@@ -103,7 +103,7 @@ const selectClass = (disabled: boolean) =>
 
 const labelClass = `${textStyles.label} mb-3 block`
 
-const groupHeaderClass = "text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3"
+const groupHeaderClass = "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3"
 
 function countFilledFields(form: Record<string, any>, fields: string[]): number {
   return fields.filter((field) => {
@@ -128,7 +128,7 @@ function ScreeningBadge() {
   return (
     <span className="inline-flex items-center gap-0.5 ml-1.5 group/screening relative" title="Usado na triagem automática da LIA">
       <Filter className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
-      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-[10px] font-['Open_Sans',sans-serif] text-white bg-gray-900 dark:bg-gray-700 rounded-lg whitespace-nowrap opacity-0 group-hover/screening:opacity-100 transition-opacity pointer-events-none z-50">
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-micro font-['Open_Sans',sans-serif] text-white bg-gray-900 dark:bg-gray-700 rounded-lg whitespace-nowrap opacity-0 group-hover/screening:opacity-100 transition-opacity pointer-events-none z-50">
         Usado na triagem da LIA
       </span>
     </span>
@@ -349,7 +349,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
         <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md overflow-hidden">
           <nav className="p-3 h-full overflow-y-auto">
           <div className="mb-2">
-            <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">Configurações da Vaga</span>
+            <span className="text-micro font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">Configurações da Vaga</span>
           </div>
           <div className="space-y-1">
           {SECTIONS.map((section) => {
@@ -368,7 +368,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
               <section.icon className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className={`${textStyles.h4} 2xl:text-xs`}>{section.title}</div>
-                <div className={`${textStyles.description} 2xl:text-[11px]`}>{section.description}</div>
+                <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
               </div>
               {isDone ? (
                 <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
@@ -383,7 +383,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
           <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
 
           <div className="mb-2">
-            <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">Configurações de Triagem</span>
+            <span className="text-micro font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">Configurações de Triagem</span>
           </div>
           <div className="space-y-1">
           {SCREENING_SECTIONS.map((section) => {
@@ -402,7 +402,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
               <section.icon className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className={`${textStyles.h4} 2xl:text-xs`}>{section.title}</div>
-                <div className={`${textStyles.description} 2xl:text-[11px]`}>{section.description}</div>
+                <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
               </div>
               {isDone ? (
                 <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
@@ -440,7 +440,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
                 {filled} de {total} campos
               </span>
               {isCreationMode ? (
@@ -448,7 +448,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                   onClick={handleSave}
                   disabled={isSaving}
                   size="sm"
-                  className="gap-1.5 text-[11px] rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                   {isSaving ? (
                     <>
@@ -467,7 +467,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                   onClick={handleStartEditing}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-[11px] rounded-md"
+                  className="gap-1.5 text-xs rounded-md"
                 >
                   <Edit className="w-3.5 h-3.5" />
                   Editar
@@ -479,7 +479,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                     disabled={isSaving}
                     variant="outline"
                     size="sm"
-                    className="text-[11px] rounded-md"
+                    className="text-xs rounded-md"
                   >
                     Cancelar
                   </Button>
@@ -487,7 +487,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                     onClick={handleSave}
                     disabled={isSaving}
                     size="sm"
-                    className="gap-1.5 text-[11px] rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                   >
                     {isSaving ? (
                       <>
@@ -514,10 +514,10 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                     <AlertTriangle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <h3 className="text-[14px] font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       Alterar Status para {statusChangeConfirm.newStatus}
                     </h3>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {job?.title || jobEditForm.title}
                     </p>
                   </div>
@@ -535,7 +535,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       {statusChangeConfirm.screeningImpact === 'ask_reactivate' && <Play className="w-3 h-3 text-green-600" />}
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
                         Impacto na Triagem
                       </p>
                       <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -734,7 +734,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         <label className={labelClass}>
                           Modelo de Trabalho<ScreeningBadge />
                           {companyDefaults?.workModel && !jobEditForm.workModel && (
-                            <span className="ml-1.5 text-[10px] text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.workModel})</span>
+                            <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.workModel})</span>
                           )}
                         </label>
                         <select
@@ -753,7 +753,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         <label className={labelClass}>
                           Tipo de Contrato<ScreeningBadge />
                           {companyDefaults?.employmentTypes && companyDefaults.employmentTypes.length > 0 && !jobEditForm.type && (
-                            <span className="ml-1.5 text-[10px] text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
+                            <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
                           )}
                         </label>
                         {(() => {
@@ -882,7 +882,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                 <h3 className={groupHeaderClass}>
                   Idiomas<ScreeningBadge />
                   {companyDefaults?.defaultLanguages && companyDefaults.defaultLanguages.length > 0 && (
-                    <span className="ml-1.5 text-[10px] text-cyan-600 dark:text-cyan-400 font-normal normal-case tracking-normal">
+                    <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal normal-case tracking-normal">
                       (padrão empresa: {companyDefaults.defaultLanguages.join(', ')})
                     </span>
                   )}
@@ -915,7 +915,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       return (
                         <div className="space-y-3">
                           {langs.length === 0 && !isEditing && (
-                            <p className="text-[11px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif] italic">
+                            <p className="text-xs text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif] italic">
                               Nenhum idioma adicionado
                             </p>
                           )}
@@ -924,7 +924,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                               <Languages className="w-4 h-4 text-gray-400 flex-shrink-0" />
                               <div className="flex-1 grid grid-cols-3 gap-3">
                                 <div>
-                                  <label className="text-[10px] text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Idioma</label>
+                                  <label className="text-micro text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Idioma</label>
                                   <select
                                     className={selectClass(!isEditing)}
                                     value={lang.language || ""}
@@ -938,7 +938,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="text-[10px] text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Nível</label>
+                                  <label className="text-micro text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Nível</label>
                                   <select
                                     className={selectClass(!isEditing)}
                                     value={lang.level || "intermediario"}
@@ -952,7 +952,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                 </div>
                                 <div className="flex items-end gap-2">
                                   <div className="flex-1">
-                                    <label className="text-[10px] text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Obrigatório</label>
+                                    <label className="text-micro text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-1 block">Obrigatório</label>
                                     <div className="flex items-center gap-2 h-[38px]">
                                       <Switch
                                         checked={!!lang.required}
@@ -960,7 +960,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                         disabled={!isEditing}
                                         className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-200"
                                       />
-                                      <span className="text-[11px] text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">
                                         {lang.required ? "Sim" : "Não"}
                                       </span>
                                     </div>
@@ -982,7 +982,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                               onClick={addLanguage}
                               variant="outline"
                               size="sm"
-                              className="gap-1.5 text-[11px] rounded-md w-full border-dashed"
+                              className="gap-1.5 text-xs rounded-md w-full border-dashed"
                             >
                               <Plus className="w-3.5 h-3.5" />
                               Adicionar Idioma
@@ -1148,7 +1148,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">LinkedIn</span>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400">Publicar vaga no LinkedIn</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Publicar vaga no LinkedIn</p>
                           </div>
                         </div>
                         <Switch
@@ -1164,7 +1164,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">Website</span>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400">Publicar no site da empresa</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Publicar no site da empresa</p>
                           </div>
                         </div>
                         <Switch
@@ -1180,7 +1180,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">Indeed</span>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400">Publicar vaga no Indeed</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Publicar vaga no Indeed</p>
                           </div>
                         </div>
                         <Switch
@@ -1361,7 +1361,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
             <div className="space-y-5">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-4 text-[10px] text-gray-500 dark:text-gray-400 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-lg font-['Open_Sans',sans-serif] flex-1">
+                  <div className="flex items-center gap-4 text-micro text-gray-500 dark:text-gray-400 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-lg font-['Open_Sans',sans-serif] flex-1">
                     <div className="flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       <span><strong>Sistema:</strong> Fixas</span>
@@ -1441,20 +1441,20 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                       placeholder="Nome da etapa"
                                     />
                                   ) : (
-                                    <span className={`text-[13px] font-semibold font-['Open_Sans',sans-serif] ${isSystem ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-50'}`}>
+                                    <span className={`text-base-ui font-semibold font-['Open_Sans',sans-serif] ${isSystem ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-50'}`}>
                                       {stage.stageName || "Sem nome"}
                                     </span>
                                   )}
                                 </div>
 
                                 <div className="flex items-center gap-2 mt-1.5">
-                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium ${badge.color} font-['Open_Sans',sans-serif]`}>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium ${badge.color} font-['Open_Sans',sans-serif]`}>
                                     <BadgeIcon className="w-2.5 h-2.5" />
                                     {badge.label}
                                   </span>
 
                                   {isLiaAssisted && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium text-wedo-cyan bg-wedo-cyan/10 font-['Open_Sans',sans-serif]">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan bg-wedo-cyan/10 font-['Open_Sans',sans-serif]">
                                       <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
                                       LIA auxilia
                                     </span>
@@ -1468,17 +1468,17 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                           type="number"
                                           min={1}
                                           max={90}
-                                          className="w-12 text-[11px] text-center px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]"
+                                          className="w-12 text-xs text-center px-1 py-0.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]"
                                           value={currentSla}
                                           onChange={(e) => updateStage(index, "slaDays", parseInt(e.target.value) || 1)}
                                         />
-                                        <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">dias</span>
+                                        <span className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">dias</span>
                                         {slaModified && (
-                                          <span className="text-[9px] text-amber-500 font-['Open_Sans',sans-serif]">(padrão: {defaultSla}d)</span>
+                                          <span className="text-micro text-amber-500 font-['Open_Sans',sans-serif]">(padrão: {defaultSla}d)</span>
                                         )}
                                       </div>
                                     ) : (
-                                      <span className={`text-[10px] font-['Open_Sans',sans-serif] ${slaModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                      <span className={`text-micro font-['Open_Sans',sans-serif] ${slaModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
                                         {currentSla} {currentSla === 1 ? 'dia' : 'dias'}
                                         {slaModified && ` (padrão: ${defaultSla}d)`}
                                       </span>
@@ -1643,7 +1643,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           <label className={labelClass}>
                             Benefícios da Vaga
                             {companyBenefitNames.length > 0 && (
-                              <span className="ml-1.5 text-[10px] text-cyan-600 dark:text-cyan-400 font-normal">
+                              <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">
                                 ({companyBenefitNames.length} cadastrados na empresa)
                               </span>
                             )}
@@ -1659,14 +1659,14 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                     type="button"
                                     onClick={() => isEditing && toggleBenefit(name)}
                                     disabled={!isEditing}
-                                    className={`px-3 py-1.5 rounded-md text-[11px] font-['Open_Sans',sans-serif] font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${
                                       isSelected
                                         ? 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100 dark:text-gray-900 dark:border-gray-100'
                                         : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
                                     } ${!isEditing ? 'cursor-default opacity-75' : 'cursor-pointer'}`}
                                   >
                                     {isSelected ? '✓ ' : ''}{name}
-                                    {!isFromCompany && <span className="ml-1 text-[9px] opacity-60">(custom)</span>}
+                                    {!isFromCompany && <span className="ml-1 text-micro opacity-60">(custom)</span>}
                                   </button>
                                 )
                               })}
@@ -1674,7 +1674,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           ) : (
                             <div className="flex flex-wrap gap-2">
                               {selectedBenefits.map((name) => (
-                                <span key={name} className="px-3 py-1.5 rounded-full text-[11px] font-['Open_Sans',sans-serif] font-medium bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 flex items-center gap-1.5">
+                                <span key={name} className="px-3 py-1.5 rounded-full text-xs font-['Open_Sans',sans-serif] font-medium bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 flex items-center gap-1.5">
                                   {name}
                                   {isEditing && (
                                     <button onClick={() => toggleBenefit(name)} className="hover:text-red-300">
@@ -1705,7 +1705,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                             </div>
                           )}
                           {selectedBenefits.length === 0 && !isEditing && (
-                            <p className="text-[11px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif] italic">
+                            <p className="text-xs text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif] italic">
                               Nenhum benefício selecionado
                             </p>
                           )}

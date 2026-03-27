@@ -77,7 +77,7 @@ function SectionHeader({
       <Badge 
         variant="outline" 
         className={cn(
-          "text-[9px] h-4 px-1.5 border",
+          "text-micro h-4 px-1.5 border",
           isLocked 
             ? "bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
             : "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
@@ -182,7 +182,7 @@ export function VacancyFullSummary({
         <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 space-y-4">
           <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-sm font-bold text-gray-800 dark:text-white">{vacancy.title}</h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Resumo completo da vaga baseada em processo anterior
             </p>
           </div>
@@ -190,7 +190,7 @@ export function VacancyFullSummary({
           <div className="space-y-4">
             <div>
               <SectionHeader icon={Tag} title="🏷️ Informações Básicas" isLocked={isFieldLocked('basic_info')} />
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900">
                   <Building2 className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Área:</span>
@@ -226,7 +226,7 @@ export function VacancyFullSummary({
                 <div className="flex items-center gap-2 p-2 rounded bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
                   <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
                   <div className="flex-1">
-                    <p className="text-[10px] text-muted-foreground">Faixa Salarial</p>
+                    <p className="text-micro text-muted-foreground">Faixa Salarial</p>
                     <p className="text-xs font-semibold text-green-700 dark:text-green-400">
                       {formatCurrency(vacancy.salary_range.min)} - {formatCurrency(vacancy.salary_range.max)}
                     </p>
@@ -236,7 +236,7 @@ export function VacancyFullSummary({
                   <div className="flex items-center gap-2 p-2 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
                     <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     <div className="flex-1">
-                      <p className="text-[10px] text-muted-foreground">Bônus</p>
+                      <p className="text-micro text-muted-foreground">Bônus</p>
                       <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
                         {vacancy.salary_range.bonus_min ? formatCurrency(vacancy.salary_range.bonus_min) : 'N/A'} - {vacancy.salary_range.bonus_max ? formatCurrency(vacancy.salary_range.bonus_max) : 'N/A'}
                       </p>
@@ -266,15 +266,15 @@ export function VacancyFullSummary({
                     <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2 min-w-0">
                         <Wrench className="h-3 w-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                        <span className="text-[11px] font-medium truncate">{skill.name}</span>
+                        <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
-                          <Badge variant="outline" className="text-[8px] h-3.5 px-1 border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400">
+                          <Badge variant="outline" className="text-micro h-3.5 px-1 border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400">
                             Req
                           </Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1 border", levelConfig.className)}>
+                        <Badge variant="outline" className={cn("text-micro h-3.5 px-1 border", levelConfig.className)}>
                           {levelConfig.label}
                         </Badge>
                         <WeightStars weight={skill.weight} />
@@ -292,7 +292,7 @@ export function VacancyFullSummary({
                   <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2 min-w-0">
                       <Brain className="h-3 w-3 text-purple-500 flex-shrink-0" />
-                      <span className="text-[11px] font-medium truncate">{comp.name}</span>
+                      <span className="text-xs font-medium truncate">{comp.name}</span>
                     </div>
                     <WeightStars weight={comp.weight} />
                   </div>
@@ -305,9 +305,9 @@ export function VacancyFullSummary({
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.screening_questions.map((q, idx) => (
                   <div key={idx} className="p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                    <p className="text-[11px] text-gray-800 dark:text-white">{idx + 1}. {q.question}</p>
+                    <p className="text-xs text-gray-800 dark:text-white">{idx + 1}. {q.question}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-[8px] h-3.5 px-1">
+                      <Badge variant="secondary" className="text-micro h-3.5 px-1">
                         {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'multiple-choice' ? 'Múltipla escolha' : q.type === 'numeric' ? 'Numérico' : 'Aberta'}
                       </Badge>
                     </div>
@@ -319,7 +319,7 @@ export function VacancyFullSummary({
             <div>
               <SectionHeader icon={FileText} title="📝 Job Description" isLocked={isFieldLocked('job_description')} iconColor="text-gray-500" />
               <div className="p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 max-h-[100px] overflow-y-auto">
-                <p className="text-[11px] text-muted-foreground whitespace-pre-wrap">
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">
                   {vacancy.job_description}
                 </p>
               </div>
@@ -331,11 +331,11 @@ export function VacancyFullSummary({
               <p className="text-xs text-gray-800 dark:text-white leading-relaxed">
                 <span className="font-semibold">📌 O que você pode fazer:</span>
               </p>
-              <ul className="text-[11px] text-muted-foreground mt-1.5 space-y-1">
+              <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                 <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 rounded">'confirmar'</span></li>
                 <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
-              <p className="text-[10px] text-muted-foreground mt-2 italic">
+              <p className="text-micro text-muted-foreground mt-2 italic">
                 Exemplos: "salário para 18 a 23k", "modelo híbrido", "adicionar benefício vale alimentação"
               </p>
             </div>

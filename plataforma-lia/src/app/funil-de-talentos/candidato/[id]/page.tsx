@@ -1194,18 +1194,18 @@ export default function CandidateProfilePage() {
                               {/* Metadata Row */}
                               <div className="flex flex-wrap gap-1.5 mb-2">
                                 {industries.slice(0, 2).map((ind: string, idx: number) => (
-                                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border border-gray-200 dark:border-gray-700">
+                                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border border-gray-200 dark:border-gray-700">
                                     <Building className="w-2.5 h-2.5 mr-0.5" />
                                     {ind}
                                   </span>
                                 ))}
                                 {isStartup && (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
                                     🚀 Startup
                                   </span>
                                 )}
                                 {companySize && (
-                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-50 text-gray-600 border border-gray-100">
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 text-gray-600 border border-gray-100">
                                     <Users className="w-2.5 h-2.5" />
                                     {companySize}
                                   </span>
@@ -1215,17 +1215,17 @@ export default function CandidateProfilePage() {
                               {/* Technologies */}
                               {technologies.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mb-2">
-                                  <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                                  <span className="text-micro text-gray-400 flex items-center gap-0.5">
                                     <Code className="w-2.5 h-2.5" />
                                     Stack:
                                   </span>
                                   {technologies.slice(0, 6).map((tech: string, idx: number) => (
-                                    <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
+                                    <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
                                       {tech}
                                     </span>
                                   ))}
                                   {technologies.length > 6 && (
-                                    <span className="text-[10px] text-gray-400">+{technologies.length - 6}</span>
+                                    <span className="text-micro text-gray-400">+{technologies.length - 6}</span>
                                   )}
                                 </div>
                               )}
@@ -1526,7 +1526,7 @@ export default function CandidateProfilePage() {
                           <Linkedin className="w-4 h-4 text-[#0A66C2]" />
                           LinkedIn Insights
                           {(candidate as any).pearch_profile_id && (
-                            <Badge className="text-[9px] px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
+                            <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
                           )}
                         </CardTitle>
                       </CardHeader>
@@ -1569,7 +1569,7 @@ export default function CandidateProfilePage() {
                                 <p className="text-lg font-semibold text-gray-800">
                                   {(candidate as any).linkedin_connections_count.toLocaleString('pt-BR')}
                                 </p>
-                                <p className="text-[10px] text-gray-500">Conexões</p>
+                                <p className="text-micro text-gray-500">Conexões</p>
                               </div>
                             )}
                             {(candidate as any).linkedin_followers_count && (
@@ -1577,7 +1577,7 @@ export default function CandidateProfilePage() {
                                 <p className="text-lg font-semibold text-gray-800">
                                   {(candidate as any).linkedin_followers_count.toLocaleString('pt-BR')}
                                 </p>
-                                <p className="text-[10px] text-gray-500">Seguidores</p>
+                                <p className="text-micro text-gray-500">Seguidores</p>
                               </div>
                             )}
                           </div>
@@ -1948,7 +1948,7 @@ export default function CandidateProfilePage() {
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                                         <span className="text-xs font-medium text-gray-800">Nota Interna</span>
-                                        <Badge className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700 border-amber-200">
+                                        <Badge className="text-micro px-1.5 py-0 bg-amber-100 text-amber-700 border-amber-200">
                                           {getCategoryLabel(item.category)}
                                         </Badge>
                                         <span className="text-xs text-gray-400">
@@ -2185,7 +2185,7 @@ export default function CandidateProfilePage() {
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Pareceres da LIA
                       {opinionsHistory.length > 0 && (
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-900" style={{ color: 'white' }}>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900" style={{ color: 'white' }}>
                           {opinionsHistory.length}
                         </Badge>
                       )}
@@ -2201,7 +2201,7 @@ export default function CandidateProfilePage() {
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Análises
                       {(savedAnalyses?.total_analyses || 0) > 0 && (
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-purple-600 text-white">
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-600 text-white">
                           {savedAnalyses?.total_analyses || 0}
                         </Badge>
                       )}
@@ -2271,7 +2271,7 @@ export default function CandidateProfilePage() {
                         return (
                           <div key={opinion.id} className="relative">
                             {!opinion.is_current && (
-                              <Badge className="absolute top-2 right-2 text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-500 z-10">
+                              <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 z-10">
                                 v{opinion.version} - Histórico
                               </Badge>
                             )}
@@ -2288,12 +2288,12 @@ export default function CandidateProfilePage() {
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className="text-sm font-medium text-gray-800">{isWsi ? 'Parecer WSI' : 'Parecer Geral'}</span>
                                       {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
                                         </Badge>
                                       ) : opinion.job_vacancy_title ? (
-                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           {opinion.job_vacancy_title}
                                         </Badge>
@@ -2331,7 +2331,7 @@ export default function CandidateProfilePage() {
                                     </TooltipTrigger>
                                     <TooltipContent>Copiar Parecer</TooltipContent>
                                   </Tooltip>
-                                  {opinion.created_at && <span className="text-[10px] text-gray-400">{formatDate(opinion.created_at)}</span>}
+                                  {opinion.created_at && <span className="text-micro text-gray-400">{formatDate(opinion.created_at)}</span>}
                                   {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                                 </div>
                               </button>
@@ -2478,11 +2478,11 @@ export default function CandidateProfilePage() {
                                         <span className="text-sm font-medium text-gray-800">
                                           {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                         </span>
-                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-purple-50 text-purple-700 border-purple-200">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-50 text-purple-700 border-purple-200">
                                           Análise LIA
                                         </Badge>
                                       </div>
-                                      <span className="text-[10px] text-gray-400 mt-0.5">
+                                      <span className="text-micro text-gray-400 mt-0.5">
                                         {analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Data não disponível'}
                                       </span>
                                     </div>

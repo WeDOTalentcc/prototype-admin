@@ -121,7 +121,7 @@ export function JobAssignRecruiterModal({
               <Users className="w-4 h-4 text-gray-600" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                 Atribuir Recrutador
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -135,7 +135,7 @@ export function JobAssignRecruiterModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vagas Selecionadas
                 </h4>
                 <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
@@ -151,15 +151,15 @@ export function JobAssignRecruiterModal({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             {job.code && (
-                              <span className="text-[10px] font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                              <span className="text-micro font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded-full">
                                 {job.code}
                               </span>
                             )}
-                            <span className="text-[13px] font-semibold text-gray-950 dark:text-gray-50 truncate">
+                            <span className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                               {job.title}
                             </span>
                           </div>
-                          <span className="text-[11px] text-gray-600">
+                          <span className="text-xs text-gray-600">
                             Atual: {job.recruiter || "Não definido"}
                           </span>
                         </div>
@@ -170,7 +170,7 @@ export function JobAssignRecruiterModal({
               </div>
 
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Opções
                 </h4>
                 <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-gray-200">
@@ -185,7 +185,7 @@ export function JobAssignRecruiterModal({
                     />
                     <Label
                       htmlFor="notify"
-                      className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1"
+                      className="text-xs text-gray-800 cursor-pointer flex items-center gap-1"
                     >
                       <Megaphone className="w-3 h-3 text-gray-400" />
                       Notificar recrutador sobre atribuição
@@ -202,7 +202,7 @@ export function JobAssignRecruiterModal({
                     />
                     <Label
                       htmlFor="transfer"
-                      className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1"
+                      className="text-xs text-gray-800 cursor-pointer flex items-center gap-1"
                     >
                       <Mail className="w-3 h-3 text-gray-400" />
                       Transferir comunicações pendentes
@@ -218,10 +218,10 @@ export function JobAssignRecruiterModal({
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                     </div>
                     <div>
-                      <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 mb-0.5">
+                      <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-0.5">
                         Sugestão da LIA
                       </h5>
-                      <p className="text-[11px] text-gray-800 leading-relaxed">
+                      <p className="text-xs text-gray-800 leading-relaxed">
                         Recomendo <strong>{recommendedRecruiter.name}</strong> ({recommendedRecruiter.active_jobs_count ?? 0} vagas, {recommendedRecruiter.performance_score ?? 0}% perf.)
                       </p>
                     </div>
@@ -231,7 +231,7 @@ export function JobAssignRecruiterModal({
             </div>
 
             <div>
-              <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+              <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                 Selecionar Recrutador
               </h4>
               <div className="relative mb-2">
@@ -246,7 +246,7 @@ export function JobAssignRecruiterModal({
 
               <div className="space-y-1.5 max-h-[200px] overflow-y-auto border border-gray-200 rounded-md p-2">
                 {filteredRecruiters.length === 0 ? (
-                  <div className="text-center py-4 text-[11px] text-gray-500">
+                  <div className="text-center py-4 text-xs text-gray-500">
                     Nenhum recrutador encontrado
                   </div>
                 ) : (
@@ -269,17 +269,17 @@ export function JobAssignRecruiterModal({
                             {recruiter.avatar ? (
                               <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
                             ) : null}
-                            <AvatarFallback className={`text-[10px] font-medium ${isRecommended ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400" : "bg-gray-100 text-gray-600"}`}>
+                            <AvatarFallback className={`text-micro font-medium ${isRecommended ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400" : "bg-gray-100 text-gray-600"}`}>
                               {getInitials(recruiter.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 truncate">
+                              <span className="text-xs font-semibold text-gray-950 dark:text-gray-50 truncate">
                                 {recruiter.name}
                               </span>
                               {isRecommended && (
-                                <span className="flex items-center gap-0.5 text-[10px] font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+                                <span className="flex items-center gap-0.5 text-micro font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
                                   <Star className="w-2.5 h-2.5" />
                                   Recom.
                                 </span>
@@ -288,7 +288,7 @@ export function JobAssignRecruiterModal({
                                 <Check className="w-3.5 h-3.5 text-gray-900 ml-auto flex-shrink-0" />
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
                               <span>{recruiter.active_jobs_count ?? 0} vagas</span>
                               <span>Perf: {recruiter.performance_score ?? 0}%</span>
                             </div>

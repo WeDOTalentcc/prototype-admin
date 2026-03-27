@@ -135,7 +135,7 @@ export function PipelineStagesCarousel({
                         : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
                     )}
                   >
-                    <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-0.5 whitespace-nowrap">
+                    <div className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-0.5 whitespace-nowrap">
                       {displayName}
                     </div>
 
@@ -150,7 +150,7 @@ export function PipelineStagesCarousel({
                       >
                         {stage.count}
                       </span>
-                      <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
+                      <span className="text-micro font-medium text-gray-400 dark:text-gray-500">
                         candidatos
                       </span>
                     </div>

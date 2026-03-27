@@ -366,7 +366,7 @@ export function StatusBadge({
         className="w-2 h-2 flex-shrink-0 text-[var(--badge-icon)] dark:text-[var(--badge-icon-dark)]" 
       />
       <span 
-        className="text-[9px] text-[var(--badge-text)] dark:text-[var(--badge-text-dark)]"
+        className="text-micro text-[var(--badge-text)] dark:text-[var(--badge-text-dark)]"
         style={{ 
           fontWeight: styles.fontWeight,
         }}
@@ -465,7 +465,7 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
       <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-400" />
-      <span className="text-[9px] text-gray-600 dark:text-gray-300 font-medium">
+      <span className="text-micro text-gray-600 dark:text-gray-300 font-medium">
         {label}
       </span>
     </div>
@@ -493,7 +493,7 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
       style={{ fontFamily: "'Open Sans', sans-serif" }}
     >
       <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-300" />
-      <span className="text-[9px] text-gray-600 dark:text-gray-200 font-semibold">
+      <span className="text-micro text-gray-600 dark:text-gray-200 font-semibold">
         {displayText}
       </span>
     </div>
@@ -567,7 +567,7 @@ export function OriginBadge({ origin, className }: OriginBadgeProps) {
       title={`Origem: ${config.label}`}
     >
       <Icon className={cn('w-2 h-2 flex-shrink-0', config.text)} />
-      <span className={cn('text-[9px] font-medium', config.text)}>
+      <span className={cn('text-micro font-medium', config.text)}>
         {config.label}
       </span>
     </div>
@@ -591,7 +591,7 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
       title="Aguardando na fila de saturação"
     >
       <Clock className="w-2 h-2 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-      <span className="text-[9px] font-medium text-amber-700 dark:text-amber-300">
+      <span className="text-micro font-medium text-amber-700 dark:text-amber-300">
         Aguardando
       </span>
     </div>

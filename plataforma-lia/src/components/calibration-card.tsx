@@ -130,7 +130,7 @@ export function CalibrationCard({
               className="h-1.5 bg-gray-100 dark:bg-gray-800"
             />
             {!progress.isComplete && feedbacksRemaining > 0 && (
-              <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 {feedbacksRemaining === 1 
                   ? 'Falta apenas 1 avaliação para liberar o sourcing automático'
                   : `Faltam ${feedbacksRemaining} avaliações para liberar o sourcing automático`
@@ -138,7 +138,7 @@ export function CalibrationCard({
               </p>
             )}
             {progress.sourcingBlocked && !progress.isComplete && (
-              <div className="flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full px-2 py-1">
+              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full px-2 py-1">
                 <span>Sourcing automático bloqueado até completar a calibração</span>
               </div>
             )}
@@ -177,21 +177,21 @@ export function CalibrationCard({
                     </a>
                   )}
                   {candidate.lia_score && (
-                    <Badge className="text-[11px] py-0 px-1.5 bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200">
+                    <Badge className="text-xs py-0 px-1.5 bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200">
                       Score: {candidate.lia_score}
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Briefcase className="w-3 h-3 text-gray-600" />
-                  <span className="text-[11px] text-gray-600 dark:text-gray-400 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     {candidate.current_title}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 mb-2">
+            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-2">
               {candidate.current_company && (
                 <div className="flex items-center gap-1">
                   <Building className="w-3 h-3" />
@@ -213,7 +213,7 @@ export function CalibrationCard({
             </div>
 
             {candidate.summary && (
-              <p className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 {candidate.summary}
               </p>
             )}
@@ -224,7 +224,7 @@ export function CalibrationCard({
                   <Badge 
                     key={skill} 
                     variant="secondary"
-                    className="text-[11px] py-0 px-1.5 bg-gray-100 dark:bg-gray-800"
+                    className="text-xs py-0 px-1.5 bg-gray-100 dark:bg-gray-800"
                   >
                     {skill}
                   </Badge>
@@ -232,7 +232,7 @@ export function CalibrationCard({
                 {candidate.skills.length > 5 && (
                   <Badge 
                     variant="outline"
-                    className="text-[11px] py-0 px-1.5"
+                    className="text-xs py-0 px-1.5"
                   >
                     +{candidate.skills.length - 5}
                   </Badge>

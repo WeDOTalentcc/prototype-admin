@@ -96,7 +96,7 @@ export function InsufficientDataModal({
                         <div>
                           <span className="text-xs font-medium text-red-700">{req.label}</span>
                           {req.description && (
-                            <p className="text-[11px] text-red-600">{req.description}</p>
+                            <p className="text-xs text-red-600">{req.description}</p>
                           )}
                         </div>
                       </li>
@@ -118,7 +118,7 @@ export function InsufficientDataModal({
                         <div>
                           <span className="text-xs font-medium text-amber-700">{req.label}</span>
                           {req.description && (
-                            <p className="text-[11px] text-amber-600">{req.description}</p>
+                            <p className="text-xs text-amber-600">{req.description}</p>
                           )}
                         </div>
                       </li>

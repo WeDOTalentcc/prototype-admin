@@ -159,12 +159,12 @@ export function CreateJobWithCandidatesModal({
               <div>
                 <h2 
                   id="create-job-with-candidates-modal-title" 
-                  className="text-[14px] font-semibold text-gray-100"
+                  className="text-sm font-semibold text-gray-100"
                   style={{ fontFamily: '"Open Sans", sans-serif' }}
                 >
                   Criar vaga com candidatos
                 </h2>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-xs text-gray-400">
                   Os candidatos serão adicionados após a criação
                 </p>
               </div>
@@ -188,7 +188,7 @@ export function CreateJobWithCandidatesModal({
               </span>
             </div>
             
-            <p className="text-[11px] text-gray-400 mb-3">
+            <p className="text-xs text-gray-400 mb-3">
               Serão adicionados automaticamente à vaga após sua criação
             </p>
             
@@ -201,18 +201,18 @@ export function CreateJobWithCandidatesModal({
                       className="flex items-center gap-2 p-2 bg-gray-800 rounded-md border border-gray-700"
                     >
                       <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-[9px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-[11px] text-gray-200 truncate flex-1">
+                      <span className="text-xs text-gray-200 truncate flex-1">
                         {name}
                       </span>
                       <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                     </div>
                   ))}
                   {remainingCount > 0 && (
-                    <div className="text-[11px] text-gray-500 text-center py-1">
+                    <div className="text-xs text-gray-500 text-center py-1">
                       +{remainingCount} candidato{remainingCount !== 1 ? 's' : ''}
                     </div>
                   )}
@@ -223,11 +223,11 @@ export function CreateJobWithCandidatesModal({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-300">
+              <Label className="text-xs font-medium text-gray-300">
                 Etapa inicial
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
-                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-gray-200 text-[11px] focus:ring-gray-900 focus:ring-offset-0">
+                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-gray-200 text-xs focus:ring-gray-900 focus:ring-offset-0">
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
@@ -235,7 +235,7 @@ export function CreateJobWithCandidatesModal({
                     <SelectItem 
                       key={stage} 
                       value={stage} 
-                      className="text-[11px] text-gray-200 focus:bg-gray-700 focus:text-gray-100"
+                      className="text-xs text-gray-200 focus:bg-gray-700 focus:text-gray-100"
                     >
                       {stage}
                     </SelectItem>
@@ -255,12 +255,12 @@ export function CreateJobWithCandidatesModal({
                 <div className="flex-1">
                   <Label
                     htmlFor="include-comments"
-                    className="text-[11px] font-medium text-gray-200 cursor-pointer flex items-center gap-1.5"
+                    className="text-xs font-medium text-gray-200 cursor-pointer flex items-center gap-1.5"
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
                     Incluir comentários como notas
                   </Label>
-                  <p className="text-[10px] text-gray-500 mt-1">
+                  <p className="text-micro text-gray-500 mt-1">
                     Os feedbacks serão adicionados como notas iniciais dos candidatos
                   </p>
                 </div>
@@ -272,10 +272,10 @@ export function CreateJobWithCandidatesModal({
             <div className="flex items-start gap-2">
               <Briefcase className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                   Próximo passo
                 </p>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-micro text-gray-400 mt-1">
                   A LIA vai te guiar na criação da vaga. Após finalizar, os candidatos serão adicionados automaticamente.
                 </p>
               </div>

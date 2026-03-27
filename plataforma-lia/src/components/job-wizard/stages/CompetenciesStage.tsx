@@ -250,7 +250,7 @@ export function CompetenciesStage() {
           <select 
             value={skill.level}
             onChange={(e) => updateSkillLevel(skill.id, e.target.value as any)}
-            className="px-1.5 py-0.5 text-[10px] border border-gray-200 rounded-full bg-white"
+            className="px-1.5 py-0.5 text-micro border border-gray-200 rounded-full bg-white"
           >
             <option value="Básico">Básico</option>
             <option value="Intermediário">Intermediário</option>
@@ -259,7 +259,7 @@ export function CompetenciesStage() {
           <button
             onClick={() => toggleSkillRequired(skill.id)}
             className={cn(
-              "px-1.5 py-0.5 text-[10px] rounded-full transition-all",
+              "px-1.5 py-0.5 text-micro rounded-full transition-all",
               skill.required ? "bg-gray-900 dark:bg-gray-50 text-white" : "bg-gray-200 text-gray-500"
             )}
           >
@@ -273,7 +273,7 @@ export function CompetenciesStage() {
           </button>
         </div>
         <div className="flex items-center gap-1 ml-0.5">
-          <span className="text-[10px] text-gray-400 mr-1">Peso:</span>
+          <span className="text-micro text-gray-400 mr-1">Peso:</span>
           {[1, 2, 3, 4, 5].map((w) => (
             <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-all">
               <Star className={cn(
@@ -317,7 +317,7 @@ export function CompetenciesStage() {
           onClick={() => toggleBehavioralCompetency(comp.id)}
           className={cn(
             "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
-            comp.enabled ? "bg-[#22C55E]" : "border border-gray-300"
+            comp.enabled ? "bg-status-success" : "border border-gray-300"
           )}
         >
           {comp.enabled && <CheckCircle2 className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
@@ -328,9 +328,9 @@ export function CompetenciesStage() {
       </div>
       {comp.enabled && (
         <>
-          <p className="text-[10px] text-gray-500 ml-6">{comp.justification}</p>
+          <p className="text-micro text-gray-500 ml-6">{comp.justification}</p>
           <div className="flex items-center gap-1 ml-6">
-            <span className="text-[10px] text-gray-400 mr-1">Peso:</span>
+            <span className="text-micro text-gray-400 mr-1">Peso:</span>
             {[1, 2, 3, 4, 5].map((w) => (
               <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-all">
                 <Star className={cn(
@@ -348,25 +348,25 @@ export function CompetenciesStage() {
   return (
     <div className="space-y-4">
       {/* Progress Indicator */}
-      <div className="p-2.5 bg-[#F8FAFB] rounded-md border border-gray-200 mb-3">
+      <div className="p-2.5 bg-gray-50 rounded-md border border-gray-200 mb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <Code className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-[10px] text-gray-500">Técnicas:</span>
-              <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-[#22C55E]' : 'text-[#F59E0B]'}`}>
+              <span className="text-micro text-gray-500">Técnicas:</span>
+              <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {technicalSkills.length}/3
               </span>
-              {technicalSkills.length >= 3 && <CheckCircle2 className="w-3 h-3 text-[#22C55E]" />}
+              {technicalSkills.length >= 3 && <CheckCircle2 className="w-3 h-3 text-status-success" />}
             </div>
             <div className="w-px h-4 bg-gray-200" />
             <div className="flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-[10px] text-gray-500">Comportamentais:</span>
-              <span className={`text-xs font-medium ${enabledBehavioralCount >= 3 ? 'text-[#22C55E]' : 'text-[#F59E0B]'}`}>
+              <span className="text-micro text-gray-500">Comportamentais:</span>
+              <span className={`text-xs font-medium ${enabledBehavioralCount >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {enabledBehavioralCount}/3
               </span>
-              {enabledBehavioralCount >= 3 && <CheckCircle2 className="w-3 h-3 text-[#22C55E]" />}
+              {enabledBehavioralCount >= 3 && <CheckCircle2 className="w-3 h-3 text-status-success" />}
             </div>
           </div>
         </div>
@@ -412,7 +412,7 @@ export function CompetenciesStage() {
           
           {/* Add Skill Modal */}
           {showAddSkillModal && (
-            <div className="p-3 bg-[#F8FAFB] rounded-md border border-gray-200 space-y-2">
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-200 space-y-2">
               <input
                 type="text"
                 value={newSkillName}

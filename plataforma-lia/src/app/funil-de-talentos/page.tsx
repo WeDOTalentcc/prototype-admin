@@ -181,7 +181,7 @@ export default function FunilDeTalentosPage() {
             <TabsTrigger value="todos" className="rounded-md text-xs">
               Todos
               {activeTab === "todos" && total > 0 && (
-                <Badge className="ml-1.5 h-4 px-1.5 text-[10px] bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
                   {total}
                 </Badge>
               )}

@@ -1372,9 +1372,9 @@ export function CompanyTeamHub({
     "bg-wedo-orange text-white",
     "bg-wedo-purple text-white",
     "bg-wedo-magenta text-white",
-    "bg-[#3B82F6] text-white",
-    "bg-[#EF4444] text-white",
-    "bg-[#F59E0B] text-white",
+    "bg-blue-500 text-white",
+    "bg-status-error text-white",
+    "bg-status-warning text-white",
   ];
 
   const handleSaveDepartment = async () => {
@@ -1726,7 +1726,7 @@ export function CompanyTeamHub({
       <div className="space-y-3">
         {successMessage && (
           <div
-            className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 px-2 py-1.5 rounded-full flex items-center gap-2 text-[11px]"
+            className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
           >
             <CheckCircle className="w-3.5 h-3.5" />
             {successMessage}
@@ -1734,7 +1734,7 @@ export function CompanyTeamHub({
         )}
         {error && (
           <div
-            className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-full flex items-center gap-2 text-[11px]"
+            className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
           >
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
@@ -1812,7 +1812,7 @@ export function CompanyTeamHub({
                     <div className="text-center">
                       <Image className="w-8 h-8 mx-auto text-gray-600 dark:text-gray-400 mb-1" />
                       <span
-                        className="text-[11px] text-gray-600"
+                        className="text-xs text-gray-600"
         
                       >
                         Upload Logo
@@ -1824,7 +1824,7 @@ export function CompanyTeamHub({
               <div className="flex-1 grid grid-cols-2 gap-3">
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Razão Social
@@ -1845,7 +1845,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Nome Fantasia
@@ -1875,7 +1875,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     CNPJ
@@ -1897,7 +1897,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Setor
@@ -1954,7 +1954,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -1986,7 +1986,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -2019,7 +2019,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Email
@@ -2040,7 +2040,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Telefone
@@ -2061,7 +2061,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -2142,7 +2142,7 @@ export function CompanyTeamHub({
                           </div>
                         </div>
                         <div
-                          className="flex items-center gap-4 text-[10px] text-gray-500 dark:text-gray-400"
+                          className="flex items-center gap-4 text-micro text-gray-500 dark:text-gray-400"
           
                         >
                           <span
@@ -2205,7 +2205,7 @@ export function CompanyTeamHub({
 
                     {!isLiaAnalyzing && (!isEditingCompanyData || !companyData.website) && (
                       <p
-                        className="text-[10px] text-amber-600 dark:text-amber-400 mt-2"
+                        className="text-micro text-amber-600 dark:text-amber-400 mt-2"
         
                       >
                         {!isEditingCompanyData 
@@ -2232,7 +2232,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Missão
@@ -2264,7 +2264,7 @@ export function CompanyTeamHub({
 
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Visão
@@ -2296,7 +2296,7 @@ export function CompanyTeamHub({
 
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Valores
@@ -2314,7 +2314,7 @@ export function CompanyTeamHub({
                     {(companyData.values || []).map((value, idx) => (
                       <Badge
                         key={idx}
-                        className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-[10px] px-2 py-0.5 rounded-full"
+                        className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-micro px-2 py-0.5 rounded-full"
                       >
                         {value}
                         {isEditingCompanyData && (
@@ -2357,7 +2357,7 @@ export function CompanyTeamHub({
 
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     Competências Comportamentais
@@ -2375,7 +2375,7 @@ export function CompanyTeamHub({
                     {(companyData.coreCompetencies || []).map((comp, idx) => (
                       <Badge
                         key={idx}
-                        className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded-full"
+                        className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full"
                       >
                         {comp}
                         {isEditingCompanyData && (
@@ -2430,7 +2430,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <Users className="w-3 h-3 inline mr-1" />
@@ -2453,7 +2453,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <Building2 className="w-3 h-3 inline mr-1" />
@@ -2481,7 +2481,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <Calendar className="w-3 h-3 inline mr-1" />
@@ -2515,7 +2515,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -2555,7 +2555,7 @@ export function CompanyTeamHub({
                 {companyData.work_model === "hybrid" && (
                   <div>
                     <label
-                      className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                      className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
       
                     >
                       <Calendar className="w-3 h-3 inline mr-1" />
@@ -2585,7 +2585,7 @@ export function CompanyTeamHub({
                 
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -2628,7 +2628,7 @@ export function CompanyTeamHub({
                               employment_types: updated,
                             }))
                           }}
-                          className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${
+                          className={`px-2 py-1 text-micro rounded-full border transition-colors ${
                             isSelected
                               ? 'bg-gray-100 dark:bg-gray-700 border-gray-400 dark:border-gray-500 text-gray-900 dark:text-gray-100'
                               : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
@@ -2641,7 +2641,7 @@ export function CompanyTeamHub({
                       )
                     })}
                   </div>
-                  <p className="text-[9px] text-gray-500 dark:text-gray-500 mt-1">
+                  <p className="text-micro text-gray-500 dark:text-gray-500 mt-1">
                     Selecione os tipos de contratação mais usados pela empresa
                   </p>
                 </div>
@@ -2651,7 +2651,7 @@ export function CompanyTeamHub({
             {/* Níveis de Senioridade */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
               <h4
-                className="flex items-center gap-2 text-[10px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
+                className="flex items-center gap-2 text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
 
               >
                 Níveis de Senioridade
@@ -2670,7 +2670,7 @@ export function CompanyTeamHub({
                   {(companyData.seniority_levels || []).map((level, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded-full"
+                      className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full"
                     >
                       {level}
                       {isEditingCompanyData && (
@@ -2704,7 +2704,7 @@ export function CompanyTeamHub({
                             seniority_levels: [...(prev.seniority_levels || []), level],
                           }));
                         }}
-                        className={`text-[9px] px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
         
                       >
                         + {level}
@@ -2731,7 +2731,7 @@ export function CompanyTeamHub({
                     }
                   }}
                 />
-                <p className="text-[9px] text-gray-500 dark:text-gray-500">
+                <p className="text-micro text-gray-500 dark:text-gray-500">
                   Defina os níveis de senioridade usados nas vagas da empresa
                 </p>
               </div>
@@ -2740,7 +2740,7 @@ export function CompanyTeamHub({
             {/* Competências Comportamentais Padrão */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
               <h4
-                className="flex items-center gap-2 text-[10px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
+                className="flex items-center gap-2 text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
 
               >
                 Competências Comportamentais Padrão
@@ -2761,7 +2761,7 @@ export function CompanyTeamHub({
                       key={idx}
                       className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-md px-3 py-1.5"
                     >
-                      <span className="text-[11px] text-gray-800 dark:text-gray-200">
+                      <span className="text-xs text-gray-800 dark:text-gray-200">
                         {comp.competency}
                       </span>
                       <div className="flex items-center gap-2">
@@ -2776,7 +2776,7 @@ export function CompanyTeamHub({
                               default_behavioral_competencies: updated,
                             }));
                           }}
-                          className={`text-[10px] px-2 py-0.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          className={`text-micro px-2 py-0.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-900 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
           
                         >
                           <option value="Essencial">Essencial</option>
@@ -2815,7 +2815,7 @@ export function CompanyTeamHub({
                             default_behavioral_competencies: [...(prev.default_behavioral_competencies || []), { competency: comp, weight: "Importante" }],
                           }));
                         }}
-                        className={`text-[9px] px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
         
                       >
                         + {comp}
@@ -2842,7 +2842,7 @@ export function CompanyTeamHub({
                     }
                   }}
                 />
-                <p className="text-[9px] text-gray-500 dark:text-gray-500">
+                <p className="text-micro text-gray-500 dark:text-gray-500">
                   Competências comportamentais que serão pré-selecionadas ao criar novas vagas
                 </p>
               </div>
@@ -2851,7 +2851,7 @@ export function CompanyTeamHub({
             {/* Faixas Salariais Padrão */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
               <h4
-                className="flex items-center gap-2 text-[10px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
+                className="flex items-center gap-2 text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
 
               >
                 Faixas Salariais Padrão
@@ -2878,11 +2878,11 @@ export function CompanyTeamHub({
                         className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-md px-3 py-2"
                       >
                         <div className="flex items-center gap-3">
-                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[9px]">{range.level}</Badge>
+                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-micro">{range.level}</Badge>
                           {range.department && (
-                            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[9px]">{range.department}</Badge>
+                            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro">{range.department}</Badge>
                           )}
-                          <span className="text-[11px] text-gray-800 dark:text-gray-200">
+                          <span className="text-xs text-gray-800 dark:text-gray-200">
                             {range.currency} {range.min.toLocaleString('pt-BR')} - {range.max.toLocaleString('pt-BR')}
                           </span>
                         </div>
@@ -2907,7 +2907,7 @@ export function CompanyTeamHub({
                   <select
                     id="new-salary-level"
                     disabled={!isEditingCompanyData}
-                    className={`col-span-1 text-[11px] px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`col-span-1 text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
     
                     defaultValue=""
                   >
@@ -2921,7 +2921,7 @@ export function CompanyTeamHub({
                     type="number"
                     placeholder="Mín (R$)"
                     disabled={!isEditingCompanyData}
- className={`col-span-1 text-[11px] px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
+ className={`col-span-1 text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
     
                   />
                   <input
@@ -2929,7 +2929,7 @@ export function CompanyTeamHub({
                     type="number"
                     placeholder="Máx (R$)"
                     disabled={!isEditingCompanyData}
- className={`col-span-1 text-[11px] px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
+ className={`col-span-1 text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
     
                   />
                   <input
@@ -2937,14 +2937,14 @@ export function CompanyTeamHub({
                     type="text"
                     placeholder="Área (opcional)"
                     disabled={!isEditingCompanyData}
- className={`col-span-1 text-[11px] px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
+ className={`col-span-1 text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-full bg-white ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
     
                   />
                   <Button
                     type="button"
                     size="sm"
                     disabled={!isEditingCompanyData}
-                    className={`col-span-1 text-[10px] rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`col-span-1 text-micro rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!isEditingCompanyData) return;
                       const levelEl = document.getElementById('new-salary-level') as HTMLSelectElement;
@@ -2976,7 +2976,7 @@ export function CompanyTeamHub({
                     <Plus className="w-3 h-3" />
                   </Button>
                 </div>
-                <p className="text-[9px] text-gray-500 dark:text-gray-500">
+                <p className="text-micro text-gray-500 dark:text-gray-500">
                   Faixas salariais por nível para facilitar o preenchimento de vagas
                 </p>
               </div>
@@ -2992,7 +2992,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <TrendingUp className="w-3 h-3 inline mr-1" />
@@ -3015,7 +3015,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3049,7 +3049,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3083,7 +3083,7 @@ export function CompanyTeamHub({
                 </div>
                 <div className="col-span-1 md:col-span-2">
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3104,7 +3104,7 @@ export function CompanyTeamHub({
                     {(companyData.evp_bullets || []).map((bullet, idx) => (
                       <Badge
                         key={idx}
-                        className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full"
+                        className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-micro px-2 py-0.5 rounded-full"
                       >
                         {bullet}
                         {isEditingCompanyData && (
@@ -3159,7 +3159,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3193,7 +3193,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3227,7 +3227,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3272,7 +3272,7 @@ export function CompanyTeamHub({
               <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label
-                    className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-2"
+                    className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-2"
     
                   >
                     <Code className="w-3 h-3 inline mr-1" />
@@ -3313,13 +3313,13 @@ export function CompanyTeamHub({
                             <div className="flex items-center gap-2">
                               <CategoryIcon className="w-3.5 h-3.5" />
                               <span
-                                className="text-[11px] font-medium"
+                                className="text-xs font-medium"
                 
                               >
                                 {category.label}
                               </span>
                               {categoryTechs.length > 0 && (
-                                <Badge className="bg-white/50 dark:bg-black/20 text-[9px] px-1.5 py-0">
+                                <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0">
                                   {categoryTechs.length}
                                 </Badge>
                               )}
@@ -3338,7 +3338,7 @@ export function CompanyTeamHub({
                                   {categoryTechs.map((tech, idx) => (
                                     <Badge
                                       key={idx}
-                                      className={`${category.color} text-[10px] px-2 py-0.5 rounded-full`}
+                                      className={`${category.color} text-micro px-2 py-0.5 rounded-full`}
                                     >
                                       {tech}
                                       {isEditingCompanyData && (
@@ -3375,7 +3375,7 @@ export function CompanyTeamHub({
                                           suggestion,
                                         );
                                       }}
-                                      className={`text-[9px] px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                      className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     >
                                       + {suggestion}
                                     </button>
@@ -3386,7 +3386,7 @@ export function CompanyTeamHub({
                                 type="text"
                                 placeholder={`Adicionar ${category.label.toLowerCase()} personalizada...`}
                                 disabled={!isEditingCompanyData}
-                                className={`w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                className={`w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                 
                                 onKeyDown={(e) => {
                                   if (
@@ -3425,12 +3425,12 @@ export function CompanyTeamHub({
                             <div className="flex items-center gap-2">
                               <Code className="w-3.5 h-3.5" />
                               <span
-                                className="text-[11px] font-medium"
+                                className="text-xs font-medium"
                 
                               >
                                 Outros
                               </span>
-                              <Badge className="bg-white/50 dark:bg-black/20 text-[9px] px-1.5 py-0">
+                              <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0">
                                 {techStackByCategory["outros"].length}
                               </Badge>
                             </div>
@@ -3448,7 +3448,7 @@ export function CompanyTeamHub({
                                   (tech, idx) => (
                                     <Badge
                                       key={idx}
-                                      className="bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-[10px] px-2 py-0.5 rounded-full"
+                                      className="bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-micro px-2 py-0.5 rounded-full"
                                     >
                                       {tech}
                                       {isEditingCompanyData && (
@@ -3470,7 +3470,7 @@ export function CompanyTeamHub({
                                 type="text"
                                 placeholder="Adicionar tecnologia..."
                                 disabled={!isEditingCompanyData}
-                                className={`w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                className={`w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                 
                                 onKeyDown={(e) => {
                                   if (
@@ -3494,7 +3494,7 @@ export function CompanyTeamHub({
                 </div>
                 <div>
                   <label
-                    className="flex items-center gap-3 text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                    className="flex items-center gap-3 text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
     
                   >
                     <span className="flex items-center gap-1">
@@ -3532,7 +3532,7 @@ export function CompanyTeamHub({
             {/* Idiomas Padrão */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
               <h4
-                className="flex items-center gap-3 text-[10px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
+                className="flex items-center gap-3 text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider mb-3"
 
               >
                 Idiomas Padrão para Vagas
@@ -3548,7 +3548,7 @@ export function CompanyTeamHub({
               </h4>
               <div className="space-y-2">
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-2"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-2"
   
                 >
                   Idiomas exigidos por padrão em novas vagas
@@ -3557,7 +3557,7 @@ export function CompanyTeamHub({
                   {(companyData.default_languages || []).map((lang, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-[10px] px-2 py-0.5 rounded-full"
+                      className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-micro px-2 py-0.5 rounded-full"
                     >
                       {lang}
                       {isEditingCompanyData && (
@@ -3591,7 +3591,7 @@ export function CompanyTeamHub({
                             default_languages: [...(prev.default_languages || []), lang],
                           }));
                         }}
-                        className={`text-[9px] px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
         
                       >
                         + {lang}
@@ -3602,7 +3602,7 @@ export function CompanyTeamHub({
                   type="text"
                   placeholder="Adicionar outro idioma..."
                   disabled={!isEditingCompanyData}
-                  className={`w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors mt-2 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-1 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors mt-2 ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
   
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && e.currentTarget.value.trim()) {
@@ -3626,7 +3626,7 @@ export function CompanyTeamHub({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-1.5">
                   <h4
-                    className="flex items-center gap-2 text-[10px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider"
+                    className="flex items-center gap-2 text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wider"
     
                   >
                     Perfil Organizacional (Big Five)
@@ -3651,7 +3651,7 @@ export function CompanyTeamHub({
                     </PopoverTrigger>
                     <PopoverContent
                       side="right"
-                      className="max-w-xs text-[11px] p-3"
+                      className="max-w-xs text-xs p-3"
                     >
                       <p>
                         <strong className="block mb-1">
@@ -3660,7 +3660,7 @@ export function CompanyTeamHub({
                         A LIA analisa o website corporativo, cultura declarada,
                         missão, visão e valores da empresa. Os 5 traços medem:
                       </p>
-                      <ul className="mt-2 space-y-1 text-[10px] text-gray-600 dark:text-gray-400">
+                      <ul className="mt-2 space-y-1 text-micro text-gray-600 dark:text-gray-400">
                         <li>
                           <strong>Abertura:</strong> Inovação e criatividade
                         </li>
@@ -3680,7 +3680,7 @@ export function CompanyTeamHub({
                         </li>
                       </ul>
                       <p
-                        className="mt-2 text-[10px] text-gray-500 dark:text-gray-400"
+                        className="mt-2 text-micro text-gray-500 dark:text-gray-400"
         
                       >
                         Você pode ajustar manualmente os valores arrastando os
@@ -3694,7 +3694,7 @@ export function CompanyTeamHub({
                   size="sm"
                   onClick={handleSaveCultureFields}
                   disabled={saving}
-                  className="text-[10px] rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="text-micro rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   {saving ? (
                     <>
@@ -3745,7 +3745,7 @@ export function CompanyTeamHub({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="flex items-center gap-2 text-[13px] font-semibold text-gray-950 dark:text-gray-50">
+          <h3 className="flex items-center gap-2 text-base-ui font-semibold text-gray-950 dark:text-gray-50">
             Departamentos
             <LiaFieldToggle
               fieldKey="departments"
@@ -3758,7 +3758,7 @@ export function CompanyTeamHub({
             />
           </h3>
           <p
-            className="text-[11px] text-gray-600"
+            className="text-xs text-gray-600"
           >
             Gerencie a estrutura organizacional da empresa
           </p>
@@ -3813,7 +3813,7 @@ export function CompanyTeamHub({
               <Button
                 onClick={() => setShowDepartmentForm(true)}
                 size="sm"
-                className="gap-1.5 py-1.5 px-2 text-[11px] rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Novo Departamento
@@ -3868,7 +3868,7 @@ export function CompanyTeamHub({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
   
                 >
                   Nome
@@ -3889,7 +3889,7 @@ export function CompanyTeamHub({
               </div>
               <div>
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
   
                 >
                   Gestor
@@ -3912,7 +3912,7 @@ export function CompanyTeamHub({
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
   
                 >
                   Cargo do Gestor
@@ -3933,7 +3933,7 @@ export function CompanyTeamHub({
               </div>
               <div>
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
   
                 >
                   Email do Gestor
@@ -3954,7 +3954,7 @@ export function CompanyTeamHub({
               </div>
               <div>
                 <label
-                  className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                  className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
   
                 >
                   Telefone/WhatsApp
@@ -3976,7 +3976,7 @@ export function CompanyTeamHub({
             </div>
             <div>
               <label
-                className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
 
               >
                 Descrição
@@ -3997,7 +3997,7 @@ export function CompanyTeamHub({
             </div>
             <div>
               <label
-                className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
 
               >
                 Cor
@@ -4020,7 +4020,7 @@ export function CompanyTeamHub({
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <h5
-                    className="text-[11px] font-semibold text-gray-800 dark:text-gray-200"
+                    className="text-xs font-semibold text-gray-800 dark:text-gray-200"
     
                   >
                     Colaboradores do Departamento
@@ -4041,7 +4041,7 @@ export function CompanyTeamHub({
                       });
                     }}
                     disabled={!isEditingDepartments}
-                    className={`py-1 px-2 text-[10px] rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`py-1 px-2 text-micro rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Adicionar
@@ -4051,7 +4051,7 @@ export function CompanyTeamHub({
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {departmentMembers.length === 0 ? (
                     <p
-                      className="text-[10px] text-gray-500 text-center py-3"
+                      className="text-micro text-gray-500 text-center py-3"
       
                     >
                       Nenhum colaborador cadastrado
@@ -4064,19 +4064,19 @@ export function CompanyTeamHub({
                       >
                         <div className="flex items-center gap-2">
                           <Avatar className="w-7 h-7">
-                            <AvatarFallback className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                               {member.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p
-                              className="text-[11px] font-medium text-gray-950 dark:text-gray-50"
+                              className="text-xs font-medium text-gray-950 dark:text-gray-50"
               
                             >
                               {member.name}
                             </p>
                             <p
-                              className="text-[10px] text-gray-500"
+                              className="text-micro text-gray-500"
               
                             >
                               {member.title || "Sem cargo"} • {member.level}
@@ -4111,7 +4111,7 @@ export function CompanyTeamHub({
                 {showMemberForm && (
                   <div className="mt-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800">
                     <h6
-                      className="text-[10px] font-medium text-gray-600 mb-2"
+                      className="text-micro font-medium text-gray-600 mb-2"
       
                     >
                       {editingMember
@@ -4129,7 +4129,7 @@ export function CompanyTeamHub({
                             name: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
         
                       />
                       <input
@@ -4142,7 +4142,7 @@ export function CompanyTeamHub({
                             title: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
         
                       />
                       <input
@@ -4155,7 +4155,7 @@ export function CompanyTeamHub({
                             email: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
         
                       />
                       <input
@@ -4168,7 +4168,7 @@ export function CompanyTeamHub({
                             phone: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
         
                       />
                       <input
@@ -4181,7 +4181,7 @@ export function CompanyTeamHub({
                             linkedin_url: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
         
                       />
                       <select
@@ -4192,7 +4192,7 @@ export function CompanyTeamHub({
                             level: e.target.value,
                           }))
                         }
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
         
                       >
                         <option value="ceo">CEO</option>
@@ -4209,13 +4209,13 @@ export function CompanyTeamHub({
                       </select>
                     </div>
                     {memberError && (
-                      <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-[10px]">
+                      <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-micro">
                         <AlertCircle className="w-3 h-3" />
                         {memberError}
                       </div>
                     )}
                     {memberSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-[10px]">
+                      <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-micro">
                         <CheckCircle className="w-3 h-3" />
                         {memberSuccess}
                       </div>
@@ -4237,7 +4237,7 @@ export function CompanyTeamHub({
                           });
                           setMemberError(null);
                         }}
-                        className="py-1 px-2 text-[10px] rounded-full"
+                        className="py-1 px-2 text-micro rounded-full"
         
                         disabled={savingMember}
                       >
@@ -4246,7 +4246,7 @@ export function CompanyTeamHub({
                       <Button
                         size="sm"
                         onClick={handleSaveMember}
-                        className="py-1 px-2 text-[10px] rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                        className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                         disabled={savingMember}
                       >
                         {savingMember ? (
@@ -4269,7 +4269,7 @@ export function CompanyTeamHub({
                 variant="ghost"
                 size="sm"
                 onClick={handleCancelDepartmentForm}
-                className="py-1.5 px-2 text-[11px] rounded-full"
+                className="py-1.5 px-2 text-xs rounded-full"
 
               >
                 Cancelar
@@ -4277,7 +4277,7 @@ export function CompanyTeamHub({
               <Button
                 size="sm"
                 onClick={handleSaveDepartment}
-                className="py-1.5 px-2 text-[11px] rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 <Save className="w-3.5 h-3.5 mr-1" />
                 {editingDepartment ? "Atualizar" : "Salvar"}
@@ -4288,13 +4288,13 @@ export function CompanyTeamHub({
       )}
 
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-[11px]">
+        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-[11px]">
+        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -4307,7 +4307,7 @@ export function CompanyTeamHub({
             <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
               Nenhum departamento cadastrado
             </p>
-            <p className="text-[11px] mt-1 text-gray-500 dark:text-gray-500">
+            <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
               Clique em "Novo Departamento" ou importe uma planilha para começar
             </p>
           </div>
@@ -4333,7 +4333,7 @@ export function CompanyTeamHub({
                         {dept.name}
                       </h4>
                       <p
-                        className="text-[10px] text-gray-600"
+                        className="text-micro text-gray-600"
         
                       >
                         {dept.description}
@@ -4372,7 +4372,7 @@ export function CompanyTeamHub({
                 </div>
                 <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                   <div
-                    className="flex items-center gap-2 text-[10px] text-gray-600"
+                    className="flex items-center gap-2 text-micro text-gray-600"
     
                   >
                     <Users className="w-3 h-3" />
@@ -4381,7 +4381,7 @@ export function CompanyTeamHub({
                   {dept.manager && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                      className="text-micro rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                     >
                       {dept.manager}
                     </Badge>
@@ -4399,7 +4399,7 @@ export function CompanyTeamHub({
       >
         <AlertDialogContent className="rounded-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[14px] font-semibold text-gray-900 dark:text-gray-50">
+            <AlertDialogTitle className="text-sm font-semibold text-gray-900 dark:text-gray-50">
               Excluir Departamento
             </AlertDialogTitle>
             <AlertDialogDescription
@@ -4410,12 +4410,12 @@ export function CompanyTeamHub({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              className="rounded-md text-[11px]"
+              className="rounded-md text-xs"
             >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-md text-[11px] bg-red-500 hover:bg-red-600"
+              className="rounded-md text-xs bg-red-500 hover:bg-red-600"
               onClick={() =>
                 departmentToDelete &&
                 handleDeleteDepartment(departmentToDelete.id)
@@ -4442,7 +4442,7 @@ export function CompanyTeamHub({
               <div>
                 <DialogTitle
   
-                  className="text-[15px]"
+                  className="text-sm"
                 >
                   Organograma - {orgChartDepartment?.name}
                 </DialogTitle>
@@ -4497,14 +4497,14 @@ export function CompanyTeamHub({
                     <div key={level} className="space-y-2">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge
-                          className={`text-[10px] px-2 py-0.5 rounded-full border ${getLevelColor(level)}`}
+                          className={`text-micro px-2 py-0.5 rounded-full border ${getLevelColor(level)}`}
           
                         >
                           {getLevelLabel(level)}
                         </Badge>
                         <div className="flex-1 h-px bg-gray-200"></div>
                         <span
-                          className="text-[10px] text-gray-400"
+                          className="text-micro text-gray-400"
           
                         >
                           {members.length}{" "}
@@ -4555,14 +4555,14 @@ export function CompanyTeamHub({
                                 )}
                               </div>
                               <p
-                                className="text-[10px] text-gray-500 truncate"
+                                className="text-micro text-gray-500 truncate"
                 
                               >
                                 {member.title || "Sem cargo"}
                               </p>
                               {member.email && (
                                 <p
-                                  className="text-[9px] text-gray-400 truncate"
+                                  className="text-micro text-gray-400 truncate"
                                 >
                                   {member.email}
                                 </p>
@@ -4581,14 +4581,14 @@ export function CompanyTeamHub({
             <Button
               variant="outline"
               size="sm"
-              className="rounded-md text-[11px]"
+              className="rounded-md text-xs"
               onClick={() => setOrgChartDepartment(null)}
             >
               Fechar
             </Button>
             <Button
               size="sm"
-              className="rounded-md text-[11px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
               onClick={() => {
                 if (orgChartDepartment) {
                   handleStartEditDepartment(orgChartDepartment);
@@ -4608,13 +4608,13 @@ export function CompanyTeamHub({
   const renderApprovers = () => (
     <div className="space-y-3">
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-[11px]">
+        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-[11px]">
+        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -4625,14 +4625,14 @@ export function CompanyTeamHub({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle
-                className="text-[13px] font-semibold flex items-center gap-2"
+                className="text-base-ui font-semibold flex items-center gap-2"
 
               >
                 <Crown className="w-3.5 h-3.5 text-gray-500" />
                 Fluxo de Aprovação de Vagas
               </CardTitle>
               <p
-                className="text-[11px] text-gray-600 mt-1"
+                className="text-xs text-gray-600 mt-1"
 
               >
                 Configure os níveis de aprovação para abertura de vagas
@@ -4641,7 +4641,7 @@ export function CompanyTeamHub({
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 py-1.5 px-2 text-[11px] rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => {
                 setNewApprover({
                   userName: "",
@@ -4670,7 +4670,7 @@ export function CompanyTeamHub({
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label
-                      className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                      className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
       
                     >
                       Nome
@@ -4699,7 +4699,7 @@ export function CompanyTeamHub({
                   </div>
                   <div>
                     <label
-                      className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                      className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
       
                     >
                       Email
@@ -4728,7 +4728,7 @@ export function CompanyTeamHub({
                   </div>
                   <div>
                     <label
-                      className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                      className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
       
                     >
                       Cargo
@@ -4757,7 +4757,7 @@ export function CompanyTeamHub({
                   </div>
                   <div>
                     <label
-                      className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1"
+                      className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1"
       
                     >
                       Nível de Aprovação
@@ -4793,7 +4793,7 @@ export function CompanyTeamHub({
                       setShowApproverForm(false);
                       setEditingApprover(null);
                     }}
-                    className="py-1.5 px-2 text-[11px] rounded-full"
+                    className="py-1.5 px-2 text-xs rounded-full"
     
                   >
                     Cancelar
@@ -4801,7 +4801,7 @@ export function CompanyTeamHub({
                   <Button
                     size="sm"
                     onClick={handleSaveApprover}
-                    className="py-1.5 px-2 text-[11px] rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
@@ -4815,13 +4815,13 @@ export function CompanyTeamHub({
             <div className="text-center py-6 text-gray-600">
               <Crown className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p
-                className="text-[11px]"
+                className="text-xs"
 
               >
                 Nenhum aprovador configurado
               </p>
               <p
-                className="text-[10px] mt-1"
+                className="text-micro mt-1"
 
               >
                 Clique em "Adicionar Nível" para criar um fluxo de aprovação
@@ -4838,7 +4838,7 @@ export function CompanyTeamHub({
                     className="relative flex items-center gap-3 pb-4 last:pb-0"
                   >
                     <div
- className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-semibold ${approver.isActive ? "text-white" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}
+ className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${approver.isActive ? "text-white" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}
                     >
                       {approver.level}
                     </div>
@@ -4847,7 +4847,7 @@ export function CompanyTeamHub({
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback
-                              className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px]"
+                              className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro"
               
                             >
                               {approver.userName
@@ -4857,11 +4857,11 @@ export function CompanyTeamHub({
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                            <p className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                               {approver.userName}
                             </p>
                             <p
-                              className="text-[10px] text-gray-600"
+                              className="text-micro text-gray-600"
               
                             >
                               {approver.role} • {approver.email}
@@ -4871,7 +4871,7 @@ export function CompanyTeamHub({
                         <div className="flex items-center gap-1">
                           <Badge
                             variant={approver.isActive ? "default" : "outline"}
-                            className={`text-[10px] rounded-md ${
+                            className={`text-micro rounded-md ${
                               approver.isActive
                                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                 : "border-gray-200 dark:border-gray-700"
@@ -4907,10 +4907,10 @@ export function CompanyTeamHub({
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500" />
               <div>
-                <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                   Fluxo de Aprovação
                 </p>
-                <p className="text-[10px] mt-0.5 text-gray-600 dark:text-gray-400">
+                <p className="text-micro mt-0.5 text-gray-600 dark:text-gray-400">
                   Vagas serão enviadas para aprovação sequencial, do nível 1 ao
                   nível final. Cada aprovador receberá notificação por email e
                   pode aprovar diretamente na plataforma.
@@ -4929,7 +4929,7 @@ export function CompanyTeamHub({
     <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30 rounded-md px-2 py-1">
       <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
       <span
-        className="text-[10px] text-amber-600 dark:text-amber-400"
+        className="text-micro text-amber-600 dark:text-amber-400"
       >
         Não informado - preencher manualmente
       </span>
@@ -4961,7 +4961,7 @@ export function CompanyTeamHub({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsEditingCompanyData(true)}
-                  className="h-7 text-[11px]"
+                  className="h-7 text-xs"
                 >
                   <Edit className="w-3 h-3 mr-1" />
                   Editar
@@ -4972,7 +4972,7 @@ export function CompanyTeamHub({
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditingCompanyData(false)}
-                    className="h-7 text-[11px]"
+                    className="h-7 text-xs"
                   >
                     <X className="w-3 h-3 mr-1" />
                     Cancelar
@@ -4981,7 +4981,7 @@ export function CompanyTeamHub({
                     size="sm"
                     onClick={saveCompanyData}
                     disabled={saving}
-                    className="h-7 text-[11px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="h-7 text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                   >
                     <Save className="w-3 h-3 mr-1" />
                     {saving ? 'Salvando...' : 'Salvar'}
@@ -4990,7 +4990,7 @@ export function CompanyTeamHub({
               )}
             </div>
           </div>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Configure as tecnologias utilizadas pela empresa por categoria
           </p>
         </CardHeader>
@@ -5021,7 +5021,7 @@ export function CompanyTeamHub({
                       {category.label}
                     </span>
                     {categoryTechs.length > 0 && (
-                      <Badge className="bg-white/50 dark:bg-black/20 text-[10px] px-1.5 py-0.5">
+                      <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                         {categoryTechs.length}
                       </Badge>
                     )}
@@ -5040,7 +5040,7 @@ export function CompanyTeamHub({
                         {categoryTechs.map((tech, idx) => (
                           <Badge
                             key={idx}
-                            className={`${category.color} text-[11px] px-2.5 py-1 rounded-full`}
+                            className={`${category.color} text-xs px-2.5 py-1 rounded-full`}
                           >
                             {tech}
                             {isEditingCompanyData && (
@@ -5071,7 +5071,7 @@ export function CompanyTeamHub({
                               if (!isEditingCompanyData) return;
                               addTechToCategory(category.key, suggestion);
                             }}
-                            className={`text-[10px] px-2 py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            className={`text-micro px-2 py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                           >
                             + {suggestion}
                           </button>
@@ -5112,7 +5112,7 @@ export function CompanyTeamHub({
                 <div className="flex items-center gap-2">
                   <Code className="w-4 h-4" />
                   <span className="text-xs font-medium">Outros</span>
-                  <Badge className="bg-white/50 dark:bg-black/20 text-[10px] px-1.5 py-0.5">
+                  <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                     {techStackByCategory["outros"].length}
                   </Badge>
                 </div>
@@ -5129,7 +5129,7 @@ export function CompanyTeamHub({
                     {techStackByCategory["outros"].map((tech, idx) => (
                       <Badge
                         key={idx}
-                        className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-[11px] px-2.5 py-1 rounded-full"
+                        className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1 rounded-full"
                       >
                         {tech}
                         {isEditingCompanyData && (
@@ -5163,7 +5163,7 @@ export function CompanyTeamHub({
           )}
 
           <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
-            <label className="flex items-center gap-3 text-[11px] font-medium text-gray-600 dark:text-gray-400 mb-2">
+            <label className="flex items-center gap-3 text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
               <span className="flex items-center gap-1">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Cultura de Engenharia

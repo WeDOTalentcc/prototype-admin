@@ -50,14 +50,14 @@ export const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: "5",  name: "interview_hr",        display_name: "Entrevista RH",     order: 5,  isActive: true, notes: "", sla: 0, type: "system",  color: "#EC4899", icon: "users",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "system"  },
   { id: "6",  name: "technical_test",      display_name: "Teste Técnico",     order: 6,  isActive: true, notes: "", sla: 5, type: "custom",  color: "#E8B8B8", icon: "code-2",      action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
   { id: "7",  name: "english_test",        display_name: "Teste de Inglês",   order: 7,  isActive: true, notes: "", sla: 5, type: "custom",  color: "#E5C5C5", icon: "languages",   action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
-  { id: "8",  name: "interview_technical", display_name: "Entrevista Técnica",order: 8,  isActive: true, notes: "", sla: 5, type: "custom",  color: "#F59E0B", icon: "code",        action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
-  { id: "9",  name: "interview_manager",   display_name: "Entrevista Gestor", order: 9,  isActive: true, notes: "", sla: 5, type: "custom",  color: "#10B981", icon: "briefcase",   action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
+  { id: "8",  name: "interview_technical", display_name: "Entrevista Técnica",order: 8,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-warning)", icon: "code",        action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
+  { id: "9",  name: "interview_manager",   display_name: "Entrevista Gestor", order: 9,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-success)", icon: "briefcase",   action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
   { id: "10", name: "interview_final",     display_name: "Entrevista Final",  order: 10, isActive: true, notes: "", sla: 5, type: "custom",  color: "#D5BFA8", icon: "award",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
   { id: "11", name: "references",          display_name: "Referências",       order: 11, isActive: true, notes: "", sla: 3, type: "custom",  color: "#E8E4E0", icon: "phone",       action_behavior: "verification",         default_channel: "email",         stage_category: "custom"  },
   { id: "12", name: "offer",               display_name: "Proposta",          order: 12, isActive: true, notes: "", sla: 3, type: "default", color: "#3B82F6", icon: "file-check",  action_behavior: "offer",                default_channel: "email",         stage_category: "catalog" },
   { id: "13", name: "offer_declined",      display_name: "Proposta Recusada", order: 13, isActive: true, notes: "", sla: 0, type: "default", color: "#F97316", icon: "x",           action_behavior: "conclusion_declined",  default_channel: "email",         stage_category: "catalog" },
-  { id: "14", name: "hired",               display_name: "Contratado",        order: 14, isActive: true, notes: "", sla: 0, type: "system",  color: "#22C55E", icon: "check-circle",action_behavior: "conclusion_hired",     default_channel: "email",         stage_category: "system"  },
-  { id: "15", name: "rejected",            display_name: "Reprovado",         order: 15, isActive: true, notes: "", sla: 0, type: "system",  color: "#EF4444", icon: "x-circle",   action_behavior: "conclusion_rejected",  default_channel: "email",         stage_category: "system"  },
+  { id: "14", name: "hired",               display_name: "Contratado",        order: 14, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-success)", icon: "check-circle",action_behavior: "conclusion_hired",     default_channel: "email",         stage_category: "system"  },
+  { id: "15", name: "rejected",            display_name: "Reprovado",         order: 15, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-error)", icon: "x-circle",   action_behavior: "conclusion_rejected",  default_channel: "email",         stage_category: "system"  },
 ]
 
 const SYSTEM_END_NAMES = ['hired', 'rejected', 'Contratado', 'Reprovado']
@@ -230,7 +230,7 @@ export function RecruitmentJourneyConfig({
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cs.color || '#9CA3AF' }} />
                         <span className={`flex-1 ${textStyles.body} text-gray-800 dark:text-gray-200`}>{cs.display_name}</span>
                         {cs.action_behavior && (
-                          <span className="text-[10px] text-gray-400">{getActionBehaviorShort(cs.action_behavior)}</span>
+                          <span className="text-micro text-gray-400">{getActionBehaviorShort(cs.action_behavior)}</span>
                         )}
                       </button>
                     ))

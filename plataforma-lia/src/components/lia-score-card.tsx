@@ -72,7 +72,7 @@ export function LIAScoreCard({
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
           <Brain
-            className="w-4 h-4 text-[#60BED1]"
+            className="w-4 h-4 text-wedo-cyan"
             aria-hidden="true"
           />
           <span className="text-xs font-medium text-gray-700">LIA Score</span>
@@ -127,7 +127,7 @@ export function LIAScoreCard({
               </div>
             )
           })}
-          <p className="text-[10px] text-gray-400 pt-1 flex items-center gap-1">
+          <p className="text-micro text-gray-400 pt-1 flex items-center gap-1">
             <Info className="w-3 h-3" aria-hidden="true" />
             Score calculado pela IA — EU AI Act Art. 13
           </p>

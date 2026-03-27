@@ -37,7 +37,7 @@ function getScoreColor(score: number): string {
 }
 
 function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[10px] text-gray-400">—</span>
+  if (value == null) return <span className="text-micro text-gray-400">—</span>
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-1.5">
@@ -50,7 +50,7 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className={cn("text-[10px] font-semibold w-8 text-right", getScoreColor(value))}>
+      <span className={cn("text-micro font-semibold w-8 text-right", getScoreColor(value))}>
         {Math.round(value)}
       </span>
     </div>
@@ -110,10 +110,10 @@ export function CandidateCompareModal({
               <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
                 <Trophy className="h-4 w-4 text-emerald-600" />
                 <div>
-                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                     Candidato indicado: {data.winner_name || nameById[data.winner] || data.winner}
                   </span>
-                  <span className="ml-2 text-[10px] text-emerald-600 opacity-70">
+                  <span className="ml-2 text-micro text-emerald-600 opacity-70">
                     Confiança: {Math.round(data.confidence * 100)}%
                   </span>
                 </div>
@@ -122,14 +122,14 @@ export function CandidateCompareModal({
 
             {/* Scores gerais */}
             <div>
-              <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Score Geral
               </p>
               <div className="grid gap-1.5">
                 {Object.entries(data.candidate_scores).map(([cId, score]) => (
                   <div key={cId} className="grid grid-cols-[1fr_auto] items-center gap-2">
                     <div>
-                      <p className="text-[10px] font-medium text-gray-800 dark:text-gray-200 truncate">
+                      <p className="text-micro font-medium text-gray-800 dark:text-gray-200 truncate">
                         {nameById[cId] || cId}
                       </p>
                       <ScoreBar value={score} />
@@ -145,7 +145,7 @@ export function CandidateCompareModal({
             {/* Dimensões */}
             {Object.keys(data.dimension_comparison).length > 0 && (
               <div>
-                <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Por Dimensão
                 </p>
                 <div className="space-y-2">
@@ -153,7 +153,7 @@ export function CandidateCompareModal({
                     .slice(0, 5)
                     .map(([dim, scores]) => (
                       <div key={dim}>
-                        <p className="text-[10px] text-gray-500 capitalize mb-1">
+                        <p className="text-micro text-gray-500 capitalize mb-1">
                           {dim.replace(/_/g, " ")}
                         </p>
                         <div className="grid gap-0.5">
@@ -161,7 +161,7 @@ export function CandidateCompareModal({
                             .filter(([, v]) => typeof v === "number")
                             .map(([cId, v]) => (
                               <div key={cId} className="flex items-center gap-2">
-                                <span className="text-[9px] text-gray-500 w-20 truncate">
+                                <span className="text-micro text-gray-500 w-20 truncate">
                                   {nameById[cId] || cId}
                                 </span>
                                 <div className="flex-1">
@@ -179,7 +179,7 @@ export function CandidateCompareModal({
             {/* Análise */}
             {data.analysis && (
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-4">
+                <p className="text-micro text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-4">
                   {data.analysis}
                 </p>
               </div>

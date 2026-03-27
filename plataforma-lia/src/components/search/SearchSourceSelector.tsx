@@ -123,7 +123,7 @@ export function SearchSourceSelector({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Email</p>
-            <p className="text-[10px] text-gray-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-gray-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -146,7 +146,7 @@ export function SearchSourceSelector({
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Telefone</p>
-            <p className="text-[10px] text-gray-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-gray-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

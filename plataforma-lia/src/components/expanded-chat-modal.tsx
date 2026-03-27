@@ -8586,7 +8586,7 @@ Qual prefere?`,
                       )}>
                         <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
                         <span 
-                          className="text-[10px] text-gray-600 dark:text-gray-400"
+                          className="text-micro text-gray-600 dark:text-gray-400"
                           style={{ fontFamily: '"Inter", sans-serif' }}
                         >
                           {message.content}
@@ -8597,12 +8597,12 @@ Qual prefere?`,
                       <div className="flex items-start gap-2.5 max-w-[70%]">
                         <div className="flex flex-col items-end gap-1 flex-1">
                           <div 
-                            className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-[#F3F4F6] dark:bg-gray-800"
+                            className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-gray-100 dark:bg-gray-800"
                             style={{ fontFamily: '"Open Sans", sans-serif' }}
                           >
-                            <p className="text-[13px] text-[#374151] dark:text-gray-200 leading-relaxed">{message.content}</p>
+                            <p className="text-base-ui text-gray-700 dark:text-gray-200 leading-relaxed">{message.content}</p>
                           </div>
-                          <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: '"Inter", sans-serif' }}>
+                          <span className="text-xs text-gray-400 px-1" style={{ fontFamily: '"Inter", sans-serif' }}>
                             {formatTimestamp(message.timestamp)}
                           </span>
                         </div>
@@ -8617,10 +8617,10 @@ Qual prefere?`,
                         </div>
                         <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
-                          <p className="text-[13px] text-gray-700 dark:text-gray-300 mb-3">{message.content}</p>
+                          <p className="text-base-ui text-gray-700 dark:text-gray-300 mb-3">{message.content}</p>
                           <ParecerLIACard
                             data={message.parecerData}
                             onAcceptSuggestion={(suggestion) => {
@@ -8647,10 +8647,10 @@ Qual prefere?`,
                           style={{ fontFamily: '"Open Sans", sans-serif' }}
                         >
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
-                          <div className="text-[13px] text-[#374151] leading-relaxed whitespace-pre-wrap">
+                          <div className="text-base-ui text-gray-700 leading-relaxed whitespace-pre-wrap">
                             {formatSalaryAnalysisText(message.compensationAnalysis || null)}
                           </div>
                           <MessageFeedback
@@ -8764,8 +8764,8 @@ Qual prefere?`,
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ToolConfirmationMessage
                             toolCall={message.toolCall}
@@ -8822,8 +8822,8 @@ Qual prefere?`,
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ToolExecutionFeedback
                             result={message.toolExecutionResult}
@@ -8858,16 +8858,16 @@ Qual prefere?`,
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>ação executada</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-micro font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>ação executada</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ActionResultCard
                             actionType={message.actionType}
                             result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
                           />
                           {message.content && (
-                            <p className="text-[13px] text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                            <p className="text-base-ui text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                               {message.content}
                             </p>
                           )}
@@ -8887,9 +8887,9 @@ Qual prefere?`,
                         </div>
                         <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>sugestão proativa</span>
-                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-micro font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>sugestão proativa</span>
+                            <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <div className={cn(
                             "rounded-md border-l-4 p-2.5 mb-1",
@@ -8902,14 +8902,14 @@ Qual prefere?`,
                           <div className="flex items-center gap-2 mt-1.5">
                             <button
                               onClick={() => handleProactiveAccept(message.proactiveData!.actionId, message.id)}
-                              className="px-3 py-1 text-[11px] font-medium rounded bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
+                              className="px-3 py-1 text-xs font-medium rounded bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
                               style={{ fontFamily: '"Inter", sans-serif' }}
                             >
                               {message.proactiveData.actionLabel}
                             </button>
                             <button
                               onClick={() => handleProactiveReject(message.proactiveData!.actionId, message.id)}
-                              className="px-3 py-1 text-[11px] rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              className="px-3 py-1 text-xs rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                               style={{ fontFamily: '"Inter", sans-serif' }}
                             >
                               Ignorar
@@ -8938,7 +8938,7 @@ Qual prefere?`,
                       /* Processing Message - Card estilo Manus */
                       <div 
                         className={cn(
-                          "px-3 py-2 rounded-md text-[11px] transition-all duration-300",
+                          "px-3 py-2 rounded-md text-xs transition-all duration-300",
                           message.processingState === 'completed'
                             ? "bg-green-50 text-green-800"
                             : "bg-gray-50 text-gray-500"
@@ -8967,11 +8967,11 @@ Qual prefere?`,
                           </div>
                           <div className="flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
                             <div className="flex items-center gap-1.5 px-1">
-                              <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                              <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                              <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                              <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                             </div>
-                            <div className="px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]">
-                              <div className="text-[13px] text-[#374151] dark:text-gray-200 space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
+                            <div className="px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px]">
+                              <div className="text-base-ui text-gray-700 dark:text-gray-200 space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                                 {formatMessageContent(message.content, message.isTyping || false, message.id)}
                                 {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
                                   <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse ml-0.5" />
@@ -9022,9 +9022,9 @@ Qual prefere?`,
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                      <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
                     </div>
-                    <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                         <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -9064,7 +9064,7 @@ Qual prefere?`,
                       data-testid="chat-input"
                       aria-label="Digite sua mensagem para a LIA"
                       aria-describedby="chat-input-hint"
-                      className="flex-1 py-1 bg-transparent text-[13px] text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none"
+                      className="flex-1 py-1 bg-transparent text-base-ui text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none"
                       style={{ fontFamily: '"Open Sans", sans-serif' }}
                       disabled={isLoading || isTypingEffect}
                     />
@@ -9134,7 +9134,7 @@ Qual prefere?`,
                       <button
                         onClick={() => setActiveInputTab('ia-natural')}
                         className={cn(
-                          "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
+                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
                           activeInputTab === 'ia-natural' 
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
@@ -9149,7 +9149,7 @@ Qual prefere?`,
                       <button
                         onClick={() => setActiveInputTab('job-description')}
                         className={cn(
-                          "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
+                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
                           activeInputTab === 'job-description' 
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
@@ -9164,7 +9164,7 @@ Qual prefere?`,
                       <button
                         onClick={() => setActiveInputTab('templates')}
                         className={cn(
-                          "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
+                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
                           activeInputTab === 'templates' 
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
@@ -9182,7 +9182,7 @@ Qual prefere?`,
                   {/* Badges de sugestão abaixo das tabs (só quando IA Natural selecionado) */}
                   {!hideModeButtons && activeInputTab === 'ia-natural' && (
                     <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
-                      <span className="text-[9px] font-medium text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
+                      <span className="text-micro font-medium text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
                       {suggestionTags.map((tag) => {
                         const IconComponent = tag.icon
                         return (
@@ -9236,7 +9236,7 @@ Qual prefere?`,
                             }}
                             disabled={isTypingEffect || isLoading}
                             className={cn(
-                              "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium text-gray-700 bg-gray-100 rounded-full transition-all",
+                              "inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full transition-all",
                               isTypingEffect || isLoading
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-gray-200"
@@ -9278,12 +9278,12 @@ Qual prefere?`,
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1">
                           <Paperclip className="w-3 h-3 text-gray-400" />
-                          <span className="text-[10px] text-gray-400">PDF, Word, TXT</span>
+                          <span className="text-micro text-gray-400">PDF, Word, TXT</span>
                         </div>
                         <Button
                           size="sm"
                           className={cn(
-                            "h-7 px-3 text-[11px] font-medium",
+                            "h-7 px-3 text-xs font-medium",
                             inputValue.trim() ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-400"
                           )}
                           style={{
@@ -9312,10 +9312,10 @@ Qual prefere?`,
                     <div className="mt-3 p-3 rounded-md border border-gray-100 bg-white space-y-3">
                       {/* Seção 1: Criar a partir de Template */}
                       <div>
-                        <h4 className="text-[11px] font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Criar Vaga a Partir de Template
                         </h4>
-                        <p className="text-[10px] text-gray-500 mb-2">
+                        <p className="text-micro text-gray-500 mb-2">
                           Selecione um modelo pronto e eu inicio a criação da vaga para você
                         </p>
                         <div className="grid grid-cols-2 gap-1.5">
@@ -9340,12 +9340,12 @@ Qual prefere?`,
                               <div className="flex items-center gap-1.5">
                                 <span className="text-sm">{template.icon}</span>
                                 <div className="flex-1 min-w-0">
-                                  <h5 className="text-[11px] font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                  <h5 className="text-xs font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                                     {template.title}
                                   </h5>
                                   <div className="flex gap-1 mt-0.5">
                                     {template.tags.map(tag => (
-                                      <span key={tag} className="text-[9px] px-1 py-0.5 rounded-full bg-gray-100 text-gray-500">{tag}</span>
+                                      <span key={tag} className="text-micro px-1 py-0.5 rounded-full bg-gray-100 text-gray-500">{tag}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -9357,10 +9357,10 @@ Qual prefere?`,
 
                       {/* Seção 2: Criar a partir de Vaga Existente */}
                       <div className="pt-2 border-t border-gray-100">
-                        <h4 className="text-[11px] font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Criar a Partir de Vaga Existente
                         </h4>
-                        <p className="text-[10px] text-gray-500 mb-2">
+                        <p className="text-micro text-gray-500 mb-2">
                           Copie uma vaga já criada e faça ajustes
                         </p>
                         <div className="relative">
@@ -9395,7 +9395,7 @@ Qual prefere?`,
                 aria-label="Mostrar painel de etapas do wizard"
               >
                 <FileText className="w-4 h-4" />
-                <span className="text-[11px] font-medium">Mostrar etapas</span>
+                <span className="text-xs font-medium">Mostrar etapas</span>
               </Button>
             </div>
           )}
@@ -9486,7 +9486,7 @@ Qual prefere?`,
                   
                   {/* Seção: Critérios Detectados */}
                   <div className="mb-4">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                       Critérios Detectados
                     </h4>
                     <div className="space-y-2">
@@ -9533,13 +9533,13 @@ Qual prefere?`,
                             </div>
                             <div className="flex-1 min-w-0">
                               <p 
-                                className="text-[11px] font-medium text-gray-800 transition-colors duration-300"
+                                className="text-xs font-medium text-gray-800 transition-colors duration-300"
                                 style={{ fontFamily: '"Open Sans", sans-serif' }}
                               >
                                 {item.label}
                               </p>
                               {isDetected && displayValue && (
-                                <p className="text-[10px] mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                <p className="text-micro mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                                   {displayValue}
                                 </p>
                               )}
@@ -9553,8 +9553,8 @@ Qual prefere?`,
                   {/* Progress Summary - Card flutuante */}
                   <div className="mt-3 p-2.5 rounded-md bg-white">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>Detectando critérios...</span>
-                      <span className="text-[10px] font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                      <span className="text-micro text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>Detectando critérios...</span>
+                      <span className="text-micro font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                         {criteriaItems.filter(item => getCriteriaStatus(item.value)).length} / {criteriaItems.length}
                       </span>
                     </div>
@@ -9804,10 +9804,10 @@ Qual prefere?`,
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      <span className="px-1.5 py-0.5 bg-white rounded-full text-[10px] text-gray-500">{basicInfoFields.area}</span>
-                      <span className="px-1.5 py-0.5 bg-white rounded-full text-[10px] text-gray-500">{basicInfoFields.tipoContrato}</span>
+                      <span className="px-1.5 py-0.5 bg-white rounded-full text-micro text-gray-500">{basicInfoFields.area}</span>
+                      <span className="px-1.5 py-0.5 bg-white rounded-full text-micro text-gray-500">{basicInfoFields.tipoContrato}</span>
                       {basicInfoFields.gestor && (
-                        <span className="px-1.5 py-0.5 bg-white rounded-full text-[10px] text-gray-500">Gestor: {basicInfoFields.gestor}</span>
+                        <span className="px-1.5 py-0.5 bg-white rounded-full text-micro text-gray-500">Gestor: {basicInfoFields.gestor}</span>
                       )}
                     </div>
                   </div>
@@ -9833,7 +9833,7 @@ Qual prefere?`,
                         <span 
                           key={skill.id}
                           className={cn(
-                            "px-1.5 py-0.5 rounded-full text-[10px]",
+                            "px-1.5 py-0.5 rounded-full text-micro",
                             skill.required 
                               ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600" 
                               : "bg-gray-50 text-gray-500"
@@ -9843,7 +9843,7 @@ Qual prefere?`,
                         </span>
                       ))}
                       {technicalSkills.length > 8 && (
-                        <span className="px-1.5 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-400">
+                        <span className="px-1.5 py-0.5 bg-gray-50 rounded-full text-micro text-gray-400">
                           +{technicalSkills.length - 8} mais
                         </span>
                       )}
@@ -9870,7 +9870,7 @@ Qual prefere?`,
                       {behavioralCompetencies.filter(c => c.enabled).map((comp) => (
                         <span 
                           key={comp.id}
-                          className="px-1.5 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-500 flex items-center gap-1"
+                          className="px-1.5 py-0.5 bg-gray-50 rounded-full text-micro text-gray-500 flex items-center gap-1"
                         >
                           {comp.name}
                           <span className="text-gray-600 dark:text-gray-400">({comp.weight}/5)</span>
@@ -9905,7 +9905,7 @@ Qual prefere?`,
                         <span className="text-gray-500 ml-2">+ Bônus R$ {salaryInfo.minBonus} - R$ {salaryInfo.maxBonus}</span>
                       )}
                     </div>
-                    <div className="text-[10px] text-gray-400 mt-1">
+                    <div className="text-micro text-gray-400 mt-1">
                       {salaryInfo.benefits.filter(b => b.enabled).length} benefícios inclusos
                     </div>
                   </div>
@@ -9940,7 +9940,7 @@ Qual prefere?`,
                           Descrição do Anúncio
                         </span>
                         {companyConfig && (
-                          <div className="flex items-center gap-1 text-[9px] text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-gray-400">
                             <Settings className="w-3 h-3" />
                             <span>Tom da empresa</span>
                           </div>
@@ -9961,12 +9961,12 @@ Qual prefere?`,
                         <span className="text-xs text-gray-500">Gerando descrição...</span>
                       </div>
                     ) : (
-                      <div className="text-[11px] text-gray-800 leading-relaxed whitespace-pre-line bg-gray-50 rounded-md p-2.5 max-h-[180px] overflow-y-auto" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                      <div className="text-xs text-gray-800 leading-relaxed whitespace-pre-line bg-gray-50 rounded-md p-2.5 max-h-[180px] overflow-y-auto" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                         {jobDescription || 'Descrição será gerada automaticamente...'}
                       </div>
                     )}
                     
-                    <p className="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
+                    <p className="text-micro text-gray-400 mt-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-chat-cyan" />
                       Texto gerado por IA baseado nas informações da vaga
                     </p>
@@ -9982,7 +9982,7 @@ Qual prefere?`,
                         <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Pronto para escolher plataformas!
                         </h4>
-                        <p className="text-[10px] text-green-800/70">
+                        <p className="text-micro text-green-800/70">
                           Clique em "Escolher Plataformas" para definir onde publicar
                         </p>
                       </div>
@@ -10004,7 +10004,7 @@ Qual prefere?`,
                         <h3 className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Onde publicar esta vaga?
                         </h3>
-                        <p className="text-[10px] text-gray-500">
+                        <p className="text-micro text-gray-500">
                           Selecione as plataformas para divulgação
                         </p>
                       </div>
@@ -10013,7 +10013,7 @@ Qual prefere?`,
 
                   {/* ATS Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       ATS - Sistema de Vagas
                     </h4>
                     <div className="space-y-2">
@@ -10045,7 +10045,7 @@ Qual prefere?`,
 
                   {/* Job Boards Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Job Boards
                     </h4>
                     <div className="space-y-2">
@@ -10057,9 +10057,9 @@ Qual prefere?`,
                               platform.id === 'linkedin' ? "bg-[#0A66C2]" : "bg-[#2557A7]"
                             )}>
                               {platform.id === 'linkedin' ? (
-                                <span className="text-white text-[10px] font-bold">in</span>
+                                <span className="text-white text-micro font-bold">in</span>
                               ) : (
-                                <span className="text-white text-[10px] font-bold">IN</span>
+                                <span className="text-white text-micro font-bold">IN</span>
                               )}
                             </div>
                             <span className="text-xs text-gray-800">{platform.name}</span>
@@ -10084,7 +10084,7 @@ Qual prefere?`,
 
                   {/* Company Website Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Website da Empresa
                     </h4>
                     <div className="space-y-2">
@@ -10116,7 +10116,7 @@ Qual prefere?`,
 
                   {/* Job Configuration Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Configurações da Vaga
                     </h4>
                     <div className="space-y-3">
@@ -10143,7 +10143,7 @@ Qual prefere?`,
                             ))}
                           </div>
                         </div>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-micro text-gray-400">
                           {jobConfig.urgencyLevel <= 2 
                             ? "Baixa: Construção de pipeline - sem pressa" 
                             : jobConfig.urgencyLevel === 3 
@@ -10170,7 +10170,7 @@ Qual prefere?`,
                                   isConfidential: opt.value === 'confidential'
                                 }))}
                                 className={cn(
-                                  "px-2 py-1 rounded text-[10px] font-medium transition-all",
+                                  "px-2 py-1 rounded text-micro font-medium transition-all",
                                   jobConfig.visibility === opt.value
                                     ? "bg-gray-900 dark:bg-gray-50 text-white"
                                     : "bg-gray-50 text-gray-500 hover:bg-gray-200"
@@ -10181,7 +10181,7 @@ Qual prefere?`,
                             ))}
                           </div>
                         </div>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-micro text-gray-400">
                           {jobConfig.visibility === 'public' 
                             ? "Visível em job boards, LinkedIn e site de carreiras" 
                             : jobConfig.visibility === 'internal'
@@ -10210,7 +10210,7 @@ Qual prefere?`,
                             )} />
                           </button>
                         </div>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-micro text-gray-400">
                           Vagas afirmativas priorizam grupos historicamente sub-representados (PcD, mulheres, LGBTQIA+, pessoas negras). Sua empresa deve estar preparada para acolher esses profissionais.
                         </p>
                         
@@ -10218,7 +10218,7 @@ Qual prefere?`,
                         {jobConfig.isAffirmative && (
                           <div className="mt-2 p-2 bg-cyan-50 rounded-md border border-gray-300 dark:border-gray-600 space-y-2">
                             <div>
-                              <label className="text-[10px] font-medium text-gray-800 block mb-1">
+                              <label className="text-micro font-medium text-gray-800 block mb-1">
                                 Critério Principal *
                               </label>
                               <select
@@ -10239,7 +10239,7 @@ Qual prefere?`,
                             </div>
                             
                             <div>
-                              <label className="text-[10px] font-medium text-gray-800 block mb-1">
+                              <label className="text-micro font-medium text-gray-800 block mb-1">
                                 Critério Secundário (opcional)
                               </label>
                               <select
@@ -10259,7 +10259,7 @@ Qual prefere?`,
                               </select>
                             </div>
                             
-                            <p className="text-[9px] text-gray-400 flex items-center gap-1">
+                            <p className="text-micro text-gray-400 flex items-center gap-1">
                               <Heart className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                               Candidatos elegíveis terão 24h para enviar documentação comprobatória
                             </p>
@@ -10271,7 +10271,7 @@ Qual prefere?`,
 
                   {/* Deadlines Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Prazos do Processo
                     </h4>
@@ -10308,7 +10308,7 @@ Qual prefere?`,
 
                   {/* Languages Section */}
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
                       <Globe className="w-3 h-3" />
                       Idiomas {jobConfig.languages.length > 0 && <span className="text-gray-600 dark:text-gray-400">({jobConfig.languages.length})</span>}
                     </h4>
@@ -10342,7 +10342,7 @@ Qual prefere?`,
                                 newLanguages[idx] = { ...newLanguages[idx], level: e.target.value }
                                 updateLanguages(newLanguages)
                               }}
-                              className="px-2 py-0.5 text-[10px] border border-gray-200 rounded-full bg-white text-gray-800"
+                              className="px-2 py-0.5 text-micro border border-gray-200 rounded-full bg-white text-gray-800"
                             >
                               <option value="Básico">Básico</option>
                               <option value="Intermediário">Intermediário</option>
@@ -10367,7 +10367,7 @@ Qual prefere?`,
                     )}
                     <button
                       onClick={() => updateLanguages([...jobConfig.languages, { name: 'Inglês', level: 'Intermediário' }])}
-                      className="mt-2 text-[10px] text-gray-600 dark:text-gray-400 hover:underline"
+                      className="mt-2 text-micro text-gray-600 dark:text-gray-400 hover:underline"
                     >
                       + Adicionar idioma
                     </button>
@@ -10383,7 +10383,7 @@ Qual prefere?`,
                         <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           {publishingPlatforms.filter(p => p.enabled).length} plataforma(s) selecionada(s)
                         </h4>
-                        <p className="text-[10px] text-green-800/70">
+                        <p className="text-micro text-green-800/70">
                           Clique em "Publicar Vaga" para ativar o recrutamento
                         </p>
                       </div>
@@ -10405,7 +10405,7 @@ Qual prefere?`,
                         <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Vaga Publicada!
                         </h4>
-                        <p className="text-[10px] text-green-800/70">
+                        <p className="text-micro text-green-800/70">
                           {publishedJobId || 'JOB-XXXXX'} • {basicInfoFields.cargo}
                         </p>
                       </div>
@@ -10463,7 +10463,7 @@ Qual prefere?`,
                             <span className="font-semibold text-green-500">{localCandidateCount}</span> candidatos encontrados
                           </span>
                         </div>
-                        <span className="text-[10px] text-gray-400">Base interna</span>
+                        <span className="text-micro text-gray-400">Base interna</span>
                       </div>
                     )}
                   </div>
@@ -10479,7 +10479,7 @@ Qual prefere?`,
                           <h4 className="text-xs font-medium text-gray-800 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Expandir para busca global?
                           </h4>
-                          <p className="text-[10px] text-gray-500 mb-2">
+                          <p className="text-micro text-gray-500 mb-2">
                             Posso buscar em uma base com mais de 800 milhões de perfis profissionais (Pearch AI).
                           </p>
                           <div className="flex gap-2">
@@ -10488,14 +10488,14 @@ Qual prefere?`,
                                 setGlobalSearchAuthorized(true)
                                 startGlobalSearch()
                               }}
-                              className="px-3 py-1.5 bg-gray-900 text-white text-[10px] font-medium rounded-md hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                              className="px-3 py-1.5 bg-gray-900 text-white text-micro font-medium rounded-md hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
                             >
                               <Globe className="w-3 h-3" />
                               Sim, expandir busca
                             </button>
                             <button
                               onClick={() => setSearchPhase('global-complete')}
-                              className="px-3 py-1.5 bg-gray-50 text-gray-500 text-[10px] font-medium rounded-md hover:bg-gray-200 transition-colors"
+                              className="px-3 py-1.5 bg-gray-50 text-gray-500 text-micro font-medium rounded-md hover:bg-gray-200 transition-colors"
                             >
                               Não, usar só base local
                             </button>
@@ -10539,7 +10539,7 @@ Qual prefere?`,
                             <span className="font-semibold text-gray-900 dark:text-gray-50">+{globalCandidateCount}</span> candidatos encontrados
                           </span>
                         </div>
-                        <span className="text-[10px] text-gray-400">Base global</span>
+                        <span className="text-micro text-gray-400">Base global</span>
                       </div>
                     </div>
                   )}
@@ -10554,22 +10554,22 @@ Qual prefere?`,
                         </span>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center justify-between text-micro">
                           <span className="text-gray-500">Total de candidatos:</span>
                           <span className="font-semibold text-gray-800">{localCandidateCount + (globalSearchAuthorized ? globalCandidateCount : 0)}</span>
                         </div>
-                        <div className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center justify-between text-micro">
                           <span className="text-gray-500">Base interna:</span>
                           <span className="font-medium text-green-500">{localCandidateCount}</span>
                         </div>
                         {globalSearchAuthorized && globalCandidateCount > 0 && (
-                          <div className="flex items-center justify-between text-[10px]">
+                          <div className="flex items-center justify-between text-micro">
                             <span className="text-gray-500">Base global:</span>
                             <span className="font-medium text-gray-600 dark:text-gray-400">{globalCandidateCount}</span>
                           </div>
                         )}
                         <div className="pt-2 border-t border-gray-200">
-                          <p className="text-[10px] text-gray-500 italic">
+                          <p className="text-micro text-gray-500 italic">
                             {localCandidateCount >= 10 
                               ? "Ótima quantidade! Você tem candidatos suficientes para uma boa seleção."
                               : localCandidateCount >= 5
@@ -10592,7 +10592,7 @@ Qual prefere?`,
                           <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Próximo passo: Calibração
                           </h4>
-                          <p className="text-[10px] text-green-800/70">
+                          <p className="text-micro text-green-800/70">
                             Vou apresentar 3 candidatos para você avaliar e calibrar minha assertividade
                           </p>
                         </div>
@@ -10623,7 +10623,7 @@ Qual prefere?`,
                           <h4 className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Buscando candidatos...
                           </h4>
-                          <p className="text-[10px] text-gray-500">
+                          <p className="text-micro text-gray-500">
                             Aguarde enquanto encontro perfis compatíveis
                           </p>
                         </div>
@@ -10633,16 +10633,16 @@ Qual prefere?`,
                   
                   {/* No candidates found - fallback UI */}
                   {!isLoadingCalibration && calibrationCandidates.length === 0 && hasAttemptedCalibrationGeneration && (
-                    <div className="p-4 bg-[#FEF3C7] rounded-md border border-[#F59E0B]/30">
+                    <div className="p-4 bg-gray-50 rounded-md border border-status-warning/30">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-[#F59E0B]/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 bg-status-warning/20 rounded-full flex items-center justify-center flex-shrink-0">
                           <AlertTriangle className="w-4 h-4 text-amber-600" />
                         </div>
                         <div className="flex-1">
                           <h4 className="text-xs font-medium text-amber-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Nenhum candidato encontrado
                           </h4>
-                          <p className="text-[10px] text-amber-800/80 mt-1">
+                          <p className="text-micro text-amber-800/80 mt-1">
                             Não encontrei candidatos na base que correspondam aos critérios. Você pode tentar novamente ou prosseguir diretamente para a busca ativa.
                           </p>
                           <div className="flex gap-2 mt-3">
@@ -10651,7 +10651,7 @@ Qual prefere?`,
                                 setHasAttemptedCalibrationGeneration(false)
                                 generateCalibrationCandidates()
                               }}
-                              className="flex-1 py-2 bg-white text-amber-600 text-xs font-medium rounded-md border border-[#F59E0B]/40 hover:bg-[#FFFBEB] transition-colors flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 bg-white text-amber-600 text-xs font-medium rounded-md border border-status-warning/40 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
                               Tentar Novamente
@@ -10683,7 +10683,7 @@ Qual prefere?`,
                             <h4 className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                               Calibração em andamento
                             </h4>
-                            <p className="text-[10px] text-gray-500">
+                            <p className="text-micro text-gray-500">
                               Avalie os candidatos para calibrar a assertividade da LIA
                             </p>
                           </div>
@@ -10732,7 +10732,7 @@ Qual prefere?`,
                         <h3 className="text-xs font-semibold text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Perfeito! Vaga Configurada com Sucesso
                         </h3>
-                        <p className="text-[10px] text-green-800/70">
+                        <p className="text-micro text-green-800/70">
                           A partir de agora os candidatos serão automaticamente adicionados na vaga.
                         </p>
                       </div>
@@ -10749,7 +10749,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <FileText className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>O plano de trabalho</strong> será enviado por e-mail para todos os envolvidos na vaga
                         </p>
                       </li>
@@ -10757,7 +10757,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-violet-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <BarChart3 className="w-3 h-3 text-violet-500" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>Relatórios de progresso</strong> serão enviados automaticamente a cada 5 dias por e-mail
                         </p>
                       </li>
@@ -10765,7 +10765,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Users className="w-3 h-3 text-green-500" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>Candidatos inscritos</strong> via website serão automaticamente triados por mim e você será notificado via <strong>Teams</strong>
                         </p>
                       </li>
@@ -10773,15 +10773,15 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-pink-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Calendar className="w-3 h-3 text-pink-500" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           Vou cuidar da sua <strong>agenda</strong>, avisando sobre tarefas pendentes como sua assistente de recrutamento inteligente
                         </p>
                       </li>
                       <li className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-[#F59E0B]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Bell className="w-3 h-3 text-[#F59E0B]" />
+                        <div className="w-5 h-5 rounded-full bg-status-warning/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Bell className="w-3 h-3 text-status-warning" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>Lembretes de feedback</strong> serão enviados quando candidatos estiverem aguardando resposta há muito tempo
                         </p>
                       </li>
@@ -10789,7 +10789,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Clock className="w-3 h-3 text-red-500" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>SLAs de resposta</strong> serão monitorados para cada etapa do processo seletivo
                         </p>
                       </li>
@@ -10797,7 +10797,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-sky-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <MessageSquare className="w-3 h-3 text-sky-500" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>Comunicação automática</strong> com candidatos sobre o status do processo será gerenciada por mim
                         </p>
                       </li>
@@ -10805,7 +10805,7 @@ Qual prefere?`,
                         <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Rocket className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                         </div>
-                        <p className="text-[11px] text-gray-800 leading-relaxed">
+                        <p className="text-xs text-gray-800 leading-relaxed">
                           Quando houver candidatos aprovados, seguirei com a <strong>triagem</strong> e posteriormente com os <strong>agendamentos de entrevistas</strong>!
                         </p>
                       </li>
@@ -10814,7 +10814,7 @@ Qual prefere?`,
 
                   {/* Nota final */}
                   <div className="p-2.5 bg-gray-50 rounded-md">
-                    <p className="text-[10px] text-gray-500 text-center italic" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <p className="text-micro text-gray-500 text-center italic" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                       *Todos estes detalhes serão enviados por e-mail junto com a confirmação de abertura da vaga.
                     </p>
                   </div>
@@ -10839,12 +10839,12 @@ Qual prefere?`,
               {currentStage === 'search-calibration' && !calibrationComplete ? (
                 <div className="flex gap-3">
                   {calibrationCandidates.length === 0 && hasAttemptedCalibrationGeneration && !isLoadingCalibration ? (
-                    <div className="w-full text-center text-[10px] text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <div className="w-full text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                       Use os botões acima para tentar novamente ou prosseguir
                     </div>
                   ) : (
                     <Button
-                      className="w-full h-9 rounded-md text-[11px] font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                      className="w-full h-9 rounded-md text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                       style={{ fontFamily: '"Open Sans", sans-serif' }}
                       onClick={() => {
                         if (calibrationCandidates.length > 0) {
@@ -10868,15 +10868,15 @@ Qual prefere?`,
                   )}
                 </div>
               ) : currentStage === 'search-calibration' && calibrationComplete ? (
-                <div className="text-center text-[10px] text-green-500 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-green-500 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                   Calibração concluída! Candidatos sendo adicionados ao kanban...
                 </div>
               ) : currentStage === 'input-evaluation' ? (
-                <div className="text-center text-[10px] text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                   Continue descrevendo a vaga para detectar mais critérios
                 </div>
               ) : currentStage === 'jd-enrichment' ? (
-                <div className="text-center text-[10px] text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                   Revise as sugestões no chat e responda o que deseja aceitar ou modificar
                 </div>
               ) : (
@@ -10884,7 +10884,7 @@ Qual prefere?`,
                   {currentStageIndex > 0 && (
                     <Button
                       variant="outline"
-                      className="flex-1 h-9 rounded-md text-[11px] font-medium border-gray-200 text-gray-600 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
+                      className="flex-1 h-9 rounded-md text-xs font-medium border-gray-200 text-gray-600 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
                       style={{ fontFamily: '"Open Sans", sans-serif' }}
                       onClick={goToPreviousStage}
                       aria-label="Voltar para etapa anterior"
@@ -10898,7 +10898,7 @@ Qual prefere?`,
                   {currentStage !== 'salary' && currentStage !== 'competencies' && (
                   <Button
                     className={cn(
-                      "flex-1 h-9 rounded-md text-[11px] font-semibold transition-all",
+                      "flex-1 h-9 rounded-md text-xs font-semibold transition-all",
                       currentStageIndex === 0 ? "w-full" : "",
                       currentStage === 'review-publish'
                         ? "bg-green-500 text-white"
@@ -11021,7 +11021,7 @@ Qual prefere?`,
                       )}
                     >
                       {comp.competency}
-                      <span className="ml-1.5 text-[10px] opacity-70">
+                      <span className="ml-1.5 text-micro opacity-70">
                         ({comp.weight === 'Essencial' ? '●●●' : comp.weight === 'Importante' ? '●●○' : '●○○'})
                       </span>
                     </button>
@@ -11146,7 +11146,7 @@ Qual prefere?`,
               <Button
                 onClick={() => { setShowSkipCompetenciesWarning(false); goToNextStage() }}
                 className="flex-1 h-10 rounded-md"
-                style={{ backgroundColor: '#F59E0B', color: 'white' }}
+                style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}
               >
                 Confirmar assim mesmo
               </Button>
@@ -11253,7 +11253,7 @@ Qual prefere?`,
               {suggestedBehavioralSkills.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                    <Heart className="w-4 h-4 text-[#9B6B9E]" />
+                    <Heart className="w-4 h-4 text-wedo-purple" />
                     Competências Comportamentais
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -11273,7 +11273,7 @@ Qual prefere?`,
                         }}
                         className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                           selectedSuggestedBehavioral.has(skill)
-                            ? 'bg-[#9B6B9E] text-white'
+                            ? 'bg-wedo-purple text-white'
                             : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                         }`}
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
@@ -11412,7 +11412,7 @@ Qual prefere?`,
                               {candidate.highlights.map((highlight, idx) => (
                                 <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-white rounded-md border border-amber-200">
                                   <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
-                                    {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-[#F59E0B]" />}
+                                    {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
                                     {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />}
                                     {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-violet-500" />}
                                     {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-green-500" />}
@@ -11504,7 +11504,7 @@ Qual prefere?`,
                               <h5 className="text-sm font-semibold text-gray-800 mb-2">{category.category}</h5>
                               <div className="flex flex-wrap gap-2">
                                 {category.skills.map((skill, sidx) => (
-                                  <span key={sidx} className="px-2 py-1 text-[10px] font-medium text-gray-800 bg-gray-50 rounded-full border border-gray-200">
+                                  <span key={sidx} className="px-2 py-1 text-micro font-medium text-gray-800 bg-gray-50 rounded-full border border-gray-200">
                                     ★ {skill}
                                   </span>
                                 ))}
@@ -11555,7 +11555,7 @@ Qual prefere?`,
                     </h3>
                     <button 
                       onClick={() => setShowEditCriteriaModal(true)}
-                      className="text-xs text-gray-600 dark:text-gray-400 hover:text-[#4A9BA8] font-medium transition-colors"
+                      className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium transition-colors"
                     >
                       Editar Critérios
                     </button>
@@ -11569,7 +11569,7 @@ Qual prefere?`,
                       <div key={match.id} className="space-y-1">
                         <div className="flex items-start gap-2">
                           <div className={cn(
-                            "px-1.5 py-0.5 rounded-full text-[10px] font-medium",
+                            "px-1.5 py-0.5 rounded-full text-micro font-medium",
                             match.isMatch ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
                           )}>
                             {match.isMatch ? '✓ Match' : '✗ No Match'}
@@ -11577,11 +11577,11 @@ Qual prefere?`,
                         </div>
                         <p className="text-xs font-semibold text-gray-800">
                           {match.criteria}
-                          <span className="ml-1.5 text-[10px] text-gray-500 font-normal">
+                          <span className="ml-1.5 text-micro text-gray-500 font-normal">
                             {match.importance === 1 ? '①②' : '①'}
                           </span>
                         </p>
-                        <p className="text-[10px] text-gray-500 leading-relaxed">
+                        <p className="text-micro text-gray-500 leading-relaxed">
                           {match.explanation}
                         </p>
                       </div>
@@ -11607,7 +11607,7 @@ Qual prefere?`,
                 {/* Edit criteria note - Always visible */}
                 <div className="shrink-0 px-4 pb-3">
                   <div className="p-2 bg-gray-50 rounded-md border border-gray-200">
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-micro text-gray-500">
  Você pode <button onClick={() => setShowEditCriteriaModal(true)} className="font-medium">fixar critérios</button> obrigatórios ou <button onClick={() => setShowEditCriteriaModal(true)} className="text-gray-600 font-medium">reordenar</button> por importância.
                     </p>
                   </div>
@@ -11650,7 +11650,7 @@ Qual prefere?`,
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Aprovar
-                      <span className="text-[10px] opacity-80">A</span>
+                      <span className="text-micro opacity-80">A</span>
                     </button>
                     <button
                       onClick={handleRejectCandidate}
@@ -11658,23 +11658,23 @@ Qual prefere?`,
                     >
                       <X className="w-3.5 h-3.5" />
                       Reprovar
-                      <span className="text-[10px] opacity-80">R</span>
+                      <span className="text-micro opacity-80">R</span>
                     </button>
                   </div>
 
-                  <p className="text-[10px] text-gray-500 text-center mt-2">
+                  <p className="text-micro text-gray-500 text-center mt-2">
                     Isso apenas calibra o agente e não envia emails.
                   </p>
 
                   {/* Progress */}
                   <div className="mt-2 flex items-center justify-center gap-1.5">
-                    <span className="text-[10px] text-gray-500">Aprovados:</span>
+                    <span className="text-micro text-gray-500">Aprovados:</span>
                     <div className="flex gap-1">
                       {[0, 1, 2].map((i) => (
                         <div
                           key={i}
                           className={cn(
-                            "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                            "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                             approvedCandidates.length > i
                               ? "bg-green-500 text-white"
                               : "bg-gray-200 text-gray-500"
@@ -11684,7 +11684,7 @@ Qual prefere?`,
                         </div>
                       ))}
                     </div>
-                    <span className="text-[10px] text-gray-500">de 3</span>
+                    <span className="text-micro text-gray-500">de 3</span>
                   </div>
                 </div>
               </div>

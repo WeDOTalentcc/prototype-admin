@@ -216,7 +216,7 @@ export function RubricEvaluationCard({
           <span className={`${textStyles.label} text-gray-950 dark:text-gray-50 font-bold min-w-[40px]`}>
             {score}%
           </span>
-          <Badge className={`${scoreBadge.className} text-[10px] px-2 py-0.5 border font-medium`}>
+          <Badge className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>
             {data.score_label || scoreBadge.label}
           </Badge>
         </div>
@@ -303,7 +303,7 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.strengths.map((strength, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 text-[10px]">
+                <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 text-micro">
                   {strength}
                 </Badge>
               ))}
@@ -321,7 +321,7 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.concerns.map((concern, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 text-[10px]">
+                <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 text-micro">
                   {concern}
                 </Badge>
               ))}

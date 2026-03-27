@@ -173,14 +173,14 @@ export function SetupAlertBadge() {
           />
         </div>
         <div 
-          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold text-white"
           style={{ backgroundColor: getProgressColor() }}
         >
           !
         </div>
       </div>
       <div className="flex flex-col items-start">
-        <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 leading-tight">
+        <span className="text-micro font-medium text-gray-500 dark:text-gray-400 leading-tight">
           Setup Incompleto
         </span>
         <div className="flex items-center gap-1.5">

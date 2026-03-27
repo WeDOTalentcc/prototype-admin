@@ -43,7 +43,7 @@ const riskStats = {
 }
 
 const risksByCategory = [
-  { category: 'Segurança', count: risks.filter(r => r.category === 'Segurança').length, color: '#ef4444' },
+  { category: 'Segurança', count: risks.filter(r => r.category === 'Segurança').length, color: 'var(--status-error)' },
   { category: 'Operacional', count: risks.filter(r => r.category === 'Operacional').length, color: '#f97316' },
   { category: 'Compliance', count: risks.filter(r => r.category === 'Compliance').length, color: '#eab308' },
   { category: 'Privacidade', count: risks.filter(r => r.category === 'Privacidade').length, color: '#8b5cf6' },
@@ -181,7 +181,7 @@ export default function RiscosPage() {
                     {riskStats.critical}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="destructive" className="text-[10px]">
+                    <Badge variant="destructive" className="text-micro">
                       Score ≥12
                     </Badge>
                   </div>
@@ -204,7 +204,7 @@ export default function RiscosPage() {
                     {risks.filter(r => r.status === 'mitigating').length}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
                       <Clock className="w-3 h-3 mr-1" />
                       Ação em curso
                     </Badge>
@@ -228,7 +228,7 @@ export default function RiscosPage() {
                     {Math.round((riskStats.mitigated / riskStats.total) * 100)}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
                       {riskStats.mitigated} mitigados
                     </Badge>
@@ -335,7 +335,7 @@ export default function RiscosPage() {
               </div>
               <div className="flex items-center justify-center gap-4 mt-4 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#22c55e' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
                   <span>Baixo (1-4)</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -347,7 +347,7 @@ export default function RiscosPage() {
                   <span>Alto (10-14)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#ef4444' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-error)' }} />
                   <span>Crítico (15+)</span>
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function RiscosPage() {
                     }}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <Badge variant="outline" className="text-[10px] font-mono" style={{ borderColor: scoreConfig.text, color: scoreConfig.text }}>
+                      <Badge variant="outline" className="text-micro font-mono" style={{ borderColor: scoreConfig.text, color: scoreConfig.text }}>
                         {risk.id}
                       </Badge>
                       <span className="text-lg font-bold" style={{ color: scoreConfig.text }}>{risk.score}</span>
@@ -396,7 +396,7 @@ export default function RiscosPage() {
                       {risk.name}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-micro">
                         {risk.category}
                       </Badge>
                       <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>

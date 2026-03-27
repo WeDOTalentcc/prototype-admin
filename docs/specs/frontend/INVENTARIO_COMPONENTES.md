@@ -711,86 +711,292 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Verificação pós-limpeza:** `npm run build` deve passar sem erros. Se algum import quebrar, remover o import (significa que algo já estava importando código morto).
 
-### Fase 1 — Escala Tipográfica
+### Fase 1 — Escala Tipográfica ✅ CONCLUÍDA (2026-03-27)
 
 **Esforço:** 2 dias | **Risco:** Baixo | **Impacto visual:** Nenhum (mesmos pixels)
+**Resultado:** ~4.500 valores arbitrários eliminados. Zero quebras de build. Zero regressões visuais.
 
-**Passo 1 — Adicionar tokens ao `tailwind.config.ts`:**
+**Tokens implementados (corretos — diferem do plano original):**
+
+| Token | Tamanho | CSS var | Substitui | Usos eliminados |
+|-------|---------|---------|-----------|----------------|
+| `text-xs` (redefinido) | 11px | `var(--font-size-xs)` | `text-[11px]` | ~2.307 |
+| `text-micro` | 10px | `var(--font-size-micro)` | `text-[10px]`, `text-[9px]`, `text-[8px]`, `text-[7px]` | ~2.000+ |
+| `text-sm-ui` | 12px | `var(--font-size-sm-ui)` | `text-[12px]` | ~18 |
+| `text-base-ui` | 13px | `var(--font-size-base-ui)` | `text-[13px]` | ~186 |
+
+**Correções de plano aplicadas:**
+- `text-[11px]` → `text-xs` (não `text-ui` — `text-xs` já era 11px neste projeto)
+- `text-[9px]`, `text-[8px]`, `text-[7px]` → `text-micro` (10px mínimo WCAG, nunca `text-tiny`)
+- `text-[12px]` → `text-sm-ui` (token novo, não `text-xs` que seria 11px aqui)
+- Corrigido bug no `vuetifyMigrationMap`: `text-xs` → `text-caption` (Vuetify) e não `text-body-2`
+
+**Arquivos modificados:** `tailwind.config.ts`, `design-tokens.css`, `design-tokens.ts`, `chat-format.ts` + ~56 componentes
+
+### Fase 2 — Tokenização de Cores (Direção Monocromática)
+
+**Esforço:** 6-7 dias | **Risco:** Baixo-Médio | **Impacto visual:** Mínimo intencional
+**Meta:** 150+ cores únicas → **~15 tokens semânticos** (vs. ~28 do plano original)
+
+> **Contexto da revisão (2026-03-27):** Análise profunda do código revelou que 70% da plataforma já é cinza
+> (26.337 usos de `gray-*`). A direção Notion/ElevenLabs monocromática é viável e reduz ainda mais a
+> paleta, mas LIA não pode ser 100% monocromática por exigência de acessibilidade (WCAG 1.4.1) nos
+> estados de status (success/error/warning) e nas etapas do pipeline para escaneabilidade B2B.
+
+#### Decisão Estratégica: O que MANTER vs. ELIMINAR
+
+| Categoria | Instâncias | Decisão | Motivo |
+|-----------|-----------|---------|--------|
+| Gray scale (6 tons core) | ~26.337 | **MANTER** | Base monocromática |
+| Status: red/green/amber | ~4.938 | **MANTER** | WCAG 1.4.1 obrigatório |
+| wedo-cyan (LIA/AI only) | ~200 | **MANTER** | Identidade da IA — único accent |
+| Pipeline pastéis (17 cores) | ~270 | **CONVERTER** → gray+opacity | Decorativos, não semânticos |
+| wedo-cyan decorativo | ~280 | **CONVERTER** → gray | Links, badges, info toasts |
+| violet/blue/indigo/rose | ~200 | **ELIMINAR** → gray | Zero valor semântico |
+| wedo-orange/purple/magenta | ~100 | **DEPRECAR** | Quase sem uso ativo |
+| Chart colors hardcoded | ~40 | **SIMPLIFICAR** → gray escala | Distinção visual, não semântica |
+| Email templates | ~125 | **ISENTAR** | HTML inline exige hex |
+| Brand terceiros (LinkedIn etc.) | ~50 | **ISENTAR** | Cor institucional imutável |
+
+#### Os 15 Tokens Semânticos Target
+
+```css
+/* design-tokens.css — fonte de verdade */
+
+/* GRAY SCALE — 6 tons core (de 11 reduzimos) */
+--gray-50:  #F9FAFB;   /* bg page, hover muito sutil */
+--gray-200: #E5E7EB;   /* border padrão, divisores */
+--gray-400: #9CA3AF;   /* text disabled, placeholder */
+--gray-600: #4B5563;   /* text secondary */
+--gray-800: #1F2937;   /* text primary forte */
+--gray-950: #030712;   /* text máxima ênfase, botão primário */
+
+/* STATUS — 3 semânticas (obrigatório WCAG) */
+--status-success: #16A34A;  /* aprovado, contratado */
+--status-error:   #DC2626;  /* reprovado, erro */
+--status-warning: #D97706;  /* pendente, atenção */
+
+/* BRAND — 1 accent reservado para LIA/AI */
+--wedo-cyan:      #60BED1;  /* RESERVADO: ícone LIA, elementos IA únicos */
+--wedo-cyan-dark: #4DA8BB;  /* hover state do cyan */
+
+/* CHART — 4 tons para visualização (gray + opacity) */
+--chart-1: rgba(3, 7, 18, 1.0);    /* série primária */
+--chart-2: rgba(3, 7, 18, 0.6);    /* série secundária */
+--chart-3: rgba(3, 7, 18, 0.35);   /* série terciária */
+--chart-4: rgba(3, 7, 18, 0.15);   /* série quaternária */
+```
+
+---
+
+#### Fase 2A — Bridge Architecture (0,5 dia)
+
+Mesmo padrão da Fase 1: CSS vars como fonte de verdade, `tailwind.config.ts` referencia vars.
+
+**`design-tokens.css` — expandir com gray scale explícito:**
+```css
+/* Adicionar na seção :root */
+--gray-50:  #F9FAFB;
+--gray-200: #E5E7EB;
+--gray-400: #9CA3AF;
+--gray-600: #4B5563;
+--gray-800: #1F2937;
+--gray-950: #030712;
+
+/* Status semânticos */
+--status-success: #16A34A;
+--status-error:   #DC2626;
+--status-warning: #D97706;
+--status-pending: var(--gray-400);   /* Sem nova cor — usa gray + animação */
+
+/* Chart monochromatic */
+--chart-1: rgba(3, 7, 18, 1.0);
+--chart-2: rgba(3, 7, 18, 0.6);
+--chart-3: rgba(3, 7, 18, 0.35);
+--chart-4: rgba(3, 7, 18, 0.15);
+```
+
+**`tailwind.config.ts` — migrar wedo-* para CSS vars (hoje estão hardcoded):**
+```typescript
+// ANTES (hardcoded — não sobrevive à migração Vue):
+'wedo-cyan': '#60BED1',
+
+// DEPOIS (CSS var — survives framework migration):
+'wedo-cyan': 'var(--wedo-cyan)',
+'wedo-cyan-dark': 'var(--wedo-cyan-dark)',
+
+// NOVOS tokens de status:
+'status-success': 'var(--status-success)',
+'status-error':   'var(--status-error)',
+'status-warning': 'var(--status-warning)',
+
+// Chart tokens:
+'chart-1': 'var(--chart-1)',
+'chart-2': 'var(--chart-2)',
+'chart-3': 'var(--chart-3)',
+'chart-4': 'var(--chart-4)',
+```
+
+---
+
+#### Fase 2B — Pipeline Monocromático (1 dia) ← MAIOR GANHO ÚNICO
+
+Arquivo principal: `src/components/ui/status-badge.tsx` (601 linhas, 90 cores hardcoded, 17 tons pastéis)
+
+**Situação atual:** 17 cores pastel únicas para estágios do pipeline (análise confirmou que são decorativas — o kanban já tem fallback cinza e o estágio é identificado por texto+posição).
+
+**Estratégia:** Substituir as 17 cores pastéis por sistema gray + opacity. Manter APENAS verde (contratado) e cinza-claro (reprovado/standby) como estados terminais semânticos.
 
 ```typescript
-fontSize: {
-  'ui': ['0.6875rem', { lineHeight: '1.4' }],    // 11px — substitui 2.307 usos
-  'micro': ['0.625rem', { lineHeight: '1.3' }],  // 10px — substitui 1.670 usos
-  'tiny': ['0.5625rem', { lineHeight: '1.2' }],  // 9px — substitui 368 usos (avaliar)
-  'base-ui': ['0.8125rem', { lineHeight: '1.5' }], // 13px — substitui 186 usos
+// ANTES — em status-badge.tsx ou recruitment-stages.ts:
+const STAGE_COLORS = {
+  sourcing:          '#A8CED5',  // cyan-pastel
+  triagem:           '#BFA8D5',  // purple-pastel
+  long_list:         '#C5D9ED',  // blue-pastel
+  short_list:        '#B8C5D0',  // gray-blue
+  interview_hr:      '#A8D5B7',  // green-pastel
+  technical_test:    '#E8B8B8',  // coral-pink
+  // ... 11 mais
+  hired:             '#A8D5B7',  // green (duplicate)
+  rejected:          '#E5E7EB',  // gray
+}
+
+// DEPOIS — sistema gray + opacity:
+const STAGE_COLORS = {
+  // Estágios ativos — gray com opacidade decrescente pelo funil
+  sourcing:          'var(--gray-200)',   // entrada
+  triagem:           'var(--gray-200)',
+  long_list:         'var(--gray-400)',   // avançando
+  short_list:        'var(--gray-400)',
+  interview_hr:      'var(--gray-600)',   // em progresso
+  technical_test:    'var(--gray-600)',
+  english_test:      'var(--gray-600)',
+  interview_tech:    'var(--gray-600)',
+  interview_manager: 'var(--gray-800)',   // final stretch
+  interview_final:   'var(--gray-800)',
+  references:        'var(--gray-800)',
+  offer:             'var(--gray-950)',   // quase lá
+  // Estados terminais — únicos com cor semântica:
+  hired:             'var(--status-success)',   // único verde = vitória
+  rejected:          'var(--gray-200)',          // faded = encerrado
+  offer_declined:    'var(--gray-200)',
+  standby:           'var(--gray-200)',
 }
 ```
 
-**Passo 2 — Find/replace global:**
+**Resultado:** 17 cores → 4 valores (gray-200, gray-400-800-950 + status-success). Kanban fica visualmente mais limpo e hierárquico.
 
-| De | Para | Usos | Comando |
-|----|------|------|---------|
-| `text-[11px]` | `text-ui` | 2.307 | `sed -i 's/text-\[11px\]/text-ui/g'` |
-| `text-[10px]` | `text-micro` | 1.670 | `sed -i 's/text-\[10px\]/text-micro/g'` |
-| `text-[9px]` | `text-tiny` | 368 | `sed -i 's/text-\[9px\]/text-tiny/g'` |
-| `text-[13px]` | `text-base-ui` | 186 | `sed -i 's/text-\[13px\]/text-base-ui/g'` |
-| `text-[12px]` | `text-xs` | 18 | Manual — verificar contexto |
-| `text-[16px]` | `text-base` | 23 | Manual |
-| `text-[18px]` | `text-lg` | 22 | Manual |
-| `text-[14px]` | `text-sm` | 65 | Manual — verificar se já é sm no config |
+---
 
-**Passo 3 — Validar:**
-- `npm run build` (sem erros)
-- Comparação visual de 5 telas críticas (Dashboard, Kanban, Candidato, Chat, Settings)
+#### Fase 2C — Hex Hardcoded → Tokens (2 dias)
 
-### Fase 2 — Tokenização de Cores
+**Top 20 arquivos com mais hex (cobrem ~70% do problema):**
 
-**Esforço:** 5-7 dias | **Risco:** Baixo | **Impacto visual:** Nenhum (mesmas cores)
+| Arquivo | Hex count | Ação |
+|---------|-----------|------|
+| `ui/status-badge.tsx` | 90 | Coberto na Fase 2B |
+| `candidate-preview.tsx` | ~63 | find/replace + review manual |
+| `jobs-page.tsx` | ~55 | find/replace |
+| `dashboards-page.tsx` | ~50 | find/replace |
+| `job-kanban-page.tsx` | ~45 | find/replace |
+| `charts/interactive-charts.tsx` | ~40 | Substituir COLORS array → chart-1..4 |
+| `modals/edit-job-modal.tsx` | ~38 | find/replace |
+| `settings/CommunicationHub.tsx` | ~35 | find/replace |
+| `pages/indicators-page.tsx` | ~30 | find/replace |
+| Demais arquivos (~80) | ~300 total | find/replace em batch |
 
-**Prioridade 1 — Top 15 cores (cobrem ~850 linhas, 53% do problema):**
+**Mapa de substituição — Top 15 hex:**
 
-| Hex | → Classe Tailwind | Usos |
-|-----|------------------|------|
-| `#374151` | `text-gray-700` ou `border-gray-700` | 120 |
-| `#FFFFFF` | `bg-white` ou `text-white` | 96 |
-| `#6B7280` | `text-gray-500` | 78 |
-| `#111827` | `text-gray-900` | 75 |
-| `#F59E0B` | `text-amber-500` | 70 |
-| `#D1D5DB` | `text-gray-300` ou `border-gray-300` | 69 |
-| `#E5E7EB` / `#e5e7eb` | `border-gray-200` | 116 |
-| `#EF4444` | `text-red-500` | 48 |
-| `#9CA3AF` | `text-gray-400` | 46 |
-| `#F3F4F6` | `bg-gray-100` | 42 |
-| `#1a1a1a` | `text-gray-900` (verificar contexto) | 38 |
-| `#5DA47A` | `text-wedo-green` (custom) | 36 |
-| `#EEEEEE` | `bg-gray-200` | 35 |
-| `#22C55E` | `text-green-500` | 33 |
-| `#8B5CF6` | `text-violet-500` | 28 |
+| Hex | → Token Tailwind | Ocorrências |
+|-----|-----------------|------------|
+| `#374151` | `gray-700` | 120 |
+| `#E5E7EB` / `#e5e7eb` | `gray-200` | 116 |
+| `#FFFFFF` | `white` | 96 |
+| `#6B7280` | `gray-500` | 78 |
+| `#111827` | `gray-900` | 75 |
+| `#F59E0B` | `status-warning` (não amber-500) | 70 |
+| `#D1D5DB` | `gray-300` | 69 |
+| `#EF4444` | `status-error` (não red-500) | 48 |
+| `#9CA3AF` | `gray-400` | 46 |
+| `#F3F4F6` | `gray-100` | 42 |
+| `#1a1a1a` | `gray-950` | 38 |
+| `#5DA47A` | `status-success` (não wedo-green) | 36 |
+| `#EEEEEE` | `gray-200` | 35 |
+| `#22C55E` | `status-success` | 33 |
+| `#8B5CF6` | `gray-600` (violet tem zero valor semântico aqui) | 28 |
 
-**Prioridade 2 — Cores WeDo (já existem como tokens):**
+> **Nota sobre violet/blue/indigo/rose:** Estas cores não têm função semântica confirmada no código.
+> Converter para gray equivalente em luminosidade. Verificar contexto antes de cada conversão.
 
-| Hex | → Classe | Usos |
-|-----|---------|------|
-| `#60BED1` | `text-wedo-cyan` | 22 |
-| `#D19960` | `text-wedo-orange` | 15 |
-| `#10B981` | `text-emerald-500` | 27 |
-| `#3B82F6` | `text-blue-500` | 18 |
-| `#E5A853` | Custom token `text-wedo-interview` | 15 |
+---
 
-**Prioridade 3 — Arquivo `status-badge.tsx` (90 cores):**
-- Extrair paleta de 17 etapas do pipeline para constante exportável
-- Converter cada cor para referência a token
+#### Fase 2D — Restrição do wedo-cyan (1 dia)
 
-**Excluir da migração (OK hardcoded):**
-- `#0A66C2` — LinkedIn blue (cor de terceiro)
-- Cores dentro de gráficos Chart.js/Recharts (precisam ser hex)
-- Cores de email HTML em `report-email-templates.tsx` (HTML inline requer hex)
+**Situação:** 507 usos de cyan. Somente ~200 são semânticos (ícone LIA/Brain, elementos IA).
 
-**Processo por arquivo (top 20):**
-1. Abrir arquivo
-2. Identificar cada hex e contexto (texto, bg, border, fill)
-3. Substituir por classe Tailwind ou variável CSS
-4. Testar visualmente
+**Auditoria nos 507 usos — critério de decisão:**
+- `text-wedo-cyan` em ícone Brain/AI → **MANTER**
+- `text-wedo-cyan` como cor de link → **CONVERTER** para `text-gray-600 underline`
+- `bg-wedo-cyan/10` como badge info → **CONVERTER** para `bg-gray-100`
+- `text-wedo-cyan-dark` em toast info title → **CONVERTER** para `text-gray-700`
+- `border-wedo-cyan` como focus ring → **CONVERTER** para `border-gray-400`
+- Cyan em branding/logo da página login → **MANTER**
+
+**Resultado esperado:** 507 → ~200 usos (60% redução). wedo-cyan torna-se exclusivo LIA.
+
+---
+
+#### Fase 2E — Gráficos Monocromáticos (0,5 dia)
+
+**Arquivo:** `src/components/charts/interactive-charts.tsx`
+
+```typescript
+// ANTES — 6 hex sem relação com design system:
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe', '#00c49f']
+
+// DEPOIS — 4 tons de cinza com opacidade (tokens definidos na Fase 2A):
+const CHART_COLORS = [
+  'var(--chart-1)',   // preto puro — série mais importante
+  'var(--chart-2)',   // 60% opacidade
+  'var(--chart-3)',   // 35% opacidade
+  'var(--chart-4)',   // 15% opacidade — série auxiliar
+]
+```
+
+Adicionar `fill-opacity` como atributo nos SVG para séries adicionais (sem criar nova cor).
+
+---
+
+#### Fase 2F — Validação (0,5 dia)
+
+1. `npm run build` — zero erros
+2. Comparação visual das 5 telas críticas: Dashboard, Kanban, Candidato, Chat, Settings
+3. Verificar dark mode em cada tela
+4. Grep final: `grep -rn "#[0-9A-Fa-f]\{3,6\}" src/ --include="*.tsx" --include="*.ts" --include="*.css"` → deve retornar apenas isentos
+
+---
+
+#### Arquivos Isentos (não migrar)
+
+| Arquivo / Padrão | Motivo |
+|-----------------|--------|
+| `report-email-templates.tsx` (~125 hex) | HTML inline de email requer hex absoluto |
+| LinkedIn `#0A66C2`, Google `#4285F4` | Cores institucionais imutáveis |
+| `design-tokens.ts` (62 hex) | É a definição dos tokens — hex aqui é intencional |
+| Recharts `stroke`, `fill` em SVG com interpolação dinâmica | API do Recharts requer hex/rgb |
+
+---
+
+#### Resultado esperado da Fase 2 completa
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Cores únicas no codebase | 150+ | ~15 tokens semânticos |
+| Hex hardcoded em componentes | ~1.607 linhas | ~200 (apenas isentos) |
+| Tons do pipeline | 17 pastéis | 4 grays + 1 green (hired) |
+| Usos de wedo-cyan | 507 | ~200 (apenas LIA/IA) |
+| Acents brand ativos | 4 (cyan, green, orange, purple) | 1 (cyan — LIA exclusivo) |
+| Compatibilidade Vuetify | 0% (hex hardcoded) | 100% (CSS vars sobrevivem migração) |
 
 ### Fase 3 — Consolidação de Badges e Status
 
@@ -913,12 +1119,12 @@ Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é s
 
 ## 20. Tabela-Resumo do Plano
 
-| Fase | O que faz | Linhas afetadas | Impacto visual | Risco | Esforço | Benefício Vue |
-|------|----------|----------------|---------------|-------|---------|--------------|
-| 0 — Limpeza | Remove código morto | ~7.800 removidas | Nenhum | Zero | 1 dia | Reduz ruído |
-| 1 — Tipografia | text-[Xpx] → tokens | ~4.500 | Nenhum | Baixo | 2 dias | Mapeamento 1:1 para Vue |
-| 2 — Cores | hex → tokens/classes | ~1.600 | Nenhum | Baixo | 5-7 dias | Ponte de tokens React↔Vue |
-| 3 — Badges | 7 → 3 componentes | ~1.400 | Nenhum | Médio | 2-3 dias | Decide componente canônico |
-| 4 — Split | 37 → ~150 sub-componentes | ~118.000 | Nenhum | Alto | 3-4 semanas | Conversão por partes |
-| 5 — Dimensões | px → tokens | ~5.400 | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
+| Fase | O que faz | Resultado | Impacto visual | Risco | Esforço | Benefício Vue |
+|------|----------|-----------|---------------|-------|---------|--------------|
+| 0 — Limpeza ✅ | Remove código morto | 9.820 linhas removidas | Nenhum | Zero | 1 dia ✅ | Reduz ruído |
+| 1 — Tipografia ✅ | text-[Xpx] → 4 tokens com CSS vars | ~4.500 valores eliminados | Nenhum | Baixo | 2 dias ✅ | Mapeamento 1:1 para Vuetify |
+| 2 — Cores | 150+ hex → 15 tokens semânticos (direção monocromática) | Pipeline: 17 pastéis→4 grays; cyan: 507→200 usos | Mínimo intencional | Baixo-Médio | 6-7 dias | CSS vars sobrevivem migração Vue |
+| 3 — Badges | 7 → 3 componentes | Tokens + badge.tsx como base | Nenhum | Médio | 2-3 dias | Decide componente canônico |
+| 4 — Split | 37 → ~150 sub-componentes | Monólitos < 800 linhas | Nenhum | Alto | 3-4 semanas | Conversão componente a componente |
+| 5 — Dimensões | px → tokens de layout | ~5.400 valores arbitrários | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
 | **Total** | | **~138.700** | **Zero** | | **~6-7 semanas** | **Conversão viável** |

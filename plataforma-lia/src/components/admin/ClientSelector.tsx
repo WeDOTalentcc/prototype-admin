@@ -93,7 +93,7 @@ export function ClientSelector() {
                   <AvatarImage src={selectedClient.logoUrl} alt={selectedClient.name} />
                 ) : null}
                 <AvatarFallback 
-                  className="text-[10px] bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
+                  className="text-micro bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
                 >
                   {getClientInitials(selectedClient)}
                 </AvatarFallback>

@@ -134,7 +134,7 @@ export function InterviewSchedulingModal({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
               Agendar Entrevista
             </DialogTitle>
           </div>
@@ -170,10 +170,10 @@ export function InterviewSchedulingModal({
             <>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+                  <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0">
+                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
                   </Badge>
@@ -203,7 +203,7 @@ export function InterviewSchedulingModal({
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+                <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                   Quando agendar?
                 </Label>
                 <Input
@@ -219,7 +219,7 @@ export function InterviewSchedulingModal({
                   disabled={isScheduling}
                   className="h-9 text-xs border-gray-200 focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-gray-800"
                 />
-                <p className="text-[11px] text-gray-500">
+                <p className="text-xs text-gray-500">
                   Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
                 </p>
               </div>
@@ -232,7 +232,7 @@ export function InterviewSchedulingModal({
                       <p className="text-xs font-medium text-red-700">
                         Erro ao agendar
                       </p>
-                      <p className="text-[11px] text-red-600 mt-1">
+                      <p className="text-xs text-red-600 mt-1">
                         {error}
                       </p>
                     </div>

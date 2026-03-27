@@ -45,7 +45,7 @@ export function CreditConfirmationDialog({
       <AlertDialogContent 
         className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4"
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--gray-50)',
           borderRadius: '10px',
           fontFamily: '"Open Sans", sans-serif'
         }}
@@ -60,12 +60,12 @@ export function CreditConfirmationDialog({
             </div>
             <div>
               <AlertDialogTitle 
-                className="text-[13px] font-semibold text-gray-950 dark:text-gray-50"
+                className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
               >
                 Confirmar Busca Global
               </AlertDialogTitle>
               <div 
-                className="text-[10px] text-gray-500"
+                className="text-micro text-gray-500"
               >
                 Esta busca irá consultar a Busca Global com 800M+ perfis
               </div>
@@ -76,20 +76,20 @@ export function CreditConfirmationDialog({
             className="rounded-md p-3 border border-gray-100 bg-gray-50"
           >
             <div
-              className="text-[11px] mb-2.5 font-medium text-gray-600"
+              className="text-xs mb-2.5 font-medium text-gray-600"
             >
               {searchTypeTexts[searchType]}
             </div>
             
             <div className="space-y-1.5">
-              <div className="flex justify-between items-center text-[11px]">
+              <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-500">Limite:</span>
                 <span className="font-medium text-gray-950 dark:text-gray-50">
                   {candidateLimit} candidatos
                 </span>
               </div>
               
-              <div className="flex justify-between items-center text-[11px]">
+              <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-500">Custo por candidato:</span>
                 <span className="font-medium text-gray-950 dark:text-gray-50">
                   {creditPerCandidate} crédito
@@ -97,7 +97,7 @@ export function CreditConfirmationDialog({
               </div>
               
               <div 
-                className="flex justify-between items-center pt-2 border-t text-[11px] border border-gray-200"
+                className="flex justify-between items-center pt-2 border-t text-xs border border-gray-200"
               >
                 <span className="font-medium text-gray-700">
                   Total estimado:
@@ -112,7 +112,7 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="text-[9px] text-center text-gray-400"
+            className="text-micro text-center text-gray-400"
           >
             Créditos serão consumidos ao executar a busca
           </div>
@@ -121,7 +121,7 @@ export function CreditConfirmationDialog({
         <AlertDialogFooter className="flex flex-row justify-end gap-2.5 sm:justify-end pt-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 h-8 text-[11px] px-4 font-medium text-gray-600" style={{ backgroundColor: 'transparent', borderRadius: '6px', fontFamily: '"Open Sans", sans-serif' }}
+            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{ backgroundColor: 'transparent', borderRadius: '6px', fontFamily: '"Open Sans", sans-serif' }}
           >
             Cancelar
           </AlertDialogCancel>
@@ -129,7 +129,7 @@ export function CreditConfirmationDialog({
           <Button
             onClick={onConfirm}
             disabled={isLoading}
-            className="text-white h-8 text-[11px] px-4 bg-[#1a1a1a] hover:bg-[#2a2a2a] disabled:bg-gray-400 font-medium"
+            className="text-white h-8 text-xs px-4 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 font-medium"
             style={{ 
               borderRadius: '6px',
               fontFamily: '"Open Sans", sans-serif'

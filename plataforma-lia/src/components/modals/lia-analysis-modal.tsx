@@ -173,7 +173,7 @@ export function LiaAnalysisModal({
             <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
             <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-[10px] text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-micro text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             LIA está gerando a análise...
           </p>
         </div>
@@ -184,7 +184,7 @@ export function LiaAnalysisModal({
       return (
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <Brain className="w-6 h-6 text-wedo-cyan" />
-          <p className="text-[10px] text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-micro text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             Clique na aba para gerar a análise
           </p>
         </div>
@@ -214,7 +214,7 @@ export function LiaAnalysisModal({
     }
 
     return (
-      <div className="text-[11px] text-gray-800 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+      <div className="text-xs text-gray-800 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
         <p className="font-semibold text-gray-950 mb-2 text-xs">{candidate?.name || candidate?.nome}</p>
         <div className="space-y-0">
           {formatContent(analysis.content)}
@@ -259,7 +259,7 @@ export function LiaAnalysisModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                   activeTab === tab.id
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-800 hover:bg-gray-100'
@@ -276,14 +276,14 @@ export function LiaAnalysisModal({
 
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-lg space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-gray-600">Análise gerada pela LIA. Confirme informações.</p>
+              <p className="text-micro text-gray-600">Análise gerada pela LIA. Confirme informações.</p>
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(activeTab)}
                   disabled={!analyses[activeTab]?.content}
-                  className="h-7 px-2.5 gap-1 text-[11px] border-gray-200"
+                  className="h-7 px-2.5 gap-1 text-xs border-gray-200"
                 >
                   {copiedTab === activeTab ? (
                     <>
@@ -300,7 +300,7 @@ export function LiaAnalysisModal({
                 <Button
                   size="sm"
                   onClick={onClose}
-                  className="h-7 px-3 text-[11px] text-white bg-gray-800 hover:bg-gray-900"
+                  className="h-7 px-3 text-xs text-white bg-gray-800 hover:bg-gray-900"
                 >
                   Concluído
                 </Button>
@@ -312,13 +312,13 @@ export function LiaAnalysisModal({
                   variant="outline"
                   size="sm"
                   onClick={handleTransport}
-                  className="w-full h-7 gap-1.5 text-[11px] border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800"
+                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   Transportar "{ANALYSIS_TABS.find(t => t.id === activeTab)?.label}" para Pareceres
                 </Button>
                 {savedMessage && (
-                  <p className={`text-[10px] text-center ${savedMessage.includes('Erro') ? 'text-red-500' : 'text-green-600'}`}>
+                  <p className={`text-micro text-center ${savedMessage.includes('Erro') ? 'text-red-500' : 'text-green-600'}`}>
                     {savedMessage.includes('Erro') ? '⚠ ' : '✓ '}{savedMessage}
                   </p>
                 )}

@@ -395,27 +395,27 @@ export function CandidatePage({
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "bg-wedo-green-pastel text-gray-950 dark:text-gray-50" // Verde WeDo - sucesso/qualidade
-    if (score >= 80) return "bg-[#A8CED5] text-gray-950 dark:text-gray-50" // Ciano WeDo - automação/progresso
-    if (score >= 70) return "bg-[#D5BFA8] text-gray-950 dark:text-gray-50" // Laranja WeDo - tempo/custos
-    return "bg-[#D5A8C6] text-gray-950 dark:text-gray-50" // Magenta WeDo - urgência/atenção
+    if (score >= 80) return "bg-gray-100 text-gray-950 dark:text-gray-50" // Ciano WeDo - automação/progresso
+    if (score >= 70) return "bg-gray-200 text-gray-950 dark:text-gray-50" // Laranja WeDo - tempo/custos
+    return "bg-gray-100 text-gray-950 dark:text-gray-50" // Magenta WeDo - urgência/atenção
   }
 
   const textStyles = {
     title: 'text-sm font-semibold text-gray-950 dark:text-gray-50',
     subtitle: 'text-xs font-medium text-gray-800 dark:text-gray-200',
     body: 'text-xs text-gray-600 dark:text-gray-400',
-    bodySmall: 'text-[11px] text-gray-600 dark:text-gray-400',
-    caption: 'text-[10px] text-gray-500 dark:text-gray-500',
-    label: 'text-[10px] font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider',
-    description: 'text-[10px] text-gray-500 dark:text-gray-500'
+    bodySmall: 'text-xs text-gray-600 dark:text-gray-400',
+    caption: 'text-micro text-gray-500 dark:text-gray-500',
+    label: 'text-micro font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider',
+    description: 'text-micro text-gray-500 dark:text-gray-500'
   }
 
   const badgeStyles = {
-    default: 'text-[10px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0',
-    success: 'text-[10px] px-1.5 py-0 h-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-0',
-    warning: 'text-[10px] px-1.5 py-0 h-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-0',
-    error: 'text-[10px] px-1.5 py-0 h-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-0',
-    info: 'text-[10px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0'
+    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0',
+    success: 'text-micro px-1.5 py-0 h-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-0',
+    warning: 'text-micro px-1.5 py-0 h-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-0',
+    error: 'text-micro px-1.5 py-0 h-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-0',
+    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0'
   }
 
   const cardStyles = {
@@ -547,10 +547,10 @@ export function CandidatePage({
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-base font-semibold text-gray-950 dark:text-gray-50">{candidate.name}</h1>
-                  <Badge variant="outline" className="text-[11px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0">
                     {candidate.candidateId || candidate.id}
                   </Badge>
-                  <Badge className={`text-[11px] px-1.5 py-0 ${getScoreColor(liaScore)}`}>
+                  <Badge className={`text-xs px-1.5 py-0 ${getScoreColor(liaScore)}`}>
                     {liaScore}% Match
                   </Badge>
                 </div>
@@ -768,14 +768,14 @@ export function CandidatePage({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? 'border-b-2 text-[#6B9BD1] border-[#6B9BD1]'
+                  ? 'border-b-2 text-gray-400 border-gray-400'
                   : 'text-gray-800 dark:text-gray-200 hover:text-gray-950 dark:hover:text-gray-50'
               }`}
             >
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {tab.badge !== undefined && tab.badge > 0 && (
-                <Badge className="text-[9px] px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
                   {tab.badge}
                 </Badge>
               )}
@@ -816,37 +816,37 @@ export function CandidatePage({
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider">Parecer LIA</span>
-                            <span className="text-[10px] font-semibold text-emerald-600">
+                            <span className="text-micro font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider">Parecer LIA</span>
+                            <span className="text-micro font-semibold text-emerald-600">
                               Score: {opinionsHistory[0]?.score || liaScore}/100
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {opinionsHistory[0]?.job_vacancy_id ? (
-                              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                              <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 flex items-center gap-1">
                                 <Briefcase className="w-2.5 h-2.5" />
                                 #{String(opinionsHistory[0].job_vacancy_id).slice(0, 6)} - {opinionsHistory[0].job_vacancy_title || 'Vaga vinculada'}
                               </Badge>
                             ) : (
-                              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                              <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                                 Sem vaga vinculada
                               </Badge>
                             )}
                             {opinionsHistory[0]?.archetype && (
-                              <span className="text-[9px] text-gray-500">{opinionsHistory[0].archetype}</span>
+                              <span className="text-micro text-gray-500">{opinionsHistory[0].archetype}</span>
                             )}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
                         {opinionsHistory[0]?.recommendation === 'approved' && (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-green-50 text-green-700 flex items-center gap-0.5">
+                          <Badge className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 flex items-center gap-0.5">
                             <CheckCircle className="w-2.5 h-2.5" />
                             APROVADO
                           </Badge>
                         )}
                         {opinionsHistory[0]?.recommendation === 'pending_review' && (
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-50 text-amber-700 flex items-center gap-0.5">
+                          <Badge className="text-micro px-1.5 py-0 h-4 bg-amber-50 text-amber-700 flex items-center gap-0.5">
                             <Clock className="w-2.5 h-2.5" />
                             PENDENTE
                           </Badge>
@@ -855,32 +855,32 @@ export function CandidatePage({
                     </div>
                     
                     {/* Summary - fonte reduzida */}
-                    <p className="text-[10px] text-gray-800 dark:text-gray-200 leading-relaxed mb-2">
+                    <p className="text-micro text-gray-800 dark:text-gray-200 leading-relaxed mb-2">
                       {opinionsHistory[0]?.summary || 'UX Designer sênior com 5+ anos de experiência em produtos digitais. Excelente liderança técnica e visão estratégica.'}
                     </p>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <h4 className="text-[10px] font-medium mb-1 flex items-center gap-1" style={{ color: '#2E8B57' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: '#2E8B57' }}>
                           <CheckCircle className="w-3 h-3" />
                           Pontos Fortes
                         </h4>
                         <ul className="space-y-0.5">
                           {(opinionsHistory[0]?.strengths || ['Ferramentas de design', 'Design systems', 'Liderança de equipes']).slice(0, 3).map((s: string, i: number) => (
-                            <li key={i} className="text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1">
+                            <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex items-start gap-1">
                               <span className="text-emerald-500">•</span> {s}
                             </li>
                           ))}
                         </ul>
                       </div>
                       <div>
-                        <h4 className="text-[10px] font-medium mb-1 flex items-center gap-1" style={{ color: '#FFA500' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: '#FFA500' }}>
                           <AlertCircle className="w-3 h-3" />
                           A Desenvolver
                         </h4>
                         <ul className="space-y-0.5">
                           {(opinionsHistory[0]?.concerns || ['Acessibilidade avançada', 'Analytics de UX', 'Motion design']).slice(0, 3).map((c: string, i: number) => (
-                            <li key={i} className="text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1">
+                            <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex items-start gap-1">
                               <span className="text-amber-500">•</span> {c}
                             </li>
                           ))}
@@ -933,18 +933,18 @@ export function CandidatePage({
                             {/* Metadata Row */}
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {industries.slice(0, 2).map((ind: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                                   <Building className="w-2.5 h-2.5 mr-0.5" />
                                   {ind}
                                 </span>
                               ))}
                               {isStartup && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
                                   🚀 Startup
                                 </span>
                               )}
                               {companySize && (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
                                   <Users className="w-2.5 h-2.5" />
                                   {companySize}
                                 </span>
@@ -954,17 +954,17 @@ export function CandidatePage({
                             {/* Technologies */}
                             {technologies.length > 0 && (
                               <div className="flex flex-wrap gap-1 mb-2">
-                                <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                                <span className="text-micro text-gray-400 flex items-center gap-0.5">
                                   <Code className="w-2.5 h-2.5" />
                                   Stack:
                                 </span>
                                 {technologies.slice(0, 6).map((tech: string, idx: number) => (
-                                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                                     {tech}
                                   </span>
                                 ))}
                                 {technologies.length > 6 && (
-                                  <span className="text-[10px] text-gray-400">+{technologies.length - 6}</span>
+                                  <span className="text-micro text-gray-400">+{technologies.length - 6}</span>
                                 )}
                               </div>
                             )}
@@ -1049,7 +1049,7 @@ export function CandidatePage({
                           Pacote de Remuneração Total
                         </CardTitle>
                       </div>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#10B981', color: 'white' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
                         Total Compensation
                       </Badge>
                     </div>
@@ -1297,7 +1297,7 @@ export function CandidatePage({
                           LinkedIn Insights
                         </CardTitle>
                         {(candidate as any).pearch_profile_id && (
-                          <Badge className="text-[9px] px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
+                          <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
                         )}
                       </div>
                     </CardHeader>
@@ -1340,7 +1340,7 @@ export function CandidatePage({
                               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                                 {(candidate as any).linkedin_connections_count.toLocaleString('pt-BR')}
                               </p>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-500">Conexões</p>
+                              <p className="text-micro text-gray-500 dark:text-gray-500">Conexões</p>
                             </div>
                           )}
                           {(candidate as any).linkedin_followers_count && (
@@ -1348,7 +1348,7 @@ export function CandidatePage({
                               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                                 {(candidate as any).linkedin_followers_count.toLocaleString('pt-BR')}
                               </p>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-500">Seguidores</p>
+                              <p className="text-micro text-gray-500 dark:text-gray-500">Seguidores</p>
                             </div>
                           )}
                         </div>
@@ -1369,7 +1369,7 @@ export function CandidatePage({
                     <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                       <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       Feed de Atividades
-                      <Badge className="text-[11px] px-1.5 py-0">{filteredActivities.length}</Badge>
+                      <Badge className="text-xs px-1.5 py-0">{filteredActivities.length}</Badge>
                     </h4>
                     <div className="flex items-center gap-2">
                       {/* Filtro de Período */}
@@ -1498,7 +1498,7 @@ export function CandidatePage({
                     <div className="flex items-center gap-2">
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       <CardTitle className="text-sm">Previsão de Próximas Etapas - IA</CardTitle>
-                      <Badge className="text-[11px] px-1.5 py-0.5" style={{ backgroundColor: '#8B5CF6', color: 'white' }}>
+                      <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#8B5CF6', color: 'white' }}>
                         Análise Preditiva
                       </Badge>
                     </div>
@@ -1522,7 +1522,7 @@ export function CandidatePage({
                                 {prediction.title}
                               </h5>
                               <Badge
-                                className="text-[11px] px-1 py-0 h-4 mt-1"
+                                className="text-xs px-1 py-0 h-4 mt-1"
                                 style={{
                                   backgroundColor: `${prediction.color}20`,
                                   color: prediction.color
@@ -1530,10 +1530,10 @@ export function CandidatePage({
                               >
                                 {prediction.probability}%
                               </Badge>
-                              <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                 {prediction.timeframe}
                               </p>
-                              <p className="text-[11px] text-gray-600 dark:text-gray-400 italic mt-1">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 italic mt-1">
                                 💡 {prediction.recommendation}
                               </p>
                             </div>
@@ -1653,7 +1653,7 @@ export function CandidatePage({
                                                   }`}
                                                 >
                                                   <p>{msg.message}</p>
-                                                  <span className="text-[11px] opacity-70">{msg.time}</span>
+                                                  <span className="text-xs opacity-70">{msg.time}</span>
                                                 </div>
                                               </div>
                                             ))}
@@ -1982,7 +1982,7 @@ export function CandidatePage({
                 <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700 pb-2">
                   <button
                     onClick={() => setOpinionsSubTab('pareceres')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                       opinionsSubTab === 'pareceres'
                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-b-2 border-gray-900 dark:border-gray-100'
                         : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -1991,14 +1991,14 @@ export function CandidatePage({
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Pareceres da LIA
                     {opinionsHistory.length > 0 && (
-                      <Badge className="text-[9px] px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
                         {opinionsHistory.length}
                       </Badge>
                     )}
                   </button>
                   <button
                     onClick={() => setOpinionsSubTab('analises')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                       opinionsSubTab === 'analises'
                         ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500'
                         : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -2007,7 +2007,7 @@ export function CandidatePage({
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análises
                     {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                      <Badge className="text-[9px] px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
+                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
                         {savedAnalyses.total_analyses}
                       </Badge>
                     )}
@@ -2126,19 +2126,19 @@ export function CandidatePage({
                                         {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
                                       </span>
                                       {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
                                         </Badge>
                                       ) : !opinion.job_vacancy_id ? (
-                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
                                           Sem vaga vinculada
                                         </Badge>
                                       ) : null}
                                     </div>
                                     <div className="flex items-center gap-2 mt-0.5">
                                       {displayScore !== null && displayScore !== undefined && (
-                                        <span className={`text-[10px] font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
+                                        <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
                                           {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
                                         </span>
                                       )}
@@ -2154,7 +2154,7 @@ export function CandidatePage({
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {opinion.created_at && (
-                                    <span className="text-[9px] text-gray-400">
+                                    <span className="text-micro text-gray-400">
                                       {new Date(opinion.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </span>
                                   )}
@@ -2174,7 +2174,7 @@ export function CandidatePage({
                                         )}
                                       </button>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top" className="text-[10px]">Copiar parecer</TooltipContent>
+                                    <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
                                   </Tooltip>
                                   {isExpanded ? (
                                     <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -2188,7 +2188,7 @@ export function CandidatePage({
                                 <div className="px-3 pb-3 pt-0 border-t border-gray-100 space-y-3">
                                   {opinion.summary && (
                                     <div className="pt-3">
-                                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed">
+                                      <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                                         {opinion.summary}
                                       </p>
                                     </div>
@@ -2203,7 +2203,7 @@ export function CandidatePage({
                                       <div className="grid grid-cols-2 gap-1.5">
                                         {Object.entries(opinion.score_breakdown).map(([key, value]: [string, any]) => (
                                           value !== null && value !== undefined && (
-                                            <div key={key} className="flex items-center justify-between text-[10px] bg-gray-50 dark:bg-gray-700 rounded-full px-2 py-1">
+                                            <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-gray-700 rounded-full px-2 py-1">
                                               <span className="text-gray-600 capitalize">{key.replace(/_/g, ' ')}</span>
                                               <span className="font-medium text-gray-800 dark:text-gray-200">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
                                             </div>
@@ -2333,7 +2333,7 @@ export function CandidatePage({
                                     <div className="flex items-center gap-2">
                                       <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                       <Badge 
-                                        className="text-[9px] px-1.5 py-0 h-4"
+                                        className="text-micro px-1.5 py-0 h-4"
                                         style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}
                                       >
                                         {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
@@ -2367,7 +2367,7 @@ export function CandidatePage({
                                         )}
                                       </button>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top" className="text-[10px]">Copiar análise</TooltipContent>
+                                    <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                                   </Tooltip>
                                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                 </div>
@@ -2393,7 +2393,7 @@ export function CandidatePage({
                                           <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
                                         </button>
                                       </TooltipTrigger>
-                                      <TooltipContent side="top" className="text-[10px]">Remover análise</TooltipContent>
+                                      <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>
                                     </Tooltip>
                                   </div>
                                 </div>

@@ -281,11 +281,11 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
   const getStatusBadge = (status: 'active' | 'expired' | 'revoked') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]">Ativo</Badge>
+        return <Badge className="bg-green-100 text-green-700 border-green-200 text-micro">Ativo</Badge>
       case 'expired':
-        return <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px]">Expirado</Badge>
+        return <Badge className="bg-red-100 text-red-700 border-red-200 text-micro">Expirado</Badge>
       case 'revoked':
-        return <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-[10px]">Revogado</Badge>
+        return <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-micro">Revogado</Badge>
     }
   }
 
@@ -430,7 +430,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           <Button
             onClick={openCreateModal}
             size="sm"
-            className="h-8 text-xs gap-1.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+            className="h-8 text-xs gap-1.5 bg-gray-900 hover:bg-gray-800 text-white"
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Lista
@@ -478,7 +478,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                   {list.candidate_count || 0}
                 </span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                <span className="text-micro text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   {(list.candidate_count || 0) === 1 ? 'candidato' : 'candidatos'}
                 </span>
               </div>
@@ -599,7 +599,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           {!searchTerm && (
             <Button
               onClick={openCreateModal}
-              className="gap-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white"
             >
               <Plus className="w-4 h-4" />
               Criar primeira lista
@@ -615,7 +615,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <Link2 className="w-4 h-4 text-gray-600" />
             Compartilhados
             {totalNewFeedbacks > 0 && (
-              <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px] ml-2">
+              <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-micro ml-2">
                 {totalNewFeedbacks} {totalNewFeedbacks === 1 ? 'novo' : 'novos'} ●
               </Badge>
             )}
@@ -821,7 +821,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <Button
               onClick={handleSave}
               disabled={saving || !formName.trim()}
-              className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               {saving ? (
                 <>

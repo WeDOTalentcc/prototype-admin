@@ -2742,7 +2742,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
       <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[13px] text-gray-500 dark:text-gray-400">Carregando vaga...</p>
+          <p className="text-base-ui text-gray-500 dark:text-gray-400">Carregando vaga...</p>
         </div>
       </div>
     )
@@ -3064,38 +3064,38 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     <div className="font-semibold mb-2">Funil de Candidatos</div>
                                     <div className="space-y-1.5 mb-2">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-gray-300">Total</span>
-                                        <span className="text-[11px] font-semibold text-white">{job.funnel.total}</span>
+                                        <span className="text-xs text-gray-300">Total</span>
+                                        <span className="text-xs font-semibold text-white">{job.funnel.total}</span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-gray-300">Triagem</span>
-                                        <span className="text-[11px] font-semibold text-gray-200">
+                                        <span className="text-xs text-gray-300">Triagem</span>
+                                        <span className="text-xs font-semibold text-gray-200">
                                           {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-gray-300">Entrevistas</span>
-                                        <span className="text-[11px] font-semibold text-gray-200">
+                                        <span className="text-xs text-gray-300">Entrevistas</span>
+                                        <span className="text-xs font-semibold text-gray-200">
                                           {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-gray-300">Finalistas</span>
-                                        <span className="text-[11px] font-semibold text-gray-200">
+                                        <span className="text-xs text-gray-300">Finalistas</span>
+                                        <span className="text-xs font-semibold text-gray-200">
                                           {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between pt-1">
-                                        <span className="text-[11px] text-gray-300">✓ Contratados</span>
-                                        <span className="text-[11px] font-bold text-white">
+                                        <span className="text-xs text-gray-300">✓ Contratados</span>
+                                        <span className="text-xs font-bold text-white">
                                           {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                     </div>
                                     <div className="pt-2">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-gray-300">Taxa conversão final</span>
-                                        <span className={`text-[11px] ${
+                                        <span className="text-xs text-gray-300">Taxa conversão final</span>
+                                        <span className={`text-xs ${
                                           job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold text-white' :
                                           job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold text-gray-200' :
                                           'font-medium text-gray-300'
@@ -3149,7 +3149,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'
                                       }}>
-                                      <span className="text-[11px] font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.pipeline}
                                       </span>
                                     </div>
@@ -3159,7 +3159,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           Pipeline LIA
                                         </div>
-                                        <div className="text-[11px] text-gray-500">{liaTriages.pipeline} candidatos contatados</div>
+                                        <div className="text-xs text-gray-500">{liaTriages.pipeline} candidatos contatados</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
                                       </div>
                                     </div>
@@ -3173,14 +3173,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'
                                       }}>
-                                      <span className="text-[11px] font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.agendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Agendadas</div>
-                                        <div className="text-[11px] text-gray-500">{liaTriages.agendadas} triagens marcadas</div>
+                                        <div className="text-xs text-gray-500">{liaTriages.agendadas} triagens marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
                                       </div>
                                     </div>
@@ -3193,14 +3193,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'
                                       }}>
-                                      <span className="text-[11px] font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.realizadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Completas</div>
-                                        <div className="text-[11px] text-gray-500">{liaTriages.realizadas} triagens finalizadas</div>
+                                        <div className="text-xs text-gray-500">{liaTriages.realizadas} triagens finalizadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
                                       </div>
                                     </div>
@@ -3214,14 +3214,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'
                                       }}>
-                                      <span className="text-[11px] font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Entrevistas Agendadas</div>
-                                        <div className="text-[11px] text-gray-500">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
+                                        <div className="text-xs text-gray-500">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
                                       </div>
                                     </div>
@@ -3268,7 +3268,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
                               <Badge
                                 variant="outline"
-                                className="border-0 text-[10px] font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
+                                className="border-0 text-micro font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
                                 style={{ backgroundColor: screeningColors[status] || '#E5E7EB' }}
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -3287,7 +3287,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
-                                  <AvatarFallback className="text-[11px] bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                  <AvatarFallback className="text-xs bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                                     {job.recruiter.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
@@ -3716,7 +3716,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Segunda linha de tags - Sugestões Dinâmicas (estilo Funil) */}
                 <div className="px-4 pb-4">
                   <div className="flex flex-wrap items-start gap-2 pt-3">
-                    <span className="text-[11px] text-gray-800 font-medium mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
+                    <span className="text-xs text-gray-800 font-medium mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
                     {/* Renderiza sugestões do orquestrador quando disponíveis, senão usa contextuais baseadas no estado */}
                     {(orchestratorSuggestions.length > 0 ? orchestratorSuggestions : getContextualSuggestions()).slice(0, 4).map((suggestion, index) => (
                       <button
@@ -3725,7 +3725,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           setActiveFilter('todas')
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
-                        className="inline-flex items-center px-2.5 py-0.5 text-[11px] rounded-full transition-all bg-gray-50 text-gray-800 border border-gray-200 hover:text-gray-900 hover:bg-gray-100"
+                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-all bg-gray-50 text-gray-800 border border-gray-200 hover:text-gray-900 hover:bg-gray-100"
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
                       >
                         {suggestion}
@@ -3754,7 +3754,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-4 pr-20 text-[13px] rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
+                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
                   style={{ 
                     backgroundColor: "#FFFFFF",
                     color: "#1a1a1a",
@@ -3949,26 +3949,26 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   </div>
                 ) : (
                   /* MODO GERAL - Prompt Expandido Original */
-                  <Card className="h-full flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: '#FFFFFF', maxHeight: 'calc(100vh - 180px)' }}>
+                  <Card className="h-full flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: 'var(--gray-50)', maxHeight: 'calc(100vh - 180px)' }}>
                     {/* Mensagem de Apresentação da LIA */}
-                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: '#FFFFFF' }}>
+                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: 'var(--gray-50)' }}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div 
                             className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: '#FFFFFF' }}
+                            style={{ backgroundColor: 'var(--gray-50)' }}
                           >
                             <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0 flex-1">
                             <h3 
-                              className="text-[14px] font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" 
+                              className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" 
                               style={{ fontFamily: 'Open Sans, sans-serif' }}
                             >
                               Olá! Sou a Lia.
                             </h3>
                             <p 
-                              className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" 
+                              className="text-xs leading-tight truncate mt-0.5 text-gray-500" 
                               style={{ fontFamily: 'Open Sans, sans-serif' }}
                             >
                               Como posso te ajudar hoje?
@@ -4032,7 +4032,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 className="px-2.5 py-2 rounded-md bg-gray-100"
                                 style={{ fontFamily: 'Open Sans, sans-serif' }}
                               >
-                                <p className="text-[11px] text-gray-800 leading-relaxed">{message.content}</p>
+                                <p className="text-xs text-gray-800 leading-relaxed">{message.content}</p>
                               </div>
                             </div>
                           ) : (
@@ -4046,9 +4046,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 </div>
                                 <div className="pt-0.5 flex-1">
                                   <div className="flex items-center gap-1 mb-0.5">
-                                    <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
+                                    <span className="text-micro font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
                                   </div>
-                                  <div className="text-[11px] text-gray-800 space-y-1 leading-relaxed">
+                                  <div className="text-xs text-gray-800 space-y-1 leading-relaxed">
                                     {message.content.split('\n').map((line, i) => {
                                       if (line.startsWith('•')) {
                                         return <p key={i} className="pl-2">{line}</p>
@@ -4088,7 +4088,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
                               <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
                             </div>
-                            <span className="text-[10px] text-gray-500">Pensando...</span>
+                            <span className="text-micro text-gray-500">Pensando...</span>
                           </div>
                         </div>
                       )}
@@ -4142,7 +4142,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     <div className="flex items-center gap-1.5 mt-2">
                       <button
                         onClick={() => setActiveSearchTab('ia-natural')}
-                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'ia-natural' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
                         style={{ fontFamily: 'Open Sans, sans-serif' }}
@@ -4154,7 +4154,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </button>
                       <button
                         onClick={() => setActiveSearchTab('job-description')}
-                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'job-description' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
                         style={{ fontFamily: 'Open Sans, sans-serif' }}
@@ -4166,7 +4166,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </button>
                       <button
                         onClick={() => setActiveSearchTab('templates')}
-                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'templates' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
                         style={{ fontFamily: 'Open Sans, sans-serif' }}
@@ -4181,13 +4181,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     {/* Tags de Ações Rápidas - Abaixo das abas (só visíveis em IA Natural) */}
                     {activeSearchTab === 'ia-natural' && (
                       <div className="flex items-center gap-1.5 mt-1.5">
-                        <span className="text-[9px] font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
+                        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
                         <button
                           onClick={() => {
                             setShowExpandedLIA(false)
                             openJobCreationChat()
                           }}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium text-gray-700 bg-[#F3F4F6] rounded-full hover:bg-gray-200 transition-all"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
                           style={{ fontFamily: 'Open Sans, sans-serif' }}
                         >
                           <Plus className="w-2.5 h-2.5 text-gray-500" />
@@ -4197,7 +4197,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           onSelectQuery={(query) => {
                             sendLiaInlineMessage(query)
                           }}
-                          className="!px-2 !py-0.5 !text-[9px] !bg-[#F3F4F6] !border-0 hover:!bg-gray-200"
+                          className="!px-2 !py-0.5 !text-micro !bg-gray-100 !border-0 hover:!bg-gray-200"
                         />
                       </div>
                     )}
@@ -4205,14 +4205,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                   {/* Conteúdo das outras abas */}
                   {(activeSearchTab === 'job-description' || activeSearchTab === 'templates') && (
-                  <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: '#F5F5F5' }}>
+                  <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: 'var(--gray-50)' }}>
 
                     {/* ABA 2: JOB DESCRIPTION */}
                     {activeSearchTab === 'job-description' && (
                       <div className="space-y-3">
                         {/* Descrição */}
-                        <div className="p-2.5 rounded-md" style={{ backgroundColor: '#FFFFFF' }}>
-                          <p className="text-[11px]" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <div className="p-2.5 rounded-md" style={{ backgroundColor: 'var(--gray-50)' }}>
+                          <p className="text-xs" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
                           </p>
                         </div>
@@ -4223,7 +4223,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)..."
                             value={jobDescriptionText}
                             onChange={(e) => setJobDescriptionText(e.target.value)}
-                            className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-all resize-none text-gray-950 dark:text-gray-50 border border-gray-100" style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: '#FFFFFF' }}
+                            className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-all resize-none text-gray-950 dark:text-gray-50 border border-gray-100" style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: 'var(--gray-50)' }}
                           />
                           {/* Botões de Anexo */}
                           <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -4259,13 +4259,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Erro de upload */}
                         {jdUploadError && (
-                          <p className="text-[10px] text-red-500 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-micro text-red-500 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             {jdUploadError}
                           </p>
                         )}
 
                         {/* Aviso LGPD */}
-                        <p className="text-[10px] text-gray-400 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <p className="text-micro text-gray-400 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                           O arquivo pode conter dados pessoais. Revise o conteúdo antes de importar. (LGPD)
                         </p>
 
@@ -4296,7 +4296,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-20rem)]">
                         {/* Seção 1: Criar a partir de Template */}
                         <div>
-                          <h4 className="text-[11px] font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Criar Vaga a Partir de Template
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4313,7 +4313,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             ].map((template) => (
                               <div 
                                 key={template.title}
-                                className="cursor-pointer transition-all rounded-md p-2 hover:border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}
+                                className="cursor-pointer transition-all rounded-md p-2 hover:border border-gray-100" style={{ backgroundColor: 'var(--gray-50)' }}
                                 onClick={() => {
                                   setLiaPromptValue(`Criar vaga ${template.title}`)
                                   setActiveSearchTab('ia-natural')
@@ -4324,12 +4324,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-sm">{template.icon}</span>
                                   <div className="flex-1 min-w-0">
-                                    <h5 className="text-[11px] font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                    <h5 className="text-xs font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                                       {template.title}
                                     </h5>
                                     <div className="flex gap-1 mt-0.5">
                                       {template.tags.map(tag => (
-                                        <span key={tag} className="text-[9px] px-1 py-0.5 rounded-full text-gray-400" style={{ backgroundColor: '#F5F5F5' }}>{tag}</span>
+                                        <span key={tag} className="text-micro px-1 py-0.5 rounded-full text-gray-400" style={{ backgroundColor: 'var(--gray-50)' }}>{tag}</span>
                                       ))}
                                     </div>
                                   </div>
@@ -4341,7 +4341,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Seção 2: Criar a partir de Vaga Existente */}
                         <div className="pt-2">
-                          <h4 className="text-[11px] font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Criar a Partir de Vaga Existente
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4354,7 +4354,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <input
                               type="text"
                               placeholder="Buscar vaga por título ou ID..."
-                              className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100" style={{ fontFamily: '"Open Sans", sans-serif', backgroundColor: '#FFFFFF' }}
+                              className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100" style={{ fontFamily: '"Open Sans", sans-serif', backgroundColor: 'var(--gray-50)' }}
                               onFocus={(e) => e.target.style.borderColor = '#9ca3af'}
                               onBlur={(e) => e.target.style.borderColor = '#F3F4F6'}
                             />
@@ -4369,7 +4369,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             ].map((job) => (
                               <div
                                 key={job.id}
-                                className="flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}
+                                className="flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors border border-gray-100" style={{ backgroundColor: 'var(--gray-50)' }}
                                 onClick={() => {
                                   setLiaPromptValue(`Duplicar vaga ${job.id} - ${job.title}`)
                                   setActiveSearchTab('ia-natural')
@@ -4377,7 +4377,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 onMouseEnter={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
                                 onMouseLeave={(e) => e.currentTarget.style.borderColor = '#F3F4F6'}
                               >
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#F5F5F5' }}>{job.id}</span>
+                                <span className="text-micro px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--gray-50)' }}>{job.id}</span>
                                 <span className="text-xs truncate flex-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                                   {job.title}
                                 </span>
@@ -4389,7 +4389,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Seção 3: Criar Novo Template */}
                         <div className="pt-2">
-                          <h4 className="text-[11px] font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Salvar Template
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4513,7 +4513,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           variant="outline"
                           size="sm"
                           onClick={() => toggleJobFilter('status', 'statuses', 'Ativa')}
-                          className={`h-8 text-[11px] justify-start ${
+                          className={`h-8 text-xs justify-start ${
                             jobFilters.status?.statuses?.includes('Ativa') 
                               ? 'bg-gray-100 border-gray-900 text-gray-950 font-semibold dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50' 
                               : ''
@@ -4526,7 +4526,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           variant="outline"
                           size="sm"
                           onClick={() => toggleJobFilter('status', 'priorities', 'alta')}
-                          className={`h-8 text-[11px] justify-start ${
+                          className={`h-8 text-xs justify-start ${
                             jobFilters.status?.priorities?.includes('alta') 
                               ? 'bg-red-50 border-red-300 text-red-700 font-semibold' 
                               : ''
@@ -4539,7 +4539,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           variant="outline"
                           size="sm"
                           onClick={() => toggleJobFilter('position', 'workModels', 'remoto')}
-                          className={`h-8 text-[11px] justify-start ${
+                          className={`h-8 text-xs justify-start ${
                             jobFilters.position?.workModels?.includes('remoto') 
                               ? 'bg-gray-100 border-gray-900 text-gray-900 font-semibold' 
                               : ''
@@ -4552,7 +4552,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           variant="outline"
                           size="sm"
                           onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
-                          className={`h-8 text-[11px] justify-start ${
+                          className={`h-8 text-xs justify-start ${
                             jobFilters.funnel?.emptyPipeline 
                               ? 'bg-orange-50 border-orange-300 text-orange-700 font-semibold' 
                               : ''
@@ -4575,7 +4575,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={status}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.status?.statuses?.includes(status)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4599,7 +4599,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={stage}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.status?.stages?.includes(stage)
                                 ? 'bg-purple-50 border-purple-300 text-purple-700 font-medium'
                                 : 'bg-white text-gray-800'
@@ -4627,7 +4627,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={priority.value}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:opacity-80 transition-opacity ${
+                            className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
                               jobFilters.status?.priorities?.includes(priority.value)
                                 ? priority.color + ' font-medium'
                                 : 'bg-white text-gray-800'
@@ -4651,7 +4651,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={model}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
                               jobFilters.position?.workModels?.includes(model)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4675,7 +4675,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={level}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.position?.levels?.includes(level)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4699,7 +4699,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={loc}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.position?.locations?.includes(loc)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4723,7 +4723,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={dept}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.team?.departments?.includes(dept)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4751,7 +4751,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <Badge
                             key={channel.value}
                             variant="outline"
-                            className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
+                            className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
                               jobFilters.publishing?.channels?.includes(channel.value)
                                 ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-gray-800 dark:border-gray-300 dark:text-gray-50'
                                 : 'bg-white text-gray-800'
@@ -4764,7 +4764,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         ))}
                         <Badge
                           variant="outline"
-                          className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                          className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                             jobFilters.publishing?.unpublished
                               ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
                               : 'bg-white text-gray-800'
@@ -4819,7 +4819,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               const name = prompt("Nome da busca:")
                               if (name) saveSearchAsTemplate(name)
                             }}
-                            className="h-6 text-[11px] px-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+                            className="h-6 text-xs px-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
                           >
                             <Plus className="w-3 h-3 mr-1" />
                             Salvar Busca
@@ -4841,7 +4841,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     {search.name}
                                   </span>
                                 </div>
-                                <p className="text-[10px] text-gray-600 mt-0.5 truncate">
+                                <p className="text-micro text-gray-600 mt-0.5 truncate">
                                   {new Date(search.createdAt).toLocaleDateString('pt-BR')}
                                   {search.query && ` - "${search.query}"`}
                                 </p>
@@ -4879,10 +4879,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       ) : (
                         <div className="text-center py-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                           <Bookmark className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                          <p className="text-[11px] text-gray-500">
+                          <p className="text-xs text-gray-500">
                             Nenhuma busca salva
                           </p>
-                          <p className="text-[10px] text-gray-600 mt-0.5">
+                          <p className="text-micro text-gray-600 mt-0.5">
                             Aplique filtros e clique em "Salvar Busca"
                           </p>
                         </div>
@@ -4940,14 +4940,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   {/* Ícone da tabela */}
                   <div className="flex flex-col items-center gap-2 text-gray-800">
                     <Briefcase className="w-5 h-5" />
-                    <span className="text-[11px] font-medium writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                    <span className="text-xs font-medium writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
                       Vagas ({filteredJobs.length})
                     </span>
                   </div>
                   
                   {/* Indicador de vagas selecionadas */}
                   {selectedJobsForBatch.size > 0 && (
-                    <Badge className="bg-gray-900 text-white text-[11px] px-1.5 py-0.5">
+                    <Badge className="bg-gray-900 text-white text-xs px-1.5 py-0.5">
                       {selectedJobsForBatch.size}
                     </Badge>
                   )}
@@ -5037,10 +5037,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="flex-1 min-w-0">
                         {/* Row 1: Título + Código (lado direito) */}
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-[13px] font-semibold text-gray-950 dark:text-gray-50 truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             {previewJob.title}
                           </h3>
-                          <Badge className="text-[9px] px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{ backgroundColor: 'rgba(107, 114, 128, 0.15)', border: '1px solid rgba(107, 114, 128, 0.3)' }}>
+                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{ backgroundColor: 'rgba(107, 114, 128, 0.15)', border: '1px solid rgba(107, 114, 128, 0.3)' }}>
                             {previewJob.jobId}
                           </Badge>
                           {previewJob.isAffirmative && (
@@ -5051,7 +5051,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </div>
 
                         {/* Row 2: Datas em texto simples (como no candidato) */}
-                        <div className="flex items-center gap-3 mb-1 text-[10px] text-gray-500">
+                        <div className="flex items-center gap-3 mb-1 text-micro text-gray-500">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-gray-400" />
                             {previewJob.openDate ? new Date(previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
@@ -5070,7 +5070,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </div>
 
                         {/* Row 2b: Histórico inline */}
-                        <div className="flex items-center gap-3 mb-1.5 text-[9px] text-gray-400">
+                        <div className="flex items-center gap-3 mb-1.5 text-micro text-gray-400">
                           <span>Criado: {previewJob.createdAt 
                             ? new Date(previewJob.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
                             : previewJob.openDate 
@@ -5090,63 +5090,63 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Row 3: Badges de informação */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {previewJob.department && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
                               {previewJob.department}
                             </Badge>
                           )}
                           {previewJob.level && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-50 text-amber-700 border border-amber-200">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-amber-50 text-amber-700 border border-amber-200">
                               {previewJob.level}
                             </Badge>
                           )}
                           {previewJob.location && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-0.5">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-0.5">
                               <MapPin className="w-2.5 h-2.5" />
                               {previewJob.location}
                             </Badge>
                           )}
                           {previewJob.workModel && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
                               {previewJob.workModel === 'remoto' ? 'Remoto' : previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
                             </Badge>
                           )}
                           {previewJob.type && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-gray-200">
                               {previewJob.type}
                             </Badge>
                           )}
                           {(previewJob.visibility === 'confidential' || previewJob.isConfidential) && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-orange-50 text-orange-700 border-orange-200">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-orange-50 text-orange-700 border-orange-200">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               Confidencial
                             </Badge>
                           )}
                           {previewJob.visibility === 'internal' && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border-blue-200">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border-blue-200">
                               <Building className="w-2.5 h-2.5 mr-0.5" />
                               Interna
                             </Badge>
                           )}
                           {previewJob.visibility === 'hidden' && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 text-gray-800 border-gray-200">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-800 border-gray-200">
                               <Lock className="w-2.5 h-2.5 mr-0.5" />
                               Oculta
                             </Badge>
                           )}
                           {/* Badge de publicação */}
                           {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-green-50 text-green-700 border-green-200 flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 border-green-200 flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Publicada
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 text-gray-500 border-gray-200 flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-500 border-gray-200 flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Não publicada
                             </Badge>
                           )}
                           {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || previewJob.salaryMin || previewJob.salaryMax) && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-green-50 text-green-700 border border-green-200 flex items-center gap-0.5">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 border border-green-200 flex items-center gap-0.5">
                               <DollarSign className="w-2.5 h-2.5" />
                               {(() => {
                                 const min = previewJob.salaryRange?.min || previewJob.salaryMin
@@ -5160,7 +5160,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           )}
                           {/* Badge de status */}
                           <Badge 
-                            className="text-[9px] px-1.5 py-0 h-4 font-medium"
+                            className="text-micro px-1.5 py-0 h-4 font-medium"
                             style={{ backgroundColor: getStatusColor(previewJob.status as Job['status']), color: '#fff' }}
                           >
                             {previewJob.status}
@@ -5183,7 +5183,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             }
                             return (
                               <Badge 
-                                className="text-[9px] px-1.5 py-0 h-4 font-medium text-gray-800"
+                                className="text-micro px-1.5 py-0 h-4 font-medium text-gray-800"
                                 style={{ backgroundColor: scrColors[scrStatus] || '#E5E7EB' }}
                               >
                                 {scrLabels[scrStatus] || 'Triagem: N/C'}
@@ -5229,7 +5229,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="flex items-center gap-0.5 overflow-x-auto">
                         {previewJob.hiringProcess.map((step, idx) => (
                           <React.Fragment key={idx}>
-                            <div className={`px-1.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${
+                            <div className={`px-1.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                               idx === 0 ? 'bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200 font-semibold' :
                               idx === (previewJob.hiringProcess?.length || 0) - 1 ? 'bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200 font-semibold' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
@@ -5251,7 +5251,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="flex items-center px-3">
                     <button
                       onClick={() => setActivePreviewTab('screening')}
-                      className={`px-2 py-1.5 text-[10px] font-medium border-b-2 transition-colors ${
+                      className={`px-2 py-1.5 text-micro font-medium border-b-2 transition-colors ${
                         activePreviewTab === 'screening'
                           ? 'border-gray-900 text-gray-700 font-semibold'
                           : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -5278,7 +5278,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Score de Sucesso */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Sucesso de Fechamento</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Sucesso de Fechamento</span>
                             <Target className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-xl font-bold text-gray-950 dark:text-gray-50 font-semibold">
@@ -5288,7 +5288,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 ? `${Math.round((previewJob.funnel.hired / Math.max(previewJob.funnel.total, 1)) * 100)}%`
                                 : '—'}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             Pipeline: {jobMetrics?.funnel.total ?? previewJob.funnel.total} candidatos
                           </div>
                         </div>
@@ -5296,13 +5296,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Atividade 7d */}
                         <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Atividade 7d</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Atividade 7d</span>
                             <TrendingUp className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                           </div>
                           <div className="text-xl font-bold text-gray-900 dark:text-gray-50">
                             {isLoadingJobMetrics ? '...' : jobMetrics ? jobMetrics.activity.applications_7d : 0}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-400">
+                          <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                             {isLoadingJobMetrics ? '...' : jobMetrics ? `${jobMetrics.activity.views_7d} visualizações` : 'Sem dados'}
                           </div>
                         </div>
@@ -5310,13 +5310,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Time to Fill */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Time to Fill</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Time to Fill</span>
                             <Clock className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-xl font-bold text-gray-950 dark:text-gray-50 font-semibold">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.performance.time_to_fill_days != null ? `${jobMetrics.performance.time_to_fill_days}d` : (previewJob.urgencyLevel > 3 ? '15d' : previewJob.urgencyLevel > 2 ? '25d' : '35d')}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.activity.interviews_scheduled ? `${jobMetrics.activity.interviews_scheduled} entrevistas agendadas` : 'Sem entrevistas'}
                           </div>
                         </div>
@@ -5324,13 +5324,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* SLA Status */}
                         <div className={`rounded-md p-3 ${jobMetrics?.sla.within_sla === false ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-gray-800'}`}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Status SLA</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Status SLA</span>
                             <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`} />
                           </div>
                           <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-red-700 dark:text-red-300' : 'text-gray-950 dark:text-gray-50'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.within_sla ? 'OK' : 'Atrasado'}
                           </div>
-                          <div className={`mt-1 text-[11px] ${jobMetrics?.sla.within_sla === false ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                          <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.days_remaining != null ? `${jobMetrics.sla.days_remaining} dias restantes` : 'Sem prazo definido'}
                           </div>
                         </div>
@@ -5344,7 +5344,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <p className="text-xs font-medium text-gray-950 dark:text-gray-200 font-semibold mb-1">
                               Insights da LIA
                             </p>
-                            <ul className="space-y-1 text-[11px] text-gray-800 dark:text-gray-200">
+                            <ul className="space-y-1 text-xs text-gray-800 dark:text-gray-200">
                               {previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
@@ -5400,7 +5400,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Competitividade salarial</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -5413,7 +5413,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               ))}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Escassez de talentos</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -5426,7 +5426,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               ))}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Tempo de processo</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -5467,13 +5467,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Horas Economizadas */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Triagens Realizadas</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Triagens Realizadas</span>
                             <Clock className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                             {previewJob.liaMetrics?.triagens_realizadas ?? 0}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
@@ -5481,13 +5481,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Pipeline LIA */}
                         <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-gray-300 dark:border-gray-600">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Pipeline LIA</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Pipeline LIA</span>
                             <TrendingUp className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                             {previewJob.liaMetrics?.pipeline_lia ?? 0}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             candidatos em triagem
                           </div>
                         </div>
@@ -5495,13 +5495,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Sem Resposta */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Sem Resposta</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Sem Resposta</span>
                             <Zap className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                             {previewJob.liaMetrics?.sem_resposta ?? 0}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             candidatos
                           </div>
                         </div>
@@ -5509,7 +5509,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Taxa de Conclusão */}
                         <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-gray-300 dark:border-gray-600">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Taxa de Conclusão</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Taxa de Conclusão</span>
                             <CheckCircle className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
@@ -5519,7 +5519,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               return agendadas > 0 ? Math.round((realizadas / agendadas) * 100) : 0
                             })()}%
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">
                             {previewJob.liaMetrics?.triagens_realizadas ?? 0} de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
@@ -5539,11 +5539,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                 <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1" style={{ width: '100%' }}>
-                                  <span className="text-[11px] text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
+                                  <span className="text-xs text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
                                 </div>
                               </div>
                             </div>
-                            <span className="text-[11px] text-gray-800 w-10 text-right">100%</span>
+                            <span className="text-xs text-gray-800 w-10 text-right">100%</span>
                           </div>
 
                           {/* Agendadas */}
@@ -5558,13 +5558,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   return (
                                     <div className="bg-gray-500 dark:bg-gray-400 h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{ width: `${Math.min(widthPercent, 100)}%` }}>
-                                      <span className="text-[11px] text-white font-medium">{triagensAgendadas}</span>
+                                      <span className="text-xs text-white font-medium">{triagensAgendadas}</span>
                                     </div>
                                   )
                                 })()}
                               </div>
                             </div>
-                            <span className="text-[11px] text-gray-800 w-10 text-right">
+                            <span className="text-xs text-gray-800 w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
@@ -5585,13 +5585,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   return (
                                     <div className="bg-gray-600 dark:bg-gray-300 h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{ width: `${Math.min(widthPercent, 100)}%` }}>
-                                      <span className="text-[11px] text-white dark:text-gray-50 font-medium">{triagensRealizadas}</span>
+                                      <span className="text-xs text-white dark:text-gray-50 font-medium">{triagensRealizadas}</span>
                                     </div>
                                   )
                                 })()}
                               </div>
                             </div>
-                            <span className="text-[11px] text-gray-800 w-10 text-right">
+                            <span className="text-xs text-gray-800 w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -5612,13 +5612,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   return (
                                     <div className="bg-gray-900 dark:bg-gray-100 h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{ width: `${Math.min(widthPercent, 100)}%` }}>
-                                      <span className="text-[11px] text-white dark:text-gray-50 font-bold">{entrevistasAgendadas}</span>
+                                      <span className="text-xs text-white dark:text-gray-50 font-bold">{entrevistasAgendadas}</span>
                                     </div>
                                   )
                                 })()}
                               </div>
                             </div>
-                            <span className="text-[11px] text-gray-800 w-10 text-right">
+                            <span className="text-xs text-gray-800 w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
@@ -5640,7 +5640,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <p className="text-xs text-gray-500 dark:text-gray-400">
                             Sem dados disponíveis
                           </p>
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                          <p className="text-micro text-gray-400 dark:text-gray-500 mt-1">
                             As médias serão exibidas após as triagens serem concluídas
                           </p>
                         </div>
@@ -5655,27 +5655,27 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                            <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-1">Total no Funil</p>
+                            <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Total no Funil</p>
                             <p className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                               {previewJob.funnel.total}
                             </p>
-                            <p className="text-[10px] text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
                           </div>
 
                           <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                            <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-1">Em Triagem</p>
+                            <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Em Triagem</p>
                             <p className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                               {previewJob.funnel.screening}
                             </p>
-                            <p className="text-[10px] text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
                           </div>
 
                           <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
-                            <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-1">Em Entrevista</p>
+                            <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Em Entrevista</p>
                             <p className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                               {previewJob.funnel.interview}
                             </p>
-                            <p className="text-[10px] text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
                           </div>
                         </div>
                       </div>
@@ -5703,7 +5703,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 return <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${percent}%` }}></div>
                               })()}
                             </div>
-                            <p className="text-[11px] text-gray-800 mt-1">
+                            <p className="text-xs text-gray-800 mt-1">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
@@ -5731,7 +5731,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 return <div className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full" style={{ width: `${Math.max(0, percent)}%` }}></div>
                               })()}
                             </div>
-                            <p className="text-[11px] text-gray-800 mt-1">triagens pendentes</p>
+                            <p className="text-xs text-gray-800 mt-1">triagens pendentes</p>
                           </div>
                         </div>
                       </div>
@@ -5744,7 +5744,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <p className="text-xs font-medium text-gray-950 dark:text-gray-200 font-semibold mb-1">
                               Resumo da Triagem LIA
                             </p>
-                            <ul className="space-y-1 text-[11px] text-gray-800 dark:text-gray-200">
+                            <ul className="space-y-1 text-xs text-gray-800 dark:text-gray-200">
                               <li>• {previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>
                               <li>• {previewJob.liaMetrics?.entrevistas_agendadas ?? 0} entrevistas agendadas</li>
                               <li>• {previewJob.liaMetrics?.sem_resposta ?? 0} candidatos sem resposta</li>
@@ -5812,7 +5812,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       {previewJob.description && (
                         <div className="p-3 bg-white border border-gray-100 rounded-md">
                           <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('descricao')}>
-                            <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                            <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                               <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                               Descrição da Vaga
                             </h5>
@@ -5823,7 +5823,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             )}
                           </div>
                           {!collapsedPreviewSections.includes('descricao') && (
-                            <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
+                            <p className="text-micro text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
                               {previewJob.description}
                             </p>
                           )}
@@ -5833,7 +5833,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       {/* 3. Competências Avaliadas */}
                       <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('competencias')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                             Competências Avaliadas
                           </h5>
@@ -5855,7 +5855,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string, idx: number) => (
-                                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[9px] px-1.5 py-0.5 h-[18px] font-medium">
+                                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-micro px-1.5 py-0.5 h-[18px] font-medium">
                                     {skill}
                                   </Badge>
                                 ))}
@@ -5867,10 +5867,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <div className="space-y-2">
                               {technicalSkills.length > 0 && (
                                 <div>
-                                  <span className="text-[8px] font-medium text-gray-500 uppercase tracking-wide">Técnicas</span>
+                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {technicalSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 h-[18px] font-medium border border-blue-200">
+                                      <Badge key={idx} className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-blue-200">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5879,10 +5879,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               )}
                               {behavioralSkills.length > 0 && (
                                 <div>
-                                  <span className="text-[8px] font-medium text-gray-500 uppercase tracking-wide">Comportamentais</span>
+                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {behavioralSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-[9px] px-1.5 py-0.5 h-[18px] font-medium border border-purple-200">
+                                      <Badge key={idx} className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-purple-200">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5891,10 +5891,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               )}
                               {responsibilitySkills.length > 0 && (
                                 <div>
-                                  <span className="text-[8px] font-medium text-gray-500 uppercase tracking-wide">Responsabilidades</span>
+                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {responsibilitySkills.slice(0, 8).map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] px-1.5 py-0.5 h-[18px] font-medium border border-amber-200">
+                                      <Badge key={idx} className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-amber-200">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5904,7 +5904,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             </div>
                           )
                         })()}
-                        <p className="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
+                        <p className="text-micro text-gray-400 mt-2 flex items-center gap-1">
                           <Lightbulb className="w-3 h-3" />
                           Extraídas automaticamente do perfil da vaga via metodologia WSI
                         </p>
@@ -5913,7 +5913,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                       <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('idiomas')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             Idiomas
                           </h5>
@@ -5928,16 +5928,16 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <div className="space-y-1.5 mt-2">
                               {previewJob.languages.map((lang: any, idx: number) => (
                                 <div key={idx} className="flex items-center gap-2">
-                                  <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">
+                                  <span className="text-micro text-gray-600 dark:text-gray-400 font-medium">
                                     {lang.language}
                                   </span>
                                   {lang.level && (
-                                    <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">
+                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">
                                       {lang.level}
                                     </Badge>
                                   )}
                                   {lang.required && (
-                                    <Badge className="text-[9px] px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
+                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
                                       Obrigatório
                                     </Badge>
                                   )}
@@ -5945,7 +5945,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               ))}
                             </div>
                           ) : (
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-2">
+                            <p className="text-micro text-gray-500 dark:text-gray-400 italic mt-2">
                               Nenhum idioma configurado
                             </p>
                           )
@@ -5954,7 +5954,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                       <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('remuneracao')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             Remuneração e Benefícios
                           </h5>
@@ -5983,30 +5983,30 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <>
                                   {hasSalary ? (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-[10px] text-gray-500 dark:text-gray-400">Salário:</span>
-                                      <span className="text-[10px] font-medium text-gray-950 dark:text-gray-50">
+                                      <span className="text-micro text-gray-500 dark:text-gray-400">Salário:</span>
+                                      <span className="text-micro font-medium text-gray-950 dark:text-gray-50">
                                         {fmt(salaryMin)}{salaryMax ? ` - ${fmt(salaryMax)}` : ''}
                                       </span>
                                     </div>
                                   ) : (
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 italic">
+                                    <p className="text-micro text-gray-500 dark:text-gray-400 italic">
                                       Faixa salarial não informada
                                     </p>
                                   )}
                                   {hasBonus && (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-[10px] text-gray-500 dark:text-gray-400">Bônus:</span>
-                                      <span className="text-[10px] font-medium text-gray-950 dark:text-gray-50">
+                                      <span className="text-micro text-gray-500 dark:text-gray-400">Bônus:</span>
+                                      <span className="text-micro font-medium text-gray-950 dark:text-gray-50">
                                         {fmt(bonusMin)}{bonusMax ? ` - ${fmt(bonusMax)}` : ''}
                                       </span>
                                     </div>
                                   )}
                                   {benefits.length > 0 && (
                                     <div>
-                                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-1">Benefícios:</span>
+                                      <span className="text-micro text-gray-500 dark:text-gray-400 block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {benefits.map((b: any, idx: number) => (
-                                          <Badge key={idx} className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">
+                                          <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
                                         ))}
@@ -6022,7 +6022,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                       <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('etapas')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             Etapas do Processo
                           </h5>
@@ -6042,7 +6042,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                       <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
                                     )}
                                     <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg flex-shrink-0">
-                                      <span className="text-[10px] font-medium text-gray-700">{step}</span>
+                                      <span className="text-micro font-medium text-gray-700">{step}</span>
                                     </div>
                                   </React.Fragment>
                                 ))}
@@ -6060,13 +6060,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         {stage.liaAssisted && (
                                           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
                                         )}
-                                        <span className="text-[10px] font-medium text-gray-700">{stage.stageName}</span>
+                                        <span className="text-micro font-medium text-gray-700">{stage.stageName}</span>
                                       </div>
                                     </React.Fragment>
                                   ))}
                               </div>
                             ) : (
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 italic">
+                              <p className="text-micro text-gray-500 dark:text-gray-400 italic">
                                 Nenhuma etapa configurada
                               </p>
                             )}
@@ -6080,9 +6080,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <ClipboardList className="w-4 h-4 text-gray-600" />
-                              <h4 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">Roteiro de Triagem Automática</h4>
+                              <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Roteiro de Triagem Automática</h4>
                               <Badge 
-                                className={`text-[10px] px-1.5 py-0 h-4 text-gray-950 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-[#D5BFA8]'}`}
+                                className={`text-micro px-1.5 py-0 h-4 text-gray-950 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
                               >
                                 {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                               </Badge>
@@ -6091,11 +6091,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                       <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('fluxo-resumido')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <ClipboardList className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             Resumo da Triagem
                             <Badge
-                              className={`text-[9px] px-1.5 py-0 h-4 text-gray-800 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-[#D5BFA8]'}`}
+                              className={`text-micro px-1.5 py-0 h-4 text-gray-800 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
                             >
                               {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                             </Badge>
@@ -6110,12 +6110,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <div className="mt-2">
                             <div className="grid grid-cols-2 gap-2">
                               <div className="text-center p-2 bg-gray-50 rounded-lg">
-                                <div className="text-[13px] font-semibold text-gray-800">{(previewJob.screeningQuestions || []).length}</div>
-                                <p className="text-[9px] text-gray-500">Perguntas</p>
+                                <div className="text-base-ui font-semibold text-gray-800">{(previewJob.screeningQuestions || []).length}</div>
+                                <p className="text-micro text-gray-500">Perguntas</p>
                               </div>
                               <div className="text-center p-2 bg-gray-50 rounded-lg">
-                                <div className="text-[13px] font-semibold text-gray-800">{Math.ceil((previewJob.screeningQuestions || []).reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0) / 60)}min</div>
-                                <p className="text-[9px] text-gray-500">Tempo Est.</p>
+                                <div className="text-base-ui font-semibold text-gray-800">{Math.ceil((previewJob.screeningQuestions || []).reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0) / 60)}min</div>
+                                <p className="text-micro text-gray-500">Tempo Est.</p>
                               </div>
                             </div>
                           </div>
@@ -6125,10 +6125,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       {/* 5. Blocos WSI do Roteiro de Triagem */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('fluxo-wsi')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-gray-600" />
                             Fluxo de Triagem WSI
-                            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-200 text-gray-800">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-gray-800">
                               6 Blocos
                             </Badge>
                           </h5>
@@ -6204,19 +6204,19 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   }}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center ${
+                                    <span className={`w-5 h-5 rounded-full text-white text-micro font-bold flex items-center justify-center ${
                                       block.editable ? 'bg-gray-700' : 'bg-gray-400'
                                     }`}>
                                       {block.id}
                                     </span>
                                     <div>
-                                      <span className={`text-[11px] font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-600'}`}>
+                                      <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-600'}`}>
                                         {block.name}
                                       </span>
-                                      <span className="text-[9px] text-gray-500 ml-1.5">({block.duration})</span>
+                                      <span className="text-micro text-gray-500 ml-1.5">({block.duration})</span>
                                     </div>
                                     {!block.editable && (
-                                      <Badge className="text-[8px] px-1 py-0 h-3.5 bg-gray-200 text-gray-500">
+                                      <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-200 text-gray-500">
                                         Auto
                                       </Badge>
                                     )}
@@ -6225,12 +6225,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     {block.editable && blockQuestions.length > 0 && (
                                       <>
                                         {eliminatoryCount > 0 && (
-                                          <Badge className="text-[9px] px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
+                                          <Badge className="text-micro px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
                                             {eliminatoryCount} Elim.
                                           </Badge>
                                         )}
                                         {informativeCount > 0 && (
-                                          <Badge className="text-[9px] px-1.5 py-0 bg-gray-100 text-gray-600">
+                                          <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600">
                                             {informativeCount} Info.
                                           </Badge>
                                         )}
@@ -6252,27 +6252,27 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
                                         <div className="rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 overflow-hidden">
                                           <div className="px-2.5 py-1.5 border-b border-gray-900 dark:border-gray-50/10 bg-gray-100 dark:bg-gray-800">
-                                            <p className="text-[11px] font-medium text-gray-800">
+                                            <p className="text-xs font-medium text-gray-800">
                                               {WSI_AUTOMATIC_MESSAGES[block.id].title}
                                             </p>
                                           </div>
                                           <div className="p-2.5">
-                                            <div className="text-[10px] text-gray-800 leading-relaxed whitespace-pre-line">
+                                            <div className="text-micro text-gray-800 leading-relaxed whitespace-pre-line">
                                               {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                                             </div>
                                           </div>
                                           <div className="px-2.5 py-1.5 border-t border-gray-900 dark:border-gray-50/10 bg-gray-50">
-                                            <p className="text-[9px] text-gray-500 italic">
+                                            <p className="text-micro text-gray-500 italic">
                                               {WSI_AUTOMATIC_MESSAGES[block.id].note}
                                             </p>
                                           </div>
                                         </div>
                                       ) : (
                                         <div className="p-2.5 bg-white/60 border border-gray-100 rounded-md">
-                                          <p className="text-[10px] text-gray-600 italic">
+                                          <p className="text-micro text-gray-600 italic">
                                             {block.description}
                                           </p>
-                                          <p className="text-[9px] text-gray-400 mt-1">
+                                          <p className="text-micro text-gray-400 mt-1">
                                             Gerenciado automaticamente pela LIA
                                           </p>
                                         </div>
@@ -6281,7 +6281,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                       <>
                                         {blockQuestions.length === 0 ? (
                                           <div className="p-3 bg-gray-50 border border-gray-200 border-dashed rounded-md text-center">
-                                            <p className="text-[10px] text-gray-500">
+                                            <p className="text-micro text-gray-500">
                                               Nenhuma pergunta neste bloco
                                             </p>
                                           </div>
@@ -6292,7 +6292,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                               className="p-2.5 bg-white border border-gray-200 rounded-md"
                                             >
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                                <Badge className={`text-[9px] px-1.5 py-0 h-4 rounded-full ${
+                                                <Badge className={`text-micro px-1.5 py-0 h-4 rounded-full ${
                                                   item.category === 'behavioral' || item.category === 'Comportamental'
                                                     ? 'bg-purple-100 text-purple-700 border border-purple-200'
                                                     : item.category === 'technical' || item.category === 'Técnica'
@@ -6308,34 +6308,34 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                                     : item.category || 'Geral'}
                                                 </Badge>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Badge className="text-[9px] px-1.5 py-0 h-4 rounded-full bg-red-50 text-red-600 border border-red-200">
+                                                  <Badge className="text-micro px-1.5 py-0 h-4 rounded-full bg-red-50 text-red-600 border border-red-200">
                                                     Eliminatória
                                                   </Badge>
                                                 )}
                                               </div>
-                                              <p className="text-[10px] text-gray-950 leading-relaxed mb-1.5">
+                                              <p className="text-micro text-gray-950 leading-relaxed mb-1.5">
                                                 {item.question}
                                               </p>
                                               <div className="flex items-center gap-2 flex-wrap">
                                                 {item.skill_targeted && (
-                                                  <span className="inline-flex items-center gap-0.5 text-[9px] text-gray-500">
+                                                  <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
                                                     <Target className="w-2.5 h-2.5 text-gray-400" />
                                                     {item.skill_targeted}
                                                   </span>
                                                 )}
-                                                <span className="inline-flex items-center gap-0.5 text-[9px] text-gray-500">
+                                                <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
                                                   <MessageSquare className="w-2.5 h-2.5 text-gray-400" />
                                                   {item.type === 'eliminatory' ? 'Sim/Não' 
                                                     : item.options?.length ? 'Múltipla escolha'
                                                     : 'Texto livre'}
                                                 </span>
                                                 {item.weight != null && (
-                                                  <span className="inline-flex items-center gap-0.5 text-[9px] text-gray-500">
+                                                  <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
                                                     <BarChart3 className="w-2.5 h-2.5 text-gray-400" />
                                                     Peso {typeof item.weight === 'number' ? item.weight.toFixed(2) : item.weight}
                                                   </span>
                                                 )}
-                                                <span className="inline-flex items-center gap-0.5 text-[9px] text-gray-500">
+                                                <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
                                                   <Clock className="w-2.5 h-2.5 text-gray-400" />
                                                   {item.type === 'eliminatory' ? '30s' : '2 min'}
                                                 </span>
@@ -6359,10 +6359,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('agendamento')}>
                           <div className="flex items-center gap-2">
                             <CalendarCheck className="w-3.5 h-3.5 text-gray-600" />
-                            <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">Agendamento Automático</h5>
+                            <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Agendamento Automático</h5>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-gray-600' : 'bg-gray-400 text-white'} text-[10px] px-1.5 py-0 h-4`}>
+                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-gray-600' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
                             </Badge>
                             {collapsedPreviewSections.includes('agendamento') ? (
@@ -6373,12 +6373,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           </div>
                         </div>
                         {!collapsedPreviewSections.includes('agendamento') && (<>
-                        <p className="text-[9px] text-gray-500 mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
+                        <p className="text-micro text-gray-500 mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                            <span className="text-[9px] text-gray-500">Score Mínimo</span>
-                            <span className="text-[10px] font-medium text-gray-700">{(() => {
+                            <span className="text-micro text-gray-500">Score Mínimo</span>
+                            <span className="text-micro font-medium text-gray-700">{(() => {
                               const preset = screeningConfig?.scheduling?.min_score_for_auto_preset
                               switch(preset) {
                                 case 'rigorous': return 'Rigoroso'
@@ -6388,16 +6388,16 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             })()}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                            <span className="text-[9px] text-gray-500">Calendário</span>
-                            <span className="text-[10px] font-medium text-gray-700">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
+                            <span className="text-micro text-gray-500">Calendário</span>
+                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                            <span className="text-[9px] text-gray-500">Horários</span>
-                            <span className="text-[10px] font-medium text-gray-700">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
+                            <span className="text-micro text-gray-500">Horários</span>
+                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                            <span className="text-[9px] text-gray-500">Duração</span>
-                            <span className="text-[10px] font-medium text-gray-700">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
+                            <span className="text-micro text-gray-500">Duração</span>
+                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
                           </div>
                         </div>
                         </>)}
@@ -6406,7 +6406,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           {/* 1. Canais + Configurações Agrupados */}
                           <div className="p-3 bg-white border border-gray-100 rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('canais')}>
-                          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
                             <Settings className="w-3.5 h-3.5 text-gray-600" />
                             Canais de Comunicação
                           </h5>
@@ -6420,21 +6420,21 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {!collapsedPreviewSections.includes('canais') && (<>
                         {/* Canais em linha */}
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-gray-100">
-                          <span className="text-[10px] text-gray-500">Canais:</span>
+                          <span className="text-micro text-gray-500">Canais:</span>
                           <div className="flex items-center gap-2">
                             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                               <MessageSquare className="w-3 h-3" />
-                              <span className="text-[10px] font-medium">WhatsApp</span>
+                              <span className="text-micro font-medium">WhatsApp</span>
                               {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
                             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                               <Globe className="w-3 h-3" />
-                              <span className="text-[10px] font-medium">Chat Web</span>
+                              <span className="text-micro font-medium">Chat Web</span>
                               {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
                             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                               <Phone className="w-3 h-3" />
-                              <span className="text-[10px] font-medium">Ligação</span>
+                              <span className="text-micro font-medium">Ligação</span>
                               {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
                             </div>
                           </div>
@@ -6443,8 +6443,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Configurações em grid */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-500">Score Mínimo Aprovação</span>
-                            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-700 text-white">{(() => {
+                            <span className="text-micro text-gray-500">Score Mínimo Aprovação</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-700 text-white">{(() => {
                               const preset = screeningConfig?.settings?.min_score_preset
                               switch(preset) {
                                 case 'rigorous': return 'Rigoroso'
@@ -6454,16 +6454,16 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             })()}</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-500">Timeout Resposta</span>
-                            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+                            <span className="text-micro text-gray-500">Timeout Resposta</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-500">Re-tentativas</span>
-                            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+                            <span className="text-micro text-gray-500">Re-tentativas</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-500">Fallback</span>
-                            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
+                            <span className="text-micro text-gray-500">Fallback</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
                           </div>
                         </div>
 
@@ -6484,13 +6484,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Score de Sucesso */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Sucesso de Fechamento</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Sucesso de Fechamento</span>
                             <Target className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                             {previewJob.funnel.total > 20 ? '85%' : previewJob.funnel.total > 10 ? '60%' : '35%'}
                           </div>
-                          <div className="mt-0.5 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-0.5 text-xs text-gray-800 dark:text-gray-200">
                             Pipeline: {previewJob.funnel.total} candidatos
                           </div>
                         </div>
@@ -6498,13 +6498,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Time to Fill */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Time to Fill</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Time to Fill</span>
                             <Clock className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                           </div>
                           <div className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                             {previewJob.urgencyLevel > 3 ? '15' : previewJob.urgencyLevel > 2 ? '25' : '35'}d
                           </div>
-                          <div className="mt-0.5 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-0.5 text-xs text-gray-800 dark:text-gray-200">
                             Velocidade: {previewJob.funnel.interview > 0 ? '3.2' : '1.5'} cv/dia
                           </div>
                         </div>
@@ -6512,13 +6512,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Qualidade Pipeline */}
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Qualidade Pipeline</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Qualidade Pipeline</span>
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                           </div>
                           <div className="text-lg font-bold text-gray-950 dark:text-gray-50 font-semibold">
                             {previewJob.funnel.final > 3 ? 'A+' : previewJob.funnel.interview > 5 ? 'B+' : 'C'}
                           </div>
- <div className="mt-0.5 text-[11px] text-gray-800">
+ <div className="mt-0.5 text-xs text-gray-800">
                             Conversão: {previewJob.funnel.interview > 0 ? Math.round((previewJob.funnel.interview / previewJob.funnel.total) * 100) : 0}%
                           </div>
                         </div>
@@ -6526,13 +6526,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         {/* Risco de Recusa */}
                         <div className="bg-red-50 dark:bg-red-900/20 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Risco de Recusa</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Risco de Recusa</span>
                             <AlertCircle className="w-3 h-3 text-red-600" />
                           </div>
                           <div className="text-lg font-bold text-red-700 dark:text-red-300">
                             {previewJob.level === 'Sênior' ? '45%' : previewJob.level === 'Pleno' ? '25%' : '15%'}
                           </div>
-                          <div className="mt-0.5 text-[11px] text-red-600 dark:text-red-400">
+                          <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">
                             Gap salarial: {previewJob.level === 'Sênior' ? '±18%' : '±8%'}
                           </div>
                         </div>
@@ -6553,7 +6553,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1" style={{ width: '100%' }}>
-                                    <span className="text-[11px] text-white font-medium">{previewJob.funnel.total}</span>
+                                    <span className="text-xs text-white font-medium">{previewJob.funnel.total}</span>
                                   </div>
                                 </div>
                               </div>
@@ -6567,11 +6567,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{ width: `${(previewJob.funnel.screening / previewJob.funnel.total) * 100}%` }}>
-                                    <span className="text-[11px] text-white font-medium">{previewJob.funnel.screening}</span>
+                                    <span className="text-xs text-white font-medium">{previewJob.funnel.screening}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[11px] text-gray-800 w-10 text-right">
+                              <span className="text-xs text-gray-800 w-10 text-right">
                                 {Math.round((previewJob.funnel.screening / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -6584,11 +6584,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{ width: `${(previewJob.funnel.interview / previewJob.funnel.total) * 100}%` }}>
-                                    <span className="text-[11px] text-white font-medium">{previewJob.funnel.interview}</span>
+                                    <span className="text-xs text-white font-medium">{previewJob.funnel.interview}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[11px] text-gray-800 w-10 text-right">
+                              <span className="text-xs text-gray-800 w-10 text-right">
                                 {Math.round((previewJob.funnel.interview / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -6601,11 +6601,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{ width: `${(previewJob.funnel.final / previewJob.funnel.total) * 100}%` }}>
-                                    <span className="text-[11px] text-white font-medium">{previewJob.funnel.final}</span>
+                                    <span className="text-xs text-white font-medium">{previewJob.funnel.final}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[11px] text-gray-800 w-10 text-right">
+                              <span className="text-xs text-gray-800 w-10 text-right">
                                 {Math.round((previewJob.funnel.final / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -6618,11 +6618,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{ width: previewJob.funnel.hired > 0 ? `${(previewJob.funnel.hired / previewJob.funnel.total) * 100}%` : '5%' }}>
-                                    <span className="text-[11px] text-white font-medium">{previewJob.funnel.hired}</span>
+                                    <span className="text-xs text-white font-medium">{previewJob.funnel.hired}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[11px] text-gray-800 w-10 text-right">
+                              <span className="text-xs text-gray-800 w-10 text-right">
                                 {Math.round((previewJob.funnel.hired / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -6666,7 +6666,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <p className="text-xs font-medium text-gray-950 dark:text-gray-200 font-semibold mb-1">
                               Insights da LIA
                             </p>
-                            <ul className="space-y-1 text-[11px] text-gray-800 dark:text-gray-200">
+                            <ul className="space-y-1 text-xs text-gray-800 dark:text-gray-200">
                               {previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
@@ -6761,7 +6761,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Competitividade salarial</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -6774,7 +6774,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               ))}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Escassez de talentos</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -6787,7 +6787,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               ))}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-800 dark:text-gray-200">Tempo de processo</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
@@ -6816,9 +6816,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               <span className={`${textStyles.bodySmall} dark:text-gray-200`}>LinkedIn</span>
                             </div>
                             {previewJob.publishedLinkedIn ? (
-                              <Badge className="text-[11px] bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
                             ) : (
-                              <Badge className="text-[11px] bg-gray-100 text-gray-800">Não publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
                             )}
                           </div>
                           <div className="flex items-center justify-between">
@@ -6827,9 +6827,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               <span className={`${textStyles.bodySmall} dark:text-gray-200`}>Site</span>
                             </div>
                             {previewJob.publishedWebsite ? (
-                              <Badge className="text-[11px] bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
                             ) : (
-                              <Badge className="text-[11px] bg-gray-100 text-gray-800">Não publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
                             )}
                           </div>
                           {previewJob.publishedIndeed !== undefined && (
@@ -6839,9 +6839,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <span className={`${textStyles.bodySmall} dark:text-gray-200`}>Indeed</span>
                               </div>
                               {previewJob.publishedIndeed ? (
-                                <Badge className="text-[11px] bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
+                                <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200">Publicado</Badge>
                               ) : (
-                                <Badge className="text-[11px] bg-gray-100 text-gray-800">Não publicado</Badge>
+                                <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
                               )}
                             </div>
                           )}
@@ -7627,7 +7627,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
           <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && setShowReactivateScreeningDialog(false)}>
             <DialogContent className="max-w-sm rounded-md bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
               <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-                <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                   Reativar Triagem?
                 </DialogTitle>
               </DialogHeader>
@@ -7639,7 +7639,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   }
                 </p>
                 <div className="space-y-2">
-                  <Label className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     Nova data de término (opcional)
                   </Label>
                   <Input
@@ -7706,10 +7706,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-md">
                     <GraduationCap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   </div>
-                  <h3 className="text-[14px] font-semibold text-gray-950">
+                  <h3 className="text-sm font-semibold text-gray-950">
                     Tutorial: Metodologia WSI
                   </h3>
-                  <Badge className="text-[10px] px-2 py-0.5 h-5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  <Badge className="text-micro px-2 py-0.5 h-5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     WeDoTalent Skill Index
                   </Badge>
                 </div>
@@ -7729,7 +7729,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <h4 className="text-xs font-semibold text-gray-950">O que é WSI?</h4>
                   </div>
-                  <p className="text-[11px] text-gray-800 leading-relaxed">
+                  <p className="text-xs text-gray-800 leading-relaxed">
                     <strong>WeDoTalent Skill Index</strong> é um índice conversacional proprietário que combina 
                     IA com psicometria para validar competências técnicas, comportamentais e fit cultural em 
                     triagens de <strong>5-10 minutos</strong>.
@@ -7745,37 +7745,37 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark">CBI</Badge>
-                        <span className="text-[10px] text-gray-600">McClelland, 1973</span>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark">CBI</Badge>
+                        <span className="text-micro text-gray-600">McClelland, 1973</span>
                       </div>
-                      <p className="text-[10px] text-gray-800">
+                      <p className="text-micro text-gray-800">
                         Competency-Based Interviewing - perguntas situacionais baseadas em comportamentos passados
                       </p>
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-green-100 text-green-700">Bloom</Badge>
-                        <span className="text-[10px] text-gray-600">Anderson et al., 2001</span>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-green-100 text-green-700">Bloom</Badge>
+                        <span className="text-micro text-gray-600">Anderson et al., 2001</span>
                       </div>
-                      <p className="text-[10px] text-gray-800">
+                      <p className="text-micro text-gray-800">
                         Taxonomia de níveis cognitivos (Lembrar → Criar)
                       </p>
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Dreyfus</Badge>
-                        <span className="text-[10px] text-gray-600">1980</span>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Dreyfus</Badge>
+                        <span className="text-micro text-gray-600">1980</span>
                       </div>
-                      <p className="text-[10px] text-gray-800">
+                      <p className="text-micro text-gray-800">
                         Estágios de domínio de habilidade (1-5: Novice → Expert)
                       </p>
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-purple-100 text-purple-700">Big Five</Badge>
-                        <span className="text-[10px] text-gray-600">1992</span>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-100 text-purple-700">Big Five</Badge>
+                        <span className="text-micro text-gray-600">1992</span>
                       </div>
-                      <p className="text-[10px] text-gray-800">
+                      <p className="text-micro text-gray-800">
                         Traços comportamentais para fit cultural
                       </p>
                     </div>
@@ -7789,7 +7789,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     <h4 className="text-xs font-semibold text-gray-950">Versões do WSI</h4>
                   </div>
                   <div className="overflow-hidden rounded-md border border-gray-200">
-                    <table className="w-full text-[11px]">
+                    <table className="w-full text-xs">
                       <thead className="bg-gray-100">
                         <tr>
                           <th className="text-left p-2 font-semibold text-gray-800">Modelo</th>
@@ -7801,7 +7801,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr>
                           <td className="p-2">
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">WSI Compact</Badge>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">WSI Compact</Badge>
                           </td>
                           <td className="p-2 text-center text-gray-800">6-8</td>
                           <td className="p-2 text-center text-gray-800">5-7 min</td>
@@ -7809,7 +7809,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </tr>
                         <tr>
                           <td className="p-2">
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 bg-purple-100 text-purple-700">WSI Compact+</Badge>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-100 text-purple-700">WSI Compact+</Badge>
                           </td>
                           <td className="p-2 text-center text-gray-800">8-10</td>
                           <td className="p-2 text-center text-gray-800">7-9 min</td>
@@ -7838,21 +7838,21 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     ].map((block) => (
                       <div key={block.id} className="flex items-center gap-3 p-2 bg-white rounded-md border border-gray-100">
                         <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                          <span className="text-[10px] font-semibold text-gray-900 dark:text-gray-50">{block.id}</span>
+                          <span className="text-micro font-semibold text-gray-900 dark:text-gray-50">{block.id}</span>
                         </div>
                         <div className="flex-1">
-                          <span className="text-[11px] font-medium text-gray-950">{block.name}</span>
+                          <span className="text-xs font-medium text-gray-950">{block.name}</span>
                         </div>
-                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-50 text-gray-600 border border-gray-200">
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-600 border border-gray-200">
                           {block.time}
                         </Badge>
-                        <Badge className={`text-[9px] px-1.5 py-0 h-4 ${block.color}`}>
+                        <Badge className={`text-micro px-1.5 py-0 h-4 ${block.color}`}>
                           {block.type}
                         </Badge>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-gray-600 mt-2 italic">
+                  <p className="text-micro text-gray-600 mt-2 italic">
                     Bloco 2: Perguntas configuradas em Configurações da Empresa → Perguntas de Triagem Padrão
                   </p>
                 </div>
@@ -7873,8 +7873,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div key={idx} className="flex items-start gap-2 p-2 bg-white rounded-md border border-gray-100">
                         <span className="text-xs">{type.icon}</span>
                         <div>
-                          <span className="text-[11px] font-medium text-gray-950 block">{type.name}</span>
-                          <span className="text-[10px] text-gray-600">{type.desc}</span>
+                          <span className="text-xs font-medium text-gray-950 block">{type.name}</span>
+                          <span className="text-micro text-gray-600">{type.desc}</span>
                         </div>
                       </div>
                     ))}
@@ -7890,37 +7890,37 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="space-y-3">
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
-                        <p className="text-[10px] text-gray-600 mb-1">Distribuição de Perguntas</p>
+                        <p className="text-micro text-gray-600 mb-1">Distribuição de Perguntas</p>
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
                             <div className="h-full bg-gray-900 dark:bg-gray-50" style={{ width: '70%' }}></div>
                           </div>
-                          <span className="text-[10px] text-gray-800">70% técnicas</span>
+                          <span className="text-micro text-gray-800">70% técnicas</span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
                             <div className="h-full bg-purple-400" style={{ width: '30%' }}></div>
                           </div>
-                          <span className="text-[10px] text-gray-800">30% comportamentais</span>
+                          <span className="text-micro text-gray-800">30% comportamentais</span>
                         </div>
                       </div>
                     </div>
                     <div className="p-2 bg-white rounded-md border border-gray-100">
-                      <p className="text-[10px] text-gray-600 mb-1">Fórmula de Cálculo</p>
-                      <p className="text-[11px] font-mono text-gray-950 bg-gray-50 px-2 py-1 rounded-full">WSI = Σ(Peso × Score) / 100</p>
+                      <p className="text-micro text-gray-600 mb-1">Fórmula de Cálculo</p>
+                      <p className="text-xs font-mono text-gray-950 bg-gray-50 px-2 py-1 rounded-full">WSI = Σ(Peso × Score) / 100</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="p-2 bg-green-50 rounded-md border border-green-200 text-center">
                         <div className="text-xs font-semibold text-green-700">≥ 4.2</div>
-                        <p className="text-[9px] text-green-600">Aprovado automático</p>
+                        <p className="text-micro text-green-600">Aprovado automático</p>
                       </div>
                       <div className="p-2 bg-yellow-50 rounded-md border border-yellow-200 text-center">
                         <div className="text-xs font-semibold text-yellow-700">3.8-4.1</div>
-                        <p className="text-[9px] text-yellow-600">Revisão humana</p>
+                        <p className="text-micro text-yellow-600">Revisão humana</p>
                       </div>
                       <div className="p-2 bg-red-50 rounded-md border border-red-200 text-center">
                         <div className="text-xs font-semibold text-red-700">&lt; 3.8</div>
-                        <p className="text-[9px] text-red-600">Reprovado</p>
+                        <p className="text-micro text-red-600">Reprovado</p>
                       </div>
                     </div>
                   </div>
@@ -7933,12 +7933,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     <h4 className="text-xs font-semibold text-gray-950">Ajuste de Score Mínimo</h4>
                   </div>
                   <div className="space-y-3">
-                    <p className="text-[11px] text-gray-800 leading-relaxed">
+                    <p className="text-xs text-gray-800 leading-relaxed">
                       O <strong>Score Mínimo de Aprovação</strong> (ex: 75%) é <strong>configurável pelo recrutador</strong>. 
                       O padrão do sistema é <strong>75%</strong> para auto-aprovação.
                     </p>
                     <div className="overflow-hidden rounded-md border border-gray-200">
-                      <table className="w-full text-[11px]">
+                      <table className="w-full text-xs">
                         <thead className="bg-gray-100">
                           <tr>
                             <th className="text-left p-2 font-semibold text-gray-800">Cenário</th>
@@ -7976,27 +7976,27 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   </div>
                   <div className="space-y-3">
                     <div className="p-3 bg-white rounded-md border border-orange-100">
-                      <p className="text-[10px] font-medium text-orange-700 mb-1">Smart Saturation</p>
-                      <p className="text-[11px] text-gray-800 leading-relaxed">
+                      <p className="text-micro font-medium text-orange-700 mb-1">Smart Saturation</p>
+                      <p className="text-xs text-gray-800 leading-relaxed">
                         Quando a vaga atinge <strong>20 candidatos aprovados</strong>, a triagem automática é pausada. 
                         O sistema sugere ações: agendar entrevistas em lote, revisar candidatos ou desbloquear pipeline.
                       </p>
                     </div>
                     <div className="p-3 bg-white rounded-md border border-orange-100">
-                      <p className="text-[10px] font-medium text-orange-700 mb-1">Dynamic Cutoff (Top 25%)</p>
-                      <p className="text-[11px] text-gray-800 leading-relaxed">
+                      <p className="text-micro font-medium text-orange-700 mb-1">Dynamic Cutoff (Top 25%)</p>
+                      <p className="text-xs text-gray-800 leading-relaxed">
                         Após <strong>30-50 triagens</strong>, o sistema aplica corte dinâmico selecionando automaticamente 
                         os <strong>top 25%</strong> candidatos por percentil histórico, garantindo qualidade mesmo em alto volume.
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-2 bg-white rounded-md border border-orange-100 text-center">
-                        <div className="text-[14px] font-semibold text-orange-700">20</div>
-                        <p className="text-[9px] text-gray-600">Limite saturação</p>
+                        <div className="text-sm font-semibold text-orange-700">20</div>
+                        <p className="text-micro text-gray-600">Limite saturação</p>
                       </div>
                       <div className="p-2 bg-white rounded-md border border-orange-100 text-center">
-                        <div className="text-[14px] font-semibold text-orange-700">30-50</div>
-                        <p className="text-[9px] text-gray-600">Triagens p/ cutoff</p>
+                        <div className="text-sm font-semibold text-orange-700">30-50</div>
+                        <p className="text-micro text-gray-600">Triagens p/ cutoff</p>
                       </div>
                     </div>
                   </div>
@@ -8007,8 +8007,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="flex items-start gap-2">
                     <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-[10px] font-medium text-wedo-cyan-dark mb-1">Calibração Automática</p>
-                      <p className="text-[10px] text-wedo-cyan-dark leading-relaxed">
+                      <p className="text-micro font-medium text-wedo-cyan-dark mb-1">Calibração Automática</p>
+                      <p className="text-micro text-wedo-cyan-dark leading-relaxed">
                         Após atingir volume suficiente, a LIA recalibra automaticamente os cortes por percentil histórico, 
                         mantendo a qualidade das contratações.
                       </p>
@@ -8020,12 +8020,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
               {/* Footer */}
               <div className="shrink-0 p-4 border-t border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-gray-600">
+                  <p className="text-micro text-gray-600">
                     Metodologia proprietária WeDoTalent • Baseada em 4 modelos científicos validados
                   </p>
                   <Button 
                     size="sm" 
-                    className="h-7 text-[11px] font-['Open_Sans'] bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="h-7 text-xs font-['Open_Sans'] bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                     onClick={() => setShowWSITutorialModal(false)}
                   >
                     Entendi

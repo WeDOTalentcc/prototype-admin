@@ -153,7 +153,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-7 h-7 text-green-600" />
               </div>
-              <h3 className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Email Enviado!
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -169,11 +169,11 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   <Mail className="w-3.5 h-3.5 text-gray-600" />
                 </div>
                 <div>
-                  <h2 className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Enviar Email
                   </h2>
                   {candidate && (
-                    <p className="text-[12px] text-gray-600">
+                    <p className="text-sm-ui text-gray-600">
                       para {candidate.name}
                     </p>
                   )}
@@ -184,7 +184,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   variant="outline"
                   size="sm"
                   onClick={onClose}
-                  className="h-9 px-4 text-[12px] font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="h-9 px-4 text-sm-ui font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </Button>
@@ -192,7 +192,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   onClick={handleSend}
                   disabled={!isValid || sending}
                   size="sm"
-                  className="h-9 px-4 text-[12px] font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="h-9 px-4 text-sm-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                   {sending ? (
                     <>
@@ -229,13 +229,13 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
 
               <div className="w-[45%] flex flex-col bg-gray-50">
                 <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="text-[11px] font-medium text-gray-600 uppercase tracking-wider mb-2">
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
                     Preview
                   </p>
                   
                   <div className="bg-white rounded-md border border-gray-100 p-2.5">
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] text-gray-600">
+                      <p className="text-xs text-gray-600">
                         Para:
                       </p>
                       <div className="flex items-center gap-0.5">
@@ -256,7 +256,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                         <p className="font-medium text-gray-800 text-xs truncate">
                           {customVariables.candidate_name || "Nome do Candidato"}
                         </p>
-                        <p className="text-[11px] text-gray-600 truncate">
+                        <p className="text-xs text-gray-600 truncate">
                           {recipientEmail || "email@exemplo.com"}
                         </p>
                       </div>
@@ -267,14 +267,14 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                 <ScrollArea className="flex-1">
                   <div className="p-4 space-y-3">
                     <div>
-                      <p className="text-[11px] text-gray-600 mb-1">Assunto</p>
+                      <p className="text-xs text-gray-600 mb-1">Assunto</p>
                       <p className="text-xs font-medium text-gray-800">
                         {renderPreview(editedSubject) || "Sem assunto definido"}
                       </p>
                     </div>
 
                     <div className="border-t border-gray-100 pt-3">
-                      <p className="text-[11px] text-gray-600 mb-2">Mensagem</p>
+                      <p className="text-xs text-gray-600 mb-2">Mensagem</p>
                       {editedBody ? (
                         <div
                           className="prose prose-sm max-w-none text-gray-800 text-xs leading-relaxed"
@@ -293,13 +293,13 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
 
                 {!recipientEmail && candidate && !candidate.email && (
                   <div className="px-4 py-2 border-t border-gray-100">
-                    <div className="flex items-start gap-1.5 p-2 rounded-md bg-[#D19960]/10 border border-[#D19960]/20">
-                      <AlertCircle className="w-3.5 h-3.5 text-[#D19960] flex-shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-1.5 p-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/20">
+                      <AlertCircle className="w-3.5 h-3.5 text-wedo-orange flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-[11px] font-medium text-[#D19960]">
+                        <p className="text-xs font-medium text-wedo-orange">
                           Email não disponível
                         </p>
-                        <p className="text-[11px] text-gray-600">
+                        <p className="text-xs text-gray-600">
                           Candidato sem email cadastrado
                         </p>
                       </div>

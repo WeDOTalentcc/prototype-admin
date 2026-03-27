@@ -104,7 +104,7 @@ export function SimilarProfilesInput({
       {/* Separador CV */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-[11px] text-gray-600 px-2">ou</span>
+        <span className="text-xs text-gray-600 px-2">ou</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
@@ -212,7 +212,7 @@ export function SimilarProfilesInput({
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-gray-800 dark:text-gray-200">
+          <p className="text-xs text-gray-800 dark:text-gray-200">
             Baseado em {validUrls.length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
           </p>
         </div>
@@ -236,7 +236,7 @@ export function SimilarProfilesInput({
       <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
-          <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
           </p>
         </div>

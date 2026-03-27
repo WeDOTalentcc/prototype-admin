@@ -248,16 +248,16 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
                 <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <span className="font-['Open_Sans',sans-serif] text-[13px] font-semibold text-gray-900 dark:text-gray-50">
+                <span className="font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50">
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (
-                  <Badge className="bg-green-100 text-green-700 text-[11px]">Ativo</Badge>
+                  <Badge className="bg-green-100 text-green-700 text-xs">Ativo</Badge>
                 ) : (
-                  <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[11px]">Desativado</Badge>
+                  <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs">Desativado</Badge>
                 )}
               </div>
-              <p className="text-[11px] text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                 Controla o acesso à busca global de candidatos em toda a plataforma.
               </p>
               
@@ -265,7 +265,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               <div className={`p-3 rounded-md border ${settings.globalSearchEnabled ? 'bg-gray-50 border-gray-200 dark:bg-gray-900/20 dark:border-gray-800' : 'bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'}`}>
                 <div className="flex items-start gap-1.5">
                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200 space-y-1.5">
+                  <div className="text-micro text-gray-800 dark:text-gray-200 space-y-1.5">
                     {settings.globalSearchEnabled ? (
                       <>
                         <p className="font-medium">Quando habilitado, você tem acesso a:</p>
@@ -319,7 +319,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                   <Users className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   Limite de Candidatos por Busca Global
                 </CardTitle>
@@ -395,12 +395,12 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                           {option.label}
                         </Label>
                         {option.recommended && (
-                          <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5 py-0.5">
+                          <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-micro px-1.5 py-0.5">
                             Recomendado
                           </Badge>
                         )}
                       </div>
-                      <p className="text-[10px] text-gray-800 dark:text-gray-200 mt-0.5">
+                      <p className="text-micro text-gray-800 dark:text-gray-200 mt-0.5">
                         {option.description}
                       </p>
                     </div>
@@ -408,7 +408,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <div className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                         ~{option.estimatedCredits.fast} créditos
                       </div>
-                      <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                      <div className="text-micro text-gray-800 dark:text-gray-200">
                         estimativa
                       </div>
                     </div>
@@ -425,7 +425,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                   <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   Opções de Busca
                 </CardTitle>
@@ -473,7 +473,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
                     Revelar emails automaticamente
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <div className="text-micro text-gray-800 dark:text-gray-200">
                     +2 créditos por candidato com email revelado
                   </div>
                 </div>
@@ -489,7 +489,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
                     Revelar telefones automaticamente
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <div className="text-micro text-gray-800 dark:text-gray-200">
                     +14 créditos por candidato com telefone revelado
                   </div>
                 </div>
@@ -505,7 +505,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
                     Priorizar perfis atualizados recentemente
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <div className="text-micro text-gray-800 dark:text-gray-200">
                     Candidatos ativos nos últimos 90 dias
                   </div>
                 </div>
@@ -520,7 +520,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                 <Shield className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Controle de Gastos
               </CardTitle>
@@ -531,7 +531,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
                     Confirmar antes de cada busca global
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <div className="text-micro text-gray-800 dark:text-gray-200">
                     Exibe estimativa de créditos antes de executar
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
                     Sugerir expansão global automaticamente
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <div className="text-micro text-gray-800 dark:text-gray-200">
                     Quando busca local retorna poucos resultados
                   </div>
                 </div>
@@ -566,20 +566,20 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
         <div className="space-y-3">
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                 <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Tabela de Custos da Busca Global
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-3">
               <div className="overflow-hidden rounded-md border border-gray-200 dark:border-gray-700">
-                <table className="w-full text-[11px]">
+                <table className="w-full text-xs">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-2 py-1.5 text-left text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                      <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-600 dark:text-gray-300">
                         Limite
                       </th>
-                      <th className="px-2 py-1.5 text-center text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                      <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-600 dark:text-gray-300">
                         Créditos Estimados
                       </th>
                     </tr>
@@ -596,18 +596,18 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       >
                         <td className="px-2 py-1.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-medium text-gray-950 dark:text-gray-50">
+                            <span className="text-xs font-medium text-gray-950 dark:text-gray-50">
                               {option.label}
                             </span>
                             {settings.defaultLimit === option.value && (
-                              <Badge className="bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 text-[10px] px-1.5">
+                              <Badge className="bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 text-micro px-1.5">
                                 Atual
                               </Badge>
                             )}
                           </div>
                         </td>
                         <td className="px-2 py-1.5 text-center">
-                          <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                             ~{option.estimatedCredits.fast} créditos
                           </span>
                         </td>
@@ -620,7 +620,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md">
                 <div className="flex items-start gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-[10px] text-amber-700 dark:text-amber-300">
+                  <div className="text-micro text-amber-700 dark:text-amber-300">
                     <strong>Nota:</strong> Os custos são estimativas baseadas no limite configurado. 
                     O custo real pode variar dependendo dos filtros aplicados e disponibilidade de candidatos.
                   </div>
@@ -632,7 +632,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           {/* Detalhamento de Custos por Campo */}
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                 <Zap className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Detalhamento de Custos por Opção
               </CardTitle>
@@ -645,7 +645,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <Zap className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span className="font-medium text-xs">Custo Estimado</span>
                   </div>
-                  <Badge variant="outline" className="text-[11px] px-1.5 py-0.5 border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
                     Tempo Real
                   </Badge>
                 </div>
@@ -655,7 +655,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <div className="text-base font-bold text-gray-900 dark:text-gray-50">
                       1-3
                     </div>
-                    <div className="text-[11px] text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       créditos por candidato
                     </div>
                   </div>
@@ -663,7 +663,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <div className="font-medium text-xs">
                       {settings.defaultLimit}-{settings.defaultLimit * 3}
                     </div>
-                    <div className="text-[11px] text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       total ({settings.defaultLimit} candidatos)
                     </div>
                   </div>
@@ -690,16 +690,16 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
               {/* Tabela de custos adicionais por opção */}
               <div className="overflow-hidden rounded-md border border-gray-200 dark:border-gray-700">
-                <table className="w-full text-[11px]">
+                <table className="w-full text-xs">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300">
                         Opção / Campo
                       </th>
-                      <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300">
                         Seção
                       </th>
-                      <th className="px-3 py-2 text-center text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-600 dark:text-gray-300">
                         Custo Adicional
                       </th>
                     </tr>
@@ -715,7 +715,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Origem da Busca</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px]">
+                        <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro">
                           1 crédito/cand.
                         </Badge>
                       </td>
@@ -731,7 +731,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Opções de Qualidade</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px]">
+                        <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro">
                           +2 créditos
                         </Badge>
                       </td>
@@ -747,7 +747,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-[10px]">
+                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -763,7 +763,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-green-100 text-green-700 text-[10px]">
+                        <Badge className="bg-green-100 text-green-700 text-micro">
                           +2 créditos
                         </Badge>
                       </td>
@@ -779,7 +779,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-[10px]">
+                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -795,7 +795,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-amber-100 text-amber-700 text-[10px]">
+                        <Badge className="bg-amber-100 text-amber-700 text-micro">
                           +14 créditos
                         </Badge>
                       </td>
@@ -811,7 +811,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-[10px]">
+                        <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -824,26 +824,26 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center gap-2 mb-2">
                   <Info className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                  <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Resumo de Custos</span>
+                  <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Resumo de Custos</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Custo Mínimo</div>
+                    <div className="text-micro text-gray-500 dark:text-gray-400">Custo Mínimo</div>
                     <div className="text-sm font-bold text-green-600">1 crédito</div>
-                    <div className="text-[9px] text-gray-400 dark:text-gray-500">por candidato</div>
+                    <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Custo Típico</div>
+                    <div className="text-micro text-gray-500 dark:text-gray-400">Custo Típico</div>
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-50">3-5 créditos</div>
-                    <div className="text-[9px] text-gray-400 dark:text-gray-500">por candidato</div>
+                    <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-gray-900 rounded border border-amber-200 dark:border-amber-700">
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Custo Máximo</div>
+                    <div className="text-micro text-gray-500 dark:text-gray-400">Custo Máximo</div>
                     <div className="text-sm font-bold text-amber-600">19 créditos</div>
-                    <div className="text-[9px] text-gray-400 dark:text-gray-500">por candidato</div>
+                    <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
                 </div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 text-center">
+                <p className="text-micro text-gray-500 dark:text-gray-400 mt-2 text-center">
                   * O custo máximo inclui todas as opções habilitadas (Freshness + Emails + Telefones)
                 </p>
               </div>
@@ -852,7 +852,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
                 <div className="flex items-start gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-[10px] text-green-700 dark:text-green-300">
+                  <div className="text-micro text-green-700 dark:text-green-300">
                     <strong>Busca Local é gratuita!</strong> Buscas na base local (candidatos já cadastrados) 
                     não consomem créditos. As opções acima são cobradas apenas em buscas Híbridas ou Globais.
                   </div>
@@ -863,7 +863,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
           <Card className="border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-[13px] font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-50">
                 <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Resumo da Configuração Atual
               </CardTitle>
@@ -871,22 +871,22 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
             <CardContent className="pt-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md col-span-2">
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200 mb-0.5">
+                  <div className="text-micro text-gray-800 dark:text-gray-200 mb-0.5">
                     Limite por busca
                   </div>
-                  <div className="text-[18px] font-bold text-gray-950 dark:text-gray-50">
+                  <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                     {settings.defaultLimit}
                   </div>
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200">candidatos (~1 crédito/cand)</div>
+                  <div className="text-micro text-gray-800 dark:text-gray-200">candidatos (~1 crédito/cand)</div>
                 </div>
                 <div className="p-3 bg-gray-100 dark:bg-gray-800/50 rounded-md col-span-2">
-                  <div className="text-[10px] text-gray-800 dark:text-gray-200 mb-0.5">
+                  <div className="text-micro text-gray-800 dark:text-gray-200 mb-0.5">
                     Custo estimado por busca
                   </div>
-                  <div className="text-[20px] font-bold text-gray-900 dark:text-gray-50">
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-50">
                     ~{estimatedCreditsPerSearch} créditos
                   </div>
-                  <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">
+                  <div className="text-micro text-gray-600 dark:text-gray-400 mt-0.5">
                     {settings.showEmails && '+emails '}
                     {settings.showPhoneNumbers && '+telefones '}
                     {settings.highFreshness && '+freshness'}
@@ -902,7 +902,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
       {successMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[11px] rounded-full">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
             <CheckCircle className="w-3.5 h-3.5" />
             {successMessage}
           </div>
@@ -911,7 +911,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
       {errorMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[11px] rounded-full">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs rounded-full">
             <AlertCircle className="w-3.5 h-3.5" />
             {errorMessage}
           </div>

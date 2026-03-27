@@ -160,7 +160,7 @@ export function QuestionAdjustmentChat({
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex items-center gap-1.5 mb-2">
         <MessageCircle className="h-3.5 w-3.5 text-gray-700" />
-        <span className="text-[11px] font-semibold text-gray-800">Chat de Ajuste</span>
+        <span className="text-xs font-semibold text-gray-800">Chat de Ajuste</span>
       </div>
 
       <div
@@ -189,12 +189,12 @@ export function QuestionAdjustmentChat({
                   : "bg-gray-50 border border-gray-200 text-gray-800"
               )}
             >
-              <p className="text-[11px] leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs leading-relaxed whitespace-pre-wrap">
                 {msg.content}
               </p>
               {msg.diff && msg.diff.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-gray-200/50">
-                  <p className="text-[10px] font-medium text-gray-700">
+                  <p className="text-micro font-medium text-gray-700">
                     {msg.diff.length} alteração(ões) feita(s) ↓
                   </p>
                 </div>
@@ -215,7 +215,7 @@ export function QuestionAdjustmentChat({
             <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
               <div className="flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin text-gray-700" />
-                <span className="text-[11px] text-gray-500">Regenerando perguntas...</span>
+                <span className="text-xs text-gray-500">Regenerando perguntas...</span>
               </div>
             </div>
           </div>
@@ -230,7 +230,7 @@ export function QuestionAdjustmentChat({
           onKeyDown={handleKeyDown}
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
-          className="w-full h-16 pl-3 pr-10 py-2 text-[11px] border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ focusRingColor: "rgba(96,190,209,0.3)" }}
         />
         <Button

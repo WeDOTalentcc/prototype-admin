@@ -548,7 +548,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 <Scale className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50">
+                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                   Comparar Vagas
                 </DialogTitle>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
@@ -561,7 +561,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-7 px-2.5 text-[11px] gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 <Share2 className="w-3 h-3" />
                 Compartilhar
@@ -571,7 +571,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 size="sm"
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="h-7 px-2.5 text-[11px] gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 <Download className="w-3 h-3" />
                 {isExporting ? "Gerando..." : "Exportar PDF"}
@@ -584,7 +584,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
           <div className="grid grid-cols-[240px_1fr] gap-4">
             <div className="space-y-3">
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
                   Vagas Selecionadas
                 </h4>
                 <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
@@ -600,7 +600,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
                             {job.code && (
-                              <span className="text-[10px] font-medium text-gray-600 bg-gray-100 px-1 py-0.5 rounded-full">
+                              <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1 py-0.5 rounded-full">
                                 {job.code}
                               </span>
                             )}
@@ -616,7 +616,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
               </div>
 
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
                   Dimensões
                 </h4>
                 <div className="space-y-1.5 p-2.5 rounded-md bg-gray-50 border border-gray-200">
@@ -631,7 +631,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                       />
                       <dim.icon className="w-3 h-3 text-gray-500 group-hover:text-gray-900" />
-                      <span className="text-[11px] text-gray-800 group-hover:text-gray-950">
+                      <span className="text-xs text-gray-800 group-hover:text-gray-950">
                         {dim.label}
                       </span>
                     </label>
@@ -641,7 +641,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[11px]">
+              <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="text-left font-semibold text-gray-600 uppercase tracking-wide p-2.5 border border-gray-200 w-[100px]">
@@ -655,7 +655,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {job.code && (
-                              <span className="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="text-micro text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
                                 {job.code}
                               </span>
                             )}
@@ -664,7 +664,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             </span>
                           </div>
                           {job.department && (
-                            <span className="text-[10px] font-normal text-gray-500">{job.department}</span>
+                            <span className="text-micro font-normal text-gray-500">{job.department}</span>
                           )}
                         </div>
                       </th>
@@ -680,7 +680,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 font-medium text-[13px]">
+                      <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 font-medium text-base-ui">
                         {job.candidates_count ?? "-"}
                       </td>
                     ))}
@@ -694,7 +694,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-700 p-2.5 border border-gray-200 font-semibold text-[13px]">
+                      <td key={job.id} className="text-gray-700 p-2.5 border border-gray-200 font-semibold text-base-ui">
                         {job.approved_count ?? "-"}
                       </td>
                     ))}
@@ -708,7 +708,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-800 p-2.5 border border-gray-200 font-medium text-[13px]">
+                      <td key={job.id} className="text-gray-800 p-2.5 border border-gray-200 font-medium text-base-ui">
                         {job.screening_count ?? "-"}
                       </td>
                     ))}
@@ -723,7 +723,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 text-[11px]">
+                        <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 text-xs">
                           {formatSalaryRange(job.salary_range)}
                         </td>
                       ))}
@@ -739,7 +739,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 text-[11px]">
+                        <td key={job.id} className="text-gray-950 p-2.5 border border-gray-200 text-xs">
                           {job.location || "-"} {job.work_model && `(${job.work_model})`}
                         </td>
                       ))}
@@ -756,7 +756,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       </td>
                       {jobs.map((job) => (
                         <td key={job.id} className="p-2.5 border border-gray-200">
-                          <span className={`text-[13px] font-semibold ${getScoreColor(job.performance_score)}`}>
+                          <span className={`text-base-ui font-semibold ${getScoreColor(job.performance_score)}`}>
                             {job.performance_score ? `${job.performance_score}%` : "-"}
                           </span>
                         </td>
@@ -777,12 +777,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.technical_requirements && job.technical_requirements.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
                                   {typeof req === "string" ? req : req.name || req.skill || "-"}
                                 </span>
                               ))}
                               {job.technical_requirements.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
                                   +{job.technical_requirements.length - 4}
                                 </span>
                               )}
@@ -808,12 +808,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
                                   {typeof comp === "string" ? comp : comp.name || comp.competency || "-"}
                                 </span>
                               ))}
                               {job.behavioral_competencies.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
                                   +{job.behavioral_competencies.length - 4}
                                 </span>
                               )}
@@ -839,12 +839,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.benefits && job.benefits.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.benefits.slice(0, 4).map((benefit, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
                                   {benefit}
                                 </span>
                               ))}
                               {job.benefits.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
                                   +{job.benefits.length - 4}
                                 </span>
                               )}
@@ -868,7 +868,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
                     <Filter className="w-3.5 h-3.5 text-gray-600" />
                   </div>
-                  <h3 className="text-[13px] font-semibold text-gray-950">Funil de Candidatos</h3>
+                  <h3 className="text-base-ui font-semibold text-gray-950">Funil de Candidatos</h3>
                 </div>
               </div>
               
@@ -893,40 +893,40 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       
                       <div className="space-y-1.5 pl-4">
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-gray-600 w-[70px]">Candidatos</span>
+                          <span className="text-micro text-gray-600 w-[70px]">Candidatos</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} transition-all duration-300`}
                               style={{ width: "100%" }}
                             />
                           </div>
-                          <span className={`text-[11px] font-semibold w-[80px] text-right ${jobColor.text}`}>
+                          <span className={`text-xs font-semibold w-[80px] text-right ${jobColor.text}`}>
                             {total} (100%)
                           </span>
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-gray-600 w-[70px]">Em Triagem</span>
+                          <span className="text-micro text-gray-600 w-[70px]">Em Triagem</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-70 transition-all duration-300`}
                               style={{ width: `${Math.max(screeningPct, 0)}%` }}
                             />
                           </div>
-                          <span className={`text-[11px] font-medium w-[80px] text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-[80px] text-right text-gray-700`}>
                             {screening} ({screeningPct.toFixed(0)}%)
                           </span>
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-gray-600 w-[70px]">Aprovados</span>
+                          <span className="text-micro text-gray-600 w-[70px]">Aprovados</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-50 transition-all duration-300`}
                               style={{ width: `${Math.max(approvedPct, 0)}%` }}
                             />
                           </div>
-                          <span className={`text-[11px] font-medium w-[80px] text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-[80px] text-right text-gray-700`}>
                             {approved} ({approvedPct.toFixed(0)}%)
                           </span>
                         </div>
@@ -945,7 +945,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                   </div>
-                  <h3 className="text-[13px] font-semibold text-gray-950">Análise LIA</h3>
+                  <h3 className="text-base-ui font-semibold text-gray-950">Análise LIA</h3>
                 </div>
               </div>
               
@@ -955,7 +955,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 </p>
 
                 <div>
-                  <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                     <BarChart3 className="w-3 h-3" />
                     Indicadores-Chave
                   </h4>
@@ -969,11 +969,11 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             : "bg-gray-50 border-gray-200"
                         }`}
                       >
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">
+                        <p className="text-micro text-gray-500 uppercase tracking-wide mb-1">
                           {metric.label}
                         </p>
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[18px] font-semibold ${
+                          <span className={`text-lg font-semibold ${
                             metric.highlight ? "text-gray-600 dark:text-gray-400" : "text-gray-950"
                           }`}>
                             {metric.value}
@@ -992,7 +992,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                 {liaAnalysis.insights.length > 0 && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                       <Lightbulb className="w-3 h-3" />
                       Insights
                     </h4>
@@ -1008,12 +1008,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             <IconComponent className={`w-4 h-4 ${style.iconColor} flex-shrink-0 mt-0.5`} />
                             <div className="flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-[11px] font-semibold text-gray-950">{insight.title}</p>
-                                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${style.badgeBg}`}>
+                                <p className="text-xs font-semibold text-gray-950">{insight.title}</p>
+                                <span className={`text-micro font-semibold px-1.5 py-0.5 rounded-full ${style.badgeBg}`}>
                                   {style.badgeText}
                                 </span>
                               </div>
-                              <p className="text-[11px] text-gray-700 mt-0.5 leading-relaxed">
+                              <p className="text-xs text-gray-700 mt-0.5 leading-relaxed">
                                 {insight.description}
                               </p>
                             </div>
@@ -1026,13 +1026,13 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                 {liaAnalysis.recommendations.length > 0 && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                       <Target className="w-3 h-3" />
                       Recomendações
                     </h4>
                     <ul className="space-y-1.5">
                       {liaAnalysis.recommendations.map((rec, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-[11px] text-gray-700">
+                        <li key={idx} className="flex items-start gap-2 text-xs text-gray-700">
                           <span className="text-gray-400 mt-0.5">•</span>
                           <span className="leading-relaxed">{rec}</span>
                         </li>

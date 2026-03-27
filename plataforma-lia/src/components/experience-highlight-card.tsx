@@ -220,7 +220,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
         </p>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-[10px] text-gray-400">
+        <p className="text-micro text-gray-400">
           Gerado pela LIA em {formatGeneratedDate(highlight.generated_at)}
         </p>
         <TooltipProvider>
@@ -237,7 +237,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
               </Button>
             </TooltipTrigger>
             <TooltipContent className="text-xs py-1 px-2">
-              <p className="text-[10px]">Regenerar resumo</p>
+              <p className="text-micro">Regenerar resumo</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

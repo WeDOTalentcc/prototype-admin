@@ -145,7 +145,7 @@ export function DataRequestModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-gray-900 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[14px] font-semibold text-gray-950 dark:text-gray-50">
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50">
             <Send className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             Solicitar Dados
           </DialogTitle>
@@ -160,7 +160,7 @@ export function DataRequestModal({
 
         <div className="space-y-5 py-4">
           <div className="space-y-2">
-            <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Template</Label>
+            <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Template</Label>
             <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
               <SelectTrigger className="w-full h-9">
                 <SelectValue placeholder="Selecione um template" />
@@ -170,7 +170,7 @@ export function DataRequestModal({
                   <SelectItem key={template.id} value={template.id}>
                     <div className="flex flex-col items-start">
                       <span className="text-xs">{template.name}</span>
-                      <span className="text-[10px] text-gray-600">{template.description}</span>
+                      <span className="text-micro text-gray-600">{template.description}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -180,8 +180,8 @@ export function DataRequestModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Campos a Solicitar</Label>
-              <span className="text-[11px] text-gray-600 dark:text-gray-400">{selectedFields.size} selecionados</span>
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Campos a Solicitar</Label>
+              <span className="text-xs text-gray-600 dark:text-gray-400">{selectedFields.size} selecionados</span>
             </div>
             <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 space-y-1 max-h-[200px] overflow-y-auto">
               {displayedFields.map((field) => (
@@ -203,7 +203,7 @@ export function DataRequestModal({
                     <span className="text-xs text-gray-800 dark:text-gray-200">{field.displayName}</span>
                   </div>
                   {field.type === 'file' && (
-                    <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                    <span className="text-micro bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
                       Arquivo
                     </span>
                   )}
@@ -234,7 +234,7 @@ export function DataRequestModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Canal de Envio</Label>
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Canal de Envio</Label>
               <Select value={channel} onValueChange={(v: 'email' | 'whatsapp' | 'both') => setChannel(v)}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
@@ -264,7 +264,7 @@ export function DataRequestModal({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Expira em
               </Label>
@@ -285,7 +285,7 @@ export function DataRequestModal({
 
           {!isSingleCandidate && (
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                 <User className="w-3 h-3" />
                 Candidatos ({candidates.length})
               </Label>
@@ -294,13 +294,13 @@ export function DataRequestModal({
                   {candidates.slice(0, 10).map((candidate) => (
                     <span
                       key={candidate.id}
-                      className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300"
+                      className="text-micro bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300"
                     >
                       {candidate.name.split(' ')[0]}
                     </span>
                   ))}
                   {candidates.length > 10 && (
-                    <span className="text-[10px] text-gray-500 px-2 py-1">
+                    <span className="text-micro text-gray-500 px-2 py-1">
                       +{candidates.length - 10} mais
                     </span>
                   )}

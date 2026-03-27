@@ -280,12 +280,12 @@ export function EnrichedJDStage({
                   {section.sectionName}
                 </span>
                 {section.suggestions.length > 0 && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+                  <span className="px-1.5 py-0.5 text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
                     +{section.suggestions.length}
                   </span>
                 )}
                 {acceptedCount > 0 && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium bg-green-100 text-green-700 rounded-full flex items-center gap-1">
+                  <span className="px-1.5 py-0.5 text-micro font-medium bg-green-100 text-green-700 rounded-full flex items-center gap-1">
                     <Check className="w-2.5 h-2.5" />
                     {acceptedCount}
                   </span>
@@ -339,7 +339,7 @@ export function EnrichedJDStage({
                                   {suggestion.value}
                                 </span>
                                 <span className={cn(
-                                  "px-1.5 py-0.5 text-[10px] font-medium rounded-full border flex items-center gap-1",
+                                  "px-1.5 py-0.5 text-micro font-medium rounded-full border flex items-center gap-1",
                                   impactColors[suggestion.impactLevel]
                                 )}>
                                   {sourceIcons[suggestion.source]}
@@ -354,7 +354,7 @@ export function EnrichedJDStage({
                               {suggestion.wsiQualityNote && (
                                 <div className="mt-1.5 flex items-center gap-1 text-gray-600 dark:text-gray-400">
                                   <Brain className="w-3 h-3 text-wedo-cyan" />
-                                  <span className="text-[10px] font-medium">
+                                  <span className="text-micro font-medium">
                                     {suggestion.wsiQualityNote}
                                   </span>
                                 </div>
@@ -363,12 +363,12 @@ export function EnrichedJDStage({
                               {suggestion.metrics && Object.keys(suggestion.metrics).length > 0 && (
                                 <div className="mt-1.5 flex flex-wrap gap-2">
                                   {suggestion.metrics.market_percentage && (
-                                    <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.market_percentage}% do mercado
                                     </span>
                                   )}
                                   {suggestion.metrics.company_history_percentage && (
-                                    <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.company_history_percentage}% das suas vagas
                                     </span>
                                   )}

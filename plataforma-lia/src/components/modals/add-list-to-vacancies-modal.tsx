@@ -129,22 +129,22 @@ export function AddListToVacanciesModal({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
-        return <Badge variant="success" className="text-[11px]">Aberta</Badge>
+        return <Badge variant="success" className="text-xs">Aberta</Badge>
       case 'paused':
-        return <Badge variant="warning" className="text-[11px]">Pausada</Badge>
+        return <Badge variant="warning" className="text-xs">Pausada</Badge>
       case 'closed':
-        return <Badge variant="default" className="text-[11px]">Fechada</Badge>
+        return <Badge variant="default" className="text-xs">Fechada</Badge>
       default:
-        return <Badge variant="outline" className="text-[11px]">{status}</Badge>
+        return <Badge variant="outline" className="text-xs">{status}</Badge>
     }
   }
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return <Badge variant="danger" className="text-[11px]">Urgente</Badge>
+        return <Badge variant="danger" className="text-xs">Urgente</Badge>
       case 'high':
-        return <Badge variant="warning" className="text-[11px]">Alta</Badge>
+        return <Badge variant="warning" className="text-xs">Alta</Badge>
       default:
         return null
     }
@@ -158,7 +158,7 @@ export function AddListToVacanciesModal({
             <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             Adicionar a Vagas
           </DialogTitle>
-          <DialogDescription className="text-[11px]">
+          <DialogDescription className="text-xs">
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-2">
                 <div 
@@ -198,7 +198,7 @@ export function AddListToVacanciesModal({
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Briefcase className="w-10 h-10 text-gray-300 mb-3" />
               <p className="text-xs text-gray-800 dark:text-gray-200">Nenhuma vaga aberta encontrada</p>
-              <p className="text-[11px] text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 Crie uma vaga primeiro para poder adicionar candidatos
               </p>
             </div>
@@ -206,7 +206,7 @@ export function AddListToVacanciesModal({
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-10 h-10 text-gray-300 mb-3" />
               <p className="text-xs text-gray-800 dark:text-gray-200">Nenhuma vaga encontrada</p>
-              <p className="text-[11px] text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 Tente buscar com outros termos
               </p>
             </div>
@@ -216,7 +216,7 @@ export function AddListToVacanciesModal({
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="text-[11px] text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1.5"
+                  className="text-xs text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1.5"
                 >
                   <Checkbox 
                     checked={selectedVacancyIds.size === filteredVacancies.length && filteredVacancies.length > 0}
@@ -227,7 +227,7 @@ export function AddListToVacanciesModal({
                     : 'Selecionar todas'
                   }
                 </button>
-                <span className="text-[11px] text-gray-800 dark:text-gray-200">
+                <span className="text-xs text-gray-800 dark:text-gray-200">
                   {filteredVacancies.length} vaga{filteredVacancies.length !== 1 ? 's' : ''} disponíve{filteredVacancies.length !== 1 ? 'is' : 'l'}
                 </span>
               </div>
@@ -255,7 +255,7 @@ export function AddListToVacanciesModal({
                             <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate">
                               {vacancy.title}
                             </h4>
-                            <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-800 dark:text-gray-200">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-800 dark:text-gray-200">
                               {vacancy.department && (
                                 <div className="flex items-center gap-1">
                                   <Building2 className="w-3 h-3" />
@@ -276,7 +276,7 @@ export function AddListToVacanciesModal({
                           </div>
                         </div>
                         {vacancy.funnel_data?.total !== undefined && (
-                          <div className="mt-2 text-[11px] text-gray-800 dark:text-gray-200">
+                          <div className="mt-2 text-xs text-gray-800 dark:text-gray-200">
                             {vacancy.funnel_data.total} candidato{vacancy.funnel_data.total !== 1 ? 's' : ''} no funil
                           </div>
                         )}
@@ -292,7 +292,7 @@ export function AddListToVacanciesModal({
               {selectedVacancyIds.size > 0 && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
                   <Check className="w-4 h-4 text-gray-900 dark:text-gray-100" />
-                  <span className="text-[11px] text-gray-800 dark:text-gray-200">
+                  <span className="text-xs text-gray-800 dark:text-gray-200">
                     <strong>{selectedVacancyIds.size}</strong> vaga{selectedVacancyIds.size !== 1 ? 's' : ''} selecionada{selectedVacancyIds.size !== 1 ? 's' : ''}
                     {' · '}
                     <strong>{candidatesToAdd}</strong> candidato{candidatesToAdd !== 1 ? 's' : ''} serão adicionados

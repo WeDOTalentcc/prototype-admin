@@ -150,7 +150,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             Jobs Autônomos
           </h2>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Gerencie tarefas de background executadas pela LIA
           </p>
         </div>
@@ -213,7 +213,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
               Nenhum job encontrado
             </h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center max-w-sm">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-sm">
               {searchTerm || statusFilter !== 'all'
                 ? 'Tente ajustar os filtros de busca'
                 : 'Crie seu primeiro job autônomo para a LIA executar tarefas em background'}
@@ -268,7 +268,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                 <CardContent className="space-y-3">
                   {job.status === 'running' && job.progress !== undefined && (
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-gray-500">
+                      <div className="flex justify-between text-micro text-gray-500">
                         <span>Progresso</span>
                         <span>{Math.round(job.progress)}%</span>
                       </div>
@@ -277,19 +277,19 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   )}
 
                   {job.result_summary && job.status === 'completed' && (
-                    <p className="text-[10px] text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <p className="text-micro text-gray-600 dark:text-gray-400 line-clamp-2">
                       {job.result_summary}
                     </p>
                   )}
 
                   {job.error_message && job.status === 'failed' && (
-                    <p className="text-[10px] text-red-600 dark:text-red-400 line-clamp-2">
+                    <p className="text-micro text-red-600 dark:text-red-400 line-clamp-2">
                       {job.error_message}
                     </p>
                   )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-micro text-gray-400">
                       {formatDate(job.created_at)}
                     </span>
                     <div className="flex items-center gap-1">
@@ -309,7 +309,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                           ) : (
                             <Play className="h-3 w-3" />
                           )}
-                          <span className="ml-1 text-[10px]">Executar</span>
+                          <span className="ml-1 text-micro">Executar</span>
                         </Button>
                       )}
                       <Button
@@ -322,7 +322,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                         }}
                       >
                         <Eye className="h-3 w-3" />
-                        <span className="ml-1 text-[10px]">Ver</span>
+                        <span className="ml-1 text-micro">Ver</span>
                       </Button>
                     </div>
                   </div>

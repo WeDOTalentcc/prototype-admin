@@ -96,10 +96,10 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   {/* Additional Info for Onboarding */}
                   {moduleId === 'onboarding_automation' && (
                     <div className="mt-6 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-md">
-                      <h4 className="font-medium text-wedo-cyan-dark dark:text-gray-400 mb-2">
+                      <h4 className="font-medium text-gray-800 dark:text-gray-300 mb-2">
                         🚀 Onboarding Automatizado Premium
                       </h4>
-                      <ul className="text-sm text-wedo-cyan-dark dark:text-gray-400 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                         <li>• Kanban visual para novos colaboradores</li>
                         <li>• Templates customizáveis por departamento</li>
                         <li>• Integração WhatsApp Business API</li>

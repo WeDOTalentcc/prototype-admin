@@ -167,7 +167,7 @@ export function ColumnContextMenu({
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
-            <DialogTitle className="text-[14px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <DialogTitle className="text-sm font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Renomear Etapa
             </DialogTitle>
           </DialogHeader>
@@ -178,7 +178,7 @@ export function ColumnContextMenu({
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="mt-1.5 text-[13px]"
+              className="mt-1.5 text-base-ui"
               style={{ fontFamily: "'Open Sans', sans-serif" }}
               onKeyDown={(e) => e.key === 'Enter' && handleRename()}
               autoFocus
@@ -198,7 +198,7 @@ export function ColumnContextMenu({
       <Dialog open={slaOpen} onOpenChange={setSlaOpen}>
         <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
-            <DialogTitle className="text-[14px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <DialogTitle className="text-sm font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Configurar SLA
             </DialogTitle>
           </DialogHeader>
@@ -210,12 +210,12 @@ export function ColumnContextMenu({
               type="number"
               value={slaHours}
               onChange={(e) => setSlaHours(parseInt(e.target.value) || 0)}
-              className="mt-1.5 text-[13px]"
+              className="mt-1.5 text-base-ui"
               style={{ fontFamily: "'Open Sans', sans-serif" }}
               min={0}
               autoFocus
             />
-            <p className="mt-1 text-[11px] text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="mt-1 text-xs text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Tempo maximo de permanencia nesta etapa
             </p>
           </div>
@@ -233,15 +233,15 @@ export function ColumnContextMenu({
       <Dialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
         <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
-            <DialogTitle className="text-[14px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <DialogTitle className="text-sm font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Remover Coluna
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <p className="text-[13px] text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-base-ui text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Tem certeza que deseja remover a coluna <strong>{stage.displayName}</strong>?
             </p>
-            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Candidatos nesta etapa serao movidos para a etapa anterior.
             </p>
           </div>

@@ -503,7 +503,7 @@ export default function ClientFaturamentoPage({
                     </div>
                   </div>
                   {method.is_default && (
-                    <Badge variant="info" className="text-[10px]">Padrão</Badge>
+                    <Badge variant="info" className="text-micro">Padrão</Badge>
                   )}
                 </div>
               ))}

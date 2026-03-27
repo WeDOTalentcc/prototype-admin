@@ -524,7 +524,7 @@ export function CompanyFilterInput({
               >
                 <span>{company.name}</span>
                 {company.domain && (
-                  <span className="text-gray-400 text-[10px]">• {company.domain}</span>
+                  <span className="text-gray-400 text-micro">• {company.domain}</span>
                 )}
                 <button
                   onClick={() => removeCompany(company.name)}

@@ -138,7 +138,7 @@ export function VariableSelector({
                 Variáveis Disponíveis
               </h3>
             </div>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600">
+            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-gray-100 text-gray-600">
               {totalVariables} variáveis
             </Badge>
           </div>
@@ -150,7 +150,7 @@ export function VariableSelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar variável..."
-              className="w-full pl-8 pr-3 py-1.5 text-[11px] border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none"
               style={{ fontFamily: 'Open Sans, sans-serif' }}
             />
           </div>
@@ -159,7 +159,7 @@ export function VariableSelector({
             <button
               onClick={() => setActiveGroup(null)}
               className={cn(
-                "px-2 py-0.5 rounded-md text-[10px] font-medium transition-all",
+                "px-2 py-0.5 rounded-md text-micro font-medium transition-all",
                 !activeGroup 
                   ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900" 
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -172,7 +172,7 @@ export function VariableSelector({
                 key={group.id}
                 onClick={() => setActiveGroup(activeGroup === group.id ? null : group.id)}
                 className={cn(
-                  "px-2 py-0.5 rounded-md text-[10px] font-medium transition-all",
+                  "px-2 py-0.5 rounded-md text-micro font-medium transition-all",
                   activeGroup === group.id 
                     ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900" 
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -188,7 +188,7 @@ export function VariableSelector({
           {filteredRegistry.length === 0 ? (
             <div className="py-6 text-center">
               <Variable className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Nenhuma variável encontrada
               </p>
             </div>
@@ -204,7 +204,7 @@ export function VariableSelector({
         </div>
 
         <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border, #e5e7eb)' }}>
-          <p className="text-[10px] text-gray-500 text-center" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <p className="text-micro text-gray-500 text-center" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             Clique para inserir a variável no template
           </p>
         </div>
@@ -225,7 +225,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
     <div className="mb-2">
       <div className="flex items-center gap-1.5 px-2 py-1">
         <Icon className="w-3 h-3 text-gray-400" />
-        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
           {group.label}
         </span>
       </div>
@@ -238,21 +238,21 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           >
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
-                <code className="text-[9px] font-mono text-gray-600 dark:text-gray-400">
+                <code className="text-micro font-mono text-gray-600 dark:text-gray-400">
                   {"{{}}"}
                 </code>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <code className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <code className="text-micro font-mono px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-gray-300">
                     {`{{${variable.key}}}`}
                   </code>
-                  <span className="text-[11px] font-medium text-gray-900 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <span className="text-xs font-medium text-gray-900 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     {variable.label}
                   </span>
                   <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0" />
                 </div>
-                <p className="text-[10px] text-gray-500 line-clamp-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <p className="text-micro text-gray-500 line-clamp-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   {variable.description}
                 </p>
               </div>

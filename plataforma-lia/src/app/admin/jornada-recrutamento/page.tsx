@@ -357,7 +357,7 @@ export default function JornadaRecrutamentoPage() {
                 <div className="w-2 h-2 rounded-full bg-green-500" />
                 Notificação WhatsApp
               </div>
-              <p className="text-[10px] text-gray-400 pt-2 border-t">
+              <p className="text-micro text-gray-400 pt-2 border-t">
                 Mais automações em breve: SMS, agendamento, testes automáticos
               </p>
             </CardContent>

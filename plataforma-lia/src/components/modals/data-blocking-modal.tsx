@@ -86,20 +86,20 @@ export function DataBlockingModal({
     switch (status) {
       case 'pending':
         return (
-          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
             Aguardando
           </span>
         )
       case 'expired':
         return (
-          <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
             Expirado
           </span>
         )
       case 'never_requested':
       default:
         return (
-          <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
             Não solicitado
           </span>
         )

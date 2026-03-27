@@ -83,8 +83,8 @@ export function CalibrationStage() {
   if (calibrationComplete) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-4">
-        <div className="w-16 h-16 rounded-full bg-[#22C55E]/10 flex items-center justify-center">
-          <Trophy className="w-8 h-8 text-[#22C55E]" />
+        <div className="w-16 h-16 rounded-full bg-status-success/10 flex items-center justify-center">
+          <Trophy className="w-8 h-8 text-status-success" />
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-800 font-semibold" style={{ fontFamily: '"Open Sans", sans-serif' }}>
@@ -95,16 +95,16 @@ export function CalibrationStage() {
           </p>
         </div>
         <div className="flex gap-3 mt-2">
-          <div className="flex items-center gap-1 px-3 py-1.5 bg-[#22C55E]/10 rounded-md">
-            <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
-            <span className="text-xs font-medium text-[#22C55E]">{approvedCandidates.length}</span>
+          <div className="flex items-center gap-1 px-3 py-1.5 bg-status-success/10 rounded-md">
+            <CheckCircle2 className="w-4 h-4 text-status-success" />
+            <span className="text-xs font-medium text-status-success">{approvedCandidates.length}</span>
           </div>
           <div className="flex items-center gap-1 px-3 py-1.5 bg-red-50 rounded-md">
             <XCircle className="w-4 h-4 text-red-500" />
             <span className="text-xs font-medium text-red-500">{rejectedCandidates.length}</span>
           </div>
         </div>
-        <p className="text-[10px] text-gray-400 text-center max-w-xs">
+        <p className="text-micro text-gray-400 text-center max-w-xs">
           O algoritmo de busca foi calibrado com suas preferências. 
           Os candidatos no kanban serão priorizados de acordo.
         </p>
@@ -127,7 +127,7 @@ export function CalibrationStage() {
     <div className="space-y-3">
       {/* Progress bar */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] text-gray-500">
+        <span className="text-micro text-gray-500">
           Calibração: {processedCount}/{Math.min(5, totalCandidates)}
         </span>
         <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -149,7 +149,7 @@ export function CalibrationStage() {
               className={cn(
                 "w-2 h-2 rounded-full transition-all",
                 i === currentCalibrationIndex && "w-4",
-                cStatus === 'approved' ? "bg-[#22C55E]" :
+                cStatus === 'approved' ? "bg-status-success" :
                 cStatus === 'rejected' ? "bg-red-400" :
                 i === currentCalibrationIndex ? "bg-gray-900 dark:bg-gray-50" : "bg-gray-300"
               )}
@@ -161,7 +161,7 @@ export function CalibrationStage() {
       {/* Candidate Card */}
       <div className={cn(
         "rounded-md border overflow-hidden transition-all",
-        status === 'approved' ? "border-[#22C55E] bg-[#22C55E]/5" :
+        status === 'approved' ? "border-status-success bg-status-success/5" :
         status === 'rejected' ? "border-red-400 bg-red-50" :
         "border-gray-200"
       )}>
@@ -182,14 +182,14 @@ export function CalibrationStage() {
               )}
             </div>
             <p className="text-xs text-gray-500 truncate">{currentCandidate.currentRole}</p>
-            <p className="text-[10px] text-gray-400 truncate">{currentCandidate.currentCompany}</p>
+            <p className="text-micro text-gray-400 truncate">{currentCandidate.currentCompany}</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="text-sm font-semibold text-gray-800">{currentCandidate.overallScore || 85}%</span>
             </div>
-            <span className="text-[9px] text-gray-400">Match Score</span>
+            <span className="text-micro text-gray-400">Match Score</span>
           </div>
         </div>
 
@@ -199,17 +199,17 @@ export function CalibrationStage() {
           {currentCandidate.highlights && currentCandidate.highlights.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {currentCandidate.highlights.map((h, i) => (
-                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-[#F8FAFB] rounded-md">
-                  <span className="text-[10px]">{h.icon}</span>
-                  <span className="text-[10px] text-gray-500">{h.label}:</span>
-                  <span className="text-[10px] font-medium text-gray-800">{h.value}</span>
+                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md">
+                  <span className="text-micro">{h.icon}</span>
+                  <span className="text-micro text-gray-500">{h.label}:</span>
+                  <span className="text-micro font-medium text-gray-800">{h.value}</span>
                 </div>
               ))}
             </div>
           )}
 
           {/* Location & Experience */}
-          <div className="flex items-center gap-3 text-[11px]">
+          <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1 text-gray-500">
               <MapPin className="w-3 h-3" />
               {currentCandidate.location}
@@ -227,10 +227,10 @@ export function CalibrationStage() {
           {/* Skills */}
           {currentCandidate.skillMap && currentCandidate.skillMap.length > 0 && (
             <div>
-              <span className="text-[10px] font-semibold text-gray-500 uppercase">Skills</span>
+              <span className="text-micro font-semibold text-gray-500 uppercase">Skills</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {currentCandidate.skillMap.flatMap(sm => sm.skills).slice(0, 8).map((skill, i) => (
-                  <span key={i} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[9px] rounded-full">
+                  <span key={i} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-micro rounded-full">
                     {skill}
                   </span>
                 ))}
@@ -241,15 +241,15 @@ export function CalibrationStage() {
           {/* Match Criteria */}
           {currentCandidate.matchCriteria && currentCandidate.matchCriteria.length > 0 && (
             <div>
-              <span className="text-[10px] font-semibold text-gray-500 uppercase flex items-center gap-1">
+              <span className="text-micro font-semibold text-gray-500 uppercase flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 Critérios de Match
               </span>
               <div className="mt-1 space-y-1">
                 {currentCandidate.matchCriteria.slice(0, 4).map((mc) => (
-                  <div key={mc.id} className="flex items-center gap-2 text-[10px]">
+                  <div key={mc.id} className="flex items-center gap-2 text-micro">
                     {mc.isMatch ? (
-                      <CheckCircle2 className="w-3 h-3 text-[#22C55E]" />
+                      <CheckCircle2 className="w-3 h-3 text-status-success" />
                     ) : (
                       <XCircle className="w-3 h-3 text-red-400" />
                     )}
@@ -264,7 +264,7 @@ export function CalibrationStage() {
         </div>
 
         {/* Actions */}
-        <div className="p-3 bg-[#F8FAFB] border-t border-gray-200 flex items-center gap-2">
+        <div className="p-3 bg-gray-50 border-t border-gray-200 flex items-center gap-2">
           <button
             onClick={goToPrevious}
             disabled={currentCalibrationIndex === 0}
@@ -291,7 +291,7 @@ export function CalibrationStage() {
             className={cn(
               "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
               status === 'approved'
-                ? "bg-[#22C55E] text-white"
+                ? "bg-status-success text-white"
                 : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
             )}
           >
@@ -310,7 +310,7 @@ export function CalibrationStage() {
       </div>
 
       {/* Feedback note */}
-      <p className="text-[9px] text-gray-400 text-center">
+      <p className="text-micro text-gray-400 text-center">
         Suas avaliações ajudam a LIA a entender melhor o perfil ideal para esta vaga
       </p>
     </div>

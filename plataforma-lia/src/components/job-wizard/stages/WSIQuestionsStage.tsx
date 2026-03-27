@@ -155,7 +155,7 @@ export function WSIQuestionsStage() {
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {/* Category badge */}
               <span className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
+                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
                 question.category === 'technical' ? "bg-blue-50 text-blue-600" :
                 question.category === 'behavioral' ? "bg-purple-50 text-purple-600" :
                 question.category === 'situacional' ? "bg-amber-50 text-amber-600" :
@@ -166,7 +166,7 @@ export function WSIQuestionsStage() {
               </span>
               
               {/* Type badge */}
-              <span className="px-1.5 py-0.5 bg-[#F0F0F0] text-gray-500 rounded-full text-[9px]">
+              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-micro">
                 {question.type === 'yes-no' ? 'Sim/Não' :
                  question.type === 'numeric' ? 'Numérica' :
                  question.type === 'multiple-choice' ? 'Múltipla escolha' :
@@ -177,10 +177,10 @@ export function WSIQuestionsStage() {
               <button
                 onClick={() => toggleWSIFlag(question.id)}
                 className={cn(
-                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all",
+                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-micro font-medium transition-all",
                   question.isWSI
-                    ? "bg-[#22C55E]/10 text-[#166534]"
-                    : "bg-gray-100 text-gray-500 hover:bg-[#22C55E]/10"
+                    ? "bg-status-success/10 text-status-success"
+                    : "bg-gray-100 text-gray-500 hover:bg-status-success/10"
                 )}
               >
                 <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
@@ -207,23 +207,23 @@ export function WSIQuestionsStage() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Phone className="w-3.5 h-3.5 text-[#25D366]" />
-          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+          <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
             Perguntas de Triagem WSI
           </span>
         </div>
         <div className="flex items-center gap-1 flex-wrap justify-end">
           <span className={cn(
             "text-xs font-semibold",
-            selectedCount === 5 ? "text-[#22C55E]" : "text-gray-600 dark:text-gray-400"
+            selectedCount === 5 ? "text-status-success" : "text-gray-600 dark:text-gray-400"
           )}>
             {selectedCount}
           </span>
-          <span className="text-[10px] text-gray-400">/ 5 selecionadas</span>
+          <span className="text-micro text-gray-400">/ 5 selecionadas</span>
           {enabledCompanyQuestionsCount > 0 && (
             <>
-              <span className="text-[10px] text-gray-400">(+</span>
-              <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{enabledCompanyQuestionsCount}</span>
-              <span className="text-[10px] text-gray-400">da empresa)</span>
+              <span className="text-micro text-gray-400">(+</span>
+              <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{enabledCompanyQuestionsCount}</span>
+              <span className="text-micro text-gray-400">da empresa)</span>
             </>
           )}
         </div>
@@ -234,7 +234,7 @@ export function WSIQuestionsStage() {
         <div 
           className={cn(
             "h-full transition-all duration-300",
-            selectedCount >= 5 ? "bg-[#22C55E]" : 
+            selectedCount >= 5 ? "bg-status-success" : 
             selectedCount >= 3 ? "bg-gray-900 dark:bg-gray-50" : "bg-amber-400"
           )}
           style={{ width: `${(selectedCount / 5) * 100}%` }}
@@ -243,27 +243,27 @@ export function WSIQuestionsStage() {
 
       {/* Company Default Questions Section */}
       {companyDefaultQuestions.length > 0 && (
-        <div className="mb-4 p-3 bg-[#F8F9FA] rounded-md border border-gray-200">
+        <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-micro text-gray-400">
                 ({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)
               </span>
             </div>
             <button
               onClick={() => setCompanyDefaultQuestions(prev => prev.map(q => ({ ...q, enabled: false })))}
-              className="text-[10px] text-gray-600 dark:text-gray-400 hover:underline"
+              className="text-micro text-gray-600 dark:text-gray-400 hover:underline"
             >
               Desabilitar todas
             </button>
           </div>
           {/* Business Rule Note: These questions are ADDITIONAL to the 5-question limit */}
           <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
-            <p className="text-[9px] text-blue-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-micro text-blue-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
               💡 <strong>Nota:</strong> Estas perguntas são <strong>adicionais</strong> às 5 perguntas WSI. Elas não contam no limite.
             </p>
           </div>
@@ -289,7 +289,7 @@ export function WSIQuestionsStage() {
                     {q.question}
                   </span>
                 </div>
-                <span className="px-1.5 py-0.5 bg-[#F0F0F0] text-gray-500 rounded-full text-[9px]">
+                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-micro">
                   {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'numeric' ? 'Numérica' : q.type === 'multiple-choice' ? 'Múltipla' : 'Aberta'}
                 </span>
               </div>
@@ -313,7 +313,7 @@ export function WSIQuestionsStage() {
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+            <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
               Perguntas Sugeridas por LIA
             </span>
           </div>
@@ -332,7 +332,7 @@ export function WSIQuestionsStage() {
 
       {/* Custom Question Form */}
       {showCustomQuestionForm && (
-        <div className="p-3 bg-[#F8FAFB] rounded-md border border-gray-200 space-y-2">
+        <div className="p-3 bg-gray-50 rounded-md border border-gray-200 space-y-2">
           <textarea
             value={customQuestionText}
             onChange={(e) => setCustomQuestionText(e.target.value)}

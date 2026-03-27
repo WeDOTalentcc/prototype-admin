@@ -62,7 +62,7 @@ export function LiaExpandedPanel({
         {/* Header Padronizado */}
         <div 
           className="flex-shrink-0 px-4 py-3" 
-          style={{ backgroundColor: '#FFFFFF' }}
+          style={{ backgroundColor: 'var(--gray-50)' }}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -71,14 +71,14 @@ export function LiaExpandedPanel({
               </div>
               <div className="min-w-0 flex-1">
                 <h3 
-                  className="text-[13px] font-bold leading-tight truncate text-gray-900 dark:text-gray-50" 
+                  className="text-base-ui font-bold leading-tight truncate text-gray-900 dark:text-gray-50" 
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   {title}
                 </h3>
                 {description && (
                   <p 
-                    className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" 
+                    className="text-xs leading-tight truncate mt-0.5 text-gray-500" 
                     style={{ fontFamily: 'Open Sans, sans-serif' }}
                   >
                     {description}
@@ -168,7 +168,7 @@ export function LiaExpandedPanel({
         {/* Main Content - Scrollable */}
         <div 
           className="flex-1 overflow-y-auto"
-          style={{ backgroundColor: '#FFFFFF' }}
+          style={{ backgroundColor: 'var(--gray-50)' }}
         >
           {children}
         </div>
@@ -177,7 +177,7 @@ export function LiaExpandedPanel({
         {footer && (
           <div 
             className="flex-shrink-0 p-4" 
-            style={{ backgroundColor: '#FFFFFF' }}
+            style={{ backgroundColor: 'var(--gray-50)' }}
           >
             {footer}
           </div>
@@ -216,10 +216,10 @@ export function LiaTabButton({
     return (
       <button
         onClick={onClick}
-        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
           active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
         }`}
-        style={{ fontFamily: 'Open Sans, sans-serif', ...(active ? { backgroundColor: '#374151' } : {}) }}
+        style={{ fontFamily: 'Open Sans, sans-serif', ...(active ? { backgroundColor: 'var(--gray-600)' } : {}) }}
       >
         <div className="flex items-center gap-1.5">
           {icon}
@@ -256,7 +256,7 @@ export function LiaQuickActionChip({ icon, label, onClick }: LiaQuickActionChipP
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-white border border-gray-200 rounded-full hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-full hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all"
       style={{ fontFamily: 'Open Sans, sans-serif' }}
     >
       <span className="flex-shrink-0 text-gray-700">{icon}</span>
@@ -350,7 +350,7 @@ export function LiaChatInput({
           style={{ 
             border: '1px solid #E4EBEF',
             fontFamily: 'Open Sans, sans-serif',
-            backgroundColor: '#FFFFFF'
+            backgroundColor: 'var(--gray-50)'
           }}
         />
         <div className="flex items-center justify-between">
@@ -372,7 +372,7 @@ export function LiaChatInput({
             )}
           </div>
           <Button
-            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' : 'bg-[#E4EBEF] text-[#9CA3AF]'}`}
+            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' : 'bg-gray-100 text-gray-400'}`}
             style={{
               fontFamily: 'Open Sans, sans-serif'
             }}
@@ -398,7 +398,7 @@ export function LiaChatInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         data-testid="chat-input"
-        className="flex-1 text-[13px] bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
+        className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
         style={{ fontFamily: 'Open Sans, sans-serif' }}
       />
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -455,16 +455,16 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           <div 
             data-testid="chat-message"
             data-role="user"
-            className="max-w-[85%] px-3.5 py-2.5 bg-[#F3F4F6] dark:bg-gray-800 rounded-[14px] rounded-br-[4px] ml-auto"
+            className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-[14px] rounded-br-[4px] ml-auto"
           >
             <div 
-              className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200" 
+              className="text-base-ui leading-relaxed text-gray-700 dark:text-gray-200" 
               style={{ fontFamily: 'Open Sans, sans-serif' }}
               dangerouslySetInnerHTML={{ __html: userHtml }}
             />
           </div>
           {timestamp && (
-            <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
               {formatTime(timestamp)}
             </span>
           )}
@@ -484,17 +484,17 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
             LIA
           </span>
         </div>
         <div 
           data-testid="chat-message"
           data-role="lia"
-          className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
+          className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
         >
           <div 
-            className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200" 
+            className="text-base-ui leading-relaxed text-gray-700 dark:text-gray-200" 
             style={{ fontFamily: 'Open Sans, sans-serif' }}
             dangerouslySetInnerHTML={{ __html: liaHtml }}
           />
@@ -506,7 +506,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           className="px-1"
         />
         {timestamp && (
-          <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
             {formatTime(timestamp)}
           </span>
         )}
@@ -523,11 +523,11 @@ export function LiaLoadingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
-          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
             LIA
           </span>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
             <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

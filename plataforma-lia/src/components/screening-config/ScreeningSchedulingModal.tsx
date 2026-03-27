@@ -89,7 +89,7 @@ export function ScreeningSchedulingModal({
               <CalendarCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
                 Agendamento Automático
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -105,7 +105,7 @@ export function ScreeningSchedulingModal({
               <CalendarCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               <div>
                 <Label className="text-xs font-medium text-gray-950">Agendamento Automático</Label>
-                <p className="text-[10px] text-gray-500">Agendar entrevistas automaticamente</p>
+                <p className="text-micro text-gray-500">Agendar entrevistas automaticamente</p>
               </div>
             </div>
             <Switch
@@ -162,7 +162,7 @@ export function ScreeningSchedulingModal({
                 placeholder="Ex: 9h-18h"
                 className="h-9 text-xs border-gray-200 dark:border-gray-600"
               />
-              <p className="text-[10px] text-gray-500">
+              <p className="text-micro text-gray-500">
                 Janela de horários para agendamento (ex: 9h-12h, 14h-18h)
               </p>
             </div>

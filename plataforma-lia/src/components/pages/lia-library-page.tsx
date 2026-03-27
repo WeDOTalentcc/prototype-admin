@@ -341,13 +341,13 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant="secondary" 
-                        className="text-[11px] px-1.5 py-0 h-5 font-open-sans"
+                        className="text-xs px-1.5 py-0 h-5 font-open-sans"
                         style={{ backgroundColor: `${categoryInfo.color}15`, color: categoryInfo.color }}
                       >
                         {categoryInfo.label}
                       </Badge>
                       {command.usageCount && (
-                        <span className="text-[11px] text-gray-800 dark:text-gray-400">
+                        <span className="text-xs text-gray-800 dark:text-gray-400">
                           {command.usageCount} usos
                         </span>
                       )}

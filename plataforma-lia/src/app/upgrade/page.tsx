@@ -56,7 +56,7 @@ export default function UpgradePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16">
       <div className="flex items-center gap-2 mb-6">
-        <Brain className="h-7 w-7 text-[#60BED1]" />
+        <Brain className="h-7 w-7 text-wedo-cyan" />
         <span className="text-xl font-semibold text-gray-900">LIA by WeDOTalent</span>
       </div>
 

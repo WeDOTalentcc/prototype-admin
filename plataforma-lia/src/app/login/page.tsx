@@ -78,7 +78,7 @@ export default function LoginPage() {
             priority
           />
           <span
-            className="block text-right text-gray-950 font-semibold uppercase tracking-[0.18em] text-[18px]"
+            className="block text-right text-gray-950 font-semibold uppercase tracking-[0.18em] text-lg"
             style={{ marginTop: "-5px", paddingRight: "6px" }}
           >
             talent

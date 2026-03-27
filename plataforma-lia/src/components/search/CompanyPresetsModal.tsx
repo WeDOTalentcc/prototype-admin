@@ -396,7 +396,7 @@ export function CompanyPresetsModal({
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <Badge className="text-[10px] bg-gray-100 text-gray-600">
+                          <Badge className="text-micro bg-gray-100 text-gray-600">
                             {preset.companies.length} companies
                           </Badge>
                           <button
@@ -455,7 +455,7 @@ export function CompanyPresetsModal({
                             {preset.description}
                           </div>
                         </div>
-                        <Badge className="text-[10px] bg-gray-100 text-gray-600">
+                        <Badge className="text-micro bg-gray-100 text-gray-600">
                           {preset.companies.length} companies
                         </Badge>
                       </div>

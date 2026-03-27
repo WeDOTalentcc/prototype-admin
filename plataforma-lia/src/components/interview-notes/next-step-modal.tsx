@@ -109,7 +109,7 @@ export function NextStepModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md rounded-md">
         <DialogHeader>
-          <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             Próxima Etapa
           </DialogTitle>
           <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">
@@ -121,7 +121,7 @@ export function NextStepModal({
 
         <div className="space-y-5 py-4">
           <div className="space-y-3">
-            <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+            <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
               Qual é a sua decisão?
             </Label>
             <RadioGroup
@@ -212,7 +212,7 @@ export function NextStepModal({
 
           {decisionType === "approve" && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                 Próxima etapa
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -225,7 +225,7 @@ export function NextStepModal({
                       <div className="flex items-center gap-2">
                         <span>{stage}</span>
                         {suggestedNextStage === stage && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-micro font-medium text-gray-600 dark:text-gray-400">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
                             Sugestão LIA
                           </span>
@@ -246,7 +246,7 @@ export function NextStepModal({
 
           {decisionType === "reject" && (
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                 Enviar feedback ao candidato?
               </Label>
               <RadioGroup
@@ -347,7 +347,7 @@ export function NextStepModal({
                 <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <Label
                     htmlFor="scheduled-date"
-                    className="text-[11px] font-medium text-gray-800 dark:text-gray-200"
+                    className="text-xs font-medium text-gray-800 dark:text-gray-200"
                   >
                     Data de envio
                   </Label>

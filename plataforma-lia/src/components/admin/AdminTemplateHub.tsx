@@ -397,7 +397,7 @@ export function AdminTemplateHub() {
                     ? 'text-white' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
                 }`}
-                style={channelFilter === key ? { backgroundColor: '#111827' } : {}}
+                style={channelFilter === key ? { backgroundColor: 'var(--gray-950)' } : {}}
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
                 {label}
@@ -519,18 +519,18 @@ export function AdminTemplateHub() {
                                         )}
                                       </div>
                                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                        <Badge className={`text-[9px] px-1.5 py-0 ${CHANNEL_LABELS[template.channel || 'email']?.color || ''}`}>
+                                        <Badge className={`text-micro px-1.5 py-0 ${CHANNEL_LABELS[template.channel || 'email']?.color || ''}`}>
                                           {CHANNEL_LABELS[template.channel || 'email']?.label || template.channel}
                                         </Badge>
                                         {template.trigger_type && (
-                                          <Badge className={`text-[9px] px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
+                                          <Badge className={`text-micro px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
                                             {TRIGGER_TYPE_LABELS[template.trigger_type]?.label || template.trigger_type}
                                           </Badge>
                                         )}
                                       </div>
                                     </div>
                                   </div>
-                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-[9px] flex-shrink-0" style={template.isActive ? { backgroundColor: '#111827' } : {}}>
+                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0" style={template.isActive ? { backgroundColor: 'var(--gray-950)' } : {}}>
                                     {template.isActive ? 'Ativo' : 'Inativo'}
                                   </Badge>
                                 </div>
@@ -671,8 +671,8 @@ export function AdminTemplateHub() {
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
-                          <span className="text-[13px] font-semibold text-gray-900">Ajustar com a LIA</span>
-                          <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <span className="text-base-ui font-semibold text-gray-900">Ajustar com a LIA</span>
+                          <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Descreva as alterações desejadas
                           </p>
                         </div>
@@ -714,7 +714,7 @@ export function AdminTemplateHub() {
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
                           </div>
-                          <span className="text-[11px]" style={{ color: '#0d7a8c', fontFamily: 'Open Sans, sans-serif' }}>
+                          <span className="text-xs" style={{ color: '#0d7a8c', fontFamily: 'Open Sans, sans-serif' }}>
                             A LIA está analisando e ajustando o template...
                           </span>
                         </div>
@@ -733,7 +733,7 @@ export function AdminTemplateHub() {
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
-                              <h3 className="text-[15px] font-semibold text-gray-900">
+                              <h3 className="text-sm font-semibold text-gray-900">
                                 Ajustes da LIA
                               </h3>
                               <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -748,12 +748,12 @@ export function AdminTemplateHub() {
                       </div>
                       <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
                         <div>
-                          <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Alterações Realizadas
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#0d7a8c' }}>
+                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#0d7a8c' }}>
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Badge>
@@ -763,7 +763,7 @@ export function AdminTemplateHub() {
                         
                         {aiResultModal.newSubject && (
                           <div>
-                            <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Novo Assunto
                             </label>
                             <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -773,7 +773,7 @@ export function AdminTemplateHub() {
                         )}
 
                         <div>
-                          <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Novo Conteúdo
                           </label>
                           <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -784,7 +784,7 @@ export function AdminTemplateHub() {
                         <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
                           <div className="flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-[11px] text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
                             </p>
                           </div>

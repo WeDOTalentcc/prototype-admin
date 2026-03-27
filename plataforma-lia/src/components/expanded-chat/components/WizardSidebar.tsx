@@ -54,7 +54,7 @@ export function WizardSidebar({
                 />
                 <span 
                   className={cn(
-                    "text-[10px] font-semibold uppercase tracking-wide",
+                    "text-micro font-semibold uppercase tracking-wide",
                     isPhaseActive 
                       ? "text-gray-600 dark:text-gray-400" 
                       : isPhaseCompleted 
@@ -109,7 +109,7 @@ export function WizardSidebar({
                       </div>
                       <span 
                         className={cn(
-                          "text-[11px] font-medium",
+                          "text-xs font-medium",
                           isActive 
                             ? "text-gray-600 dark:text-gray-400" 
                             : isCompleted 
@@ -151,7 +151,7 @@ export function WizardSidebar({
             <div className="flex items-center gap-1 mb-1">
               <span 
                 className={cn(
-                  "text-[8px] font-semibold uppercase tracking-wide",
+                  "text-micro font-semibold uppercase tracking-wide",
                   isPhaseActive 
                     ? "text-gray-600 dark:text-gray-400" 
                     : isPhaseCompleted 
@@ -195,7 +195,7 @@ export function WizardSidebar({
                     {!compact && (
                       <span 
                         className={cn(
-                          "text-[7px] mt-1 truncate max-w-full px-0.5 text-center leading-tight",
+                          "text-micro mt-1 truncate max-w-full px-0.5 text-center leading-tight",
                           isActive 
                             ? "font-semibold text-gray-900 dark:text-gray-50" 
                             : isCompleted 

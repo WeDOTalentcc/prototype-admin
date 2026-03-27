@@ -554,7 +554,7 @@ export function BenefitsTab() {
               onInstructionSave={handleLiaInstructionSave}
               compact
             />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400">Consumido pela LIA</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Consumido pela LIA</span>
           </div>
           {!isEditingBenefits ? (
             <button
@@ -650,7 +650,7 @@ export function BenefitsTab() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-micro">
                     {categoryBenefits.filter(b => b.is_active).length} ativos
                   </Badge>
                   {isExpanded ? (
@@ -672,7 +672,7 @@ export function BenefitsTab() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="mt-2 text-[11px] text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
+                        className="mt-2 text-xs text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
                         onClick={() => {
                           setEditingBenefit({ ...defaultBenefit, category: category.id })
                           setShowBenefitModal(true)
@@ -701,16 +701,16 @@ export function BenefitsTab() {
                                 <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                               )}
                               {benefit.is_mandatory && (
-                                <Badge variant="secondary" className="text-[10px]">Obrigatório</Badge>
+                                <Badge variant="secondary" className="text-micro">Obrigatório</Badge>
                               )}
                               {benefit.is_discount && (
-                                <Badge variant="outline" className="text-[10px] text-red-600 border-red-200">Desconto</Badge>
+                                <Badge variant="outline" className="text-micro text-red-600 border-red-200">Desconto</Badge>
                               )}
                             </div>
                             <p className={`${textStyles.description} truncate mb-1.5`}>
                               {benefit.description || 'Sem descrição'}
                             </p>
-                            <div className="flex items-center gap-3 text-[11px] text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
                               <span className="flex items-center gap-1">
                                 <DollarSign className="w-3.5 h-3.5" />
                                 {formatBenefitValue(benefit)}
@@ -1052,15 +1052,15 @@ export function BenefitsTab() {
                 />
               </div>
               <Select value={templateCategoryFilter} onValueChange={setTemplateCategoryFilter}>
-                <SelectTrigger className="w-[180px] h-8 text-[11px] rounded-md">
+                <SelectTrigger className="w-[180px] h-8 text-xs rounded-md">
                   <SelectValue placeholder="Todas categorias" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all" className="text-[11px]">Todas as categorias</SelectItem>
+                  <SelectItem value="all" className="text-xs">Todas as categorias</SelectItem>
                   {BENEFIT_CATEGORIES.map((cat) => {
                     const Icon = cat.icon
                     return (
-                      <SelectItem key={cat.id} value={cat.id} className="text-[11px]">
+                      <SelectItem key={cat.id} value={cat.id} className="text-xs">
                         <div className="flex items-center gap-1.5">
                           <Icon className={`w-3.5 h-3.5 ${cat.color}`} />
                           <span>{cat.name}</span>
@@ -1078,7 +1078,7 @@ export function BenefitsTab() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-5 text-[10px] px-1.5"
+                  className="h-5 text-micro px-1.5"
                   onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
                 >
                   Limpar
@@ -1104,7 +1104,7 @@ export function BenefitsTab() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 h-6 text-[11px] text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
+                  className="mt-1 h-6 text-xs text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
                   onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
                 >
                   Limpar filtros
@@ -1124,7 +1124,7 @@ export function BenefitsTab() {
                       <span className={`${textStyles.label}`}>
                         {category.name}
                       </span>
-                      <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                      <Badge variant="secondary" className="text-micro h-4 px-1">
                         {catTemplates.length}
                       </Badge>
                     </div>
@@ -1156,7 +1156,7 @@ export function BenefitsTab() {
                                 </p>
                               </div>
                               {alreadyAdded ? (
-                                <div className="flex items-center gap-0.5 text-green-600 text-[10px] flex-shrink-0">
+                                <div className="flex items-center gap-0.5 text-green-600 text-micro flex-shrink-0">
                                   <Check className="w-3.5 h-3.5" />
                                 </div>
                               ) : (

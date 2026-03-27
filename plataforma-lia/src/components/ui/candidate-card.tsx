@@ -265,7 +265,7 @@ export function CandidateCard({
                     <MessageSquare className="w-3.5 h-3.5" />
                     Histórico de Comunicações
                     {totalCommunications > 0 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">
+                      <Badge variant="secondary" className="text-micro px-1.5 py-0 ml-1">
                         {totalCommunications}
                       </Badge>
                     )}
@@ -303,7 +303,7 @@ export function CandidateCard({
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <div className="flex items-center gap-2 text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
                                 <span>{formatDate(comm.sent_at || comm.created_at)}</span>
                                 <span className="flex items-center gap-0.5">
                                   {getStatusIcon(comm.status)}

@@ -176,7 +176,7 @@ export function MessageFeedback({
               <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                 Sugerir correção
               </span>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-micro text-gray-500 dark:text-gray-400 mt-0.5">
                 Ajude a LIA a melhorar suas respostas
               </p>
             </div>

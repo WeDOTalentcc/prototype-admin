@@ -42,7 +42,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
     if (isEditing) return null
     
     const sizeClasses = size === 'sm' 
-      ? 'py-1.5 px-3 text-[11px] gap-1.5' 
+      ? 'py-1.5 px-3 text-xs gap-1.5' 
       : 'py-2 px-4 text-xs gap-2'
     
     return (
@@ -71,7 +71,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
         <button
           onClick={cancelEditing}
           disabled={isSaving}
-          className="inline-flex items-center py-1.5 px-3 text-[11px] font-medium rounded-2xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+          className="inline-flex items-center py-1.5 px-3 text-xs font-medium rounded-2xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
           style={{ fontFamily: 'Open Sans, sans-serif' }}
         >
           {cancelLabel}
@@ -79,7 +79,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
         <button
           onClick={saveAndExit}
           disabled={isSaving}
-          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-[11px] font-medium rounded-2xl text-white transition-colors disabled:opacity-50 bg-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}
+          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium rounded-2xl text-white transition-colors disabled:opacity-50 bg-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}
         >
           {isSaving ? (
             <>

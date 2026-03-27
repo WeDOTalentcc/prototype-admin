@@ -67,7 +67,7 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
         <React.Fragment key={step.id}>
           <div className="flex flex-col items-center">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-medium transition-all ${
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                 step.status === 'completed'
                   ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
                   : step.status === 'current'
@@ -83,7 +83,7 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
               )}
             </div>
             <span
-              className={`mt-1.5 text-[10px] text-center max-w-[70px] ${
+              className={`mt-1.5 text-micro text-center max-w-[70px] ${
                 step.status === 'current'
                   ? 'text-gray-900 font-medium dark:text-gray-100'
                   : step.status === 'completed'
@@ -117,17 +117,17 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <button className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs p-3">
           <div className="space-y-2">
-            <p className="font-medium text-[11px] text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="font-medium text-xs text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               {isInterview ? 'Processo de Agendamento LIA:' : 'Processo de Triagem LIA:'}
             </p>
-            <ul className="space-y-1 text-[11px] text-gray-600 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               {isInterview ? (
                 <>
                   <li className="flex items-start gap-1.5">
@@ -240,7 +240,7 @@ Equipe de Recrutamento`
           icon: <X className="w-5 h-5 text-wedo-coral" />,
           steps: [],
           confirmLabel: 'Confirmar Reprovação',
-          confirmColor: 'bg-wedo-coral hover:bg-[#C54C4D]',
+          confirmColor: 'bg-wedo-coral hover:bg-status-error',
         }
       case 'reject_post_triage':
         return {
@@ -248,7 +248,7 @@ Equipe de Recrutamento`
           icon: <X className="w-5 h-5 text-wedo-coral" />,
           steps: [],
           confirmLabel: 'Enviar Feedback',
-          confirmColor: 'bg-wedo-coral hover:bg-[#C54C4D]',
+          confirmColor: 'bg-wedo-coral hover:bg-status-error',
           showFeedbackActions: true,
         }
       case 'request_urgency':
@@ -309,7 +309,7 @@ Equipe de Recrutamento`
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
-          <DialogTitle className="flex items-center gap-2 text-[15px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             {config.icon}
             {config.title}
           </DialogTitle>
@@ -327,8 +327,8 @@ Equipe de Recrutamento`
               )}
             </div>
             <div>
-              <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>{candidate.name}</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>{candidate.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 {candidate.role} {candidate.currentCompany && `• ${candidate.currentCompany}`}
               </p>
             </div>
@@ -345,10 +345,10 @@ Equipe de Recrutamento`
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     {flowType === 'approve_to_triage' 
                       ? `Contato via ${contactChannels.join(' e ') || 'WhatsApp e Email'}`
                       : 'Candidato receberá link para escolher horário'
@@ -367,10 +367,10 @@ Equipe de Recrutamento`
                   <CheckCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     LIA vai enviar boas-vindas
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     {`Contato via ${contactChannels.join(' e ') || 'Email'} com próximos passos de onboarding`}
                   </p>
                 </div>
@@ -385,10 +385,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Candidato será reprovado
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Como ainda não iniciou a triagem, não é necessário enviar feedback.
                   </p>
                 </div>
@@ -403,10 +403,10 @@ Equipe de Recrutamento`
                   <MessageSquare className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Candidato participou da triagem
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Recomendamos enviar feedback para manter boa experiência do candidato.
                   </p>
                 </div>
@@ -421,10 +421,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Solicitação de Urgência
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
@@ -439,10 +439,10 @@ Equipe de Recrutamento`
                   <Calendar className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     Alterar Horário da Entrevista
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
@@ -484,7 +484,7 @@ Equipe de Recrutamento`
                   }
                 }}
                 disabled={isLoading}
-                className="bg-wedo-coral hover:bg-[#C54C4D] text-white text-xs h-8"
+                className="bg-wedo-coral hover:bg-status-error text-white text-xs h-8"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 <Send className="w-3.5 h-3.5 mr-1" />

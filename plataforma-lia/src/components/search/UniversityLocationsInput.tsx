@@ -191,7 +191,7 @@ export function UniversityLocationsInput({
             </span>
             <button
               onClick={clearAll}
-              className="text-xs text-gray-600 dark:text-gray-400 hover:text-[#50a3b8] font-medium"
+              className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium"
             >
               Clear all
             </button>

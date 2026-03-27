@@ -16,19 +16,19 @@ const STATUS_CONFIG = {
   pending: {
     label: 'Pendente',
     icon: AlertCircle,
-    color: '#9CA3AF',
+    color: 'var(--gray-400)',
     bgColor: 'rgba(156, 163, 175, 0.12)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
-    color: '#F59E0B',
+    color: 'var(--status-warning)',
     bgColor: 'rgba(245, 158, 11, 0.12)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
-    color: '#10B981',
+    color: 'var(--status-success)',
     bgColor: 'rgba(16, 185, 129, 0.12)'
   }
 }
@@ -41,12 +41,12 @@ const SKILL_CONFIG = [
 ]
 
 const LEVEL_CONFIG: Record<string, { label: string; description: string; color: string }> = {
-  'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: '#EF4444' },
-  'A2': { label: 'A2 - Básico', description: 'Nível básico', color: '#F59E0B' },
-  'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: '#F59E0B' },
+  'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: 'var(--status-error)' },
+  'A2': { label: 'A2 - Básico', description: 'Nível básico', color: 'var(--status-warning)' },
+  'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: 'var(--status-warning)' },
   'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: '#3B82F6' },
-  'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: '#10B981' },
-  'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: '#10B981' },
+  'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: 'var(--status-success)' },
+  'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: 'var(--status-success)' },
 }
 
 export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModalProps) {
@@ -110,13 +110,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             </div>
             <div>
               <h2 
-                className="text-[13px] font-semibold text-gray-950 dark:text-gray-50"
+                className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 Teste de Inglês
               </h2>
               <p 
-                className="text-[11px] text-gray-500"
+                className="text-xs text-gray-500"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 {candidate?.name ?? 'Candidato'}
@@ -142,7 +142,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 style={{ color: statusConfig.color }} 
               />
               <span 
-                className="text-[11px] font-medium"
+                className="text-xs font-medium"
                 style={{ fontFamily: "'Open Sans', sans-serif", color: statusConfig.color }}
               >
                 {statusConfig.label}
@@ -150,7 +150,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             </div>
             {testData.completedAt && status === 'completed' && (
               <span 
-                className="text-[10px] text-gray-500"
+                className="text-micro text-gray-500"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
@@ -167,7 +167,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   <div className="flex items-center gap-2 mb-1">
                     <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span 
-                      className="text-[10px] text-gray-500"
+                      className="text-micro text-gray-500"
                       style={{ fontFamily: "'Open Sans', sans-serif" }}
                     >
                       Score Geral
@@ -193,7 +193,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span 
-                      className="text-[10px] text-gray-500"
+                      className="text-micro text-gray-500"
                       style={{ fontFamily: "'Open Sans', sans-serif" }}
                     >
                       Nível CEFR
@@ -206,7 +206,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     {testData.level}
                   </span>
                   <p 
-                    className="text-[10px] mt-0.5 text-gray-600"
+                    className="text-micro mt-0.5 text-gray-600"
                     style={{ fontFamily: "'Open Sans', sans-serif" }}
                   >
                     {levelInfo.description}
@@ -216,7 +216,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
               <div className="mb-4">
                 <p 
-                  className="text-[11px] font-semibold mb-3 text-gray-950 dark:text-gray-50"
+                  className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
                   style={{ fontFamily: "'Open Sans', sans-serif" }}
                 >
                   Breakdown por Habilidade
@@ -237,7 +237,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                           <div className="flex items-center gap-2">
                             <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             <span 
-                              className="text-[11px] font-medium text-gray-950 dark:text-gray-50"
+                              className="text-xs font-medium text-gray-950 dark:text-gray-50"
                               style={{ fontFamily: "'Open Sans', sans-serif" }}
                             >
                               {skill.label}
@@ -245,7 +245,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                           </div>
                           <div className="flex items-center gap-2">
                             <span 
-                              className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                              className="text-micro px-1.5 py-0.5 rounded-full font-medium"
                               style={{ 
                                 fontFamily: "'Open Sans', sans-serif", 
                                 color: LEVEL_CONFIG[skillLevel]?.color ?? '#6B7280',
@@ -255,7 +255,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                               {skillLevel}
                             </span>
                             <span 
-                              className="text-[11px] font-bold"
+                              className="text-xs font-bold"
                               style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(score) }}
                             >
                               {score}
@@ -277,13 +277,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}
               >
                 <p 
-                  className="text-[10px] font-medium mb-1 text-gray-700 dark:text-gray-300"
+                  className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"
                   style={{ fontFamily: "'Open Sans', sans-serif" }}
                 >
                   Sobre o nível CEFR
                 </p>
                 <p 
-                  className="text-[10px] text-gray-600"
+                  className="text-micro text-gray-600"
                   style={{ fontFamily: "'Open Sans', sans-serif" }}
                 >
                   O CEFR (Quadro Europeu Comum de Referência) é um padrão internacional para descrever habilidades linguísticas em uma escala de A1 (iniciante) a C2 (proficiente).
@@ -304,7 +304,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 Teste ainda não iniciado
               </p>
               <p 
-                className="text-[10px] text-center text-gray-400"
+                className="text-micro text-center text-gray-400"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 O candidato receberá um convite para realizar o teste de inglês.
@@ -315,7 +315,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           {status === 'in_progress' && (
             <div 
               className="flex flex-col items-center justify-center py-8"
-              style={{ color: '#F59E0B' }}
+              style={{ color: 'var(--status-warning)' }}
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 
@@ -325,7 +325,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 Teste em andamento
               </p>
               <p 
-                className="text-[10px] text-center text-gray-400"
+                className="text-micro text-center text-gray-400"
                 style={{ fontFamily: "'Open Sans', sans-serif" }}
               >
                 O candidato está realizando o teste de inglês neste momento.

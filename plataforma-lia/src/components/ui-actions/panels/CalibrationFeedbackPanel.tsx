@@ -324,7 +324,7 @@ function CandidateCard({
                 <Badge 
                   key={skill} 
                   variant="outline" 
-                  className="text-[11px] dark:border-gray-600 dark:text-gray-300"
+                  className="text-xs dark:border-gray-600 dark:text-gray-300"
                   style={{ 
                     borderColor: 'var(--lia-border-subtle)', 
                     color: 'var(--lia-text-secondary)' 
@@ -336,7 +336,7 @@ function CandidateCard({
               {candidate.skills.length > 5 && (
                 <Badge 
                   variant="outline" 
-                  className="text-[11px] dark:border-gray-600 dark:text-gray-400"
+                  className="text-xs dark:border-gray-600 dark:text-gray-400"
                   style={{ 
                     borderColor: 'var(--lia-border-subtle)', 
                     color: 'var(--lia-text-tertiary)' 

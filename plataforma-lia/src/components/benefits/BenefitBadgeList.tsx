@@ -95,8 +95,8 @@ export function BenefitBadgeList({
   const remainingCount = activeBenefits.length - maxVisible
 
   const sizeClasses = {
-    sm: "text-[11px] px-1.5 py-0.5 gap-0.5",
-    md: "text-[11px] px-2 py-0.5 gap-1",
+    sm: "text-xs px-1.5 py-0.5 gap-0.5",
+    md: "text-xs px-2 py-0.5 gap-1",
     lg: "text-xs px-2.5 py-1 gap-1.5",
   }
 
@@ -161,7 +161,7 @@ export function BenefitBadgeList({
                         <p className="font-semibold text-gray-950 dark:text-gray-50 text-sm">
                           {benefit.name}
                         </p>
-                        <p className="text-[11px] text-gray-800 dark:text-gray-200">{category.name}</p>
+                        <p className="text-xs text-gray-800 dark:text-gray-200">{category.name}</p>
                       </div>
                     </div>
                     {benefit.is_highlighted && (
@@ -177,7 +177,7 @@ export function BenefitBadgeList({
                   
                   <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-700">
                     {valueDisplay && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-800 dark:text-gray-200">
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-gray-200">
                         {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
                         {benefit.value_type === "percentage" && <Percent className="w-3 h-3" />}
                         {valueDisplay}
@@ -185,7 +185,7 @@ export function BenefitBadgeList({
                     )}
                     
                     {benefit.waiting_period_days > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-800 dark:text-gray-200">
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-gray-200">
                         <Clock className="w-3 h-3" />
                         {getWaitingPeriodLabel(benefit.waiting_period_days)}
                       </span>
@@ -194,13 +194,13 @@ export function BenefitBadgeList({
                   
                   <div className="flex flex-wrap gap-1">
                     {benefit.is_mandatory && (
-                      <Badge variant="secondary" className="text-[11px]">Obrigatório</Badge>
+                      <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
                     )}
                     {benefit.is_discount && (
-                      <Badge variant="outline" className="text-[11px] text-red-600 border-red-200">Desconto</Badge>
+                      <Badge variant="outline" className="text-xs text-red-600 border-red-200">Desconto</Badge>
                     )}
                     {benefit.provider && (
-                      <Badge variant="outline" className="text-[11px]">{benefit.provider}</Badge>
+                      <Badge variant="outline" className="text-xs">{benefit.provider}</Badge>
                     )}
                   </div>
                 </div>

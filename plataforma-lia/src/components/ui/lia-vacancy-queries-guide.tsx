@@ -126,7 +126,7 @@ export function LiaVacancyQueriesGuide({
         align="start" 
         sideOffset={6}
         style={{ 
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--gray-50)',
           borderRadius: '12px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
           border: '1px solid #E8E8E8'
@@ -140,22 +140,22 @@ export function LiaVacancyQueriesGuide({
               border: '1px solid #E8E8E8'
             }}
           >
-            <Search className="w-3.5 h-3.5 text-[#999999] flex-shrink-0" />
+            <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar sugestão..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 bg-transparent text-[11px] outline-none placeholder:text-[#AAAAAA]"
+              className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
               style={{ fontFamily: '"Open Sans", sans-serif', color: '#2D2D2D' }}
               autoFocus
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm('')} 
-                className="p-0.5 rounded-full hover:bg-[#EEEEEE] transition-colors"
+                className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
               >
-                <X className="w-3 h-3 text-[#999999]" />
+                <X className="w-3 h-3 text-gray-400" />
               </button>
             )}
           </div>
@@ -165,10 +165,10 @@ export function LiaVacancyQueriesGuide({
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              "px-2 py-1 rounded-full text-[10px] font-medium transition-all whitespace-nowrap",
+              "px-2 py-1 rounded-full text-micro font-medium transition-all whitespace-nowrap",
               !activeCategory 
                 ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
             )}
             style={{ fontFamily: '"Open Sans", sans-serif' }}
           >
@@ -179,10 +179,10 @@ export function LiaVacancyQueriesGuide({
               key={key}
               onClick={() => setActiveCategory(activeCategory === key ? null : key)}
               className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all whitespace-nowrap",
+                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-all whitespace-nowrap",
                 activeCategory === key 
                   ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                  : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
               )}
               style={{ fontFamily: '"Open Sans", sans-serif' }}
             >
@@ -219,7 +219,7 @@ export function LiaVacancyQueriesGuide({
                   <query.icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                 </div>
                 <span 
-                  className="text-[11px] leading-snug"
+                  className="text-xs leading-snug"
                   style={{ 
                     fontFamily: '"Open Sans", sans-serif',
                     color: '#444444'
@@ -234,15 +234,15 @@ export function LiaVacancyQueriesGuide({
               <div className="py-8 text-center">
                 <div 
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#F5F5F5' }}
+                  style={{ backgroundColor: 'var(--gray-50)' }}
                 >
-                  <Search className="w-3.5 h-3.5 text-[#CCCCCC]" />
+                  <Search className="w-3.5 h-3.5 text-gray-300" />
                 </div>
                 <p 
-                  className="text-[11px]"
+                  className="text-xs"
                   style={{ 
                     fontFamily: '"Open Sans", sans-serif',
-                    color: '#999999'
+                    color: 'var(--gray-400)'
                   }}
                 >
                   Nenhuma sugestão encontrada
@@ -260,10 +260,10 @@ export function LiaVacancyQueriesGuide({
           }}
         >
           <p 
-            className="text-[10px] text-center"
+            className="text-micro text-center"
             style={{ 
               fontFamily: '"Open Sans", sans-serif',
-              color: '#999999'
+              color: 'var(--gray-400)'
             }}
           >
             Clique para inserir no prompt

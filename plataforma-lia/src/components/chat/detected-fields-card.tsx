@@ -67,7 +67,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 italic">
+      <p className="text-micro text-gray-400 dark:text-gray-500 mt-2 italic">
         Campos preenchidos pela LIA com base na sua descrição. Edite se necessário.
       </p>
     </div>

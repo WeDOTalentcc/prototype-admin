@@ -795,7 +795,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                 <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Planejamento de Headcount {selectedYear}
                 {departmentsLoaded && (
-                  <Badge variant="outline" className={`${badgeStyles.success} text-[9px] font-normal`}>
+                  <Badge variant="outline" className={`${badgeStyles.success} text-micro font-normal`}>
                     <RefreshCw className="w-2.5 h-2.5 mr-1" />
                     Sincronizado
                   </Badge>
@@ -993,7 +993,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                           variant="outline"
                           size="sm"
                           onClick={() => addPositionToDepartment(dept.id)}
-                          className={`w-full gap-1.5 py-1.5 text-[10px] rounded-md ${buttonStyles.outline}`}
+                          className={`w-full gap-1.5 py-1.5 text-micro rounded-md ${buttonStyles.outline}`}
                         >
                           <Plus className="w-3 h-3" />
                           Adicionar Posição
@@ -1009,7 +1009,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
           {isEditingWorkforce && (
             <Button
               onClick={addDepartment}
-              className={`w-full mt-4 gap-1.5 py-1.5 text-[11px] rounded-md ${buttonStyles.primary}`}
+              className={`w-full mt-4 gap-1.5 py-1.5 text-xs rounded-md ${buttonStyles.primary}`}
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Departamento

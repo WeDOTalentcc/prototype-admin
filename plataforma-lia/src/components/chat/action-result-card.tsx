@@ -166,7 +166,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         {result.simulated && (
           <div className="flex items-center gap-1 mt-1 text-amber-400/60">
             <AlertCircle className="w-3 h-3" />
-            <span className="text-[10px]">Simulado (aguardando integração real)</span>
+            <span className="text-micro">Simulado (aguardando integração real)</span>
           </div>
         )}
       </div>

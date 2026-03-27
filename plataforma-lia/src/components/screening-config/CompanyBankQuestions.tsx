@@ -44,13 +44,13 @@ export type { CompanyBankQuestionsProps, BankQuestion }
 function CharacterBadge({ character }: { character: 'eliminatoria' | 'classificatoria' }) {
   if (character === 'eliminatoria') {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
         eliminatória
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
       classificatória
     </span>
   )
@@ -102,11 +102,11 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
       >
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <span className="font-['Open_Sans',sans-serif] text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
             Banco da Empresa
           </span>
           {selectedCount > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
               {selectedCount} selecionadas
             </span>
           )}
@@ -135,10 +135,10 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                         className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                       >
                         <span className="text-xs">{catInfo.icon}</span>
-                        <span className="font-['Open_Sans',sans-serif] text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 flex-1 text-left">
+                        <span className="font-['Open_Sans',sans-serif] text-micro uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 flex-1 text-left">
                           {catInfo.label}
                         </span>
-                        <span className="font-['Open_Sans',sans-serif] text-[10px] text-gray-400 dark:text-gray-500">
+                        <span className="font-['Open_Sans',sans-serif] text-micro text-gray-400 dark:text-gray-500">
                           {questions.length}
                         </span>
                         {isCatExpanded ? (
@@ -162,7 +162,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                                   </span>
                                   <CharacterBadge character={q.eliminatory ? 'eliminatoria' : 'classificatoria'} />
                                 </div>
-                                <p className="font-['Open_Sans',sans-serif] text-[10px] text-gray-400 dark:text-gray-500 italic mt-0.5">
+                                <p className="font-['Open_Sans',sans-serif] text-micro text-gray-400 dark:text-gray-500 italic mt-0.5">
                                   {q.contextHint}
                                 </p>
                               </div>
@@ -189,7 +189,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                <span className="font-['Open_Sans',sans-serif] text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+                <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                   Perguntas Selecionadas ({selectedCount})
                 </span>
 
@@ -223,7 +223,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
 
                           <div className="ml-0 mt-1.5 space-y-2 pb-1">
                             <div className="flex items-center gap-2">
-                              <label className="font-['Open_Sans',sans-serif] text-[10px] font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                              <label className="font-['Open_Sans',sans-serif] text-micro font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 Caráter:
                               </label>
                               <select
@@ -238,7 +238,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
 
                             {question.character === 'eliminatoria' && (
                               <div className="flex items-center gap-2">
-                                <label className="font-['Open_Sans',sans-serif] text-[10px] font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                <label className="font-['Open_Sans',sans-serif] text-micro font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                   Resposta esperada:
                                 </label>
                                 <input
@@ -252,7 +252,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                             )}
 
                             {contextHint && (
-                              <p className="font-['Open_Sans',sans-serif] text-[10px] text-gray-400 dark:text-gray-500 italic">
+                              <p className="font-['Open_Sans',sans-serif] text-micro text-gray-400 dark:text-gray-500 italic">
                                 {contextHint}
                               </p>
                             )}
@@ -290,12 +290,12 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                       {(question.expectedAnswer || contextHint) && (
                         <div className="ml-8 mt-1 space-y-0.5">
                           {question.expectedAnswer && (
-                            <p className="font-['Open_Sans',sans-serif] text-[10px] text-gray-500 dark:text-gray-400">
+                            <p className="font-['Open_Sans',sans-serif] text-micro text-gray-500 dark:text-gray-400">
                               <span className="font-semibold">Resposta esperada:</span> {question.expectedAnswer}
                             </p>
                           )}
                           {contextHint && (
-                            <p className="font-['Open_Sans',sans-serif] text-[10px] text-gray-400 dark:text-gray-500 italic">
+                            <p className="font-['Open_Sans',sans-serif] text-micro text-gray-400 dark:text-gray-500 italic">
                               {contextHint}
                             </p>
                           )}

@@ -735,7 +735,7 @@ export function JobInsightsModal({
               <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950">
+              <DialogTitle className="text-sm font-semibold text-gray-950">
                 Relatório de Insights
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -750,7 +750,7 @@ export function JobInsightsModal({
 
         <div className="flex-1 overflow-y-auto py-4 space-y-4">
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               Resumo Agregado
             </h3>
@@ -758,49 +758,49 @@ export function JobInsightsModal({
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Users className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] text-gray-600">Total Candidatos</span>
+                  <span className="text-xs text-gray-600">Total Candidatos</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-950">{aggregateMetrics.totalCandidates}</p>
+                <p className="text-xl font-bold text-gray-950">{aggregateMetrics.totalCandidates}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Filter className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="text-[11px] text-gray-600">Em Triagem</span>
+                  <span className="text-xs text-gray-600">Em Triagem</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-800">{aggregateMetrics.totalScreening}</p>
+                <p className="text-xl font-bold text-gray-800">{aggregateMetrics.totalScreening}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-[11px] text-gray-600">Aprovados</span>
+                  <span className="text-xs text-gray-600">Aprovados</span>
                 </div>
-                <p className="text-[20px] font-bold text-green-700">{aggregateMetrics.totalApproved}</p>
+                <p className="text-xl font-bold text-green-700">{aggregateMetrics.totalApproved}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <XCircle className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="text-[11px] text-gray-600">Rejeitados</span>
+                  <span className="text-xs text-gray-600">Rejeitados</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-700">{aggregateMetrics.totalRejected}</p>
+                <p className="text-xl font-bold text-gray-700">{aggregateMetrics.totalRejected}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="text-[11px] text-gray-600">Tempo/Etapa</span>
+                  <span className="text-xs text-gray-600">Tempo/Etapa</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-950">{aggregateMetrics.avgTimePerStage}<span className="text-xs font-normal text-gray-500">d</span></p>
+                <p className="text-xl font-bold text-gray-950">{aggregateMetrics.avgTimePerStage}<span className="text-xs font-normal text-gray-500">d</span></p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] text-gray-600">Conversão</span>
+                  <span className="text-xs text-gray-600">Conversão</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-900 dark:text-gray-50">{aggregateMetrics.conversionRate}%</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{aggregateMetrics.conversionRate}%</p>
               </div>
             </div>
           </div>
@@ -812,10 +812,10 @@ export function JobInsightsModal({
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div>
-                <h3 className="text-[11px] font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide mb-2">
+                <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide mb-2">
                   Análise LIA
                 </h3>
-                <p className="text-[13px] text-gray-800 leading-relaxed">
+                <p className="text-base-ui text-gray-800 leading-relaxed">
                   {liaTextualAnalysis.summary} {liaTextualAnalysis.performance}
                   {liaTextualAnalysis.volumeInsight && ` ${liaTextualAnalysis.volumeInsight}`}
                   {liaTextualAnalysis.conversionNote && ` ${liaTextualAnalysis.conversionNote}`}
@@ -826,58 +826,58 @@ export function JobInsightsModal({
           </div>
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Funil de Triagem LIA
               {liaFunnelMetrics.isEstimated && (
-                <span className="text-[9px] text-gray-400 font-normal ml-1">(estimativa)</span>
+                <span className="text-micro text-gray-400 font-normal ml-1">(estimativa)</span>
               )}
             </h3>
             <div className="grid grid-cols-5 gap-3">
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <GitBranch className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] text-gray-600">Pipeline LIA</span>
+                  <span className="text-xs text-gray-600">Pipeline LIA</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-950">{liaFunnelMetrics.pipeline_lia}</p>
+                <p className="text-xl font-bold text-gray-950">{liaFunnelMetrics.pipeline_lia}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CalendarCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] text-gray-600">Triagens Agendadas</span>
+                  <span className="text-xs text-gray-600">Triagens Agendadas</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-800">{liaFunnelMetrics.triagens_agendadas}</p>
+                <p className="text-xl font-bold text-gray-800">{liaFunnelMetrics.triagens_agendadas}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <PhoneCall className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-[11px] text-gray-600">Triagens Realizadas</span>
+                  <span className="text-xs text-gray-600">Triagens Realizadas</span>
                 </div>
-                <p className="text-[20px] font-bold text-green-700">{liaFunnelMetrics.triagens_realizadas}</p>
+                <p className="text-xl font-bold text-green-700">{liaFunnelMetrics.triagens_realizadas}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <MessageCircleX className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="text-[11px] text-gray-600">Sem Resposta</span>
+                  <span className="text-xs text-gray-600">Sem Resposta</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-600">{liaFunnelMetrics.sem_resposta}</p>
+                <p className="text-xl font-bold text-gray-600">{liaFunnelMetrics.sem_resposta}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] text-gray-600">Entrevistas Agendadas</span>
+                  <span className="text-xs text-gray-600">Entrevistas Agendadas</span>
                 </div>
-                <p className="text-[20px] font-bold text-gray-900 dark:text-gray-50">{liaFunnelMetrics.entrevistas_agendadas}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{liaFunnelMetrics.entrevistas_agendadas}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <ArrowDownRight className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               Taxa de Conversão por Etapa
             </h3>
@@ -888,9 +888,9 @@ export function JobInsightsModal({
                   <div key={index} className={`rounded-md p-3 border ${colors.bg} ${colors.border}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-gray-700">{rate.from}</span>
+                        <span className="text-xs text-gray-700">{rate.from}</span>
                         <ArrowRight className="w-3 h-3 text-gray-400" />
-                        <span className="text-[11px] text-gray-700">{rate.to}</span>
+                        <span className="text-xs text-gray-700">{rate.to}</span>
                       </div>
                       <div className={`flex items-center gap-1 ${colors.text}`}>
                         {rate.status === 'good' && <CheckCircle className={`w-3.5 h-3.5 ${colors.icon}`} />}
@@ -905,9 +905,9 @@ export function JobInsightsModal({
                           style={{ width: `${Math.min(rate.rate, 100)}%` }}
                         />
                       </div>
-                      <span className={`text-[14px] font-bold ${colors.text}`}>{rate.rate}%</span>
+                      <span className={`text-sm font-bold ${colors.text}`}>{rate.rate}%</span>
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-1">
+                    <p className="text-micro text-gray-500 mt-1">
                       {rate.status === 'good' ? 'Dentro do esperado' : rate.status === 'warning' ? 'Atenção necessária' : 'Gargalo identificado'}
                     </p>
                   </div>
@@ -917,15 +917,15 @@ export function JobInsightsModal({
           </div>
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               Tendência Temporal
-              <span className="text-[9px] text-gray-400 font-normal ml-1">(estimativa)</span>
+              <span className="text-micro text-gray-400 font-normal ml-1">(estimativa)</span>
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-md p-3 border border-gray-200">
-                <h4 className="text-[10px] font-medium text-gray-500 mb-3">Candidatos Acumulados</h4>
+                <h4 className="text-micro font-medium text-gray-500 mb-3">Candidatos Acumulados</h4>
                 <div className="flex items-end justify-between h-20 gap-1">
                   {trendData.candidatesTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
@@ -933,15 +933,15 @@ export function JobInsightsModal({
                         className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-all"
                         style={{ height: `${(val / trendData.maxCandidates) * 100}%` }}
                       />
-                      <span className="text-[9px] text-gray-500 mt-1">{trendData.weeks[i]}</span>
-                      <span className="text-[10px] font-medium text-gray-700">{val}</span>
+                      <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
+                      <span className="text-micro font-medium text-gray-700">{val}</span>
                     </div>
                   ))}
                 </div>
               </div>
               
               <div className="bg-white rounded-md p-3 border border-gray-200">
-                <h4 className="text-[10px] font-medium text-gray-500 mb-3">Taxa de Conversão (%)</h4>
+                <h4 className="text-micro font-medium text-gray-500 mb-3">Taxa de Conversão (%)</h4>
                 <div className="flex items-end justify-between h-20 gap-1">
                   {trendData.conversionTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
@@ -949,8 +949,8 @@ export function JobInsightsModal({
                         className="w-full bg-green-500 rounded-t transition-all"
                         style={{ height: `${(val / 100) * 100}%` }}
                       />
-                      <span className="text-[9px] text-gray-500 mt-1">{trendData.weeks[i]}</span>
-                      <span className="text-[10px] font-medium text-gray-700">{val}%</span>
+                      <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
+                      <span className="text-micro font-medium text-gray-700">{val}%</span>
                     </div>
                   ))}
                 </div>
@@ -959,24 +959,24 @@ export function JobInsightsModal({
           </div>
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               Funil de Recrutamento
             </h3>
             <div className="space-y-2">
               {funnelData.map((stage, index) => (
                 <div key={stage.name} className="flex items-center gap-3">
-                  <div className="w-24 text-[11px] font-medium text-gray-700 text-right">{stage.name}</div>
+                  <div className="w-24 text-xs font-medium text-gray-700 text-right">{stage.name}</div>
                   <div className="flex-1 h-7 bg-gray-100 rounded-md overflow-hidden relative">
                     <div 
                       className={`h-full ${stage.color} transition-all duration-500`}
                       style={{ width: `${stage.percentage}%` }}
                     />
                     <div className="absolute inset-0 flex items-center px-2">
-                      <span className="text-[11px] font-semibold text-gray-800">{stage.value}</span>
+                      <span className="text-xs font-semibold text-gray-800">{stage.value}</span>
                     </div>
                   </div>
-                  <div className="w-12 text-[11px] text-gray-600">{stage.rate}%</div>
+                  <div className="w-12 text-xs text-gray-600">{stage.rate}%</div>
                   {index < funnelData.length - 1 && (
                     <ArrowRight className="w-3 h-3 text-gray-400" />
                   )}
@@ -988,7 +988,7 @@ export function JobInsightsModal({
           {(demographicData.cities.length > 0 || demographicData.workModels.length > 0 || demographicData.genders.length > 0 || demographicData.ageRanges.length > 0 || demographicData.educationLevels.length > 0 || demographicData.experienceYears.length > 0) ? (
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   Por Cidade
                 </h3>
@@ -996,7 +996,7 @@ export function JobInsightsModal({
                   {demographicData.cities.length > 0 ? (
                     demographicData.cities.map((city) => (
                       <div key={city.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{city.name}</span>
+                        <span className="text-xs text-gray-700">{city.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1004,18 +1004,18 @@ export function JobInsightsModal({
                               style={{ width: `${city.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{city.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{city.count}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[11px] text-gray-500 italic">Dados não disponíveis</p>
+                    <p className="text-xs text-gray-500 italic">Dados não disponíveis</p>
                   )}
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   Por Modelo de Trabalho
                 </h3>
@@ -1023,7 +1023,7 @@ export function JobInsightsModal({
                   {demographicData.workModels.length > 0 ? (
                     demographicData.workModels.map((model) => (
                       <div key={model.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{model.name}</span>
+                        <span className="text-xs text-gray-700">{model.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1031,18 +1031,18 @@ export function JobInsightsModal({
                               style={{ width: `${model.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{model.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{model.count}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[11px] text-gray-500 italic">Dados não disponíveis</p>
+                    <p className="text-xs text-gray-500 italic">Dados não disponíveis</p>
                   )}
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                   <UserCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   Por Gênero
                 </h3>
@@ -1050,7 +1050,7 @@ export function JobInsightsModal({
                   {demographicData.genders.length > 0 ? (
                     demographicData.genders.map((gender) => (
                       <div key={gender.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{gender.name}</span>
+                        <span className="text-xs text-gray-700">{gender.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1058,26 +1058,26 @@ export function JobInsightsModal({
                               style={{ width: `${gender.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{gender.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{gender.count}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[11px] text-gray-500 italic">Dados não disponíveis</p>
+                    <p className="text-xs text-gray-500 italic">Dados não disponíveis</p>
                   )}
                 </div>
               </div>
 
               {demographicData.ageRanges.length > 0 && (
                 <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                  <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     Por Faixa Etária
                   </h3>
                   <div className="space-y-2">
                     {demographicData.ageRanges.map((ageRange) => (
                       <div key={ageRange.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{ageRange.name}</span>
+                        <span className="text-xs text-gray-700">{ageRange.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1085,7 +1085,7 @@ export function JobInsightsModal({
                               style={{ width: `${ageRange.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{ageRange.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{ageRange.count}</span>
                         </div>
                       </div>
                     ))}
@@ -1095,14 +1095,14 @@ export function JobInsightsModal({
 
               {demographicData.educationLevels.length > 0 && (
                 <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                  <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                     <Award className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     Por Escolaridade
                   </h3>
                   <div className="space-y-2">
                     {demographicData.educationLevels.map((edu) => (
                       <div key={edu.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{edu.name}</span>
+                        <span className="text-xs text-gray-700">{edu.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1110,7 +1110,7 @@ export function JobInsightsModal({
                               style={{ width: `${edu.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{edu.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{edu.count}</span>
                         </div>
                       </div>
                     ))}
@@ -1120,14 +1120,14 @@ export function JobInsightsModal({
 
               {demographicData.experienceYears.length > 0 && (
                 <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                  <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     Por Anos de Experiência
                   </h3>
                   <div className="space-y-2">
                     {demographicData.experienceYears.map((exp) => (
                       <div key={exp.name} className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-700">{exp.name}</span>
+                        <span className="text-xs text-gray-700">{exp.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
@@ -1135,7 +1135,7 @@ export function JobInsightsModal({
                               style={{ width: `${exp.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-gray-600 w-8 text-right">{exp.count}</span>
+                          <span className="text-micro text-gray-600 w-8 text-right">{exp.count}</span>
                         </div>
                       </div>
                     ))}
@@ -1145,11 +1145,11 @@ export function JobInsightsModal({
             </div>
           ) : (
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Dados Demográficos
               </h3>
-              <p className="text-[11px] text-gray-500 italic">
+              <p className="text-xs text-gray-500 italic">
                 Dados demográficos não disponíveis para as vagas selecionadas.
               </p>
             </div>
@@ -1157,17 +1157,17 @@ export function JobInsightsModal({
 
           {jobs.some(job => job.behavioral_competencies && job.behavioral_competencies.length > 0) && (
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Competências Requeridas
               </h3>
               <div className="space-y-3 max-h-[180px] overflow-y-auto">
                 {jobs.filter(job => job.behavioral_competencies && job.behavioral_competencies.length > 0).map(job => (
                   <div key={job.id} className="bg-white rounded-md p-2.5 border border-gray-200">
-                    <span className="text-[10px] font-medium text-gray-500">{job.title}</span>
+                    <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.behavioral_competencies?.map((comp, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
                           {comp.competency}
                         </span>
                       ))}
@@ -1180,17 +1180,17 @@ export function JobInsightsModal({
 
           {jobs.some(job => job.benefits && job.benefits.length > 0) && (
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Benefícios Oferecidos
               </h3>
               <div className="space-y-3 max-h-[180px] overflow-y-auto">
                 {jobs.filter(job => job.benefits && job.benefits.length > 0).map(job => (
                   <div key={job.id} className="bg-white rounded-md p-2.5 border border-gray-200">
-                    <span className="text-[10px] font-medium text-gray-500">{job.title}</span>
+                    <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.benefits?.map((benefit, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                           {benefit}
                         </span>
                       ))}
@@ -1203,7 +1203,7 @@ export function JobInsightsModal({
 
           {bottlenecks && bottlenecks.length > 0 && (
             <div className="bg-amber-50 rounded-md p-4 border border-amber-200">
-              <h3 className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <AlertOctagon className="w-3.5 h-3.5 text-amber-600" />
                 Gargalos Identificados
               </h3>
@@ -1213,12 +1213,12 @@ export function JobInsightsModal({
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-950">{b.stage}</span>
                       {b.stuckCount > 0 && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        <span className="text-micro px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
                           {b.stuckCount} parados
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-[11px]">
+                    <div className="flex items-center gap-4 text-xs">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3 h-3 text-gray-500" />
                         <span className="text-gray-600">Tempo médio:</span>
@@ -1240,7 +1240,7 @@ export function JobInsightsModal({
 
           {jobs.some(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0) && (
             <div className="bg-red-50 rounded-md p-4 border border-red-200">
-              <h3 className="text-[11px] font-semibold text-red-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5 text-red-600" />
                 Vagas Sem Aprovação
               </h3>
@@ -1250,18 +1250,18 @@ export function JobInsightsModal({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {job.code && (
-                          <span className="text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">{job.code}</span>
+                          <span className="text-micro font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">{job.code}</span>
                         )}
                         <span className="text-xs font-semibold text-gray-950">{job.title}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3 h-3 text-red-500" />
-                        <span className="text-[11px] font-medium text-red-600">
+                        <span className="text-xs font-medium text-red-600">
                           {job.days_open} dias aberta
                         </span>
                       </div>
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-1">
+                    <p className="text-micro text-gray-500 mt-1">
                       {job.candidates_count || 0} candidatos • {job.screening_count || 0} em triagem • Nenhum aprovado
                     </p>
                   </div>
@@ -1272,25 +1272,25 @@ export function JobInsightsModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Análise Salarial
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Faixa da Vaga</span>
+                  <span className="text-xs text-gray-600">Faixa da Vaga</span>
                   <span className="text-xs font-semibold text-gray-950">
                     R$ {salaryData.vagaMin.toLocaleString()} - R$ {salaryData.vagaMax.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Média Pretensão Candidatos</span>
+                  <span className="text-xs text-gray-600">Média Pretensão Candidatos</span>
                   <span className="text-xs font-semibold text-gray-950">
                     R$ {salaryData.mediaInscritos.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Candidatos Dentro da Faixa</span>
+                  <span className="text-xs text-gray-600">Candidatos Dentro da Faixa</span>
                   <span className="text-xs font-semibold text-gray-900 dark:text-gray-50">
                     {salaryData.dentroFaixa} ({salaryData.percentualDentro}%)
                   </span>
@@ -1299,25 +1299,25 @@ export function JobInsightsModal({
             </div>
 
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Indicadores de Qualidade
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Score Médio (Todos)</span>
+                  <span className="text-xs text-gray-600">Score Médio (Todos)</span>
                   <span className={`text-xs font-semibold ${getScoreColor(qualityMetrics.avgScoreTodos)}`}>
                     {qualityMetrics.avgScoreTodos}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Score Médio (Triados)</span>
+                  <span className="text-xs text-gray-600">Score Médio (Triados)</span>
                   <span className={`text-xs font-semibold ${getScoreColor(qualityMetrics.avgScoreTriados)}`}>
                     {qualityMetrics.avgScoreTriados}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
-                  <span className="text-[11px] text-gray-600">Taxa Triagem → Aprovação</span>
+                  <span className="text-xs text-gray-600">Taxa Triagem → Aprovação</span>
                   <span className="text-xs font-semibold text-gray-900 dark:text-gray-50">
                     {qualityMetrics.taxaAprovacao}%
                   </span>
@@ -1328,14 +1328,14 @@ export function JobInsightsModal({
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Métricas WSI
-                <span className="text-[9px] text-gray-400 font-normal ml-1">(estimativa baseada em performance)</span>
+                <span className="text-micro text-gray-400 font-normal ml-1">(estimativa baseada em performance)</span>
               </h3>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-gray-500">Score Médio:</span>
-                <span className="text-[14px] font-bold text-gray-900 dark:text-gray-50">{wsiMetrics.avgWSI}%</span>
+                <span className="text-micro text-gray-500">Score Médio:</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-50">{wsiMetrics.avgWSI}%</span>
               </div>
             </div>
             
@@ -1343,8 +1343,8 @@ export function JobInsightsModal({
               {wsiMetrics.dimensions.map((dim) => (
                 <div key={dim.dimension} className="flex items-center gap-3">
                   <div className="w-24">
-                    <span className="text-[11px] font-medium text-gray-700">{dim.dimension}</span>
-                    <span className="text-[9px] text-gray-500 block">{dim.label}</span>
+                    <span className="text-xs font-medium text-gray-700">{dim.dimension}</span>
+                    <span className="text-micro text-gray-500 block">{dim.label}</span>
                   </div>
                   <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
                     <div 
@@ -1367,7 +1367,7 @@ export function JobInsightsModal({
           </div>
 
           <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-            <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               Insights Categorizados
             </h3>
@@ -1384,14 +1384,14 @@ export function JobInsightsModal({
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="text-xs font-semibold text-gray-950">{insight.title}</h4>
                           {insight.badge && (
-                            <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${
+                            <span className={`text-micro font-medium px-1.5 py-0.5 rounded-full ${
                               insight.type === 'attention' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'
                             }`}>
                               {insight.badge}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-gray-700 leading-relaxed">{insight.description}</p>
+                        <p className="text-xs text-gray-700 leading-relaxed">{insight.description}</p>
                       </div>
                     </div>
                   </div>
@@ -1402,7 +1402,7 @@ export function JobInsightsModal({
 
           {jobs.length > 0 && (
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-              <h3 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Detalhamento por Vaga
               </h3>
@@ -1416,11 +1416,11 @@ export function JobInsightsModal({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {job.code && (
-                              <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">{job.code}</span>
+                              <span className="text-micro font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">{job.code}</span>
                             )}
                             <span className="text-xs font-semibold text-gray-950 truncate">{job.title}</span>
                           </div>
-                          <div className="flex items-center gap-3 text-[11px] text-gray-600">
+                          <div className="flex items-center gap-3 text-xs text-gray-600">
                             <span className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
                               {job.candidates_count || 0} cand.
@@ -1444,11 +1444,11 @@ export function JobInsightsModal({
                         <div className="text-right ml-3">
                           <div className="flex items-center gap-1">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                            <span className={`text-[14px] font-bold ${getScoreColor(job.performance_score)}`}>
+                            <span className={`text-sm font-bold ${getScoreColor(job.performance_score)}`}>
                               {job.performance_score || '--'}%
                             </span>
                           </div>
-                          <span className="text-[10px] text-gray-500">Score LIA</span>
+                          <span className="text-micro text-gray-500">Score LIA</span>
                         </div>
                       </div>
                     </div>
@@ -1466,7 +1466,7 @@ export function JobInsightsModal({
                 variant="outline"
                 size="sm"
                 onClick={handleExportReport}
-                className="h-8 px-3 text-[11px] gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="h-8 px-3 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 Exportar PDF
@@ -1476,7 +1476,7 @@ export function JobInsightsModal({
                 size="sm"
                 onClick={handleSendEmail}
                 disabled={!onSendEmail}
-                className="h-8 px-3 text-[11px] gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="h-8 px-3 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 <Mail className="w-3.5 h-3.5" />
                 Enviar por Email

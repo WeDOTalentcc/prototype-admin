@@ -532,7 +532,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
               href="https://workos.com/docs/directory-sync"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 text-[11px] flex-shrink-0"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 text-xs flex-shrink-0"
             >
               <ExternalLink className="w-3 h-3" />
               Saiba mais
@@ -588,13 +588,13 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-[24px] font-bold text-green-600 dark:text-green-400">{stats.active}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</div>
             <div className={textStyles.description}>Usuários Ativos</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-[24px] font-bold text-purple-600 dark:text-purple-400">{stats.managers}</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.managers}</div>
             <div className={textStyles.description}>Gestores</div>
           </CardContent>
         </Card>
@@ -638,7 +638,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
           <button
             onClick={() => setViewMode('cards')}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               viewMode === 'cards'
                 ? 'bg-white text-gray-950 dark:text-gray-50'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
@@ -648,7 +648,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               viewMode === 'table'
                 ? 'bg-white text-gray-950 dark:text-gray-50'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
@@ -669,7 +669,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <div className="flex items-center gap-2">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className={`${badgeStyles.info} font-medium text-[11px]`}>
+                      <AvatarFallback className={`${badgeStyles.info} font-medium text-xs`}>
                         {user.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
@@ -677,11 +677,11 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                       <h4 className={textStyles.subtitle}>{user.name}</h4>
                       <p className={textStyles.description}>{user.role}</p>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <Badge className={`text-[10px] ${getStatusColor(user.status)}`}>
+                        <Badge className={`text-micro ${getStatusColor(user.status)}`}>
                           {user.status}
                         </Badge>
                         {user.isScimManaged && (
-                          <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-[10px]">
+                          <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
                             <Shield className="w-2.5 h-2.5 mr-0.5" />
                             SSO
                           </Badge>
@@ -714,7 +714,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 text-[10px] text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400">
                     <span className="flex items-center gap-1">
                       <Mail className="w-3 h-3" />
                       {user.email}
@@ -726,7 +726,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   </div>
 
                   {user.isManager && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-[10px]">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-micro">
                       <Users className="w-3 h-3 mr-1" />
                       Gestor
                     </Badge>
@@ -738,7 +738,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                       size="sm"
                       onClick={() => handleResendInvitation(user.id, user.email)}
                       disabled={resendingInvite === user.id}
-                      className="w-full mt-1.5 text-[10px] gap-1.5 h-7"
+                      className="w-full mt-1.5 text-micro gap-1.5 h-7"
                     >
                       {resendingInvite === user.id ? (
                         <>
@@ -765,17 +765,17 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-2 py-2.5 text-left text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Usuário
                     </th>
-                    <th className="px-2 py-2.5 text-left text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Cargo
                     </th>
-                    <th className="px-2 py-2.5 text-left text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
                     {!isSCIMEnabled && (
-                      <th className="px-2 py-2.5 text-center text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-2 py-2.5 text-center text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Ações
                       </th>
                     )}
@@ -788,7 +788,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback className={`${badgeStyles.info} font-medium text-[10px]`}>
+                            <AvatarFallback className={`${badgeStyles.info} font-medium text-micro`}>
                               {user.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -804,11 +804,11 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <Badge className={`${getStatusColor(user.status)} text-[10px]`}>
+                          <Badge className={`${getStatusColor(user.status)} text-micro`}>
                             {user.status}
                           </Badge>
                           {user.isScimManaged && (
-                            <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-[10px]">
+                            <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               SSO
                             </Badge>

@@ -130,7 +130,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         return (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px]">ID da Vaga (opcional)</Label>
+              <Label className="text-xs">ID da Vaga (opcional)</Label>
               <Input
                 placeholder="Ex: vaga-123"
                 value={config.job_vacancy_id || ''}
@@ -138,7 +138,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Limite de Candidatos</Label>
+              <Label className="text-xs">Limite de Candidatos</Label>
               <Input
                 type="number"
                 placeholder="50"
@@ -152,7 +152,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         return (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Query de Busca</Label>
+              <Label className="text-xs">Query de Busca</Label>
               <Input
                 placeholder="Ex: desenvolvedor senior python"
                 value={config.query || ''}
@@ -160,7 +160,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Localização</Label>
+              <Label className="text-xs">Localização</Label>
               <Input
                 placeholder="Ex: São Paulo, SP"
                 value={config.location || ''}
@@ -173,7 +173,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         return (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Tipo de Relatório</Label>
+              <Label className="text-xs">Tipo de Relatório</Label>
               <Select
                 value={config.report_type || ''}
                 onValueChange={(value) => setConfig({ ...config, report_type: value })}
@@ -195,7 +195,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         return (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px]">Template de Email</Label>
+              <Label className="text-xs">Template de Email</Label>
               <Select
                 value={config.template_id || ''}
                 onValueChange={(value) => setConfig({ ...config, template_id: value })}
@@ -232,7 +232,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-[11px]">Tipo de Job</Label>
+            <Label className="text-xs">Tipo de Job</Label>
             <Select value={jobType} onValueChange={setJobType}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de job" />
@@ -252,14 +252,14 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
               </SelectContent>
             </Select>
             {selectedJobType && (
-              <p className="text-[10px] text-gray-500 mt-1">
+              <p className="text-micro text-gray-500 mt-1">
                 {selectedJobType.description}
               </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[11px]">Nome do Job</Label>
+            <Label className="text-xs">Nome do Job</Label>
             <Input
               placeholder="Ex: Triagem Semanal - Desenvolvedores"
               value={jobName}
@@ -271,7 +271,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
           {renderConfigFields()}
 
           <div className="space-y-1.5">
-            <Label className="text-[11px]">Agendamento</Label>
+            <Label className="text-xs">Agendamento</Label>
             <div className="grid grid-cols-2 gap-2">
               {SCHEDULE_OPTIONS.map((option) => {
                 const Icon = option.icon
@@ -281,7 +281,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                     type="button"
                     onClick={() => setScheduleType(option.value)}
                     className={cn(
-                      "flex items-center justify-center gap-2 p-3 rounded-md border transition-all text-[11px]",
+                      "flex items-center justify-center gap-2 p-3 rounded-md border transition-all text-xs",
                       scheduleType === option.value
                         ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400"
                         : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
@@ -298,7 +298,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
           {scheduleType === 'scheduled' && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[11px]">Data</Label>
+                <Label className="text-xs">Data</Label>
                 <Input
                   type="date"
                   value={scheduledDate}
@@ -308,7 +308,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px]">Hora</Label>
+                <Label className="text-xs">Hora</Label>
                 <Input
                   type="time"
                   value={scheduledTime}

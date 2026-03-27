@@ -414,10 +414,10 @@ export function UniversalTransitionModal({
           <div className="mx-4 mt-2 flex items-start gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
             <CalendarClock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-[10px] font-semibold text-amber-800 dark:text-amber-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-micro font-semibold text-amber-800 dark:text-amber-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Entrevista agendada
               </p>
-              <p className="text-[10px] text-amber-700 dark:text-amber-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-micro text-amber-700 dark:text-amber-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 {interviewAlert.name} — {interviewAlert.date}
               </p>
             </div>
@@ -451,7 +451,7 @@ export function UniversalTransitionModal({
                       {candidate.name}
                     </p>
                     {(candidate.role || candidate.currentTitle || candidate.currentCompany) && (
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate leading-tight mt-0.5">
+                      <p className="text-micro text-gray-500 dark:text-gray-400 truncate leading-tight mt-0.5">
                         {candidate.role || candidate.currentTitle}{(candidate.role || candidate.currentTitle) && candidate.currentCompany ? ' • ' : ''}{candidate.currentCompany}
                       </p>
                     )}
@@ -460,7 +460,7 @@ export function UniversalTransitionModal({
               ) : (
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{candidates.length}</span>
+                    <span className="text-micro font-semibold text-gray-600 dark:text-gray-300">{candidates.length}</span>
                   </div>
                   <p className="text-xs font-medium text-gray-900 dark:text-gray-50">
                     {candidates.length} candidatos selecionados
@@ -469,7 +469,7 @@ export function UniversalTransitionModal({
               )}
 
               <div className="flex items-center justify-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
                   {fromStageDisplayName}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
@@ -478,7 +478,7 @@ export function UniversalTransitionModal({
                     type="button"
                     onClick={() => stageSelectable && setShowStageSelector(!showStageSelector)}
                     className={cn(
-                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-white dark:bg-gray-700",
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-semibold border bg-white dark:bg-gray-700",
                       stageSelectable
                         ? "text-gray-900 dark:text-gray-50 border-gray-900 dark:border-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                         : "text-gray-900 dark:text-gray-50 border-gray-900 dark:border-gray-300 cursor-default"
@@ -495,7 +495,7 @@ export function UniversalTransitionModal({
                           type="button"
                           onClick={() => handleStageSelect(stage)}
                           className={cn(
-                            "w-full text-left px-3 py-1.5 text-[11px] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+                            "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
                             stage.id === selectedToStage
                               ? "bg-gray-100 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-50"
                               : "text-gray-700 dark:text-gray-300"
@@ -520,19 +520,19 @@ export function UniversalTransitionModal({
                       className="w-full flex items-center justify-between py-1.5 group"
                       onClick={() => setShowAllPerCandidate(prev => !prev)}
                     >
-                      <span className="font-sans text-[11px] font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                      <span className="font-sans text-xs font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
                         Motivo por candidato
                         {isBulkPredicting && (
                           <Loader2 className="w-3 h-3 animate-spin text-wedo-cyan" />
                         )}
                         {!isBulkPredicting && Object.keys(predictedSubStatuses).length > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-[9px] font-normal text-wedo-cyan">
+                          <span className="inline-flex items-center gap-0.5 text-micro font-normal text-wedo-cyan">
                             <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
                             IA
                           </span>
                         )}
                       </span>
-                      <span className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                      <span className="flex items-center gap-1 text-micro text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                         {candidates.length} candidatos
                         {showAllPerCandidate ? (
                           <ChevronUp className="w-3.5 h-3.5" />
@@ -564,7 +564,7 @@ export function UniversalTransitionModal({
                                   {c.avatar ? (
                                     <img src={c.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
                                   ) : (
-                                    <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{initials}</span>
+                                    <span className="text-micro font-semibold text-gray-600 dark:text-gray-300">{initials}</span>
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -572,7 +572,7 @@ export function UniversalTransitionModal({
                                     {c.name}
                                   </p>
                                   {(c.role || c.currentCompany) && (
-                                    <p className="font-sans text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                    <p className="font-sans text-xs text-gray-500 dark:text-gray-400 truncate">
                                       {c.role}{c.role && c.currentCompany ? ' @ ' : ''}{c.currentCompany}
                                     </p>
                                   )}
@@ -585,12 +585,12 @@ export function UniversalTransitionModal({
                                     value={candidateSubStatus}
                                     onValueChange={(value) => handlePerCandidateSubStatusChange(c.id, value)}
                                   >
-                                    <SelectTrigger className="w-[180px] h-7 rounded-md text-[11px]">
+                                    <SelectTrigger className="w-[180px] h-7 rounded-md text-xs">
                                       <SelectValue placeholder="Selecione..." />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {currentSubStatusOptions.map((opt) => (
-                                        <SelectItem key={opt.code} value={opt.code} className="text-[11px]">
+                                        <SelectItem key={opt.code} value={opt.code} className="text-xs">
                                           {opt.display_name}
                                         </SelectItem>
                                       ))}
@@ -599,7 +599,7 @@ export function UniversalTransitionModal({
                                 </div>
                               </div>
                               {reasoning && (
-                                <p className="font-sans text-[11px] text-gray-500 dark:text-gray-400 mt-1.5 ml-[38px] flex items-center gap-1">
+                                <p className="font-sans text-xs text-gray-500 dark:text-gray-400 mt-1.5 ml-[38px] flex items-center gap-1">
                                   <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
                                   {reasoning}
                                 </p>
@@ -615,7 +615,7 @@ export function UniversalTransitionModal({
                 {/* Action mode */}
                 {behaviorConfig && (
                   <div className="space-y-1">
-                    <Label className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <Label className="text-micro font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Ação
                     </Label>
                     <RadioGroup
@@ -636,12 +636,12 @@ export function UniversalTransitionModal({
                         <div className="flex-1 min-w-0">
                           <label htmlFor="action-lia" className="flex items-center gap-1 cursor-pointer">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
-                            <span className="text-[11px] font-medium text-gray-900 dark:text-gray-50">LIA automático</span>
-                            <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1 py-px rounded-full ml-auto">
+                            <span className="text-xs font-medium text-gray-900 dark:text-gray-50">LIA automático</span>
+                            <span className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1 py-px rounded-full ml-auto">
                               Recomendado
                             </span>
                           </label>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                          <p className="text-micro text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                             {behaviorConfig.description}
                           </p>
                         </div>
@@ -659,13 +659,13 @@ export function UniversalTransitionModal({
                         <RadioGroupItem value="manual" id="action-manual" className="mt-0.5" />
                         <div className="flex-1">
                           <label htmlFor="action-manual" className="flex items-center gap-1 cursor-pointer">
-                            <span className="text-[11px] font-medium text-gray-900 dark:text-gray-50">Manual</span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-gray-50">Manual</span>
                           </label>
                           {action === 'manual' && onOpenSpecializedModal && ACTION_BEHAVIOR_MODALS[currentActionBehavior] && (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="mt-1.5 h-6 text-[10px] gap-1 rounded"
+                              className="mt-1.5 h-6 text-micro gap-1 rounded"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleOpenManualModal()
@@ -688,7 +688,7 @@ export function UniversalTransitionModal({
                         onClick={() => setAction('just_move')}
                       >
                         <RadioGroupItem value="just_move" id="action-move" />
-                        <label htmlFor="action-move" className="text-[11px] font-medium text-gray-900 dark:text-gray-50 cursor-pointer">
+                        <label htmlFor="action-move" className="text-xs font-medium text-gray-900 dark:text-gray-50 cursor-pointer">
                           Apenas mover
                         </label>
                       </div>
@@ -699,7 +699,7 @@ export function UniversalTransitionModal({
                 {/* Generic action mode (no behaviorConfig) */}
                 {!behaviorConfig && (
                   <div className="space-y-1">
-                    <Label className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <Label className="text-micro font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Ação
                     </Label>
                     <RadioGroup
@@ -719,7 +719,7 @@ export function UniversalTransitionModal({
                         <RadioGroupItem value="lia_auto" id="action-lia-generic" />
                         <label htmlFor="action-lia-generic" className="flex items-center gap-1 cursor-pointer">
                           <Brain className="w-3 h-3 text-wedo-cyan" />
-                          <span className="text-[11px] font-medium text-gray-900 dark:text-gray-50">LIA automático</span>
+                          <span className="text-xs font-medium text-gray-900 dark:text-gray-50">LIA automático</span>
                         </label>
                       </div>
                       <div
@@ -732,7 +732,7 @@ export function UniversalTransitionModal({
                         onClick={() => setAction('just_move')}
                       >
                         <RadioGroupItem value="just_move" id="action-move-generic" />
-                        <label htmlFor="action-move-generic" className="text-[11px] font-medium text-gray-900 dark:text-gray-50 cursor-pointer">
+                        <label htmlFor="action-move-generic" className="text-xs font-medium text-gray-900 dark:text-gray-50 cursor-pointer">
                           Apenas mover
                         </label>
                       </div>
@@ -760,16 +760,16 @@ export function UniversalTransitionModal({
         {/* SUB-STATUS ROW (separate band above footer buttons) */}
         {currentSubStatusOptions.length > 0 && (
           <div className="flex items-center justify-end gap-2 w-full px-5 py-2.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-            <span className="text-[11px] font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
               {isRejectedBatch ? 'Motivo padrão:' : isRejectedStage ? 'Motivo:' : 'Sub-status da etapa:'}
             </span>
             <Select value={subStatus} onValueChange={handleGlobalSubStatusChange}>
-              <SelectTrigger className="w-[220px] h-8 rounded-md text-[11px] bg-white dark:bg-gray-800">
+              <SelectTrigger className="w-[220px] h-8 rounded-md text-xs bg-white dark:bg-gray-800">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent className="z-[9999]" position="popper" sideOffset={4} side="top">
                 {currentSubStatusOptions.map((opt) => (
-                  <SelectItem key={opt.code} value={opt.code} className="text-[11px]">
+                  <SelectItem key={opt.code} value={opt.code} className="text-xs">
                     {opt.display_name}
                   </SelectItem>
                 ))}
@@ -791,7 +791,7 @@ export function UniversalTransitionModal({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 text-[11px] font-medium rounded-md border-gray-300 text-gray-600 hover:bg-gray-50 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:border-gray-600 dark:text-gray-400"
+                  className="h-9 px-3 text-xs font-medium rounded-md border-gray-300 text-gray-600 hover:bg-gray-50 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:border-gray-600 dark:text-gray-400"
                   onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage })}
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-1.5" />

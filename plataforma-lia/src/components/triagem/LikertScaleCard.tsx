@@ -76,10 +76,10 @@ export function LikertScaleCard({
       </div>
 
       <div className="flex justify-between">
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
           {labels[0]}
         </span>
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
           {labels[labels.length - 1]}
         </span>
       </div>

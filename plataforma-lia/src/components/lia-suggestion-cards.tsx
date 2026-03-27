@@ -78,7 +78,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="mt-2 text-[11px] text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
+            className="mt-2 text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
           >
             <RefreshCw className="w-3 h-3 mr-1" />
             Atualizar
@@ -91,7 +91,7 @@ export function LiaSuggestionCards({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
           Sugestões da LIA
         </h4>
         {onRefresh && (
@@ -99,7 +99,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="h-6 px-2 text-[10px] text-gray-400 hover:text-gray-900 dark:hover:text-gray-50"
+            className="h-6 px-2 text-micro text-gray-400 hover:text-gray-900 dark:hover:text-gray-50"
           >
             <RefreshCw className="w-3 h-3" />
           </Button>
@@ -129,23 +129,23 @@ export function LiaSuggestionCards({
                     </h5>
                     <Badge 
                       variant="outline" 
-                      className="text-[9px] px-1.5 py-0 h-4 shrink-0"
+                      className="text-micro px-1.5 py-0 h-4 shrink-0"
                     >
                       {typeInfo.label}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-gray-600 line-clamp-2">
+                  <p className="text-xs text-gray-600 line-clamp-2">
                     {suggestion.description}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge 
                       variant="secondary" 
-                      className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-600"
+                      className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600"
                     >
                       {suggestion.category}
                     </Badge>
                     {suggestion.metadata?.count && (
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-micro text-gray-400">
                         {suggestion.metadata.count as number} item(s)
                       </span>
                     )}

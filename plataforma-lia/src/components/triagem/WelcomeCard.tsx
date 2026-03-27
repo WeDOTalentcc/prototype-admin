@@ -42,8 +42,8 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </h1>
         </div>
 
-        <div className="flex items-start gap-3 p-4 bg-[#60BED1]/10 rounded-md">
-          <LIAIcon size="sm" className="flex-shrink-0 bg-[#60BED1]/10" />
+        <div className="flex items-start gap-3 p-4 bg-wedo-cyan/10 rounded-md">
+          <LIAIcon size="sm" className="flex-shrink-0 bg-wedo-cyan/10" />
           <div className="text-sm text-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif] leading-relaxed">
             <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
               Olá, {config.candidateName}! Eu sou a LIA 👋

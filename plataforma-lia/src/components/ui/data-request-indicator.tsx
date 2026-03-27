@@ -58,7 +58,7 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   expired: {
     icon: <Clock className="w-3 h-3" />,
     label: 'Expirado',
-    color: '#EF4444',
+    color: 'var(--status-error)',
     bgColor: 'rgba(239, 68, 68, 0.15)',
   },
   cancelled: {
@@ -166,16 +166,16 @@ export function DataRequestIndicator({
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-micro font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Campos Solicitados
               </p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {allFields.map((field) => (
                   <div key={field.id} className="flex items-center gap-2 text-xs">
                     {field.status === 'completed' ? (
-                      <Check className="w-3 h-3 text-[#5aa078] flex-shrink-0" />
+                      <Check className="w-3 h-3 text-wedo-green flex-shrink-0" />
                     ) : (
-                      <Clock className="w-3 h-3 text-[#c58a5e] flex-shrink-0" />
+                      <Clock className="w-3 h-3 text-wedo-orange flex-shrink-0" />
                     )}
                     <span className={cn(
                       "truncate",

@@ -132,7 +132,7 @@ function OnboardingStepsChecklist({ steps }: { steps: OnboardingStep[] }) {
             >
               <Circle className="w-3.5 h-3.5" />
               <span className="truncate">{step.label}</span>
-              <span className="text-[10px]">(Dados indisponíveis)</span>
+              <span className="text-micro">(Dados indisponíveis)</span>
             </div>
           )
         }

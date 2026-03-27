@@ -309,7 +309,7 @@ export function ExcludedCompaniesInput({
             >
               <span>{company.name}</span>
               {company.domain && (
-                <span className="text-amber-500 text-[10px]">• {company.domain}</span>
+                <span className="text-amber-500 text-micro">• {company.domain}</span>
               )}
               <button
                 onClick={() => removeCompany(company.name)}

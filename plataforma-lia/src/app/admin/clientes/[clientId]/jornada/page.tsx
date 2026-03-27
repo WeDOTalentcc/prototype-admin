@@ -31,11 +31,11 @@ interface RecruitmentStage {
 }
 
 const DEFAULT_STAGES: RecruitmentStage[] = [
-  { id: 'applied', name: 'Candidatura', color: '#9CA3AF', isActive: true, order: 1 },
+  { id: 'applied', name: 'Candidatura', color: 'var(--gray-400)', isActive: true, order: 1 },
   { id: 'screening', name: 'Triagem', isActive: true, order: 2 },
-  { id: 'interview', name: 'Entrevista', color: '#F59E0B', isActive: true, order: 3 },
+  { id: 'interview', name: 'Entrevista', color: 'var(--status-warning)', isActive: true, order: 3 },
   { id: 'technical', name: 'Avaliação Técnica', color: '#8B5CF6', isActive: true, order: 4 },
-  { id: 'offer', name: 'Proposta', color: '#10B981', isActive: true, order: 5 },
+  { id: 'offer', name: 'Proposta', color: 'var(--status-success)', isActive: true, order: 5 },
   { id: 'hired', name: 'Contratado', color: '#059669', isActive: true, order: 6 }
 ]
 

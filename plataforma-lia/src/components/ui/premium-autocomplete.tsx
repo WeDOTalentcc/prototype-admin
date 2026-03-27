@@ -171,7 +171,7 @@ export function PremiumAutocomplete({
           <div key={category}>
             <div
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide",
+                "flex items-center gap-2 px-3 py-1.5 text-micro font-medium uppercase tracking-wide",
                 config.bgColor,
                 config.color
               )}

@@ -71,7 +71,7 @@ export function InputEvaluationStage() {
       
       {/* Seção: Critérios Detectados */}
       <div className="mb-4">
-        <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Critérios Detectados
         </h4>
         <div className="space-y-2">
@@ -89,7 +89,7 @@ export function InputEvaluationStage() {
                 className={cn(
                   "flex items-center gap-2.5 py-2 px-3 rounded-md transition-all duration-300",
                   isDetected 
-                    ? "bg-[#F0FAF8]" 
+                    ? "bg-gray-50" 
                     : "bg-white"
                 )}
                 style={{ 
@@ -100,7 +100,7 @@ export function InputEvaluationStage() {
                   className={cn(
                     "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300",
                     isDetected 
-                      ? "bg-[#22C55E]" 
+                      ? "bg-status-success" 
                       : "border border-gray-300"
                   )}
                 >
@@ -110,13 +110,13 @@ export function InputEvaluationStage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p 
-                    className="text-[11px] font-medium text-gray-800 transition-colors duration-300"
+                    className="text-xs font-medium text-gray-800 transition-colors duration-300"
                     style={{ fontFamily: '"Open Sans", sans-serif' }}
                   >
                     {item.label}
                   </p>
                   {isDetected && displayValue && (
-                    <p className="text-[10px] mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <p className="text-micro mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                       {displayValue}
                     </p>
                   )}
@@ -130,10 +130,10 @@ export function InputEvaluationStage() {
       {/* Progress Summary */}
       <div className="mt-3 p-2.5 rounded-md bg-white">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-micro text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             Detectando critérios...
           </span>
-          <span className="text-[10px] font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-micro font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             {detectedCount} / {totalCount}
           </span>
         </div>

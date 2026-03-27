@@ -1010,7 +1010,11 @@
       "Bash(wc -l /home/runner/workspace/plataforma-lia/src/components/ui/*.tsx)",
       "Bash(gh auth:*)",
       "Bash(TOKEN=\"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\" curl -s -H \"Authorization: token $TOKEN\" \"https://api.github.com/orgs/WeDOTalent/repos\")",
-      "Bash(find /home/runner/workspace/plataforma-lia -maxdepth 3 -type f \\\\\\(-name *.config.js -o -name *.config.ts -o -name nuxt.config.* \\\\\\))"
+      "Bash(find /home/runner/workspace/plataforma-lia -maxdepth 3 -type f \\\\\\(-name *.config.js -o -name *.config.ts -o -name nuxt.config.* \\\\\\))",
+      "Bash(xargs sed:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -roh \"#[0-9a-fA-F]\\\\{3,8\\\\}\" plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(awk 'NR>80')"
     ]
   }
 }

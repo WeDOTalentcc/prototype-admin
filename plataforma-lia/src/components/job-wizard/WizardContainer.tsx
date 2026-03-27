@@ -73,17 +73,17 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         onClick={() => handleStageNavigate(stage, index)}
       >
         <div className={cn(
-          "w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-semibold",
+          "w-4 h-4 rounded-full flex items-center justify-center text-micro font-semibold",
           isCurrent && "bg-gray-900 dark:bg-gray-50 text-white",
-          isPast && "bg-[#22C55E] text-white",
+          isPast && "bg-status-success text-white",
           !isCurrent && !isPast && "border border-gray-300 text-gray-400"
         )}>
           {isPast ? <Check className="w-2.5 h-2.5" /> : index + 1}
         </div>
         <span className={cn(
-          "text-[10px] font-medium",
+          "text-micro font-medium",
           isCurrent && "text-gray-600 dark:text-gray-400",
-          isPast && "text-[#22C55E]",
+          isPast && "text-status-success",
           !isCurrent && !isPast && "text-gray-400"
         )} style={{ fontFamily: '"Open Sans", sans-serif' }}>
           {stageConfig?.title || stage}
@@ -94,7 +94,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
 
   return (
     <div className={cn(
-      "flex flex-col bg-[#F8FAFB] h-full",
+      "flex flex-col bg-gray-50 h-full",
       inline ? "rounded-md border border-gray-200" : "fixed inset-0 z-50"
     )}>
       {/* Header with phase navigation */}
@@ -109,11 +109,11 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             </span>
           </div>
           <div className="h-4 w-px bg-gray-200" />
-          <div className="flex items-center gap-1 bg-[#F0F0F0] rounded-md px-2 py-1">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-md px-2 py-1">
             {WIZARD_PHASES.map((phase, phaseIndex) => (
               <React.Fragment key={phase.id}>
                 <span className={cn(
-                  "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                  "text-micro font-medium px-2 py-0.5 rounded-full",
                   currentPhase.id === phase.id
                     ? "bg-gray-900 dark:bg-gray-50 text-white"
                     : "text-gray-500"
@@ -206,13 +206,13 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           {validation.warnings.length > 0 && (
             <div className="flex items-center gap-1 text-amber-500">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span className="text-[10px]">{validation.warnings[0]}</span>
+              <span className="text-micro">{validation.warnings[0]}</span>
             </div>
           )}
           
           {/* Progress indicator */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-gray-500">
+            <span className="text-micro text-gray-500">
               {currentStageIndex + 1} de {WIZARD_STAGES.length}
             </span>
             <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -231,7 +231,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
               if (onJobCreated) onJobCreated()
               onClose()
             }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#22C55E] text-white rounded-md text-xs font-medium hover:bg-[#16A34A] transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-md text-xs font-medium hover:bg-status-success transition-all"
             style={{ fontFamily: '"Open Sans", sans-serif' }}
           >
             <Check className="w-4 h-4" />

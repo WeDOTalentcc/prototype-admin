@@ -375,8 +375,8 @@ export function ScreeningQuestionsPanel({
             <Zap className={cn("h-4 w-4", screeningModel === 'compact' ? "text-gray-900" : "text-gray-400")} />
             <span className="text-xs font-medium text-gray-800">Compacto</span>
           </div>
-          <p className="text-[11px] text-gray-600">8 perguntas WSI • ~15 min</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">Triagem rápida para alto volume</p>
+          <p className="text-xs text-gray-600">8 perguntas WSI • ~15 min</p>
+          <p className="text-micro text-gray-500 mt-0.5">Triagem rápida para alto volume</p>
         </div>
         <div
           className={cn(
@@ -391,8 +391,8 @@ export function ScreeningQuestionsPanel({
             <Target className={cn("h-4 w-4", screeningModel === 'full' ? "text-gray-900" : "text-gray-400")} />
             <span className="text-xs font-medium text-gray-800">Completo</span>
           </div>
-          <p className="text-[11px] text-gray-600">12 perguntas WSI • ~30 min</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">Avaliação aprofundada</p>
+          <p className="text-xs text-gray-600">12 perguntas WSI • ~30 min</p>
+          <p className="text-micro text-gray-500 mt-0.5">Avaliação aprofundada</p>
         </div>
       </div>
     )
@@ -415,12 +415,12 @@ export function ScreeningQuestionsPanel({
 
     return (
       <div className="mb-3">
-        <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1.5">Distribuição por Bloco</p>
+        <p className="text-micro font-medium text-gray-500 uppercase tracking-wide mb-1.5">Distribuição por Bloco</p>
         <div className="flex flex-wrap items-center gap-1.5">
           {distributionItems.map((item, idx) => (
             <React.Fragment key={item.key}>
-              {idx > 0 && <span className="text-gray-300 text-[10px]">|</span>}
-              <Badge variant="outline" className="text-[10px] px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+              {idx > 0 && <span className="text-gray-300 text-micro">|</span>}
+              <Badge variant="outline" className="text-micro px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
                 Bloco {item.key} · {item.name}: {item.count} {item.count === 1 ? 'pergunta' : 'perguntas'}
               </Badge>
             </React.Fragment>
@@ -438,7 +438,7 @@ export function ScreeningQuestionsPanel({
         {qualityWarnings.map((warning, idx) => (
           <div key={idx} className="flex items-start gap-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-            <p className="text-[10px] text-amber-700">{warning}</p>
+            <p className="text-micro text-amber-700">{warning}</p>
           </div>
         ))}
       </div>
@@ -460,9 +460,9 @@ export function ScreeningQuestionsPanel({
         {configItems.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center text-center">
             <item.icon className="h-4 w-4 text-gray-500 mb-1" />
-            <span className="text-[9px] text-gray-400 uppercase tracking-wide">{item.label}</span>
-            <span className="text-[11px] font-semibold text-gray-800">{item.value}</span>
-            <span className="text-[9px] text-gray-400">{item.sublabel}</span>
+            <span className="text-micro text-gray-400 uppercase tracking-wide">{item.label}</span>
+            <span className="text-xs font-semibold text-gray-800">{item.value}</span>
+            <span className="text-micro text-gray-400">{item.sublabel}</span>
           </div>
         ))}
       </div>
@@ -504,11 +504,11 @@ export function ScreeningQuestionsPanel({
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1">
-                <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border", badge.color)}>
+                <Badge variant="outline" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
                   {badge.label}
                 </Badge>
                 {isAffirmativeQuestion && (
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-green-50 text-green-700 border-green-200">
                     Não eliminatória
                   </Badge>
                 )}
@@ -527,7 +527,7 @@ export function ScreeningQuestionsPanel({
             <p className="text-xs text-gray-800 leading-relaxed">
               {question.text}
             </p>
-            <div className="flex items-center gap-3 text-[10px] text-gray-500">
+            <div className="flex items-center gap-3 text-micro text-gray-500">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
                 {question.weight ? `${Math.round(question.weight * 100)}%` : '75%'}
@@ -566,7 +566,7 @@ export function ScreeningQuestionsPanel({
         >
           <div className="flex items-center gap-2.5">
             <div className={cn(
-              "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium",
+              "w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium",
               block.editable ? "bg-gray-200 text-gray-700" : "bg-gray-100 text-gray-500"
             )}>
               {block.id}
@@ -576,19 +576,19 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium text-gray-800">{block.name}</span>
                 {block.id === 2 && isAffirmative && (
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border bg-purple-50 text-purple-700 border-purple-200">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-purple-50 text-purple-700 border-purple-200">
                     Vaga Afirmativa
                   </Badge>
                 )}
               </div>
-              <span className="text-[10px] text-gray-500">{block.duration}</span>
+              <span className="text-micro text-gray-500">{block.duration}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {!block.editable && (
               <Badge 
                 variant="outline" 
-                className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-500 border-gray-200"
+                className="text-micro px-1.5 py-0 bg-gray-100 text-gray-500 border-gray-200"
               >
                 <Lock className="h-2.5 w-2.5 mr-0.5" />
                 Automático
@@ -597,7 +597,7 @@ export function ScreeningQuestionsPanel({
             {block.editable && questions.length > 0 && (
               <Badge 
                 variant="outline" 
-                className="text-[10px] px-1.5 py-0"
+                className="text-micro px-1.5 py-0"
                 style={{ backgroundColor: selectedInBlock > 0 ? '#A8D5B7' : '#f5f5f5', color: selectedInBlock > 0 ? '#1a5a34' : '#666', borderColor: selectedInBlock > 0 ? '#7ec9a0' : '#ddd' }}
               >
                 {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
@@ -622,33 +622,33 @@ export function ScreeningQuestionsPanel({
                     </p>
                   </div>
                   <div className="p-3">
-                    <div className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
+                    <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                       {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                     </div>
                   </div>
                   <div className="px-3 py-2 border-t border-gray-200 bg-gray-50">
-                    <p className="text-[10px] text-gray-500 italic">
+                    <p className="text-micro text-gray-500 italic">
                       {WSI_AUTOMATIC_MESSAGES[block.id].note}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="p-3 rounded-md bg-gray-50/50 border border-gray-100">
-                  <p className="text-[11px] text-gray-500 italic">
+                  <p className="text-xs text-gray-500 italic">
                     {block.description}
                   </p>
                 </div>
               )
             ) : questions.length === 0 ? (
               <div className="p-3 rounded-md bg-gray-50/50 border border-gray-100 border-dashed">
-                <p className="text-[11px] text-gray-400 italic text-center">
+                <p className="text-xs text-gray-400 italic text-center">
                   Nenhuma pergunta neste bloco
                 </p>
                 <div className="flex justify-center mt-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[10px] text-gray-700"
+                    className="h-6 text-micro text-gray-700"
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedBlockForSuggestion(block.id)
@@ -707,7 +707,7 @@ export function ScreeningQuestionsPanel({
             </p>
             <div className="flex flex-wrap gap-1">
               {badges.map((badge, idx) => (
-                <Badge key={idx} variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border", badge.color)}>
+                <Badge key={idx} variant="outline" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
                   {badge.label}
                 </Badge>
               ))}
@@ -744,7 +744,7 @@ export function ScreeningQuestionsPanel({
               variant="outline"
               size="sm"
               onClick={() => setHasGenerated(false)}
-              className="text-[11px]"
+              className="text-xs"
             >
               Tentar novamente
             </Button>
@@ -762,10 +762,10 @@ export function ScreeningQuestionsPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-wedo-cyan" />
-            <CardTitle className="text-[14px] font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>Roteiro WSI de Triagem</CardTitle>
+            <CardTitle className="text-sm font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>Roteiro WSI de Triagem</CardTitle>
             <Badge 
               variant="outline" 
-              className="text-[10px] px-1.5 py-0 rounded-full bg-green-50 text-green-700 border-green-200"
+              className="text-micro px-1.5 py-0 rounded-full bg-green-50 text-green-700 border-green-200"
             >
               Ativo
             </Badge>
@@ -809,8 +809,8 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-start gap-2">
                 <Brain className="h-4 w-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div>
-                  <p className="text-[11px] font-medium text-gray-800">Metodologia WSI</p>
-                  <p className="text-[10px] text-gray-600 leading-relaxed mt-0.5">
+                  <p className="text-xs font-medium text-gray-800">Metodologia WSI</p>
+                  <p className="text-micro text-gray-600 leading-relaxed mt-0.5">
                     A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, 
                     calibrando complexidade conforme senioridade e skills da vaga.
                   </p>
@@ -822,7 +822,7 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Brain className="h-3.5 w-3.5 text-wedo-cyan" />
-                  <span className="text-[11px] font-medium text-gray-700">Sugestões da LIA</span>
+                  <span className="text-xs font-medium text-gray-700">Sugestões da LIA</span>
                 </div>
               </div>
 
@@ -832,7 +832,7 @@ export function ScreeningQuestionsPanel({
                     suggestionsForSelectedBlock.map(renderSuggestionCard)
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-[11px] text-gray-500">
+                      <p className="text-xs text-gray-500">
                         Todas as sugestões foram adicionadas ao roteiro
                       </p>
                     </div>
@@ -846,12 +846,12 @@ export function ScreeningQuestionsPanel({
                     value={String(selectedBlockForSuggestion)} 
                     onValueChange={(v) => setSelectedBlockForSuggestion(Number(v))}
                   >
-                    <SelectTrigger className="h-8 text-[11px] flex-1">
+                    <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="Selecionar bloco" />
                     </SelectTrigger>
                     <SelectContent>
                       {editableBlocks.map(block => (
-                        <SelectItem key={block.id} value={String(block.id)} className="text-[11px]">
+                        <SelectItem key={block.id} value={String(block.id)} className="text-xs">
                           {block.id}. {block.name}
                         </SelectItem>
                       ))}
@@ -860,7 +860,7 @@ export function ScreeningQuestionsPanel({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 text-[11px] px-3"
+                    className="h-8 text-xs px-3"
                     onClick={handleGenerateMoreForBlock}
                     disabled={isGeneratingMore}
                   >
@@ -880,7 +880,7 @@ export function ScreeningQuestionsPanel({
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-4 text-[11px] text-gray-600">
+          <div className="flex items-center gap-4 text-xs text-gray-600">
             <span>{selectedCount} pergunta(s) no roteiro</span>
             <span className="text-gray-400">|</span>
             <span>Blocos editáveis: 2, 3, 4, 5</span>
@@ -888,7 +888,7 @@ export function ScreeningQuestionsPanel({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-[11px] text-gray-500"
+            className="h-7 text-xs text-gray-500"
           >
             Fechar
           </Button>

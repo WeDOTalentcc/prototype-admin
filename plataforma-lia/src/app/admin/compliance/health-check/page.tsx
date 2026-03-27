@@ -547,7 +547,7 @@ export default function HealthCheckPage() {
                   </div>
                   <Progress value={fw.compliancePercentage} className="h-1.5 mt-2" />
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-[10px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <div className="grid grid-cols-2 gap-1 text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span>{fw.implemented} impl.</span>
@@ -659,9 +659,9 @@ export default function HealthCheckPage() {
                               {item.requirement}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="lilac" className="text-[10px]">{FRAMEWORK_NAMES[item.framework] || item.framework}</Badge>
+                              <Badge variant="lilac" className="text-micro">{FRAMEWORK_NAMES[item.framework] || item.framework}</Badge>
                               {item.comment && (
-                                <span className="text-[10px] flex items-center gap-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                <span className="text-micro flex items-center gap-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
                                   <MessageSquare className="w-3 h-3" />
                                   Comentário
                                 </span>

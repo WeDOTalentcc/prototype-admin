@@ -287,7 +287,7 @@ export default function ComplianceDashboardPage() {
                     {lgpdStatus}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={lgpdBadgeVariant as any} className="text-[10px]">
+                    <Badge variant={lgpdBadgeVariant as any} className="text-micro">
                       {lgpdStats?.dpoActive ? 'DPO Ativo' : 'Verificar'}
                     </Badge>
                   </div>
@@ -319,7 +319,7 @@ export default function ComplianceDashboardPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <Badge 
                       variant={biasAlertCount > 0 ? 'warning' : 'success'} 
-                      className="text-[10px]"
+                      className="text-micro"
                     >
                       {biasAlertCount > 0 ? 'Atenção' : 'OK'}
                     </Badge>
@@ -384,7 +384,7 @@ export default function ComplianceDashboardPage() {
                       </h3>
                       <Badge 
                         variant={fw.status === 'active' ? (fw.progress >= 70 ? 'success' : 'warning') : 'default'}
-                        className="text-[10px]"
+                        className="text-micro"
                         style={fw.status === 'implementing' ? { backgroundColor: 'var(--eleven-bg-secondary)', color: 'var(--eleven-text-tertiary)' } : undefined}
                       >
                         {fw.status === 'active' ? `${Math.round(fw.progress)}%` : 'Em impl.'}
@@ -483,7 +483,7 @@ export default function ComplianceDashboardPage() {
                             ? 'warning' 
                             : getSeverityBadgeVariant(alert.severity)
                       }
-                      className="text-[10px] shrink-0"
+                      className="text-micro shrink-0"
                     >
                       {alert.status === 'resolved' 
                         ? 'Resolvido' 

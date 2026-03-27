@@ -74,7 +74,7 @@ export function ScreeningChannelsModal({
               <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
                 Canais de Comunicação
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -92,7 +92,7 @@ export function ScreeningChannelsModal({
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">WhatsApp</Label>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">Canal principal de triagem</p>
+                <p className="text-micro text-gray-500 dark:text-gray-400">Canal principal de triagem</p>
               </div>
             </div>
             <Switch
@@ -108,7 +108,7 @@ export function ScreeningChannelsModal({
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">Chat Web</Label>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">Widget integrado no site</p>
+                <p className="text-micro text-gray-500 dark:text-gray-400">Widget integrado no site</p>
               </div>
             </div>
             <Switch
@@ -124,7 +124,7 @@ export function ScreeningChannelsModal({
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">Ligação</Label>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">Chamada de voz automatizada</p>
+                <p className="text-micro text-gray-500 dark:text-gray-400">Chamada de voz automatizada</p>
               </div>
             </div>
             <Switch

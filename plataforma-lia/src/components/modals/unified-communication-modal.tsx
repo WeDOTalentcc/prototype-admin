@@ -539,8 +539,8 @@ export function UnifiedCommunicationModal({
                   >
                     <Mail className="w-4 h-4" />
                     <div className="text-left">
-                      <div className="text-[11px] font-medium">Email</div>
-                      <div className="text-[10px] opacity-70 truncate max-w-[120px]">{safeCandidate.email}</div>
+                      <div className="text-xs font-medium">Email</div>
+                      <div className="text-micro opacity-70 truncate max-w-[120px]">{safeCandidate.email}</div>
                     </div>
                   </button>
                   <button
@@ -554,8 +554,8 @@ export function UnifiedCommunicationModal({
                   >
                     <MessageSquare className="w-4 h-4" />
                     <div className="text-left">
-                      <div className="text-[11px] font-medium">WhatsApp</div>
-                      <div className="text-[10px] opacity-70">{safeCandidate.phone}</div>
+                      <div className="text-xs font-medium">WhatsApp</div>
+                      <div className="text-micro opacity-70">{safeCandidate.phone}</div>
                     </div>
                   </button>
                   <button
@@ -572,8 +572,8 @@ export function UnifiedCommunicationModal({
                       <MessageSquare className="w-3.5 h-3.5" />
                     </div>
                     <div className="text-left">
-                      <div className="text-[11px] font-medium">Ambos</div>
-                      <div className="text-[10px] opacity-70">Email + WA</div>
+                      <div className="text-xs font-medium">Ambos</div>
+                      <div className="text-micro opacity-70">Email + WA</div>
                     </div>
                   </button>
                 </div>
@@ -604,7 +604,7 @@ export function UnifiedCommunicationModal({
                           <iType.icon className={`w-3.5 h-3.5 mb-1 ${
                             interviewSettings.interviewType === iType.id ? 'text-gray-900' : 'text-gray-600'
                           }`} />
-                          <div className="text-[10px] font-medium text-gray-800">{iType.name}</div>
+                          <div className="text-micro font-medium text-gray-800">{iType.name}</div>
                         </button>
                       ))}
                     </div>
@@ -627,7 +627,7 @@ export function UnifiedCommunicationModal({
                           <plat.icon className={`w-3.5 h-3.5 mx-auto mb-1 ${
                             interviewSettings.platform === plat.id ? 'text-gray-900' : 'text-gray-600'
                           }`} />
-                          <div className="text-[10px] text-gray-800">{plat.name}</div>
+                          <div className="text-micro text-gray-800">{plat.name}</div>
                         </button>
                       ))}
                     </div>
@@ -773,10 +773,10 @@ export function UnifiedCommunicationModal({
                           <div className="flex items-center gap-2">
                             <Clock className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                             <div>
-                              <span className="text-[11px] font-medium text-amber-800">
+                              <span className="text-xs font-medium text-amber-800">
                                 Vincular após completar triagem
                               </span>
-                              <p className="text-[10px] text-amber-600 mt-0.5">
+                              <p className="text-micro text-amber-600 mt-0.5">
                                 Candidato só entra na vaga se responder a triagem
                               </p>
                             </div>
@@ -798,7 +798,7 @@ export function UnifiedCommunicationModal({
                           ) : (
                             <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
                           )}
-                          <span className={`text-[10px] ${type === 'triagem' && linkOnCompletionOnly ? 'text-amber-700' : 'text-green-700'}`}>
+                          <span className={`text-micro ${type === 'triagem' && linkOnCompletionOnly ? 'text-amber-700' : 'text-green-700'}`}>
                             {type === 'triagem' && linkOnCompletionOnly ? (
                               isBulkMode 
                                 ? `${selectedCandidates.length} candidato(s) serão vinculados à vaga "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}" somente após completarem a triagem`
@@ -841,7 +841,7 @@ export function UnifiedCommunicationModal({
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                       <div className="flex items-center gap-2 mb-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-[10px] bg-gray-900 dark:bg-gray-50 text-white">RH</AvatarFallback>
+                          <AvatarFallback className="text-micro bg-gray-900 dark:bg-gray-50 text-white">RH</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className={textStyles.bodySmall}>Equipe de Recrutamento</div>
@@ -893,7 +893,7 @@ export function UnifiedCommunicationModal({
                 <div className="mt-4 bg-amber-50 border border-amber-200 rounded-md p-3">
                   <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-[10px] text-amber-700">
+                    <div className="text-micro text-amber-700">
                       <strong>Fluxo de Triagem:</strong>
                       <ul className="mt-1 space-y-0.5 ml-2">
                         <li>• Candidato recebe a mensagem com link</li>
@@ -909,7 +909,7 @@ export function UnifiedCommunicationModal({
                 <div className="mt-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3">
                   <div className="flex items-start gap-2">
                     <CalendarDays className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
-                    <div className="text-[10px] text-wedo-cyan-dark">
+                    <div className="text-micro text-wedo-cyan-dark">
                       <strong>Após Confirmação:</strong>
                       <ul className="mt-1 space-y-0.5 ml-2">
                         <li>• Candidato escolhe horário disponível</li>
@@ -926,7 +926,7 @@ export function UnifiedCommunicationModal({
                 <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3">
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-[10px] text-green-700">
+                    <div className="text-micro text-green-700">
                       <strong>Dica:</strong> Um feedback bem estruturado fortalece a marca empregadora e mantém bom relacionamento com candidatos.
                     </div>
                   </div>

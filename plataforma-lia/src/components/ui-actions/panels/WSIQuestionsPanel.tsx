@@ -410,7 +410,7 @@ export function WSIQuestionsPanel({
                     className="text-xs flex flex-col gap-1 py-2 px-1"
                   >
                     <span>{AREA_LABELS[area].icon}</span>
-                    <span className="hidden sm:inline text-[11px]">{AREA_LABELS[area].label}</span>
+                    <span className="hidden sm:inline text-xs">{AREA_LABELS[area].label}</span>
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -439,7 +439,7 @@ export function WSIQuestionsPanel({
                           </p>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             <Badge 
-                              className="text-[11px]"
+                              className="text-xs"
                               style={{
                                 backgroundColor: 'var(--lia-bg-tertiary)',
                                 color: 'var(--lia-text-secondary)',
@@ -449,7 +449,7 @@ export function WSIQuestionsPanel({
                               Bloom: {template.bloom_level}
                             </Badge>
                             <Badge 
-                              className="text-[11px]"
+                              className="text-xs"
                               style={{
                                 backgroundColor: 'var(--lia-bg-tertiary)',
                                 color: 'var(--lia-text-secondary)',
@@ -460,7 +460,7 @@ export function WSIQuestionsPanel({
                             </Badge>
                             <Badge 
                               variant="outline" 
-                              className="text-[11px]"
+                              className="text-xs"
                               style={{
                                 borderColor: 'var(--lia-border-default)',
                                 color: 'var(--lia-text-tertiary)'
@@ -469,7 +469,7 @@ export function WSIQuestionsPanel({
                               {template.competency}
                             </Badge>
                             <span 
-                              className="text-[11px] flex items-center gap-1 dark:text-gray-400"
+                              className="text-xs flex items-center gap-1 dark:text-gray-400"
                               style={{ color: 'var(--lia-text-tertiary)' }}
                             >
                               <Clock className="h-3 w-3" />
@@ -703,7 +703,7 @@ function QuestionCard({
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <Badge 
-                className="text-[11px]"
+                className="text-xs"
                 style={{
                   backgroundColor: 'var(--lia-bg-tertiary)',
                   color: 'var(--lia-text-secondary)',
@@ -713,7 +713,7 @@ function QuestionCard({
                 {question.bloom_level}
               </Badge>
               <Badge 
-                className="text-[11px]"
+                className="text-xs"
                 style={{
                   backgroundColor: 'var(--lia-bg-tertiary)',
                   color: 'var(--lia-text-secondary)',
@@ -724,7 +724,7 @@ function QuestionCard({
               </Badge>
               <Badge 
                 variant="outline" 
-                className="text-[11px]"
+                className="text-xs"
                 style={{
                   borderColor: 'var(--lia-border-default)',
                   color: 'var(--lia-text-tertiary)'
@@ -733,7 +733,7 @@ function QuestionCard({
                 {question.competency}
               </Badge>
               <span 
-                className="text-[11px] flex items-center gap-1 dark:text-gray-400"
+                className="text-xs flex items-center gap-1 dark:text-gray-400"
                 style={{ color: 'var(--lia-text-tertiary)' }}
               >
                 <Clock className="h-3 w-3" />

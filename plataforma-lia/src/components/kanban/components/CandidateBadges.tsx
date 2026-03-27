@@ -73,8 +73,8 @@ export function CandidateBadges({
           <span
             key={i}
             className={cn(
-              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium",
-              compact && "text-[9px] px-1 py-0",
+              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
+              compact && "text-micro px-1 py-0",
               COLOR_CLASSES[badge.color]
             )}
           >

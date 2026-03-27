@@ -360,7 +360,7 @@ export default function CoberturaPage() {
                           {gap.controlName}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="info" className="text-[10px]">
+                          <Badge variant="info" className="text-micro">
                             {gap.framework}
                           </Badge>
                         </TableCell>
@@ -372,7 +372,7 @@ export default function CoberturaPage() {
                         <TableCell>
                           <Badge 
                             variant={gap.priority === 'high' ? 'destructive' : gap.priority === 'medium' ? 'warning' : 'default'}
-                            className="text-[10px]"
+                            className="text-micro"
                           >
                             {gap.priority === 'high' ? 'Alta' : gap.priority === 'medium' ? 'Média' : 'Baixa'}
                           </Badge>

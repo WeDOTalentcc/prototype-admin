@@ -195,7 +195,7 @@ export function CandidateCard({
         >
           <div className="flex items-center gap-1">
             <Zap className="w-2 h-2 animate-pulse text-gray-500" />
-            <span className="text-[10px] font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <span className="text-micro font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Ação Necessária
             </span>
           </div>
@@ -296,7 +296,7 @@ export function CandidateCard({
           <div className="relative flex-shrink-0">
             <Avatar className="w-7 h-7">
               <AvatarImage src={avatarUrl} alt={candidate.name} />
-              <AvatarFallback className="text-[10px] font-medium text-gray-600">
+              <AvatarFallback className="text-micro font-medium text-gray-600">
                 {candidate.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
               </AvatarFallback>
             </Avatar>
@@ -330,16 +330,16 @@ export function CandidateCard({
         </div>
 
         <div className="space-y-0 mb-1.5">
-          <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
             <span className="truncate">{candidate.role || 'Cargo não informado'}</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             <Building className="w-2.5 h-2.5 flex-shrink-0" />
             <span className="truncate">{candidate.currentCompany || candidate.company || 'Não informado'}</span>
           </div>
           {candidate.location && (
-            <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
               <span className="truncate">{candidate.location}</span>
             </div>
@@ -385,14 +385,14 @@ export function CandidateCard({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-44">
-                <DropdownMenuLabel className="text-[10px] text-gray-500">Alterar Sub-status</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-micro text-gray-500">Alterar Sub-status</DropdownMenuLabel>
                 {subStatusOptions.map((opt) => {
                   const display = SUB_STATUS_DISPLAY_MAP[opt.code]
                   const isCurrent = opt.code === (candidate.subStatus || candidate.sub_status)
                   return (
                     <DropdownMenuItem
                       key={opt.code}
-                      className={`text-[11px] cursor-pointer ${isCurrent ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                      className={`text-xs cursor-pointer ${isCurrent ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation()
                         onSubStatusChange(candidate.id, opt.code, stageId)

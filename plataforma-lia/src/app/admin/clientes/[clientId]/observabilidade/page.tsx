@@ -190,15 +190,15 @@ function ComplianceTab({ clientId }: { clientId: string }) {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
                     <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{framework.controlsImplemented}</p>
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400">Implementado</p>
+                    <p className="text-micro text-emerald-600 dark:text-emerald-400">Implementado</p>
                   </div>
                   <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-900/20">
                     <p className="text-lg font-semibold text-amber-600 dark:text-amber-400">{framework.controlsPartial}</p>
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400">Parcial</p>
+                    <p className="text-micro text-amber-600 dark:text-amber-400">Parcial</p>
                   </div>
                   <div className="p-2 rounded-md bg-red-50 dark:bg-red-900/20">
                     <p className="text-lg font-semibold text-red-600 dark:text-red-400">{framework.controlsNotImplemented}</p>
-                    <p className="text-[10px] text-red-600 dark:text-red-400">Pendente</p>
+                    <p className="text-micro text-red-600 dark:text-red-400">Pendente</p>
                   </div>
                 </div>
 

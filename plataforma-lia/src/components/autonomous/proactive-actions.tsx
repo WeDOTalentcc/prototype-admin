@@ -131,7 +131,7 @@ export function ProactiveActions({
           <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
             Tudo em dia!
           </h3>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center max-w-sm">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-sm">
             Não há ações proativas pendentes no momento. A LIA está monitorando e notificará quando houver sugestões.
           </p>
         </CardContent>
@@ -159,10 +159,10 @@ export function ProactiveActions({
                 <PriorityIcon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium text-gray-900 dark:text-gray-100 truncate">
+                <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
                   {action.title}
                 </p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-micro text-gray-500 dark:text-gray-400 truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
                     : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -237,27 +237,27 @@ export function ProactiveActions({
                           {action.title}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-micro text-gray-400">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
-                          <span className="text-[10px] text-gray-300 dark:text-gray-600">•</span>
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-micro text-gray-300 dark:text-gray-600">•</span>
+                          <span className="text-micro text-gray-400">
                             {formatTimeAgo(action.created_at)}
                           </span>
                         </div>
                       </div>
-                      <Badge className={cn("shrink-0 text-[10px]", priorityStyle.badge)}>
+                      <Badge className={cn("shrink-0 text-micro", priorityStyle.badge)}>
                         {PRIORITY_LABELS[action.priority] || action.priority}
                       </Badge>
                     </div>
 
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       {action.description}
                     </p>
 
                     <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600">
                       <ArrowRight className="h-4 w-4 text-gray-600 dark:text-gray-400 shrink-0" />
-                      <span className="text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                         {typeof action.suggested_action === 'string' 
                           ? action.suggested_action 
                           : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}

@@ -284,7 +284,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                         {item.count !== undefined && (
                           <Badge
                             variant="outline"
-                            className="ml-auto text-[11px] tracking-tight font-semibold uppercase font-open-sans"
+                            className="ml-auto text-xs tracking-tight font-semibold uppercase font-open-sans"
                           >
                             {item.count}
                           </Badge>
@@ -421,7 +421,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 <p className={`${textStyles.subtitle} text-gray-950 dark:text-gray-50`}>Juliana Mendes</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>17 contratações • 91% taxa de aprovação</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-medium">
+              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
                 🥉 Top 3
               </Badge>
             </div>
@@ -497,7 +497,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 <span className={`${textStyles.subtitle} dark:text-gray-300`}>Especialista/C-Level</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">45 dias</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-medium">
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
                     +2d
                   </Badge>
                 </div>
@@ -546,7 +546,7 @@ function IndicadoresEstrategicosPlaceholder() {
             <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">DevOps Architect</p>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[11px] font-inter">
+                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs font-inter">
                   Alto
                 </Badge>
               </div>
@@ -569,7 +569,7 @@ function IndicadoresEstrategicosPlaceholder() {
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-500">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Security Specialist</p>
-                <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[11px] font-inter">
+                <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-inter">
                   Médio
                 </Badge>
               </div>
@@ -640,7 +640,7 @@ function IndicadoresEstrategicosPlaceholder() {
                   <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Marketing</span>
                   <p className={`${textStyles.description} dark:text-gray-400`}>R$ 124k investidos • 19 contratações</p>
                 </div>
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-medium">
+                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
                   87% ROI
                 </Badge>
               </div>
@@ -712,7 +712,7 @@ function PrevisoesIAPlaceholder() {
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Previsões & Inteligência Artificial
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-[11px]">
+        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-xs">
           Machine Learning, previsões de demanda, alertas inteligentes e scoring preditivo
         </p>
       </div>
@@ -744,7 +744,7 @@ function PrevisoesIAPlaceholder() {
               <p className={`${textStyles.description} dark:text-gray-400 mb-1`}>Contratações Previstas</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">127</span>
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-[11px] font-inter">
+ <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs font-inter">
                   +8%
                 </Badge>
               </div>
@@ -893,7 +893,7 @@ function PrevisoesIAPlaceholder() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">React.js</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">287 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">287 vagas</span>
                   <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
                     +18%
                   </Badge>
@@ -908,7 +908,7 @@ function PrevisoesIAPlaceholder() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Python</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">243 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">243 vagas</span>
                   <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
                     +22%
                   </Badge>
@@ -923,8 +923,8 @@ function PrevisoesIAPlaceholder() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Node.js</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">218 vagas</span>
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-[11px] font-inter">
+                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">218 vagas</span>
+ <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs font-inter">
                     +15%
                   </Badge>
                 </div>
@@ -938,8 +938,8 @@ function PrevisoesIAPlaceholder() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">AWS</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">194 vagas</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[11px] font-inter">
+                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">194 vagas</span>
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-inter">
                     +28%
                   </Badge>
                 </div>
@@ -953,8 +953,8 @@ function PrevisoesIAPlaceholder() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Machine Learning</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">156 vagas</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[11px] font-inter">
+                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">156 vagas</span>
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-inter">
                     +34%
                   </Badge>
                 </div>
@@ -978,7 +978,7 @@ function PrevisoesIAPlaceholder() {
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Tecnologia</p>
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-medium">
+                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
                   +42 vagas
                 </Badge>
               </div>
@@ -1083,7 +1083,7 @@ function PeopleAnalyticsPlaceholder() {
             variant={activeSubDashboard === 'bigfive' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('bigfive')}
-            className="text-[11px] h-7 px-3 font-open-sans"
+            className="text-xs h-7 px-3 font-open-sans"
           >
             <Brain className="w-3 h-3 mr-1.5 text-wedo-cyan" />
             Big Five
@@ -1092,7 +1092,7 @@ function PeopleAnalyticsPlaceholder() {
             variant={activeSubDashboard === 'diversidade' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('diversidade')}
-            className="text-[11px] h-7 px-3 font-open-sans"
+            className="text-xs h-7 px-3 font-open-sans"
           >
             <Heart className="w-3 h-3 mr-1.5" />
             Diversidade
@@ -1101,7 +1101,7 @@ function PeopleAnalyticsPlaceholder() {
             variant={activeSubDashboard === 'nps' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('nps')}
-            className="text-[11px] h-7 px-3 font-open-sans"
+            className="text-xs h-7 px-3 font-open-sans"
           >
             <Award className="w-3 h-3 mr-1.5" />
             NPS
@@ -1224,7 +1224,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">São Paulo</h4>
-                <Badge variant="outline" className="text-[11px] tracking-tight font-inter">523 vagas</Badge>
+                <Badge variant="outline" className="text-xs tracking-tight font-inter">523 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
@@ -1246,7 +1246,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Rio de Janeiro</h4>
-                <Badge variant="outline" className="text-[11px] tracking-tight font-inter">287 vagas</Badge>
+                <Badge variant="outline" className="text-xs tracking-tight font-inter">287 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
@@ -1268,7 +1268,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Minas Gerais</h4>
-                <Badge variant="outline" className="text-[11px] tracking-tight font-inter">194 vagas</Badge>
+                <Badge variant="outline" className="text-xs tracking-tight font-inter">194 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
@@ -1303,7 +1303,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Tecnologia</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">78% Remoto • 18% Híbrido • 4% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">78% Remoto • 18% Híbrido • 4% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '78%' }}></div>
@@ -1316,7 +1316,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Vendas</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">15% Remoto • 62% Híbrido • 23% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">15% Remoto • 62% Híbrido • 23% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '15%' }}></div>
@@ -1329,7 +1329,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Financeiro</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">32% Remoto • 51% Híbrido • 17% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">32% Remoto • 51% Híbrido • 17% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '32%' }}></div>
@@ -1342,7 +1342,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Operações</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">8% Remoto • 25% Híbrido • 67% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">8% Remoto • 25% Híbrido • 67% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '8%' }}></div>
@@ -1355,7 +1355,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Marketing</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">55% Remoto • 38% Híbrido • 7% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">55% Remoto • 38% Híbrido • 7% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '55%' }}></div>
@@ -1368,7 +1368,7 @@ function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Recursos Humanos</span>
-                <span className="text-[11px] tracking-tight font-inter text-gray-800 dark:text-gray-200">42% Remoto • 45% Híbrido • 13% Presencial</span>
+                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">42% Remoto • 45% Híbrido • 13% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <div className="bg-gray-900" style={{ width: '42%' }}></div>
@@ -1715,7 +1715,7 @@ function WarRoomOperacionalPlaceholder() {
           <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
           War Room Operacional
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-[11px]">
+        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-xs">
           Alertas críticos, ações urgentes e pipelines em risco que exigem atenção imediata
         </p>
       </div>
@@ -1725,7 +1725,7 @@ function WarRoomOperacionalPlaceholder() {
         <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] tracking-tight font-open-sans text-red-700 dark:text-red-400 font-semibold">VAGAS EM RISCO</p>
+              <p className="text-xs tracking-tight font-open-sans text-red-700 dark:text-red-400 font-semibold">VAGAS EM RISCO</p>
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>
             <div className="text-2xl font-inter font-bold text-red-600 dark:text-red-400">8</div>
@@ -1736,7 +1736,7 @@ function WarRoomOperacionalPlaceholder() {
         <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] tracking-tight font-open-sans text-orange-700 dark:text-orange-400 font-semibold">AÇÕES URGENTES</p>
+              <p className="text-xs tracking-tight font-open-sans text-orange-700 dark:text-orange-400 font-semibold">AÇÕES URGENTES</p>
               <Target className="w-3.5 h-3.5 text-orange-600" />
             </div>
             <div className="text-2xl font-inter font-bold text-orange-600 dark:text-orange-400">23</div>
@@ -1747,7 +1747,7 @@ function WarRoomOperacionalPlaceholder() {
         <Card className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] tracking-tight font-open-sans text-yellow-700 dark:text-yellow-400 font-semibold">EM ESPERA</p>
+              <p className="text-xs tracking-tight font-open-sans text-yellow-700 dark:text-yellow-400 font-semibold">EM ESPERA</p>
               <Users className="w-3.5 h-3.5 text-yellow-600" />
             </div>
             <div className="text-2xl font-inter font-bold text-yellow-600 dark:text-yellow-400">47</div>
@@ -1917,7 +1917,7 @@ function VoiceScreeningDashboard() {
           <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
           Voice Screening Analytics
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-[11px]">
+        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-xs">
           Análise de triagem por voz com IA - OpenMic.ai + LIA Assistant
         </p>
       </div>
@@ -2002,7 +2002,7 @@ function VoiceScreeningDashboard() {
               <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400">
                 Nenhum screening realizado ainda
               </p>
-              <p className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200 mt-1">
+              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-200 mt-1">
                 Use o endpoint /api/v1/openmic/test-call para iniciar um screening
               </p>
             </div>
@@ -2026,7 +2026,7 @@ function VoiceScreeningDashboard() {
                         )}
                       </div>
                       
-                      <p className="text-[11px] font-open-sans text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs font-open-sans text-gray-600 dark:text-gray-400 mb-2">
                         {screening.job_title} • {screening.duration_seconds}s • {screening.candidate_phone}
                       </p>
 
@@ -2054,7 +2054,7 @@ function VoiceScreeningDashboard() {
                           </div>
 
                           {screening.analysis.summary && (
-                            <p className="text-[11px] font-open-sans text-gray-600 dark:text-gray-400 line-clamp-2">
+                            <p className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-2">
                               {screening.analysis.summary}
                             </p>
                           )}
@@ -2064,7 +2064,7 @@ function VoiceScreeningDashboard() {
                               {screening.analysis.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
                                 <Badge 
                                   key={idx}
-                                  className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[11px] tracking-tight"
+                                  className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight"
                                 >
                                   ✓ {strength}
                                 </Badge>
@@ -2080,7 +2080,7 @@ function VoiceScreeningDashboard() {
                         {new Date(screening.created_at).toLocaleDateString('pt-BR')}
                       </p>
                       {screening.processing_status && (
- <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 text-[11px] tracking-tight">
+ <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 text-xs tracking-tight">
                           {screening.processing_status}
                         </Badge>
                       )}
@@ -2244,7 +2244,7 @@ function AnaliseCompetenciasPlaceholder() {
             <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
               <div className="flex items-start justify-between mb-1">
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">DevOps & Cloud Certification</p>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[11px] font-inter">ALTO</Badge>
+                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs font-inter">ALTO</Badge>
               </div>
               <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
                 Gap de 55% • Parceria com AWS Training disponível
@@ -2353,7 +2353,7 @@ function BigFiveAnalyticsDashboard() {
           {/* Abertura */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">68%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -2364,7 +2364,7 @@ function BigFiveAnalyticsDashboard() {
           {/* Conscienciosidade */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">74%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -2375,7 +2375,7 @@ function BigFiveAnalyticsDashboard() {
           {/* Extroversão */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Extroversão</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Extroversão</span>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">61%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -2386,7 +2386,7 @@ function BigFiveAnalyticsDashboard() {
           {/* Amabilidade */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">72%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -2397,7 +2397,7 @@ function BigFiveAnalyticsDashboard() {
           {/* Estabilidade Emocional */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Estabilidade Emocional</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Estabilidade Emocional</span>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">55%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -2418,37 +2418,37 @@ function BigFiveAnalyticsDashboard() {
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[11px] tracking-tight">Muito Alta</Badge>
+                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight">Muito Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.84</span>
               </div>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Estabilidade</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Estabilidade</span>
               <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-[11px] tracking-tight">Alta</Badge>
+ <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.71</span>
               </div>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[11px] tracking-tight">Alta</Badge>
+                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.67</span>
               </div>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[11px] tracking-tight">Alta</Badge>
+                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.63</span>
               </div>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Extroversão</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Extroversão</span>
               <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 text-[11px] tracking-tight">Moderada</Badge>
+ <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 text-xs tracking-tight">Moderada</Badge>
                 <span className="text-sm font-inter font-bold">0.51</span>
               </div>
             </div>
@@ -2521,7 +2521,7 @@ function DiversidadeInclusaoDashboard() {
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">C-Level</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">C-Level</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-purple-600">40% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">60% H</span>
@@ -2535,7 +2535,7 @@ function DiversidadeInclusaoDashboard() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Gerência</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Gerência</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-purple-600">45% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">55% H</span>
@@ -2549,7 +2549,7 @@ function DiversidadeInclusaoDashboard() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Técnico</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Técnico</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-purple-600">48% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">52% H</span>
@@ -2571,23 +2571,23 @@ function DiversidadeInclusaoDashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Brancos</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Brancos</span>
               <span className="text-sm font-inter font-bold">58%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Pardos</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pardos</span>
               <span className="text-sm font-inter font-bold">24%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Pretos</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pretos</span>
               <span className="text-sm font-inter font-bold">14%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Amarelos</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amarelos</span>
               <span className="text-sm font-inter font-bold">3%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-              <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Indígenas</span>
+              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Indígenas</span>
               <span className="text-sm font-inter font-bold">1%</span>
             </div>
           </CardContent>
@@ -2700,7 +2700,7 @@ function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-green"></div>
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Promotores (9-10)</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Promotores (9-10)</span>
               </div>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">72%</span>
             </div>
@@ -2714,7 +2714,7 @@ function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Neutros (7-8)</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Neutros (7-8)</span>
               </div>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">23%</span>
             </div>
@@ -2728,7 +2728,7 @@ function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-magenta"></div>
-                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Detratores (0-6)</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Detratores (0-6)</span>
               </div>
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">5%</span>
             </div>
@@ -2748,37 +2748,37 @@ function NPSDashboard() {
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Aplicação Inicial</span>
+            <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Aplicação Inicial</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[11px] tracking-tight">Excelente</Badge>
+              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight">Excelente</Badge>
               <span className="text-sm font-inter font-bold">9.2</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Comunicação</span>
+            <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Comunicação</span>
             <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-[11px] tracking-tight">Muito Bom</Badge>
+ <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.8</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Entrevistas</span>
+            <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Entrevistas</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[11px] tracking-tight">Muito Bom</Badge>
+              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.6</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Tempo de Resposta</span>
+            <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Tempo de Resposta</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[11px] tracking-tight">Bom</Badge>
+              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs tracking-tight">Bom</Badge>
               <span className="text-sm font-inter font-bold">7.9</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Feedback Pós-Entrevista</span>
+            <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Feedback Pós-Entrevista</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[11px] tracking-tight">Regular</Badge>
+              <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs tracking-tight">Regular</Badge>
               <span className="text-sm font-inter font-bold">6.8</span>
             </div>
           </div>
@@ -3071,7 +3071,7 @@ function AgentActivityDashboard() {
                   <p className="font-semibold font-open-sans text-sm text-gray-950 dark:text-gray-50 truncate" style={{ color: agent.color }}>
                     {agent.name}
                   </p>
-                  <p className="text-[11px] tracking-tight font-open-sans text-gray-800 dark:text-gray-200 truncate">
+                  <p className="text-xs tracking-tight font-open-sans text-gray-800 dark:text-gray-200 truncate">
                     {agent.description}
                   </p>
                 </div>
@@ -3080,15 +3080,15 @@ function AgentActivityDashboard() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className={`${textStyles.description} dark:text-gray-400`}>Ações</span>
-                    <span className="text-[11px] font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
+                    <span className="text-xs font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`${textStyles.description} dark:text-gray-400`}>Sucesso</span>
-                    <span className="text-[11px] font-inter font-bold text-green-600 dark:text-green-400">{agent.successRate}%</span>
+                    <span className="text-xs font-inter font-bold text-green-600 dark:text-green-400">{agent.successRate}%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`${textStyles.description} dark:text-gray-400`}>Tempo</span>
-                    <span className="text-[11px] font-inter font-bold text-gray-950 dark:text-gray-50">{agent.avgResponseTime}s</span>
+                    <span className="text-xs font-inter font-bold text-gray-950 dark:text-gray-50">{agent.avgResponseTime}s</span>
                   </div>
                 </div>
 
@@ -3133,11 +3133,11 @@ function AgentActivityDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: agent.color }}></div>
-                        <span className="text-[11px] font-open-sans font-medium text-gray-800 dark:text-gray-200">{agent.name}</span>
+                        <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{agent.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
-                        <Badge className={`text-[11px] tracking-tight ${
+                        <Badge className={`text-xs tracking-tight ${
                           agent.successRate >= 98 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
  agent.successRate >= 95 ? 'bg-gray-100 text-gray-900 dark:text-gray-300' :
                           'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
@@ -3173,7 +3173,7 @@ function AgentActivityDashboard() {
               <select
                 value={selectedAgentFilter}
                 onChange={(e) => setSelectedAgentFilter(e.target.value)}
-                className="text-[11px] font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
               >
                 <option value="all">Todos os Agentes</option>
                 {agentsData.map(agent => (
@@ -3184,7 +3184,7 @@ function AgentActivityDashboard() {
               <select
                 value={selectedTypeFilter}
                 onChange={(e) => setSelectedTypeFilter(e.target.value)}
-                className="text-[11px] font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
               >
                 <option value="all">Todos os Tipos</option>
                 {actionTypes.map(type => (
@@ -3199,11 +3199,11 @@ function AgentActivityDashboard() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="text-left py-2 px-2 text-[11px] tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Hora</th>
-                  <th className="text-left py-2 px-2 text-[11px] tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Agente</th>
-                  <th className="text-left py-2 px-2 text-[11px] tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Tipo</th>
-                  <th className="text-left py-2 px-2 text-[11px] tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Descrição</th>
-                  <th className="text-left py-2 px-2 text-[11px] tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Status</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Hora</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Agente</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Tipo</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Descrição</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -3212,24 +3212,24 @@ function AgentActivityDashboard() {
                   return (
                     <tr key={action.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                       <td className="py-2 px-2">
-                        <span className="text-[11px] font-inter font-medium text-gray-950 dark:text-gray-50">{action.time}</span>
+                        <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">{action.time}</span>
                       </td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: agent?.color || '#111827' }}></div>
-                          <span className="text-[11px] font-open-sans font-medium text-gray-800 dark:text-gray-200">{action.agentName}</span>
+                          <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{action.agentName}</span>
                         </div>
                       </td>
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="text-[11px] tracking-tight font-open-sans">
+                        <Badge variant="outline" className="text-xs tracking-tight font-open-sans">
                           {action.type}
                         </Badge>
                       </td>
                       <td className="py-2 px-2">
-                        <span className="text-[11px] font-open-sans text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[200px]">{action.description}</span>
+                        <span className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[200px]">{action.description}</span>
                       </td>
                       <td className="py-2 px-2">
-                        <Badge className={`text-[11px] tracking-tight ${getActionStatusColor(action.status)}`}>
+                        <Badge className={`text-xs tracking-tight ${getActionStatusColor(action.status)}`}>
                           {getActionStatusLabel(action.status)}
                         </Badge>
                       </td>
@@ -3243,7 +3243,7 @@ function AgentActivityDashboard() {
           {filteredActions.length === 0 && (
             <div className="text-center py-6">
  <Activity className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-200 mb-2" />
-              <p className="text-[11px] font-open-sans text-gray-800 dark:text-gray-200">Nenhuma ação encontrada com os filtros selecionados</p>
+              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Nenhuma ação encontrada com os filtros selecionados</p>
             </div>
           )}
         </CardContent>

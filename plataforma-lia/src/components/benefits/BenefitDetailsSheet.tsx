@@ -261,7 +261,7 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-800 dark:text-gray-200">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-800 dark:text-gray-200">
             {valueDisplay && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800">
                 {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
@@ -285,15 +285,15 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
 
       <div className="flex flex-wrap gap-1 mt-2">
         {benefit.is_mandatory && (
-          <Badge variant="secondary" className="text-[11px]">Obrigatório</Badge>
+          <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
         )}
         {benefit.is_discount && (
-          <Badge variant="outline" className="text-[11px] text-red-600 border-red-200 dark:text-red-400 dark:border-red-800">
+          <Badge variant="outline" className="text-xs text-red-600 border-red-200 dark:text-red-400 dark:border-red-800">
             Desconto
           </Badge>
         )}
         {benefit.provider && (
-          <Badge variant="outline" className="text-[11px]">{benefit.provider}</Badge>
+          <Badge variant="outline" className="text-xs">{benefit.provider}</Badge>
         )}
       </div>
     </div>

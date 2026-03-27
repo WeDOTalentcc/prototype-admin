@@ -220,7 +220,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
         >
           <Bell className="h-4 w-4 text-gray-800 dark:text-gray-500" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[11px] font-medium text-white">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}

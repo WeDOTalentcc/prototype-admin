@@ -126,7 +126,7 @@ export function SalaryStage({
               <span className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                 Remuneração pré-configurada
               </span>
-              <p className="text-[10px] text-gray-500 mt-0.5">
+              <p className="text-micro text-gray-500 mt-0.5">
                 Valores baseados nas políticas salariais da empresa.
                 <button
                   onClick={handleToggleExpand}
@@ -160,7 +160,7 @@ export function SalaryStage({
                   Benchmark de Mercado
                 </span>
                 {salaryBenchmark.market?.learning_adjusted && (
-                  <span className="px-1.5 py-0.5 bg-green-500/10 text-green-800 text-[9px] font-medium rounded-full">
+                  <span className="px-1.5 py-0.5 bg-green-500/10 text-green-800 text-micro font-medium rounded-full">
                     Personalizado
                   </span>
                 )}
@@ -169,9 +169,9 @@ export function SalaryStage({
               {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
                 <div className="mb-2 p-2 bg-white/50 rounded-md">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-gray-500">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
+                    <span className="text-micro text-gray-500">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
                     {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
-                      <span className={`text-[9px] ${salaryBenchmark.internal.trend === 'increasing' ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`text-micro ${salaryBenchmark.internal.trend === 'increasing' ? 'text-green-500' : 'text-red-500'}`}>
                         {salaryBenchmark.internal.trend === 'increasing' ? '↑ Em alta' : '↓ Em queda'}
                       </span>
                     )}
@@ -185,10 +185,10 @@ export function SalaryStage({
               {salaryBenchmark.market && salaryBenchmark.market.min > 0 && (
                 <div className="mb-2 p-2 bg-white/50 rounded-md">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-micro text-gray-500">
                       Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
                     </span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                    <span className={`text-micro px-1.5 py-0.5 rounded-full ${
                       salaryBenchmark.market.confidence === 'high' ? 'bg-green-500/10 text-green-800' :
                       salaryBenchmark.market.confidence === 'medium' ? 'bg-amber-500/10 text-amber-800' :
                       'bg-red-500/10 text-red-800'
@@ -211,14 +211,14 @@ export function SalaryStage({
                       maxSalary: salaryBenchmark.combined!.max.toLocaleString()
                     })
                   }}
-                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-[10px] font-medium rounded-md transition-colors flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
                 >
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
                 </button>
               )}
 
-              <p className="text-[9px] text-gray-400 mt-2 italic">
+              <p className="text-micro text-gray-400 mt-2 italic">
                 Estimativa baseada em dados públicos. Valores podem variar.
               </p>
             </div>
@@ -241,7 +241,7 @@ export function SalaryStage({
             </label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <span className="text-[10px] text-gray-400">De</span>
+                <span className="text-micro text-gray-400">De</span>
                 <div className={cn(
                   "relative mt-1",
                   isFieldHighlighted('minSalary') && "field-highlight field-pulse"
@@ -259,7 +259,7 @@ export function SalaryStage({
                 </div>
               </div>
               <div className="flex-1">
-                <span className="text-[10px] text-gray-400">Até</span>
+                <span className="text-micro text-gray-400">Até</span>
                 <div className={cn(
                   "relative mt-1",
                   isFieldHighlighted('maxSalary') && "field-highlight field-pulse"
@@ -289,7 +289,7 @@ export function SalaryStage({
             </label>
             <div className="flex gap-2 mb-1.5">
               <div className="flex-1">
-                <span className="text-[10px] text-gray-400">De</span>
+                <span className="text-micro text-gray-400">De</span>
                 <div className="relative mt-1">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
                   <input
@@ -304,7 +304,7 @@ export function SalaryStage({
                 </div>
               </div>
               <div className="flex-1">
-                <span className="text-[10px] text-gray-400">Até</span>
+                <span className="text-micro text-gray-400">Até</span>
                 <div className="relative mt-1">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
                   <input
@@ -350,10 +350,10 @@ export function SalaryStage({
                   <div key={categoryId}>
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <CategoryIcon className="w-3 h-3 text-gray-500" />
-                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                      <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
                         {meta.name}
                       </span>
-                      <span className="text-[9px] text-gray-400">({categoryBenefits.length})</span>
+                      <span className="text-micro text-gray-400">({categoryBenefits.length})</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {categoryBenefits.map((benefit) => {
@@ -378,21 +378,21 @@ export function SalaryStage({
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1">
-                                <span className="text-[10px] font-medium text-gray-800 block truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                <span className="text-micro font-medium text-gray-800 block truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                                   {benefit.name}
                                 </span>
                                 {benefit.is_highlighted && (
                                   <Heart className="w-2.5 h-2.5 text-pink-500 fill-pink-500 flex-shrink-0" />
                                 )}
                                 {benefit.is_mandatory && (
-                                  <span className="text-[8px] px-1 py-0 rounded bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>
+                                  <span className="text-micro px-1 py-0 rounded bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>
                                 )}
                               </div>
                               {valueDisplay && (
                                 <span className={`${textStyles.description} text-gray-400`}>{valueDisplay}</span>
                               )}
                               {benefit.provider && (
-                                <span className="text-[8px] text-gray-400 block truncate">{benefit.provider}</span>
+                                <span className="text-micro text-gray-400 block truncate">{benefit.provider}</span>
                               )}
                             </div>
                           </button>

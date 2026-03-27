@@ -96,7 +96,7 @@ export function CandidateCell({
       <Avatar className="w-7 h-7">
         <AvatarImage src={avatarUrl} />
         <AvatarFallback 
-          className="text-[11px] font-medium" 
+          className="text-xs font-medium" 
           style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}
         >
           {initials}
@@ -127,7 +127,7 @@ export function CandidateCell({
           )}
         </div>
         {candidate.email && (
-          <span className="text-[11px] text-gray-600 truncate block">
+          <span className="text-xs text-gray-600 truncate block">
             {candidate.email}
           </span>
         )}
@@ -149,7 +149,7 @@ export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?
   const formattedScore = Number.isInteger(score) ? score : score.toFixed(1)
 
   return (
-    <Badge className="text-[11px] px-1.5 py-0.5" style={getScoreStyle(score)}>
+    <Badge className="text-xs px-1.5 py-0.5" style={getScoreStyle(score)}>
       {showIcon && <Star className="w-2.5 h-2.5 mr-0.5" />}
       {formattedScore}
     </Badge>
@@ -246,7 +246,7 @@ export function SourceCell({ source }: { source?: string }) {
   const config = getSourceConfig(source)
 
   return (
-    <Badge className="text-[10px] px-1.5 py-0.5" style={config.style}>
+    <Badge className="text-micro px-1.5 py-0.5" style={config.style}>
       {config.label}
     </Badge>
   )
@@ -301,12 +301,12 @@ export function SkillsCell({ skills, maxShow = 3 }: { skills?: string[]; maxShow
   return (
     <div className="flex flex-wrap gap-1">
       {visible.map((skill, idx) => (
-        <Badge key={idx} variant="secondary" className="text-[10px] px-1.5 py-0">
+        <Badge key={idx} variant="secondary" className="text-micro px-1.5 py-0">
           {skill}
         </Badge>
       ))}
       {remaining > 0 && (
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+        <Badge variant="outline" className="text-micro px-1.5 py-0">
           +{remaining}
         </Badge>
       )}
@@ -328,7 +328,7 @@ export function WorkModelCell({ model }: { model?: string }) {
   const config = getModelConfig(model)
 
   return (
-    <Badge className="text-[10px] px-1.5 py-0.5" style={config.style}>
+    <Badge className="text-micro px-1.5 py-0.5" style={config.style}>
       {config.label}
     </Badge>
   )
@@ -406,7 +406,7 @@ export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?
 
   return (
     <Badge 
-      className="text-[10px] px-1.5 py-0.5" 
+      className="text-micro px-1.5 py-0.5" 
       style={{ backgroundColor: colors.bgStyle, color: colors.textStyle }}
     >
       {displayName}
@@ -475,7 +475,7 @@ export function InteractiveSubStatusCell({
           disabled={isUpdating}
         >
           <Badge 
-            className="text-[10px] px-1.5 py-0.5 flex items-center gap-0.5" 
+            className="text-micro px-1.5 py-0.5 flex items-center gap-0.5" 
             style={{ backgroundColor: colors.bgStyle, color: colors.textStyle }}
           >
             {isUpdating ? 'Atualizando...' : displayName}
@@ -578,7 +578,7 @@ export function InteractiveStageCell({
   if (!onStageChange && !onTransitionRequest) {
     return (
       <Badge 
-        className="text-[10px] px-1.5 py-0.5 font-medium"
+        className="text-micro px-1.5 py-0.5 font-medium"
         style={{ backgroundColor: currentStageInfo?.color || '#E5E7EB' }}
       >
         {stageDisplayName}
@@ -596,7 +596,7 @@ export function InteractiveStageCell({
         className="hover:opacity-80 transition-opacity cursor-pointer"
       >
         <Badge 
-          className="text-[10px] px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
+          className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
           style={{ backgroundColor: currentStageInfo?.color || '#E5E7EB' }}
         >
           {stageDisplayName}
@@ -607,7 +607,7 @@ export function InteractiveStageCell({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
           <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-[16px] font-semibold text-gray-950">
+            <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-base font-semibold text-gray-950">
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                 <ArrowRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
@@ -622,9 +622,9 @@ export function InteractiveStageCell({
                   <img src={candidateAvatar} alt={candidateName} className="w-10 h-10 rounded-full" />
                 )}
                 <div>
-                  <span className="text-[13px] font-medium text-gray-950 block">{candidateName}</span>
+                  <span className="text-base-ui font-medium text-gray-950 block">{candidateName}</span>
                   {candidateRole && (
-                    <span className="text-[11px] text-gray-600">{candidateRole}</span>
+                    <span className="text-xs text-gray-600">{candidateRole}</span>
                   )}
                 </div>
               </div>
@@ -641,7 +641,7 @@ export function InteractiveStageCell({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans']">
+              <label className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans']">
                 Nova Etapa
               </label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -703,8 +703,8 @@ export function StageCell({ stage }: { stage?: string }) {
   
   return (
     <Badge 
-      className="text-[10px] px-1.5 py-0.5"
-      style={{ backgroundColor: stageInfo?.color || '#6B7280', color: '#FFFFFF' }}
+      className="text-micro px-1.5 py-0.5"
+      style={{ backgroundColor: stageInfo?.color || '#6B7280', color: 'var(--gray-50)' }}
     >
       {displayName}
     </Badge>
@@ -736,7 +736,7 @@ export function ActionButtons({
             style={{ backgroundColor: 'rgba(31, 41, 55, 0.08)' }}
           >
             <Zap className="w-3 h-3 text-gray-800 dark:text-gray-200 animate-pulse" />
-            <span className="text-[10px] font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <span className="text-micro font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Ação Necessária
             </span>
           </div>

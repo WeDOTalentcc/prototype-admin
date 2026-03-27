@@ -50,7 +50,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
                   key={i}
                   className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 font-['Open_Sans',sans-serif]"
                 >
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] font-['Inter',sans-serif] font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-micro font-['Inter',sans-serif] font-medium text-gray-500 dark:text-gray-400 mt-0.5">
                     {i + 1}
                   </span>
                   {step}
@@ -72,8 +72,8 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
         )}
 
         <div className="pt-2 border-t border-gray-100 dark:border-gray-700 text-center">
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
-            Powered by <span className="text-[#60BED1] font-medium">LIA</span> · WeDOTalent
+          <span className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
+            Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent
           </span>
         </div>
       </div>

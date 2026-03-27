@@ -295,14 +295,14 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="p-2 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                         Ações 24h
                       </span>
                       <DeltaIndicator value={agent.delta} />
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg font-bold text-gray-900 dark:text-gray-50">{agent.actions_today}</span>
-                      <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                         /{agent.daily_goal}
                       </span>
                     </div>
@@ -314,7 +314,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </div>
                   </div>
                   <div className="p-2 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                    <span className="text-[11px] block" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <span className="text-xs block" style={{ color: 'var(--eleven-text-tertiary)' }}>
                       Progresso
                     </span>
                     <span 
@@ -328,10 +328,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
                 {/* Last Activity */}
                 <div className="pt-2 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                  <p className="text-[11px] truncate" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <p className="text-xs truncate" style={{ color: 'var(--eleven-text-secondary)' }}>
                     {agent.last_action || 'Sem atividade recente'}
                   </p>
-                  <p className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                     {formatTimeAgo(agent.last_action_time)}
                   </p>
                 </div>
@@ -342,8 +342,8 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     className="mt-2 p-2 rounded-md flex items-center gap-2"
                     style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
                   >
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: '#EF4444' }} />
-                    <span className="text-[11px] line-clamp-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--status-error)' }} />
+                    <span className="text-xs line-clamp-1" style={{ color: 'var(--eleven-text-secondary)' }}>
                       Requer atenção
                     </span>
                   </div>
@@ -405,7 +405,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <button
                     key={agent.id}
                     onClick={() => toggleAgentFilter(agent.id)}
-                    className="px-2 py-1 rounded-full text-[11px] transition-all"
+                    className="px-2 py-1 rounded-full text-xs transition-all"
                     style={{
                       backgroundColor: selectedAgentFilter.includes(agent.id) ? 'rgba(96, 190, 209, 0.15)' : 'var(--eleven-bg-message)',
                       color: selectedAgentFilter.includes(agent.id) ? '#111827' : 'var(--eleven-text-secondary)',
@@ -423,7 +423,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <button
                     key={status}
                     onClick={() => toggleStatusFilter(status)}
-                    className="px-2 py-1 rounded-full text-[11px] transition-all flex items-center gap-1"
+                    className="px-2 py-1 rounded-full text-xs transition-all flex items-center gap-1"
                     style={{
                       backgroundColor: selectedStatusFilter.includes(status) ? 
                         (status === 'success' ? 'rgba(96, 209, 134, 0.15)' : status === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)') : 
@@ -447,7 +447,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               {(selectedAgentFilter.length > 0 || selectedStatusFilter.length > 0) && (
                 <button
                   onClick={clearFilters}
-                  className="px-2 py-1 rounded-full text-[11px] flex items-center gap-1"
+                  className="px-2 py-1 rounded-full text-xs flex items-center gap-1"
                   style={{ color: 'var(--eleven-text-tertiary)' }}
                 >
                   <X className="w-3 h-3" />
@@ -479,11 +479,11 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                           {activity.agent_name}
                         </span>
-                        <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (
-                          <Badge variant="outline" className="text-[11px] px-1 py-0" style={{ borderColor: '#EF4444', color: '#EF4444' }}>
+                          <Badge variant="outline" className="text-xs px-1 py-0" style={{ borderColor: 'var(--status-error)', color: 'var(--status-error)' }}>
                             SLA
                           </Badge>
                         )}
@@ -500,10 +500,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <CheckCircle className="w-4 h-4 text-wedo-green-bright" />
                       )}
                       {activity.status === 'in_progress' && (
-                        <Clock className="w-4 h-4" style={{ color: '#F59E0B' }} />
+                        <Clock className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                       )}
                       {activity.status === 'error' && (
-                        <XCircle className="w-4 h-4" style={{ color: '#EF4444' }} />
+                        <XCircle className="w-4 h-4" style={{ color: 'var(--status-error)' }} />
                       )}
                       {activity.status === 'pending' && (
                         <Clock className="w-4 h-4 text-gray-400" />
@@ -533,7 +533,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 function DeltaIndicator({ value }: { value: number }) {
   if (value === 0) {
     return (
-      <div className="flex items-center gap-0.5 text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+      <div className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
         <Minus className="w-2.5 h-2.5" />
         <span>0%</span>
       </div>
@@ -542,7 +542,7 @@ function DeltaIndicator({ value }: { value: number }) {
   
   if (value > 0) {
     return (
-      <div className="flex items-center gap-0.5 text-[11px] text-wedo-green-bright">
+      <div className="flex items-center gap-0.5 text-xs text-wedo-green-bright">
         <TrendingUp className="w-2.5 h-2.5" />
         <span>+{value}%</span>
       </div>
@@ -550,7 +550,7 @@ function DeltaIndicator({ value }: { value: number }) {
   }
   
   return (
-    <div className="flex items-center gap-0.5 text-[11px]" style={{ color: '#EF4444' }}>
+    <div className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--status-error)' }}>
       <TrendingDown className="w-2.5 h-2.5" />
       <span>{value}%</span>
     </div>
@@ -577,7 +577,7 @@ function MetricCard({
     >
       <div className="flex items-center gap-2 mb-1.5">
         <div style={{ color }}>{icon}</div>
-        <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>{label}</span>
+        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
         <span className="text-xl font-bold" style={{ color }}>{value}</span>

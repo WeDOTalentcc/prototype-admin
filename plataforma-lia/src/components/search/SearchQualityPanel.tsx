@@ -30,10 +30,10 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
               Qualidade da busca
             </span>
-            <span className="text-[11px] font-bold" style={{ color: scoreColor }}>
+            <span className="text-xs font-bold" style={{ color: scoreColor }}>
               {score}%
             </span>
           </div>
@@ -47,7 +47,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
 
         {searchAnalysis.next_recommended_action && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px]"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
             style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
           >
             <TrendingUp className="w-3 h-3" />
@@ -62,7 +62,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
           {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
             <div
               key={index}
-              className="flex items-start gap-2 px-2.5 py-2 rounded-full text-[11px]"
+              className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
               style={{
                 backgroundColor:
                   alert.severity === 'warning'

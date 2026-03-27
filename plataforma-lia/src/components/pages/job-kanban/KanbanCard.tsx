@@ -109,7 +109,7 @@ export function KanbanCard({
               <Badge 
                 key={skill} 
                 variant="outline" 
-                className="text-[10px] border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-0"
+                className="text-micro border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-0"
               >
                 {skill}
               </Badge>
@@ -117,7 +117,7 @@ export function KanbanCard({
             {candidate.skills.length > 3 && (
               <Badge 
                 variant="outline" 
-                className="text-[10px] border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-500 py-0"
+                className="text-micro border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-500 py-0"
               >
                 +{candidate.skills.length - 3}
               </Badge>
@@ -167,7 +167,7 @@ export function KanbanCard({
             </div>
           </TooltipProvider>
           
-          <span className="text-[10px] text-gray-500 dark:text-gray-500">
+          <span className="text-micro text-gray-500 dark:text-gray-500">
             {new Date(candidate.addedAt).toLocaleDateString("pt-BR", {
               day: "2-digit",
               month: "short"

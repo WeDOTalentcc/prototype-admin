@@ -502,12 +502,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                       Selecione a Vaga
                     </label>
                     {isLoadingVacancies ? (
-                      <div className="flex items-center gap-2 text-[11px] text-gray-500 py-2">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         Carregando vagas...
                       </div>
                     ) : vacancies.length === 0 ? (
-                      <div className="text-[11px] text-gray-500 py-2">
+                      <div className="text-xs text-gray-500 py-2">
                         Nenhuma vaga disponível
                       </div>
                     ) : (
@@ -547,7 +547,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   
                   {selectedVacancyId && (
                     <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600">
-                      <p className="text-[11px] text-gray-600">
+                      <p className="text-xs text-gray-600">
                         Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-gray-600 dark:text-gray-400">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
                       </p>
                     </div>
@@ -610,7 +610,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 <span className={textStyles.subtitle}>Preview da Mensagem</span>
               </div>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-micro">
                 {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : channel === 'both' ? 'Email + WhatsApp' : 'Telefone'}
               </Badge>
             </div>
@@ -625,7 +625,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4 border-b border-gray-100 bg-gray-50/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
-                        <AvatarFallback className="text-[10px] bg-gray-900 dark:bg-gray-50 text-white">
+                        <AvatarFallback className="text-micro bg-gray-900 dark:bg-gray-50 text-white">
                           RH
                         </AvatarFallback>
                       </Avatar>
@@ -660,17 +660,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="flex justify-end mb-2">
                     <div className="bg-[#dcf8c6] rounded-md p-3 max-w-[85%]">
                       <div 
-                        className="text-[11px] text-gray-800 leading-relaxed whitespace-pre-wrap"
+                        className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-400">A mensagem aparecerá aqui...</span>' }}
                       />
-                      <div className="text-[10px] text-gray-500 text-right mt-1">
+                      <div className="text-micro text-gray-500 text-right mt-1">
                         {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
                       </div>
                     </div>
                   </div>
                   {/* WhatsApp Info */}
                   <div className="text-center mt-3">
-                    <span className="text-[10px] text-gray-500 bg-white/60 rounded-full py-1 px-3">
+                    <span className="text-micro text-gray-500 bg-white/60 rounded-full py-1 px-3">
                       Será aberto o WhatsApp Web/App
                     </span>
                   </div>
@@ -692,7 +692,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   {/* Script Content */}
                   <div className="p-4">
                     <div 
-                      className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-gray-100"
+                      className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-gray-100"
                       dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-400">O script aparecerá aqui...</span>' }}
                     />
                   </div>

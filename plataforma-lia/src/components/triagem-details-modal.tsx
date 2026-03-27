@@ -50,7 +50,7 @@ const getDecisionDisplay = (decision?: string) => {
     case 'REPROVADO':
     case 'nao_aprovado':
       return { label: 'Não Aprovado', icon: ThumbsDown, color: '#991B1B', bg: 'rgba(239, 68, 68, 0.12)' }
-    default: return { label: 'Pendente', icon: Clock, color: '#6B7280', bg: '#F3F4F6' }
+    default: return { label: 'Pendente', icon: Clock, color: 'var(--gray-400)', bg: '#F3F4F6' }
   }
 }
 
@@ -105,7 +105,7 @@ function DreyfusRow({
   const bg    = isCritical ? "bg-red-50 border-red-200" : isAtencao ? "bg-amber-50 border-amber-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200"
   const lbl   = isCritical ? "Gap crítico" : isAtencao ? "Atenção" : isAcima ? "Acima" : "Alinhado"
   return (
-    <div className={`flex items-center justify-between text-[10px] rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
+    <div className={`flex items-center justify-between text-micro rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
       <span className="text-gray-500">Maturidade comportamental</span>
       <div className="flex items-center gap-2">
         <span className="text-gray-400">
@@ -115,7 +115,7 @@ function DreyfusRow({
         <span className="text-gray-400">
           Demonstrado: <span className={`font-semibold ${color}`}>{dreyfusLabel(dreyfusDemonstrado)}</span>
         </span>
-        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${bg} ${color}`}>{lbl}</span>
+        <span className={`text-micro font-bold px-1.5 py-0.5 rounded-full border ${bg} ${color}`}>{lbl}</span>
       </div>
     </div>
   )
@@ -286,17 +286,17 @@ export function TriagemDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
-      <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
+      <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>
               <Brain className="w-4 h-4 text-wedo-cyan" />
             </div>
             <div>
-              <h2 className="text-[13px] font-semibold text-gray-950 dark:text-gray-50" style={font}>
+              <h2 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50" style={font}>
                 Detalhes da Triagem WSI - {candidate.name}
               </h2>
-              <p className="text-[11px] text-gray-500" style={font}>
+              <p className="text-xs text-gray-500" style={font}>
                 {candidate.role || candidate.current_title} {candidate.location ? `• ${candidate.location}` : ''}
               </p>
             </div>
@@ -342,7 +342,7 @@ export function TriagemDetailsModal({
                 printWindow.document.close()
                 printWindow.print()
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium transition-colors hover:bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-100" style={{ ...font, backgroundColor: '#FFFFFF', borderRadius: '6px' }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-100" style={{ ...font, backgroundColor: 'var(--gray-50)', borderRadius: '6px' }}
             >
               <Download className="w-3 h-3" />
               Exportar
@@ -353,13 +353,13 @@ export function TriagemDetailsModal({
           </div>
         </div>
 
-        <div className="px-4 py-2.5 border-b border-b-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="px-4 py-2.5 border-b border-b-gray-100" style={{ backgroundColor: 'var(--gray-50)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 <div>
-                  <p className="text-[10px] text-gray-500" style={font}>Score WSI</p>
+                  <p className="text-micro text-gray-500" style={font}>Score WSI</p>
                   <p className={`text-base font-bold ${getScoreColor(scores.overall_wsi)}`} style={font}>{scores.overall_wsi.toFixed(1)}<span className="text-gray-400 font-normal">/5.0</span></p>
                 </div>
               </div>
@@ -367,7 +367,7 @@ export function TriagemDetailsModal({
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-gray-500" />
                 <div>
-                  <p className="text-[10px] text-gray-500" style={font}>Ranking</p>
+                  <p className="text-micro text-gray-500" style={font}>Ranking</p>
                   <p className="text-sm font-bold text-gray-950 dark:text-gray-50" style={font}>
                     {ranking?.ranked ? `#${ranking.rank} de ${ranking.total}` : 'N/A'}
                   </p>
@@ -377,8 +377,8 @@ export function TriagemDetailsModal({
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 text-gray-500" />
                 <div>
-                  <p className="text-[10px] text-gray-500" style={font}>Classificação</p>
-                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
+                  <p className="text-micro text-gray-500" style={font}>Classificação</p>
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-micro font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
                     {getClassificationLabel(scores.classification)}
                   </span>
                 </div>
@@ -388,7 +388,7 @@ export function TriagemDetailsModal({
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-500" />
                   <div>
-                    <p className="text-[10px] text-gray-500" style={font}>Duração</p>
+                    <p className="text-micro text-gray-500" style={font}>Duração</p>
                     <p className="text-xs font-medium text-gray-950 dark:text-gray-50" style={font}>{sessionInfo.duration_minutes} min</p>
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export function TriagemDetailsModal({
             </div>
 
             <div className="text-right">
-              <span className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-full" style={{ backgroundColor: decisionDisplay.bg, color: decisionDisplay.color, ...font }}>
+              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: decisionDisplay.bg, color: decisionDisplay.color, ...font }}>
                 <DecisionIcon className="w-3 h-3" />
                 {decisionDisplay.label}
               </span>
@@ -414,7 +414,7 @@ export function TriagemDetailsModal({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className="px-3 py-1.5 text-[11px] font-medium transition-all flex items-center gap-1.5 rounded-full hover:bg-gray-100"
+                className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 rounded-full hover:bg-gray-100"
                 style={{ ...font, backgroundColor: activeTab === tab.key ? '#1F2937' : 'transparent', color: activeTab === tab.key ? '#FFFFFF' : '#6B7280' }}
               >
                 <tab.icon className="w-3 h-3" />
@@ -427,7 +427,7 @@ export function TriagemDetailsModal({
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
           {activeTab === 'triagem' && (
             <div className="space-y-4">
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-gray-950 dark:text-gray-50" style={font}>
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Scores por Dimensão
@@ -435,17 +435,17 @@ export function TriagemDetailsModal({
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 rounded-lg border border-gray-100">
                     <p className="text-xl font-bold text-gray-950" style={font}>{scores.overall_wsi.toFixed(1)}</p>
-                    <p className="text-[10px] text-gray-500" style={font}>Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
+                    <p className="text-micro text-gray-500" style={font}>Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                   <div className="text-center p-3 rounded-lg border border-gray-100">
                     <p className="text-xl font-bold text-gray-950" style={font}>{scores.technical_wsi.toFixed(1)}</p>
-                    <p className="text-[10px] text-gray-500" style={font}>Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
+                    <p className="text-micro text-gray-500" style={font}>Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                   <div className="text-center p-3 rounded-lg border border-gray-100">
                     <p className="text-xl font-bold text-gray-950" style={font}>{scores.behavioral_wsi.toFixed(1)}</p>
-                    <p className="text-[10px] text-gray-500" style={font}>Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
+                    <p className="text-micro text-gray-500" style={font}>Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                 </div>
@@ -455,19 +455,19 @@ export function TriagemDetailsModal({
                     {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
                   </span>
                   {scores.percentile && (
-                    <span className="text-[10px] text-gray-500 flex items-center gap-1" style={font}>
+                    <span className="text-micro text-gray-500 flex items-center gap-1" style={font}>
                       <TrendingUp className="w-3 h-3" />
                       Top {100 - scores.percentile}%
                     </span>
                   )}
                   {sessionInfo.started_at && (
-                    <span className="text-[10px] text-gray-400" style={font}>
+                    <span className="text-micro text-gray-400" style={font}>
                       {new Date(sessionInfo.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
                 </div>
                 {f11Report?.seniority_weights && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mt-2">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mt-2">
                     <BarChart3 className="w-3 h-3 text-gray-400 shrink-0" />
                     <span>
                       Para <span className="font-medium text-gray-600">{f11Report.seniority || details?.session?.seniority_label || 'N/A'}</span>: Competências Técnicas valem{' '}
@@ -478,8 +478,8 @@ export function TriagemDetailsModal({
                 )}
                 {f11Report?.mode && (
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400" style={font}>Modo de triagem:</span>
-                    <span className="text-[10px] font-medium text-gray-700 flex items-center gap-1" style={font}>
+                    <span className="text-micro text-gray-400" style={font}>Modo de triagem:</span>
+                    <span className="text-micro font-medium text-gray-700 flex items-center gap-1" style={font}>
                       <Layers className="w-3 h-3 text-gray-400" />
                       {f11Report.mode === 'compact' ? 'Compact' : f11Report.mode === 'full' ? 'Full' : f11Report.mode}
                       {f11Report.question_count ? ` · ${f11Report.question_count} perguntas` : ''}
@@ -489,7 +489,7 @@ export function TriagemDetailsModal({
               </div>
 
 
-              <div className="border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', overflow: 'hidden' }}>
+              <div className="border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px', overflow: 'hidden' }}>
                 <div className="cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors" onClick={() => toggleSection('responses')} style={{ borderBottom: expandedSections.has('responses') ? '1px solid #F3F4F6' : 'none' }}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950 dark:text-gray-50" style={font}>
                     <MessageSquare className="w-4 h-4 text-gray-700" />
@@ -527,9 +527,9 @@ export function TriagemDetailsModal({
                           >
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm font-medium text-gray-800" style={font}>{resp.competency}</span>
-                              <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
+                              <span className="text-micro bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
                               {isCritical && (
-                                <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+                                <span className="flex items-center gap-0.5 text-micro font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
                                   <ShieldAlert className="w-2.5 h-2.5" /> Crítica
                                 </span>
                               )}
@@ -546,17 +546,17 @@ export function TriagemDetailsModal({
                             <div className="px-4 pb-4 space-y-4 bg-gray-50/50">
                               <div className="space-y-2">
                                 <div className="bg-white border border-gray-100 rounded-lg p-3">
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1" style={font}>Pergunta</p>
+                                  <p className="text-micro text-gray-400 uppercase tracking-wide mb-1" style={font}>Pergunta</p>
                                   <p className="text-xs text-gray-700 leading-relaxed" style={font}>{resp.question?.text || f11.question_text}</p>
                                 </div>
                                 <div className="bg-white border border-gray-100 rounded-lg p-3">
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1" style={font}>Resposta do Candidato</p>
+                                  <p className="text-micro text-gray-400 uppercase tracking-wide mb-1" style={font}>Resposta do Candidato</p>
                                   <p className="text-xs text-gray-800 leading-relaxed" style={font}>{resp.response_text}</p>
                                 </div>
                               </div>
 
                               <div className="bg-white border border-gray-100 rounded-lg p-3">
-                                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2" style={font}>Qualidade da resposta (STAR)</p>
+                                <p className="text-micro text-gray-400 uppercase tracking-wide mb-2" style={font}>Qualidade da resposta (STAR)</p>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {starComponents.map(({ key, label, desc }) => {
                                     const present = starData[key]
@@ -564,7 +564,7 @@ export function TriagemDetailsModal({
                                       <div
                                         key={key}
                                         title={desc}
-                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                                           present
                                             ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                                             : "bg-gray-100 border-gray-200 text-gray-400"
@@ -572,14 +572,14 @@ export function TriagemDetailsModal({
                                       >
                                         {present
                                           ? <CheckCircle className="w-3 h-3" />
-                                          : <span className="w-3 h-3 flex items-center justify-center text-gray-300 font-bold text-[10px]">–</span>
+                                          : <span className="w-3 h-3 flex items-center justify-center text-gray-300 font-bold text-micro">–</span>
                                         }
                                         <span>{label}</span>
                                       </div>
                                     )
                                   })}
                                   {!starData.R && (
-                                    <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                                    <span className="text-micro text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
                                       Resultado não evidenciado
                                     </span>
                                   )}
@@ -594,7 +594,7 @@ export function TriagemDetailsModal({
                                   { label: "Dreyfus", value: dreyfusLabel(demonstrated_dreyfus), sub: `Nível ${demonstrated_dreyfus}` },
                                 ].map((s) => (
                                   <div key={s.label} className="bg-white border border-gray-100 rounded-lg p-2 text-center">
-                                    <p className="text-[9px] text-gray-400 mb-1" style={font}>{s.label}</p>
+                                    <p className="text-micro text-gray-400 mb-1" style={font}>{s.label}</p>
                                     <p className="text-sm font-bold text-gray-900" style={font}>{s.value}</p>
                                   </div>
                                 ))}
@@ -607,11 +607,11 @@ export function TriagemDetailsModal({
                                 </div>
                                 <div className="flex items-center gap-4 text-xs">
                                   <div className="text-right">
-                                    <p className="text-[9px] text-gray-400" style={font}>Bloom</p>
+                                    <p className="text-micro text-gray-400" style={font}>Bloom</p>
                                     <p className={`font-semibold ${gap.color}`} style={font}>{bloomLabel(bloomExpected)}</p>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-[9px] text-gray-400" style={font}>Dreyfus</p>
+                                    <p className="text-micro text-gray-400" style={font}>Dreyfus</p>
                                     <p className={`font-semibold ${gap.color}`} style={font}>{dreyfusLabel(dreyfusExpected)}</p>
                                   </div>
                                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
@@ -622,10 +622,10 @@ export function TriagemDetailsModal({
 
                               {resp.evidences && resp.evidences.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2" style={font}>Evidências</p>
+                                  <p className="text-micro text-gray-400 uppercase tracking-wide mb-2" style={font}>Evidências</p>
                                   <div className="flex flex-wrap gap-2">
                                     {resp.evidences.map((ev, i) => (
-                                      <span key={i} className="flex items-center gap-1 text-[11px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                                      <span key={i} className="flex items-center gap-1 text-xs bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-full">
                                         <CheckCircle className="w-3 h-3 text-emerald-500" /> {ev}
                                       </span>
                                     ))}
@@ -654,7 +654,7 @@ export function TriagemDetailsModal({
                   <div className="flex items-center gap-2 mb-3">
                     <AlertCircle className="w-4 h-4 text-amber-600" />
                     <h3 className="text-sm font-semibold text-amber-700" style={font}>Pontos de Atenção</h3>
-                    <span className="ml-auto text-[10px] bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium border border-amber-200">Revisão humana recomendada</span>
+                    <span className="ml-auto text-micro bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium border border-amber-200">Revisão humana recomendada</span>
                   </div>
                   <ul className="space-y-1.5">
                     {(f11Report?.attention_flags || report?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (
@@ -668,34 +668,34 @@ export function TriagemDetailsModal({
 
               {report && (
                 <>
-                  <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                  <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                     <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50" style={font}>
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Sumário Executivo
                     </h3>
-                    <p className="text-[11px] text-gray-700 leading-relaxed" style={font}>{report.executive_summary}</p>
+                    <p className="text-xs text-gray-700 leading-relaxed" style={font}>{report.executive_summary}</p>
                   </div>
 
                   {report.technical_analysis && Object.keys(report.technical_analysis).length > 0 && (
-                    <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                    <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                       <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
                         <Target className="w-4 h-4 text-gray-700" />
                         Análise Técnica
                       </h3>
                       {report.technical_analysis.pontos_fortes && (
                         <div className="mb-2">
-                          <p className="text-[10px] font-medium text-emerald-700 mb-1 flex items-center gap-1" style={font}><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
+                          <p className="text-micro font-medium text-emerald-700 mb-1 flex items-center gap-1" style={font}><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
                           {report.technical_analysis.pontos_fortes.map((p: string, i: number) => (
                             <div key={i} className="flex items-start gap-1.5 mb-1">
                               <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-emerald-500" />
-                              <p className="text-[11px] text-gray-700" style={font}>{p}</p>
+                              <p className="text-xs text-gray-700" style={font}>{p}</p>
                             </div>
                           ))}
                         </div>
                       )}
                       {report.technical_analysis.gaps && report.technical_analysis.gaps.length > 0 && (
                         <div className="mb-2">
-                          <p className="text-[10px] font-medium text-gray-600 mb-1 flex items-center gap-1" style={font}><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Gaps Identificados:</p>
+                          <p className="text-micro font-medium text-gray-600 mb-1 flex items-center gap-1" style={font}><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Gaps Identificados:</p>
                           <ul className="space-y-2">
                             {report.technical_analysis.gaps.map((g: any, i: number) => {
                               const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : g
@@ -704,7 +704,7 @@ export function TriagemDetailsModal({
                                 <li key={i} className={`flex items-start gap-2.5 text-xs text-gray-700 rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`} style={font}>
                                   <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
                                   <span className="flex-1">{gs.texto || gs}</span>
-                                  <span className={`text-[9px] font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
+                                  <span className={`text-micro font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
                                 </li>
                               )
                             })}
@@ -713,11 +713,11 @@ export function TriagemDetailsModal({
                       )}
                       {report.technical_analysis.evidencias && (
                         <div>
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Evidências:</p>
+                          <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Evidências:</p>
                           {report.technical_analysis.evidencias.map((e: string, i: number) => (
                             <div key={i} className="flex items-start gap-1.5 mb-1">
                               <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-400" />
-                              <p className="text-[11px] text-gray-600" style={font}>{e}</p>
+                              <p className="text-xs text-gray-600" style={font}>{e}</p>
                             </div>
                           ))}
                         </div>
@@ -745,7 +745,7 @@ export function TriagemDetailsModal({
                     const isBigFive = entries.some(([k]) => Object.keys(BIG_FIVE_MAP).includes(k))
                     if (!isBigFive) {
                       return (
-                        <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                        <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                           <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
                             <User className="w-4 h-4 text-gray-700" />
                             Análise Comportamental
@@ -754,11 +754,11 @@ export function TriagemDetailsModal({
                             {entries.map(([key, val]: [string, any]) => (
                               <div key={key}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className="text-[11px] text-gray-800 capitalize" style={font}>{key}</span>
-                                  <span className="text-[11px] font-bold" style={{ ...font }}>{val.score?.toFixed(1)}/5.0</span>
+                                  <span className="text-xs text-gray-800 capitalize" style={font}>{key}</span>
+                                  <span className="text-xs font-bold" style={{ ...font }}>{val.score?.toFixed(1)}/5.0</span>
                                 </div>
                                 <Progress value={((val.score || 0) / 5) * 100} className="h-1.5 mb-1" />
-                                <p className="text-[10px] text-gray-500" style={font}>{val.descricao}</p>
+                                <p className="text-micro text-gray-500" style={font}>{val.descricao}</p>
                               </div>
                             ))}
                           </div>
@@ -767,17 +767,17 @@ export function TriagemDetailsModal({
                     }
                     const seniority = sessionInfo?.seniority_label || "Sênior"
                     return (
-                      <div className="p-3 border border-gray-100 space-y-4" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                      <div className="p-3 border border-gray-100 space-y-4" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                         <div>
                           <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
                             <User className="w-4 h-4 text-gray-700" />
                             Perfil de Personalidade
                           </h3>
-                          <p className="text-[10px] text-gray-400 mt-0.5" style={font}>
+                          <p className="text-micro text-gray-400 mt-0.5" style={font}>
                             Dimensões <span className="text-purple-600 font-medium">críticas</span> determinam fit de performance e cultura.
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-[10px] text-gray-400">
+                        <div className="flex items-center gap-4 text-micro text-gray-400">
                           <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-800 rounded-sm inline-block" /> Candidato</span>
                           <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado</span>
                         </div>
@@ -794,13 +794,13 @@ export function TriagemDetailsModal({
                             return (
                               <div key={key} className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[11px] font-medium text-gray-800" style={font}>{traitName}</span>
+                                  <span className="text-xs font-medium text-gray-800" style={font}>{traitName}</span>
                                   {val.is_critical && (
-                                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full border text-purple-700 bg-purple-50 border-purple-200">Crítica para esta vaga</span>
+                                    <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-purple-700 bg-purple-50 border-purple-200">Crítica para esta vaga</span>
                                   )}
-                                  {status === "gap"   && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
-                                  {status === "acima" && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
-                                  {status === "ok"    && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
+                                  {status === "gap"   && <span className="text-micro font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
+                                  {status === "acima" && <span className="text-micro font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
+                                  {status === "ok"    && <span className="text-micro font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
                                   {hint && (
                                     <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
                                       <Info className="w-3 h-3 text-gray-300 hover:text-gray-500 transition-colors" />
@@ -808,13 +808,13 @@ export function TriagemDetailsModal({
                                   )}
                                 </div>
                                 {showHint && hint && (
-                                  <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2.5 py-1.5" style={font}>{hint}</p>
+                                  <p className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2.5 py-1.5" style={font}>{hint}</p>
                                 )}
                                 <div className="relative h-3">
                                   <div className="absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${vagaEsperado}%` }} />
                                   <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-amber-400" : status === "acima" ? "bg-blue-400" : "bg-gray-800"}`} style={{ width: `${candidato}%` }} />
                                 </div>
-                                <div className="flex items-center justify-between text-[10px] text-gray-400" style={font}>
+                                <div className="flex items-center justify-between text-micro text-gray-400" style={font}>
                                   <span>Candidato: <span className="font-semibold text-gray-600">{candidato}%</span></span>
                                   <span>Vaga espera: <span className="font-semibold text-gray-600">{vagaEsperado}%</span></span>
                                 </div>
@@ -823,7 +823,7 @@ export function TriagemDetailsModal({
                             )
                           })}
                         </div>
-                        <p className="text-[10px] text-gray-400 pt-1 border-t border-gray-100" style={font}>
+                        <p className="text-micro text-gray-400 pt-1 border-t border-gray-100" style={font}>
                           Clique em <Info className="w-2.5 h-2.5 inline" /> para entender o que cada dimensão mede.
                         </p>
                       </div>
@@ -831,22 +831,22 @@ export function TriagemDetailsModal({
                   })()}
 
                   {report.recommendation && Object.keys(report.recommendation).length > 0 && (
-                    <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                    <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                       <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
                         <Award className="w-4 h-4 text-gray-700" />
                         Recomendação
                       </h3>
                       <div className="p-2.5 rounded-lg mb-2" style={{ backgroundColor: decisionDisplay.bg }}>
                         <p className="text-xs font-semibold" style={{ ...font, color: decisionDisplay.color }}>{report.recommendation.decisao}</p>
-                        <p className="text-[11px] mt-1 text-gray-700" style={font}>{report.recommendation.justificativa}</p>
+                        <p className="text-xs mt-1 text-gray-700" style={font}>{report.recommendation.justificativa}</p>
                       </div>
                       {report.recommendation.proximos_passos && (
                         <div>
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Próximos Passos:</p>
+                          <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Próximos Passos:</p>
                           {report.recommendation.proximos_passos.map((step: string, i: number) => (
                             <div key={i} className="flex items-center gap-1.5 mb-1">
-                              <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[9px] font-bold text-gray-600">{i + 1}</span>
-                              <p className="text-[11px] text-gray-700" style={font}>{step}</p>
+                              <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-micro font-bold text-gray-600">{i + 1}</span>
+                              <p className="text-xs text-gray-700" style={font}>{step}</p>
                             </div>
                           ))}
                         </div>
@@ -858,12 +858,12 @@ export function TriagemDetailsModal({
 
               {/* Perguntas sugeridas para entrevista — CBI do F11 */}
               {f11Report?.cbi_questions && f11Report.cbi_questions.length > 0 && (
-                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <div>
                     <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
                       <Mic2 className="w-4 h-4 text-gray-500" /> Perguntas sugeridas para a entrevista
                     </h3>
-                    <p className="text-[10px] text-gray-400 mt-0.5" style={font}>
+                    <p className="text-micro text-gray-400 mt-0.5" style={font}>
                       Geradas com base nos gaps identificados — use na entrevista presencial
                     </p>
                   </div>
@@ -873,9 +873,9 @@ export function TriagemDetailsModal({
                       <div key={i} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
                         <p className="text-xs text-gray-800 leading-relaxed" style={font}>"{q.question || q.texto}"</p>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-400" style={font}>Foco:</span>
-                          <span className="text-[10px] text-gray-600 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full" style={font}>{q.focus || q.foco || "Competência comportamental"}</span>
-                          <span className={`text-[9px] font-bold ${sev.color}`} style={font}>Gap {sev.label}</span>
+                          <span className="text-micro text-gray-400" style={font}>Foco:</span>
+                          <span className="text-micro text-gray-600 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full" style={font}>{q.focus || q.foco || "Competência comportamental"}</span>
+                          <span className={`text-micro font-bold ${sev.color}`} style={font}>Gap {sev.label}</span>
                         </div>
                       </div>
                     )
@@ -884,37 +884,37 @@ export function TriagemDetailsModal({
               )}
 
               {isPendingDecision && !!details && (
-                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
                     <BookOpen className="w-4 h-4 text-blue-500" /> Feedback para o Candidato
                   </h3>
                   <p className="text-xs text-gray-500 italic" style={font}>Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
                   <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
-                    <p className="text-[10px] text-gray-400 font-medium mb-0.5" style={font}>Prévia do feedback (rascunho)</p>
+                    <p className="text-micro text-gray-400 font-medium mb-0.5" style={font}>Prévia do feedback (rascunho)</p>
                     <p className="text-xs text-gray-600" style={font}>Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p>
                   </div>
                 </div>
               )}
 
               {canTriggerFeedback && (
-                <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
                     <MessageSquare className="w-4 h-4 text-wedo-cyan" />
                     Envio de Feedback Automático
                   </h3>
-                  <p className="text-[11px] text-gray-600 mb-3" style={font}>
+                  <p className="text-xs text-gray-600 mb-3" style={font}>
                     O candidato obteve classificação "{scores.classification}" e pode receber feedback construtivo automaticamente.
                   </p>
                   {feedbackSuccess && (
                     <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
                       <CheckCircle className="w-4 h-4" style={{ color: '#166534' }} />
-                      <span className="text-[11px] font-medium" style={{ ...font, color: '#166534' }}>Feedback enviado com sucesso</span>
+                      <span className="text-xs font-medium" style={{ ...font, color: '#166534' }}>Feedback enviado com sucesso</span>
                     </div>
                   )}
                   {feedbackError && (
                     <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                       <AlertCircle className="w-4 h-4" style={{ color: '#991B1B' }} />
-                      <span className="text-[11px] font-medium" style={{ ...font, color: '#991B1B' }}>{feedbackError}</span>
+                      <span className="text-xs font-medium" style={{ ...font, color: '#991B1B' }}>{feedbackError}</span>
                     </div>
                   )}
                   <button
@@ -939,7 +939,7 @@ export function TriagemDetailsModal({
               )}
 
               {(feedback || (f11Report?.response_analyses && f11Report.response_analyses.length > 0)) && (
-                <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
                       <BookOpen className="w-4 h-4 text-blue-500" />
@@ -963,7 +963,7 @@ export function TriagemDetailsModal({
                         setCopiedFeedback(true)
                         setTimeout(() => setCopiedFeedback(false), 2000)
                       }}
-                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                       style={font}
                     >
                       {copiedFeedback ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
@@ -971,14 +971,14 @@ export function TriagemDetailsModal({
                     </button>
                   </div>
                   {feedback?.main_message && (
-                    <p className="text-[11px] text-gray-700 leading-relaxed mb-3" style={font}>{feedback.main_message}</p>
+                    <p className="text-xs text-gray-700 leading-relaxed mb-3" style={font}>{feedback.main_message}</p>
                   )}
 
                   {!feedback && f11Report?.response_analyses && (
                     <div className="mb-3 space-y-1">
                       {f11Report.response_analyses.slice(0, 3).map((a: any, i: number) => (
                         a.feedback && (
-                          <p key={i} className="text-[11px] text-gray-700 leading-relaxed" style={font}>{a.feedback}</p>
+                          <p key={i} className="text-xs text-gray-700 leading-relaxed" style={font}>{a.feedback}</p>
                         )
                       ))}
                     </div>
@@ -986,11 +986,11 @@ export function TriagemDetailsModal({
 
                   {feedback?.technical_strengths && feedback.technical_strengths.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Técnicos:</p>
+                      <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Técnicos:</p>
                       {feedback.technical_strengths.map((s: string, i: number) => (
                         <div key={i} className="flex items-start gap-1.5 mb-0.5">
                           <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
-                          <p className="text-[11px] text-gray-700" style={font}>{s}</p>
+                          <p className="text-xs text-gray-700" style={font}>{s}</p>
                         </div>
                       ))}
                     </div>
@@ -998,11 +998,11 @@ export function TriagemDetailsModal({
 
                   {feedback?.behavioral_strengths && feedback.behavioral_strengths.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Comportamentais:</p>
+                      <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Comportamentais:</p>
                       {feedback.behavioral_strengths.map((s: string, i: number) => (
                         <div key={i} className="flex items-start gap-1.5 mb-0.5">
                           <Star className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-400" />
-                          <p className="text-[11px] text-gray-700" style={font}>{s}</p>
+                          <p className="text-xs text-gray-700" style={font}>{s}</p>
                         </div>
                       ))}
                     </div>
@@ -1010,11 +1010,11 @@ export function TriagemDetailsModal({
 
                   {feedback?.development_opportunities && feedback.development_opportunities.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Oportunidades de Desenvolvimento:</p>
+                      <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Oportunidades de Desenvolvimento:</p>
                       {feedback.development_opportunities.map((d: string, i: number) => (
                         <div key={i} className="flex items-start gap-1.5 mb-0.5">
                           <BookOpen className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500" />
-                          <p className="text-[11px] text-gray-700" style={font}>{d}</p>
+                          <p className="text-xs text-gray-700" style={font}>{d}</p>
                         </div>
                       ))}
                     </div>
@@ -1022,15 +1022,15 @@ export function TriagemDetailsModal({
 
                   {feedback?.personalized_tip && (
                     <div className="p-2 rounded-lg mt-2" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}>
-                      <p className="text-[10px] font-medium mb-0.5 text-wedo-cyan" style={{ ...font }}>Dica Personalizada</p>
-                      <p className="text-[11px] text-gray-700" style={font}>{feedback.personalized_tip}</p>
+                      <p className="text-micro font-medium mb-0.5 text-wedo-cyan" style={{ ...font }}>Dica Personalizada</p>
+                      <p className="text-xs text-gray-700" style={font}>{feedback.personalized_tip}</p>
                     </div>
                   )}
 
                   {feedback?.next_steps && (
                     <div className="mt-2 p-2 rounded-lg bg-gray-100">
-                      <p className="text-[10px] font-medium text-gray-500 mb-0.5" style={font}>Próximos Passos:</p>
-                      <p className="text-[11px] text-gray-700" style={font}>{feedback.next_steps}</p>
+                      <p className="text-micro font-medium text-gray-500 mb-0.5" style={font}>Próximos Passos:</p>
+                      <p className="text-xs text-gray-700" style={font}>{feedback.next_steps}</p>
                     </div>
                   )}
                 </div>
@@ -1052,7 +1052,7 @@ export function TriagemDetailsModal({
                       <div key={label} className="border border-gray-200 rounded-md p-3 dark:border-gray-700">
                         <div className="flex items-center gap-1.5 mb-1">
                           <Icon className="w-3.5 h-3.5 text-gray-400" />
-                          <span className="text-[10px] text-gray-500 uppercase tracking-wide" style={font}>{label}</span>
+                          <span className="text-micro text-gray-500 uppercase tracking-wide" style={font}>{label}</span>
                         </div>
                         <p className="text-lg font-semibold text-gray-900 dark:text-gray-100" style={font}>
                           {value.toFixed(1)}<span className="text-xs text-gray-400">/10</span>
@@ -1066,7 +1066,7 @@ export function TriagemDetailsModal({
                     <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Trophy className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300" style={font}>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300" style={font}>
                           Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -1080,7 +1080,7 @@ export function TriagemDetailsModal({
                             className={`flex items-center gap-3 px-3 py-2.5 ${isCurrent ? 'bg-gray-900 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                           >
                             {/* Rank badge */}
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-bold flex-shrink-0 ${
                               entry.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
                               entry.rank === 2 ? 'bg-gray-100 text-gray-600' :
                               entry.rank === 3 ? 'bg-orange-100 text-orange-700' :
@@ -1090,26 +1090,26 @@ export function TriagemDetailsModal({
                             </div>
                             {/* Name */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-[11px] font-medium truncate ${isCurrent ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`} style={font}>
+                              <p className={`text-xs font-medium truncate ${isCurrent ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`} style={font}>
                                 {isCurrent ? `${entry.candidate_name} (você)` : entry.candidate_name}
                               </p>
                               {entry.candidate_title && (
-                                <p className={`text-[10px] truncate ${isCurrent ? 'text-gray-300' : 'text-gray-400'}`} style={font}>{entry.candidate_title}</p>
+                                <p className={`text-micro truncate ${isCurrent ? 'text-gray-300' : 'text-gray-400'}`} style={font}>{entry.candidate_title}</p>
                               )}
                             </div>
                             {/* Scores */}
                             <div className="flex items-center gap-3 flex-shrink-0">
                               <div className="text-right">
-                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Tec</p>
-                                <p className={`text-[11px] font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.technical_wsi.toFixed(1)}</p>
+                                <p className={`text-micro ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Tec</p>
+                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.technical_wsi.toFixed(1)}</p>
                               </div>
                               <div className="text-right">
-                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Comp</p>
-                                <p className={`text-[11px] font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.behavioral_wsi.toFixed(1)}</p>
+                                <p className={`text-micro ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Comp</p>
+                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.behavioral_wsi.toFixed(1)}</p>
                               </div>
                               <div className="text-right min-w-[36px]">
-                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>WSI</p>
-                                <p className={`text-[12px] font-bold ${isCurrent ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`} style={font}>{entry.overall_wsi.toFixed(1)}</p>
+                                <p className={`text-micro ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>WSI</p>
+                                <p className={`text-sm-ui font-bold ${isCurrent ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`} style={font}>{entry.overall_wsi.toFixed(1)}</p>
                               </div>
                             </div>
                           </div>
@@ -1138,12 +1138,12 @@ export function TriagemDetailsModal({
 
         <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500" style={font}>Decisão do Recrutador</span>
+            <span className="text-micro text-gray-500" style={font}>Decisão do Recrutador</span>
           </div>
           <div className="flex items-center gap-2">
             {confirmReject ? (
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-red-600 font-medium" style={font}>Confirmar reprovação?</span>
+                <span className="text-xs text-red-600 font-medium" style={font}>Confirmar reprovação?</span>
                 <button
                   onClick={async () => {
                     setRejecting(true)
@@ -1152,15 +1152,15 @@ export function TriagemDetailsModal({
                     setConfirmReject(false)
                   }}
                   disabled={rejecting}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded-full transition-colors disabled:opacity-50"
-                  style={{ ...font, backgroundColor: '#EF4444', color: '#FFFFFF' }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors disabled:opacity-50"
+                  style={{ ...font, backgroundColor: 'var(--status-error)', color: 'var(--gray-50)' }}
                 >
                   {rejecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsDown className="w-3 h-3" />}
                   Sim, reprovar
                 </button>
                 <button
                   onClick={() => setConfirmReject(false)}
-                  className="px-2.5 py-1.5 text-[11px] font-medium rounded-full transition-colors hover:bg-gray-100 border border-gray-200" style={{ ...font, backgroundColor: '#FFFFFF' }}
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors hover:bg-gray-100 border border-gray-200" style={{ ...font, backgroundColor: 'var(--gray-50)' }}
                 >
                   Cancelar
                 </button>
@@ -1168,7 +1168,7 @@ export function TriagemDetailsModal({
             ) : (
               <button
                 onClick={() => setConfirmReject(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-red-50 border border-gray-200" style={{ ...font, backgroundColor: '#FFFFFF', color: '#EF4444' }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-red-50 border border-gray-200" style={{ ...font, backgroundColor: 'var(--gray-50)', color: 'var(--status-error)' }}
               >
                 <ThumbsDown className="w-3.5 h-3.5" />
                 Reprovar
@@ -1181,7 +1181,7 @@ export function TriagemDetailsModal({
                 setApproving(false)
               }}
               disabled={approving}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-gray-800 disabled:opacity-50 bg-gray-800" style={{ ...font, color: '#FFFFFF' }}
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-gray-800 disabled:opacity-50 bg-gray-800" style={{ ...font, color: 'var(--gray-50)' }}
             >
               {approving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
               Aprovar para Entrevista

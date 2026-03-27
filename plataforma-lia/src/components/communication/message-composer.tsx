@@ -227,10 +227,10 @@ export function MessageComposer({
       {showTemplateSelector && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-[11px] font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
               Templates
             </label>
-            <span className="text-[10px] flex items-center gap-1 text-gray-700">
+            <span className="text-micro flex items-center gap-1 text-gray-700">
               <Brain className="w-3 h-3 text-wedo-cyan" />
               LIA disponível
             </span>
@@ -239,11 +239,11 @@ export function MessageComposer({
             {templatesLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                <span className="text-[11px] text-gray-500 ml-2">Carregando templates...</span>
+                <span className="text-xs text-gray-500 ml-2">Carregando templates...</span>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="py-3 text-center">
-                <span className="text-[11px] text-gray-500">Nenhum template disponível</span>
+                <span className="text-xs text-gray-500">Nenhum template disponível</span>
               </div>
             ) : (
               filteredTemplates.slice(0, 5).map((template) => (
@@ -256,11 +256,11 @@ export function MessageComposer({
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-[11px] font-medium text-gray-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div className="text-xs font-medium text-gray-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     {template.name}
                   </div>
                   {template.subject && channel === 'email' && (
-                    <div className="text-[10px] text-gray-500 mt-0.5 truncate">
+                    <div className="text-micro text-gray-500 mt-0.5 truncate">
                       Assunto: {template.subject}
                     </div>
                   )}
@@ -275,7 +275,7 @@ export function MessageComposer({
         {channel === 'email' && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[11px] font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Assunto
               </label>
               {showVariableSelector && (
@@ -283,7 +283,7 @@ export function MessageComposer({
                   onSelect={insertVariableAtCursor}
                   trigger={
                     <button 
-                      className="text-[10px] flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
                       onFocus={() => setFocusedField('subject')}
                     >
                       <span>Inserir Variável</span>
@@ -307,7 +307,7 @@ export function MessageComposer({
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[11px] font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
               {channel === 'email' ? 'Mensagem' : 'Mensagem WhatsApp'}
             </label>
             {showVariableSelector && (
@@ -315,7 +315,7 @@ export function MessageComposer({
                 onSelect={insertVariableAtCursor}
                 trigger={
                   <button 
-                    className="text-[10px] flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
                     onFocus={() => setFocusedField('message')}
                   >
                     <span>Inserir Variável</span>
@@ -345,17 +345,17 @@ export function MessageComposer({
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div className="flex-1">
-                <span className="text-[13px] font-semibold text-gray-900">
+                <span className="text-base-ui font-semibold text-gray-900">
                   Ajustar com a LIA
                 </span>
-                <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   Ajustes são aplicados apenas neste envio
                 </p>
               </div>
               <select
                 value={toneStyle}
                 onChange={(e) => setToneStyle(e.target.value as ToneStyle)}
-                className="text-[11px] border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400"
                 style={{ fontFamily: 'Open Sans, sans-serif' }}
               >
                 {TONE_OPTIONS.map(opt => (
@@ -402,7 +402,7 @@ export function MessageComposer({
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
                 </div>
-                <span className="text-[11px]" style={{ color: '#0d7a8c', fontFamily: 'Open Sans, sans-serif' }}>
+                <span className="text-xs" style={{ color: '#0d7a8c', fontFamily: 'Open Sans, sans-serif' }}>
                   A LIA está analisando e ajustando a mensagem...
                 </span>
               </div>
@@ -421,7 +421,7 @@ export function MessageComposer({
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <div>
-                    <h3 className="text-[15px] font-semibold text-gray-900">
+                    <h3 className="text-sm font-semibold text-gray-900">
                       Ajustes da LIA
                     </h3>
                     <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -436,12 +436,12 @@ export function MessageComposer({
             </div>
             <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
               <div>
-                <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   Alterações Realizadas
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Badge key={idx} className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#0d7a8c' }}>
+                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#0d7a8c' }}>
                       <Check className="w-3 h-3 mr-1" />
                       {change}
                     </Badge>
@@ -451,7 +451,7 @@ export function MessageComposer({
               
               {channel === 'email' && aiResultModal.newSubject && (
                 <div>
-                  <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     Novo Assunto
                   </label>
                   <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -461,7 +461,7 @@ export function MessageComposer({
               )}
 
               <div>
-                <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   Nova Mensagem
                 </label>
                 <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -472,7 +472,7 @@ export function MessageComposer({
               <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <p className="text-xs text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     Os ajustes serão aplicados apenas a esta mensagem. O template original permanece inalterado.
                   </p>
                 </div>

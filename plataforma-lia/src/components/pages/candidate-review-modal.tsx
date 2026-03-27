@@ -289,7 +289,7 @@ const EditCriteriaPopup: React.FC<{
 
             {showPresets && (
               <div className="absolute left-0 bottom-full mb-2 bg-white rounded-md border border-gray-200 py-2 min-w-[200px] z-20">
-                <p className="px-3 py-1 text-[11px] text-gray-600 uppercase tracking-wide">Select a preset</p>
+                <p className="px-3 py-1 text-xs text-gray-600 uppercase tracking-wide">Select a preset</p>
                 {allPresets.map((preset) => (
                   <button
                     key={preset.id}
@@ -297,7 +297,7 @@ const EditCriteriaPopup: React.FC<{
                     className="w-full px-3 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 flex items-center justify-between"
                   >
                     <span>{preset.name}</span>
-                    <span className="text-[11px] text-gray-600">{preset.criteria.length} criteria</span>
+                    <span className="text-xs text-gray-600">{preset.criteria.length} criteria</span>
                   </button>
                 ))}
               </div>
@@ -534,7 +534,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               <span className="text-lg">{highlight.icon}</span>
                               <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">{highlight.title}</span>
                             </div>
-                            <p className="text-[11px] text-gray-600 line-clamp-2">
+                            <p className="text-xs text-gray-600 line-clamp-2">
                               {highlight.description}
                             </p>
                           </div>
@@ -545,15 +545,15 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     {/* Experience Stats */}
                     <div className="grid grid-cols-3 gap-4 py-4 border-t border-gray-100">
                       <div>
-                        <p className="text-[11px] text-gray-600 uppercase tracking-wide mb-1">Average Tenure</p>
+                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Average Tenure</p>
                         <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">{currentCandidate.experienceStats.averageTenure}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] text-gray-600 uppercase tracking-wide mb-1">Current Tenure</p>
+                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Current Tenure</p>
                         <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">{currentCandidate.experienceStats.currentTenure}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] text-gray-600 uppercase tracking-wide mb-1">Total Experience</p>
+                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Total Experience</p>
                         <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">{currentCandidate.experienceStats.totalExperience}</p>
                       </div>
                     </div>
@@ -580,7 +580,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               <div className="flex items-center gap-2 mt-1">
                                 <p className="text-sm text-gray-800 dark:text-gray-200">{exp.title}</p>
                                 {exp.isPromotion && (
-                                  <Badge className="text-[11px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                  <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
                                     Promotion
                                   </Badge>
                                 )}
@@ -589,7 +589,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               {exp.skills && exp.skills.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {exp.skills.slice(0, 5).map((skill, idx) => (
-                                    <span key={idx} className="text-[11px] text-gray-600">
+                                    <span key={idx} className="text-xs text-gray-600">
                                       {skill}{idx < Math.min(exp.skills!.length - 1, 4) ? ' · ' : ''}
                                     </span>
                                   ))}
@@ -666,7 +666,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   </h3>
                   <button
                     onClick={() => setShowEditCriteria(true)}
-                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#4BA8BB] transition-colors"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark transition-colors"
                   >
                     Edit Criteria
                   </button>
@@ -756,7 +756,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   className="w-full justify-center text-sm font-semibold"
                   style={{
                     backgroundColor: 'white',
-                    color: '#10B981',
+                    color: 'var(--status-success)',
                     border: '2px solid #10B981'
                   }}
                 >
@@ -774,7 +774,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   className="w-full justify-center text-sm font-semibold"
                   style={{
                     backgroundColor: 'white',
-                    color: '#EF4444',
+                    color: 'var(--status-error)',
                     border: '2px solid #EF4444'
                   }}
                 >
@@ -782,14 +782,14 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <span className="ml-2 text-xs opacity-70 bg-red-50 px-1.5 py-0.5 rounded">R</span>
                 </Button>
 
-                <p className="text-[11px] text-gray-600 text-center mt-4 leading-relaxed">
+                <p className="text-xs text-gray-600 text-center mt-4 leading-relaxed">
                   This only calibrates the agent and does not send emails.
                 </p>
               </div>
 
               {/* Tips Section */}
               <div className="mt-auto p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-[11px] text-gray-600 leading-relaxed">
+                <p className="text-xs text-gray-600 leading-relaxed">
  You can <button className="hover:underline">pin criteria</button> if it is a mandatory requirement or <button className="text-gray-600 hover:underline">re-order</button> by importance using{' '}
                   <button 
                     className="text-gray-600 dark:text-gray-400 hover:underline font-medium"

@@ -61,7 +61,7 @@ export function JobDescriptionStage() {
     <div className="space-y-2.5">
       {/* Cargo */}
       <div>
-        <label className="flex items-center gap-2 text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Cargo *
           {fieldOrigins['job_title'] && (
             <FieldOriginBadge 
@@ -85,7 +85,7 @@ export function JobDescriptionStage() {
 
       {/* Área */}
       <div>
-        <label className="flex items-center gap-2 text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Área/Departamento *
           {fieldOrigins['department'] && (
             <FieldOriginBadge 
@@ -112,7 +112,7 @@ export function JobDescriptionStage() {
 
       {/* Gestor */}
       <div>
-        <label className="block text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Gestor Responsável
         </label>
         <input
@@ -128,7 +128,7 @@ export function JobDescriptionStage() {
 
       {/* Localidade */}
       <div>
-        <label className="flex items-center gap-2 text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Localidade
           {fieldOrigins['location'] && (
             <FieldOriginBadge 
@@ -154,7 +154,7 @@ export function JobDescriptionStage() {
 
       {/* Modelo de Trabalho */}
       <div>
-        <label className="flex items-center gap-2 text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Modelo de Trabalho
           {fieldOrigins['work_model'] && (
             <FieldOriginBadge 
@@ -186,7 +186,7 @@ export function JobDescriptionStage() {
       {/* Dias Híbridos - só aparece se modelo for híbrido */}
       {basicInfoFields.modeloTrabalho === 'Híbrido' && (
         <div>
-          <label className="block text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             Dias Presenciais por Semana
           </label>
           <div className="flex gap-1.5">
@@ -212,7 +212,7 @@ export function JobDescriptionStage() {
 
       {/* Tipo de Contrato */}
       <div>
-        <label className="block text-[10px] font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
           Tipo de Contrato
         </label>
         <div className="flex flex-wrap gap-2">

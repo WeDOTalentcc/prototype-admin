@@ -102,7 +102,7 @@ export function CompanyBenefitsSummaryCard({
                 <CategoryIcon className={`w-3 h-3 ${categoryInfo.color}`} />
                 <span className="truncate max-w-[120px]">{benefit.name}</span>
                 {value && (
-                  <span className="text-gray-800 dark:text-gray-200 text-[11px]">
+                  <span className="text-gray-800 dark:text-gray-200 text-xs">
                     ({value})
                   </span>
                 )}
@@ -110,10 +110,10 @@ export function CompanyBenefitsSummaryCard({
                   <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
                 )}
                 {benefit.is_mandatory && (
-                  <span className="text-[9px] px-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
+                  <span className="text-micro px-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
                 )}
                 {benefit.is_discount && (
-                  <span className="text-[9px] px-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">desc.</span>
+                  <span className="text-micro px-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">desc.</span>
                 )}
               </Badge>
             )

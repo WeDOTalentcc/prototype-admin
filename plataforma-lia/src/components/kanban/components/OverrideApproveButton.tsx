@@ -59,14 +59,14 @@ export function OverrideApproveButton({
         className="flex items-center gap-1 mt-1"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-[10px] text-gray-600 dark:text-gray-400">
+        <span className="text-micro text-gray-600 dark:text-gray-400">
           Aprovar {candidateName.split(' ')[0]}?
         </span>
         <button
           onClick={handleConfirm}
           disabled={isLoading || disabled}
           className={
-            'inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium rounded-md ' +
+            'inline-flex items-center gap-0.5 px-2 py-0.5 text-micro font-medium rounded-md ' +
             'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 ' +
             'dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ' +
             'disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed ' +
@@ -84,7 +84,7 @@ export function OverrideApproveButton({
           onClick={handleCancel}
           disabled={isLoading}
           className={
-            'inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-md ' +
+            'inline-flex items-center px-2 py-0.5 text-micro font-medium rounded-md ' +
             'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ' +
             'dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 ' +
             'transition-colors duration-150'
@@ -102,7 +102,7 @@ export function OverrideApproveButton({
       onClick={handleClick}
       disabled={isLoading || disabled}
       className={
-        'inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md ' +
+        'inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-md ' +
         'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 ' +
         'dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ' +
         'disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed ' +

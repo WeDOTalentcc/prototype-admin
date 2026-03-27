@@ -362,7 +362,7 @@ export function IndustryFilterInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-600 dark:text-gray-400 hover:text-[#50a3b8] font-medium"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium"
           >
             Limpar tudo
           </button>
@@ -424,7 +424,7 @@ export function IndustryFilterInput({
                   <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
                     <Brain className="w-3 h-3 text-purple-500" />
                     <span>{item.label}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full ml-auto">AI</span>
+                    <span className="text-micro px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between text-gray-800 dark:text-gray-200">

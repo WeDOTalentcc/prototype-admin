@@ -278,7 +278,7 @@ const mapInterviewStagesToKanban = (
 
   const systemInitialStages: DynamicStage[] = [
     { id: 'sourcing', name: 'sourcing', displayName: 'Funil', order: 0, stageType: 'active', isInitial: true, actionBehavior: 'intake' },
-    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: '#4B5563', stageType: 'active', isInitial: false, actionBehavior: 'screening' }
+    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: 'var(--gray-600)', stageType: 'active', isInitial: false, actionBehavior: 'screening' }
   ]
   const systemFinalStages: DynamicStage[] = [
     { id: 'hired', name: 'hired', displayName: 'Contratado', order: 900, stageType: 'final', isFinal: true, isHired: true, actionBehavior: 'conclusion_hired' },
@@ -4285,7 +4285,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 isDropping ? 'scale-150' : ''
               }`}></div>
               <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-              <span className="text-[10px] text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+              <span className="text-micro text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
                 {filteredCandidates.length}
               </span>
               {stageId === 'screening' && (currentJob.backendId || currentJob.id) && (
@@ -4368,7 +4368,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 >
                   <div className="flex items-center gap-1">
                     <Flag className="w-3 h-3 text-amber-500" />
-                    <span className="text-[10px] font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Ação Necessária</span>
+                    <span className="text-micro font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Ação Necessária</span>
                   </div>
                 </div>
               )}
@@ -4524,7 +4524,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       return (
                         <Avatar className="w-7 h-7">
                           <AvatarImage src={kanbanAvatarUrl} alt={candidate.name} />
-                          <AvatarFallback className="text-[10px] font-medium text-gray-600">
+                          <AvatarFallback className="text-micro font-medium text-gray-600">
                             {candidate.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
                           </AvatarFallback>
                         </Avatar>
@@ -4610,15 +4610,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                 {/* Informações do candidato - Alinhadas à esquerda */}
                 <div className="space-y-0 mb-1.5">
-                  <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.role}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <Building className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.currentCompany || 'Não informado'}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.location}</span>
                   </div>
@@ -4943,7 +4943,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   {stageId === 'sourcing' && (
                     <div className="flex gap-1">
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-[10px] font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                         style={{ fontFamily: "'Open Sans', sans-serif" }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -4954,7 +4954,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <span>Aprovar</span>
                       </button>
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-[10px] font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
                         style={{ fontFamily: "'Open Sans', sans-serif" }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -4971,7 +4971,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   {stageId === 'screening' && (
                     <div className="flex gap-1">
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-[10px] font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                         style={{ fontFamily: "'Open Sans', sans-serif" }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -4982,7 +4982,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <span>Aprovar</span>
                       </button>
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-[10px] font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
                         style={{ fontFamily: "'Open Sans', sans-serif" }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -5004,7 +5004,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <>
                           {/* Botão Entrevista Agendada - Abre Teams diretamente */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-[10px] font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                             style={{ fontFamily: "'Open Sans', sans-serif" }}
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5018,7 +5018,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           </button>
                           {/* Botão Alterar Horário - Abre UniversalTransitionModal com LIA */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-[10px] font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
                             style={{ fontFamily: "'Open Sans', sans-serif" }}
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5034,7 +5034,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           </button>
                           {/* Botão Cancelar Entrevista */}
                           <button
-                            className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-full text-[10px] font-medium transition-colors"
+                            className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-full text-micro font-medium transition-colors"
                             style={{ fontFamily: "'Open Sans', sans-serif" }}
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5054,7 +5054,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <>
                           {/* Botão Solicitar Urgência - Abre modal de confirmação */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-[10px] font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
                             style={{ fontFamily: "'Open Sans', sans-serif" }}
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5068,7 +5068,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           </button>
                           {/* Botão Alterar Horário - Abre modal de confirmação */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-[10px] font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                             style={{ fontFamily: "'Open Sans', sans-serif" }}
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5087,7 +5087,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                   {stageId === 'offer' && (
                     <button
-                      className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-gray-900 rounded-full text-[10px] transition-colors"
+                      className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-gray-900 rounded-full text-micro transition-colors"
                       style={{ fontFamily: "'Open Sans', sans-serif" }}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -5171,13 +5171,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     {currentJob.title}
                   </h1>
                   {currentJob.jobId && (
-                    <span className="text-[10px] font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <span className="text-micro font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded whitespace-nowrap">
                       {currentJob.jobId}
                     </span>
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-[#c9d6c8] transition-colors select-none">
+                      <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
                         {jobEditForm.status || currentJob.status}
                       </Badge>
                     </PopoverTrigger>
@@ -5316,38 +5316,38 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {currentJob.status === 'Rascunho' && (
-                    <Badge className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                       Rascunho
                     </Badge>
                   )}
-                  <Badge className="bg-[#E3DADC] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap text-[10px] px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level}
                   </Badge>
-                  <Badge className="bg-[#DDE1E9] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium capitalize whitespace-nowrap text-[10px] px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.workModel || '—'}
                   </Badge>
-                  <Badge className="bg-[#E3DADC] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.type || '—'}
                   </Badge>
-                  <Badge className="bg-[#DDE1E9] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.department}
                   </Badge>
-                  <Badge className="bg-[#E3DADC] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location}
                   </Badge>
                   {currentJob.salary && currentJob.salary !== 'A combinar' && (
-                    <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary}
                     </Badge>
                   )}
                   {currentJob.publishedLinkedIn && (
-                    <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       Publicada
                     </Badge>
                   )}
-                  <span className="text-[10px] text-gray-300 dark:text-gray-600 mx-0.5">|</span>
+                  <span className="text-micro text-gray-300 dark:text-gray-600 mx-0.5">|</span>
                   {currentJob.openDate && (
-                    <span className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    <span className="text-micro text-gray-700 dark:text-gray-300 whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                       {new Date(currentJob.openDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
@@ -5357,37 +5357,37 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
-                      <span className={`text-[10px] font-semibold whitespace-nowrap ${isLate ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'}`}>
                         {days}d {isLate ? 'de atraso' : 'aberta'}
                       </span>
                     )
                   })()}
                   {currentJob.updatedAt && (
-                    <span className="text-[10px] text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                    <span className="text-micro text-gray-600 dark:text-gray-400 whitespace-nowrap">
                       Atualizada: {new Date(currentJob.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {currentJob.deadlineScreening && (
-                    <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo triagem: {new Date(currentJob.deadlineScreening).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineShortlist && (
-                    <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo short: {new Date(currentJob.deadlineShortlist).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineClosing && (
-                    <Badge className="bg-[#DCE4DB] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-[10px] px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Encerramento: {new Date(currentJob.deadlineClosing).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {computedSuggestions.length > 0 && (
                     <Badge 
-                      className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-[10px] px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors"
+                      className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors"
                       onClick={() => {
                         setShowExpandedLIA(true)
                         setShowLiaSuggestionsPanel(true)
@@ -5445,7 +5445,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             >
               <Layers3 className="w-3.5 h-3.5" />
               Gestão da Vaga
-              <Badge className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-1.5 py-0 ml-1">
+              <Badge className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-1.5 py-0 ml-1">
                 {allTableCandidates?.length || 0}
               </Badge>
             </button>
@@ -5463,7 +5463,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
                 <>
-                  <span className="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <span className="inline-flex items-center gap-1 text-micro text-amber-600 dark:text-amber-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <Settings className="w-3 h-3" />
                     Pipeline personalizado
                   </span>
@@ -5476,7 +5476,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
                     style={{ fontFamily: "'Open Sans', sans-serif" }}
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -5484,7 +5484,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <span className="inline-flex items-center gap-1 text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   <Link2 className="w-3 h-3" />
                   Herdado da empresa
                 </span>
@@ -5557,7 +5557,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       variant="ghost"
                       size="sm"
                       onClick={clearStageFilters}
-                      className="h-6 text-[10px] gap-1 flex-shrink-0 px-2"
+                      className="h-6 text-micro gap-1 flex-shrink-0 px-2"
                     >
                       <X className="w-3 h-3" />
                       Limpar
@@ -5621,10 +5621,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         placeholder="Ex: Analisar candidatos com maior fit..."
                         value={liaPromptValue}
                         onChange={(e) => setLiaPromptValue(e.target.value)}
-                        className="w-full h-10 pl-10 pr-20 text-[13px] rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
+                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
                         style={{ 
-                          backgroundColor: '#FFFFFF',
-                          color: '#1a1a1a',
+                          backgroundColor: 'var(--gray-50)',
+                          color: 'var(--gray-950)',
                           fontFamily: '"Open Sans", sans-serif'
                         }}
                         onFocus={(e) => {
@@ -5968,7 +5968,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   {/* Ícone HubSpot/Integração */}
                   <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
                     <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                      <span className="text-white text-[10px] font-bold">H</span>
+                      <span className="text-white text-micro font-bold">H</span>
                     </div>
                   </div>
                   
@@ -5988,7 +5988,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   >
                     <Users className="w-4 h-4 text-gray-600" />
                     <span 
-                      className="text-[9px] font-medium text-gray-600 tracking-wide"
+                      className="text-micro font-medium text-gray-600 tracking-wide"
                       style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
                     >
                       Candidatos ({Object.values(candidatesData).flat().length})
@@ -6005,22 +6005,22 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   className="flex-shrink-0 transition-all duration-300 pl-4 py-4 pr-0 relative"
                   style={{ width: `${liaExpandedWidth}px` }}
                 >
-                  <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: '#FFFFFF', maxHeight: 'calc(100vh - 16rem)' }}>
+                  <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: 'var(--gray-50)', maxHeight: 'calc(100vh - 16rem)' }}>
                     {/* Mensagem de Apresentação da LIA */}
-                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: '#FFFFFF' }}>
+                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: 'var(--gray-50)' }}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div 
                             className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: '#FFFFFF' }}
+                            style={{ backgroundColor: 'var(--gray-50)' }}
                           >
                             <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-[14px] font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Olá! Sou a Lia.
                             </h3>
-                            <p className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs leading-tight truncate mt-0.5 text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Como posso te ajudar hoje?
                             </p>
                           </div>
@@ -6089,7 +6089,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           <div className="flex items-center gap-2">
                             <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
                             <span className="text-xs font-semibold text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões da LIA</span>
-                            <Badge className="bg-wedo-cyan text-white border-0 text-[10px] px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
+                            <Badge className="bg-wedo-cyan text-white border-0 text-micro px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
                               {computedSuggestions.length}
                             </Badge>
                           </div>
@@ -6110,8 +6110,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   <div className="flex items-start gap-2">
                                     <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-[11px] text-gray-700 leading-tight" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.message}</p>
-                                      <p className="text-[10px] text-gray-500 mt-0.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.suggested_action}</p>
+                                      <p className="text-xs text-gray-700 leading-tight" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.message}</p>
+                                      <p className="text-micro text-gray-500 mt-0.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.suggested_action}</p>
                                     </div>
                                     <button
                                       onClick={(e) => {
@@ -6122,7 +6122,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                           setShowCandidatePage(true)
                                         }
                                       }}
-                                      className="text-[10px] font-medium px-2 py-0.5 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                                      className="text-micro font-medium px-2 py-0.5 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                                       className="text-wedo-cyan"
                                     >
                                       Ver
@@ -6152,7 +6152,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   className="px-2.5 py-2 rounded-md bg-gray-100"
                                   style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 >
-                                  <p className="text-[11px] text-gray-800 leading-relaxed">{msg.content}</p>
+                                  <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
                                 </div>
                               </div>
                             ) : (
@@ -6166,9 +6166,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   </div>
                                   <div className="pt-0.5 flex-1">
                                     <div className="flex items-center gap-1 mb-0.5">
-                                      <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
+                                      <span className="text-micro font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
                                     </div>
-                                    <div className="text-[11px] text-gray-800 space-y-1 leading-relaxed">
+                                    <div className="text-xs text-gray-800 space-y-1 leading-relaxed">
                                       {msg.content.split('\n').map((line, i) => {
                                         if (line.startsWith('•')) {
                                           return <p key={i} className="pl-2">{line}</p>
@@ -6220,7 +6220,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
                                 <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
                               </div>
-                              <span className="text-[10px] text-gray-500">Pensando...</span>
+                              <span className="text-micro text-gray-500">Pensando...</span>
                             </div>
                           </div>
                         )}
@@ -6272,10 +6272,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       
                       {/* Sugestões de Análises - Abaixo do input */}
                       <div className="flex items-center gap-1.5 mt-2">
-                        <span className="text-[9px] font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
+                        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
                         <button
                           onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium text-gray-700 bg-[#F3F4F6] rounded-full hover:bg-gray-200 transition-all"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
                           style={{ fontFamily: 'Open Sans, sans-serif' }}
                         >
                           <Star className="w-2.5 h-2.5 text-gray-500" />
@@ -6283,7 +6283,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </button>
                         <button
                           onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium text-gray-700 bg-[#F3F4F6] rounded-full hover:bg-gray-200 transition-all"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
                           style={{ fontFamily: 'Open Sans, sans-serif' }}
                         >
                           <Users className="w-2.5 h-2.5 text-gray-500" />
@@ -6291,7 +6291,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </button>
                         <CandidateQueriesGuide 
                           onSelectQuery={(query) => setLiaPromptValue(query)}
-                          className="!px-2 !py-0.5 !text-[9px] !bg-[#F3F4F6] !border-0 hover:!bg-gray-200"
+                          className="!px-2 !py-0.5 !text-micro !bg-gray-100 !border-0 hover:!bg-gray-200"
                         />
                       </div>
                     </div>
@@ -6490,7 +6490,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: stage.color }}></div>
                               <h3 className="font-medium text-xs text-gray-400">{stage.displayName}</h3>
-                              <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
+                              <span className="text-micro text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
                             </div>
                           </div>
                           <div className="flex-1 flex items-center justify-center">
@@ -6584,10 +6584,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               )}
                               {inferredBehavior && (
                                 <div className="flex items-center gap-2 p-2 rounded bg-neutral-50 border border-neutral-200">
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
+                                  <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
                                     {inferredBehavior.suggested_behavior}
                                   </span>
-                                  <span className="text-[10px] text-neutral-400">
+                                  <span className="text-micro text-neutral-400">
                                     {Math.round(inferredBehavior.confidence * 100)}% confiança
                                   </span>
                                 </div>
@@ -6674,8 +6674,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 {[
                                   { name: 'Teste Técnico', behavior: 'evaluation', color: '#E8B8B8' },
                                   { name: 'Teste de Inglês', behavior: 'evaluation', color: '#E5C5C5' },
-                                  { name: 'Entrevista Técnica', behavior: 'scheduling', color: '#F59E0B' },
-                                  { name: 'Entrevista Gestor', behavior: 'scheduling', color: '#10B981' },
+                                  { name: 'Entrevista Técnica', behavior: 'scheduling', color: 'var(--status-warning)' },
+                                  { name: 'Entrevista Gestor', behavior: 'scheduling', color: 'var(--status-success)' },
                                   { name: 'Entrevista Final', behavior: 'scheduling', color: '#D5BFA8' },
                                   { name: 'Dinâmica de Grupo', behavior: 'scheduling', color: '#A78BFA' },
                                   { name: 'Referências', behavior: 'verification', color: '#E8E4E0' },
@@ -6753,7 +6753,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     className="flex items-center gap-2 p-2 rounded-sm border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                                    <span className="text-[11px] text-neutral-700 font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>{cat.name}</span>
+                                    <span className="text-xs text-neutral-700 font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>{cat.name}</span>
                                   </button>
                                 ))}
                               </div>
@@ -7010,7 +7010,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               {defaultLabel}
                               {isSat && saturationData && (
                                 <span
-                                  className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium font-['Open_Sans'] ${
+                                  className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-micro font-medium font-['Open_Sans'] ${
                                     saturationData.is_saturated
                                       ? 'text-red-600 bg-red-50 border border-red-200'
                                       : 'text-amber-600 bg-amber-50 border border-amber-200'
@@ -7253,7 +7253,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   {isDemo && (
-                                    <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">[D]</span>
+                                    <span className="text-micro font-medium text-gray-400 dark:text-gray-500">[D]</span>
                                   )}
                                   <span className="font-medium text-sm text-gray-950 dark:text-gray-50">
                                     {candidate.name}
@@ -7477,7 +7477,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               <div className="flex flex-col gap-0.5">
                                 {queryInsightsData.slice(0, 2).map((insight: any, idx: number) => (
                                   <div key={idx} className="flex items-center gap-1">
-                                    <Badge className={`${textStyles.caption} !text-[10px] px-1 py-0 ${
+                                    <Badge className={`${textStyles.caption} !text-micro px-1 py-0 ${
                                       insight.match_level === 'Exceeds' ? badgeStyles.success :
                                       insight.match_level === 'Meets' ? badgeStyles.info :
                                       insight.match_level === 'Partial' ? badgeStyles.warning :
@@ -7548,7 +7548,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             return (
                               <div className="flex flex-wrap gap-1">
                                 {companyKeywords.slice(0, 3).map((keyword: string, idx: number) => (
-                                  <Badge key={idx} variant="outline" className="text-[10px] px-1 py-0 bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                  <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                     {keyword}
                                   </Badge>
                                 ))}
@@ -7637,7 +7637,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                       }}
                                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                                     >
-                                      <Fingerprint className="w-4 h-4 text-[#8B5CF6]" />
+                                      <Fingerprint className="w-4 h-4 text-gray-600" />
                                       Ver BigFive
                                     </button>
                                     <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
@@ -7694,7 +7694,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-[10px] font-semibold" 
+                                  className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-semibold" 
                                   title="Aprovar candidato"
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -7707,7 +7707,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-6 px-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-[10px] font-semibold" 
+                                  className="h-6 px-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-semibold" 
                                   title="Reprovar candidato"
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -8008,13 +8008,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             <div key={category} className="mb-5">
                               <div className="flex items-center justify-between mb-2 px-1">
                                 <h4 
-                                  className="text-[11px] font-semibold uppercase tracking-wider text-gray-600"
+                                  className="text-xs font-semibold uppercase tracking-wider text-gray-600"
                                   style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 >
                                   {categoryLabels[category] || category}
                                 </h4>
                                 <span 
-                                  className="text-[11px] px-2 py-0.5 rounded-full"
+                                  className="text-xs px-2 py-0.5 rounded-full"
                                   style={{ 
                                     backgroundColor: visibleCount > 0 ? 'rgba(31,41,55,0.1)' : '#f3f4f6',
                                     color: visibleCount > 0 ? '#1f2937' : '#9ca3af',
@@ -8224,7 +8224,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               <div className="flex items-baseline gap-2">
                                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">7.4</p>
                                 <span className="text-xs text-gray-800 dark:text-gray-200">/10</span>
-                                <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 text-[11px]">
+                                <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 text-xs">
                                   <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                                   +0.3
                                 </Badge>
@@ -8303,7 +8303,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-800 dark:text-gray-200">Nível:</span>
-                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[11px]">Pleno</Badge>
+                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs">Pleno</Badge>
                         </div>
                       </div>
 
@@ -8386,7 +8386,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-800 dark:text-gray-200">Nível:</span>
-                          <Badge className="bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-[11px]">Sênior</Badge>
+                          <Badge className="bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-xs">Sênior</Badge>
                         </div>
                       </div>
 
@@ -8457,7 +8457,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-800 dark:text-gray-200">Nível:</span>
-                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[11px]">Pleno</Badge>
+                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs">Pleno</Badge>
                         </div>
                       </div>
 
@@ -8528,7 +8528,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-800 dark:text-gray-200">Nível:</span>
-                          <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 text-[11px]">Júnior</Badge>
+                          <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 text-xs">Júnior</Badge>
                         </div>
                       </div>
 
@@ -8670,7 +8670,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                   {/* Mini gráfico de evolução */}
                   <div className="bg-white/10 rounded-md p-3">
-                    <p className="text-[11px] opacity-80 mb-2">Evolução (6 meses)</p>
+                    <p className="text-xs opacity-80 mb-2">Evolução (6 meses)</p>
                     <div className="flex items-end gap-1 h-10">
                       {[6.8, 7.0, 7.1, 7.2, 7.1, 7.4].map((value, i) => (
                         <div
@@ -8678,7 +8678,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           className="flex-1 bg-white/30 rounded-t hover:bg-white/40 transition-colors relative group"
                           style={{ height: `${((value - 6) / 2) * 100}%` }}
                         >
-                          <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                             {value}
                           </span>
                         </div>
@@ -8782,7 +8782,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex items-center justify-between mb-1">
                       <span className={textStyles.description}>Distribuição de Notas</span>
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[11px] px-1.5">
+                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs px-1.5">
                           <Trophy className="w-2.5 h-2.5 mr-0.5" />
                           Nota Média: 7.8/10
                         </Badge>
@@ -8839,7 +8839,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex items-center justify-between mb-1">
                       <span className={textStyles.description}>Distribuição de Notas</span>
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[11px] px-1.5">
+                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs px-1.5">
                           <Trophy className="w-2.5 h-2.5 mr-0.5" />
                           Nota Média: 7.2/10
                         </Badge>
@@ -8896,7 +8896,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex items-center justify-between mb-1">
                       <span className={textStyles.description}>Distribuição de Notas</span>
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-[11px] px-1.5">
+                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs px-1.5">
                           <Trophy className="w-2.5 h-2.5 mr-0.5" />
                           Nota Média: 6.5/10
                         </Badge>

@@ -65,7 +65,7 @@ const formatTime = (date: Date) => {
 function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
   return (
     <div className="mt-2 pt-2 border-t border-gray-200/30">
-      <p className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
         Tarefas agendadas
       </p>
       {tasks.map((task, idx) => (
@@ -74,7 +74,7 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
           className="flex items-start gap-1.5 py-0.5"
         >
           <CheckCircle2 className="w-3 h-3 text-chat-cyan flex-shrink-0 mt-0.5" />
-          <span className="text-[11px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             {task.description || task.type}
             {task.data_type && <span className="text-gray-400 ml-1">({task.data_type})</span>}
           </span>
@@ -89,7 +89,7 @@ function OutOfScopeIndicator() {
     <div className="mt-2 pt-2 border-t border-amber-200/50">
       <div className="flex items-center gap-1.5">
         <ExternalLink className="w-3 h-3 text-amber-500 flex-shrink-0" />
-        <span className="text-[9px] font-medium text-amber-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <span className="text-micro font-medium text-amber-600" style={{ fontFamily: 'Inter, sans-serif' }}>
           Fora do escopo desta conversa
         </span>
       </div>
@@ -105,11 +105,11 @@ function FairnessWarning({ fairnessResult }: { fairnessResult: { is_fair: boolea
       <div className="flex items-start gap-1.5">
         <ShieldAlert className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-[11px] font-semibold text-red-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-xs font-semibold text-red-600" style={{ fontFamily: 'Inter, sans-serif' }}>
             Alerta de Fairness
           </p>
           {fairnessResult.warnings.map((w, idx) => (
-            <p key={idx} className="text-[9px] text-red-500 mt-0.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <p key={idx} className="text-micro text-red-500 mt-0.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>
               {w}
             </p>
           ))}
@@ -126,7 +126,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
     <div className="mt-2 pt-2 border-t border-gray-200/30">
       <div className="flex items-center gap-1 mb-1">
         <Lightbulb className="w-3 h-3 text-amber-400" />
-        <span className="text-[9px] font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
           Baseado no seu histórico
         </span>
       </div>
@@ -135,7 +135,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
           <button
             key={idx}
             onClick={() => onAccept(s)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[9px] text-amber-700 hover:bg-amber-100 transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-micro text-amber-700 hover:bg-amber-100 transition-colors"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             <Sparkles className="w-2.5 h-2.5" />
@@ -154,7 +154,7 @@ function ConfidenceBadge({ confidence, layer }: { confidence?: number; layer?: n
   const color = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-500'
 
   return (
-    <span className={cn("text-[8px] font-medium ml-1", color)} style={{ fontFamily: 'Inter, sans-serif' }}>
+    <span className={cn("text-micro font-medium ml-1", color)} style={{ fontFamily: 'Inter, sans-serif' }}>
       {pct}%{layer === 3 && <span className="text-gray-400 ml-0.5">AI</span>}
     </span>
   )
@@ -225,7 +225,7 @@ export function TransitionChatPanel({
               <div className="w-7 h-7 rounded-full flex items-center justify-center">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <span className="text-[13px] font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Inter, sans-serif' }}>
                 LIA
               </span>
             </div>
@@ -284,7 +284,7 @@ export function TransitionChatPanel({
         >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
-              <p className="text-[11px] text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Envie uma mensagem para começar
               </p>
             </div>
@@ -296,15 +296,15 @@ export function TransitionChatPanel({
                 return (
                   <div key={i} className="flex justify-end items-start gap-2">
                     <div className="flex flex-col items-end gap-1">
-                      <div className="max-w-[85%] px-3.5 py-2.5 bg-[#F3F4F6] dark:bg-gray-800 rounded-[14px] rounded-br-[4px]">
+                      <div className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-[14px] rounded-br-[4px]">
                         <p
-                          className="text-[13px] whitespace-pre-wrap text-[#374151] dark:text-gray-200"
+                          className="text-base-ui whitespace-pre-wrap text-gray-700 dark:text-gray-200"
                           style={{ fontFamily: 'Open Sans, sans-serif' }}
                         >
                           {msg.content}
                         </p>
                       </div>
-                      <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                         {formatTime(timestamp)}
                       </span>
                     </div>
@@ -333,17 +333,17 @@ export function TransitionChatPanel({
                   </div>
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
                         LIA
                       </span>
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
                     </div>
                     <div
-                      className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
+                      className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
                     >
                       <RichContent
                         html={liaHtml}
-                        className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200 font-['Open_Sans',sans-serif]"
+                        className="text-base-ui leading-relaxed text-gray-700 dark:text-gray-200 font-['Open_Sans',sans-serif]"
                       />
 
                       {meta?.extracted_preferences && Object.keys(meta.extracted_preferences).length > 0 && (
@@ -353,7 +353,7 @@ export function TransitionChatPanel({
                             return (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-1 text-[9px] bg-gray-50 rounded-full px-2 py-0.5 text-gray-600"
+                                className="inline-flex items-center gap-1 text-micro bg-gray-50 rounded-full px-2 py-0.5 text-gray-600"
                                 style={{ fontFamily: 'Inter, sans-serif' }}
                               >
                                 <span className="font-medium">{label}:</span> {String(value)}
@@ -379,7 +379,7 @@ export function TransitionChatPanel({
                       originalResponse={msg.content}
                       className="px-1"
                     />
-                    <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {formatTime(timestamp)}
                     </span>
                   </div>
@@ -394,11 +394,11 @@ export function TransitionChatPanel({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
                     LIA
                   </span>
                 </div>
-                <div className="bg-white border border-[#E5E7EB] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                <div className="bg-white border border-gray-200 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                   <div className="flex items-center gap-1">
                     <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -415,7 +415,7 @@ export function TransitionChatPanel({
           <div className="flex-shrink-0 px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Brain className="w-3 h-3 text-chat-cyan" strokeWidth={2.5} />
-              <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Preferências detectadas
               </span>
             </div>
@@ -426,7 +426,7 @@ export function TransitionChatPanel({
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-700 dark:text-gray-300"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-300"
                     style={{ fontFamily: 'Inter, sans-serif' }}
                   >
                     <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span> {String(value)}
@@ -450,7 +450,7 @@ export function TransitionChatPanel({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder || 'Envie mensagem para a LIA...'}
-              className="flex-1 text-[13px] bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
+              className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
               style={{ fontFamily: 'Open Sans, sans-serif' }}
               disabled={isLoading}
             />

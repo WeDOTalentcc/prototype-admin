@@ -576,7 +576,7 @@ export function CloseVacancyModal({
               <PartyPopper className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50">
+              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                 Fechar Vaga
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-600">

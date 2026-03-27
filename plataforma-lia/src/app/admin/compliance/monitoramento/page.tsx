@@ -196,7 +196,7 @@ export default function MonitoramentoPage() {
                     {systemOverview.systemsMonitored}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className={`text-[10px] ${statusConfig.color} hover:${statusConfig.color}`}>
+                    <Badge className={`text-micro ${statusConfig.color} hover:${statusConfig.color}`}>
                       {statusConfig.label}
                     </Badge>
                   </div>
@@ -219,7 +219,7 @@ export default function MonitoramentoPage() {
                     {systemOverview.openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
                       Em investigação
                     </Badge>
                   </div>

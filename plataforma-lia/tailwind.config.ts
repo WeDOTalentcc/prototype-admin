@@ -10,12 +10,41 @@ export default {
   theme: {
     extend: {
       fontSize: {
-        'xs': ['0.6875rem', { lineHeight: '1.4' }],
+        'xs':       ['var(--font-size-xs)',      { lineHeight: 'var(--line-height-normal)' }],
+        'micro':    ['var(--font-size-micro)',    { lineHeight: 'var(--line-height-tight)' }],
+        'sm-ui':    ['var(--font-size-sm-ui)',    { lineHeight: 'var(--line-height-normal)' }],
+        'base-ui':  ['var(--font-size-base-ui)',  { lineHeight: 'var(--line-height-relaxed)' }],
       },
       colors: {
+        // ──────────────────────────────────────────────
+        // BRAND — wedo-cyan EXCLUSIVO para LIA/IA
+        // Fonte de verdade: design-tokens.css (--wedo-cyan)
+        // Hardcoded aqui para suportar opacity modifiers (bg-wedo-cyan/10)
+        // ──────────────────────────────────────────────
         'wedo-cyan': '#60BED1',
         'wedo-cyan-dark': '#4DA8BB',
         'chat-cyan': '#00B8B8',
+        // ──────────────────────────────────────────────
+        // STATUS SEMÂNTICOS — obrigatórios WCAG 1.4.1
+        // Fonte de verdade: design-tokens.css (--status-*)
+        // Usar: text-status-success, bg-status-error, etc.
+        // ──────────────────────────────────────────────
+        'status-success': '#16A34A',
+        'status-error':   '#DC2626',
+        'status-warning': '#D97706',
+        // ──────────────────────────────────────────────
+        // CHART — tons monocromáticos para visualização
+        // Fonte de verdade: design-tokens.css (--chart-*)
+        // Usar apenas em componentes de gráfico
+        // ──────────────────────────────────────────────
+        'chart-1': 'rgba(3,7,18,1.00)',
+        'chart-2': 'rgba(3,7,18,0.60)',
+        'chart-3': 'rgba(3,7,18,0.35)',
+        'chart-4': 'rgba(3,7,18,0.15)',
+        // ──────────────────────────────────────────────
+        // LEGADOS — manter até Fase 3 (consolidação badges)
+        // Gradualmente substituir por status-* ou gray-*
+        // ──────────────────────────────────────────────
         'wedo-green': '#5DA47A',
         'wedo-green-light': '#7BC29A',
         'wedo-green-pastel': '#A8D5B7',

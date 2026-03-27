@@ -298,9 +298,9 @@ export function ScreeningMediaModal({
                   transcription.map((segment, idx) => (
                     <div key={idx} className="bg-white p-3 rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{segment.timestamp}</span>
-                        <span className="text-[10px] text-gray-500">•</span>
-                        <span className="text-[10px] font-medium text-gray-800">{segment.speaker}</span>
+                        <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{segment.timestamp}</span>
+                        <span className="text-micro text-gray-500">•</span>
+                        <span className="text-micro font-medium text-gray-800">{segment.speaker}</span>
                       </div>
                       <p className={`${textStyles.bodySmall} text-gray-800`}>"{segment.text}"</p>
                     </div>
@@ -309,9 +309,9 @@ export function ScreeningMediaModal({
                   questions.map((q, idx) => (
                     <div key={q.id} className="bg-white p-3 rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{q.timestamp || `${idx}:00`}</span>
-                        <span className="text-[10px] text-gray-500">•</span>
-                        <span className="text-[10px] font-medium text-gray-800">Candidato</span>
+                        <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{q.timestamp || `${idx}:00`}</span>
+                        <span className="text-micro text-gray-500">•</span>
+                        <span className="text-micro font-medium text-gray-800">Candidato</span>
                       </div>
                       <p className={`${textStyles.bodySmall} text-gray-800`}>"{q.transcription}"</p>
                     </div>

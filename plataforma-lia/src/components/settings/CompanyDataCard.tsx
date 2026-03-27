@@ -147,7 +147,7 @@ export function CompanyDataCard({
 
               {examples.length > 0 && (
                 <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-1 text-[11px] font-medium uppercase text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1 text-xs font-medium uppercase text-gray-600 dark:text-gray-400">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
                   </div>
@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-[11px] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 p-1.5 rounded hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                        className="block w-full text-left text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 p-1.5 rounded hover:bg-white dark:hover:bg-gray-800 transition-colors"
                       >
                         "{example}"
                       </button>
@@ -170,7 +170,7 @@ export function CompanyDataCard({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsPopoverOpen(false)}
-                  className="text-[11px] h-8"
+                  className="text-xs h-8"
                 >
                   Cancelar
                 </Button>
@@ -178,7 +178,7 @@ export function CompanyDataCard({
                   size="sm"
                   onClick={handleSaveInstruction}
                   disabled={isSaving}
-                  className="text-[11px] h-8 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                   {isSaving ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />

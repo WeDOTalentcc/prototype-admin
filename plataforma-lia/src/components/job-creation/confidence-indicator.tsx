@@ -16,7 +16,7 @@ const sizeStyles = {
   sm: {
     container: 'w-4 h-4',
     dot: 'w-2 h-2',
-    text: 'text-[10px] ml-1'
+    text: 'text-micro ml-1'
   },
   md: {
     container: 'w-5 h-5',
@@ -113,7 +113,7 @@ export function ConfidenceLabel({
     <span 
       className={cn(
         "inline-flex items-center gap-1",
-        size === 'sm' ? 'text-[10px]' : size === 'md' ? 'text-xs' : 'text-sm',
+        size === 'sm' ? 'text-micro' : size === 'md' ? 'text-xs' : 'text-sm',
         styles.color,
         className
       )}

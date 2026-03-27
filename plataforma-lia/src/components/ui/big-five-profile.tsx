@@ -211,10 +211,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div key={dimension.key} className="space-y-1">
                 {/* Header compacto com nome e percentual */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">
+                  <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
                     {dimension.shortName}
                   </span>
-                  <span className="text-[11px] font-bold" style={{ color: dimension.color }}>
+                  <span className="text-xs font-bold" style={{ color: dimension.color }}>
                     {score}%
                   </span>
                 </div>
@@ -232,16 +232,16 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
                 {/* Labels minimalistas */}
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     {dimension.labels.low.split(',')[0]}
                   </span>
-                  <span className="text-[11px] text-gray-400 dark:text-gray-500 text-right">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 text-right">
                     {dimension.labels.high.split(',')[0]}
                   </span>
                 </div>
 
                 {/* Traits compactos */}
-                <div className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-1">
+                <div className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                   {relevantTraits.slice(0, 3).join(', ')}
                 </div>
               </div>
@@ -257,10 +257,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">
-                  <div className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                  <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     Insight Comportamental
                   </div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                     {generatePersonalityInsight()}
                   </div>
                 </div>
@@ -269,29 +269,29 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
             {/* Fit para funções super compacto */}
             <div className="flex flex-wrap gap-1">
-              <span className="text-[11px] text-gray-500 dark:text-gray-400">Fit:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4" style={{ borderColor: '#B8E6D3', color: '#2E8B57' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#B8E6D3', color: '#2E8B57' }}>
                   Gestão
                 </Badge>
               )}
               {scores.openness > 70 && (
-                <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4" style={{ borderColor: '#F8B4B4', color: '#DC143C' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#F8B4B4', color: '#DC143C' }}>
                   Inovação
                 </Badge>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4" style={{ borderColor: '#FFD700', color: '#FFA500' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#FFD700', color: '#FFA500' }}>
                   Liderança
                 </Badge>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4" style={{ borderColor: '#D8BFD8', color: '#8B4B8C' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#D8BFD8', color: '#8B4B8C' }}>
                   Atendimento
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4" style={{ borderColor: '#87CEEB', color: '#4169E1' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#87CEEB', color: '#4169E1' }}>
                   Alta Pressão
                 </Badge>
               )}

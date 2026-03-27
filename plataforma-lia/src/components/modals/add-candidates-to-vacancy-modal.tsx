@@ -420,7 +420,7 @@ export function AddCandidatesToVacancyModal({
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-gray-200 text-[11px] placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
@@ -439,7 +439,7 @@ export function AddCandidatesToVacancyModal({
                   variant="ghost"
                   size="sm"
                   onClick={loadVacancies}
-                  className="mt-2 text-[11px]"
+                  className="mt-2 text-xs"
                 >
                   Tentar novamente
                 </Button>

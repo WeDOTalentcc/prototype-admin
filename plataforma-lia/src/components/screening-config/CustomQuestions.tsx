@@ -78,11 +78,11 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
       >
         <div className="flex items-center gap-2">
           <PenLine className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <span className="font-['Open_Sans',sans-serif] text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
             Personalizadas
           </span>
           {questions.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
               {questions.length}
             </span>
           )}
@@ -120,7 +120,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     <select
                       value={editCharacter}
                       onChange={(e) => setEditCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                      className="text-[11px] font-['Open_Sans',sans-serif] rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
+                      className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
                     >
                       <option value="classificatoria">Classificatória</option>
                       <option value="eliminatoria">Eliminatória</option>
@@ -146,7 +146,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                   </div>
                   {editCharacter === 'eliminatoria' && (
                     <div className="flex items-center gap-2">
-                      <label className="text-[10px] font-medium text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] whitespace-nowrap">
+                      <label className="text-micro font-medium text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] whitespace-nowrap">
                         Resposta esperada
                       </label>
                       <input
@@ -166,15 +166,15 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                       {question.question}
                     </span>
                     {question.expectedAnswer && (
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">Resposta esperada: {question.expectedAnswer}</span>
+                      <span className="text-micro text-gray-400 dark:text-gray-500">Resposta esperada: {question.expectedAnswer}</span>
                     )}
                   </div>
                   {question.character === 'eliminatoria' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                       eliminatória{question.expectedAnswer ? ` (${question.expectedAnswer})` : ''}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                       classificatória
                     </span>
                   )}
@@ -214,7 +214,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                 <select
                   value={newQuestionCharacter}
                   onChange={(e) => setNewQuestionCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                  className="text-[11px] font-['Open_Sans',sans-serif] rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
+                  className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
                 >
                   <option value="classificatoria">Classificatória</option>
                   <option value="eliminatoria">Eliminatória</option>
@@ -244,7 +244,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
               </div>
               {newQuestionCharacter === 'eliminatoria' && (
                 <div className="flex items-center gap-2">
-                  <label className="text-[10px] font-medium text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] whitespace-nowrap">
+                  <label className="text-micro font-medium text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif] whitespace-nowrap">
                     Resposta esperada
                   </label>
                   <input
@@ -262,7 +262,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           {isEditing && !isAdding && (
             <button
               onClick={() => setIsAdding(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors font-['Open_Sans',sans-serif] text-[11px] font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors font-['Open_Sans',sans-serif] text-xs font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pergunta

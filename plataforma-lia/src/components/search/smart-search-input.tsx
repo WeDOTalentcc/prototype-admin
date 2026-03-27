@@ -1529,7 +1529,7 @@ export function SmartSearchInput({
           </TooltipTrigger>
           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
             <p className="text-xs font-medium">Seu banco de talentos</p>
-            <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+            <p className="text-xs text-gray-300">Gratuito • Local</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -1554,7 +1554,7 @@ export function SmartSearchInput({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
               <p className="text-xs font-medium">Expanda sua busca</p>
-              <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+              <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -1580,7 +1580,7 @@ export function SmartSearchInput({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
               <p className="text-xs font-medium">Alcance global</p>
-              <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+              <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -1609,7 +1609,7 @@ export function SmartSearchInput({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -1633,7 +1633,7 @@ export function SmartSearchInput({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -1770,7 +1770,7 @@ export function SmartSearchInput({
               Filtros
               {(activeFiltersCount > 0 || filledCount > 0) && (
                 <Badge 
-                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-[11px] bg-gray-900" style={{ color: "white" }}
+                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-gray-900" style={{ color: "white" }}
                 >
                   {Math.max(activeFiltersCount, filledCount)}
                 </Badge>
@@ -1792,7 +1792,7 @@ export function SmartSearchInput({
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                   <p className="text-xs font-medium">Ir para Resultados</p>
-                  <p className="text-[11px] text-gray-300">Buscar direto na tabela expandida</p>
+                  <p className="text-xs text-gray-300">Buscar direto na tabela expandida</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1809,7 +1809,7 @@ export function SmartSearchInput({
                 {ghostTextSuffix && !showAutocomplete && (
                   <div 
                     ref={ghostOverlayRef}
-                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-[13px] min-h-[56px] overflow-hidden"
+                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-[56px] overflow-hidden"
                     style={{ 
                       fontFamily: '"Open Sans", sans-serif',
                       whiteSpace: 'pre-wrap',
@@ -1834,7 +1834,7 @@ export function SmartSearchInput({
                     }
                   }}
                   placeholder={getPlaceholder()}
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[56px] transition-all border relative"
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border relative"
                   style={{ 
                     backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "#FFFFFF",
                     color: "#1a1a1a",
@@ -1877,7 +1877,7 @@ export function SmartSearchInput({
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                           <p className="text-xs font-medium">Seu banco de talentos</p>
-                          <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                          <p className="text-xs text-gray-300">Gratuito • Local</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -1902,7 +1902,7 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Expanda sua busca</p>
-                            <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                            <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1928,7 +1928,7 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Alcance global</p>
-                            <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                            <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1957,7 +1957,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Apenas com Email</p>
-                              <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                              <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -1981,7 +1981,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Apenas com Telefone</p>
-                              <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                              <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -2036,12 +2036,12 @@ export function SmartSearchInput({
                   <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
-                      <span className="text-[10px] font-medium text-gray-500">Sugestões</span>
+                      <span className="text-micro font-medium text-gray-500">Sugestões</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setAutocompleteEnabled(false)}
-                        className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-micro text-gray-400 hover:text-gray-600 transition-colors"
                         title="Desativar sugestões"
                       >
                         Desativar
@@ -2127,7 +2127,7 @@ export function SmartSearchInput({
                           {item.text}
                         </span>
                         <span 
-                          className="text-[10px] text-gray-500 flex-shrink-0"
+                          className="text-micro text-gray-500 flex-shrink-0"
                         >
                           {item.category}
                         </span>
@@ -2141,9 +2141,9 @@ export function SmartSearchInput({
                 {/* Ghost Text Tab hint */}
                 {ghostTextSuffix && !showAutocomplete && (
                   <div 
-                    className="absolute -bottom-5 right-3 flex items-center gap-1 text-[10px] text-gray-400"
+                    className="absolute -bottom-5 right-3 flex items-center gap-1 text-micro text-gray-400"
                   >
-                    <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-[9px] font-mono">Tab</kbd>
+                    <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-micro font-mono">Tab</kbd>
                     <span>para aceitar</span>
                   </div>
                 )}
@@ -2167,9 +2167,9 @@ export function SmartSearchInput({
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={handleAcceptEnhancement}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium hover:bg-wedo-cyan/15 transition-colors text-gray-700"
+                      className="flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium hover:bg-wedo-cyan/15 transition-colors text-gray-700"
                     >
-                      <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-[9px] font-mono">Tab</kbd>
+                      <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-micro font-mono">Tab</kbd>
                       <span>Aceitar</span>
                     </button>
                     <button
@@ -2241,13 +2241,13 @@ export function SmartSearchInput({
                         className={cn(
                           "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90",
                           autocompleteEnabled 
-                            ? "bg-[#1a1a1a] text-white" 
+                            ? "bg-gray-900 text-white" 
                             : "bg-gray-100 text-gray-500"
                         )}
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
                       >
                         <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-gray-400'}`} />
-                        <span className="font-medium text-[11px]">
+                        <span className="font-medium text-xs">
                           Assistente de Busca
                         </span>
                       </button>
@@ -2265,7 +2265,7 @@ export function SmartSearchInput({
                               {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                             </span>
                           </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ 
+                          <span className="text-micro px-2 py-0.5 rounded-full" style={{ 
                             backgroundColor: autocompleteEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                             color: autocompleteEnabled ? '#22C55E' : '#EF4444'
                           }}>
@@ -2294,7 +2294,7 @@ export function SmartSearchInput({
                             <span>Alerta sobre buscas muito amplas ou restritivas</span>
                           </li>
                         </ul>
-                        <p className="text-[10px] pt-1 border-t text-gray-500" style={{ borderColor: "var(--eleven-border)" }}>
+                        <p className="text-micro pt-1 border-t text-gray-500" style={{ borderColor: "var(--eleven-border)" }}>
                           {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
                         </p>
                       </div>
@@ -2326,11 +2326,11 @@ export function SmartSearchInput({
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Qualidade da busca
                         </span>
                         <span 
-                          className="text-[11px] font-bold"
+                          className="text-xs font-bold"
                           style={{ 
                             color: searchAnalysis.completeness_score >= 60 
                               ? "#22c55e" 
@@ -2361,7 +2361,7 @@ export function SmartSearchInput({
                     </div>
                     {searchAnalysis.next_recommended_action && (
                       <div 
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px]"
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
                         style={{ 
                           backgroundColor: "rgba(96, 190, 209, 0.08)"
                         }}
@@ -2378,7 +2378,7 @@ export function SmartSearchInput({
                       {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
                         <div 
                           key={index}
-                          className="flex items-start gap-2 px-2.5 py-2 rounded-full text-[11px]"
+                          className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
                           style={{ 
                             backgroundColor: alert.severity === "warning" 
                               ? "rgba(245, 158, 11, 0.08)" 
@@ -2414,7 +2414,7 @@ export function SmartSearchInput({
                   {/* Sugestões de enriquecimento - Inline scroll se necessário */}
                   {Object.keys(searchAnalysis.enrichment_suggestions).length > 0 && (
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      <span className="text-[11px] text-gray-950 dark:text-gray-50 font-medium whitespace-nowrap" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                      <span className="text-xs text-gray-950 dark:text-gray-50 font-medium whitespace-nowrap" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                         Adicionar:
                       </span>
                       <div className="flex gap-1.5 flex-nowrap">
@@ -2423,7 +2423,7 @@ export function SmartSearchInput({
                             <button
                               key={`${category}-${item}`}
                               onClick={() => onChange(value + ", " + item)}
-                              className="px-2 py-0.5 rounded-full text-[11px] font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
+                              className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
                               style={{ 
                                 backgroundColor: "#FFFFFF",
                                 fontFamily: '"Open Sans", sans-serif'
@@ -2442,7 +2442,7 @@ export function SmartSearchInput({
               {/* Sugestões de busca - Horizontal lado a lado */}
               {!value && (
                 <div className="pt-1 w-full flex items-start gap-2">
-                  <span className="text-[11px] text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                     Sugestões:
                   </span>
                   <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
@@ -2450,7 +2450,7 @@ export function SmartSearchInput({
                       <button
                         key={suggestion}
                         onClick={() => onChange(suggestion)}
-                        className="px-2.5 py-0.5 text-[11px] text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-50 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-200 transition-all whitespace-nowrap flex-shrink-0"
+                        className="px-2.5 py-0.5 text-xs text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-50 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-200 transition-all whitespace-nowrap flex-shrink-0"
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
                         title={suggestion}
                       >
@@ -2478,7 +2478,7 @@ export function SmartSearchInput({
                     onChange={(e) => updateSimilarUrl(index, e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
-                    className="w-full rounded-md pl-9 pr-20 py-2.5 text-[13px] focus:outline-none transition-all border"
+                    className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-all border"
                     style={{ 
                       backgroundColor: "#FFFFFF",
                       color: "#1a1a1a",
@@ -2509,7 +2509,7 @@ export function SmartSearchInput({
                           <TooltipTrigger asChild>
                             <button
                               onClick={addSimilarUrl}
-                              className="px-2 py-1 rounded-full text-[11px] font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors"
+                              className="px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors"
                               style={{ 
                                 backgroundColor: "rgba(229, 231, 235, 0.3)"
                               }}
@@ -2530,7 +2530,7 @@ export function SmartSearchInput({
               {/* CV Upload section */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider">ou</span>
+                <span className="text-micro text-gray-400 uppercase tracking-wider">ou</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
@@ -2548,7 +2548,7 @@ export function SmartSearchInput({
                     {similarCvFiles.map((file, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-[11px]"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs"
                         style={{ backgroundColor: "#F8F9FA", fontFamily: "'Open Sans', sans-serif" }}
                       >
                         <FileText className="w-3 h-3 text-gray-500" />
@@ -2561,7 +2561,7 @@ export function SmartSearchInput({
                     {similarCvFiles.length < MAX_CV_FILES && (
                       <button
                         onClick={() => cvFileInputRef.current?.click()}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-medium hover:bg-gray-100 transition-colors border"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors border"
                         style={{ backgroundColor: "#FFFFFF", fontFamily: "'Open Sans', sans-serif" }}
                       >
                         <Upload className="w-3 h-3" />
@@ -2640,7 +2640,7 @@ export function SmartSearchInput({
                       </div>
                     ))}
                   </div>
-                  <p className="text-[11px] text-gray-800 dark:text-gray-200">
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     Baseado em {similarUrls.filter(u => u.trim()).length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
                   </p>
                 </div>
@@ -2656,14 +2656,14 @@ export function SmartSearchInput({
                         Preview do prompt de busca
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
+                    <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
                   </div>
                   <div className="relative">
                     <textarea
                       value={similarSearchPrompt}
                       onChange={(e) => setSimilarSearchPrompt(e.target.value)}
                       placeholder="Descreva o perfil que deseja buscar..."
-                      className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[60px] transition-all border"
+                      className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
                       style={{ 
                         backgroundColor: "#FFFFFF",
                         color: "#1a1a1a",
@@ -2702,7 +2702,7 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Seu banco de talentos</p>
-                                <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                                <p className="text-xs text-gray-300">Gratuito • Local</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -2727,7 +2727,7 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Expanda sua busca</p>
-                                  <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                                  <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -2753,7 +2753,7 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Alcance global</p>
-                                  <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                                  <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -2781,7 +2781,7 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Apenas com Email</p>
-                                    <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                    <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -2805,7 +2805,7 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                                    <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                    <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -2835,13 +2835,13 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Buscar Similares</p>
-                                <p className="text-[11px] text-gray-300">Encontra candidatos com perfil similar</p>
+                                <p className="text-xs text-gray-300">Encontra candidatos com perfil similar</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </div>
                         {/* Hint abaixo dos ícones */}
-                        <span className="text-[9px] text-gray-400 italic">buscar similares</span>
+                        <span className="text-micro text-gray-400 italic">buscar similares</span>
                       </div>
                     )}
                   </div>
@@ -2855,7 +2855,7 @@ export function SmartSearchInput({
                     value={similarSearchPrompt}
                     onChange={(e) => setSimilarSearchPrompt(e.target.value)}
                     placeholder="Edite o prompt de busca ou adicione perfis acima..."
-                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[56px] transition-all border"
+                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
                     style={{ 
                       backgroundColor: "#FFFFFF",
                       color: "#1a1a1a",
@@ -2894,7 +2894,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Seu banco de talentos</p>
-                              <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                              <p className="text-xs text-gray-300">Gratuito • Local</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -2919,7 +2919,7 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Expanda sua busca</p>
-                                <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                                <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -2945,7 +2945,7 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Alcance global</p>
-                                <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                                <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -2973,7 +2973,7 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Apenas com Email</p>
-                                  <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                  <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -2997,7 +2997,7 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Apenas com Telefone</p>
-                                  <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                  <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -3027,13 +3027,13 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Buscar Similares</p>
-                              <p className="text-[11px] text-gray-300">Encontra candidatos com perfil similar</p>
+                              <p className="text-xs text-gray-300">Encontra candidatos com perfil similar</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
                       {/* Hint abaixo dos ícones */}
-                      <span className="text-[9px] text-gray-400 italic">buscar similares</span>
+                      <span className="text-micro text-gray-400 italic">buscar similares</span>
                     </div>
                   )}
                 </div>
@@ -3043,7 +3043,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
                   </p>
                 </div>
@@ -3063,7 +3063,7 @@ export function SmartSearchInput({
                   >
                     Buscar vaga existente
                   </span>
-                  <span className="text-[10px] text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>opcional</span>
+                  <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>opcional</span>
                 </div>
                 
                 {selectedVacancy ? (
@@ -3078,9 +3078,9 @@ export function SmartSearchInput({
                         <Briefcase className="w-3 h-3 text-gray-600" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-medium text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>{selectedVacancy.title}</p>
+                        <p className="text-base-ui font-medium text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>{selectedVacancy.title}</p>
                         {selectedVacancy.job_id && (
-                          <p className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {selectedVacancy.job_id}</p>
+                          <p className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {selectedVacancy.job_id}</p>
                         )}
                       </div>
                     </div>
@@ -3105,10 +3105,10 @@ export function SmartSearchInput({
                       value={jdVacancySearch}
                       onChange={(e) => setJdVacancySearch(e.target.value)}
                       placeholder="Digite o nome ou ID da vaga..."
-                      className="w-full pl-9 pr-4 py-2.5 text-[13px] rounded-md border focus:outline-none transition-all"
+                      className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all"
                       style={{ 
-                        backgroundColor: '#FFFFFF',
-                        color: '#1a1a1a',
+                        backgroundColor: 'var(--gray-50)',
+                        color: 'var(--gray-950)',
                         fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
@@ -3125,7 +3125,7 @@ export function SmartSearchInput({
                     {showVacancyResults && jdVacancyResults.length > 0 && (
                       <div 
                         className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
-                        style={{ backgroundColor: '#FFFFFF' }}
+                        style={{ backgroundColor: 'var(--gray-50)' }}
                       >
                         {jdVacancyResults.map((vacancy) => (
                           <button
@@ -3136,10 +3136,10 @@ export function SmartSearchInput({
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-[13px] font-medium text-gray-800 truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>{vacancy.title}</p>
+                                  <p className="text-base-ui font-medium text-gray-800 truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>{vacancy.title}</p>
                                   <Badge 
                                     variant="outline" 
-                                    className="text-[9px] px-1.5 py-0 h-4 flex-shrink-0"
+                                    className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
                                     style={{ 
                                       borderColor: vacancy.status === 'Ativa' ? '#22c55e' : '#9ca3af',
                                       color: vacancy.status === 'Ativa' ? '#22c55e' : '#6b7280'
@@ -3150,12 +3150,12 @@ export function SmartSearchInput({
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   {vacancy.job_id && (
-                                    <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {vacancy.job_id}</span>
+                                    <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {vacancy.job_id}</span>
                                   )}
-                                  <span className="text-[10px] text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatDate(vacancy.created_at)}</span>
+                                  <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatDate(vacancy.created_at)}</span>
                                 </div>
                                 {vacancy.description_preview && (
-                                  <p className="text-[11px] text-gray-500 mt-1 line-clamp-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     {vacancy.description_preview}
                                   </p>
                                 )}
@@ -3170,9 +3170,9 @@ export function SmartSearchInput({
                     {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
                       <div 
                         className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
-                        style={{ backgroundColor: '#FFFFFF' }}
+                        style={{ backgroundColor: 'var(--gray-50)' }}
                       >
-                        <p className="text-[13px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma vaga encontrada</p>
+                        <p className="text-base-ui text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma vaga encontrada</p>
                       </div>
                     )}
                   </div>
@@ -3182,7 +3182,7 @@ export function SmartSearchInput({
               {/* Divisor */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider">ou</span>
+                <span className="text-micro text-gray-400 uppercase tracking-wider">ou</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
@@ -3205,7 +3205,7 @@ export function SmartSearchInput({
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-[11px] h-6 px-2"
+                  className="text-xs h-6 px-2"
                   style={{ fontFamily: "'Open Sans', sans-serif" }}
                 >
                   <Upload className="w-3 h-3 mr-1" />
@@ -3224,7 +3224,7 @@ export function SmartSearchInput({
                     }
                   }}
                   placeholder={getPlaceholder()}
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[100px] transition-all border"
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border"
                   style={{ 
                     backgroundColor: "#FFFFFF",
                     color: "#1a1a1a",
@@ -3263,7 +3263,7 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Seu banco de talentos</p>
-                            <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                            <p className="text-xs text-gray-300">Gratuito • Local</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -3288,7 +3288,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Expanda sua busca</p>
-                              <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                              <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -3314,7 +3314,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Alcance global</p>
-                              <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                              <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -3342,7 +3342,7 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Apenas com Email</p>
-                                <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -3366,7 +3366,7 @@ export function SmartSearchInput({
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                                <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -3396,13 +3396,13 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Extrair e Buscar</p>
-                            <p className="text-[11px] text-gray-300">Extrai requisitos e busca candidatos</p>
+                            <p className="text-xs text-gray-300">Extrai requisitos e busca candidatos</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
                     {/* Hint abaixo dos ícones */}
-                    <span className="text-[9px] text-gray-400 italic">extrair e buscar</span>
+                    <span className="text-micro text-gray-400 italic">extrair e buscar</span>
                   </div>
                 )}
               </div>
@@ -3417,7 +3417,7 @@ export function SmartSearchInput({
                         Preview do prompt de busca
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-400">editável</span>
+                    <span className="text-micro text-gray-400">editável</span>
                   </div>
                   <textarea
                     value={jdSearchPrompt}
@@ -3438,7 +3438,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
                   </p>
                 </div>
@@ -3502,7 +3502,7 @@ export function SmartSearchInput({
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                           <p className="text-xs font-medium">Seu banco de talentos</p>
-                          <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                          <p className="text-xs text-gray-300">Gratuito • Local</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -3527,7 +3527,7 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Expanda sua busca</p>
-                            <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                            <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -3553,7 +3553,7 @@ export function SmartSearchInput({
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                             <p className="text-xs font-medium">Alcance global</p>
-                            <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                            <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -3581,7 +3581,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Apenas com Email</p>
-                              <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                              <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -3605,7 +3605,7 @@ export function SmartSearchInput({
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                               <p className="text-xs font-medium">Apenas com Telefone</p>
-                              <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                              <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -3661,7 +3661,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
                   </p>
                 </div>
@@ -3677,7 +3677,7 @@ export function SmartSearchInput({
                 <button
                   onClick={() => setArchetypeTab("list")}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     archetypeTab === "list" 
                       ? "bg-gray-100 ring-1 ring-gray-400" 
                       : "bg-white ring-1 ring-[#E5E7EB] hover:bg-gray-50"
@@ -3692,7 +3692,7 @@ export function SmartSearchInput({
                 </button>
                 <button
                   onClick={() => setArchetypeTab("create")}
-                  className="flex items-center gap-1 h-7 px-3 rounded-md text-[11px] font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50"
+                  className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50"
                   style={{ 
                     backgroundColor: "white",
                     fontFamily: "'Open Sans', sans-serif"
@@ -3762,7 +3762,7 @@ export function SmartSearchInput({
                               isExpanded
                                 ? "bg-gray-50 ring-1 ring-gray-900/20"
                                 : selectedArchetype?.id === arch.id 
-                                  ? "bg-[#F8FCFD] ring-1 ring-gray-900/20" 
+                                  ? "bg-gray-50 ring-1 ring-gray-900/20" 
                                   : "bg-white hover:bg-gray-50"
                             )}
                             style={{ 
@@ -3778,7 +3778,7 @@ export function SmartSearchInput({
                               }}
                             >
                               <div className="flex items-center gap-2">
-                                <span className="text-[13px] flex-shrink-0">{arch.emoji || "🎯"}</span>
+                                <span className="text-base-ui flex-shrink-0">{arch.emoji || "🎯"}</span>
                                 <span 
                                   className="font-semibold text-xs truncate text-gray-800"
                                 >
@@ -3786,7 +3786,7 @@ export function SmartSearchInput({
                                 </span>
                                 {arch.is_default && (
                                   <span 
-                                    className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium"
+                                    className="text-micro px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium"
                                     style={{ backgroundColor: "rgba(96,190,209,0.15)" }}
                                   >
                                     Padrão
@@ -3797,13 +3797,13 @@ export function SmartSearchInput({
                                     {arch.tags.slice(0, 2).map((tag: string, idx: number) => (
                                       <span 
                                         key={idx} 
-                                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100"
+                                        className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                                       >
                                         {tag}
                                       </span>
                                     ))}
                                     {arch.tags.length > 2 && (
-                                      <span className="text-[10px] px-1 py-0.5 text-gray-400">
+                                      <span className="text-micro px-1 py-0.5 text-gray-400">
                                         +{arch.tags.length - 2}
                                       </span>
                                     )}
@@ -3819,7 +3819,7 @@ export function SmartSearchInput({
                               </div>
                               {!isExpanded && arch.description && (
                                 <p 
-                                  className="mt-1 pl-[21px] text-[10px] line-clamp-1" 
+                                  className="mt-1 pl-[21px] text-micro line-clamp-1" 
                                   style={{ fontFamily: "'Open Sans', sans-serif" }}
                                 >
                                   {arch.description}
@@ -3830,17 +3830,17 @@ export function SmartSearchInput({
                             {isExpanded && (
                               <div className="px-3 pb-3 space-y-2 border-t border-t-gray-200" style={{ paddingTop: "10px" }}>
                                 {arch.description && (
-                                  <p className="text-[10px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-micro" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     {arch.description}
                                   </p>
                                 )}
                                 
                                 <div className="space-y-1">
-                                  <span className="text-[9px] font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     Query de Busca
                                   </span>
                                   <p 
-                                    className="text-[11px] p-2 rounded" 
+                                    className="text-xs p-2 rounded" 
                                     style={{ fontFamily: "'Open Sans', sans-serif" }}
                                   >
                                     {arch.query || "Sem query definida"}
@@ -3849,14 +3849,14 @@ export function SmartSearchInput({
                                 
                                 {arch.tags && arch.tags.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-[9px] font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                       Tags
                                     </span>
                                     <div className="flex flex-wrap gap-1">
                                       {arch.tags.map((tag: string, idx: number) => (
                                         <span 
                                           key={idx} 
-                                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100"
+                                          className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                                         >
                                           {tag}
                                         </span>
@@ -3867,14 +3867,14 @@ export function SmartSearchInput({
                                 
                                 {arch.filters?.skills && arch.filters.skills.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-[9px] font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                       Skills
                                     </span>
                                     <div className="flex flex-wrap gap-1">
                                       {arch.filters.skills.map((skill: string, idx: number) => (
                                         <span 
                                           key={idx} 
-                                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100"
+                                          className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                                         >
                                           {skill}
                                         </span>
@@ -3883,7 +3883,7 @@ export function SmartSearchInput({
                                   </div>
                                 )}
                                 
-                                <div className="flex flex-wrap gap-2 text-[10px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <div className="flex flex-wrap gap-2 text-micro" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {arch.seniority && (
                                     <div className="flex items-center gap-1">
                                       <span className="text-gray-400">Senioridade:</span>
@@ -3933,14 +3933,14 @@ export function SmartSearchInput({
                                 </div>
                                 {arch.filters?.languages && arch.filters.languages.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-[9px] font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                       Idiomas
                                     </span>
                                     <div className="flex flex-wrap gap-1">
                                       {arch.filters.languages.map((lang: string, idx: number) => (
                                         <span 
                                           key={idx} 
-                                          className="px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100"
+                                          className="px-1.5 py-0.5 rounded-full text-micro bg-gray-100"
                                         >
                                           {lang}
                                         </span>
@@ -3958,7 +3958,7 @@ export function SmartSearchInput({
                                       setArchetypeSearchPrompt(buildArchetypePrompt(arch))
                                       setExpandedArchetypeId(null)
                                     }}
-                                    className="flex-1 text-[11px] h-8 bg-gray-800" style={{ color: "white", fontFamily: "'Open Sans', sans-serif" }}
+                                    className="flex-1 text-xs h-8 bg-gray-800" style={{ color: "white", fontFamily: "'Open Sans', sans-serif" }}
                                   >
                                     <Check className="w-3 h-3 mr-1" />
                                     Usar Arquétipo
@@ -3967,7 +3967,7 @@ export function SmartSearchInput({
                                     size="sm"
                                     variant="outline"
                                     onClick={(e) => openEditArchetype(arch, e)}
-                                    className="text-[11px] h-8"
+                                    className="text-xs h-8"
                                     style={{ fontFamily: "'Open Sans', sans-serif" }}
                                   >
                                     <Pencil className="w-3 h-3 mr-1" />
@@ -4008,14 +4008,14 @@ export function SmartSearchInput({
                             Preview do prompt de busca
                           </span>
                         </div>
-                        <span className="text-[10px] text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
+                        <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
                       </div>
                       <div className="relative">
                         <textarea
                           value={archetypeSearchPrompt}
                           onChange={(e) => setArchetypeSearchPrompt(e.target.value)}
                           placeholder="Descreva o perfil do arquétipo..."
-                          className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[60px] transition-all border"
+                          className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
                           style={{ 
                             backgroundColor: "#FFFFFF",
                             color: "#1a1a1a",
@@ -4054,7 +4054,7 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Seu banco de talentos</p>
-                                    <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                                    <p className="text-xs text-gray-300">Gratuito • Local</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -4079,7 +4079,7 @@ export function SmartSearchInput({
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                       <p className="text-xs font-medium">Expanda sua busca</p>
-                                      <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                                      <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -4105,7 +4105,7 @@ export function SmartSearchInput({
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                       <p className="text-xs font-medium">Alcance global</p>
-                                      <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                                      <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -4133,7 +4133,7 @@ export function SmartSearchInput({
                                       </TooltipTrigger>
                                       <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                         <p className="text-xs font-medium">Apenas com Email</p>
-                                        <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                        <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
@@ -4157,7 +4157,7 @@ export function SmartSearchInput({
                                       </TooltipTrigger>
                                       <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                         <p className="text-xs font-medium">Apenas com Telefone</p>
-                                        <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                        <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
@@ -4187,13 +4187,13 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Buscar Arquétipo</p>
-                                    <p className="text-[11px] text-gray-300">Encontra perfis similares ao arquétipo</p>
+                                    <p className="text-xs text-gray-300">Encontra perfis similares ao arquétipo</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
                             </div>
                             {/* Hint abaixo dos ícones */}
-                            <span className="text-[9px] text-gray-400 italic">buscar arquétipo</span>
+                            <span className="text-micro text-gray-400 italic">buscar arquétipo</span>
                           </div>
                         )}
                       </div>
@@ -4207,7 +4207,7 @@ export function SmartSearchInput({
                         value={archetypeSearchPrompt}
                         onChange={(e) => setArchetypeSearchPrompt(e.target.value)}
                         placeholder={selectedArchetype ? `Buscar perfis similares a "${selectedArchetype.title}"...` : "Selecione um arquétipo acima para buscar..."}
-                        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[56px] transition-all border"
+                        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
                         style={{ 
                           backgroundColor: "#FFFFFF",
                           color: "#1a1a1a",
@@ -4247,7 +4247,7 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                                  <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                                  <p className="text-xs text-gray-300">Gratuito • Local</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -4272,7 +4272,7 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Expanda sua busca</p>
-                                    <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                                    <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -4298,7 +4298,7 @@ export function SmartSearchInput({
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                     <p className="text-xs font-medium">Alcance global</p>
-                                    <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                                    <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -4326,7 +4326,7 @@ export function SmartSearchInput({
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                       <p className="text-xs font-medium">Apenas com Email</p>
-                                      <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                      <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -4350,7 +4350,7 @@ export function SmartSearchInput({
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                                      <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                                      <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -4380,13 +4380,13 @@ export function SmartSearchInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
                                   <p className="text-xs font-medium">Buscar Arquétipo</p>
-                                  <p className="text-[11px] text-gray-300">Encontra perfis similares ao arquétipo</p>
+                                  <p className="text-xs text-gray-300">Encontra perfis similares ao arquétipo</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
                           </div>
                           {/* Hint abaixo dos ícones */}
-                          <span className="text-[9px] text-gray-400 italic">buscar arquétipo</span>
+                          <span className="text-micro text-gray-400 italic">buscar arquétipo</span>
                         </div>
                       )}
                     </div>
@@ -4396,7 +4396,7 @@ export function SmartSearchInput({
                   <div className="px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200">
                     <div className="flex items-center gap-1.5">
                       <Lightbulb className="w-3 h-3 flex-shrink-0 text-gray-700" />
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                         <strong>Dica:</strong> Arquétipos são perfis baseados em contratações bem-sucedidas.
                       </p>
                     </div>
@@ -4475,7 +4475,7 @@ export function SmartSearchInput({
                           ) : jobSearchResults.length === 0 ? (
                             <div className="text-center py-4 px-3">
                               <Briefcase className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
-                              <p className="text-[11px]" style={{ color: "#999" }}>
+                              <p className="text-xs" style={{ color: "#999" }}>
                                 Nenhuma vaga encontrada para "{jobSearchQuery}"
                               </p>
                             </div>
@@ -4494,7 +4494,7 @@ export function SmartSearchInput({
                                         {job.title}
                                       </p>
                                       <span 
-                                        className="px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                                        className="px-1.5 py-0.5 rounded-full text-micro font-medium"
                                         style={{ 
                                           backgroundColor: job.status === "Publicada" ? "rgba(34, 197, 94, 0.15)" : 
                                                           job.status === "Encerrada" ? "rgba(156, 163, 175, 0.2)" : 
@@ -4508,27 +4508,27 @@ export function SmartSearchInput({
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                      <span className="text-[10px]" style={{ color: "#666" }}>
+                                      <span className="text-micro" style={{ color: "#666" }}>
                                         ID: {job.id.slice(0, 8)}...
                                       </span>
                                       {job.department && (
                                         <>
-                                          <span className="text-[10px]" style={{ color: "#ccc" }}>•</span>
-                                          <span className="text-[10px]" style={{ color: "#666" }}>{job.department}</span>
+                                          <span className="text-micro" style={{ color: "#ccc" }}>•</span>
+                                          <span className="text-micro" style={{ color: "#666" }}>{job.department}</span>
                                         </>
                                       )}
                                       {job.seniority_level && (
                                         <>
-                                          <span className="text-[10px]" style={{ color: "#ccc" }}>•</span>
-                                          <span className="text-[10px]" style={{ color: "#666" }}>{job.seniority_level}</span>
+                                          <span className="text-micro" style={{ color: "#ccc" }}>•</span>
+                                          <span className="text-micro" style={{ color: "#666" }}>{job.seniority_level}</span>
                                         </>
                                       )}
                                     </div>
-                                    <p className="text-[10px] mt-0.5" style={{ color: "#999" }}>
+                                    <p className="text-micro mt-0.5" style={{ color: "#999" }}>
                                       Criada em {new Date(job.created_at).toLocaleDateString('pt-BR')}
                                     </p>
                                     {job.description && (
-                                      <p className="text-[10px] mt-1 line-clamp-2" style={{ color: "#666" }}>
+                                      <p className="text-micro mt-1 line-clamp-2" style={{ color: "#666" }}>
                                         {job.description.slice(0, 120)}{job.description.length > 120 ? "..." : ""}
                                       </p>
                                     )}
@@ -4545,7 +4545,7 @@ export function SmartSearchInput({
                       {!jobSearchQuery.trim() && (
                         <div className="text-center py-4 px-3 rounded-md border border-dashed border-gray-200">
                           <Search className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
-                          <p className="text-[11px]" style={{ color: "#999" }}>
+                          <p className="text-xs" style={{ color: "#999" }}>
                             Digite o nome ou ID da vaga para buscar
                           </p>
                         </div>
@@ -4555,7 +4555,7 @@ export function SmartSearchInput({
                       <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                          <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                             <strong>Dica:</strong> Selecione uma vaga para preencher automaticamente os dados do arquétipo. Você poderá editar antes de salvar.
                           </p>
                         </div>
@@ -4608,7 +4608,7 @@ export function SmartSearchInput({
                       <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                          <p className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                             <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo, senioridade e skills para criar o arquétipo.
                           </p>
                         </div>
@@ -4652,7 +4652,7 @@ export function SmartSearchInput({
                 <Target className="w-5 h-5 text-gray-700" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[15px] font-semibold" style={{ color: "#1a1a1a" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "#1a1a1a" }}>
                   {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
                 </h3>
                 <p className="text-xs truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -4672,14 +4672,14 @@ export function SmartSearchInput({
               {/* Seção 1: Identificação - espaçamento reduzido para proporcionalidade */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[13px] font-semibold text-gray-700">1</span>
+                  <span className="text-base-ui font-semibold text-gray-700">1</span>
                   <h4 className="text-xs font-semibold text-gray-800">Identificação do Arquétipo</h4>
                 </div>
                 
                 {/* Nome e Emoji */}
                 <div className="flex gap-2">
                   <div className="w-14">
-                    <label className="text-[10px] font-medium mb-0.5 block text-gray-500">Emoji</label>
+                    <label className="text-micro font-medium mb-0.5 block text-gray-500">Emoji</label>
                     <input
                       type="text"
                       value={editArchetypeEmoji}
@@ -4689,7 +4689,7 @@ export function SmartSearchInput({
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[10px] font-medium mb-0.5 block text-gray-500">
+                    <label className="text-micro font-medium mb-0.5 block text-gray-500">
                       Nome do Arquétipo
                     </label>
                     <input
@@ -4697,14 +4697,14 @@ export function SmartSearchInput({
                       value={editArchetypeName}
                       onChange={(e) => setEditArchetypeName(e.target.value)}
                       placeholder="Ex: Tech Lead, Product Manager..."
-                      className="w-full rounded-md px-2.5 py-1.5 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                      className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                     />
                   </div>
                 </div>
 
                 {/* Query de Busca */}
                 <div>
-                  <label className="text-[10px] font-medium mb-0.5 block text-gray-500">
+                  <label className="text-micro font-medium mb-0.5 block text-gray-500">
                     Query de Busca
                   </label>
                   <textarea
@@ -4712,19 +4712,19 @@ export function SmartSearchInput({
                     onChange={(e) => setEditArchetypeQuery(e.target.value)}
                     placeholder="Ex: Tech Lead com experiência em gestão de equipes, arquitetura de sistemas, 8+ anos em desenvolvimento"
                     rows={2}
-                    className="w-full rounded-md px-2.5 py-1.5 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-gray-200"
+                    className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-gray-200"
                   />
                 </div>
 
                 {/* Descrição */}
                 <div>
-                  <label className="text-[10px] font-medium mb-0.5 block text-gray-500">Descrição</label>
+                  <label className="text-micro font-medium mb-0.5 block text-gray-500">Descrição</label>
                   <textarea
                     value={editArchetypeDescription}
                     onChange={(e) => setEditArchetypeDescription(e.target.value)}
                     placeholder="Líder técnico com experiência em gestão de equipes e arquitetura de sistemas"
                     rows={2}
-                    className="w-full rounded-md px-2.5 py-1.5 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-gray-200"
+                    className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-gray-200"
                   />
                 </div>
               </div>
@@ -4732,7 +4732,7 @@ export function SmartSearchInput({
               {/* Seção 2: Requisitos */}
               <div className="space-y-3 pt-2 border-t border-t-gray-100">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[13px] font-semibold text-gray-700">2</span>
+                  <span className="text-base-ui font-semibold text-gray-700">2</span>
                   <h4 className="text-xs font-semibold text-gray-800">Requisitos do Perfil</h4>
                 </div>
                 
@@ -4741,11 +4741,11 @@ export function SmartSearchInput({
                   {/* Coluna 1: Senioridade + Experiência */}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[11px] font-medium mb-1 block text-gray-500">Senioridade</label>
+                      <label className="text-xs font-medium mb-1 block text-gray-500">Senioridade</label>
                       <select
                         value={editArchetypeSeniority}
                         onChange={(e) => setEditArchetypeSeniority(e.target.value)}
-                        className="w-full rounded-md px-2.5 py-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                        className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                       >
                         <option value="">-</option>
                         <option value="junior">Júnior</option>
@@ -4759,7 +4759,7 @@ export function SmartSearchInput({
                       </select>
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium mb-1 block text-gray-500">Exp. Mínima</label>
+                      <label className="text-xs font-medium mb-1 block text-gray-500">Exp. Mínima</label>
                       <input
                         type="number"
                         min={0}
@@ -4767,18 +4767,18 @@ export function SmartSearchInput({
                         value={editArchetypeExperienceMin ?? ""}
                         onChange={(e) => setEditArchetypeExperienceMin(e.target.value ? parseInt(e.target.value) : null)}
                         placeholder="Anos"
-                        className="w-full rounded-md px-2.5 py-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                        className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                       />
                     </div>
                   </div>
                   
                   {/* Coluna 2: Indústria (searchable dropdown) */}
                   <div className="relative">
-                    <label className="text-[11px] font-medium mb-1 block text-gray-500">Indústria</label>
+                    <label className="text-xs font-medium mb-1 block text-gray-500">Indústria</label>
                   <button
                     type="button"
                     onClick={() => setIsIndustryDropdownOpen(!isIndustryDropdownOpen)}
-                    className="w-full rounded px-2 py-1.5 text-[11px] text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                    className="w-full rounded px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                   >
                     <span style={{ color: editArchetypeIndustry ? "#1a1a1a" : "#999" }}>
                       {editArchetypeIndustry 
@@ -4795,7 +4795,7 @@ export function SmartSearchInput({
                           value={industrySearchQuery}
                           onChange={(e) => setIndustrySearchQuery(e.target.value)}
                           placeholder="Buscar setor..."
-                          className="w-full rounded px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                          className="w-full rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                           autoFocus
                         />
                       </div>
@@ -4807,7 +4807,7 @@ export function SmartSearchInput({
                             setIsIndustryDropdownOpen(false)
                             setIndustrySearchQuery("")
                           }}
-                          className="w-full px-3 py-1.5 text-left text-[11px] hover:bg-gray-50"
+                          className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50"
                           style={{ color: "#999" }}
                         >
                           - Nenhum -
@@ -4823,7 +4823,7 @@ export function SmartSearchInput({
                           if (categoryIndustries.length === 0) return null
                           return (
                             <div key={catKey}>
-                              <div className="px-3 py-1 text-[9px] font-semibold uppercase tracking-wide bg-gray-50">
+                              <div className="px-3 py-1 text-micro font-semibold uppercase tracking-wide bg-gray-50">
                                 {catLabel.labelPt}
                               </div>
                               {categoryIndustries.map(industry => (
@@ -4835,7 +4835,7 @@ export function SmartSearchInput({
                                     setIsIndustryDropdownOpen(false)
                                     setIndustrySearchQuery("")
                                   }}
-                                  className={`w-full px-3 py-1.5 text-left text-[11px] hover:bg-gray-50 ${editArchetypeIndustry === industry.key ? "bg-gray-100 dark:bg-gray-800" : ""}`}
+                                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 ${editArchetypeIndustry === industry.key ? "bg-gray-100 dark:bg-gray-800" : ""}`}
                                 >
                                   {industry.labelPt}
                                 </button>
@@ -4852,7 +4852,7 @@ export function SmartSearchInput({
                 {/* Localização e Modelo de Trabalho */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-medium mb-1 flex items-center gap-1 text-gray-500">
+                    <label className="text-xs font-medium mb-1 flex items-center gap-1 text-gray-500">
                       <MapPin className="w-3 h-3 text-gray-700" />
                       Localização
                     </label>
@@ -4861,18 +4861,18 @@ export function SmartSearchInput({
                       value={editArchetypeLocation}
                       onChange={(e) => setEditArchetypeLocation(e.target.value)}
                       placeholder="São Paulo, Brasil..."
-                      className="w-full rounded-md px-2.5 py-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                      className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-medium mb-1 flex items-center gap-1 text-gray-500">
+                    <label className="text-xs font-medium mb-1 flex items-center gap-1 text-gray-500">
                       <Building2 className="w-3 h-3 text-gray-700" />
                       Modelo de Trabalho
                     </label>
                     <select
                       value={editArchetypeWorkModel}
                       onChange={(e) => setEditArchetypeWorkModel(e.target.value)}
-                      className="w-full rounded-md px-2.5 py-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                      className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                     >
                       <option value="">Qualquer</option>
                       <option value="remote">Remoto</option>
@@ -4885,7 +4885,7 @@ export function SmartSearchInput({
                 {/* Idiomas e Tipo de Contrato */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-medium mb-1 flex items-center gap-1 text-gray-500">
+                    <label className="text-xs font-medium mb-1 flex items-center gap-1 text-gray-500">
                       <Globe className="w-3 h-3 text-gray-700" />
                       Idiomas
                     </label>
@@ -4893,7 +4893,7 @@ export function SmartSearchInput({
                       {editArchetypeLanguages.map((lang, idx) => (
                         <span 
                           key={idx}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                           style={{ backgroundColor: "rgba(96, 190, 209, 0.15)", fontFamily: "'Open Sans', sans-serif" }}
                         >
                           {lang}
@@ -4921,18 +4921,18 @@ export function SmartSearchInput({
                         }
                       }}
                       placeholder="Inglês, Espanhol..."
-                      className="w-full rounded-md px-2.5 py-1.5 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                      className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-medium mb-1 flex items-center gap-1 text-gray-500">
+                    <label className="text-xs font-medium mb-1 flex items-center gap-1 text-gray-500">
                       <Briefcase className="w-3 h-3 text-gray-600" />
                       Tipo de Contrato
                     </label>
                     <select
                       value={editArchetypeEmploymentType}
                       onChange={(e) => setEditArchetypeEmploymentType(e.target.value)}
-                      className="w-full rounded-md px-2.5 py-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
+                      className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-gray-200"
                     >
                       <option value="">Qualquer</option>
                       <option value="clt">CLT</option>
@@ -4948,22 +4948,22 @@ export function SmartSearchInput({
               {/* Seção 3: Competências */}
               <div className="space-y-3 pt-2 border-t border-t-gray-100">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[13px] font-semibold text-gray-700">3</span>
+                  <span className="text-base-ui font-semibold text-gray-700">3</span>
                   <h4 className="text-xs font-semibold text-gray-800">Competências Técnicas</h4>
                 </div>
                 
                 {/* Skills */}
                 <div>
-                  <label className="text-[11px] font-medium mb-1 flex items-center gap-1.5 text-gray-500">
+                  <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-gray-500">
                     <Code className="w-3.5 h-3.5 text-gray-700" />
                     Skills
-                    <span className="text-[10px] font-normal text-gray-400">(habilidades técnicas: Python, React, AWS...)</span>
+                    <span className="text-micro font-normal text-gray-400">(habilidades técnicas: Python, React, AWS...)</span>
                   </label>
                 <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-gray-200">
                   {editArchetypeSkills.map((skill, idx) => (
                     <span 
                       key={idx}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                       style={{ backgroundColor: "rgba(96, 190, 209, 0.15)", fontFamily: "'Open Sans', sans-serif" }}
                     >
                       {skill}
@@ -4977,7 +4977,7 @@ export function SmartSearchInput({
                     </span>
                   ))}
                   {editArchetypeSkills.length === 0 && (
-                    <span className="text-[11px] text-gray-400">Nenhuma skill</span>
+                    <span className="text-xs text-gray-400">Nenhuma skill</span>
                   )}
                 </div>
                 <div className="relative">
@@ -5015,7 +5015,7 @@ export function SmartSearchInput({
                         }
                       }}
                       placeholder="Digite e pressione Enter..."
-                      className="flex-1 rounded px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
                     />
                     <button
                       type="button"
@@ -5046,7 +5046,7 @@ export function SmartSearchInput({
                         }
                       }}
                       disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
-                      className="px-2 py-1 rounded-full flex items-center gap-1 text-[10px] transition-colors disabled:opacity-50"
+                      className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
                       style={{ backgroundColor: editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeSkills.length > 0 ? "#111827" : "#999" }}
                       title="Buscar skills similares com IA"
                     >
@@ -5065,7 +5065,7 @@ export function SmartSearchInput({
                         <button
                           key={idx}
                           type="button"
-                          className="w-full text-left px-2 py-1.5 text-[11px] hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                          className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors flex items-center gap-1.5"
                           onMouseDown={(e) => {
                             e.preventDefault()
                             if (!editArchetypeSkills.includes(suggestion.term)) {
@@ -5079,10 +5079,10 @@ export function SmartSearchInput({
                           <Code className="w-3 h-3 text-gray-400" />
                           <span style={{ color: "#1a1a1a" }}>{suggestion.term}</span>
                           {suggestion.is_synonym && (
-                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
                           {suggestion.is_related && (
-                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
                           )}
                         </button>
                       ))}
@@ -5093,7 +5093,7 @@ export function SmartSearchInput({
                   <div className="mt-2 p-2 rounded-md" style={{ backgroundColor: "rgba(96, 190, 209, 0.08)", border: "1px solid rgba(96, 190, 209, 0.3)" }}>
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
-                      <span className="text-[10px] font-medium text-gray-700">Sugestões de IA</span>
+                      <span className="text-micro font-medium text-gray-700">Sugestões de IA</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -5120,7 +5120,7 @@ export function SmartSearchInput({
                               }
                             }}
                             className={cn(
-                              "px-1.5 py-0.5 rounded-full text-[10px] transition-all cursor-pointer text-wedo-cyan-dark",
+                              "px-1.5 py-0.5 rounded-full text-micro transition-all cursor-pointer text-wedo-cyan-dark",
                               isSelected ? "ring-2 ring-gray-900/20" : ""
                             )}
                             style={{ 
@@ -5140,7 +5140,7 @@ export function SmartSearchInput({
                           setAiSuggestedSkills(prev => prev.filter(s => !selectedAiSkills.includes(s)))
                           setSelectedAiSkills([])
                         }}
-                        className="mt-2 w-full py-1 rounded text-[10px] font-medium transition-colors bg-gray-900" style={{ color: "white" }}
+                        className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900" style={{ color: "white" }}
                       >
                         Adicionar {selectedAiSkills.length} Selecionado{selectedAiSkills.length > 1 ? 's' : ''}
                       </button>
@@ -5151,16 +5151,16 @@ export function SmartSearchInput({
 
               {/* Tags */}
               <div>
-                <label className="text-[11px] font-medium mb-1 flex items-center gap-1.5 text-gray-500">
+                <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-gray-500">
                   <Tag className="w-3.5 h-3.5 text-gray-700" />
                   Tags
-                  <span className="text-[10px] font-normal text-gray-400">(categorias: liderança, estratégia, backend...)</span>
+                  <span className="text-micro font-normal text-gray-400">(categorias: liderança, estratégia, backend...)</span>
                 </label>
                 <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-gray-200">
                   {editArchetypeTags.map((tag, idx) => (
                     <span 
                       key={idx}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                       style={{ fontFamily: "'Open Sans', sans-serif" }}
                     >
                       {tag}
@@ -5174,7 +5174,7 @@ export function SmartSearchInput({
                     </span>
                   ))}
                   {editArchetypeTags.length === 0 && (
-                    <span className="text-[11px] text-gray-400">Nenhuma tag</span>
+                    <span className="text-xs text-gray-400">Nenhuma tag</span>
                   )}
                 </div>
                 <div className="relative">
@@ -5212,7 +5212,7 @@ export function SmartSearchInput({
                         }
                       }}
                       placeholder="Digite e pressione Enter..."
-                      className="flex-1 rounded px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
                     />
                     <button
                       type="button"
@@ -5243,7 +5243,7 @@ export function SmartSearchInput({
                         }
                       }}
                       disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
-                      className="px-2 py-1 rounded-full flex items-center gap-1 text-[10px] transition-colors disabled:opacity-50"
+                      className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
                       style={{ backgroundColor: editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeTags.length > 0 ? "#111827" : "#999" }}
                       title="Buscar tags similares com IA"
                     >
@@ -5262,7 +5262,7 @@ export function SmartSearchInput({
                         <button
                           key={idx}
                           type="button"
-                          className="w-full text-left px-2 py-1.5 text-[11px] hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                          className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors flex items-center gap-1.5"
                           onMouseDown={(e) => {
                             e.preventDefault()
                             if (!editArchetypeTags.includes(suggestion.term)) {
@@ -5276,10 +5276,10 @@ export function SmartSearchInput({
                           <Tag className="w-3 h-3 text-gray-400" />
                           <span style={{ color: "#1a1a1a" }}>{suggestion.term}</span>
                           {suggestion.is_synonym && (
-                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
                           {suggestion.is_related && (
-                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
                           )}
                         </button>
                       ))}
@@ -5290,7 +5290,7 @@ export function SmartSearchInput({
                   <div className="mt-2 p-2 rounded-md" style={{ backgroundColor: "rgba(96, 190, 209, 0.08)", border: "1px solid rgba(96, 190, 209, 0.3)" }}>
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
-                      <span className="text-[10px] font-medium text-gray-700">Sugestões de IA</span>
+                      <span className="text-micro font-medium text-gray-700">Sugestões de IA</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -5317,7 +5317,7 @@ export function SmartSearchInput({
                               }
                             }}
                             className={cn(
-                              "px-1.5 py-0.5 rounded-full text-[10px] transition-all cursor-pointer text-wedo-cyan-dark",
+                              "px-1.5 py-0.5 rounded-full text-micro transition-all cursor-pointer text-wedo-cyan-dark",
                               isSelected ? "ring-2 ring-gray-900/20" : ""
                             )}
                             style={{ 
@@ -5337,7 +5337,7 @@ export function SmartSearchInput({
                           setAiSuggestedTags(prev => prev.filter(t => !selectedAiTags.includes(t)))
                           setSelectedAiTags([])
                         }}
-                        className="mt-2 w-full py-1 rounded text-[10px] font-medium transition-colors bg-gray-900" style={{ color: "white" }}
+                        className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900" style={{ color: "white" }}
                       >
                         Adicionar {selectedAiTags.length} Selecionado{selectedAiTags.length > 1 ? 's' : ''}
                       </button>
@@ -5351,7 +5351,7 @@ export function SmartSearchInput({
 
             {/* Footer - Padrão ElevenLabs */}
             <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
-              <p className="text-[11px] text-gray-500">
+              <p className="text-xs text-gray-500">
                 Campos obrigatórios: Nome e Query
               </p>
               <div className="flex gap-2">
@@ -5392,7 +5392,7 @@ export function SmartSearchInput({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
-          style={{ backgroundColor: '#FFFFFF', fontFamily: '"Open Sans", sans-serif' }}
+          style={{ backgroundColor: 'var(--gray-50)', fontFamily: '"Open Sans", sans-serif' }}
         >
           <AlertDialogTitle className="sr-only">
             {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
@@ -5410,10 +5410,10 @@ export function SmartSearchInput({
                 )}
               </div>
               <div>
-                <h3 className="font-semibold text-[13px] text-gray-800">
+                <h3 className="font-semibold text-base-ui text-gray-800">
                   {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
                 </h3>
-                <p className="text-[10px] text-gray-500">
+                <p className="text-micro text-gray-500">
                   {pendingSourceChange === 'hybrid' 
                     ? 'Combina base local + global (800M+ perfis).'
                     : 'Acessa 800M+ perfis profissionais.'}
@@ -5423,16 +5423,16 @@ export function SmartSearchInput({
             
             <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-gray-100">
               {pendingSourceChange === 'hybrid' && (
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-gray-600">Local:</span>
                   <span className="font-medium text-emerald-600">Grátis</span>
                 </div>
               )}
-              <div className="flex justify-between text-[11px]">
+              <div className="flex justify-between text-xs">
                 <span className="text-gray-600">Global:</span>
                 <span className="font-medium text-amber-600">1 cr/candidato</span>
               </div>
-              <div className="flex justify-between text-[11px] pt-2 border-t border-gray-200">
+              <div className="flex justify-between text-xs pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800 dark:text-gray-200">Total estimado:</span>
                 <span className="font-semibold text-amber-600">1 cr/candidato</span>
               </div>
@@ -5444,13 +5444,13 @@ export function SmartSearchInput({
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-8 text-[11px] px-3 rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium transition-colors"
+                className="flex-1 h-8 text-xs px-3 rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmSourceChange}
-                className="flex-1 h-8 text-[11px] px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
+                className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <>

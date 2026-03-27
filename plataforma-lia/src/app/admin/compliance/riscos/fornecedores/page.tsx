@@ -201,7 +201,7 @@ export default function FornecedoresPage() {
                   <p className="font-medium text-sm text-amber-700">
                     Due Diligence Obrigatória - BCB 498/2025
                   </p>
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px]">
+                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-micro">
                     Obrigatório
                   </Badge>
                 </div>
@@ -380,7 +380,7 @@ export default function FornecedoresPage() {
                               <Badge 
                                 key={index} 
                                 variant="outline" 
-                                className="text-[10px]"
+                                className="text-micro"
                               >
                                 {cert}
                               </Badge>

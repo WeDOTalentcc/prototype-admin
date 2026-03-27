@@ -231,7 +231,7 @@ export function FilterAutocomplete({
                           {suggestion.label}
                         </span>
                         {suggestion.aliases && suggestion.aliases.length > 0 && (
-                          <span className="text-[11px] text-gray-600 truncate block">
+                          <span className="text-xs text-gray-600 truncate block">
                             Também: {suggestion.aliases.slice(0, 2).join(", ")}
                           </span>
                         )}
@@ -241,19 +241,19 @@ export function FilterAutocomplete({
                     {showCounts && (
                       <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                         {suggestion.local_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-[11px] text-emerald-600 font-medium">
+                          <span className="flex items-center gap-0.5 text-xs text-emerald-600 font-medium">
                             <Home className="w-3 h-3" />
                             {suggestion.local_count}
                           </span>
                         )}
                         {suggestion.global_count && suggestion.global_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <span className="flex items-center gap-0.5 text-xs text-gray-600 dark:text-gray-400 font-medium">
                             <Globe className="w-3 h-3" />
                             +{suggestion.global_count > 1000 ? `${(suggestion.global_count / 1000).toFixed(1)}K` : suggestion.global_count}
                           </span>
                         )}
                         {suggestion.source === "suggested" && suggestion.local_count === 0 && (
-                          <span className="text-[11px] text-gray-600 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">
+                          <span className="text-xs text-gray-600 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">
                             Sugerido
                           </span>
                         )}

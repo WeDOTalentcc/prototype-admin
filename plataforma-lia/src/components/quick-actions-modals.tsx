@@ -469,7 +469,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <h4 className={textStyles.label}>
                   Templates Rápidos
                 </h4>
-                <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-gray-400">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   <span>LIA disponível abaixo</span>
                 </div>
@@ -502,7 +502,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   <select
                     value={liaContext}
                     onChange={(e) => setLiaContext(e.target.value as any)}
-                    className="text-[10px] border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className="text-micro border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   >
                     <option value="professional">Profissional</option>
                     <option value="warm">Caloroso</option>
@@ -546,7 +546,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
                         <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-2" />
-                        <p className="text-[11px] text-gray-600">LIA analisando perfil e gerando sugestões...</p>
+                        <p className="text-xs text-gray-600">LIA analisando perfil e gerando sugestões...</p>
                       </div>
                     </div>
                   ) : (
@@ -555,13 +555,13 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
-                            <h5 className="text-[11px] font-medium text-gray-800">
+                            <h5 className="text-xs font-medium text-gray-800">
                               {suggestion.title}
                             </h5>
                           </div>
                           <button
                             onClick={() => applyLiaSuggestion(suggestion)}
-                            className="text-[10px] h-6 px-2 rounded-full border border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+                            className="text-micro h-6 px-2 rounded-full border border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
                           >
                             Usar Esta
                           </button>
@@ -569,23 +569,23 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
                         {activeTab === 'email' && suggestion.content.subject && (
                           <div className="mb-2">
-                            <span className="text-[10px] font-medium text-gray-600">Assunto:</span>
-                            <p className="text-[10px] text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1">
+                            <span className="text-micro font-medium text-gray-600">Assunto:</span>
+                            <p className="text-micro text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1">
                               {suggestion.content.subject}
                             </p>
                           </div>
                         )}
 
                         <div className="mb-3">
-                          <span className="text-[10px] font-medium text-gray-600">Mensagem:</span>
-                          <p className="text-[10px] text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1 whitespace-pre-line">
+                          <span className="text-micro font-medium text-gray-600">Mensagem:</span>
+                          <p className="text-micro text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1 whitespace-pre-line">
                             {suggestion.content.message}
                           </p>
                         </div>
 
                         <div className="border-t border-gray-100 pt-2">
-                          <span className="text-[10px] font-medium text-gray-600">Por que a LIA sugere:</span>
-                          <ul className="text-[10px] text-gray-600 mt-1 space-y-1">
+                          <span className="text-micro font-medium text-gray-600">Por que a LIA sugere:</span>
+                          <ul className="text-micro text-gray-600 mt-1 space-y-1">
                             {suggestion.reasons.map((reason: string, idx: number) => (
                               <li key={idx} className="flex items-start gap-1">
                                 <span className="text-gray-600 dark:text-gray-400 mt-0.5">•</span>
@@ -605,28 +605,28 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             <div className="space-y-4">
               {activeTab === 'email' && (
                 <div>
-                  <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+                  <label className="block text-xs font-medium text-gray-800 mb-1.5">
                     Assunto
                   </label>
                   <input
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
                     placeholder="Assunto do email"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+                <label className="block text-xs font-medium text-gray-800 mb-1.5">
                   Mensagem
                 </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={activeTab === 'email' ? 8 : 6}
-                  className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                   placeholder={`Digite sua mensagem...`}
                 />
               </div>
@@ -635,11 +635,11 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Phone className="w-4 h-4 text-gray-600" />
-                    <span className="text-[11px] font-medium text-gray-800">
+                    <span className="text-xs font-medium text-gray-800">
                       Ligação Telefônica
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-800 dark:text-gray-200">
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     Ligue para {candidate.phone} e registre as informações da conversa no campo de mensagem acima.
                   </p>
                 </div>
@@ -1009,7 +1009,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <select
                   value={liaFocus}
                   onChange={(e) => setLiaFocus(e.target.value as any)}
-                  className="text-[10px] border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="text-micro border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                 >
                   <option value="comprehensive">Análise Completa</option>
                   <option value="technical">Foco Técnico</option>
@@ -1043,7 +1043,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <div className="flex items-center justify-center py-6">
                     <div className="text-center">
                       <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-2" />
-                      <p className="text-[11px] text-gray-600">LIA analisando perfil para recomendações...</p>
+                      <p className="text-xs text-gray-600">LIA analisando perfil para recomendações...</p>
                     </div>
                   </div>
                 ) : liaRecommendations && (
@@ -1052,30 +1052,30 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     <div className="grid grid-cols-3 gap-3">
                       <div className="text-center p-3 bg-white rounded-md border border-gray-100">
                         <div className="text-lg font-semibold text-gray-900 dark:text-gray-50">{liaRecommendations.recommendedDuration}min</div>
-                        <div className="text-[10px] text-gray-600">Duração sugerida</div>
+                        <div className="text-micro text-gray-600">Duração sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('duration')}
-                          className="text-[10px] mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
                         >
                           Aplicar
                         </button>
                       </div>
                       <div className="text-center p-3 bg-white rounded-md border border-gray-100">
                         <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedType}</div>
-                        <div className="text-[10px] text-gray-600">Tipo recomendado</div>
+                        <div className="text-micro text-gray-600">Tipo recomendado</div>
                         <button
                           onClick={() => applyLiaRecommendation('type')}
-                          className="text-[10px] mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
                         >
                           Aplicar
                         </button>
                       </div>
                       <div className="text-center p-3 bg-white rounded-md border border-gray-100">
                         <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedPlatform}</div>
-                        <div className="text-[10px] text-gray-600">Plataforma sugerida</div>
+                        <div className="text-micro text-gray-600">Plataforma sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('platform')}
-                          className="text-[10px] mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
                         >
                           Aplicar
                         </button>
@@ -1084,17 +1084,17 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
                     {/* Suggested Times */}
                     <div>
-                      <h5 className="text-[11px] font-medium text-gray-800 mb-2">Horários Recomendados:</h5>
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Horários Recomendados:</h5>
                       <div className="space-y-2">
                         {liaRecommendations.suggestedTimes.map((timeRec: any, idx: number) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-100">
                             <div>
-                              <span className="font-medium text-gray-800 text-[11px]">{timeRec.time}</span>
-                              <span className="text-[10px] text-gray-600 ml-2">{timeRec.reason}</span>
+                              <span className="font-medium text-gray-800 text-xs">{timeRec.time}</span>
+                              <span className="text-micro text-gray-600 ml-2">{timeRec.reason}</span>
                             </div>
                             <button
                               onClick={() => setTime(timeRec.time)}
-                              className="text-[10px] h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                              className="text-micro h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
                             >
                               Usar
                             </button>
@@ -1105,7 +1105,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
                     {/* Interview Focus */}
                     <div>
-                      <h5 className="text-[11px] font-medium text-gray-800 mb-2">Foco da Entrevista:</h5>
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Foco da Entrevista:</h5>
                       <div className="grid grid-cols-2 gap-2">
                         {Object.entries(liaRecommendations.interviewFocus)
                           .sort(([,a], [,b]) => (b as any).weight - (a as any).weight)
@@ -1113,16 +1113,16 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           .map(([key, value]: [string, any]) => (
                           <div key={key} className="p-2 bg-white rounded-md border border-gray-100">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] font-medium text-gray-800 capitalize">{key}</span>
-                              <span className="text-[10px] text-gray-600 dark:text-gray-400">{value.weight}%</span>
+                              <span className="text-micro font-medium text-gray-800 capitalize">{key}</span>
+                              <span className="text-micro text-gray-600 dark:text-gray-400">{value.weight}%</span>
                             </div>
-                            <p className="text-[10px] text-gray-600">{value.approach}</p>
+                            <p className="text-micro text-gray-600">{value.approach}</p>
                           </div>
                         ))}
                       </div>
                       <button
                         onClick={() => applyLiaRecommendation('notes')}
-                        className="text-[10px] mt-2 px-2 py-1 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                        className="text-micro mt-2 px-2 py-1 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
                       >
                         Aplicar foco nas observações
                       </button>
@@ -1130,11 +1130,11 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
                     {/* Key Insights */}
                     <div className="border-t border-gray-100 pt-3">
-                      <h5 className="text-[11px] font-medium text-gray-800 mb-2">Insights Principais:</h5>
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Insights Principais:</h5>
                       <div className="grid grid-cols-1 gap-2">
                         <div>
-                          <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200">Pontos Fortes:</span>
-                          <ul className="text-[10px] text-gray-600 ml-2">
+                          <span className="text-micro font-medium text-gray-800 dark:text-gray-200">Pontos Fortes:</span>
+                          <ul className="text-micro text-gray-600 ml-2">
                             {liaRecommendations.attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
                               <li key={idx}>• {strength}</li>
                             ))}
@@ -1142,8 +1142,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         </div>
                         {liaRecommendations.attentionPoints.concerns.length > 0 && (
                           <div>
-                            <span className="text-[10px] font-medium text-amber-700">Pontos de Atenção:</span>
-                            <ul className="text-[10px] text-amber-600 ml-2">
+                            <span className="text-micro font-medium text-amber-700">Pontos de Atenção:</span>
+                            <ul className="text-micro text-amber-600 ml-2">
                               {liaRecommendations.attentionPoints.concerns.slice(0, 2).map((concern: string, idx: number) => (
                                 <li key={idx}>• {concern}</li>
                               ))}
@@ -1160,7 +1160,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Tipo de Entrevista */}
           <div>
-            <h4 className="text-[11px] font-medium text-gray-800 mb-3">
+            <h4 className="text-xs font-medium text-gray-800 mb-3">
               Tipo de Entrevista
             </h4>
             <div className="grid grid-cols-3 gap-3">
@@ -1175,8 +1175,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   }`}
                 >
                   <type.icon className={`w-5 h-5 mb-2 ${scheduleType === type.id ? 'text-gray-900' : 'text-gray-500'}`} />
-                  <div className="text-[11px] font-medium text-gray-800">{type.name}</div>
-                  <div className="text-[10px] text-gray-600">{type.description}</div>
+                  <div className="text-xs font-medium text-gray-800">{type.name}</div>
+                  <div className="text-micro text-gray-600">{type.description}</div>
                 </button>
               ))}
             </div>
@@ -1185,7 +1185,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           {/* Data e Hora */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
                 Data
               </label>
               <input
@@ -1193,28 +1193,28 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
                 Horário
               </label>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
                 Duração (min)
               </label>
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               >
                 <option value="30">30 minutos</option>
                 <option value="45">45 minutos</option>
@@ -1228,7 +1228,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           {/* Local/Plataforma */}
           {scheduleType === 'video' && (
             <div>
-              <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
                 Plataforma
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -1243,7 +1243,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     }`}
                   >
                     <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'text-gray-900' : 'text-gray-500'}`} />
-                    <div className="text-[10px] text-gray-800 dark:text-gray-200">{plat.name}</div>
+                    <div className="text-micro text-gray-800 dark:text-gray-200">{plat.name}</div>
                   </button>
                 ))}
               </div>
@@ -1252,14 +1252,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {scheduleType === 'presential' && (
             <div>
-              <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
                 Local da Entrevista
               </label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
                 placeholder="Endereço completo ou sala"
               />
             </div>
@@ -1267,13 +1267,13 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Entrevistador */}
           <div>
-            <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+            <label className="block text-xs font-medium text-gray-800 mb-1.5">
               Entrevistador Responsável
             </label>
             <select
               value={interviewer}
               onChange={(e) => setInterviewer(e.target.value)}
-              className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
             >
               <option value="">Selecione o entrevistador</option>
               {interviewers.map((person) => (
@@ -1284,14 +1284,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Observações */}
           <div>
-            <label className="block text-[11px] font-medium text-gray-800 mb-1.5">
+            <label className="block text-xs font-medium text-gray-800 mb-1.5">
               Observações para a Entrevista
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
               placeholder="Pontos específicos a abordar, preparações necessárias..."
             />
           </div>
@@ -1300,9 +1300,9 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
             <div className="flex items-center gap-2 text-amber-800">
               <Info className="w-4 h-4" />
-              <span className="text-[11px] font-medium">Funcional - Aguardando Configuração Calendar</span>
+              <span className="text-xs font-medium">Funcional - Aguardando Configuração Calendar</span>
             </div>
-            <p className="text-[10px] text-amber-700 mt-1">
+            <p className="text-micro text-amber-700 mt-1">
               Entrevistas são salvas no banco de dados. Para sincronização automática com calendários, configure Microsoft Graph ou Google Calendar.
             </p>
           </div>

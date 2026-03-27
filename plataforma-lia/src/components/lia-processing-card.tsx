@@ -134,7 +134,7 @@ export function LIATaskStepItem({
               {step.label}
             </span>
             {step.isCompleted && (
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                 Concluído
               </span>
             )}
@@ -230,7 +230,7 @@ export function LIAProcessingCard({
                     style={{ width: `${(completedCount / steps.length) * 100}%` }}
                   />
                 </div>
-                <span className="text-[11px] text-gray-500">
+                <span className="text-xs text-gray-500">
                   {completedCount}/{steps.length}
                 </span>
               </div>
@@ -382,7 +382,7 @@ export function LIAFileBadge({
         <div className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
           {fileName}
         </div>
-        <div className="text-[11px] text-gray-500">
+        <div className="text-xs text-gray-500">
           {status === 'processing' ? 'Processando...' : 
            status === 'finished' ? 'Finalizado' : 'Erro'}
         </div>

@@ -140,7 +140,7 @@ function InlineFieldEditor({
         style={{ fontFamily: '"Inter", sans-serif' }}
       />
       {config?.suffix && (
-        <span className="text-[10px] text-gray-500">{config.suffix}</span>
+        <span className="text-micro text-gray-500">{config.suffix}</span>
       )}
       <button
         onClick={handleSave}
@@ -206,7 +206,7 @@ export function HiringPoliciesHub() {
               {setupProgress}% configurado
             </span>
             {setupProgress >= 100 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex-shrink-0">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex-shrink-0">
                 Completo
               </span>
             )}
@@ -227,7 +227,7 @@ export function HiringPoliciesHub() {
         >
           <div
             className="flex-shrink-0 px-4 py-3"
-            style={{ backgroundColor: '#FFFFFF' }}
+            style={{ backgroundColor: 'var(--gray-50)' }}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -239,13 +239,13 @@ export function HiringPoliciesHub() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3
-                    className="text-[14px] font-semibold leading-tight truncate text-gray-950 dark:text-gray-50"
+                    className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50"
                     style={{ fontFamily: 'Open Sans, sans-serif' }}
                   >
                     Olá! Sou a Lia.
                   </h3>
                   <p
-                    className="text-[11px] leading-tight truncate mt-0.5 text-gray-500"
+                    className="text-xs leading-tight truncate mt-0.5 text-gray-500"
                     style={{ fontFamily: 'Open Sans, sans-serif' }}
                   >
                     Posso criar vagas, buscar candidatos, analisar ...
@@ -271,7 +271,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-            style={{ backgroundColor: '#FFFFFF' }}
+            style={{ backgroundColor: 'var(--gray-50)' }}
           >
             {messages.map((msg, idx) => (
               <LiaChatMessage
@@ -287,7 +287,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-shrink-0 p-4"
-            style={{ backgroundColor: '#FFFFFF' }}
+            style={{ backgroundColor: 'var(--gray-50)' }}
           >
             <LiaChatInput
               value={inputValue}
@@ -328,7 +328,7 @@ export function HiringPoliciesHub() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium border ${
                         isCompleted
                           ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
                           : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'

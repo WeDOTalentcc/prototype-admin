@@ -219,7 +219,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 className="p-4 rounded-md transition-all text-left group"
                 style={{ 
                   border: `1px solid ${colors.bg}`,
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--gray-50)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.hoverBg
@@ -281,7 +281,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           style={{
             top: `${position.top}px`,
             right: `${position.right}px`,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--gray-50)',
             border: '1px solid #E8E8E8',
             cursor: isDragging ? 'grabbing' : 'grab'
           }}
@@ -311,7 +311,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           style={{
             top: `${position.top}px`,
             right: `${position.right}px`,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--gray-50)',
             border: '1px solid #E8E8E8',
             borderRadius: '16px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)'
@@ -329,7 +329,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             }}
           >
             <div className="flex items-center gap-2">
-              <Move className="w-3 h-3 text-[#CCCCCC]" />
+              <Move className="w-3 h-3 text-gray-300" />
               <div 
                 className="p-1.5 rounded-md"
                 className="bg-gray-900/[0.08]"
@@ -349,9 +349,9 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
-              className="h-7 w-7 p-0 rounded-md hover:bg-[#EEEEEE]"
+              className="h-7 w-7 p-0 rounded-md hover:bg-gray-200"
             >
-              <X className="w-4 h-4 text-[#999999]" />
+              <X className="w-4 h-4 text-gray-400" />
             </Button>
           </div>
 
@@ -369,7 +369,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                   }}
                   className="w-full p-3 rounded-md transition-all text-left group"
                   style={{ 
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--gray-50)',
                     border: `1px solid ${colors.bg}`
                   }}
                   onMouseEnter={(e) => {

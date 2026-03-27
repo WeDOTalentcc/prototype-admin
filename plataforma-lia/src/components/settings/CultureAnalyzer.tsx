@@ -477,7 +477,7 @@ export function CultureAnalyzer({
                     className={`${textStyles.caption} text-center leading-tight ${
                       isActive
                         ? isLia
-                          ? "text-[#0E7490] dark:text-gray-400"
+                          ? "text-wedo-cyan-dark dark:text-gray-400"
                           : "text-gray-700 dark:text-gray-300"
                         : isCompleted
                           ? "text-emerald-700 dark:text-emerald-300"

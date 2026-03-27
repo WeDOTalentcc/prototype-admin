@@ -152,7 +152,7 @@ export function AudioPlayer({
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between text-[10px] font-['Inter',sans-serif] text-gray-400 dark:text-gray-500 tabular-nums">
+        <div className="flex justify-between text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500 tabular-nums">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>

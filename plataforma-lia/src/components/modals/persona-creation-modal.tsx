@@ -186,10 +186,10 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
                 {baseJob && (
  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
- <h4 className="font-medium text-wedo-cyan-dark dark:text-gray-300 mb-2">
+ <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
                       📋 Baseada na Vaga
                     </h4>
- <p className="text-sm text-wedo-cyan-dark dark:text-gray-500 mb-2">
+ <p className="text-sm text-gray-600 dark:text-gray-500 mb-2">
                       <strong>{baseJob.title}</strong> na {baseJob.company}
                     </p>
  <p className="text-xs text-gray-600 dark:text-gray-300">
@@ -210,7 +210,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {personaData.requiredSkills.map((skill, index) => (
-                      <Badge key={index} className="bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark flex items-center gap-1">
+                      <Badge key={index} className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 flex items-center gap-1">
                         {skill}
                         <button
                           onClick={() => handleSkillRemove('required', index)}
@@ -363,7 +363,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">Skills Obrigatórias:</p>
                         <div className="flex flex-wrap gap-1">
                           {personaData.requiredSkills.map((skill, index) => (
-                            <Badge key={index} className="text-xs bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark">
+                            <Badge key={index} className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-400">
                               {skill}
                             </Badge>
                           ))}
@@ -463,7 +463,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                     {preview.estimatedCandidates} candidatos correspondem aos critérios
                   </p>
-                  <Badge className="bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark text-xs">
+                  <Badge className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-400 text-xs">
                     Base sólida para início
                   </Badge>
                 </div>

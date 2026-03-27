@@ -140,13 +140,13 @@ export function CompanyDataSection({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 px-3 py-2 rounded-md flex items-center gap-2 text-[11px] font-['Open_Sans',sans-serif]">
+        <div className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-3 py-2 rounded-md flex items-center gap-2 text-[11px] font-['Open_Sans',sans-serif]">
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -168,7 +168,7 @@ export function CompanyDataSection({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
             {countActiveFields()} de {totalFields} campos ativos
           </span>
           {!isEditingCompanyData ? (
@@ -179,7 +179,7 @@ export function CompanyDataSection({
               }}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-[11px] rounded-md"
+              className="gap-1.5 text-xs rounded-md"
             >
               <Edit className="w-3.5 h-3.5" />
               Editar
@@ -197,7 +197,7 @@ export function CompanyDataSection({
                 disabled={saving}
                 variant="outline"
                 size="sm"
-                className="text-[11px] rounded-md"
+                className="text-xs rounded-md"
               >
                 Cancelar
               </Button>
@@ -209,7 +209,7 @@ export function CompanyDataSection({
                 }}
                 disabled={saving}
                 size="sm"
-                className="gap-1.5 text-[11px] rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 {saving ? (
                   <>
@@ -230,7 +230,7 @@ export function CompanyDataSection({
 
       {/* Seção: Informações Gerais */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Informações Gerais
         </h3>
         
@@ -243,7 +243,7 @@ export function CompanyDataSection({
               ) : (
                 <div className="text-center">
                   <Image className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500 mb-0.5" />
-                  <span className="text-[8px] text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">Upload</span>
+                  <span className="text-micro text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">Upload</span>
                 </div>
               )}
             </div>
@@ -251,7 +251,7 @@ export function CompanyDataSection({
               <span className={textStyles.label}>
                 Logo da Empresa
               </span>
-              <span className="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">
+              <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">
                 Identidade Visual
               </span>
             </div>
@@ -346,7 +346,7 @@ export function CompanyDataSection({
 
       {/* Seção: Contato e Presença Online */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Contato e Presença Online
         </h3>
         
@@ -509,7 +509,7 @@ export function CompanyDataSection({
             )}
 
             {!isLiaAnalyzing && (!isEditingCompanyData || !companyData.website) && (
-              <p className="text-[10px] text-amber-600 mt-2">
+              <p className="text-micro text-amber-600 mt-2">
                 {!isEditingCompanyData 
                   ? "Clique em 'Editar' para habilitar a análise"
                   : "Informe o website da empresa acima para habilitar a análise"
@@ -522,7 +522,7 @@ export function CompanyDataSection({
 
       {/* Seção: Cultura e Identidade */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Cultura e Identidade
         </h3>
         
@@ -586,7 +586,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.values || []).map((value: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-[10px] px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-micro px-2 py-0.5 rounded-full">
                     {value}
                     {isEditingCompanyData && (
                       <button
@@ -634,7 +634,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.coreCompetencies || []).map((comp: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full">
                     {comp}
                     {isEditingCompanyData && (
                       <button
@@ -671,7 +671,7 @@ export function CompanyDataSection({
 
       {/* Seção: Informações Corporativas */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Informações Corporativas
         </h3>
         
@@ -751,7 +751,7 @@ export function CompanyDataSection({
 
       {/* Seção: Modelo de Trabalho e Contratação */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Modelo de Trabalho e Contratação
         </h3>
         
@@ -813,7 +813,7 @@ export function CompanyDataSection({
                         : [...current, type]
                       setCompanyData((prev: any) => ({ ...prev, employment_types: updated }))
                     }}
-                    className={`px-2.5 py-1.5 text-[10px] rounded-full border transition-colors ${
+                    className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors ${
                       isSelected
                         ? 'bg-gray-900 border-gray-900 text-white dark:bg-gray-50 dark:border-gray-50 dark:text-gray-900'
                         : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
@@ -843,7 +843,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.seniority_levels || []).map((level: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full">
                     {level}
                     {isEditingCompanyData && (
                       <button
@@ -872,7 +872,7 @@ export function CompanyDataSection({
                           seniority_levels: [...(prev.seniority_levels || []), level],
                         }))
                       }}
-                      className={`text-[9px] px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
                       + {level}
                     </button>
@@ -885,7 +885,7 @@ export function CompanyDataSection({
 
       {/* Seção: Responsabilidade Social */}
       <div className="space-y-3">
-        <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Responsabilidade Social
         </h3>
         
@@ -970,7 +970,7 @@ export function CompanyDataSection({
       {/* Seção: Perfil Organizacional (Big Five) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
             Perfil Organizacional (Big Five)
           </h3>
           <Button
@@ -978,7 +978,7 @@ export function CompanyDataSection({
             size="sm"
             onClick={handleSaveCultureFields}
             disabled={saving}
-            className="text-[10px] rounded-md border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="text-micro rounded-md border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
           >
             {saving ? (
               <>

@@ -1112,7 +1112,7 @@ export function AdvancedFiltersModal({
                     <SelectItem key={option.value} value={option.value} className="text-xs">
                       <div>
                         <div className="font-medium">{option.label}</div>
-                        <div className="text-[10px] text-gray-500">{option.description}</div>
+                        <div className="text-micro text-gray-500">{option.description}</div>
                       </div>
                     </SelectItem>
                   ))}
@@ -1179,7 +1179,7 @@ export function AdvancedFiltersModal({
             {showTitleSuggestions && titleSuggestions.length > 0 && (
               <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md max-h-48 overflow-y-auto">
                 <div className="p-1.5 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1.5 text-micro text-gray-600 dark:text-gray-400">
                     <Zap className="w-3 h-3" />
                     <span>Sugestões semânticas</span>
                   </div>
@@ -1194,7 +1194,7 @@ export function AdvancedFiltersModal({
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2"
                   >
                     <span>{suggestion.term}</span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-micro text-gray-400">
                       {Math.round(suggestion.confidence * 100)}%
                     </span>
                   </button>
@@ -1258,7 +1258,7 @@ export function AdvancedFiltersModal({
                 <div className="flex items-center gap-2">
                   <Brain className="w-4 h-4 text-purple-600" />
                   <span className="text-xs font-medium text-purple-700">Sugestões da LIA</span>
-                  <span className="text-[10px] text-purple-500">
+                  <span className="text-micro text-purple-500">
                     (clique para selecionar múltiplos)
                   </span>
                 </div>
@@ -1459,7 +1459,7 @@ export function AdvancedFiltersModal({
             {showPastTitleSuggestions && titleSuggestions.length > 0 && (
               <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md max-h-48 overflow-y-auto">
                 <div className="p-1.5 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1.5 text-micro text-gray-600 dark:text-gray-400">
                     <Zap className="w-3 h-3" />
                     <span>Sugestões semânticas</span>
                   </div>
@@ -1474,7 +1474,7 @@ export function AdvancedFiltersModal({
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2"
                   >
                     <span>{suggestion.term}</span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-micro text-gray-400">
                       {Math.round(suggestion.confidence * 100)}%
                     </span>
                   </button>
@@ -1534,7 +1534,7 @@ export function AdvancedFiltersModal({
                 <div className="flex items-center gap-2">
                   <Brain className="w-4 h-4 text-purple-600" />
                   <span className="text-xs font-medium text-purple-700">Sugestões da LIA</span>
-                  <span className="text-[10px] text-purple-500">
+                  <span className="text-micro text-purple-500">
                     (clique para selecionar múltiplos)
                   </span>
                 </div>
@@ -1662,7 +1662,7 @@ export function AdvancedFiltersModal({
               {showRoleSuggestions && roleSuggestions.length > 0 && (
                 <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md max-h-40 overflow-y-auto">
                   <div className="p-1 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-gray-400">
                       <Zap className="w-2.5 h-2.5" />
                       <span>Sugestões AI</span>
                     </div>
@@ -1677,7 +1677,7 @@ export function AdvancedFiltersModal({
                       className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 flex items-center justify-between gap-2"
                     >
                       <span>{suggestion.term}</span>
-                      <span className="text-[9px] text-gray-400">
+                      <span className="text-micro text-gray-400">
                         {Math.round(suggestion.confidence * 100)}%
                       </span>
                     </button>
@@ -1815,12 +1815,12 @@ export function AdvancedFiltersModal({
                               </div>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {preset.titles.slice(0, 3).map(title => (
-                                  <span key={title} className="text-[10px] px-1.5 py-0.5 bg-purple-100 rounded-full text-purple-700">
+                                  <span key={title} className="text-micro px-1.5 py-0.5 bg-purple-100 rounded-full text-purple-700">
                                     {title}
                                   </span>
                                 ))}
                                 {preset.titles.length > 3 && (
-                                  <span className="text-[10px] text-purple-400">...</span>
+                                  <span className="text-micro text-purple-400">...</span>
                                 )}
                               </div>
                             </button>
@@ -1852,12 +1852,12 @@ export function AdvancedFiltersModal({
                             </div>
                             <div className="flex flex-wrap gap-1 mt-2">
                               {preset.titles.slice(0, 3).map(title => (
-                                <span key={title} className="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded-full text-gray-600">
+                                <span key={title} className="text-micro px-1.5 py-0.5 bg-gray-100 rounded-full text-gray-600">
                                   {title}
                                 </span>
                               ))}
                               {preset.titles.length > 3 && (
-                                <span className="text-[10px] text-gray-400">...</span>
+                                <span className="text-micro text-gray-400">...</span>
                               )}
                             </div>
                           </button>
@@ -1913,12 +1913,12 @@ export function AdvancedFiltersModal({
                   </div>
                   <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
                     {(presetTarget === "titles" ? filters.job?.titles : filters.job?.pastTitles)?.slice(0, 10).map(title => (
-                      <span key={title} className="text-[10px] px-1.5 py-0.5 bg-gray-200 rounded-full text-gray-800 dark:text-gray-200">
+                      <span key={title} className="text-micro px-1.5 py-0.5 bg-gray-200 rounded-full text-gray-800 dark:text-gray-200">
                         {title}
                       </span>
                     ))}
                     {((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) > 10 && (
-                      <span className="text-[10px] text-gray-400">+{((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) - 10} mais</span>
+                      <span className="text-micro text-gray-400">+{((presetTarget === "titles" ? filters.job?.titles?.length : filters.job?.pastTitles?.length) || 0) - 10} mais</span>
                     )}
                   </div>
                 </div>
@@ -2174,7 +2174,7 @@ export function AdvancedFiltersModal({
                     )}
                   >
                     <Badge 
-                      className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 font-medium"
+                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
                       style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
                     >
                       1 CRÉDITO/CAND.
@@ -2209,7 +2209,7 @@ export function AdvancedFiltersModal({
                     )}
                   >
                     <Badge 
-                      className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 font-medium"
+                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
                       style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
                     >
                       1 CRÉDITO/CAND.
@@ -2270,7 +2270,7 @@ export function AdvancedFiltersModal({
                       <Zap className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                       <span className="font-medium text-xs">Custo Estimado</span>
                     </div>
-                    <Badge variant="outline" className="text-[11px] px-1.5 py-0.5 border-gray-500 text-gray-700 dark:text-gray-300">
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 text-gray-700 dark:text-gray-300">
                       Tempo Real
                     </Badge>
                   </div>
@@ -2280,7 +2280,7 @@ export function AdvancedFiltersModal({
                       <div className="text-base font-bold text-gray-900 dark:text-gray-100">
                         {creditEstimate.cost_per_candidate}
                       </div>
-                      <div className="text-[11px] text-gray-600">
+                      <div className="text-xs text-gray-600">
                         créditos por candidato
                       </div>
                     </div>
@@ -2288,7 +2288,7 @@ export function AdvancedFiltersModal({
                       <div className={textStyles.title}>
                         {creditEstimate.total_estimated}
                       </div>
-                      <div className="text-[11px] text-gray-600">
+                      <div className="text-xs text-gray-600">
                         total ({creditEstimate.limit} candidatos)
                       </div>
                     </div>
@@ -2359,7 +2359,7 @@ export function AdvancedFiltersModal({
                       <Mail className="w-3.5 h-3.5 text-gray-500" />
                       <div>
                         <div className="text-xs font-medium">Apenas com Email</div>
-                        <div className="text-[11px] text-gray-600">
+                        <div className="text-xs text-gray-600">
                           Filtrar candidatos com email
                         </div>
                       </div>
@@ -2375,7 +2375,7 @@ export function AdvancedFiltersModal({
                       <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                       <div>
                         <div className="text-xs font-medium">Mostrar Emails</div>
-                        <div className="text-[11px] text-gray-600">
+                        <div className="text-xs text-gray-600">
                           Exibir emails nos resultados
                         </div>
                       </div>
@@ -3166,27 +3166,27 @@ export function AdvancedFiltersModal({
           {getActiveFiltersCount() > 0 && (
             <div className="px-6 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] text-gray-500 font-medium">Filtros ativos:</span>
+                <span className="text-micro text-gray-500 font-medium">Filtros ativos:</span>
                 {filters.general?.minExperience && (
-                  <Badge variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. mín: {filters.general.minExperience}a
                     <button onClick={() => updateFilter("general", "minExperience", undefined)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.general?.maxExperience && (
-                  <Badge variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. máx: {filters.general.maxExperience}a
                     <button onClick={() => updateFilter("general", "maxExperience", undefined)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.job?.titles?.map(t => (
-                  <Badge key={t} variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge key={t} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {t}
                     <button onClick={() => removeFromArray("job", "titles", t)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 ))}
                 {filters.skills?.skillItems?.map(s => (
-                  <Badge key={s.name} variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge key={s.name} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {s.name}
                     <button onClick={() => {
                       const items = filters.skills?.skillItems?.filter(i => i.name !== s.name) || []
@@ -3195,7 +3195,7 @@ export function AdvancedFiltersModal({
                   </Badge>
                 ))}
                 {filters.company?.companyItems?.map(c => (
-                  <Badge key={c.name} variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge key={c.name} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {c.name}
                     <button onClick={() => {
                       const items = filters.company?.companyItems?.filter(i => i.name !== c.name) || []
@@ -3204,7 +3204,7 @@ export function AdvancedFiltersModal({
                   </Badge>
                 ))}
                 {filters.languages?.languages?.map(l => (
-                  <Badge key={l} variant="outline" className="text-[10px] py-0 h-5 gap-1">
+                  <Badge key={l} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {l}
                     <button onClick={() => removeFromArray("languages", "languages", l)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
                   </Badge>

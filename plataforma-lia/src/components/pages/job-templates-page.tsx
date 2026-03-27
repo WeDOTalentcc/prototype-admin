@@ -378,7 +378,7 @@ export function JobTemplatesPage() {
                   <span>•</span>
                   <span>{template.level}</span>
                   <Badge variant="outline" className={`text-xs ${
-                    template.workModel === 'remoto' ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark' :
+                    template.workModel === 'remoto' ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
                     template.workModel === 'híbrido' ? 'border-purple-200 bg-purple-50 text-purple-700' :
                     'border-green-200 bg-green-50 text-green-700'
                   }`}>

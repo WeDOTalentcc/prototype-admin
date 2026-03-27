@@ -493,23 +493,23 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
                         {result.field.replace('_', ' ')}
                       </span>
                       {rule && (
-                        <Badge className={`text-[11px] ${getCategoryColor(rule.category)}`}>
+                        <Badge className={`text-xs ${getCategoryColor(rule.category)}`}>
                           {rule.category}
                         </Badge>
                       )}
                     </div>
 
                     {result.message && (
-                      <p className="text-[11px] mb-2">{result.message}</p>
+                      <p className="text-xs mb-2">{result.message}</p>
                     )}
 
                     {showSuggestions && result.suggestions && result.suggestions.length > 0 && (
                       <div className="bg-white bg-opacity-50 rounded p-2 mt-2">
                         <div className="flex items-center gap-1 mb-1">
                           <Lightbulb className="w-3 h-3" />
-                          <span className="text-[11px] font-medium">Sugestões:</span>
+                          <span className="text-xs font-medium">Sugestões:</span>
                         </div>
-                        <ul className="text-[11px] space-y-1">
+                        <ul className="text-xs space-y-1">
                           {result.suggestions.map((suggestion, idx) => (
                             <li key={idx} className="flex items-center gap-1">
                               <span className="w-1 h-1 bg-current rounded-full"></span>
@@ -522,15 +522,15 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
 
                     {result.correctedValue && onAutoCorrect && (
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[11px]">Correção sugerida:</span>
-                        <code className="text-[11px] bg-white bg-opacity-50 px-2 py-1 rounded-full">
+                        <span className="text-xs">Correção sugerida:</span>
+                        <code className="text-xs bg-white bg-opacity-50 px-2 py-1 rounded-full">
                           {result.correctedValue}
                         </code>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => onAutoCorrect(result.field, result.correctedValue!)}
-                          className="text-[11px] h-6"
+                          className="text-xs h-6"
                         >
                           Aplicar
                         </Button>

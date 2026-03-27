@@ -248,7 +248,7 @@ export function FavoritesTab({
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:transition-all group">
                   <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Insights</span>
-                  <Badge className="h-4 px-1.5 text-[11px] bg-gray-700 text-white dark:bg-gray-600">
+                  <Badge className="h-4 px-1.5 text-xs bg-gray-700 text-white dark:bg-gray-600">
                     {filteredCandidates.length}
                   </Badge>
                 </button>
@@ -282,7 +282,7 @@ export function FavoritesTab({
                       <span className="text-xs text-gray-800 dark:text-gray-200 block mb-1.5">Top skills</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.flatMap(c => ((c.skills || c.technical_skills || []) as string[]).slice(0, 2)))).slice(0, 4).map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-[11px] bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                             {skill}
                           </Badge>
                         ))}
@@ -293,7 +293,7 @@ export function FavoritesTab({
                       <span className="text-xs text-gray-800 dark:text-gray-200 block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-[11px] bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200">
                             <MapPin className="w-2.5 h-2.5 mr-0.5" />
                             {loc}
                           </Badge>
@@ -323,7 +323,7 @@ export function FavoritesTab({
               variant={filterType === 'all' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('all')}
-              className="h-6 px-2.5 text-[11px]"
+              className="h-6 px-2.5 text-xs"
             >
               Todos ({candidates.length})
             </Button>
@@ -331,7 +331,7 @@ export function FavoritesTab({
               variant={filterType === 'pinned' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('pinned')}
-              className="h-6 px-2.5 text-[11px]"
+              className="h-6 px-2.5 text-xs"
             >
               <Pin className="w-3 h-3 mr-1" />
               Fixados
@@ -340,7 +340,7 @@ export function FavoritesTab({
               variant={filterType === 'starred' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('starred')}
-              className="h-6 px-2.5 text-[11px]"
+              className="h-6 px-2.5 text-xs"
             >
               <Star className="w-3 h-3 mr-1" />
               Salvos
@@ -400,7 +400,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                     <Star className="w-4 h-4 text-orange-500" />
                   </div>
-                  <h3 className="text-[13px] font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
                     Adicionar aos Favoritos
                   </h3>
                 </div>
@@ -427,7 +427,7 @@ export function FavoritesTab({
                   <p className="font-medium text-gray-800 dark:text-gray-100 text-xs">
                     {selectedCandidateForNote.name}
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {selectedCandidateForNote.position}
                   </p>
                 </div>
@@ -443,7 +443,7 @@ export function FavoritesTab({
                   onChange={(e) => setNoteText(e.target.value)}
                   className="h-24 resize-none text-xs border-gray-200 focus:ring-1 focus:ring-gray-400"
                 />
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Esta nota ajuda você a lembrar por que salvou este candidato.
                 </p>
               </div>
@@ -481,7 +481,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
                     <StickyNote className="w-4 h-4 text-amber-600" />
                   </div>
-                  <h3 className="text-[13px] font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
                     Nota do Candidato
                   </h3>
                 </div>
@@ -508,7 +508,7 @@ export function FavoritesTab({
                   <p className="font-medium text-gray-800 dark:text-gray-100 text-xs">
                     {viewingNote.candidate.name}
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {viewingNote.candidate.position}
                   </p>
                 </div>

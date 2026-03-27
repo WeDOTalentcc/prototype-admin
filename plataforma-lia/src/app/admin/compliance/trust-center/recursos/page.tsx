@@ -160,7 +160,7 @@ export default function RecursosPage() {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors"
                         style={{ 
                           borderColor: '#F59E0B',
-                          color: '#F59E0B'
+                          color: 'var(--status-warning)'
                         }}
                         onClick={() => handleRequest(resource.name)}
                       >
@@ -183,7 +183,7 @@ export default function RecursosPage() {
           }}
         >
           <div className="flex items-start gap-3">
-            <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{ color: '#F59E0B' }} />
+            <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--status-warning)' }} />
             <div>
               <h4 className="font-medium text-sm mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
                 Documentos com Acesso Restrito

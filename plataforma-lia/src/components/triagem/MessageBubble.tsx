@@ -66,7 +66,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
         <div className="flex-shrink-0 mt-1">
           <LIAIcon
             size="sm"
-            className="bg-[#60BED1]/10"
+            className="bg-wedo-cyan/10"
             speaking={isAudioPlaying}
           />
         </div>
@@ -94,7 +94,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
         )}
         <span
           className={cn(
-            "text-[10px] font-['Inter',sans-serif] text-gray-400 dark:text-gray-500",
+            "text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500",
             isLia ? "text-left" : "text-right"
           )}
         >

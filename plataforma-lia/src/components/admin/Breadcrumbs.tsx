@@ -61,10 +61,10 @@ export function Breadcrumbs({
             {isLast && scope && (
               <Badge 
                 variant="outline" 
-                className="text-[10px] font-medium ml-1"
+                className="text-micro font-medium ml-1"
                 style={
                   scope === 'global' 
-                    ? { borderColor: '#D1D5DB' }
+                    ? { borderColor: 'var(--gray-200)' }
                     : { borderColor: '#9333ea', color: '#9333ea' }
                 }
               >

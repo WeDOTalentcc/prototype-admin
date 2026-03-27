@@ -62,7 +62,7 @@ export function ArchetypesList({
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Criar Novo Arquétipo</span>
           {naturalSearchValue && (
-            <Badge variant="outline" className="text-[10px] bg-wedo-cyan/10 text-gray-600 dark:text-gray-400 border-gray-900 dark:border-gray-50">
+            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-gray-600 dark:text-gray-400 border-gray-900 dark:border-gray-50">
               Busca ativa detectada
             </Badge>
           )}
@@ -81,29 +81,29 @@ export function ArchetypesList({
             {Object.keys(parsedEntities).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedEntities.job_title && (
-                  <Badge variant="secondary" className="text-[10px] bg-wedo-cyan/10 text-wedo-cyan-dark border-gray-300 dark:border-gray-600">
+                  <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-gray-300 dark:border-gray-600">
                     {parsedEntities.job_title}
                   </Badge>
                 )}
                 {parsedEntities.location && (
-                  <Badge variant="secondary" className="text-[10px] bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
                     <MapPin className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.location}
                   </Badge>
                 )}
                 {parsedEntities.seniority && (
-                  <Badge variant="secondary" className="text-[10px] bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
                     {parsedEntities.seniority}
                   </Badge>
                 )}
                 {parsedEntities.industry && (
-                  <Badge variant="secondary" className="text-[10px] bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
                     <Building2 className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.industry}
                   </Badge>
                 )}
                 {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-[10px] bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
                     {skill}
                   </Badge>
                 ))}
@@ -145,7 +145,7 @@ export function ArchetypesList({
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-[10px] text-gray-400">ou crie do zero com LIA</span>
+            <span className="text-micro text-gray-400">ou crie do zero com LIA</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
         )}
@@ -164,7 +164,7 @@ export function ArchetypesList({
         <button
           onClick={() => onCreateFromDescription(newArchetypeDescription)}
           disabled={isCreatingArchetype || !newArchetypeDescription.trim()}
-          className="w-full px-3 py-2 bg-[#1a1a1a] text-white text-xs rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3 py-2 bg-gray-900 text-white text-xs rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreatingArchetype ? (
             <>
@@ -183,7 +183,7 @@ export function ArchetypesList({
       {/* Divisor */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-[11px] text-gray-500">ou selecione um existente</span>
+        <span className="text-xs text-gray-500">ou selecione um existente</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
@@ -191,7 +191,7 @@ export function ArchetypesList({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Meus Arquétipos</span>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-micro">
             {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
           </Badge>
         </div>
@@ -216,7 +216,7 @@ export function ArchetypesList({
             <div className="text-center py-6 text-gray-500">
               <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-xs">Nenhum arquétipo encontrado</p>
-              <p className="text-[10px] text-gray-400 mt-1">Crie um novo acima para começar</p>
+              <p className="text-micro text-gray-400 mt-1">Crie um novo acima para começar</p>
             </div>
           ) : (
             filteredArchetypes.map((arch) => {
@@ -256,10 +256,10 @@ export function ArchetypesList({
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-800 truncate">{arch.name}</div>
                       {arch.description && (
-                        <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{arch.description}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{arch.description}</p>
                       )}
                       {arch.department && (
-                        <Badge variant="outline" className="mt-1.5 text-[10px]">{arch.department}</Badge>
+                        <Badge variant="outline" className="mt-1.5 text-micro">{arch.department}</Badge>
                       )}
                     </div>
                   </div>

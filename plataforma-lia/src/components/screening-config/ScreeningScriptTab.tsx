@@ -192,9 +192,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <h4 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">Roteiro de Triagem Automática</h4>
+          <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Roteiro de Triagem Automática</h4>
           <Badge 
-            className={`text-[10px] px-1.5 py-0 h-4 text-gray-800 ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-[#D5BFA8]'}`}
+            className={`text-micro px-1.5 py-0 h-4 text-gray-800 ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
           >
             {(previewJob.screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
           </Badge>
@@ -203,7 +203,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
       {/* 1. Card Performance da Triagem */}
       <div className="p-3 bg-white border border-gray-100 rounded-md">
-        <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-3">
+        <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-3">
           <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
           Performance da Triagem
         </h5>
@@ -211,69 +211,69 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         {/* Métricas do Roteiro - Linha 1 */}
         <div className="grid grid-cols-4 gap-2">
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               {(() => {
                 const questions = previewJob.screeningQuestions || []
                 const totalTime = questions.reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0)
                 return Math.ceil(totalTime / 60)
               })()}min
             </div>
-            <p className="text-[9px] text-gray-500">Tempo Total</p>
+            <p className="text-micro text-gray-500">Tempo Total</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               {previewJob.screeningQuestions?.length || 0}
             </div>
-            <p className="text-[9px] text-gray-500">Perguntas</p>
+            <p className="text-micro text-gray-500">Perguntas</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               ~{100 - (previewJob.screeningConfig?.settings?.min_score ?? 70)}%
             </div>
-            <p className="text-[9px] text-gray-500">Reprovação Est.</p>
+            <p className="text-micro text-gray-500">Reprovação Est.</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-900 dark:text-gray-50">
+            <div className="text-base-ui font-semibold text-gray-900 dark:text-gray-50">
               {previewJob.screeningConfig?.status?.last_updated 
                 ? new Date(previewJob.screeningConfig.status.last_updated).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                 : new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
             </div>
-            <p className="text-[9px] text-gray-500">Atualizado</p>
+            <p className="text-micro text-gray-500">Atualizado</p>
           </div>
         </div>
         
         {/* Performance - Linha 2 */}
         <div className="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-gray-100">
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               {Math.round(funnel.screening * 0.6)}
             </div>
-            <p className="text-[9px] text-gray-500">Triados</p>
+            <p className="text-micro text-gray-500">Triados</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               {funnel.total > 0 ? Math.round((funnel.screening / funnel.total) * 100) : 0}%
             </div>
-            <p className="text-[9px] text-gray-500">Conclusão</p>
+            <p className="text-micro text-gray-500">Conclusão</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-green-600">
+            <div className="text-base-ui font-semibold text-green-600">
               {funnel.screening > 0 ? Math.round((funnel.interview / funnel.screening) * 100) : 0}%
             </div>
-            <p className="text-[9px] text-gray-500">Aprovação</p>
+            <p className="text-micro text-gray-500">Aprovação</p>
           </div>
           <div className="text-center">
-            <div className="text-[13px] font-semibold text-gray-800">
+            <div className="text-base-ui font-semibold text-gray-800">
               {nps > 0 ? (nps / 20).toFixed(1) : '4.2'}
             </div>
-            <p className="text-[9px] text-gray-500">Nota Média</p>
+            <p className="text-micro text-gray-500">Nota Média</p>
           </div>
         </div>
       </div>
 
       {/* 2. Skills WSI Utilizadas */}
       <div className="p-3 bg-white border border-gray-100 rounded-md">
-        <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-2">
+        <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-2">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Skills WSI Avaliadas
         </h5>
@@ -284,13 +284,13 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             const defaultSkills = ['Comunicação', 'Resolução de Problemas', 'Adaptabilidade', 'Trabalho em Equipe']
             const finalSkills = skills.length > 0 ? skills : defaultSkills
             return finalSkills.slice(0, 6).map((skill: string, idx: number) => (
-              <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[10px] px-2 py-0.5 h-5 font-medium">
+              <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-micro px-2 py-0.5 h-5 font-medium">
                 {skill}
               </Badge>
             ))
           })()}
         </div>
-        <p className="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
+        <p className="text-micro text-gray-400 mt-2 flex items-center gap-1">
           <Lightbulb className="w-3 h-3" />
           Extraídas automaticamente do perfil da vaga via metodologia WSI
         </p>
@@ -299,10 +299,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       {/* 3. Blocos WSI do Roteiro de Triagem */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
             <Layers3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             Fluxo de Triagem WSI
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200">
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200">
               6 Blocos
             </Badge>
           </h5>
@@ -371,19 +371,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center ${
+                    <span className={`w-5 h-5 rounded-full text-white text-micro font-bold flex items-center justify-center ${
                       block.editable ? 'bg-gray-700' : 'bg-gray-400'
                     }`}>
                       {block.id}
                     </span>
                     <div>
-                      <span className={`text-[11px] font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-600'}`}>
+                      <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-600'}`}>
                         {block.name}
                       </span>
-                      <span className="text-[9px] text-gray-500 ml-1.5">({block.duration})</span>
+                      <span className="text-micro text-gray-500 ml-1.5">({block.duration})</span>
                     </div>
                     {!block.editable && (
-                      <Badge className="text-[8px] px-1 py-0 h-3.5 bg-gray-200 text-gray-500">
+                      <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-200 text-gray-500">
                         Auto
                       </Badge>
                     )}
@@ -392,12 +392,12 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && (
-                          <Badge className="text-[9px] px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
+                          <Badge className="text-micro px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
                             {eliminatoryCount} Elim.
                           </Badge>
                         )}
                         {informativeCount > 0 && (
-                          <Badge className="text-[9px] px-1.5 py-0 bg-gray-100 text-gray-600">
+                          <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600">
                             {informativeCount} Info.
                           </Badge>
                         )}
@@ -419,27 +419,27 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
                         <div className="rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 overflow-hidden">
                           <div className="px-2.5 py-1.5 border-b border-gray-900 dark:border-gray-50/10 bg-gray-100 dark:bg-gray-800">
-                            <p className="text-[11px] font-medium text-gray-800">
+                            <p className="text-xs font-medium text-gray-800">
                               {WSI_AUTOMATIC_MESSAGES[block.id].title}
                             </p>
                           </div>
                           <div className="p-2.5">
-                            <div className="text-[10px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
+                            <div className="text-micro text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
                               {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                             </div>
                           </div>
                           <div className="px-2.5 py-1.5 border-t border-gray-900 dark:border-gray-50/10 bg-gray-50">
-                            <p className="text-[9px] text-gray-500 italic">
+                            <p className="text-micro text-gray-500 italic">
                               {WSI_AUTOMATIC_MESSAGES[block.id].note}
                             </p>
                           </div>
                         </div>
                       ) : (
                         <div className="p-2.5 bg-white/60 border border-gray-100 rounded-md">
-                          <p className="text-[10px] text-gray-600 italic">
+                          <p className="text-micro text-gray-600 italic">
                             {block.description}
                           </p>
-                          <p className="text-[9px] text-gray-400 mt-1">
+                          <p className="text-micro text-gray-400 mt-1">
                             Gerenciado automaticamente pela LIA
                           </p>
                         </div>
@@ -449,7 +449,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                         {/* Questions in this block */}
                         {blockQuestions.length === 0 ? (
                           <div className="p-3 bg-gray-50 border border-gray-200 border-dashed rounded-md text-center">
-                            <p className="text-[10px] text-gray-500">
+                            <p className="text-micro text-gray-500">
                               Nenhuma pergunta neste bloco
                             </p>
                           </div>
@@ -462,7 +462,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                               <div className="flex items-start gap-2">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                    <Badge className={`text-[9px] px-1.5 py-0 h-4 ${
+                                    <Badge className={`text-micro px-1.5 py-0 h-4 ${
                                       item.category === 'behavioral' || item.category === 'Comportamental'
                                         ? 'bg-purple-100 text-purple-700 border border-purple-200'
                                         : item.category === 'technical' || item.category === 'Técnica'
@@ -475,12 +475,12 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category || 'Geral'}
                                     </Badge>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Badge className="text-[9px] px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
+                                      <Badge className="text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
                                         Eliminatória
                                       </Badge>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-gray-950 dark:text-gray-50 leading-relaxed">
+                                  <p className="text-micro text-gray-950 dark:text-gray-50 leading-relaxed">
                                     {item.question}
                                   </p>
                                 </div>
@@ -500,28 +500,28 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
       {/* 4. Canais + Configurações Agrupados */}
       <div className="p-3 bg-white border border-gray-100 rounded-md">
-        <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-3">
+        <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-3">
           <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
           Canais e Configurações
         </h5>
 
         {/* Canais em linha */}
         <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
-          <span className="text-[10px] text-gray-500">Canais:</span>
+          <span className="text-micro text-gray-500">Canais:</span>
           <div className="flex items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
               <MessageSquare className="w-3 h-3" />
-              <span className="text-[10px] font-medium">WhatsApp</span>
+              <span className="text-micro font-medium">WhatsApp</span>
               {(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
               <Globe className="w-3 h-3" />
-              <span className="text-[10px] font-medium">Chat Web</span>
+              <span className="text-micro font-medium">Chat Web</span>
               {(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
             <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
               <Phone className="w-3 h-3" />
-              <span className="text-[10px] font-medium">Telefone</span>
+              <span className="text-micro font-medium">Telefone</span>
               {(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
             </div>
           </div>
@@ -530,31 +530,31 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         {/* Configurações em grid */}
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-gray-500">Score Mínimo</span>
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-700 text-white">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
+            <span className="text-micro text-gray-500">Score Mínimo</span>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-700 text-white">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-gray-500">Timeout Resposta</span>
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+            <span className="text-micro text-gray-500">Timeout Resposta</span>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-gray-500">Re-tentativas</span>
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+            <span className="text-micro text-gray-500">Re-tentativas</span>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-gray-500">Fallback</span>
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
+            <span className="text-micro text-gray-500">Fallback</span>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
           </div>
         </div>
 
         {/* Status Integrações */}
         <div className="flex items-center gap-3 mt-3 pt-2 border-t border-gray-100">
-          <span className="text-[9px] text-gray-400">Integrações:</span>
-          <div className="flex items-center gap-1 text-[9px]">
+          <span className="text-micro text-gray-400">Integrações:</span>
+          <div className="flex items-center gap-1 text-micro">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
             <span className="text-gray-600">OpenMic.ai</span>
           </div>
-          <div className="flex items-center gap-1 text-[9px]">
+          <div className="flex items-center gap-1 text-micro">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
             <span className="text-gray-600">Deepgram</span>
           </div>
@@ -566,30 +566,30 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <CalendarCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-            <h5 className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">Agendamento Automático</h5>
+            <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Agendamento Automático</h5>
           </div>
-          <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-gray-600' : 'bg-gray-400 text-white'} text-[10px] px-1.5 py-0 h-4`}>
+          <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-gray-600' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
           </Badge>
         </div>
-        <p className="text-[9px] text-gray-500 mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
+        <p className="text-micro text-gray-500 mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-            <span className="text-[9px] text-gray-500">Score Mínimo</span>
-            <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
+            <span className="text-micro text-gray-500">Score Mínimo</span>
+            <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-            <span className="text-[9px] text-gray-500">Calendário</span>
-            <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
+            <span className="text-micro text-gray-500">Calendário</span>
+            <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-            <span className="text-[9px] text-gray-500">Horários</span>
-            <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
+            <span className="text-micro text-gray-500">Horários</span>
+            <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-            <span className="text-[9px] text-gray-500">Duração</span>
-            <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
+            <span className="text-micro text-gray-500">Duração</span>
+            <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
           </div>
         </div>
       </div>
@@ -599,8 +599,8 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-[10px] font-medium text-gray-800 dark:text-gray-200 mb-1">Insights da LIA</p>
-            <ul className="space-y-0.5 text-[9px] text-gray-600">
+            <p className="text-micro font-medium text-gray-800 dark:text-gray-200 mb-1">Insights da LIA</p>
+            <ul className="space-y-0.5 text-micro text-gray-600">
               <li>• Triagens 6.5x mais rápidas que processo manual</li>
               <li>• Economia estimada: R$ {(() => {
                 const triagens = Math.round(funnel.total * 0.85)

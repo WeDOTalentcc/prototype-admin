@@ -100,7 +100,7 @@ export default function ComplianceLayout({
               </span>
               <Badge 
                 variant="outline" 
-                className="text-[10px] font-medium border-gray-300"
+                className="text-micro font-medium border-gray-300"
               >
                 GLOBAL
               </Badge>

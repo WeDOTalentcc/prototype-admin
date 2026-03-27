@@ -250,11 +250,11 @@ export function PastLocationsInput({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#8B5CF6]">Past Locations</span>
+        <span className="text-xs font-semibold text-gray-600">Past Locations</span>
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-600 dark:text-gray-400 hover:text-[#50a3b8] font-medium"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium"
           >
             Clear all
           </button>
@@ -285,7 +285,7 @@ export function PastLocationsInput({
                 return (
                   <div 
                     key={`header-${item.label}`}
-                    className="px-3 py-1.5 text-xs font-semibold text-[#8B5CF6] bg-gray-50 border-t border-gray-100 first:border-t-0"
+                    className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 border-t border-gray-100 first:border-t-0"
                   >
                     {item.label}
                   </div>
@@ -319,7 +319,7 @@ export function PastLocationsInput({
               key={location.value}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
             >
-              <span className="text-[10px] font-semibold text-gray-500 uppercase">
+              <span className="text-micro font-semibold text-gray-500 uppercase">
                 {getTypeLabel(location.type)}
               </span>
               <span>{location.value.split(',')[0]}</span>

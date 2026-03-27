@@ -128,7 +128,7 @@ export function RubricEvaluationModal({
   const getScoreBadge = (scoreValue: number) => {
     if (scoreValue >= 85) return { label: 'Excelente', bg: 'rgba(96, 190, 209, 0.12)' }
     if (scoreValue >= 70) return { label: 'Bom', bg: 'rgba(96, 190, 209, 0.08)' }
-    if (scoreValue >= 50) return { label: 'Moderado', bg: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B' }
+    if (scoreValue >= 50) return { label: 'Moderado', bg: 'rgba(245, 158, 11, 0.12)', color: 'var(--status-warning)' }
     if (scoreValue >= 30) return { label: 'Fraco', bg: 'rgba(225, 97, 98, 0.12)', color: '#E16162' }
     return { label: 'Inadequado', bg: 'rgba(225, 97, 98, 0.15)', color: '#E16162' }
   }
@@ -138,7 +138,7 @@ export function RubricEvaluationModal({
       case 'APROVAR_TRIAGEM':
         return { label: 'Aprovar para Triagem', bg: 'rgba(96, 190, 209, 0.12)', icon: CheckCircle }
       case 'MANTER_ESPERA':
-        return { label: 'Manter em Espera', bg: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B', icon: Clock }
+        return { label: 'Manter em Espera', bg: 'rgba(245, 158, 11, 0.12)', color: 'var(--status-warning)', icon: Clock }
       case 'NAO_PROSSEGUIR':
         return { label: 'Não Prosseguir', bg: 'rgba(225, 97, 98, 0.12)', color: '#E16162', icon: XCircle }
       default:
@@ -157,7 +157,7 @@ export function RubricEvaluationModal({
       case 'meets':
         return <Check className="w-3.5 h-3.5 text-gray-700" />
       case 'partial':
-        return <AlertTriangle className="w-3.5 h-3.5" style={{ color: '#F59E0B' }} />
+        return <AlertTriangle className="w-3.5 h-3.5" style={{ color: 'var(--status-warning)' }} />
       case 'missing':
         return <X className="w-3.5 h-3.5 text-wedo-coral" />
       default:
@@ -172,7 +172,7 @@ export function RubricEvaluationModal({
       case 'meets':
         return { bg: 'rgba(96, 190, 209, 0.04)', border: '#F3F4F6' }
       case 'partial':
-        return { bg: 'rgba(245, 158, 11, 0.08)', border: '#F3F4F6', color: '#F59E0B' }
+        return { bg: 'rgba(245, 158, 11, 0.08)', border: '#F3F4F6', color: 'var(--status-warning)' }
       case 'missing':
         return { bg: 'rgba(225, 97, 98, 0.08)', border: '#F3F4F6', color: '#E16162' }
       default:
@@ -213,7 +213,7 @@ export function RubricEvaluationModal({
       case 'essential':
         return { bg: 'rgba(225, 97, 98, 0.12)', color: '#E16162' }
       case 'important':
-        return { bg: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B' }
+        return { bg: 'rgba(245, 158, 11, 0.12)', color: 'var(--status-warning)' }
       case 'nice-to-have':
         return { bg: '#F3F4F6' }
       default:
@@ -345,7 +345,7 @@ export function RubricEvaluationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100">
           <div className="flex items-center gap-3">
@@ -356,10 +356,10 @@ export function RubricEvaluationModal({
               <Target className="w-4 h-4 text-gray-700" />
             </div>
             <div>
-              <h2 className="text-[13px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <h2 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Análise CV vs Vaga
               </h2>
-              <div className="flex items-center gap-2 text-[11px]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <div className="flex items-center gap-2 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 <span className="flex items-center gap-1 text-gray-800 dark:text-gray-200">
                   <User className="w-3 h-3 text-gray-500" />
                   {displayName}
@@ -388,7 +388,7 @@ export function RubricEvaluationModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
                 style={{
                   fontFamily: "'Open Sans', sans-serif",
                   backgroundColor: activeSection === tab.id ? 'rgba(96, 190, 209, 0.12)' : 'transparent',
@@ -408,12 +408,12 @@ export function RubricEvaluationModal({
           {activeSection === 'overview' && (
             <div className="space-y-3">
               {/* Score Card */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>Score de Aderência</span>
                   <div className="flex items-center gap-2">
                     <span 
-                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      className="text-micro font-medium px-2 py-0.5 rounded-full"
                       style={{ 
                         fontFamily: "'Open Sans', sans-serif",
                         backgroundColor: scoreBadge.bg,
@@ -424,7 +424,7 @@ export function RubricEvaluationModal({
                     </span>
                     {decisionBadge && (
                       <span 
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
+                        className="text-micro font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
                         style={{ 
                           fontFamily: "'Open Sans', sans-serif",
                           backgroundColor: decisionBadge.bg,
@@ -455,20 +455,20 @@ export function RubricEvaluationModal({
                 {/* Category Breakdown */}
                 <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-t-gray-100">
                   <div className="text-center">
-                    <div className="text-[10px] mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Essenciais</div>
-                    <div className="text-[13px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
+                    <div className="text-micro mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Essenciais</div>
+                    <div className="text-base-ui font-semibold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
                       {essentialMet}/{essentialReqs.length}
                     </div>
                   </div>
                   <div className="text-center border-l border-l-gray-100 border-r border-r-gray-100">
-                    <div className="text-[10px] mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Importantes</div>
-                    <div className="text-[13px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <div className="text-micro mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Importantes</div>
+                    <div className="text-base-ui font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {importantMet}/{importantReqs.length}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Desejáveis</div>
-                    <div className="text-[13px] font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <div className="text-micro mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Desejáveis</div>
+                    <div className="text-base-ui font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {desirableMet}/{desirableReqs.length}
                     </div>
                   </div>
@@ -476,7 +476,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Parecer da LIA - Expandido */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Parecer da LIA
@@ -484,11 +484,11 @@ export function RubricEvaluationModal({
                 
                 {/* 1. Contexto e Fit */}
                 <div className="mb-3">
-                  <div className="text-[10px] font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>1</span>
+                  <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>1</span>
                     Contexto e Fit
                   </div>
-                  <p className="text-[11px] leading-relaxed pl-5 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs leading-relaxed pl-5 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     {mockParecer.contexto_fit}
                   </p>
                 </div>
@@ -496,8 +496,8 @@ export function RubricEvaluationModal({
                 {/* 2. Pontos Fortes com Impacto */}
                 {mockParecer.pontos_fortes_impacto && mockParecer.pontos_fortes_impacto.length > 0 && (
                   <div className="mb-3">
-                    <div className="text-[10px] font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>2</span>
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>2</span>
                       Pontos Fortes e Impacto
                     </div>
                     <div className="space-y-1.5 pl-5">
@@ -509,13 +509,13 @@ export function RubricEvaluationModal({
                           <div className="flex items-start gap-2">
                             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
                             <div>
-                              <span className="text-[11px] font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 {pf.ponto}
                               </span>
-                              <p className="text-[10px] mt-0.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <p className="text-micro mt-0.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 {pf.evidencia}
                               </p>
-                              <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <p className="text-micro mt-0.5 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 <ArrowRight className="w-3 h-3" />
                                 {pf.impacto_negocio}
                               </p>
@@ -530,8 +530,8 @@ export function RubricEvaluationModal({
                 {/* 3. Riscos e Mitigações */}
                 {mockParecer.riscos_mitigacoes && mockParecer.riscos_mitigacoes.length > 0 && (
                   <div className="mb-3">
-                    <div className="text-[10px] font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B' }}>3</span>
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: 'rgba(245, 158, 11, 0.12)', color: 'var(--status-warning)' }}>3</span>
                       Riscos e Mitigações
                     </div>
                     <div className="space-y-1.5 pl-5">
@@ -545,22 +545,22 @@ export function RubricEvaluationModal({
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <span className="text-[11px] font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <span className="text-xs font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {rm.risco}
                                 </span>
-                                <p className="text-[10px] mt-0.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-micro mt-0.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   <span className="font-medium">Mitigação:</span> {rm.mitigacao}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end gap-1">
                                 <span 
-                                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                  className="text-micro font-medium px-1.5 py-0.5 rounded-full"
                                   style={{ backgroundColor: `${nivelColor}15`, color: nivelColor }}
                                 >
                                   Risco {rm.nivel === 'alto' ? 'Alto' : rm.nivel === 'medio' ? 'Médio' : 'Baixo'}
                                 </span>
                                 {rm.tempo_estimado && (
-                                  <span className="text-[10px] flex items-center gap-0.5 text-gray-500">
+                                  <span className="text-micro flex items-center gap-0.5 text-gray-500">
                                     <Clock className="w-3 h-3" />
                                     {rm.tempo_estimado}
                                   </span>
@@ -577,20 +577,20 @@ export function RubricEvaluationModal({
                 {/* 4. Recomendação Final */}
                 {mockParecer.recomendacao_final && (
                   <div>
-                    <div className="text-[10px] font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : '#374151' }}>4</span>
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : '#374151' }}>4</span>
                       Recomendação Final
                     </div>
                     <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : '#F9FAFB' }}>
-                      <p className="text-[11px] leading-relaxed mb-2 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <p className="text-xs leading-relaxed mb-2 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                         {mockParecer.recomendacao_final.justificativa}
                       </p>
                       {mockParecer.recomendacao_final.proximos_passos && mockParecer.recomendacao_final.proximos_passos.length > 0 && (
                         <div>
-                          <span className="text-[10px] font-medium text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Próximos Passos:</span>
+                          <span className="text-micro font-medium text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Próximos Passos:</span>
                           <ul className="mt-1 space-y-0.5">
                             {mockParecer.recomendacao_final.proximos_passos.map((ps, idx) => (
-                              <li key={idx} className="text-[10px] flex items-start gap-1.5 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <li key={idx} className="text-micro flex items-start gap-1.5 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 <span className="text-gray-700">→</span>
                                 {ps}
                               </li>
@@ -604,7 +604,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Why This Candidate */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   <Lightbulb className="w-4 h-4 text-gray-700" />
                   Por que este candidato?
@@ -616,7 +616,7 @@ export function RubricEvaluationModal({
                       className="flex items-start gap-2 p-2 rounded-md bg-gray-50"
                     >
                       <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                      <span className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <span className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                         {reason}
                       </span>
                     </div>
@@ -630,7 +630,7 @@ export function RubricEvaluationModal({
           {activeSection === 'details' && (
             <div className="space-y-3">
               {/* Avaliação por Requisito */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   <FileText className="w-4 h-4 text-gray-700" />
                   Matriz de Avaliação por Requisito
@@ -656,12 +656,12 @@ export function RubricEvaluationModal({
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                              <span className="text-[11px] font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 {reqName}
                               </span>
                               {req.priority && (
                                 <span 
-                                  className="text-[10px] font-medium px-1.5 py-0 rounded-full"
+                                  className="text-micro font-medium px-1.5 py-0 rounded-full"
                                   style={{ 
                                     fontFamily: "'Open Sans', sans-serif",
                                     backgroundColor: priorityStyle.bg,
@@ -673,20 +673,20 @@ export function RubricEvaluationModal({
                               )}
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] font-medium" style={{ fontFamily: "'Open Sans', sans-serif", color: rubricStyle.color }}>
+                              <span className="text-micro font-medium" style={{ fontFamily: "'Open Sans', sans-serif", color: rubricStyle.color }}>
                                 {getRubricLabel(level)}
                               </span>
                               {req.evidence && (
                                 <>
                                   <span className="text-gray-100">•</span>
-                                  <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     {req.evidence}
                                   </span>
                                 </>
                               )}
                             </div>
                             {req.narrative && (
-                              <p className="text-[10px] mt-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <p className="text-micro mt-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 {req.narrative}
                               </p>
                             )}
@@ -696,7 +696,7 @@ export function RubricEvaluationModal({
                     )
                   })}
                   {sortedRequirements.length === 0 && (
-                    <div className="text-center py-4 text-[11px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <div className="text-center py-4 text-xs text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       Nenhum requisito avaliado disponível.
                     </div>
                   )}
@@ -704,7 +704,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Red Flags */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   <Shield className="w-4 h-4 text-gray-700" />
                   Verificação de Red Flags
@@ -718,12 +718,12 @@ export function RubricEvaluationModal({
                         key={idx} 
                         className="flex items-center justify-between p-2 rounded-md bg-gray-50"
                       >
-                        <span className="text-[11px] text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <span className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                           {flag.type}
                         </span>
                         <div className="flex items-center gap-1.5">
                           {flag.detail && (
-                            <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                            <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                               {flag.detail}
                             </span>
                           )}
@@ -736,7 +736,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Auditoria - Collapsible */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                 <button
                   onClick={() => setShowAudit(!showAudit)}
                   className="w-full flex items-center justify-between text-xs font-semibold text-gray-950 dark:text-gray-50"
@@ -757,48 +757,48 @@ export function RubricEvaluationModal({
                   <div className="mt-3 pt-3 border-t border-t-gray-100">
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="p-2 rounded-md bg-gray-50">
-                        <div className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Total Requisitos</div>
-                        <div className="text-[14px] font-bold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Total Requisitos</div>
+                        <div className="text-sm font-bold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                           {requirements.length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
-                        <div className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Red Flags</div>
-                        <div className="text-[14px] font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? '#F59E0B' : '#374151' }}>
+                        <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Red Flags</div>
+                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? '#F59E0B' : '#374151' }}>
                           {mockRedFlags.filter(f => f.status !== 'ok').length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
-                        <div className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Taxa Essenciais</div>
-                        <div className="text-[14px] font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
+                        <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Taxa Essenciais</div>
+                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
                           {essentialReqs.length > 0 ? Math.round((essentialMet / essentialReqs.length) * 100) : 100}%
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
-                        <div className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Tempo Análise</div>
-                        <div className="text-[14px] font-bold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Tempo Análise</div>
+                        <div className="text-sm font-bold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                           {evaluation.audit_metrics?.analysis_time || '2.3'}s
                         </div>
                       </div>
                     </div>
                     
                     {/* Legenda */}
-                    <div className="text-[10px] font-medium mb-1.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Legenda de Níveis</div>
+                    <div className="text-micro font-medium mb-1.5 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Legenda de Níveis</div>
                     <div className="grid grid-cols-4 gap-1">
                       {[
                         { code: 'E+', label: 'Excede' },
                         { code: 'A', label: 'Atende' },
-                        { code: 'P', label: 'Parcial', color: '#F59E0B' },
+                        { code: 'P', label: 'Parcial', color: 'var(--status-warning)' },
                         { code: 'X', label: 'Ausente', color: '#E16162' },
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center gap-1 p-1.5 rounded bg-gray-50">
                           <span 
-                            className="text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded"
+                            className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded"
                             style={{ backgroundColor: `${item.color}15`, color: item.color }}
                           >
                             {item.code}
                           </span>
-                          <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.label}</span>
+                          <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.label}</span>
                         </div>
                       ))}
                     </div>
@@ -810,8 +810,8 @@ export function RubricEvaluationModal({
                         { label: 'Data/Hora', value: new Date().toLocaleString('pt-BR') },
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between">
-                          <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.label}</span>
-                          <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.value}</span>
+                          <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.label}</span>
+                          <span className="text-micro font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -827,7 +827,7 @@ export function RubricEvaluationModal({
           className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
         >
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Decisão do Recrutador
             </span>
           </div>

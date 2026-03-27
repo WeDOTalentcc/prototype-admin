@@ -491,7 +491,7 @@ export function EmailTemplatesManager() {
               </div>
               {selectedTemplate?.variables && selectedTemplate.variables.length > 0 && (
                 <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <span className="text-sm font-medium text-wedo-cyan-dark">Variáveis:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (
                       <Badge key={v} variant="outline" className="bg-white">

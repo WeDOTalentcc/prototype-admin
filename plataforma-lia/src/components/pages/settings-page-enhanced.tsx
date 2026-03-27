@@ -534,7 +534,7 @@ export default function SettingsPageEnhanced() {
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <Badge
                               variant="outline"
-                              className={`text-[10px] px-1.5 py-0.5 ${getCompletionBadgeColor(sectionCompletion[section.id] || 0)} border-0 rounded-full font-medium`}
+                              className={`text-micro px-1.5 py-0.5 ${getCompletionBadgeColor(sectionCompletion[section.id] || 0)} border-0 rounded-full font-medium`}
                             >
                               {sectionCompletion[section.id] || 0}%
                             </Badge>

@@ -859,7 +859,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               <button 
                 key={key}
                 onClick={() => handleChannelFilterChange(key as 'all' | 'email' | 'whatsapp')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   channelFilter === key 
                     ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
@@ -875,7 +875,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-full text-[11px] font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+              className="px-2.5 py-1.5 rounded-full text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -885,7 +885,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           </div>
         </div>
 
-        <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-2">
+        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
           <Filter className="w-3.5 h-3.5" />
           {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} encontrado{filteredTemplates.length !== 1 ? 's' : ''}
         </div>
@@ -952,7 +952,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                         <span className="text-xs font-semibold text-gray-950 dark:text-gray-50" >
                           {group.label}
                         </span>
-                        <Badge variant="outline" className="text-[10px] ml-1">
+                        <Badge variant="outline" className="text-micro ml-1">
                           {groupTemplates.length}
                         </Badge>
                       </div>
@@ -980,7 +980,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1.5">
-                                      <p className="text-[11px] font-medium text-gray-950 dark:text-gray-50 truncate" >
+                                      <p className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate" >
                                         {template.name}
                                       </p>
                                       {template.priority && (
@@ -989,24 +989,24 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                                     </div>
                                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                       {template.trigger_type && (
-                                        <Badge className={`text-[9px] px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
+                                        <Badge className={`text-micro px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
                                           {TRIGGER_TYPE_LABELS[template.trigger_type]?.label || template.trigger_type}
                                         </Badge>
                                       )}
                                       {template.used_in && template.used_in.slice(0, 2).map((usage, idx) => (
-                                        <Badge key={idx} variant="outline" className="text-[9px] px-1.5 py-0">
+                                        <Badge key={idx} variant="outline" className="text-micro px-1.5 py-0">
                                           {usage}
                                         </Badge>
                                       ))}
                                       {template.used_in && template.used_in.length > 2 && (
-                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                                        <Badge variant="outline" className="text-micro px-1.5 py-0">
                                           +{template.used_in.length - 2}
                                         </Badge>
                                       )}
                                     </div>
                                   </div>
                                 </div>
-                                <Badge variant={template.isActive ? "default" : "outline"} className="text-[9px] flex-shrink-0 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900">
+                                <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900">
                                   {template.isActive ? 'Ativo' : 'Inativo'}
                                 </Badge>
                               </div>
@@ -1035,7 +1035,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
                         <X className="w-3.5 h-3.5" />
                       </Button>
-                      <Button size="sm" className="py-1.5 px-2 text-[11px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200" onClick={handleSaveTemplate}>
+                      <Button size="sm" className="py-1.5 px-2 text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200" onClick={handleSaveTemplate}>
                         <Save className="w-3.5 h-3.5 mr-1" />
                         Salvar
                       </Button>
@@ -1045,7 +1045,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       variant="outline" 
                       size="sm"
                       onClick={() => setEditingTemplate({ ...selectedTemplate })}
-                      className="rounded-full py-1.5 px-2 text-[11px] border-gray-900 text-gray-900 hover:bg-gray-50 dark:border-gray-50 dark:text-gray-50 dark:hover:bg-gray-900"
+                      className="rounded-full py-1.5 px-2 text-xs border-gray-900 text-gray-900 hover:bg-gray-50 dark:border-gray-50 dark:text-gray-50 dark:hover:bg-gray-900"
                     >
                       <Edit className="w-3.5 h-3.5 mr-1" />
                       Editar
@@ -1058,7 +1058,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <CardContent className="p-3 space-y-3">
                   {channelFilter === 'email' && (
                   <div>
-                    <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1" >Assunto</label>
+                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1" >Assunto</label>
                     {editingTemplate ? (
                       <input
                         type="text"
@@ -1074,7 +1074,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   )}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400" >
+                      <label className="block text-micro font-medium text-gray-600 dark:text-gray-400" >
                         {channelFilter === 'email' ? 'Corpo do Email' : 'Mensagem WhatsApp'}
                       </label>
                       {editingTemplate && (
@@ -1099,7 +1099,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                             <div className="text-xs text-gray-950 dark:text-gray-50 whitespace-pre-wrap" >
                               {stripHtmlTags(selectedTemplate.body)}
                             </div>
-                            <div className="text-[10px] text-gray-500 dark:text-gray-400 text-right mt-1" >
+                            <div className="text-micro text-gray-500 dark:text-gray-400 text-right mt-1" >
                               {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
                             </div>
                           </div>
@@ -1112,10 +1112,10 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     )}
                   </div>
                   <div>
-                    <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1" >Variáveis Disponíveis</label>
+                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1" >Variáveis Disponíveis</label>
                     <div className="flex flex-wrap gap-1">
                       {selectedTemplate.variables.map((v) => (
-                        <Badge key={v} variant="outline" className="text-[10px] font-mono rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
+                        <Badge key={v} variant="outline" className="text-micro font-mono rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
                           {`{{${v}}}`}
                         </Badge>
                       ))}
@@ -1133,7 +1133,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       </div>
                       <div>
                         <span className={textStyles.h4}>Ajustar com a LIA</span>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400" >
+                        <p className="text-xs text-gray-500 dark:text-gray-400" >
                           Descreva as alterações desejadas
                         </p>
                       </div>
@@ -1174,7 +1174,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                           <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{ animationDelay: '150ms' }}></span>
                           <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{ animationDelay: '300ms' }}></span>
                         </div>
-                        <span className="text-[11px] text-gray-700 dark:text-gray-300" >
+                        <span className="text-xs text-gray-700 dark:text-gray-300" >
                           A LIA está analisando e ajustando o template...
                         </span>
                       </div>
@@ -1208,12 +1208,12 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     </CardHeader>
                     <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
                       <div>
-                        <label className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
                           Alterações Realizadas
                         </label>
                         <div className="flex flex-wrap gap-1.5">
                           {aiResultModal.changesMade.map((change, idx) => (
-                            <Badge key={idx} className="text-[11px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
+                            <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
                               <Check className="w-3 h-3 mr-1" />
                               {change}
                             </Badge>
@@ -1223,7 +1223,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       
                       {aiResultModal.newSubject && (
                         <div>
-                          <label className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
                             Novo Assunto
                           </label>
                           <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md text-xs text-gray-900 dark:text-gray-100" >
@@ -1233,7 +1233,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       )}
 
                       <div>
-                        <label className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
                           Novo Conteúdo
                         </label>
                         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap max-h-[300px] overflow-y-auto font-mono" >
@@ -1244,7 +1244,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                       <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
                         <div className="flex items-start gap-2">
                           <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-[11px] text-amber-800" >
+                          <p className="text-xs text-amber-800" >
                             Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
                           </p>
                         </div>
@@ -1334,7 +1334,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1" >
+            <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1" >
               Template de Assinatura
             </label>
             <textarea
@@ -1347,12 +1347,12 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           </div>
           
           <div>
-            <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1" >
+            <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1" >
               Variáveis Disponíveis
             </label>
             <div className="flex flex-wrap gap-1">
               {['recrutador_nome', 'cargo', 'empresa_nome', 'email', 'telefone', 'website', 'linkedin'].map((v) => (
-                <Badge key={v} variant="outline" className="text-[10px] font-mono cursor-pointer hover:bg-gray-100 rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
+                <Badge key={v} variant="outline" className="text-micro font-mono cursor-pointer hover:bg-gray-100 rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
                   {`{{${v}}}`}
                 </Badge>
               ))}
@@ -1360,7 +1360,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           </div>
 
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3">
-            <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
+            <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
               Prévia
             </label>
             <div className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap" >
@@ -1436,7 +1436,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               <Shield className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className={`${textStyles.subtitle} text-amber-800 dark:text-amber-200`}>Conformidade LGPD</p>
-                <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5" >
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5" >
                   De acordo com as boas práticas de LGPD, mensagens só podem ser enviadas entre 8h e 20h em dias úteis. 
                   A LIA respeita automaticamente estes horários.
                 </p>
@@ -1446,7 +1446,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
+              <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
                 Horário de Início
               </label>
               <div className="flex items-center gap-2">
@@ -1466,7 +1466,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
+              <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1.5" >
                 Horário de Fim
               </label>
               <div className="flex items-center gap-2">
@@ -1489,8 +1489,8 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
 
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-medium text-gray-600" >Janela de Envio</span>
-              <Badge variant="outline" className="text-[10px] rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
+              <span className="text-micro font-medium text-gray-600" >Janela de Envio</span>
+              <Badge variant="outline" className="text-micro rounded-full border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300">
                 {sendingHours.end - sendingHours.start} horas/dia
               </Badge>
             </div>
@@ -1499,14 +1499,14 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 className="absolute h-full rounded-full bg-gray-800" style={{ left: `${((sendingHours.start - 6) / 18) * 100}%`, width: `${((sendingHours.end - sendingHours.start) / 18) * 100}%` }}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2">
-                <span className="text-[10px] text-gray-600" >6:00</span>
-                <span className="text-[10px] text-gray-600" >24:00</span>
+                <span className="text-micro text-gray-600" >6:00</span>
+                <span className="text-micro text-gray-600" >24:00</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider" >
+            <h4 className="text-micro font-semibold text-gray-600 uppercase tracking-wider" >
               Configurações Adicionais
             </h4>
             <div className="space-y-1.5">
@@ -1572,7 +1572,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <Bell className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 Configuração de Alertas
               </CardTitle>
-              <p className="text-[11px] text-gray-600 mt-0.5" >
+              <p className="text-xs text-gray-600 mt-0.5" >
                 A LIA aprende com seus padrões e ajusta os alertas automaticamente
               </p>
             </div>
@@ -1632,7 +1632,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     <p className={`text-xs font-medium ${alert.enabled ? 'text-gray-950 dark:text-gray-50' : 'text-gray-800'}`} >
                       {alert.name}
                     </p>
-                    <p className="text-[11px] text-gray-600 mt-0.5" >{alert.description}</p>
+                    <p className="text-xs text-gray-600 mt-0.5" >{alert.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1640,7 +1640,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     value={alert.channel}
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as any)}
                     disabled={!isEditingAlerts || !alert.enabled}
-                    className="text-[10px] border border-gray-200 dark:border-gray-700 rounded-full px-1.5 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:bg-gray-50 disabled:text-gray-600"
+                    className="text-micro border border-gray-200 dark:border-gray-700 rounded-full px-1.5 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:bg-gray-50 disabled:text-gray-600"
                     
                   >
                     <option value="email">Email</option>
@@ -1686,7 +1686,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <RefreshCw className="w-3.5 h-3.5" style={{ color: briefingFrequency === 'twice_daily' ? '#374151' : undefined }} />
                 <span className="text-xs font-medium" >2x ao Dia</span>
               </div>
-              <p className="text-[11px] text-gray-600" >
+              <p className="text-xs text-gray-600" >
                 Resumo às 8h e às 14h
               </p>
             </button>
@@ -1703,7 +1703,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 <span className="text-xs font-medium" >Diário</span>
               </div>
-              <p className="text-[11px] text-gray-600" >
+              <p className="text-xs text-gray-600" >
                 Resumo todas as manhãs às 8h
               </p>
             </button>
@@ -1720,7 +1720,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <Calendar className="w-3.5 h-3.5" style={{ color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? '#374151' : undefined }} />
                 <span className="text-xs font-medium" >Semanal</span>
               </div>
-              <p className="text-[11px] text-gray-600" >
+              <p className="text-xs text-gray-600" >
                 Resumo toda segunda-feira
               </p>
             </button>
@@ -1737,7 +1737,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <Calendar className="w-3.5 h-3.5" style={{ color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? '#374151' : undefined }} />
                 <span className="text-xs font-medium" >Mensal</span>
               </div>
-              <p className="text-[11px] text-gray-600" >
+              <p className="text-xs text-gray-600" >
                 Resumo no 1º dia útil do mês
               </p>
             </button>
@@ -1748,7 +1748,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
                 <p className={`${textStyles.subtitle} text-gray-800 dark:text-gray-200`}>A LIA aprende com você</p>
-                <p className="text-[11px] text-gray-600 mt-0.5" >
+                <p className="text-xs text-gray-600 mt-0.5" >
                   Quanto mais você interage, melhor ela entende quais alertas são relevantes. 
                   Alertas ignorados consistentemente serão automaticamente desativados.
                 </p>

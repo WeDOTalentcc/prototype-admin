@@ -348,7 +348,7 @@ function EditableCell({
         onKeyDown={handleKeyDown}
         autoFocus
         min={0}
-        className="w-10 px-1 py-1 text-[11px] border border-gray-400 rounded text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-['Open_Sans',sans-serif]"
+        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-['Open_Sans',sans-serif]"
       />
     )
   }
@@ -358,7 +358,7 @@ function EditableCell({
   return (
     <div
       onClick={handleClick}
-      className={`w-10 px-1 py-1 text-[11px] border border-gray-200 rounded-full text-center bg-white cursor-pointer hover:border-gray-300 transition-colors font-['Open_Sans',sans-serif] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+      className={`w-10 px-1 py-1 text-xs border border-gray-200 rounded-full text-center bg-white cursor-pointer hover:border-gray-300 transition-colors font-['Open_Sans',sans-serif] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
     >
       {displayValue}
     </div>
@@ -1323,31 +1323,31 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-[18px]`}>{goalStats.totalTemplates}</div>
+            <div className={`${textStyles.metricLarge} !text-lg`}>{goalStats.totalTemplates}</div>
             <div className={textStyles.caption}>Templates</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-[18px]`}>{goalStats.totalAssigned}</div>
+            <div className={`${textStyles.metricLarge} !text-lg`}>{goalStats.totalAssigned}</div>
             <div className={textStyles.caption}>Atribuídas</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-[18px] !text-green-600`}>{goalStats.achieved}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-green-600`}>{goalStats.achieved}</div>
             <div className={textStyles.caption}>Atingidas</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-[18px] !text-amber-600`}>{goalStats.inProgress}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-amber-600`}>{goalStats.inProgress}</div>
             <div className={textStyles.caption}>Em Progresso</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-[18px] !text-red-600`}>{goalStats.overdue}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-red-600`}>{goalStats.overdue}</div>
             <div className={textStyles.caption}>Atrasadas</div>
           </CardContent>
         </Card>
@@ -1411,7 +1411,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             {template.description}
                           </p>
                         </div>
-                        <Badge className={`text-[10px] ml-2 ${getCategoryColor(template.category)}`}>
+                        <Badge className={`text-micro ml-2 ${getCategoryColor(template.category)}`}>
                           {template.category}
                         </Badge>
                       </div>
@@ -1419,7 +1419,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-[10px] gap-1"
+                          className="h-7 text-micro gap-1"
                           onClick={() => {
                             setShowApplyAllModal(template.id)
                             const effectiveTemplate = getEffectiveTemplate(template)
@@ -1435,7 +1435,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     {!isCollapsed && (
                       <div className="border-t border-gray-200 bg-gray-50/50 dark:bg-gray-800/50">
                         <div className="overflow-x-auto">
-                        <table className="w-full text-[11px] font-['Open_Sans',sans-serif]">
+                        <table className="w-full text-xs font-['Open_Sans',sans-serif]">
                           <thead>
                             <tr className="border-b border-gray-200 dark:border-gray-700">
                               <th className="text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-gray-800 font-medium text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
@@ -1461,11 +1461,11 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">
                                       <AvatarImage src={user.avatar} alt={user.name} />
-                                      <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-[9px]">
+                                      <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-micro">
                                         {user.name.split(' ').map((n: string) => n[0]).join('')}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="font-medium text-[11px] text-gray-800 dark:text-gray-200 truncate">{user.name}</span>
+                                    <span className="font-medium text-xs text-gray-800 dark:text-gray-200 truncate">{user.name}</span>
                                   </div>
                                 </td>
                                 {MONTHS.map((month) => (
@@ -1508,7 +1508,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => handleAddUserToTemplate(template.id)}
-                            className="text-[10px] h-6 gap-1.5 rounded-2xl text-gray-700 border-gray-300 hover:bg-gray-100"
+                            className="text-micro h-6 gap-1.5 rounded-2xl text-gray-700 border-gray-300 hover:bg-gray-100"
                             disabled={isSaving}
                           >
                             <Plus className="w-3 h-3" />
@@ -1628,7 +1628,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <select
                     value={templateApplyMode}
                     onChange={(e) => setTemplateApplyMode(e.target.value as 'all' | 'selected')}
-                    className="border rounded-full px-1.5 py-0.5 text-[10px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]"
+                    className="border rounded-full px-1.5 py-0.5 text-micro bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]"
                   >
                     <option value="all">Aplicar a todos usuários</option>
                     {selectedUser && <option value="selected">Aplicar a {selectedUser.name}</option>}
@@ -1637,7 +1637,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     size="sm"
                     onClick={handleApplySelectedTemplates}
                     disabled={isSaving}
-                    className="text-[10px] h-6 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                    className="text-micro h-6 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
                   >
                     {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
                     Aplicar Selecionados
@@ -1646,7 +1646,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     size="sm"
                     variant="ghost"
                     onClick={() => setSelectedTemplateIds(new Set())}
-                    className="text-[10px] h-6 font-['Open_Sans',sans-serif]"
+                    className="text-micro h-6 font-['Open_Sans',sans-serif]"
                   >
                     Limpar
                   </Button>
@@ -1663,14 +1663,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     placeholder="Buscar templates..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-[10px] font-['Open_Sans',sans-serif]"
+                    className="w-full pl-7 pr-2.5 py-1 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-micro font-['Open_Sans',sans-serif]"
                   />
                 </div>
               </div>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 text-[10px] font-['Open_Sans',sans-serif]"
+                className="border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todas Categorias</option>
                 <option value="recruitment">Recrutamento</option>
@@ -1681,7 +1681,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               <select
                 value={filterPeriod}
                 onChange={(e) => setFilterPeriod(e.target.value)}
-                className="border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 text-[10px] font-['Open_Sans',sans-serif]"
+                className="border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todos Períodos</option>
                 <option value="monthly">Mensal</option>
@@ -1749,22 +1749,22 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
-                      <Badge className={`text-[10px] px-1.5 py-0.5 font-['Open_Sans',sans-serif] ${getCategoryColor(template.category)}`}>
+                      <Badge className={`text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif] ${getCategoryColor(template.category)}`}>
                         {template.category}
                       </Badge>
                       {isAppliedToAll && (
-                        <Badge className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 border-green-300 font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-green-100 text-green-700 border-green-300 font-['Open_Sans',sans-serif]">
                           <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                           Aplicado a Todos
                         </Badge>
                       )}
                       {isPartiallyApplied && (
-                        <Badge className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 border-amber-300 font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-amber-100 text-amber-700 border-amber-300 font-['Open_Sans',sans-serif]">
                           {appliedCount}/{users.length} usuários
                         </Badge>
                       )}
                       {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                        <Badge className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700 font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700 font-['Open_Sans',sans-serif]">
                           Já aplicado a {selectedUser.name.split(' ')[0]}
                         </Badge>
                       )}
@@ -1781,12 +1781,12 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[10px] ml-6">
+                  <div className="flex items-center justify-between text-micro ml-6">
                     <span className={textStyles.caption}>
                       Meta: {template.defaultTarget} {template.unit}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-['Open_Sans',sans-serif]">
+                      <Badge variant="outline" className="text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif]">
                         {template.period === 'monthly' ? 'Mensal' :
                          template.period === 'quarterly' ? 'Trimestral' : 'Anual'}
                       </Badge>

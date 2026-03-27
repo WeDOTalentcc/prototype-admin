@@ -193,8 +193,8 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   onClick={handleChooseWizard}
                   className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 text-left transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-md bg-[#60BED1]/10 flex items-center justify-center mb-3">
-                    <Brain className="w-5 h-5 text-[#60BED1]" />
+                  <div className="w-10 h-10 rounded-md bg-wedo-cyan/10 flex items-center justify-center mb-3">
+                    <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif] mb-1">
                     Criar com a LIA
@@ -227,7 +227,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-title"
-                  className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
                   Título da Vaga <span className="text-red-500">*</span>
                 </label>
@@ -255,7 +255,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-department"
-                  className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
                   Departamento
                 </label>
@@ -276,7 +276,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-work-model"
-                    className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                   >
                     Modelo de Trabalho
                   </label>
@@ -296,7 +296,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-employment-type"
-                    className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                   >
                     Forma de Contratação
                   </label>
@@ -317,7 +317,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager"
-                  className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
                   Gestor Responsável <span className="text-red-500">*</span>
                 </label>
@@ -345,7 +345,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager-email"
-                  className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
                   Email do Gestor <span className="text-red-500">*</span>
                 </label>

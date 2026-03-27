@@ -202,15 +202,15 @@ export const borderRadius = {
  */
 export const textStyles = {
   // DS v4.1: Títulos com Open Sans
-  h1: "font-['Open_Sans',sans-serif] text-[24px] font-semibold text-gray-900 dark:text-gray-50",
-  h2: "font-['Open_Sans',sans-serif] text-[18px] font-semibold text-gray-900 dark:text-gray-50",
-  h3: "font-['Open_Sans',sans-serif] text-[14px] font-semibold text-gray-900 dark:text-gray-50",
-  h4: "font-['Open_Sans',sans-serif] text-[13px] font-semibold text-gray-900 dark:text-gray-50",
+  h1: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50",
+  h2: "font-['Open_Sans',sans-serif] text-lg font-semibold text-gray-900 dark:text-gray-50",
+  h3: "font-['Open_Sans',sans-serif] text-sm font-semibold text-gray-900 dark:text-gray-50",
+  h4: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
   
   // Aliases para compatibilidade
-  title: "font-['Open_Sans',sans-serif] text-[13px] font-semibold text-gray-900 dark:text-gray-50",
-  titleLarge: "font-['Open_Sans',sans-serif] text-[16px] font-semibold text-gray-900 dark:text-gray-50",
-  titleXl: "font-['Open_Sans',sans-serif] text-[24px] font-semibold text-gray-900 dark:text-gray-50",
+  title: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
+  titleLarge: "font-['Open_Sans',sans-serif] text-base font-semibold text-gray-900 dark:text-gray-50",
+  titleXl: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50",
   
   // v4: Subtítulos
   subtitle: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200",
@@ -218,32 +218,32 @@ export const textStyles = {
   
   // v4: Corpo de texto
   body: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-800 dark:text-gray-200",
-  bodySmall: "font-['Open_Sans',sans-serif] text-[11px] font-normal text-gray-800 dark:text-gray-200",
-  bodyLarge: "font-['Open_Sans',sans-serif] text-[13px] font-normal text-gray-800 dark:text-gray-200",
+  bodySmall: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-800 dark:text-gray-200",
+  bodyLarge: "font-['Open_Sans',sans-serif] text-base-ui font-normal text-gray-800 dark:text-gray-200",
   
   // v4: Descrições secundárias
-  description: "font-['Open_Sans',sans-serif] text-[11px] font-normal text-gray-600 dark:text-gray-400",
+  description: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-600 dark:text-gray-400",
   
   // v4: Captions e labels
-  caption: "font-['Open_Sans',sans-serif] text-[10px] font-normal text-gray-600 dark:text-gray-400",
-  captionBold: "font-['Open_Sans',sans-serif] text-[10px] font-medium text-gray-800 dark:text-gray-200",
+  caption: "font-['Open_Sans',sans-serif] text-micro font-normal text-gray-600 dark:text-gray-400",
+  captionBold: "font-['Open_Sans',sans-serif] text-micro font-medium text-gray-800 dark:text-gray-200",
   
   // v4: Labels
-  label: "font-['Open_Sans',sans-serif] text-[11px] font-medium text-gray-800 dark:text-gray-200",
-  labelSmall: "font-['Open_Sans',sans-serif] text-[10px] font-medium text-gray-800 dark:text-gray-200",
+  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200",
+  labelSmall: "font-['Open_Sans',sans-serif] text-micro font-medium text-gray-800 dark:text-gray-200",
   
   // v4: Métricas com Inter
-  metric: "font-['Inter',sans-serif] text-[14px] font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
-  metricLarge: "font-['Inter',sans-serif] text-[24px] font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
+  metric: "font-['Inter',sans-serif] text-sm font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
+  metricLarge: "font-['Inter',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
   metricSmall: "font-['Inter',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200 tabular-nums",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
-  sidebarTitle: "font-['Open_Sans',sans-serif] text-[13px] font-semibold text-gray-900 dark:text-gray-50",
+  sidebarTitle: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
   sidebarItem: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 dark:text-gray-300",
   sidebarItemActive: "font-['Open_Sans',sans-serif] text-xs font-semibold text-gray-900 dark:text-gray-50",
   
   // v4: Links (cyan para LIA/IA)
-  link: "font-['Open_Sans',sans-serif] text-xs font-medium text-wedo-cyan hover:text-[#0E7490] transition-colors",
+  link: "font-['Open_Sans',sans-serif] text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
   linkSubtle: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 transition-colors",
 } as const
 
@@ -295,10 +295,10 @@ export const buttonStyles = {
  * Focus ring usa gray-900 (preto)
  */
 export const inputStyles = {
-  default: 'border border-gray-300 hover:border-gray-400 rounded-md px-3 py-2 text-[13px] font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-all',
-  error: 'border border-red-500 rounded-md px-3 py-2 text-[13px] font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-red-500 outline-none',
-  success: 'border border-green-500 rounded-md px-3 py-2 text-[13px] font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-green-500 outline-none',
-  disabled: 'border border-gray-200 bg-gray-100 rounded-md px-3 py-2 text-[13px] font-normal text-gray-400 cursor-not-allowed',
+  default: 'border border-gray-300 hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-all',
+  error: 'border border-red-500 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-red-500 outline-none',
+  success: 'border border-green-500 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-green-500 outline-none',
+  disabled: 'border border-gray-200 bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-gray-400 cursor-not-allowed',
 } as const
 
 /**
@@ -307,28 +307,28 @@ export const inputStyles = {
  */
 export const badgeStyles = {
   // v4.1: Neutro/Default — rounded-full (pill) conforme DS v4.1
-  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   
   // v4.1: Estados semânticos com dark mode
-  success: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  error: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  error: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   
   // v4.1: WeDo accent colors (uso limitado - 10%) com dark mode
-  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-cyan/10 text-[#0E7490] dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
-  green: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-green/10 text-[#166534] dark:bg-wedo-green/20 dark:text-wedo-green',
-  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-gold/10 text-[#9A3412] dark:bg-wedo-gold/20 dark:text-wedo-gold',
-  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-purple/10 text-[#6B21A8] dark:bg-wedo-purple/20 dark:text-wedo-purple',
-  
+  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  green: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-green/10 text-status-success dark:bg-wedo-green/20 dark:text-wedo-green',
+  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-orange/10 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange',
+  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
+
   // Alias para compatibilidade
-  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-cyan/10 text-[#0E7490] dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   
   // v4.1: Outline variants com dark mode
-  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-transparent border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300',
-  outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-transparent border border-green-300 text-green-700 dark:border-green-700 dark:text-green-400',
-  outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-transparent border border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400',
-  outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-transparent border border-red-300 text-red-700 dark:border-red-700 dark:text-red-400',
+  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300',
+  outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-green-300 text-green-700 dark:border-green-700 dark:text-green-400',
+  outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400',
+  outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-red-300 text-red-700 dark:border-red-700 dark:text-red-400',
 } as const
 
 /**
@@ -344,8 +344,8 @@ export const tabStyles = {
   
   // Estilo pill (badges arredondadas) - PADRÃO para Settings hubs
   pillContainer: 'flex items-center gap-1 flex-wrap',
-  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
-  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900",
+  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
+  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900",
   pillIcon: 'w-3.5 h-3.5',
 } as const
 
@@ -355,10 +355,10 @@ export const tabStyles = {
  */
 export const actionButtonStyles = {
   // Botões pequenos para ações inline
-  sm: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-[11px] font-medium rounded-md transition-colors",
-  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-[11px] font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50",
-  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-[11px] font-medium rounded-md transition-colors border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50",
-  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-[11px] font-medium rounded-md transition-colors border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
+  sm: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors",
+  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50",
+  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50",
+  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
   // Ícones padrão para botões de ação
   icon: 'w-3.5 h-3.5',
 } as const
@@ -370,7 +370,7 @@ export const modalStyles = {
   overlay: 'fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50',
   container: 'bg-white border border-gray-200 rounded-md',
   header: 'px-6 py-4 border-b border-gray-200',
-  headerTitle: "font-['Open_Sans',sans-serif] text-[16px] font-semibold text-gray-900",
+  headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-gray-900",
   body: 'px-6 py-4',
   footer: 'px-6 py-4 border-t border-gray-200 flex justify-end gap-3',
 } as const
@@ -380,10 +380,10 @@ export const modalStyles = {
  */
 export const formStyles = {
   fieldGroup: 'space-y-1.5',
-  label: "font-['Open_Sans',sans-serif] text-[11px] font-medium text-gray-700",
-  labelRequired: "font-['Open_Sans',sans-serif] text-[11px] font-medium text-gray-700 after:content-['*'] after:ml-0.5 after:text-red-500",
-  helperText: "font-['Open_Sans',sans-serif] text-[10px] font-normal text-gray-500 mt-1",
-  errorText: "font-['Open_Sans',sans-serif] text-[10px] font-normal text-red-600 mt-1",
+  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700",
+  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 after:content-['*'] after:ml-0.5 after:text-red-500",
+  helperText: "font-['Open_Sans',sans-serif] text-micro font-normal text-gray-500 mt-1",
+  errorText: "font-['Open_Sans',sans-serif] text-micro font-normal text-red-600 mt-1",
 } as const
 
 /**
@@ -404,11 +404,25 @@ export const tailwindToVuetify = {
   },
   
   typography: {
-    'text-[13px] font-semibold': 'class="text-subtitle-2 font-weight-bold"',
-    'text-xs font-medium': 'class="text-body-2 font-weight-medium"',
-    'text-xs font-normal': 'class="text-body-2"',
-    'text-[11px] font-normal': 'class="text-caption"',
-    'text-[10px] font-normal': 'class="text-overline"',
+    // text-xs = 11px neste projeto → Vuetify text-caption (≈12px)
+    'text-xs font-medium':        'class="text-caption font-weight-medium"',
+    'text-xs font-normal':        'class="text-caption"',
+    // text-micro = 10px → Vuetify text-overline (10px, exato)
+    'text-micro font-normal':     'class="text-overline"',
+    'text-micro font-medium':     'class="text-overline font-weight-medium"',
+    // text-sm-ui = 12px → Vuetify text-caption (12px, exato)
+    'text-sm-ui font-normal':     'class="text-caption"',
+    'text-sm-ui font-medium':     'class="text-caption font-weight-medium"',
+    // text-base-ui = 13px → Vuetify text-body-2 (≈14px)
+    'text-base-ui font-semibold': 'class="text-subtitle-2 font-weight-bold"',
+    'text-base-ui font-normal':   'class="text-body-2"',
+    // text-sm = 14px → Vuetify text-body-2 (14px, exato)
+    'text-sm font-normal':        'class="text-body-2"',
+    'text-sm font-medium':        'class="text-body-2 font-weight-medium"',
+    // Legado — manter como referência durante migração
+    'text-[13px] font-semibold':  'class="text-subtitle-2 font-weight-bold"',
+    'text-[11px] font-normal':    'class="text-caption"',
+    'text-[10px] font-normal':    'class="text-overline"',
   },
   
   spacing: {

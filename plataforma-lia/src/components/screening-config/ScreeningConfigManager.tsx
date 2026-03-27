@@ -71,11 +71,11 @@ function CompanyDefaultQuestions({
       >
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <span className="font-['Open_Sans',sans-serif] text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
             Padrão da Empresa
           </span>
           {questions.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
               {activeCount}/{questions.length} ativas
             </span>
           )}
@@ -90,7 +90,7 @@ function CompanyDefaultQuestions({
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
-            <p className="text-[11px] font-['Open_Sans',sans-serif] text-gray-400 dark:text-gray-500 text-center py-4 italic">
+            <p className="text-xs font-['Open_Sans',sans-serif] text-gray-400 dark:text-gray-500 text-center py-4 italic">
               Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (
@@ -112,11 +112,11 @@ function CompanyDefaultQuestions({
                     onChange={e => onToggle(q.id, e.target.checked)}
                     className="w-3.5 h-3.5 rounded border-gray-300 accent-gray-900 cursor-pointer disabled:cursor-default"
                   />
-                  <span className="font-['Open_Sans',sans-serif] text-[11px] text-gray-700 dark:text-gray-300 flex-1">
+                  <span className="font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 flex-1">
                     {q.question}
                   </span>
                   {q.is_eliminatory && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                       eliminatória
                     </span>
                   )}
@@ -569,7 +569,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <section.icon className="w-4 h-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className={`${textStyles.h4} 2xl:text-xs`}>{section.title}</div>
-                    <div className={`${textStyles.description} 2xl:text-[11px]`}>{section.description}</div>
+                    <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
                   </div>
                   {sectionDone && (
                     <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
@@ -595,14 +595,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
             <div className="flex items-center gap-3">
               {activeSection === 'configuracoes' && (
                 <>
-                  <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
                     {getConfigStatusInfo()}
                   </span>
                   {!isEditingScreeningConfig ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5 text-[11px] rounded-md"
+                      className="gap-1.5 text-xs rounded-md"
                       onClick={() => setIsEditingScreeningConfig(true)}
                     >
                       <Edit className="w-3.5 h-3.5" />
@@ -610,7 +610,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </Button>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="text-[11px] rounded-md" onClick={() => {
+                      <Button variant="outline" size="sm" className="text-xs rounded-md" onClick={() => {
                         setIsEditingScreeningConfig(false)
                         if (screeningConfig) {
                           setEditChannels({
@@ -632,7 +632,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       }}>
                         Cancelar
                       </Button>
-                      <Button size="sm" className="gap-1.5 text-[11px] rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200" onClick={async () => {
+                      <Button size="sm" className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200" onClick={async () => {
                         try {
                           const presetToScore = (preset: string) => {
                             switch(preset) {
@@ -685,20 +685,20 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 </>
               )}
               {activeSection === 'descricao' && (
-                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
                   {jdDone ? 'Descrição preenchida' : 'Descrição pendente'}
                 </span>
               )}
               {activeSection === 'perguntas' && (
                 <>
-                  <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
                     {job.screeningQuestions?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (
                       <> · {(companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length} extras</>
                     )}
                   </span>
                   <div className="flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-3 ml-1">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
                       Triagem
                     </span>
                     {(job.screeningStatus === 'not_configured' || !job.screeningStatus) ? (
@@ -719,7 +719,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                         Concluída
                       </span>
                     ) : (
@@ -751,14 +751,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5 text-[11px] rounded-md"
+                      className="gap-1.5 text-xs rounded-md"
                       onClick={() => setIsEditingScreening(true)}
                     >
                       <Edit className="w-3.5 h-3.5" />
                       Editar Perguntas
                     </Button>
                   ) : (
-                    <Button variant="outline" size="sm" className="gap-1.5 text-[11px] rounded-md" onClick={() => resetScreeningEditing()}>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-md" onClick={() => resetScreeningEditing()}>
                       <X className="w-3.5 h-3.5" />
                       Cancelar Edição
                     </Button>
@@ -779,10 +779,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     }
                   </div>
                   <div>
-                    <h3 className="text-[14px] font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {showScreeningToggleConfirm === 'activate' ? 'Ativar Triagem' : 'Pausar Triagem'}
                     </h3>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {job.title}
                     </p>
                   </div>
@@ -853,8 +853,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
-                          <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
-                          <span className={`ml-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
+                          <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                             (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                             (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                             (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
@@ -871,7 +871,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
                         <div className="flex items-center gap-2.5 opacity-50 cursor-not-allowed" title="Clique em Editar Configurações para alterar">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Inter', sans-serif" }}>
                             {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                           </span>
                           <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
@@ -887,7 +887,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
                     <div className="border border-gray-100 dark:border-gray-700 rounded-md divide-y divide-gray-100 dark:divide-gray-700">
                       {[
                         { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
@@ -899,9 +899,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                             <div className="flex items-center gap-2">
                               <ChIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                              <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
                               {ch.key === 'phone' && !ch.enabled && (
-                                <span className="text-[9px] text-gray-300 dark:text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
+                                <span className="text-micro text-gray-300 dark:text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
                               )}
                             </div>
                             <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${ch.enabled ? 'bg-gray-400' : 'bg-gray-200 dark:bg-gray-700'}`}>
@@ -914,10 +914,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   </div>
 
                   <div>
-                    <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -928,11 +928,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
-                                <span className={`text-[10px] font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                <span className="text-[8px] text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                               </div>
                             )
                           })}
@@ -940,13 +940,13 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
                           <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                             {screeningConfig?.settings?.response_timeout_hours ?? 48}h
                           </div>
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
                           <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                             {screeningConfig?.settings?.max_retries ?? 2}x
                           </div>
@@ -958,17 +958,17 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-2">
                       <Calendar className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                      <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
                         <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                           {job.deadlineScreening ? new Date(job.deadlineScreening).toLocaleDateString('pt-BR') : 'Não definido'}
                         </div>
                       </div>
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
                         <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                           {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(job.deadlineScreening).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
                         </div>
@@ -980,11 +980,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-2">
                       <ShieldAlert className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                      <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -996,11 +996,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
-                                <span className={`text-[10px] font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
-                                <span className="text-[8px] text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                               </div>
                             )
                           })}
@@ -1009,8 +1009,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
                         <div className="border border-gray-100 dark:border-gray-700 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-[9px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
-                            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
+                            <span className="text-micro font-medium text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{screeningConfig?.settings?.auto_approval_limit ?? 10} aprovações
                             </span>
                           </div>
@@ -1025,7 +1025,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {screeningConfig?.settings?.auto_approval_paused && (
                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-50/50 dark:bg-amber-900/10 rounded text-amber-600 dark:text-amber-500">
                           <AlertTriangle className="w-3 h-3" />
-                          <span className="text-[9px] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido, aguardando revisão humana</span>
+                          <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido, aguardando revisão humana</span>
                         </div>
                       )}
                     </div>
@@ -1036,7 +1036,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <CalendarCheck className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                        <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
                       </div>
                       <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-400' : 'bg-gray-200 dark:bg-gray-700'}`}>
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-gray-900 ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'translate-x-4' : 'translate-x-0.5'}`} />
@@ -1045,7 +1045,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     {(screeningConfig?.scheduling?.auto_enabled ?? true) && (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
                           <div className="grid grid-cols-3 gap-2">
                             {[
                               { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -1056,11 +1056,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               return (
                                 <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                   <div className="flex items-center justify-between mb-0.5">
-                                    <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                   </div>
-                                  <span className={`text-[10px] font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                  <span className="text-[8px] text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                  <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                  <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                                 </div>
                               )
                             })}
@@ -1068,22 +1068,22 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
                             <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                               {screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}
                             </div>
                           </div>
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Horários</label>
                             <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                               {screeningConfig?.scheduling?.available_hours || '9h-18h'}
                             </div>
                             {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
-                              <span className="text-[8px] text-gray-300 dark:text-gray-600 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
+                              <span className="text-micro text-gray-300 dark:text-gray-600 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
                             )}
                           </div>
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Duração</label>
                             <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 opacity-60">
                               {screeningConfig?.scheduling?.interview_duration_min ?? 60}min
                             </div>
@@ -1115,8 +1115,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
-                          <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
-                          <span className={`ml-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
+                          <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                             (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                             (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                             (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
@@ -1133,7 +1133,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
                         <div className="flex items-center gap-2.5">
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
                             {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                           </span>
                           <button
@@ -1158,7 +1158,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
                     <div className="border border-gray-200 dark:border-gray-600 rounded-md divide-y divide-gray-200 dark:divide-gray-600">
                       {[
                         { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
@@ -1171,9 +1171,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                             <div className="flex items-center gap-2">
                               <ChIcon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                              <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
+                              <span className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
                               {ch.key === 'phone' && !enabled && (
-                                <span className="text-[9px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
                               )}
                             </div>
                             <button
@@ -1189,10 +1189,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   </div>
 
                   <div>
-                    <h3 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -1203,11 +1203,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
-                                <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                <span className="text-[8px] text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                               </button>
                             )
                           })}
@@ -1215,13 +1215,13 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
                           <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                             {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
                           </select>
                         </div>
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
                           <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                             {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
                           </select>
@@ -1234,11 +1234,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-2">
                       <ShieldAlert className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                      <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -1249,11 +1249,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
-                                <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
-                                <span className="text-[8px] text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
+                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                               </button>
                             )
                           })}
@@ -1262,8 +1262,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
                         <div className="border border-gray-200 dark:border-gray-600 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-[9px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
-                            <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
+                            <span className="text-micro font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{approvalPresetToLimit(editAutoApprovalPreset)} aprovações
                             </span>
                           </div>
@@ -1278,8 +1278,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {screeningConfig?.settings?.auto_approval_paused && (
                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded text-amber-700 dark:text-amber-400">
                           <AlertTriangle className="w-3 h-3" />
-                          <span className="text-[9px] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido</span>
-                          <button onClick={() => {}} className="ml-auto text-[9px] font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido</span>
+                          <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" style={{ fontFamily: "'Inter', sans-serif" }}>
                             Retomar
                           </button>
                         </div>
@@ -1290,10 +1290,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
                     <div className="flex items-center gap-2 mb-2">
                       <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                      <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+                      <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
                       <input
                         type="date"
                         value={job.deadlineScreening ? new Date(job.deadlineScreening).toISOString().split('T')[0] : ''}
@@ -1308,7 +1308,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <CalendarCheck className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                        <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
                       </div>
                       <button
                         onClick={() => setEditSchedulingEnabled(!editSchedulingEnabled)}
@@ -1320,7 +1320,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     {editSchedulingEnabled && (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                          <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
                           <div className="grid grid-cols-3 gap-2">
                             {[
                               { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -1331,11 +1331,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               return (
                                 <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                   <div className="flex items-center justify-between mb-0.5">
-                                    <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                   </div>
-                                  <span className="text-[10px] font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                  <span className="text-[8px] text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                  <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                  <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
                                 </button>
                               )
                             })}
@@ -1343,7 +1343,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
                             <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                               <option value="Microsoft">Microsoft</option>
                               <option value="Google">Google</option>
@@ -1351,16 +1351,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             </select>
                           </div>
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Horários</label>
                             <div className="flex items-center gap-2">
                               <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors" />
                             </div>
                             {editAvailableHoursInherited && (
-                              <span className="text-[8px] text-gray-400 dark:text-gray-500 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
+                              <span className="text-micro text-gray-400 dark:text-gray-500 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
                             )}
                           </div>
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                            <label className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block mb-2">Duração</label>
                             <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                               {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
                             </select>
@@ -1495,8 +1495,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
               <CardContent className="p-4">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
-                    <div className="flex items-center gap-3 text-[10px] text-gray-600 dark:text-gray-400 flex-wrap mb-3" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
+                    <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400 flex-wrap mb-3" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       <span>Total: {job.screeningQuestions?.length || 0} perguntas WSI</span>
                       <span>•</span>
                       <span>{(job.screeningQuestions || []).filter((q: any) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
@@ -1513,14 +1513,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       return (
                         <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-gray-50/50 border border-gray-100' : totalBlockCount > 0 ? 'bg-white border border-gray-100' : 'bg-white border border-gray-200 border-dashed/50 dark:border-gray-600'}`}>
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-gray-400 dark:text-gray-400 dark:bg-gray-700'}`}>{block.id}</span>
-                            <span className={`text-[11px] font-medium ${isAutomatic ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.name}</span>
+                            <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-gray-400 dark:text-gray-400 dark:bg-gray-700'}`}>{block.id}</span>
+                            <span className={`text-xs font-medium ${isAutomatic ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.name}</span>
                             {isAutomatic ? (
-                              <span className="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded-full font-medium uppercase tracking-wide dark:bg-gray-700 dark:text-gray-500">Automático</span>
+                              <span className="text-micro px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded-full font-medium uppercase tracking-wide dark:bg-gray-700 dark:text-gray-500">Automático</span>
                             ) : totalBlockCount > 0 ? (
-                              <span className="text-[10px] text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
+                              <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                             ) : (
-                              <span className="text-[10px] text-gray-400 italic dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma pergunta</span>
+                              <span className="text-micro text-gray-400 italic dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma pergunta</span>
                             )}
                           </div>
                           {block.id === 2 && (
@@ -1561,7 +1561,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {!isAutomatic && block.id !== 2 && blockQuestions.length > 0 && (
                             <div className="space-y-1 ml-7 mt-1.5">
                               {blockQuestions.map((q: any, idx: number) => (
-                                <p key={q.id || idx} className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p key={q.id || idx} className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   • {q.question || q.text}
                                 </p>
                               ))}
@@ -1569,15 +1569,15 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           )}
                           {isAutomatic && WSI_AUTOMATIC_MESSAGES[block.id] && (
                             <div className="ml-7 mt-1.5">
-                              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                              <p className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                               <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-2.5 py-2">
-                                <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
+                                <p className="text-micro text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                               </div>
-                              <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-1 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                              <p className="text-micro text-gray-400 dark:text-gray-500 mt-1 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                             </div>
                           )}
                           {isAutomatic && !WSI_AUTOMATIC_MESSAGES[block.id] && (
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500 ml-7 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.description}</p>
+                            <p className="text-micro text-gray-400 dark:text-gray-500 ml-7 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.description}</p>
                           )}
                         </div>
                       )
@@ -1604,7 +1604,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
                             <div className="space-y-1">
                               {showTechWarning && (
-                                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {techSkillsCount === 0
                                     ? 'Nenhuma competência técnica cadastrada — adicione competências na seção Job Description para gerar perguntas de triagem.'
                                     : `Apenas ${techSkillsCount} competência${techSkillsCount === 1 ? '' : 's'} técnica${techSkillsCount === 1 ? '' : 's'} cadastrada${techSkillsCount === 1 ? '' : 's'}. Para triagem completa, recomendamos pelo menos 9.`
@@ -1612,7 +1612,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showBehavWarning && (
-                                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {behavCompCount === 0
                                     ? 'Nenhuma competência comportamental cadastrada — a triagem usará avaliação padrão.'
                                     : `${behavCompCount} competência${behavCompCount === 1 ? '' : 's'} comportamental${behavCompCount === 1 ? '' : 's'} (recomendado: 5 para cobertura completa).`
@@ -1620,7 +1620,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showFullDisabled && (
-                                <p className="text-[10px] text-amber-600 dark:text-amber-500 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-micro text-amber-600 dark:text-amber-500 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   Modo Completo requer pelo menos 5 competências técnicas.
                                 </p>
                               )}
@@ -1637,8 +1637,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <>
-                          <span className="text-[11px] font-semibold">Gerar WSI Compacto</span>
-                          <span className={`text-[10px] ${wsiGenerationMode === 'compact' ? 'text-gray-400' : 'text-gray-500'}`}>~7 perguntas · 12 min</span>
+                          <span className="text-xs font-semibold">Gerar WSI Compacto</span>
+                          <span className={`text-micro ${wsiGenerationMode === 'compact' ? 'text-gray-400' : 'text-gray-500'}`}>~7 perguntas · 12 min</span>
                         </>
                       )}
                     </button>
@@ -1648,13 +1648,13 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <>
-                            <span className="text-[11px] font-semibold">Gerar WSI Completo</span>
-                            <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 22 min</span>
+                            <span className="text-xs font-semibold">Gerar WSI Completo</span>
+                            <span className={`text-micro ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 22 min</span>
                           </>
                         )}
                       </button>
                       {(job?.technicalRequirements || []).filter(Boolean).length < 5 && (
-                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-[10px] rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-all z-50 text-center">
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-micro rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-all z-50 text-center">
                           <p className="leading-relaxed">Adicione pelo menos 5 competências técnicas na seção Job Description para habilitar o modo Completo.</p>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                         </div>
@@ -1662,7 +1662,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </div>
                     <div className="relative group">
                       <Brain className="w-5 h-5 cursor-help text-wedo-cyan" />
-                      <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-[11px] rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                      <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                         <p className="leading-relaxed">A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
                         <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                       </div>
@@ -1681,10 +1681,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-base-ui font-semibold text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                             {wsiGenerationStep < 4 ? 'Gerando Roteiro e Perguntas de Triagem...' : 'Roteiro e Perguntas de Triagem'}
                           </p>
-                          <p className="text-[11px] text-gray-600 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-600 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                             {wsiGenerationStep < 4
                               ? `Analisando ${wsiGenerationMode === 'compact' ? 'modo compacto' : 'modo completo'}`
                               : `Status: ${wsiGeneratedCount} perguntas geradas · Metodologia WeDoTalent Skill Index (WSI) Completa`
@@ -1723,10 +1723,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   ) : wsiGenerationStep === step.num ? (
                                     <Loader2 className="w-3 h-3 animate-spin text-wedo-cyan" />
                                   ) : (
-                                    <span className="text-[10px] font-semibold text-gray-400">{step.num}</span>
+                                    <span className="text-micro font-semibold text-gray-400">{step.num}</span>
                                   )}
                                 </div>
-                                <span className={`text-[10px] mt-1.5 font-medium whitespace-nowrap transition-colors duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'text-gray-400'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'text-gray-400'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {step.label}
                                 </span>
                               </div>
@@ -1743,7 +1743,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {wsiGenerationStep < 4 && wsiTypedMessage && (
                         <div className="px-5 pb-3 flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-100 animate-pulse" />
-                          <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                             {wsiTypedMessage}
                             {wsiTypedMessage.length < wsiDynamicMessage.length && (
                               <span className="inline-block w-[2px] h-[14px] bg-gray-900 dark:bg-gray-100 ml-0.5 align-middle animate-pulse" />
@@ -1756,7 +1756,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <div className="px-5 pb-4 pt-1 space-y-3 border-t border-gray-100 dark:border-gray-700">
                           {wsiGenerationStep >= 1 && wsiGenerationContext && (
                             <div className="pt-2">
-                              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Cargo analisado</p>
+                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Cargo analisado</p>
                               <p className="text-xs text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                 {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-gray-600 dark:text-gray-400"> · {wsiGenerationContext.seniority}</span> : ''}
                               </p>
@@ -1767,10 +1767,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             <div className="space-y-2">
                               {wsiGenerationContext.responsibilities.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades Chave</p>
+                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades Chave</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
-                                      <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">
+                                      <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">
                                         {resp.length > 35 ? resp.slice(0, 35) + '...' : resp}
                                       </span>
                                     ))}
@@ -1779,20 +1779,20 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               )}
                               {wsiGenerationContext.technicalSkills.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</p>
+                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
-                                      <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{skill}</span>
+                                      <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{skill}</span>
                                     ))}
                                   </div>
                                 </div>
                               )}
                               {wsiGenerationContext.behavioralCompetencies.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</p>
+                                  <p className="text-micro font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.behavioralCompetencies.map((comp: string, i: number) => (
-                                      <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{comp}</span>
+                                      <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{comp}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -1802,9 +1802,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
                           {wsiGenerationStep >= 3 && (
                             <div>
-                              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias Utilizadas para Gerar Perguntas</p>
+                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias Utilizadas para Gerar Perguntas</p>
                               {wsiGenerationStep >= 4 && wsiGenerationContext?.methodologyBreakdown && Object.keys(wsiGenerationContext.methodologyBreakdown).length > 0 ? (
-                                <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {Object.entries(wsiGenerationContext.methodologyBreakdown)
                                     .filter(([key]) => key !== 'Dreyfus')
                                     .map(([method, count]) => {
@@ -1816,7 +1816,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               ) : (
                                 <div className="flex flex-wrap gap-1.5">
                                   {['CBI', 'Bloom', 'Big Five', 'Dreyfus'].map(m => (
-                                    <span key={m} className="inline-flex px-2.5 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-full">{m}</span>
+                                    <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-full">{m}</span>
                                   ))}
                                 </div>
                               )}
@@ -1826,7 +1826,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {wsiGenerationStep >= 4 && wsiGenerationContext && (
                             <div className="space-y-4 pt-1">
                               <div>
-                                <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                   {wsiSummaryTypedText}
                                   {!wsiSummaryTypingDone && (
                                     <span className="inline-block w-[2px] h-[14px] bg-gray-900 dark:bg-gray-100 ml-0.5 align-middle animate-pulse" />
@@ -1839,7 +1839,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo
                                       </p>
                                     </div>
@@ -1847,7 +1847,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática
                                       </p>
                                     </div>
@@ -1855,7 +1855,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga
                                       </p>
                                     </div>
@@ -1863,10 +1863,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </div>
 
                                 <div className="space-y-1">
-                                  <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     Ao todo, a triagem será composta por <span className="font-semibold">{wsiGeneratedCount} perguntas</span>.
                                   </p>
-                                  <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                     O tempo médio estimado de triagem é de <span className="font-semibold">15 a 20 minutos</span>, considerando o tempo de leitura e resposta do candidato.
                                   </p>
                                 </div>
@@ -1879,32 +1879,32 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 ) : (
                                   <>
                                     <div>
-                                      <p className="text-[13px] font-semibold text-gray-900 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Próximo passo</p>
-                                      <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>Selecione as perguntas em cada um dos blocos abaixo.</p>
+                                      <p className="text-base-ui font-semibold text-gray-900 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Próximo passo</p>
+                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>Selecione as perguntas em cada um dos blocos abaixo.</p>
                                     </div>
                                     <div className="space-y-1.5">
-                                      <p className="text-[13px] text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                         As perguntas foram geradas com base na metodologia <span className="font-semibold text-gray-900 dark:text-gray-50">WeDoTalent Skill Index</span>, considerando:
                                       </p>
                                       <div className="space-y-0.5 pl-1">
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Senioridade do cargo</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades e competências mapeadas</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Senioridade do cargo</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades e competências mapeadas</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
                                       </div>
                                     </div>
-                                    <p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                       As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.
                                     </p>
-                                    <p className="text-[13px] text-gray-800 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <p className="text-base-ui text-gray-800 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                                       Caso deseje perguntas adicionais, utilize a opção de adicionar perguntas personalizadas manualmente em cada bloco.
                                     </p>
                                     <div className="border-t border-gray-100 pt-3">
-                                      <p className="text-[13px] font-semibold text-gray-900 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Finalização</p>
-                                      <p className="text-[13px] text-gray-800 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Após concluir a seleção das perguntas:</p>
+                                      <p className="text-base-ui font-semibold text-gray-900 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Finalização</p>
+                                      <p className="text-base-ui text-gray-800 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Após concluir a seleção das perguntas:</p>
                                       <div className="space-y-0.5 pl-1">
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">1.</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Salve as alterações</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">2.</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Inicie o disparo da triagem</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">3.</span><p className="text-[13px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">1.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Salve as alterações</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">2.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Inicie o disparo da triagem</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">3.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
                                       </div>
                                     </div>
                                     {wsiGenerationContext.companyStandardFound && (
@@ -1977,23 +1977,23 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             }
                           }}>
                             <div className="flex items-center gap-2">
-                              <span className={`w-6 h-6 rounded-full text-white text-[11px] font-bold flex items-center justify-center ${block.editable ? 'bg-gray-700' : 'bg-gray-400 dark:bg-gray-600'}`}>{block.id}</span>
+                              <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center ${block.editable ? 'bg-gray-700' : 'bg-gray-400 dark:bg-gray-600'}`}>{block.id}</span>
                               <div>
                                 <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-800 dark:text-gray-200'}`}>{block.name}</span>
-                                <span className="text-[10px] text-gray-600 ml-2">({block.duration})</span>
+                                <span className="text-micro text-gray-600 ml-2">({block.duration})</span>
                               </div>
-                              {!block.editable && <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-200 text-gray-600 ml-1">Automático</Badge>}
+                              {!block.editable && <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-gray-600 ml-1">Automático</Badge>}
                             </div>
                             <div className="flex items-center gap-2">
                               {block.editable && blockQuestions.length > 0 && (
                                 <>
-                                  {eliminatoryCount > 0 && <Badge className="text-[10px] px-2 py-0.5 bg-red-50 text-red-600 border border-red-200">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
-                                  {informativeCount > 0 && <Badge className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-800">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
+                                  {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-red-50 text-red-600 border border-red-200">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
+                                  {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-800">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
                                 </>
                               )}
                               {blockGenerated.length > 0 && (
                                 <>
-                                  <Badge className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 border border-gray-200">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
+                                  <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 border border-gray-200">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
                                   {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>}
                                 </>
                               )}
@@ -2010,16 +2010,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                       <p className="text-xs font-medium text-gray-950 dark:text-gray-100">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                                     </div>
                                     <div className="p-3">
-                                      <div className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
+                                      <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
                                     </div>
                                     <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50">
-                                      <p className="text-[10px] text-gray-600 dark:text-gray-400 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                                      <p className="text-micro text-gray-600 dark:text-gray-400 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                                     </div>
                                   </div>
                                 ) : (
                                   <div className="p-3 bg-white/60 border border-gray-100 rounded-md">
-                                    <p className="text-[11px] text-gray-800 italic">{block.description}</p>
-                                    <p className="text-[10px] text-gray-600 mt-1">Este bloco é gerenciado automaticamente pela LIA</p>
+                                    <p className="text-xs text-gray-800 italic">{block.description}</p>
+                                    <p className="text-micro text-gray-600 mt-1">Este bloco é gerenciado automaticamente pela LIA</p>
                                   </div>
                                 )
                               ) : (
@@ -2053,7 +2053,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   )}
                                   {blockQuestions.length === 0 && blockGenerated.length === 0 && block.id !== 2 ? (
                                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600 border-dashed rounded-md text-center">
-                                      <p className="text-[11px] text-gray-500">Nenhuma pergunta neste bloco</p>
+                                      <p className="text-xs text-gray-500">Nenhuma pergunta neste bloco</p>
                                     </div>
                                   ) : block.id !== 2 || blockQuestions.length > 0 || blockGenerated.length > 0 ? (
                                     <>
@@ -2067,55 +2067,55 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'Técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'Técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'}`}>
                                                     {item.category === 'behavioral' ? 'Comportamental' : item.category === 'technical' ? 'Técnica' : item.category === 'cultural' ? 'Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.required) && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
                                                   )}
-                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
                                                   </Badge>
                                                   {item.bloom_level && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
                                                       <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
                                                     </Badge>
                                                   )}
                                                   {item.dreyfus_level && item.block_id !== 2 && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
                                                   {item.big_five_trait && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
                                                       {getBigFiveLabelPTBR(item.big_five_trait)}
                                                     </Badge>
                                                   )}
                                                   {(item.weight || 0) >= 1.5 && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                                                       <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
                                                     </Badge>
                                                   )}
                                                   {isDeactivated ? (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
                                                   ) : (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                                     </Badge>
                                                   )}
                                                 </div>
                                                 <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question}</p>
-                                                <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
+                                                <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-gray-400">
                                                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{estTime}</span>
                                                   {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
                                                   {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
                                                   <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
                                                 </div>
-                                                <button className="mt-1.5 text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
+                                                <button className="mt-1.5 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
                                                   {isDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
                                                 </button>
                                                 {isDetailsExpanded && (
-                                                  <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-[10px]">
+                                                  <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-micro">
                                                     <div className="flex gap-4">
                                                       <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
                                                       <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
@@ -2156,53 +2156,53 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
                                                     {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.is_eliminatory) && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
                                                   )}
-                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full border ${genComplexity.color}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${genComplexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{genComplexity.label}
                                                   </Badge>
                                                   {item.bloom_level && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
                                                       <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
                                                     </Badge>
                                                   )}
                                                   {item.dreyfus_level && item.block_id !== 2 && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
                                                   {item.big_five_trait && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
                                                       {getBigFiveLabelPTBR(item.big_five_trait)}
                                                     </Badge>
                                                   )}
                                                   {(item.weight || 0) >= 1.5 && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                                                       <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
                                                     </Badge>
                                                   )}
                                                   {isAccepted && (
-                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                                     </Badge>
                                                   )}
                                                 </div>
                                                 <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question || item.text}</p>
-                                                <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
+                                                <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-gray-400">
                                                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{genEstTime}</span>
                                                   {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
                                                   {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
                                                   <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
                                                 </div>
-                                                <button className="mt-1.5 text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
+                                                <button className="mt-1.5 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
                                                   {genDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
                                                 </button>
                                                 {genDetailsExpanded && (
-                                                  <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-[10px]">
+                                                  <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-micro">
                                                     <div className="flex gap-4 flex-wrap">
                                                       <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
                                                       <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
@@ -2219,7 +2219,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                               </div>
                                               <div className="flex items-center gap-1.5 shrink-0">
                                                 {isAccepted ? (
-                                                  <button className="border border-gray-200 text-gray-500 text-[10px] px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => {
+                                                  <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => {
                                                     if (confirm('Remover pergunta aceita?')) {
                                                       setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
                                                       setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))
@@ -2227,8 +2227,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                   }}>Remover</button>
                                                 ) : (
                                                   <>
-                                                    <button className="bg-gray-900 text-white text-[10px] px-2 py-1 rounded-full hover:bg-gray-800 transition-colors" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                                    <button className="border border-gray-200 text-gray-500 text-[10px] px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))}>Descartar</button>
+                                                    <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
+                                                    <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))}>Descartar</button>
                                                   </>
                                                 )}
                                               </div>
@@ -2252,11 +2252,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
                 {/* Save/Cancel buttons */}
                 <div className="flex items-center justify-between px-5 py-3 border-t border-gray-200 dark:border-gray-700">
-                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-3 border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300" onClick={resetScreeningEditing}>
+                  <Button variant="outline" size="sm" className="h-7 text-micro px-3 border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300" onClick={resetScreeningEditing}>
                     Cancelar
                   </Button>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" className="h-7 text-[10px] px-4 bg-gray-900 hover:bg-gray-800 text-white" onClick={async () => {
+                    <Button size="sm" className="h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white" onClick={async () => {
                       const existingCount = (job.screeningQuestions || []).length
                       const acceptedCount = Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).length
                       const totalQuestions = existingCount + acceptedCount
@@ -2311,7 +2311,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       Salvar Alterações
                     </Button>
                     {(job.screeningStatus !== 'active') && (
-                      <Button size="sm" className="h-7 text-[10px] px-4 bg-green-600 hover:bg-green-700 text-white" onClick={async () => {
+                      <Button size="sm" className="h-7 text-micro px-4 bg-green-600 hover:bg-green-700 text-white" onClick={async () => {
                         const existingCount = (job.screeningQuestions || []).length
                         const acceptedCount = Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).length
                         const totalQuestions = existingCount + acceptedCount
@@ -2376,7 +2376,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
           {(job.liaMetrics?.triagens_realizadas ?? 0) > 0 && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-md dark:bg-amber-900/10 dark:border-amber-800">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
                 <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold">{job.liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
               </p>
             </div>

@@ -114,7 +114,7 @@ export function ScreeningNotificationCard({
                     key={index}
                     className="p-2 rounded bg-gray-50 dark:bg-gray-700/50"
                   >
-                    <p className="text-[10px] text-gray-600 dark:text-gray-400">
+                    <p className="text-micro text-gray-600 dark:text-gray-400">
                       {block.name}
                     </p>
                     <p className="font-['Inter',sans-serif] text-xs font-semibold text-gray-900 dark:text-gray-50">
@@ -128,14 +128,14 @@ export function ScreeningNotificationCard({
 
           <div className="pt-2">
             <span
-              className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium ${config.badgeBg} ${config.badgeText}`}
+              className={`inline-flex items-center px-2 py-1 rounded-full text-micro font-medium ${config.badgeBg} ${config.badgeText}`}
             >
               {config.label}
             </span>
           </div>
 
           <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+            <p className="text-micro text-gray-500 dark:text-gray-400">
               Triagem automática via inscrição pelo website
             </p>
           </div>

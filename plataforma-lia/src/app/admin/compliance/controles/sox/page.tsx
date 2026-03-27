@@ -67,13 +67,13 @@ function getTestResultBadge(result: string) {
 function getControlTypeBadge(type: string) {
   switch (type) {
     case 'preventive':
-      return <Badge variant="info" className="text-[10px]">Preventivo</Badge>
+      return <Badge variant="info" className="text-micro">Preventivo</Badge>
     case 'detective':
-      return <Badge variant="secondary" className="text-[10px]">Detectivo</Badge>
+      return <Badge variant="secondary" className="text-micro">Detectivo</Badge>
     case 'corrective':
-      return <Badge variant="warning" className="text-[10px]">Corretivo</Badge>
+      return <Badge variant="warning" className="text-micro">Corretivo</Badge>
     default:
-      return <Badge variant="default" className="text-[10px]">{type}</Badge>
+      return <Badge variant="default" className="text-micro">{type}</Badge>
   }
 }
 
@@ -265,12 +265,12 @@ export default function SOXPage() {
             >
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="lilac" className="text-[10px]">{section.id}</Badge>
+                  <Badge variant="lilac" className="text-micro">{section.id}</Badge>
                 </div>
                 <p className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                   {section.name}
                 </p>
-                <p className="text-[10px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   {section.description}
                 </p>
               </CardContent>
@@ -400,7 +400,7 @@ export default function SOXPage() {
                               {control.controlName}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="lilac" className="text-[10px]">
+                              <Badge variant="lilac" className="text-micro">
                                 {control.section}
                               </Badge>
                             </TableCell>

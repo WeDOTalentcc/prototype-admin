@@ -67,7 +67,7 @@ const CollapsibleSection = ({
         <Icon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
         <span className={textStyles.subtitle}>{title}</span>
         {count !== undefined && (
-          <Badge variant="outline" className="ml-1 text-[10px]">{count} itens</Badge>
+          <Badge variant="outline" className="ml-1 text-micro">{count} itens</Badge>
         )}
       </div>
       <ChevronDown className={cn(
@@ -85,29 +85,29 @@ const CollapsibleSection = ({
 
 const FieldBadges = ({ field }: { field: DataField }) => (
   <div className="flex items-center gap-1 flex-wrap">
-    <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+    <Badge variant="outline" className="text-micro px-1 py-0 h-4">
       {field.type}
     </Badge>
     {field.isDefault && (
-      <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[9px] px-1 py-0 h-4">
+      <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro px-1 py-0 h-4">
         <Database className="w-2.5 h-2.5 mr-0.5" />
         Banco
       </Badge>
     )}
     {field.savesToProfile && (
-      <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[9px] px-1 py-0 h-4">
+      <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-micro px-1 py-0 h-4">
         <User className="w-2.5 h-2.5 mr-0.5" />
         Cadastro
       </Badge>
     )}
     {field.type === 'file' && (
-      <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-[9px] px-1 py-0 h-4">
+      <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-micro px-1 py-0 h-4">
         <File className="w-2.5 h-2.5 mr-0.5" />
         Documento
       </Badge>
     )}
     {!field.isDefault && (
-      <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[9px] px-1 py-0 h-4">
+      <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro px-1 py-0 h-4">
         <Brain className="w-2.5 h-2.5 mr-0.5 text-wedo-cyan" />
         Custom
       </Badge>
@@ -215,7 +215,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
       {error && (
         <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
           <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-          <p className="text-[11px] text-amber-700 dark:text-amber-300">
+          <p className="text-xs text-amber-700 dark:text-amber-300">
             {error} - Usando configurações padrão.
           </p>
         </div>
@@ -240,7 +240,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     size="sm" 
                     onClick={handleCancelEditing} 
                     disabled={isSaving}
-                    className="h-8 text-[11px] px-3"
+                    className="h-8 text-xs px-3"
                   >
                     <X className="w-3.5 h-3.5 mr-1" />
                     Cancelar
@@ -249,7 +249,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     size="sm" 
                     onClick={handleSaveChanges} 
                     disabled={isSaving || !hasChanges}
-                    className="h-8 text-[11px] px-3 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white dark:text-gray-900"
+                    className="h-8 text-xs px-3 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white dark:text-gray-900"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
@@ -260,7 +260,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   variant="outline" 
                   size="sm" 
                   onClick={handleStartEditing}
-                  className="h-8 text-[11px] px-3"
+                  className="h-8 text-xs px-3"
                 >
                   <Pencil className="w-3.5 h-3.5 mr-1" />
                   Editar Configurações
@@ -294,8 +294,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <div className="flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   <div>
-                    <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">OTP Obrigatório</Label>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Verificação por código</p>
+                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">OTP Obrigatório</Label>
+                    <p className="text-micro text-gray-500 dark:text-gray-400">Verificação por código</p>
                   </div>
                 </div>
                 {isEditing ? (
@@ -304,7 +304,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     onCheckedChange={(checked: boolean) => updateGeneralConfig({ otpRequired: checked })}
                   />
                 ) : (
-                  <Badge variant={config.otpRequired ? "default" : "secondary"} className="text-[10px]">
+                  <Badge variant={config.otpRequired ? "default" : "secondary"} className="text-micro">
                     {config.otpRequired ? 'Ativo' : 'Inativo'}
                   </Badge>
                 )}
@@ -314,8 +314,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   <div>
-                    <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Lembretes Automáticos</Label>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Enviar lembretes pendentes</p>
+                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Lembretes Automáticos</Label>
+                    <p className="text-micro text-gray-500 dark:text-gray-400">Enviar lembretes pendentes</p>
                   </div>
                 </div>
                 {isEditing ? (
@@ -324,7 +324,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     onCheckedChange={(checked: boolean) => updateGeneralConfig({ autoReminders: checked })}
                   />
                 ) : (
-                  <Badge variant={config.autoReminders ? "default" : "secondary"} className="text-[10px]">
+                  <Badge variant={config.autoReminders ? "default" : "secondary"} className="text-micro">
                     {config.autoReminders ? 'Ativo' : 'Inativo'}
                   </Badge>
                 )}
@@ -333,14 +333,14 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                  <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Dias para Expiração</Label>
+                  <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Dias para Expiração</Label>
                 </div>
                 {isEditing ? (
                   <Select
                     value={config.expirationDays.toString()}
                     onValueChange={(value) => updateGeneralConfig({ expirationDays: parseInt(value) })}
                   >
-                    <SelectTrigger className="w-full h-8 text-[11px]">
+                    <SelectTrigger className="w-full h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -359,14 +359,14 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <div className="flex items-center gap-2 mb-2">
                     <Bell className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                    <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Enviar Lembrete Após</Label>
+                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Enviar Lembrete Após</Label>
                   </div>
                   {isEditing ? (
                     <Select
                       value={config.reminderDays.toString()}
                       onValueChange={(value) => updateGeneralConfig({ reminderDays: parseInt(value) })}
                     >
-                      <SelectTrigger className="w-full h-8 text-[11px]">
+                      <SelectTrigger className="w-full h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -393,7 +393,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
           >
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Como o candidato responde?
                 </Label>
                 {isEditing ? (
@@ -419,27 +419,27 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                             config.collectionMode === option.value ? "text-gray-900 dark:text-gray-50" : "text-gray-400"
                           )} />
                           <span className={cn(
-                            "text-[11px] font-medium",
+                            "text-xs font-medium",
  config.collectionMode === option.value ? "text-gray-900" : "text-gray-700 dark:text-gray-300"
                           )}>
                             {option.label}
                           </span>
                         </div>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{option.desc}</p>
+                        <p className="text-micro text-gray-500 dark:text-gray-400">{option.desc}</p>
                         {option.value === 'candidate_choice' && (
-                          <Badge className="mt-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 text-[9px] h-4">Recomendado</Badge>
+                          <Badge className="mt-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 text-micro h-4">Recomendado</Badge>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 text-[10px]">
+                    <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 text-micro">
                       {config.collectionMode === 'portal_only' && 'Apenas Portal'}
                       {config.collectionMode === 'chat_only' && 'Apenas Chat'}
                       {config.collectionMode === 'candidate_choice' && 'Candidato Escolhe'}
                     </Badge>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    <span className="text-micro text-gray-500 dark:text-gray-400">
                       {config.collectionMode === 'portal_only' && '- Envia link direto para formulário'}
                       {config.collectionMode === 'chat_only' && '- Coleta via conversa no WhatsApp'}
                       {config.collectionMode === 'candidate_choice' && '- LIA pergunta preferência ao candidato'}
@@ -449,7 +449,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h4 className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                   <Send className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
                   Mensagens do WhatsApp
                   <TooltipProvider>
@@ -458,7 +458,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         <Info className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p className="text-[10px]">
+                        <p className="text-micro">
                           Use variáveis: {'{{nome}}'}, {'{{empresa}}'}, {'{{campo}}'}, {'{{proximo_campo}}'}, {'{{campos_pendentes}}'}, {'{{dias_restantes}}'}
                         </p>
                       </TooltipContent>
@@ -467,16 +467,16 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Solicitação Inicial</Label>
+                    <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Solicitação Inicial</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.initialRequest}
                         onChange={(e) => updateCollectionMessages({ initialRequest: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     ) : (
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.initialRequest}
                       </p>
                     )}
@@ -484,16 +484,16 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
                   {(config.collectionMode === 'candidate_choice') && (
                     <div>
-                      <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Mensagem de Escolha</Label>
+                      <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Mensagem de Escolha</Label>
                       {isEditing ? (
                         <textarea
                           value={config.collectionMessages.choicePrompt}
                           onChange={(e) => updateCollectionMessages({ choicePrompt: e.target.value })}
                           rows={3}
-                          className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         />
                       ) : (
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                           {config.collectionMessages.choicePrompt}
                         </p>
                       )}
@@ -503,32 +503,32 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   {(config.collectionMode === 'chat_only' || config.collectionMode === 'candidate_choice') && (
                     <>
                       <div>
-                        <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Início da Coleta via Chat</Label>
+                        <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Início da Coleta via Chat</Label>
                         {isEditing ? (
                           <textarea
                             value={config.collectionMessages.chatStartMessage}
                             onChange={(e) => updateCollectionMessages({ chatStartMessage: e.target.value })}
                             rows={2}
-                            className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           />
                         ) : (
-                          <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.chatStartMessage}
                           </p>
                         )}
                       </div>
 
                       <div>
-                        <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Confirmação de Documento</Label>
+                        <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Confirmação de Documento</Label>
                         {isEditing ? (
                           <textarea
                             value={config.collectionMessages.documentReceived}
                             onChange={(e) => updateCollectionMessages({ documentReceived: e.target.value })}
                             rows={1}
-                            className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           />
                         ) : (
-                          <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.documentReceived}
                           </p>
                         )}
@@ -537,32 +537,32 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   )}
 
                   <div>
-                    <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Lembrete de Pendência</Label>
+                    <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Lembrete de Pendência</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.pendingReminder}
                         onChange={(e) => updateCollectionMessages({ pendingReminder: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     ) : (
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.pendingReminder}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label className="text-[10px] text-gray-600 dark:text-gray-400 mb-1 block">Confirmação Final</Label>
+                    <Label className="text-micro text-gray-600 dark:text-gray-400 mb-1 block">Confirmação Final</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.allComplete}
                         onChange={(e) => updateCollectionMessages({ allComplete: e.target.value })}
                         rows={1}
-                        className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     ) : (
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.allComplete}
                       </p>
                     )}
@@ -583,7 +583,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-amber-700 dark:text-amber-300">
+                  <p className="text-micro text-amber-700 dark:text-amber-300">
                     A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) exige consentimento explícito do candidato antes da coleta de dados pessoais.
                   </p>
                 </div>
@@ -592,41 +592,41 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <div className="flex items-center justify-between mb-2">
-                    <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Exigir Consentimento</Label>
+                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Exigir Consentimento</Label>
                     {isEditing ? (
                       <Switch
                         checked={config.lgpd.requireConsent}
                         onCheckedChange={(checked: boolean) => updateLgpdConfig({ requireConsent: checked })}
                       />
                     ) : (
-                      <Badge variant={config.lgpd.requireConsent ? "default" : "secondary"} className="text-[9px]">
+                      <Badge variant={config.lgpd.requireConsent ? "default" : "secondary"} className="text-micro">
                         {config.lgpd.requireConsent ? 'Obrigatório' : 'Desabilitado'}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Candidato deve autorizar antes de enviar dados</p>
+                  <p className="text-micro text-gray-500 dark:text-gray-400">Candidato deve autorizar antes de enviar dados</p>
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <div className="flex items-center justify-between mb-2">
-                    <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Permitir Exclusão</Label>
+                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Permitir Exclusão</Label>
                     {isEditing ? (
                       <Switch
                         checked={config.lgpd.allowDataDeletion}
                         onCheckedChange={(checked: boolean) => updateLgpdConfig({ allowDataDeletion: checked })}
                       />
                     ) : (
-                      <Badge variant={config.lgpd.allowDataDeletion ? "default" : "secondary"} className="text-[9px]">
+                      <Badge variant={config.lgpd.allowDataDeletion ? "default" : "secondary"} className="text-micro">
                         {config.lgpd.allowDataDeletion ? 'Habilitado' : 'Desabilitado'}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Candidato pode solicitar exclusão dos dados</p>
+                  <p className="text-micro text-gray-500 dark:text-gray-400">Candidato pode solicitar exclusão dos dados</p>
                 </div>
               </div>
 
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Retenção de Dados
                 </Label>
                 {isEditing ? (
@@ -637,19 +637,19 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       onChange={(e) => updateLgpdConfig({ dataRetentionDays: parseInt(e.target.value) || 365 })}
                       min={30}
                       max={1825}
-                      className="w-20 px-2 py-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                      className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                     />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">dias após término do processo</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400">dias após término do processo</span>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     {config.lgpd.dataRetentionDays} dias após término do processo
                   </p>
                 )}
               </div>
 
               <div>
-                <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                   Mensagem de Consentimento (WhatsApp)
                 </Label>
                 {isEditing ? (
@@ -657,17 +657,17 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.consentMessage}
                     onChange={(e) => updateLgpdConfig({ consentMessage: e.target.value })}
                     rows={4}
-                    className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   />
                 ) : (
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.consentMessage}
                   </p>
                 )}
               </div>
 
               <div>
-                <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                   Disclaimer (Portal)
                 </Label>
                 {isEditing ? (
@@ -675,10 +675,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.disclaimerText}
                     onChange={(e) => updateLgpdConfig({ disclaimerText: e.target.value })}
                     rows={3}
-                    className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   />
                 ) : (
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.disclaimerText}
                   </p>
                 )}
@@ -699,22 +699,22 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <>
                   {showAddField ? (
                     <div className="p-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 rounded-md">
-                      <h4 className="text-[11px] font-medium mb-2 text-gray-900 dark:text-gray-100">Novo Campo Customizado</h4>
+                      <h4 className="text-xs font-medium mb-2 text-gray-900 dark:text-gray-100">Novo Campo Customizado</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
-                          <Label className="text-[10px] text-gray-700 dark:text-gray-300">Nome do Campo</Label>
+                          <Label className="text-micro text-gray-700 dark:text-gray-300">Nome do Campo</Label>
                           <input
                             type="text"
                             value={newFieldName}
                             onChange={(e) => setNewFieldName(e.target.value)}
                             placeholder="Ex: Número do Passaporte"
-                            className="w-full mt-1 px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            className="w-full mt-1 px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <Label className="text-[10px] text-gray-700 dark:text-gray-300">Tipo</Label>
+                          <Label className="text-micro text-gray-700 dark:text-gray-300">Tipo</Label>
                           <Select value={newFieldType} onValueChange={(v: any) => setNewFieldType(v)}>
-                            <SelectTrigger className="mt-1 h-7 text-[11px]">
+                            <SelectTrigger className="mt-1 h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -728,17 +728,17 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           </Select>
                         </div>
                         <div className="flex items-end gap-2">
-                          <Button size="sm" onClick={handleAddField} disabled={!newFieldName.trim()} className="h-7 text-[10px] px-2">
+                          <Button size="sm" onClick={handleAddField} disabled={!newFieldName.trim()} className="h-7 text-micro px-2">
                             Adicionar
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => setShowAddField(false)} className="h-7 text-[10px] px-2">
+                          <Button variant="outline" size="sm" onClick={() => setShowAddField(false)} className="h-7 text-micro px-2">
                             Cancelar
                           </Button>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => setShowAddField(true)} className="h-7 text-[10px]">
+                    <Button variant="outline" size="sm" onClick={() => setShowAddField(true)} className="h-7 text-micro">
                       <Plus className="w-3 h-3 mr-1" />
                       Adicionar Campo
                     </Button>
@@ -748,7 +748,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               {defaultFields.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Campos do Sistema</h4>
+                  <h4 className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Campos do Sistema</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {defaultFields.map((field) => (
                       <TooltipProvider key={field.id}>
@@ -762,14 +762,14 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         >
                           <div className="flex-1 min-w-0 mr-2">
                             <div className="flex items-center gap-1">
-                              <span className="text-[11px] font-medium text-gray-900 dark:text-gray-100 truncate">{field.displayName}</span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{field.displayName}</span>
                               {field.id === 'cv_document' && (
                                 <Tooltip>
                                   <TooltipTrigger>
                                     <Info className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-xs">
-                                    <p className="text-[10px]">O CV enviado será parseado automaticamente pela LIA para extração de dados estruturados.</p>
+                                    <p className="text-micro">O CV enviado será parseado automaticamente pela LIA para extração de dados estruturados.</p>
                                   </TooltipContent>
                                 </Tooltip>
                               )}
@@ -783,7 +783,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                               className="scale-75"
                             />
                           ) : (
-                            <Badge variant={field.enabled ? "default" : "secondary"} className="text-[9px] h-4">
+                            <Badge variant={field.enabled ? "default" : "secondary"} className="text-micro h-4">
                               {field.enabled ? 'Ativo' : 'Inativo'}
                             </Badge>
                           )}
@@ -796,7 +796,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               {customFields.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Campos Personalizados</h4>
+                  <h4 className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Campos Personalizados</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {customFields.map((field) => (
                       <div
@@ -809,7 +809,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         )}
                       >
                         <div className="flex-1 min-w-0 mr-2">
-                          <span className="text-[11px] font-medium text-gray-900 dark:text-gray-100 truncate block">{field.displayName}</span>
+                          <span className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate block">{field.displayName}</span>
                           <FieldBadges field={field} />
                         </div>
                         <div className="flex items-center gap-1">
@@ -828,7 +828,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                               className="scale-75"
                             />
                           ) : (
-                            <Badge variant={field.enabled ? "default" : "secondary"} className="text-[9px] h-4">
+                            <Badge variant={field.enabled ? "default" : "secondary"} className="text-micro h-4">
                               {field.enabled ? 'Ativo' : 'Inativo'}
                             </Badge>
                           )}
@@ -840,7 +840,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               )}
 
               {customFields.length === 0 && !isEditing && (
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Nenhum campo personalizado configurado. Clique em &quot;Editar Configurações&quot; para adicionar.
                 </p>
               )}
@@ -857,7 +857,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-md">
-                  <Label className="text-[11px] font-medium mb-2 block text-gray-700 dark:text-gray-300">Logo da Empresa</Label>
+                  <Label className="text-xs font-medium mb-2 block text-gray-700 dark:text-gray-300">Logo da Empresa</Label>
                   <div className="flex items-center gap-3">
                     {config.branding.logoUrl ? (
                       <div className="relative w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
@@ -869,7 +869,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </div>
                     )}
                     {isEditing && (
-                      <Button variant="outline" size="sm" className="h-7 text-[10px]">
+                      <Button variant="outline" size="sm" className="h-7 text-micro">
                         <Upload className="w-3 h-3 mr-1" />
                         Upload
                       </Button>
@@ -878,7 +878,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <Label className="text-[11px] font-medium mb-2 block text-gray-700 dark:text-gray-300">Cor Primária</Label>
+                  <Label className="text-xs font-medium mb-2 block text-gray-700 dark:text-gray-300">Cor Primária</Label>
                   <div className="flex items-center gap-2">
                     {isEditing ? (
                       <>
@@ -892,7 +892,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           type="text"
                           value={config.branding.primaryColor}
                           onChange={(e) => updateBranding({ primaryColor: e.target.value })}
-                          className="flex-1 px-2 py-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded-full font-mono uppercase bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                          className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-full font-mono uppercase bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                         />
                       </>
                     ) : (
@@ -901,7 +901,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           className="w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700" 
                           style={{ backgroundColor: config.branding.primaryColor }}
                         />
-                        <span className="text-[11px] font-mono text-gray-700 dark:text-gray-300">{config.branding.primaryColor}</span>
+                        <span className="text-xs font-mono text-gray-700 dark:text-gray-300">{config.branding.primaryColor}</span>
                       </div>
                     )}
                   </div>
@@ -910,13 +910,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Mensagem de Boas-vindas</Label>
+                  <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Mensagem de Boas-vindas</Label>
                   {isEditing && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('welcome')}
-                      className="h-6 text-[10px] px-2 text-gray-600 dark:text-gray-400 hover:text-[#4da8ba] hover:bg-[#F0F9FA]"
+                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -928,11 +928,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.welcomeMessage}
                     onChange={(e) => updateBranding({ welcomeMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     placeholder="Mensagem exibida no início do formulário..."
                   />
                 ) : (
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                     {config.branding.welcomeMessage}
                   </p>
                 )}
@@ -940,13 +940,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Mensagem de Agradecimento</Label>
+                  <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Mensagem de Agradecimento</Label>
                   {isEditing && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('thankYou')}
-                      className="h-6 text-[10px] px-2 text-gray-600 dark:text-gray-400 hover:text-[#4da8ba] hover:bg-[#F0F9FA]"
+                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -958,11 +958,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.thankYouMessage}
                     onChange={(e) => updateBranding({ thankYouMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     placeholder="Mensagem exibida após o envio do formulário..."
                   />
                 ) : (
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                     {config.branding.thankYouMessage}
                   </p>
                 )}

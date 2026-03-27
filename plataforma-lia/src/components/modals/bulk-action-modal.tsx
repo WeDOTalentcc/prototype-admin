@@ -235,7 +235,7 @@ export function BulkActionModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700">
         <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
-          <DialogTitle className="flex items-center gap-2 text-[14px] font-semibold text-gray-950 dark:text-gray-50">
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50">
             {config.icon}
             {config.title}
           </DialogTitle>
@@ -248,7 +248,7 @@ export function BulkActionModal({
         <div className="space-y-5 py-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-[11px] font-medium text-gray-800 flex items-center gap-2">
+              <Label className="text-xs font-medium text-gray-800 flex items-center gap-2">
                 <Users className="w-3 h-3 text-gray-600" />
                 Candidatos Selecionados
               </Label>
@@ -275,14 +275,14 @@ export function BulkActionModal({
                     >
                       <Avatar className="w-7 h-7">
                         <AvatarImage src={avatarUrl} />
-                        <AvatarFallback className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                           {candidate.name?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-gray-800 truncate">{candidate.name}</p>
                         {candidate.email && (
-                          <p className="text-[11px] text-gray-600 truncate">{candidate.email}</p>
+                          <p className="text-xs text-gray-600 truncate">{candidate.email}</p>
                         )}
                       </div>
                       {result && (
@@ -322,7 +322,7 @@ export function BulkActionModal({
 
           {actionType === 'move_stage' && !isComplete && (
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-800">Etapa de Destino</Label>
+              <Label className="text-xs font-medium text-gray-800">Etapa de Destino</Label>
               <Select value={targetStage} onValueChange={setTargetStage}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a etapa" />
@@ -341,7 +341,7 @@ export function BulkActionModal({
           {actionType === 'reject' && !isComplete && (
             <>
               <div className="space-y-2">
-                <Label className="text-[11px] font-medium text-gray-800">Motivo da Reprovação</Label>
+                <Label className="text-xs font-medium text-gray-800">Motivo da Reprovação</Label>
                 <Select value={rejectionReason} onValueChange={setRejectionReason}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o motivo" />
@@ -356,7 +356,7 @@ export function BulkActionModal({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-[11px] font-medium text-gray-800">Observações (opcional)</Label>
+                <Label className="text-xs font-medium text-gray-800">Observações (opcional)</Label>
                 <Textarea
                   value={rejectionNotes}
                   onChange={(e) => setRejectionNotes(e.target.value)}

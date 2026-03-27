@@ -52,7 +52,7 @@ export function JobFiltersPanel({
             <h3 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Filtros de Vagas</h3>
           </div>
           {getActiveJobFiltersCount() > 0 && (
-            <Badge className="text-[10px] px-1.5 py-0 h-4 bg-gray-900 dark:bg-gray-50 text-white">
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900 dark:bg-gray-50 text-white">
               {getActiveJobFiltersCount()}
             </Badge>
           )}
@@ -69,7 +69,7 @@ export function JobFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => toggleJobFilter('status', 'statuses', 'Ativa')}
-                className={`h-8 text-[11px] justify-start ${
+                className={`h-8 text-xs justify-start ${
                   jobFilters.status?.statuses?.includes('Ativa') 
                     ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 font-semibold' 
                     : ''
@@ -82,7 +82,7 @@ export function JobFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => toggleJobFilter('status', 'priorities', 'alta')}
-                className={`h-8 text-[11px] justify-start ${
+                className={`h-8 text-xs justify-start ${
                   jobFilters.status?.priorities?.includes('alta') 
                     ? 'bg-red-50 border-red-300 text-red-700 font-semibold' 
                     : ''
@@ -95,7 +95,7 @@ export function JobFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => toggleJobFilter('position', 'workModels', 'remoto')}
-                className={`h-8 text-[11px] justify-start ${
+                className={`h-8 text-xs justify-start ${
                   jobFilters.position?.workModels?.includes('remoto') 
                     ? 'bg-gray-50 dark:bg-gray-900 border-gray-900 dark:border-gray-50 text-wedo-cyan-dark font-semibold' 
                     : ''
@@ -108,7 +108,7 @@ export function JobFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
-                className={`h-8 text-[11px] justify-start ${
+                className={`h-8 text-xs justify-start ${
                   jobFilters.funnel?.emptyPipeline 
                     ? 'bg-orange-50 border-orange-300 text-orange-700 font-semibold' 
                     : ''
@@ -130,7 +130,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={status}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.status?.statuses?.includes(status)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -153,7 +153,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={stage}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.status?.stages?.includes(stage)
                       ? 'bg-purple-50 border-purple-300 text-purple-700 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -180,7 +180,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={priority.value}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:opacity-80 transition-opacity ${
+                  className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
                     jobFilters.status?.priorities?.includes(priority.value)
                       ? priority.color + ' font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -203,7 +203,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={model}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
                     jobFilters.position?.workModels?.includes(model)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -226,7 +226,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={level}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.position?.levels?.includes(level)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -249,7 +249,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={loc}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.position?.locations?.includes(loc)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -272,7 +272,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={dept}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.team?.departments?.includes(dept)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -295,7 +295,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={recruiter}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.team?.recruiters?.includes(recruiter)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -318,7 +318,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={manager}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.team?.managers?.includes(manager)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -345,7 +345,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={channel.value}
                   variant="outline"
-                  className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
                       ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-950 dark:text-gray-50 font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -358,7 +358,7 @@ export function JobFiltersPanel({
               ))}
               <Badge
                 variant="outline"
-                className={`text-[11px] cursor-pointer hover:bg-gray-100 transition-colors ${
+                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                   jobFilters.publishing?.unpublished
                     ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
@@ -411,7 +411,7 @@ export function JobFiltersPanel({
                     const name = prompt("Nome da busca:")
                     if (name) saveSearchAsTemplate(name)
                   }}
- className="h-6 text-[11px] px-2 text-gray-600 hover:text-gray-600/80"
+ className="h-6 text-xs px-2 text-gray-600 hover:text-gray-600/80"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   Salvar Busca
@@ -433,7 +433,7 @@ export function JobFiltersPanel({
                           {search.name}
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                      <p className="text-micro text-gray-600 dark:text-gray-400 mt-0.5 truncate">
                         {new Date(search.createdAt).toLocaleDateString('pt-BR')}
                         {search.query && ` - "${search.query}"`}
                       </p>
@@ -471,10 +471,10 @@ export function JobFiltersPanel({
             ) : (
               <div className="text-center py-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <Bookmark className="w-5 h-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Nenhuma busca salva
                 </p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-500 mt-0.5">
+                <p className="text-micro text-gray-600 dark:text-gray-500 mt-0.5">
                   Aplique filtros e clique em "Salvar Busca"
                 </p>
               </div>

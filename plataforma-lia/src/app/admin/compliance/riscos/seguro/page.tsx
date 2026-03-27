@@ -713,7 +713,7 @@ export default function SeguroCiberneticoPage() {
                               {coverage.name}
                             </span>
                             {coverage.bcbArticle && (
-                              <Badge variant="outline" className="text-[10px] font-mono">{coverage.bcbArticle}</Badge>
+                              <Badge variant="outline" className="text-micro font-mono">{coverage.bcbArticle}</Badge>
                             )}
                           </div>
                           {coverage.description && (
@@ -775,7 +775,7 @@ export default function SeguroCiberneticoPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] font-mono">
+                      <Badge variant="outline" className="text-micro font-mono">
                         {item.bcbArticle}
                       </Badge>
                       <Badge 

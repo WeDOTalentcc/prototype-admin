@@ -53,7 +53,7 @@ export function HITLConfirmCard({
           strokeWidth={2}
         />
         <p
-          className="text-[12px] font-semibold text-amber-800 dark:text-amber-300 leading-snug"
+          className="text-sm-ui font-semibold text-amber-800 dark:text-amber-300 leading-snug"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           Confirmação necessária
@@ -62,7 +62,7 @@ export function HITLConfirmCard({
 
       {/* Descrição da ação */}
       <p
-        className="text-[12px] text-gray-700 dark:text-gray-300 leading-relaxed pl-6"
+        className="text-sm-ui text-gray-700 dark:text-gray-300 leading-relaxed pl-6"
         style={{ fontFamily: "Open Sans, sans-serif" }}
       >
         {description}
@@ -82,7 +82,7 @@ export function HITLConfirmCard({
           aria-label="Confirmar automaticamente esta ação no futuro"
         />
         <span
-          className="text-[11px] text-gray-500 dark:text-gray-400"
+          className="text-xs text-gray-500 dark:text-gray-400"
           style={{ fontFamily: "Open Sans, sans-serif" }}
         >
           Confirmar automaticamente esta ação no futuro
@@ -95,7 +95,7 @@ export function HITLConfirmCard({
           onClick={() => onConfirm(autoConfirm)}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5",
-            "rounded-md text-[11px] font-medium",
+            "rounded-md text-xs font-medium",
             "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900",
             "hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
           )}
@@ -108,7 +108,7 @@ export function HITLConfirmCard({
           onClick={onCancel}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5",
-            "rounded-md text-[11px] font-medium",
+            "rounded-md text-xs font-medium",
             "border border-gray-200 dark:border-gray-700",
             "text-gray-600 dark:text-gray-400",
             "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

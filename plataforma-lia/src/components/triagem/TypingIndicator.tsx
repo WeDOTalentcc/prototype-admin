@@ -19,7 +19,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
       aria-label="LIA está digitando"
     >
       <div className="flex-shrink-0">
-        <LIAIcon size="sm" className="bg-[#60BED1]/10" />
+        <LIAIcon size="sm" className="bg-wedo-cyan/10" />
       </div>
 
       <div className="flex items-center gap-3 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -27,7 +27,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-2 h-2 rounded-full bg-[#60BED1]"
+              className="w-2 h-2 rounded-full bg-wedo-cyan"
               style={{
                 animation: "triagemTypingDot 1.4s ease-in-out infinite",
                 animationDelay: `${i * 0.2}s`,

@@ -85,7 +85,7 @@ export function LiaInstructionPopover({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-chat-cyan" />
-              <span className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Instrução para LIA</span>
+              <span className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Instrução para LIA</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -108,7 +108,7 @@ export function LiaInstructionPopover({
 
           {examples.length > 0 && (
             <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-1 text-[11px] font-medium uppercase text-gray-600">
+              <div className="flex items-center gap-1 text-xs font-medium uppercase text-gray-600">
                 <Info className="w-3 h-3" />
                 <span>Exemplos de instruções</span>
               </div>
@@ -117,7 +117,7 @@ export function LiaInstructionPopover({
                   <button
                     key={idx}
                     onClick={() => setInstruction(example)}
-                    className="block w-full text-left text-[11px] text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 rounded hover:bg-white transition-colors"
+                    className="block w-full text-left text-xs text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 rounded hover:bg-white transition-colors"
                   >
                     "{example}"
                   </button>

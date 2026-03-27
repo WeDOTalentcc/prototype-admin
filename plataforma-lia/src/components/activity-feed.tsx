@@ -429,7 +429,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-amber-700`}>Atenção:</span>
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px]">
+                        <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 text-micro">
                           {flag}
                         </Badge>
                       ))}
@@ -446,7 +446,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-emerald-700`}>Pontos fortes:</span>
                       {activity.extra_data.green_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
+                        <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-micro">
                           {flag}
                         </Badge>
                       ))}

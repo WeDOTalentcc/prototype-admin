@@ -119,13 +119,13 @@ function MiniSalaryBar({
           className="absolute top-0 w-0.5 h-6 bg-gray-900 dark:bg-gray-50"
           style={{ left: `${percentile}%` }}
         >
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
             P{percentile}
           </div>
         </div>
       </div>
       
-      <div className="flex justify-between text-[9px] text-muted-foreground">
+      <div className="flex justify-between text-micro text-muted-foreground">
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
           <span>Proposto</span>
@@ -209,7 +209,7 @@ export function CompensationChatMessage({
               <p className={cn("text-xs font-medium", statusConfig.className)}>
                 {statusConfig.label}
               </p>
-              <p className="text-[10px] text-muted-foreground truncate">
+              <p className="text-micro text-muted-foreground truncate">
                 {statusConfig.description}
               </p>
             </div>
@@ -223,13 +223,13 @@ export function CompensationChatMessage({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="p-2.5 rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-                <p className="text-[10px] text-muted-foreground mb-0.5">Proposto</p>
+                <p className="text-micro text-muted-foreground mb-0.5">Proposto</p>
                 <p className="text-xs font-semibold text-green-700 dark:text-green-400">
                   {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
                 </p>
               </div>
               <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] text-muted-foreground mb-0.5">Mercado</p>
+                <p className="text-micro text-muted-foreground mb-0.5">Mercado</p>
                 <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                   {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
                 </p>
@@ -242,12 +242,12 @@ export function CompensationChatMessage({
               percentile={analysis.salary.percentileVsMarket}
             />
 
-            <div className="flex items-center justify-between text-[11px] px-1">
+            <div className="flex items-center justify-between text-xs px-1">
               <span className="text-muted-foreground">Posição no mercado:</span>
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-[10px] h-5",
+                  "text-micro h-5",
                   analysis.salary.percentileVsMarket >= 50 
                     ? "border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/30 dark:text-green-400"
                     : "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
@@ -260,7 +260,7 @@ export function CompensationChatMessage({
             {analysis.salary.suggestion && (
               <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-start gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                <p className="text-micro text-amber-700 dark:text-amber-400">
                   <span className="font-medium">Sugestão:</span> Considere ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)} para melhor competitividade.
                 </p>
               </div>

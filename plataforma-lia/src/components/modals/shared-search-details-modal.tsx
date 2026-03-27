@@ -217,18 +217,18 @@ export function SharedSearchDetailsModal({
   const getStatusBadge = (status: 'active' | 'expired' | 'revoked') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px]">Ativo</Badge>
+        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-micro">Ativo</Badge>
       case 'expired':
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">Expirado</Badge>
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-micro">Expirado</Badge>
       case 'revoked':
-        return <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-[10px]">Revogado</Badge>
+        return <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-micro">Revogado</Badge>
     }
   }
 
   const getDecisionBadge = (feedback?: CandidateFeedback) => {
     if (!feedback) {
       return (
-        <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-[10px] gap-1">
+        <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-micro gap-1">
           <Clock className="w-3 h-3" />
           Pendente
         </Badge>
@@ -237,21 +237,21 @@ export function SharedSearchDetailsModal({
     switch (feedback.decision) {
       case 'approved':
         return (
-          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] gap-1">
+          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-micro gap-1">
             <ThumbsUp className="w-3 h-3" />
             Interessado
           </Badge>
         )
       case 'maybe':
         return (
-          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] gap-1">
+          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-micro gap-1">
             <HelpCircle className="w-3 h-3" />
             Talvez
           </Badge>
         )
       case 'rejected':
         return (
-          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px] gap-1">
+          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-micro gap-1">
             <ThumbsDown className="w-3 h-3" />
             Não Interessado
           </Badge>
@@ -280,7 +280,7 @@ export function SharedSearchDetailsModal({
               </DialogTitle>
               {sharedSearch && (
                 <>
-                  <Badge className="bg-zinc-700 text-zinc-300 border-zinc-600 text-[10px]">
+                  <Badge className="bg-zinc-700 text-zinc-300 border-zinc-600 text-micro">
                     {sharedSearch.share_type === 'search' ? 'Busca' : 'Lista'}
                   </Badge>
                   {getStatusBadge(sharedSearch.status)}
@@ -309,27 +309,27 @@ export function SharedSearchDetailsModal({
                 <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <p className="text-zinc-400 text-[11px] mb-1">Compartilhado com</p>
+                      <p className="text-zinc-400 text-xs mb-1">Compartilhado com</p>
                       <p className="text-white font-medium text-xs">
                         {recipient?.name || recipient?.email || '-'}
                       </p>
                       {recipient?.name && (
-                        <p className="text-zinc-500 text-[10px]">{recipient.email}</p>
+                        <p className="text-zinc-500 text-micro">{recipient.email}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-[11px] mb-1 flex items-center gap-1">
+                      <p className="text-zinc-400 text-xs mb-1 flex items-center gap-1">
                         <Eye className="w-3 h-3" /> Primeiro Acesso
                       </p>
                       <p className="text-white font-medium text-xs">
                         {formatDate(recipient?.first_accessed_at)}
                       </p>
-                      <p className="text-zinc-500 text-[10px]">
+                      <p className="text-zinc-500 text-micro">
                         {recipient?.total_views || 0} visualizações
                       </p>
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-[11px] mb-1 flex items-center gap-1">
+                      <p className="text-zinc-400 text-xs mb-1 flex items-center gap-1">
                         <Calendar className="w-3 h-3" /> Expira em
                       </p>
                       <p className="text-white font-medium text-xs">
@@ -337,14 +337,14 @@ export function SharedSearchDetailsModal({
                       </p>
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-[11px] mb-1">Progresso</p>
+                      <p className="text-zinc-400 text-xs mb-1">Progresso</p>
                       <div className="flex items-center gap-2">
                         <Progress value={progressPercent} className="h-2 flex-1 bg-zinc-700" />
-                        <span className="text-[11px] text-zinc-300 whitespace-nowrap">
+                        <span className="text-xs text-zinc-300 whitespace-nowrap">
                           {totalEvaluated}/{totalCandidates}
                         </span>
                       </div>
-                      <p className="text-zinc-500 text-[10px] mt-0.5">candidatos avaliados</p>
+                      <p className="text-zinc-500 text-micro mt-0.5">candidatos avaliados</p>
                     </div>
                   </div>
                 </div>
@@ -353,22 +353,22 @@ export function SharedSearchDetailsModal({
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">👍</div>
                     <p className="text-2xl font-bold text-emerald-400">{feedbackCounts.approved}</p>
-                    <p className="text-[11px] text-zinc-400">Interessados</p>
+                    <p className="text-xs text-zinc-400">Interessados</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">🤔</div>
                     <p className="text-2xl font-bold text-amber-400">{feedbackCounts.maybe}</p>
-                    <p className="text-[11px] text-zinc-400">Talvez</p>
+                    <p className="text-xs text-zinc-400">Talvez</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">👎</div>
                     <p className="text-2xl font-bold text-red-400">{feedbackCounts.rejected}</p>
-                    <p className="text-[11px] text-zinc-400">Não Interessados</p>
+                    <p className="text-xs text-zinc-400">Não Interessados</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">⏳</div>
                     <p className="text-2xl font-bold text-zinc-400">{feedbackCounts.pending}</p>
-                    <p className="text-[11px] text-zinc-400">Pendentes</p>
+                    <p className="text-xs text-zinc-400">Pendentes</p>
                   </div>
                 </div>
 
@@ -376,46 +376,46 @@ export function SharedSearchDetailsModal({
                   <TabsList className="bg-zinc-800 border border-zinc-700 p-1 h-auto">
                     <TabsTrigger 
                       value="all" 
-                      className="text-[11px] px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Todos
-                      <Badge className="ml-1.5 text-[9px] px-1.5 py-0 bg-zinc-600 text-zinc-300">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-zinc-600 text-zinc-300">
                         {totalCandidates}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="approved" 
-                      className="text-[11px] px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Interessados
-                      <Badge className="ml-1.5 text-[9px] px-1.5 py-0 bg-emerald-500/20 text-emerald-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-emerald-500/20 text-emerald-400">
                         {feedbackCounts.approved}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="maybe" 
-                      className="text-[11px] px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Talvez
-                      <Badge className="ml-1.5 text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-amber-500/20 text-amber-400">
                         {feedbackCounts.maybe}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="rejected" 
-                      className="text-[11px] px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Não
-                      <Badge className="ml-1.5 text-[9px] px-1.5 py-0 bg-red-500/20 text-red-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-red-500/20 text-red-400">
                         {feedbackCounts.rejected}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="pending" 
-                      className="text-[11px] px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Pendentes
-                      <Badge className="ml-1.5 text-[9px] px-1.5 py-0 bg-zinc-600 text-zinc-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-zinc-600 text-zinc-400">
                         {feedbackCounts.pending}
                       </Badge>
                     </TabsTrigger>
@@ -433,7 +433,7 @@ export function SharedSearchDetailsModal({
                       />
                       <label 
                         htmlFor="select-all-approved" 
-                        className="text-[11px] text-zinc-300 cursor-pointer"
+                        className="text-xs text-zinc-300 cursor-pointer"
                       >
                         Selecionar todos aprovados ({approvedIds.length})
                       </label>
@@ -463,12 +463,12 @@ export function SharedSearchDetailsModal({
                             <div className="flex items-start justify-between gap-2">
                               <div>
                                 <p className="text-white font-medium text-xs">{candidate.name}</p>
-                                <p className="text-zinc-400 text-[11px]">
+                                <p className="text-zinc-400 text-xs">
                                   {candidate.title}
                                   {candidate.company && ` • ${candidate.company}`}
                                 </p>
                                 {candidate.location && (
-                                  <p className="text-zinc-500 text-[10px] mt-0.5">{candidate.location}</p>
+                                  <p className="text-zinc-500 text-micro mt-0.5">{candidate.location}</p>
                                 )}
                               </div>
                               <div className="flex-shrink-0">
@@ -494,7 +494,7 @@ export function SharedSearchDetailsModal({
                                   </div>
                                 )}
                                 {candidate.feedback.comment && (
-                                  <p className="text-zinc-400 text-[11px] italic">
+                                  <p className="text-zinc-400 text-xs italic">
                                     "{candidate.feedback.comment}"
                                   </p>
                                 )}
@@ -523,7 +523,7 @@ export function SharedSearchDetailsModal({
                     size="sm"
                     onClick={handleCreateList}
                     disabled={selectedIds.size === 0}
-                    className="text-[11px] h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                    className="text-xs h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
                   >
                     <ListPlus className="w-3.5 h-3.5 mr-1.5" />
                     Criar Lista
@@ -533,7 +533,7 @@ export function SharedSearchDetailsModal({
                     size="sm"
                     onClick={handleAddToJob}
                     disabled={selectedIds.size === 0}
-                    className="text-[11px] h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                    className="text-xs h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
                   >
                     <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Adicionar à Vaga
@@ -542,7 +542,7 @@ export function SharedSearchDetailsModal({
                     size="sm"
                     onClick={handleCreateJob}
                     disabled={selectedIds.size === 0}
-                    className="text-[11px] h-8 text-white disabled:opacity-50 bg-gray-900 hover:bg-gray-800"
+                    className="text-xs h-8 text-white disabled:opacity-50 bg-gray-900 hover:bg-gray-800"
                   >
                     <Briefcase className="w-3.5 h-3.5 mr-1.5" />
                     Criar Vaga

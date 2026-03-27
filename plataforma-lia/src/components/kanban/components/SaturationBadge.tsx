@@ -152,14 +152,14 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold font-['Open_Sans'] text-red-600 bg-red-50 border border-red-200 cursor-pointer" title="Pipeline Saturado">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-red-600 bg-red-50 border border-red-200 cursor-pointer" title="Pipeline Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span className="text-red-300">|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold font-['Open_Sans'] text-amber-600 bg-amber-50 border border-amber-200 cursor-pointer" title="Quase Saturado">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-amber-600 bg-amber-50 border border-amber-200 cursor-pointer" title="Quase Saturado">
       <TrendingUp className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span className="text-amber-300">|</span>
@@ -177,7 +177,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
         align="start"
         sideOffset={8}
       >
-        <div className="p-3 space-y-3 text-[11px] font-['Open_Sans']">
+        <div className="p-3 space-y-3 text-xs font-['Open_Sans']">
           <div className="font-medium text-gray-900">
             {isSaturated ? "Pipeline Saturado" : "Quase Saturado"}
           </div>
@@ -241,20 +241,20 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           <button
             onClick={() => handleUnlock("increase_threshold")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-[11px] font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Aumentar limite (+{data.unlock_increment})
           </button>
           <button
             onClick={() => handleUnlock("disable_temporarily")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-[11px] font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Desbloquear por {data.unlock_hours}h
           </button>
           <button
             onClick={() => router.push('/configuracoes')}
-            className="w-full px-3 py-1.5 rounded-md text-[11px] font-medium font-['Open_Sans'] text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
           >
             <Settings className="w-3 h-3" />
             Ver configurações

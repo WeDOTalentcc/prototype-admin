@@ -159,7 +159,7 @@ export function ClientTable({
                   variant={page === pageNum ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}
-                  className={page === pageNum ? 'bg-gray-900 dark:bg-gray-50 hover:bg-[#4fa9bb]' : ''}
+                  className={page === pageNum ? 'bg-gray-900 dark:bg-gray-50 hover:bg-wedo-cyan-dark' : ''}
                 >
                   {pageNum}
                 </Button>

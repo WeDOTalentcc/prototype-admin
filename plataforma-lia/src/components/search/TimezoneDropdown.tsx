@@ -126,7 +126,7 @@ export function TimezoneDropdown({
             {groupedOptions.map((group, groupIndex) => (
               <div key={group.group}>
                 {group.group !== 'default' && (
-                  <div className="px-3 py-1.5 text-xs font-semibold text-[#8B5CF6] bg-gray-50 dark:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 dark:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
                     {group.group}
                   </div>
                 )}
@@ -150,7 +150,7 @@ export function TimezoneDropdown({
                         )}>
                           {option.label}
                         </span>
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">{option.offset}</span>
+                        <span className="text-micro text-gray-400 dark:text-gray-500">{option.offset}</span>
                       </div>
                       {value === option.value && (
                         <Check className="w-4 h-4 text-gray-600 dark:text-gray-400" />

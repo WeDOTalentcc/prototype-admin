@@ -145,7 +145,7 @@ export function WSIScoreCard({
               <h4 className="font-semibold" style={{ color: 'var(--lia-text-primary)' }}>
                 {data.candidate_name}
               </h4>
-              <span className={`inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded-full ${classification.bg} ${classification.color}`}>
+              <span className={`inline-flex items-center px-1.5 py-0.5 text-micro font-medium rounded-full ${classification.bg} ${classification.color}`}>
                 {classification.label}
               </span>
             </div>

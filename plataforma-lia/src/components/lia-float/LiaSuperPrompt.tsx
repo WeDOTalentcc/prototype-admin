@@ -240,7 +240,7 @@ export function LiaSuperPrompt() {
                   <Brain className="w-5 h-5 text-chat-cyan" strokeWidth={2.5} />
                   <span
                     className="text-lg font-bold"
-                    style={{ color: "#1F2937", fontFamily: '"Inter", sans-serif' }}
+                    style={{ color: "var(--gray-800)", fontFamily: '"Inter", sans-serif' }}
                   >
                     LIA
                   </span>
@@ -329,11 +329,11 @@ export function LiaSuperPrompt() {
                   {/* History panel */}
                   {showHistory ? (
                     <div className="flex-1 overflow-y-auto px-6 py-4">
-                      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
                         Conversas recentes
                       </p>
                       {recentChats.length === 0 ? (
-                        <p className="text-[13px] text-gray-400 text-center mt-10" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                        <p className="text-base-ui text-gray-400 text-center mt-10" style={{ fontFamily: "Open Sans, sans-serif" }}>
                           Nenhuma conversa anterior encontrada.
                         </p>
                       ) : (
@@ -346,10 +346,10 @@ export function LiaSuperPrompt() {
                             >
                               <Clock className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-[13px] text-gray-700 truncate group-hover:text-gray-900 transition-colors" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                                <p className="text-base-ui text-gray-700 truncate group-hover:text-gray-900 transition-colors" style={{ fontFamily: "Open Sans, sans-serif" }}>
                                   {chat.title}
                                 </p>
-                                <p className="text-[11px] text-gray-400 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                                <p className="text-xs text-gray-400 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
                                   {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                                 </p>
                               </div>
@@ -366,13 +366,13 @@ export function LiaSuperPrompt() {
                             <LIAIcon size="xl" useChatCyan className="mb-4 mx-auto" />
                             <h2
                               className="text-3xl font-semibold mb-3"
-                              style={{ color: "#1F2937" }}
+                              style={{ color: "var(--gray-800)" }}
                             >
                               Oi, eu sou a <span className="text-gray-700">LIA</span>.
                             </h2>
                             <p
                               className="text-base mb-2"
-                              style={{ color: "#6B7280" }}
+                              style={{ color: "var(--gray-400)" }}
                             >
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
@@ -428,7 +428,7 @@ export function LiaSuperPrompt() {
                                         {suggestion.description}
                                       </p>
                                       {suggestion.actionType === "redirect" && (
-                                        <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
                                           Abre em nova tela
                                         </span>
                                       )}
@@ -463,7 +463,7 @@ export function LiaSuperPrompt() {
                                   <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                                 </div>
                               </div>
-                              <div className="bg-white border border-[#E5E7EB] rounded-[14px] rounded-bl-[4px] p-4">
+                              <div className="bg-white border border-gray-200 rounded-[14px] rounded-bl-[4px] p-4">
                                 <div className="flex items-center gap-1.5">
                                   <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "0ms" }} />
                                   <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -492,9 +492,9 @@ export function LiaSuperPrompt() {
                           onChange={(e) => setInput(e.target.value)}
                           onKeyDown={handleKeyPress}
                           placeholder="Envie mensagem para a LIA..."
-                          className="flex-1 resize-none text-[13px] focus:outline-none bg-transparent min-w-0"
+                          className="flex-1 resize-none text-base-ui focus:outline-none bg-transparent min-w-0"
                           style={{
-                            color: "#1F2937",
+                            color: "var(--gray-800)",
                             fontFamily: '"Open Sans", sans-serif'
                           }}
                           rows={1}
@@ -552,12 +552,12 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
               style={{ backgroundColor: "#F3F4F6" }}
             >
               <div
-                className="text-[13px] leading-relaxed text-[#374151]"
+                className="text-base-ui leading-relaxed text-gray-700"
                 style={{ fontFamily: '"Open Sans", sans-serif' }}
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>
-            <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: '"Inter", sans-serif' }}>
+            <span className="text-xs text-gray-400 px-1" style={{ fontFamily: '"Inter", sans-serif' }}>
               {message.timestamp}
             </span>
           </div>
@@ -578,16 +578,16 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-          <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>
+          <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+          <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>
             {message.timestamp}
           </span>
         </div>
         <div
-          className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-[#E5E7EB]"
+          className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-gray-200"
         >
           <div
-            className="text-[13px] leading-relaxed text-[#374151]"
+            className="text-base-ui leading-relaxed text-gray-700"
             style={{ fontFamily: '"Open Sans", sans-serif' }}
             dangerouslySetInnerHTML={{ __html: html }}
           />
@@ -612,11 +612,11 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex-1 flex flex-col gap-1">
       <div className="flex items-center gap-1.5 px-1">
-        <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+        <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
       </div>
-      <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-[#E5E7EB]">
+      <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-gray-200">
         <div
-          className="text-[13px] leading-relaxed text-[#374151]"
+          className="text-base-ui leading-relaxed text-gray-700"
           style={{ fontFamily: '"Open Sans", sans-serif' }}
           dangerouslySetInnerHTML={{ __html: html }}
         />

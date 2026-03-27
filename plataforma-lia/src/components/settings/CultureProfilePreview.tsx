@@ -424,7 +424,7 @@ export function CultureProfilePreview({
                     </p>
                   </div>
                   
-                  <p className="text-gray-500 dark:text-gray-500 italic text-[10px] pt-1">
+                  <p className="text-gray-500 dark:text-gray-500 italic text-micro pt-1">
                     Fonte: Goldberg (1990), Costa & McCrae (1992)
                   </p>
                 </div>
@@ -462,7 +462,7 @@ export function CultureProfilePreview({
                 <div className="flex items-start gap-2">
                   <Briefcase className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Indústria</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Indústria</span>
                     <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.industry}</span>
                   </div>
                 </div>
@@ -471,7 +471,7 @@ export function CultureProfilePreview({
                 <div className="flex items-start gap-2">
                   <Users className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Tamanho</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Tamanho</span>
                     <span className="text-xs text-gray-800 dark:text-gray-200">
                       {editedProfile.employee_count ? `${editedProfile.employee_count.toLocaleString()} funcionários` : editedProfile.company_size}
                     </span>
@@ -482,7 +482,7 @@ export function CultureProfilePreview({
                 <div className="flex items-start gap-2">
                   <MapPin className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Sede</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Sede</span>
                     <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.headquarters}</span>
                   </div>
                 </div>
@@ -491,7 +491,7 @@ export function CultureProfilePreview({
                 <div className="flex items-start gap-2">
                   <Calendar className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Fundação</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Fundação</span>
                     <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.founded_year}</span>
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export function CultureProfilePreview({
                 <div className="flex items-start gap-2 col-span-2">
                   <Globe className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Localidades</span>
+                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Localidades</span>
                     <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.locations.join(", ")}</span>
                   </div>
                 </div>
@@ -521,25 +521,25 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.work_model && (
               <div>
-                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium block mb-1">Modelo de Trabalho</span>
+                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Modelo de Trabalho</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.work_model}</p>
               </div>
             )}
             {editedProfile.growth_opportunities && (
               <div>
-                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium block mb-1">Oportunidades de Crescimento</span>
+                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Oportunidades de Crescimento</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.growth_opportunities}</p>
               </div>
             )}
             {editedProfile.team_dynamics && (
               <div>
-                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium block mb-1">Dinâmica de Equipe</span>
+                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Dinâmica de Equipe</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.team_dynamics}</p>
               </div>
             )}
             {editedProfile.leadership_style && (
               <div>
-                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium block mb-1">Estilo de Liderança</span>
+                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Estilo de Liderança</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.leadership_style}</p>
               </div>
             )}
@@ -558,19 +558,19 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.dei_initiatives && (
               <div>
-                <span className="text-[10px] text-green-600 dark:text-green-400 font-medium block mb-1">Diversidade, Equidade e Inclusão</span>
+                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Diversidade, Equidade e Inclusão</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.dei_initiatives}</p>
               </div>
             )}
             {editedProfile.sustainability && (
               <div>
-                <span className="text-[10px] text-green-600 dark:text-green-400 font-medium block mb-1">Sustentabilidade</span>
+                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Sustentabilidade</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.sustainability}</p>
               </div>
             )}
             {editedProfile.social_impact && (
               <div>
-                <span className="text-[10px] text-green-600 dark:text-green-400 font-medium block mb-1">Impacto Social</span>
+                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Impacto Social</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.social_impact}</p>
               </div>
             )}
@@ -589,12 +589,12 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.tech_stack && editedProfile.tech_stack.length > 0 && (
               <div>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium block mb-2">Stack Tecnológico</span>
+                <span className="text-micro text-slate-600 dark:text-slate-400 font-medium block mb-2">Stack Tecnológico</span>
                 <div className="flex flex-wrap gap-1.5">
                   {editedProfile.tech_stack.map((tech, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-micro font-medium bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
                     >
                       {tech}
                     </span>
@@ -604,7 +604,7 @@ export function CultureProfilePreview({
             )}
             {editedProfile.engineering_culture && (
               <div>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium block mb-1">Cultura de Engenharia</span>
+                <span className="text-micro text-slate-600 dark:text-slate-400 font-medium block mb-1">Cultura de Engenharia</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.engineering_culture}</p>
               </div>
             )}

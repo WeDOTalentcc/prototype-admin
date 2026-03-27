@@ -75,7 +75,7 @@ export function ScreeningSettingsModal({
               <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
                 Configurações de Triagem
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -104,7 +104,7 @@ export function ScreeningSettingsModal({
               step={5}
               className="w-full"
             />
-            <p className="text-[10px] text-gray-500">
+            <p className="text-micro text-gray-500">
               Candidatos com score abaixo de {minScore}% serão reprovados automaticamente
             </p>
           </div>
@@ -126,9 +126,9 @@ export function ScreeningSettingsModal({
                 max={168}
                 className="w-24 h-9 text-xs border-gray-200 dark:border-gray-600"
               />
-              <span className="text-[11px] text-gray-500 dark:text-gray-400">horas</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">horas</span>
             </div>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+            <p className="text-micro text-gray-500 dark:text-gray-400">
               Tempo máximo de espera para resposta do candidato (1-168h)
             </p>
           </div>
@@ -150,9 +150,9 @@ export function ScreeningSettingsModal({
                 max={5}
                 className="w-24 h-9 text-xs border-gray-200 dark:border-gray-600"
               />
-              <span className="text-[11px] text-gray-500">tentativas</span>
+              <span className="text-xs text-gray-500">tentativas</span>
             </div>
-            <p className="text-[10px] text-gray-500">
+            <p className="text-micro text-gray-500">
               Número de tentativas de recontato antes de descartar (0-5)
             </p>
           </div>

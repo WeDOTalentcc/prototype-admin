@@ -126,7 +126,7 @@ export function WSIQuestionsStage({
 
           <div className="flex items-center gap-2 mt-2">
             <span className={cn(
-              "px-2 py-0.5 text-[11px] rounded-full",
+              "px-2 py-0.5 text-xs rounded-full",
               q.type === 'yes-no' ? "bg-blue-100 text-blue-800" :
               q.type === 'numeric' ? "bg-amber-100 text-amber-800" :
               q.type === 'multiple-choice' ? "bg-indigo-100 text-indigo-800" :
@@ -137,7 +137,7 @@ export function WSIQuestionsStage({
                q.type === 'multiple-choice' ? 'Múltipla escolha' : 'Aberta'}
             </span>
             {q.required && (
-              <span className="px-2 py-0.5 text-[11px] rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 Obrigatória
               </span>
             )}
@@ -145,7 +145,7 @@ export function WSIQuestionsStage({
 
           {q.selected && (
             <div className="mt-3 pt-3 border-t border-gray-200">
-              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Resposta esperada:
               </label>
               {q.type === 'yes-no' ? (
@@ -230,7 +230,7 @@ export function WSIQuestionsStage({
           )}>
             {selectedCount}
           </span>
-          <span className="text-[10px] text-gray-400">/ 5 selecionadas</span>
+          <span className="text-micro text-gray-400">/ 5 selecionadas</span>
         </div>
       </div>
 
@@ -239,14 +239,14 @@ export function WSIQuestionsStage({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
-              <span className="text-[10px] text-gray-400">({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)</span>
+              <span className="text-micro text-gray-400">({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)</span>
             </div>
             <button
               onClick={() => onSetCompanyDefaultQuestions(companyDefaultQuestions.map(q => ({ ...q, enabled: false })))}
-              className="text-[10px] text-gray-600 dark:text-gray-400 hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+              className="text-micro text-gray-600 dark:text-gray-400 hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
             >
               Desabilitar todas
             </button>
@@ -271,7 +271,7 @@ export function WSIQuestionsStage({
                   <span className="text-xs text-gray-800">{q.question}</span>
                 </div>
                 <span className={cn(
-                  "px-2 py-0.5 text-[10px] rounded-full",
+                  "px-2 py-0.5 text-micro rounded-full",
                   q.type === 'yes-no' ? "bg-blue-100 text-blue-800" :
                   q.type === 'numeric' ? "bg-amber-100 text-amber-800" :
                   "bg-gray-100 text-gray-700"
@@ -281,7 +281,7 @@ export function WSIQuestionsStage({
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+          <p className="text-micro text-gray-400 mt-2 flex items-center gap-1">
             <Settings className="w-3 h-3" />
             Configure perguntas padrão em Configurações &gt; Triagem
           </p>
@@ -290,14 +290,14 @@ export function WSIQuestionsStage({
         <div className="mb-4 p-3 bg-amber-100/30 rounded-md border border-amber-300/50">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-amber-600" />
-            <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
+            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
               Perguntas da Empresa
             </span>
           </div>
           <p className="text-xs text-amber-900">
             Nenhuma pergunta padrão cadastrada.
           </p>
-          <p className="text-[10px] text-amber-800 mt-1 flex items-center gap-1">
+          <p className="text-micro text-amber-800 mt-1 flex items-center gap-1">
             <Settings className="w-3 h-3" />
             Configure no menu Configurações &gt; Triagem
           </p>
@@ -310,10 +310,10 @@ export function WSIQuestionsStage({
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-md">
                 <Code className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Validação Técnica
                 </span>
-                <span className="text-[10px] text-gray-400">({technicalQuestions.length})</span>
+                <span className="text-micro text-gray-400">({technicalQuestions.length})</span>
               </div>
               {technicalQuestions.map(renderQuestionCard)}
             </div>
@@ -323,10 +323,10 @@ export function WSIQuestionsStage({
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-md">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Fit Comportamental
                 </span>
-                <span className="text-[10px] text-gray-400">({behavioralQuestions.length})</span>
+                <span className="text-micro text-gray-400">({behavioralQuestions.length})</span>
               </div>
               {behavioralQuestions.map(renderQuestionCard)}
             </div>
@@ -363,7 +363,7 @@ export function WSIQuestionsStage({
       {showCustomQuestionForm ? (
         <div className="p-3 bg-gray-50 rounded-md border border-gray-200 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Adicionar Pergunta Customizada
             </span>
             <button
@@ -388,7 +388,7 @@ export function WSIQuestionsStage({
           />
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="text-[10px] text-gray-500 mb-1 block">Tipo de resposta:</label>
+              <label className="text-micro text-gray-500 mb-1 block">Tipo de resposta:</label>
               <select
                 value={customQuestionType}
                 onChange={(e) => onSetCustomQuestionType(e.target.value as 'open' | 'yes-no' | 'numeric' | 'multiple-choice')}
@@ -412,7 +412,7 @@ export function WSIQuestionsStage({
               >
                 {customQuestionRequired && <Check className="w-2.5 h-2.5" />}
               </button>
-              <span className="text-[10px] text-gray-500">Eliminatória</span>
+              <span className="text-micro text-gray-500">Eliminatória</span>
             </div>
           </div>
           <button
@@ -450,7 +450,7 @@ export function WSIQuestionsStage({
           ) : (
             <AlertCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
           )}
-          <span className="text-[10px] text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             {selectedCount === 5
               ? "Triagem completa! Revise as respostas esperadas acima."
               : `Selecione mais ${5 - selectedCount} pergunta(s) para completar.`}

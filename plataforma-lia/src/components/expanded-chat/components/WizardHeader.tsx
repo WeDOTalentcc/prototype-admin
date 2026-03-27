@@ -47,17 +47,17 @@ export function WizardHeader({
           <div className="w-5 h-5 rounded-md flex items-center justify-center bg-gray-900 dark:bg-gray-50">
             <FileText className="w-3 h-3 text-white" />
           </div>
-          <span className="text-[11px] font-semibold text-gray-950" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-xs font-semibold text-gray-950" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             {currentStageConfig.panelTitle}
           </span>
           {catalogStatus && (
             <span 
               className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded-full",
+                "inline-flex items-center gap-1 px-1.5 py-0.5 text-micro font-medium rounded-full",
                 catalogStatus.maturity_level === 'complete' 
                   ? "bg-green-500/10 text-green-500"
                   : catalogStatus.maturity_level === 'partial'
-                  ? "bg-[#F59E0B]/10 text-[#F59E0B]"
+                  ? "bg-status-warning/10 text-status-warning"
                   : "bg-gray-100 text-gray-500"
               )}
               style={{ fontFamily: '"Open Sans", sans-serif' }}
@@ -82,7 +82,7 @@ export function WizardHeader({
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-[10px]" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <div className="flex items-center gap-1 text-micro" style={{ fontFamily: '"Open Sans", sans-serif' }}>
             {isAutoSaving ? (
               <>
                 <Loader2 className="w-3 h-3 text-gray-600 dark:text-gray-400 animate-spin" />
@@ -95,8 +95,8 @@ export function WizardHeader({
               </>
             ) : hasPendingChanges ? (
               <>
-                <Circle className="w-3 h-3 text-[#F59E0B]" />
-                <span className="text-[#F59E0B]">Não salvo</span>
+                <Circle className="w-3 h-3 text-status-warning" />
+                <span className="text-status-warning">Não salvo</span>
               </>
             ) : null}
           </div>
@@ -140,7 +140,7 @@ export function WizardHeader({
             "mt-2 px-2.5 py-1.5 rounded-md flex items-center gap-2 border",
             catalogStatus.maturity_level === 'complete'
               ? "bg-green-500/[0.08] border-green-500/20"
-              : "bg-[#F59E0B]/[0.08] border-[#F59E0B]/20"
+              : "bg-status-warning/[0.08] border-status-warning/20"
           )}
         >
           <CheckCircle2 
@@ -148,15 +148,15 @@ export function WizardHeader({
               "w-3.5 h-3.5 flex-shrink-0",
               catalogStatus.maturity_level === 'complete'
                 ? "text-green-500"
-                : "text-[#F59E0B]"
+                : "text-status-warning"
             )}
           />
           <span 
             className={cn(
-              "text-[10px] font-medium",
+              "text-micro font-medium",
               catalogStatus.maturity_level === 'complete'
                 ? "text-green-500"
-                : "text-[#F59E0B]"
+                : "text-status-warning"
             )}
             style={{ fontFamily: '"Open Sans", sans-serif' }}
           >

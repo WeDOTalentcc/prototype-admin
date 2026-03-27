@@ -258,11 +258,11 @@ export function SmartImportZone({
             {description}
           </p>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] rounded-full">
+            <Badge variant="outline" className="text-micro rounded-full">
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1" />
               Excel (.xlsx, .xls)
             </Badge>
-            <Badge variant="outline" className="text-[10px] rounded-full">
+            <Badge variant="outline" className="text-micro rounded-full">
               <FileText className="w-3.5 h-3.5 mr-1" />
               CSV
             </Badge>
@@ -271,7 +271,7 @@ export function SmartImportZone({
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 rounded-md text-[11px] font-['Open_Sans',sans-serif]"
+              className="gap-1.5 rounded-md text-xs font-['Open_Sans',sans-serif]"
               onClick={(e) => {
                 e.stopPropagation()
                 if (!disabled) fileInputRef.current?.click()
@@ -285,7 +285,7 @@ export function SmartImportZone({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1.5 rounded-md text-[11px] text-gray-800 dark:text-gray-200 hover:text-gray-900 font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:text-gray-900 font-['Open_Sans',sans-serif]"
                 onClick={(e) => {
                   e.stopPropagation()
                   if (!disabled) handleDownloadTemplate()
@@ -307,7 +307,7 @@ export function SmartImportZone({
                   <Badge 
                     key={field} 
                     variant="secondary" 
-                    className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
+                    className="text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
                   >
                     {field}
                   </Badge>
@@ -407,7 +407,7 @@ export function SmartImportZone({
                     Campos identificados:
                   </span>
                   {previewData.matchedFields.map((field) => (
-                    <Badge key={field} className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                    <Badge key={field} className="text-micro bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
                       {field}
                     </Badge>
                   ))}
@@ -420,7 +420,7 @@ export function SmartImportZone({
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
-                    <Badge key={field} className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full">
+                    <Badge key={field} className="text-micro bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full">
                       {field}
                     </Badge>
                   ))}
@@ -431,13 +431,13 @@ export function SmartImportZone({
             {previewData.rows.length > 0 && (
               <div className="border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden mb-3">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-[11px]">
+                  <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-gray-50 dark:bg-gray-800/50">
                         {previewData.headers.map((header, idx) => (
                           <th 
                             key={idx} 
-                            className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 font-['Open_Sans',sans-serif]"
+                            className="px-2 py-1.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 font-['Open_Sans',sans-serif]"
                           >
                             {header}
                           </th>
@@ -450,7 +450,7 @@ export function SmartImportZone({
                           {previewData.headers.map((header, colIdx) => (
                             <td 
                               key={colIdx} 
-                              className="px-2 py-1.5 text-[11px] text-gray-800 dark:text-gray-200 border-b border-gray-50 dark:border-gray-800 truncate max-w-[200px] font-['Open_Sans',sans-serif]"
+                              className="px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border-b border-gray-50 dark:border-gray-800 truncate max-w-[200px] font-['Open_Sans',sans-serif]"
                             >
                               {row[header] || '-'}
                             </td>
@@ -461,7 +461,7 @@ export function SmartImportZone({
                   </table>
                 </div>
                 {previewData.totalRows > 5 && (
-                  <div className="px-2 py-1.5 text-center text-[10px] text-gray-600 bg-gray-50/50 dark:bg-gray-800/30 font-['Open_Sans',sans-serif]">
+                  <div className="px-2 py-1.5 text-center text-micro text-gray-600 bg-gray-50/50 dark:bg-gray-800/30 font-['Open_Sans',sans-serif]">
                     ... e mais {previewData.totalRows - 5} registros
                   </div>
                 )}
@@ -473,7 +473,7 @@ export function SmartImportZone({
                 variant="outline"
                 size="sm"
                 onClick={resetState}
-                className="gap-1.5 rounded-md text-[11px] font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs font-['Open_Sans',sans-serif]"
               >
                 <X className="w-3.5 h-3.5" />
                 Cancelar
@@ -481,7 +481,7 @@ export function SmartImportZone({
               <Button
                 size="sm"
                 onClick={handleConfirmImport}
-                className="gap-1.5 rounded-md text-[11px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Confirmar Importação
@@ -528,7 +528,7 @@ export function SmartImportZone({
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-[11px] border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30 font-['Open_Sans',sans-serif]"
           >
             <Upload className="w-3.5 h-3.5" />
             Nova Importação
@@ -555,7 +555,7 @@ export function SmartImportZone({
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-[11px] border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30 font-['Open_Sans',sans-serif]"
           >
             <X className="w-3.5 h-3.5" />
             Tentar Novamente

@@ -162,7 +162,7 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config = DATA_SOURCE_CONFIG[source]
   return (
-    <Badge variant="outline" className={cn('gap-1 text-[10px]', config.className)}>
+    <Badge variant="outline" className={cn('gap-1 text-micro', config.className)}>
       <span>{config.icon}</span>
       <span>{config.label}</span>
     </Badge>
@@ -228,26 +228,26 @@ function SalaryComparisonBar({
         }}
       />
 
-      <div className="absolute top-11 left-0 text-[10px] text-muted-foreground">
+      <div className="absolute top-11 left-0 text-micro text-muted-foreground">
         {formatCurrency(minValue)}
       </div>
-      <div className="absolute top-11 right-0 text-[10px] text-muted-foreground">
+      <div className="absolute top-11 right-0 text-micro text-muted-foreground">
         {formatCurrency(maxValue)}
       </div>
 
       <div className="flex justify-center gap-4 absolute top-0 inset-x-0">
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-[10px] text-muted-foreground">Proposto</span>
+          <span className="text-micro text-muted-foreground">Proposto</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-purple-300" />
-          <span className="text-[10px] text-muted-foreground">Mercado</span>
+          <span className="text-micro text-muted-foreground">Mercado</span>
         </div>
         {policy && (
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-300" />
-            <span className="text-[10px] text-muted-foreground">Política</span>
+            <span className="text-micro text-muted-foreground">Política</span>
           </div>
         )}
       </div>
@@ -281,7 +281,7 @@ function CompensationBreakdownChart({
           />
         ))}
       </div>
-      <div className="flex justify-between text-[10px]">
+      <div className="flex justify-between text-micro">
         {segments.map((segment) => (
           <div key={segment.label} className="flex items-center gap-1">
             <div className={cn('w-2 h-2 rounded-full', segment.color)} />
@@ -351,7 +351,7 @@ export function CompensationAnalysisPanel({
             <StatusIcon className={cn('h-5 w-5', statusConfig.className)} />
             <div>
               <CardTitle className="text-sm font-sans dark:text-gray-100">{statusConfig.label}</CardTitle>
-              <CardDescription className="text-[11px] mt-0.5">
+              <CardDescription className="text-xs mt-0.5">
                 {statusConfig.description}
               </CardDescription>
             </div>
@@ -377,20 +377,20 @@ export function CompensationAnalysisPanel({
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-              <p className="text-[10px] text-muted-foreground mb-1">Proposto</p>
+              <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-xs font-semibold text-green-700 dark:text-green-400">
                 {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
               </p>
             </div>
             <div className="p-2 rounded-md bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
-              <p className="text-[10px] text-muted-foreground mb-1">Mercado</p>
+              <p className="text-micro text-muted-foreground mb-1">Mercado</p>
               <p className="text-xs font-semibold text-purple-700 dark:text-purple-400">
                 {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
               </p>
             </div>
             {analysis.salary.policy && (
               <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                <p className="text-[10px] text-muted-foreground mb-1">Política</p>
+                <p className="text-micro text-muted-foreground mb-1">Política</p>
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
                 </p>
@@ -404,7 +404,7 @@ export function CompensationAnalysisPanel({
             policy={analysis.salary.policy}
           />
 
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Posição vs. Mercado:</span>
             <span className={cn(
               'font-medium',
@@ -417,7 +417,7 @@ export function CompensationAnalysisPanel({
           {analysis.salary.suggestion && (
             <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-              <p className="text-[10px] text-amber-700 dark:text-amber-400">
+              <p className="text-micro text-amber-700 dark:text-amber-400">
                 Sugestão: Ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)}
               </p>
             </div>
@@ -435,12 +435,12 @@ export function CompensationAnalysisPanel({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
-              <p className="text-[10px] text-muted-foreground mb-1">Proposto</p>
+              <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
             {analysis.bonus.policyPercentage !== undefined && (
               <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                <p className="text-[10px] text-muted-foreground mb-1">Política da Empresa</p>
+                <p className="text-micro text-muted-foreground mb-1">Política da Empresa</p>
                 <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
                   {analysis.bonus.policyPercentage}%
                 </p>
@@ -449,7 +449,7 @@ export function CompensationAnalysisPanel({
           </div>
 
           {analysis.bonus.criteria && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-micro text-muted-foreground">
               <span className="font-medium">Critérios:</span> {analysis.bonus.criteria}
             </p>
           )}
@@ -457,7 +457,7 @@ export function CompensationAnalysisPanel({
           {analysis.bonus.suggestion !== undefined && analysis.bonus.suggestion !== analysis.bonus.proposedPercentage && (
             <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-              <p className="text-[10px] text-amber-700 dark:text-amber-400">
+              <p className="text-micro text-amber-700 dark:text-amber-400">
                 Sugestão: Ajustar bônus para {analysis.bonus.suggestion}%
               </p>
             </div>
@@ -474,13 +474,13 @@ export function CompensationAnalysisPanel({
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] text-muted-foreground font-medium">Benefícios Incluídos:</p>
+            <p className="text-micro text-muted-foreground font-medium">Benefícios Incluídos:</p>
             <div className="flex flex-wrap gap-1">
               {analysis.benefits.proposed.filter(b => b.included).map((benefit) => (
                 <TooltipProvider key={benefit.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Badge variant="secondary" className="text-micro gap-1">
                         <Check className="h-3 w-3" />
                         {benefit.name}
                         {benefit.isCompanyStandard && (
@@ -502,7 +502,7 @@ export function CompensationAnalysisPanel({
 
           {analysis.benefits.missingFromStandard.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-micro text-amber-600 dark:text-amber-400 font-medium">
                 Benefícios Padrão Não Incluídos:
               </p>
               <div className="flex flex-wrap gap-1">
@@ -510,7 +510,7 @@ export function CompensationAnalysisPanel({
                   <Badge 
                     key={benefit.id} 
                     variant="outline" 
-                    className="text-[10px] gap-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                    className="text-micro gap-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
                   >
                     <X className="h-3 w-3" />
                     {benefit.name}
@@ -522,7 +522,7 @@ export function CompensationAnalysisPanel({
 
           <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-muted-foreground">Valor Monetizável Anual:</span>
+              <span className="text-micro text-muted-foreground">Valor Monetizável Anual:</span>
               <span className="text-xs font-semibold">
                 {formatCurrency(analysis.benefits.totalAnnualValue)}
               </span>
@@ -538,14 +538,14 @@ export function CompensationAnalysisPanel({
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
-              <p className="text-[10px] text-muted-foreground mb-1">Proposto Anual</p>
+              <p className="text-micro text-muted-foreground mb-1">Proposto Anual</p>
               <p className="text-xs font-semibold">
                 {formatCurrency(analysis.totalCompensation.proposedAnnual)}
               </p>
             </div>
             {analysis.totalCompensation.marketAnnual && (
               <div className="p-2 rounded-md bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
-                <p className="text-[10px] text-muted-foreground mb-1">Mercado</p>
+                <p className="text-micro text-muted-foreground mb-1">Mercado</p>
                 <p className="text-xs font-semibold text-purple-700 dark:text-purple-400">
                   {formatCurrency(analysis.totalCompensation.marketAnnual)}
                 </p>
@@ -553,7 +553,7 @@ export function CompensationAnalysisPanel({
             )}
             {analysis.totalCompensation.policyAnnual && (
               <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                <p className="text-[10px] text-muted-foreground mb-1">Política</p>
+                <p className="text-micro text-muted-foreground mb-1">Política</p>
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}
                 </p>

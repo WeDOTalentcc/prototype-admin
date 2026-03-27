@@ -37,7 +37,7 @@ export function Sparkline({ data, color = '#374151', height = 32, showArea = tru
   if (!data.length) {
     return (
       <div 
-        className="w-full flex items-center justify-center text-[11px]"
+        className="w-full flex items-center justify-center text-xs"
         style={{ height, color: 'var(--eleven-text-tertiary)' }}
       >
         Sem dados

@@ -192,11 +192,11 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-cyan-500" />
           <div>
-            <span className="text-[13px] font-semibold text-gray-900 dark:text-gray-50 block leading-tight">
+            <span className="text-base-ui font-semibold text-gray-900 dark:text-gray-50 block leading-tight">
               LIA
             </span>
             {splitView.page && (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">
+              <span className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
                 {splitView.page}
               </span>
             )}
@@ -234,7 +234,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       {/* Page hint banner */}
       {splitView.page && (
         <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
-          <p className="text-[11px] text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Contexto atual:{" "}
             <span className="font-medium text-gray-700 dark:text-gray-300">
               {splitView.page}
@@ -278,7 +278,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
             className={cn(
-              "flex-1 resize-none bg-transparent text-[13px]",
+              "flex-1 resize-none bg-transparent text-base-ui",
               "text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500",
               "focus:outline-none py-1.5 px-1 max-h-[120px] leading-relaxed"
             )}
@@ -303,7 +303,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           </button>
         </div>
         {inputText.length > MAX_INPUT_CHARS * 0.9 && (
-          <p className="text-[11px] text-gray-400 mt-1 text-right">
+          <p className="text-xs text-gray-400 mt-1 text-right">
             {inputText.length}/{MAX_INPUT_CHARS}
           </p>
         )}
@@ -321,10 +321,10 @@ function SplitEmptyState({ page }: { page: string | null }) {
         <Brain className="w-5 h-5 text-cyan-500" />
       </div>
       <div>
-        <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300">
+        <p className="text-base-ui font-medium text-gray-700 dark:text-gray-300">
           {page ? `Explorando ${page}` : "Como posso ajudar?"}
         </p>
-        <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-1">
+        <p className="text-sm-ui text-gray-400 dark:text-gray-500 mt-1">
           Continue a conversa enquanto navega pela página.
         </p>
       </div>
@@ -343,14 +343,14 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
       )}
       <div
         className={cn(
-          "max-w-[85%] px-3 py-2 rounded-md text-[13px] leading-relaxed",
+          "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
           isUser
             ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
             : "bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
         )}
       >
         <p className="whitespace-pre-wrap">{msg.content}</p>
-        <span className="text-[10px] opacity-50 mt-1 block">{msg.timestamp}</span>
+        <span className="text-micro opacity-50 mt-1 block">{msg.timestamp}</span>
       </div>
     </div>
   )
@@ -362,7 +362,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-3.5 h-3.5 text-cyan-500" />
       </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-[13px] leading-relaxed bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50">
+      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />

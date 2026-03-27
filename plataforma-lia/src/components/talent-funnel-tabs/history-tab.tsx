@@ -252,7 +252,7 @@ export function HistoryTab({
                           <Clock className="w-3 h-3" />
                           {formatRelativeTime(item.timestamp)}
                         </span>
-                        <Badge variant="outline" className="h-5 text-[11px] px-1.5">
+                        <Badge variant="outline" className="h-5 text-xs px-1.5">
                           {getModeLabel(item.mode)}
                         </Badge>
                         <span className="flex items-center gap-1">
@@ -355,7 +355,7 @@ export function HistoryTab({
             <Button
               onClick={handleSaveSearch}
               disabled={!saveName.trim()}
-              className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar

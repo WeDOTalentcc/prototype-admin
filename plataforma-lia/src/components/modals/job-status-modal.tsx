@@ -494,7 +494,7 @@ export function JobStatusModal({
           <React.Fragment key={step.id}>
             <div className="flex items-center gap-1.5">
               <div className={cn(
-                "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                 step.done 
                   ? "bg-gray-900 text-white" 
                   : currentStep === 'options' && index === 0 
@@ -508,7 +508,7 @@ export function JobStatusModal({
                 {step.done ? <Check className="w-3 h-3" /> : index + 1}
               </div>
               <span className={cn(
-                "text-[11px] font-medium",
+                "text-xs font-medium",
                 step.done ? "text-gray-900" : "text-gray-600"
               )}>
                 {step.label}
@@ -526,7 +526,7 @@ export function JobStatusModal({
   const renderPauseOptionsStep = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[100px]">
@@ -536,11 +536,11 @@ export function JobStatusModal({
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    {job.code && <span className="text-[10px] font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                    {job.code && <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
                     <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                <div className="flex items-center gap-2 text-micro text-gray-500">
                   <span className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
                     {job.candidates_count || 0}
@@ -565,20 +565,20 @@ export function JobStatusModal({
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[11px] font-semibold text-red-800">
+              <p className="text-xs font-semibold text-red-800">
                 {candidatesInProposal.length} candidato(s) em etapa de Proposta
               </p>
-              <p className="text-[10px] text-red-600 mt-0.5">
+              <p className="text-micro text-red-600 mt-0.5">
                 Finalize ou mova esses candidatos antes de pausar a vaga.
               </p>
               <div className="mt-2 space-y-1">
                 {candidatesInProposal.slice(0, 3).map(c => (
-                  <Badge key={c.id} variant="outline" className="text-[10px] bg-white border-red-200 text-red-700">
+                  <Badge key={c.id} variant="outline" className="text-micro bg-white border-red-200 text-red-700">
                     {c.name}
                   </Badge>
                 ))}
                 {candidatesInProposal.length > 3 && (
-                  <span className="text-[10px] text-red-600">+{candidatesInProposal.length - 3} mais</span>
+                  <span className="text-micro text-red-600">+{candidatesInProposal.length - 3} mais</span>
                 )}
               </div>
             </div>
@@ -588,16 +588,16 @@ export function JobStatusModal({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
             Motivo (Opcional)
           </h4>
           <Select value={pauseReason} onValueChange={setPauseReason}>
-            <SelectTrigger className="h-9 text-[11px] border-gray-200">
+            <SelectTrigger className="h-9 text-xs border-gray-200">
               <SelectValue placeholder="Selecione um motivo..." />
             </SelectTrigger>
             <SelectContent>
               {PAUSE_REASONS.map((reason) => (
-                <SelectItem key={reason.value} value={reason.value} className="text-[11px]">
+                <SelectItem key={reason.value} value={reason.value} className="text-xs">
                   {reason.label}
                 </SelectItem>
               ))}
@@ -608,29 +608,29 @@ export function JobStatusModal({
               value={customReason}
               onChange={(e) => setCustomReason(e.target.value)}
               placeholder="Digite o motivo para pausar..."
-              className="mt-2 h-16 text-[11px] border-gray-200 resize-none"
+              className="mt-2 h-16 text-xs border-gray-200 resize-none"
             />
           )}
         </div>
 
         <div>
-          <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
             Impacto
           </h4>
           <div className="space-y-1.5 p-3 rounded-md bg-gray-50 border border-gray-200">
-            <div className="flex items-start gap-2 text-[11px] text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-gray-800">
               <span className="flex-shrink-0">⏸️</span>
               <span>Triagens em andamento serão pausadas</span>
             </div>
-            <div className="flex items-start gap-2 text-[11px] text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-gray-800">
               <span className="flex-shrink-0">📅</span>
               <span>{totalInterviews} entrevista(s) agendada(s)</span>
             </div>
-            <div className="flex items-start gap-2 text-[11px] text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-gray-800">
               <span className="flex-shrink-0">📢</span>
               <span>Publicações serão desativadas</span>
             </div>
-            <div className="flex items-start gap-2 text-[11px] text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-gray-800">
               <span className="flex-shrink-0">📧</span>
               <span>Novos candidatos → pool de talentos</span>
             </div>
@@ -639,7 +639,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
-        <h4 className="text-[11px] font-semibold text-gray-950 flex items-center gap-2">
+        <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
           <CalendarOff className="w-3.5 h-3.5 text-gray-600" />
           Ações ao Pausar
         </h4>
@@ -653,7 +653,7 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelScreenings" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="cancelScreenings" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Filter className="w-3 h-3 text-gray-400" />
               Desmarcar triagens pendentes ({totalScreenings})
             </Label>
@@ -667,7 +667,7 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelInterviews" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="cancelInterviews" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Calendar className="w-3 h-3 text-gray-400" />
               Desmarcar entrevistas agendadas ({totalInterviews})
             </Label>
@@ -681,7 +681,7 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelTests" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="cancelTests" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <FileText className="w-3 h-3 text-gray-400" />
               Cancelar testes agendados ({totalTests})
             </Label>
@@ -690,7 +690,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
-        <h4 className="text-[11px] font-semibold text-gray-950 flex items-center gap-2">
+        <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
           <Megaphone className="w-3.5 h-3.5 text-gray-600" />
           Notificações
         </h4>
@@ -704,14 +704,14 @@ export function JobStatusModal({
               className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <div className="flex-1">
-              <Label htmlFor="notifyRecruiters" className="text-[11px] font-medium text-gray-950 cursor-pointer">
+              <Label htmlFor="notifyRecruiters" className="text-xs font-medium text-gray-950 cursor-pointer">
                 Notificar recrutadores
               </Label>
-              <p className="text-[10px] text-gray-600">Enviar resumo das ações por email ou Teams</p>
+              <p className="text-micro text-gray-600">Enviar resumo das ações por email ou Teams</p>
               
               {notifyRecruiters && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Label className="text-[10px] text-gray-600">Canal:</Label>
+                  <Label className="text-micro text-gray-600">Canal:</Label>
                   <div className="flex gap-1">
                     {(['email', 'teams', 'bell'] as RecruiterChannel[]).map((channel) => (
                       <Button
@@ -721,7 +721,7 @@ export function JobStatusModal({
                         size="sm"
                         onClick={() => setRecruiterChannel(channel)}
                         className={cn(
-                          "h-6 px-2 text-[10px] gap-1",
+                          "h-6 px-2 text-micro gap-1",
                           recruiterChannel === channel 
                             ? "bg-gray-900 hover:bg-gray-800 text-white" 
                             : "border border-gray-300 text-gray-600"
@@ -749,14 +749,14 @@ export function JobStatusModal({
                 className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
               />
               <div className="flex-1">
-                <Label htmlFor="notifyApplicants" className="text-[11px] font-medium text-gray-950 cursor-pointer">
+                <Label htmlFor="notifyApplicants" className="text-xs font-medium text-gray-950 cursor-pointer">
                   Enviar email aos candidatos
                 </Label>
-                <p className="text-[10px] text-gray-600">
+                <p className="text-micro text-gray-600">
                   Comunicar candidatos sobre o congelamento da vaga
                 </p>
                 {notifyApplicants && (
-                  <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                  <p className="text-micro text-gray-500 mt-1 flex items-center gap-1">
                     <Activity className="w-3 h-3" />
                     Após pausar, você selecionará o template e canal
                   </p>
@@ -781,7 +781,7 @@ export function JobStatusModal({
       </div>
 
       <div>
-        <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[120px]">
@@ -792,7 +792,7 @@ export function JobStatusModal({
                   <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                   <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                <div className="flex items-center gap-2 text-micro text-gray-500">
                   <Clock className="w-3 h-3" />
                   <span>Pausada há {formatPausedDuration(job.paused_since)}</span>
                 </div>
@@ -803,7 +803,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
-        <h4 className="text-[11px] font-semibold text-gray-950">Ações ao Ativar</h4>
+        <h4 className="text-xs font-semibold text-gray-950">Ações ao Ativar</h4>
         
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
@@ -813,7 +813,7 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setResumeScreening(checked === true)}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="resumeScreening" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="resumeScreening" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Filter className="w-3 h-3 text-gray-400" />
               Retomar triagens pausadas
             </Label>
@@ -826,7 +826,7 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setRepublish(checked === true)}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="republish" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="republish" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Megaphone className="w-3 h-3 text-gray-400" />
               Republicar em job boards
             </Label>
@@ -839,7 +839,7 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setUpdateDeadlines(checked === true)}
               className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="updateDeadlines" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+            <Label htmlFor="updateDeadlines" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Calendar className="w-3 h-3 text-gray-400" />
               Atualizar deadlines (+15 dias)
             </Label>
@@ -848,7 +848,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-gray-200">
-        <h4 className="text-[11px] font-semibold text-gray-950">Notificações</h4>
+        <h4 className="text-xs font-semibold text-gray-950">Notificações</h4>
         
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -857,7 +857,7 @@ export function JobStatusModal({
             onCheckedChange={(checked) => setNotifyRecruiters(checked === true)}
             className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
-          <Label htmlFor="notifyRecruitersActivate" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+          <Label htmlFor="notifyRecruitersActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
             <Megaphone className="w-3 h-3 text-gray-400" />
             Notificar recrutadores
           </Label>
@@ -870,7 +870,7 @@ export function JobStatusModal({
             onCheckedChange={(checked) => setNotifyApplicants(checked === true)}
             className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
-          <Label htmlFor="notifyApplicantsActivate" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+          <Label htmlFor="notifyApplicantsActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
             <Mail className="w-3 h-3 text-gray-400" />
             Notificar candidatos sobre retomada
           </Label>
@@ -889,7 +889,7 @@ export function JobStatusModal({
       </div>
 
       <div>
-        <Label className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
           Canal de Comunicação
         </Label>
         <div className="flex gap-2">
@@ -901,7 +901,7 @@ export function JobStatusModal({
               size="sm"
               onClick={() => setNotificationChannel(channel)}
               className={cn(
-                "h-8 px-3 text-[11px] gap-1.5",
+                "h-8 px-3 text-xs gap-1.5",
                 notificationChannel === channel 
                   ? "bg-gray-900 hover:bg-gray-800 text-white" 
                   : "border border-gray-300 text-gray-600"
@@ -917,22 +917,22 @@ export function JobStatusModal({
       </div>
 
       <div>
-        <Label className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
           Template
         </Label>
         {templatesLoading ? (
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-            <span className="text-[11px] text-gray-500">Carregando templates...</span>
+            <span className="text-xs text-gray-500">Carregando templates...</span>
           </div>
         ) : (
           <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
-            <SelectTrigger className="h-9 text-[11px] border-gray-200">
+            <SelectTrigger className="h-9 text-xs border-gray-200">
               <SelectValue placeholder="Selecione um template..." />
             </SelectTrigger>
             <SelectContent>
               {availableTemplates.map((template) => (
-                <SelectItem key={template.id} value={template.id} className="text-[11px]">
+                <SelectItem key={template.id} value={template.id} className="text-xs">
                   {template.name}
                 </SelectItem>
               ))}
@@ -943,27 +943,27 @@ export function JobStatusModal({
 
       {notificationChannel !== 'whatsapp' && (
         <div>
-          <Label className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+          <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
             Assunto do Email
           </Label>
           <Input
             value={notificationSubject}
             onChange={(e) => setNotificationSubject(e.target.value)}
             placeholder="Assunto do email..."
-            className="h-9 text-[11px] border-gray-200"
+            className="h-9 text-xs border-gray-200"
           />
         </div>
       )}
 
       <div>
-        <Label className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
           Mensagem
         </Label>
         <Textarea
           value={notificationMessage}
           onChange={(e) => setNotificationMessage(e.target.value)}
           placeholder="Mensagem para os candidatos..."
-          className="h-32 text-[11px] border-gray-200 resize-none"
+          className="h-32 text-xs border-gray-200 resize-none"
         />
       </div>
     </div>
@@ -979,37 +979,37 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-gray-200">
-        <h4 className="text-[11px] font-semibold text-gray-950 mb-2">Resumo das Ações</h4>
+        <h4 className="text-xs font-semibold text-gray-950 mb-2">Resumo das Ações</h4>
         
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex items-center gap-2 text-xs">
             <Check className="w-3.5 h-3.5 text-green-600" />
             <span className="text-gray-800">Pausar {jobs.length} vaga(s)</span>
           </div>
           
           {cancelScreenings && totalScreenings > 0 && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-green-600" />
               <span className="text-gray-800">Desmarcar {totalScreenings} triagem(ns)</span>
             </div>
           )}
           
           {cancelInterviews && totalInterviews > 0 && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-green-600" />
               <span className="text-gray-800">Desmarcar {totalInterviews} entrevista(s)</span>
             </div>
           )}
           
           {cancelTests && totalTests > 0 && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-green-600" />
               <span className="text-gray-800">Cancelar {totalTests} teste(s)</span>
             </div>
           )}
           
           {notifyApplicants && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-green-600" />
               <span className="text-gray-800">
                 Notificar {selectedCandidateIds.size} candidato(s) via {notificationChannel === 'both' ? 'Email e WhatsApp' : notificationChannel}
@@ -1018,7 +1018,7 @@ export function JobStatusModal({
           )}
           
           {notifyRecruiters && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-green-600" />
               <span className="text-gray-800">
                 Enviar resumo para recrutadores via {recruiterChannel === 'teams' ? 'Teams' : recruiterChannel === 'bell' ? 'Notificação interna' : 'Email'}
@@ -1030,8 +1030,8 @@ export function JobStatusModal({
 
       {pauseReason && (
         <div className="p-3 rounded-md bg-gray-50 border border-gray-200">
-          <h4 className="text-[11px] font-semibold text-gray-600 mb-1">Motivo</h4>
-          <p className="text-[11px] text-gray-800">
+          <h4 className="text-xs font-semibold text-gray-600 mb-1">Motivo</h4>
+          <p className="text-xs text-gray-800">
             {pauseReason === 'other' ? customReason : PAUSE_REASONS.find(r => r.value === pauseReason)?.label}
           </p>
         </div>
@@ -1045,7 +1045,7 @@ export function JobStatusModal({
         <CheckCircle className="w-8 h-8 text-green-600" />
       </div>
       <div>
-        <h3 className="text-[14px] font-semibold text-gray-950">Processo Concluído!</h3>
+        <h3 className="text-sm font-semibold text-gray-950">Processo Concluído!</h3>
         <p className="text-xs text-gray-600 mt-1">
           {getSuccessMessage()}
         </p>
@@ -1068,7 +1068,7 @@ export function JobStatusModal({
               )}
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950">
+              <DialogTitle className="text-sm font-semibold text-gray-950">
                 {isPauseMode ? 'Pausar Vagas' : 'Ativar Vagas'}
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">

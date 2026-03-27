@@ -232,7 +232,7 @@ export function PromptSuggestionsPopover({
           variant="ghost"
           size="sm"
           className={cn(
-            "h-7 px-2 gap-1.5 text-[11px] font-medium transition-all",
+            "h-7 px-2 gap-1.5 text-xs font-medium transition-all",
             "hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-50",
             "border border-transparent hover:border-gray-300 dark:border-gray-600",
             isOpen && "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600",
@@ -260,7 +260,7 @@ export function PromptSuggestionsPopover({
                 Ações Sugeridas
               </h3>
             </div>
-            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5">
+            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
               {filteredSuggestions.length} disponíveis
             </Badge>
           </div>
@@ -269,7 +269,7 @@ export function PromptSuggestionsPopover({
             <button
               onClick={() => setActiveCategory(null)}
               className={cn(
-                "px-2 py-0.5 rounded text-[11px] font-medium transition-all",
+                "px-2 py-0.5 rounded text-xs font-medium transition-all",
                 !activeCategory 
                   ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900" 
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -282,7 +282,7 @@ export function PromptSuggestionsPopover({
                 key={key}
                 onClick={() => setActiveCategory(activeCategory === key ? null : key)}
                 className={cn(
-                  "px-2 py-0.5 rounded text-[11px] font-medium transition-all",
+                  "px-2 py-0.5 rounded text-xs font-medium transition-all",
                   activeCategory === key 
                     ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900" 
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -298,7 +298,7 @@ export function PromptSuggestionsPopover({
           {displaySuggestions.length === 0 ? (
             <div className="py-6 text-center">
               <Lightbulb className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-[11px] text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-gray-200">
                 Selecione candidatos ou uma vaga para ver sugestões contextuais
               </p>
             </div>
@@ -319,18 +319,18 @@ export function PromptSuggestionsPopover({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <h4 className="text-[11px] font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <h4 className="text-xs font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
                           {suggestion.title}
                         </h4>
                         <ChevronRight className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-1">
+                      <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-1">
                         {suggestion.description}
                       </p>
                     </div>
                     <Badge 
                       variant="secondary" 
-                      className={cn("text-[11px] px-1 py-0 flex-shrink-0", categoryInfo.color)}
+                      className={cn("text-xs px-1 py-0 flex-shrink-0", categoryInfo.color)}
                     >
                       {categoryInfo.label}
                     </Badge>
@@ -342,7 +342,7 @@ export function PromptSuggestionsPopover({
         </div>
 
         <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-[11px] text-gray-600 dark:text-gray-400 text-center">
+          <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
             Dica: Selecione candidatos ou abra uma vaga para mais ações
           </p>
         </div>

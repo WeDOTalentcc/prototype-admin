@@ -239,7 +239,7 @@ export function SavedSearchesTab({
               </div>
 
               <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-gray-200">
-                <Badge variant="outline" className="h-5 text-[11px] px-1.5">
+                <Badge variant="outline" className="h-5 text-xs px-1.5">
                   {getModeLabel(search.mode)}
                 </Badge>
                 <span className="flex items-center gap-1">
@@ -268,7 +268,7 @@ export function SavedSearchesTab({
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 size="sm"
-                className="h-8 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+                className="h-8 bg-gray-900 hover:bg-gray-800 text-white"
                 onClick={() => onExecuteSearch(search)}
               >
                 <Play className="w-3.5 h-3.5 mr-1" />
@@ -498,7 +498,7 @@ export function SavedSearchesTab({
                         key={mode}
                         variant={newSearchMode === mode ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-7 text-xs ${newSearchMode === mode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white' : ''}`}
+                        className={`h-7 text-xs ${newSearchMode === mode ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
                         onClick={() => setNewSearchMode(mode)}
                       >
                         <Icon className="w-3 h-3 mr-1" />
@@ -521,7 +521,7 @@ export function SavedSearchesTab({
                         key={source}
                         variant={newSearchSource === source ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-7 text-xs ${newSearchSource === source ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white' : ''}`}
+                        className={`h-7 text-xs ${newSearchSource === source ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
                         onClick={() => setNewSearchSource(source)}
                       >
                         <Icon className="w-3 h-3 mr-1" />
@@ -541,7 +541,7 @@ export function SavedSearchesTab({
             <Button
               onClick={handleCreateSearch}
               disabled={!newSearchName.trim() || !newSearchQuery.trim()}
-              className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar Busca
@@ -599,7 +599,7 @@ export function SavedSearchesTab({
             <Button
               onClick={handleEditSearch}
               disabled={!newSearchName.trim()}
-              className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar Alterações

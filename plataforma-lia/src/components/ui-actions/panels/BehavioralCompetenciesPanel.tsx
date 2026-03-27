@@ -183,7 +183,7 @@ function CompetencyCard({
             </div>
           </div>
           <Badge
-            className="shrink-0 text-[11px]"
+            className="shrink-0 text-xs"
             style={LEVEL_STYLES[competency.level].style}
           >
             {LEVEL_STYLES[competency.level].label}

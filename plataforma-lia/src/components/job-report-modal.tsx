@@ -181,7 +181,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <FileText className="w-4 h-4 print:w-4 print:h-4" />
               <div>
                 <h2 className="text-xs font-semibold print:text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>Relatório Executivo da Vaga</h2>
-                <p className="text-[10px] text-white/80">{reportLoading ? "Carregando..." : job.title} • {job.jobId}</p>
+                <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : job.title} • {job.jobId}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">
@@ -189,7 +189,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 variant="secondary"
                 size="sm"
                 onClick={shareReport}
-                className="h-7 px-2 text-[10px] bg-white/20 hover:bg-white/30 text-white"
+                className="h-7 px-2 text-micro bg-white/20 hover:bg-white/30 text-white"
               >
                 <Share2 className="w-3 h-3 mr-1" />
                 Compartilhar
@@ -198,7 +198,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 variant="secondary"
                 size="sm"
                 onClick={printReport}
-                className="h-7 px-2 text-[10px] bg-white/20 hover:bg-white/30 text-white"
+                className="h-7 px-2 text-micro bg-white/20 hover:bg-white/30 text-white"
               >
                 <Printer className="w-3 h-3 mr-1" />
                 Imprimir
@@ -208,7 +208,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 size="sm"
                 onClick={generatePDF}
                 disabled={isGenerating}
-                className="h-7 px-2 text-[10px] bg-white hover:bg-gray-100 text-gray-900"
+                className="h-7 px-2 text-micro bg-white hover:bg-gray-100 text-gray-900"
               >
                 {isGenerating ? (
                   <>Gerando...</>
@@ -244,7 +244,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <h1 className="text-base font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   {job.title}
                 </h1>
-                <div className="flex items-center gap-3 mt-0.5 text-[10px] text-gray-600">
+                <div className="flex items-center gap-3 mt-0.5 text-micro text-gray-600">
                   <span className="flex items-center gap-0.5">
                     <Building className="w-3 h-3" />
                     {job.department}
@@ -259,7 +259,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </span>
                 </div>
               </div>
-              <div className="text-right text-[10px] text-gray-500">
+              <div className="text-right text-micro text-gray-500">
                 <p>Gerado: {reportData.generatedDate}</p>
                 <p>às {reportData.generatedTime}</p>
               </div>
@@ -276,27 +276,27 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
                     <Users className="w-4 h-4 text-gray-600 dark:text-gray-400 mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-gray-900 dark:text-gray-50">{reportData.funnelMetrics.totalCandidates}</p>
-                    <p className="text-[10px] text-gray-600">Total Candidatos</p>
+                    <p className="text-micro text-gray-600">Total Candidatos</p>
                   </div>
                   <div className="text-center p-2 bg-green-50 rounded border border-green-100">
                     <Target className="w-4 h-4 text-green-600 mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-green-600">{reportData.funnelMetrics.hired}</p>
-                    <p className="text-[10px] text-gray-600">Contratados</p>
+                    <p className="text-micro text-gray-600">Contratados</p>
                   </div>
                   <div className="text-center p-2 bg-purple-50 rounded border border-purple-100">
                     <Clock className="w-4 h-4 text-purple-600 mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-purple-600">{reportData.funnelMetrics.averageTimeToHire}</p>
-                    <p className="text-[10px] text-gray-600">Dias p/ Contratar</p>
+                    <p className="text-micro text-gray-600">Dias p/ Contratar</p>
                   </div>
                   <div className="text-center p-2 bg-orange-50 rounded border border-orange-100">
                     <DollarSign className="w-4 h-4 text-orange-600 mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-orange-600">R${reportData.funnelMetrics.costPerHire.toLocaleString('pt-BR')}</p>
-                    <p className="text-[10px] text-gray-600">Custo/Contratação</p>
+                    <p className="text-micro text-gray-600">Custo/Contratação</p>
                   </div>
                 </div>
                 <div className="p-2 bg-amber-50 rounded border border-amber-100 flex items-start gap-2">
                   <AlertCircle className="w-3 h-3 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-gray-800 dark:text-gray-200">
+                  <p className="text-micro text-gray-800 dark:text-gray-200">
                     <span className="font-medium">Status:</span> Processo em fase de {job.stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
                     em entrevista e {reportData.funnelMetrics.final} finalistas. Taxa de conversão: {reportData.funnelMetrics.conversionRate}% (mercado: 2.3%).
                   </p>
@@ -322,22 +322,22 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                       { stage: "Contratados", value: reportData.funnelMetrics.hired, percentage: 2, color: "bg-green-500" }
                     ].map((item, index) => (
                       <div key={item.stage} className="flex items-center gap-2">
-                        <span className="w-16 text-[10px] text-gray-800 dark:text-gray-200">{item.stage}</span>
+                        <span className="w-16 text-micro text-gray-800 dark:text-gray-200">{item.stage}</span>
                         <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
                           <div className={`h-full ${item.color}`} style={{ width: `${item.percentage}%` }}></div>
                         </div>
-                        <span className="w-8 text-[10px] font-medium text-right">{item.value}</span>
-                        <span className="w-8 text-[10px] text-gray-500 text-right">{item.percentage}%</span>
+                        <span className="w-8 text-micro font-medium text-right">{item.value}</span>
+                        <span className="w-8 text-micro text-gray-500 text-right">{item.percentage}%</span>
                       </div>
                     ))}
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1 p-1.5 bg-green-50 rounded border border-green-100 text-center">
-                      <p className="text-[10px] text-gray-600">Conversão</p>
+                      <p className="text-micro text-gray-600">Conversão</p>
                       <p className="text-sm font-bold text-green-600">{reportData.funnelMetrics.conversionRate}%</p>
                     </div>
                     <div className="flex-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 text-center">
-                      <p className="text-[10px] text-gray-600">Qualidade</p>
+                      <p className="text-micro text-gray-600">Qualidade</p>
                       <div className="flex items-center justify-center gap-0.5 mt-0.5">
                         {[1,2,3,4].map((star) => (
                           <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
@@ -357,7 +357,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     Performance por Canal
                   </h3>
                   <div className="overflow-hidden rounded border border-gray-100">
-                    <table className="w-full text-[10px]">
+                    <table className="w-full text-micro">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="text-left py-1 px-1.5 font-medium text-gray-800 dark:text-gray-200">Canal</th>
@@ -386,7 +386,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                               </span>
                             </td>
                             <td className="text-center py-1 px-1">
-                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-medium ${channel.hired > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-micro font-medium ${channel.hired > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                 {channel.hired}
                               </span>
                             </td>
@@ -408,23 +408,23 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {selectedSections.candidates && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                    <Trophy className="w-3 h-3 text-[#E5A853]" />
+                    <Trophy className="w-3 h-3 text-wedo-orange" />
                     Top 5 Candidatos
                   </h3>
                   <div className="space-y-1">
                     {reportData.topCandidates.map((candidate, index) => (
                       <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-gray-50 rounded border border-gray-100">
                         <div className="flex items-center gap-1.5">
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold text-white
                             ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-500'}`}>
                             {index + 1}
                           </div>
                           <div>
-                            <p className="text-[10px] font-medium text-gray-950 dark:text-gray-50">{candidate.name}</p>
-                            <p className="text-[10px] text-gray-500">Score: {candidate.score}% • Fit: {candidate.fit}%</p>
+                            <p className="text-micro font-medium text-gray-950 dark:text-gray-50">{candidate.name}</p>
+                            <p className="text-micro text-gray-500">Score: {candidate.score}% • Fit: {candidate.fit}%</p>
                           </div>
                         </div>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium
+                        <span className={`text-micro px-1.5 py-0.5 rounded-full font-medium
                           ${candidate.status === "Final" ? "bg-purple-100 text-purple-700" :
                           candidate.status === "Entrevista" ? "bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark" :
                           "bg-yellow-100 text-yellow-700"}`}>
@@ -453,11 +453,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                             event.status === 'in-progress' ? 'bg-yellow-500' :
                             'bg-gray-300'
                           }`}></div>
-                          <div className="flex-1 flex items-center justify-between text-[10px]">
+                          <div className="flex-1 flex items-center justify-between text-micro">
  <span className={event.status === 'completed' ? 'text-gray-800' : event.status === 'in-progress' ? 'font-medium dark:text-gray-50' : 'text-gray-500'}>
                               {event.event}
                             </span>
-                            <span className="text-[10px] text-gray-500">{event.date}</span>
+                            <span className="text-micro text-gray-500">{event.date}</span>
                           </div>
                         </div>
                       ))}
@@ -476,24 +476,24 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </h3>
                 <div className="grid grid-cols-6 gap-2">
                   <div className="col-span-2 p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
-                    <p className="text-[10px] text-gray-600">Orçamento Total</p>
+                    <p className="text-micro text-gray-600">Orçamento Total</p>
                     <p className="text-sm font-bold text-gray-900 dark:text-gray-50">R$ {reportData.budget.total.toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-orange-50 rounded border border-orange-100">
-                    <p className="text-[10px] text-gray-600">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
+                    <p className="text-micro text-gray-600">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-orange-600">R$ {reportData.budget.spent.toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-green-50 rounded border border-green-100">
-                    <p className="text-[10px] text-gray-600">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
+                    <p className="text-micro text-gray-600">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-green-600">R$ {reportData.budget.remaining.toLocaleString('pt-BR')}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {reportData.budget.breakdown.map((item) => (
                     <div key={item.category} className="p-1.5 bg-gray-50 rounded border border-gray-100 text-center">
-                      <p className="text-[10px] text-gray-600 truncate">{item.category}</p>
-                      <p className="text-[10px] font-semibold text-gray-800">R$ {item.amount.toLocaleString('pt-BR')}</p>
-                      <p className="text-[10px] text-gray-500">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
+                      <p className="text-micro text-gray-600 truncate">{item.category}</p>
+                      <p className="text-micro font-semibold text-gray-800">R$ {item.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-micro text-gray-500">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
                     </div>
                   ))}
                 </div>
@@ -504,7 +504,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {selectedSections.recommendations && (
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1 bg-yellow-50 py-1.5 px-2 rounded-t border border-yellow-100 border-b-0" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                  <Lightbulb className="w-3 h-3 text-[#E5A853]" />
+                  <Lightbulb className="w-3 h-3 text-wedo-orange" />
                   Recomendações e Próximos Passos
                 </h3>
                 <div className="space-y-1.5 p-2 bg-white rounded-b border border-gray-100 border-t-0">
@@ -519,8 +519,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                         <rec.icon className={`w-3 h-3 ${rec.color}`} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-[10px] font-semibold text-gray-950 dark:text-gray-50">{rec.title}</h4>
-                        <p className="text-[10px] text-gray-600 leading-tight">{rec.desc}</p>
+                        <h4 className="text-micro font-semibold text-gray-950 dark:text-gray-50">{rec.title}</h4>
+                        <p className="text-micro text-gray-600 leading-tight">{rec.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -528,8 +528,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 flex items-start gap-2">
                   <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
                   <div>
-                    <h4 className="text-[10px] font-semibold text-gray-950 dark:text-gray-50">Ação Prioritária</h4>
-                    <p className="text-[10px] text-gray-800 dark:text-gray-200">
+                    <h4 className="text-micro font-semibold text-gray-950 dark:text-gray-50">Ação Prioritária</h4>
+                    <p className="text-micro text-gray-800 dark:text-gray-200">
                       Agendar entrevistas com os 12 finalistas nos próximos 3 dias para manter o momentum do processo e garantir as contratações dentro do prazo.
                     </p>
                   </div>
@@ -538,7 +538,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             )}
 
             {/* Footer */}
-            <div className="pt-3 mt-3 border-t border-gray-200 flex items-center justify-between text-[10px] text-gray-500">
+            <div className="pt-3 mt-3 border-t border-gray-200 flex items-center justify-between text-micro text-gray-500">
               <div>
                 <p>Relatório gerado automaticamente pela plataforma WeDoTalent</p>
                 <p>© 2025 Sodexo - Todos os direitos reservados</p>

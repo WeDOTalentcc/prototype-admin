@@ -135,7 +135,7 @@ const discDimensions = {
     letter: "C",
     name: "Conformidade",
     icon: Zap,
-    color: "#9CA3AF",
+    color: "var(--gray-400)",
     bgColor: "bg-gray-50",
     borderColor: "border-gray-200",
     high: {
@@ -330,7 +330,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Relatório DISC
                 </h2>
@@ -437,7 +437,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
                     <div className="flex flex-wrap gap-1">
                       {levelData.keywords.map((kw, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 bg-white/50">
+                        <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white/50">
                           {kw}
                         </Badge>
                       ))}
@@ -460,7 +460,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {profileInfo.strengths.map((s, i) => (
-                        <Badge key={i} className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
                           ✓ {s}
                         </Badge>
                       ))}
@@ -520,19 +520,19 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                 {data.teamworkScore && (
                   <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
                     <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.teamworkScore}%</p>
-                    <p className="text-[10px] text-gray-500">Trabalho em Equipe</p>
+                    <p className="text-micro text-gray-500">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
                   <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
                     <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.adaptabilityScore}%</p>
-                    <p className="text-[10px] text-gray-500">Adaptabilidade</p>
+                    <p className="text-micro text-gray-500">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
                   <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
                     <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.stressResilienceScore}%</p>
-                    <p className="text-[10px] text-gray-500">Resiliência</p>
+                    <p className="text-micro text-gray-500">Resiliência</p>
                   </div>
                 )}
               </div>

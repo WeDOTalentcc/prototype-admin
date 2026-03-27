@@ -97,14 +97,14 @@ function QuestionItem({
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                "px-2 py-0.5 rounded-full text-micro font-medium",
                 categoryColors[question.category]
               )}
             >
               {categoryLabels[question.category]}
             </span>
             {question.source && (
-              <span className="text-[10px] text-gray-500">
+              <span className="text-micro text-gray-500">
                 Fonte: {question.source}
               </span>
             )}
@@ -119,7 +119,7 @@ function QuestionItem({
             }
             disabled={disabled}
           />
-          <label className="text-[11px] text-gray-600 whitespace-nowrap">
+          <label className="text-xs text-gray-600 whitespace-nowrap">
             Não perguntei
           </label>
         </div>
@@ -129,7 +129,7 @@ function QuestionItem({
         <>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-gray-600">Avaliação:</span>
+              <span className="text-xs text-gray-600">Avaliação:</span>
               <StarRating
                 value={question.starRating}
                 onChange={handleStarChange}
@@ -137,7 +137,7 @@ function QuestionItem({
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-gray-600">Nível:</span>
+              <span className="text-xs text-gray-600">Nível:</span>
               <LikertRating
                 value={question.likertRating || null}
                 onChange={handleLikertChange}
@@ -272,7 +272,7 @@ export function InterviewNoteCard({
             <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
               {note.candidateName}
             </h2>
-            <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
               {note.jobTitle && (
                 <div className="flex items-center gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -353,7 +353,7 @@ export function InterviewNoteCard({
             <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
               Perguntas da Entrevista
             </h3>
-            <span className="text-[11px] text-gray-500">
+            <span className="text-xs text-gray-500">
               ({note.questions.length} perguntas)
             </span>
           </div>
@@ -396,7 +396,7 @@ export function InterviewNoteCard({
               )}
               Transcrição da Entrevista
               {note.transcriptionSource && (
-                <span className="text-[10px] font-normal text-gray-500">
+                <span className="text-micro font-normal text-gray-500">
                   (via {note.transcriptionSource})
                 </span>
               )}
@@ -416,7 +416,7 @@ export function InterviewNoteCard({
             <Bot className="h-4 w-4 text-wedo-cyan" />
             <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Parecer LIA</h3>
             {note.liaParecerEditado && (
-              <span className="text-[10px] text-amber-600">(editado)</span>
+              <span className="text-micro text-amber-600">(editado)</span>
             )}
           </div>
           {note.liaParecer ? (

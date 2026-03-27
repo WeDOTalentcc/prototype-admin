@@ -341,12 +341,12 @@ export function ShareSearchModal({
                     <div className="flex-1 min-w-0">
                       <p className={`${textStyles.subtitle} truncate text-sm`}>{title}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="gap-1 text-[10px]">
+                        <Badge variant="secondary" className="gap-1 text-micro">
                           <Users className="w-3 h-3" />
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''}
                         </Badge>
                         {sourceQuery && (
-                          <span className="text-[10px] text-gray-500 truncate max-w-[160px]">
+                          <span className="text-micro text-gray-500 truncate max-w-[160px]">
                             "{sourceQuery}"
                           </span>
                         )}
@@ -371,7 +371,7 @@ export function ShareSearchModal({
                       <Mail className="w-4 h-4 flex-shrink-0" />
                       <div>
                         <div className="text-xs font-medium">Email</div>
-                        <div className="text-[10px] opacity-70">Convite</div>
+                        <div className="text-micro opacity-70">Convite</div>
                       </div>
                     </button>
                     <button
@@ -387,7 +387,7 @@ export function ShareSearchModal({
                       <MessageSquare className="w-4 h-4 flex-shrink-0" />
                       <div>
                         <div className="text-xs font-medium">WhatsApp</div>
-                        <div className="text-[10px] opacity-70">Mensagem</div>
+                        <div className="text-micro opacity-70">Mensagem</div>
                       </div>
                     </button>
                     <button
@@ -403,7 +403,7 @@ export function ShareSearchModal({
                       <Send className="w-4 h-4 flex-shrink-0" />
                       <div>
                         <div className="text-xs font-medium">Ambos</div>
-                        <div className="text-[10px] opacity-70">Email + WA</div>
+                        <div className="text-micro opacity-70">Email + WA</div>
                       </div>
                     </button>
                   </div>
@@ -452,13 +452,13 @@ export function ShareSearchModal({
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
                         >
                           <Mail className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                          <span className="text-[11px] text-gray-700 dark:text-gray-300 truncate flex-1">
+                          <span className="text-xs text-gray-700 dark:text-gray-300 truncate flex-1">
                             {recipient.email}
                           </span>
                           {recipient.phone && (
                             <>
                               <Phone className="w-3 h-3 text-green-500 flex-shrink-0" />
-                              <span className="text-[10px] text-gray-500 truncate">
+                              <span className="text-micro text-gray-500 truncate">
                                 {recipient.phone}
                               </span>
                             </>
@@ -476,7 +476,7 @@ export function ShareSearchModal({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
+                    <p className="text-micro text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
                       Adicione pelo menos um email de gestor para compartilhar
                     </p>
                   )}
@@ -492,7 +492,7 @@ export function ShareSearchModal({
                           type="button"
                           onClick={() => handleSelectTemplate(tpl)}
                           className={cn(
-                            "flex-shrink-0 px-3 py-1.5 rounded-md border text-[11px] transition-all whitespace-nowrap",
+                            "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-all whitespace-nowrap",
                             selectedTemplateId === tpl.id
                               ? "border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
                               : "border-gray-200 dark:border-gray-700 hover:border-gray-400 text-gray-700 dark:text-gray-300"
@@ -507,7 +507,7 @@ export function ShareSearchModal({
 
                 {(channel === 'email' || channel === 'both') && (
                   <div className="space-y-1.5">
-                    <Label className={`${textStyles.label} text-[11px]`}>Assunto</Label>
+                    <Label className={`${textStyles.label} text-xs`}>Assunto</Label>
                     <Input
                       placeholder="Assunto do email"
                       value={subject}
@@ -518,7 +518,7 @@ export function ShareSearchModal({
                 )}
 
                 <div className="space-y-1.5">
-                  <Label className={`${textStyles.label} text-[11px]`}>
+                  <Label className={`${textStyles.label} text-xs`}>
                     Mensagem
                   </Label>
                   <Textarea
@@ -530,24 +530,24 @@ export function ShareSearchModal({
                 </div>
 
                 <div className="space-y-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
-                  <Label className={`${textStyles.label} text-[11px]`}>Configurações de acesso</Label>
+                  <Label className={`${textStyles.label} text-xs`}>Configurações de acesso</Label>
                   
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] text-gray-500 flex items-center gap-1">
+                    <Label className="text-micro text-gray-500 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       Validade do link
                     </Label>
                     <div className="flex gap-2">
                       <Select value={expiryOption} onValueChange={setExpiryOption}>
                         <SelectTrigger className={cn(
-                          "h-8 text-[11px]",
+                          "h-8 text-xs",
                           expiryOption === 'custom' ? "w-1/2" : "w-full"
                         )}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]" position="popper" sideOffset={4}>
                           {EXPIRY_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value} className="text-[11px]">
+                            <SelectItem key={option.value} value={option.value} className="text-xs">
                               {option.label}
                             </SelectItem>
                           ))}
@@ -562,9 +562,9 @@ export function ShareSearchModal({
                             placeholder="Dias"
                             value={customExpiryDays}
                             onChange={(e) => setCustomExpiryDays(e.target.value)}
-                            className="h-8 w-16 text-[11px]"
+                            className="h-8 w-16 text-xs"
                           />
-                          <span className="text-[10px] text-gray-500">dias</span>
+                          <span className="text-micro text-gray-500">dias</span>
                         </div>
                       )}
                     </div>
@@ -577,7 +577,7 @@ export function ShareSearchModal({
                         checked={canComment}
                         onCheckedChange={(checked) => setCanComment(checked === true)}
                       />
-                      <Label htmlFor="can-comment" className="text-[11px] cursor-pointer flex items-center gap-1">
+                      <Label htmlFor="can-comment" className="text-xs cursor-pointer flex items-center gap-1">
                         <MessageSquare className="w-3 h-3 text-gray-500" />
                         Pode comentar
                       </Label>
@@ -588,7 +588,7 @@ export function ShareSearchModal({
                         checked={canRate}
                         onCheckedChange={(checked) => setCanRate(checked === true)}
                       />
-                      <Label htmlFor="can-rate" className="text-[11px] cursor-pointer flex items-center gap-1">
+                      <Label htmlFor="can-rate" className="text-xs cursor-pointer flex items-center gap-1">
                         <Star className="w-3 h-3 text-gray-500" />
                         Pode dar rating
                       </Label>
@@ -601,11 +601,11 @@ export function ShareSearchModal({
 
           <div className="flex-1 bg-gray-50/50 dark:bg-gray-900/50 overflow-hidden flex flex-col">
             <div className="px-5 pt-4 pb-3 flex items-center justify-between flex-shrink-0">
-              <h4 className={`${textStyles.label} flex items-center gap-2 text-[11px]`}>
+              <h4 className={`${textStyles.label} flex items-center gap-2 text-xs`}>
                 <Eye className="w-3.5 h-3.5 text-gray-500" />
                 Preview da Mensagem
               </h4>
-              <Badge variant="outline" className="text-[10px] h-5">
+              <Badge variant="outline" className="text-micro h-5">
                 {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
               </Badge>
             </div>
@@ -621,14 +621,14 @@ export function ShareSearchModal({
                       </div>
                       <div>
                         <p className="text-white text-xs font-medium">WeDoTalent</p>
-                        <p className="text-white/60 text-[10px]">Plataforma de Recrutamento</p>
+                        <p className="text-white/60 text-micro">Plataforma de Recrutamento</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="px-5 py-4 space-y-3">
                     <div className="border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <p className="text-[10px] text-gray-500">Assunto</p>
+                      <p className="text-micro text-gray-500">Assunto</p>
                       <p className="text-xs font-medium text-gray-900 dark:text-gray-100">
                         {renderPreview(subject) || 'Candidatos para sua avaliação'}
                       </p>
@@ -648,20 +648,20 @@ export function ShareSearchModal({
                     <div className="bg-gray-50 dark:bg-gray-700/30 rounded-md p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-[10px] text-gray-500">
+                        <span className="text-micro text-gray-500">
                           Válido por {getExpiryLabel().toLowerCase()}
                         </span>
                       </div>
                       {(!canComment || !canRate) && (
                         <div className="flex items-center gap-2">
                           <Shield className="w-3.5 h-3.5 text-gray-500" />
-                          <span className="text-[10px] text-gray-500">
+                          <span className="text-micro text-gray-500">
                             {!canRate ? 'Somente visualização' : 'Sem comentários'}
                           </span>
                         </div>
@@ -670,7 +670,7 @@ export function ShareSearchModal({
 
                     <div className="pt-1">
                       <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2.5 text-center">
-                        <p className="text-[10px] text-gray-500 mb-1">Código de acesso</p>
+                        <p className="text-micro text-gray-500 mb-1">Código de acesso</p>
                         <p className="text-sm font-mono font-bold tracking-widest text-gray-900 dark:text-gray-100">
                           A1B2C3
                         </p>
@@ -686,7 +686,7 @@ export function ShareSearchModal({
                   </div>
 
                   <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-3">
-                    <p className="text-[9px] text-gray-400 text-center">
+                    <p className="text-micro text-gray-400 text-center">
                       Powered by WeDoTalent · Política de Privacidade
                     </p>
                   </div>
@@ -696,17 +696,17 @@ export function ShareSearchModal({
                   <div className="mt-3">
                     <div className="flex items-center gap-2 mb-2">
                       <MessageSquare className="w-3 h-3 text-green-600" />
-                      <span className="text-[10px] font-medium text-gray-500">Preview WhatsApp</span>
+                      <span className="text-micro font-medium text-gray-500">Preview WhatsApp</span>
                     </div>
                     <div className="flex justify-end">
                       <div className="max-w-[85%]">
                         <div className="bg-[#DCF8C6] dark:bg-green-900/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
-                          <p className="text-[11px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                          <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                             {message ? renderPreview(message) : (
-                              <span className="italic text-gray-500 text-[10px]">Mensagem...</span>
+                              <span className="italic text-gray-500 text-micro">Mensagem...</span>
                             )}
                           </p>
-                          <div className="mt-1.5 pt-1.5 border-t border-green-200 dark:border-green-800 text-[9px] text-gray-600 dark:text-gray-400 space-y-0.5">
+                          <div className="mt-1.5 pt-1.5 border-t border-green-200 dark:border-green-800 text-micro text-gray-600 dark:text-gray-400 space-y-0.5">
                             <p>📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} · 🔗 Link · 🔑 OTP</p>
                           </div>
                         </div>
@@ -730,23 +730,23 @@ export function ShareSearchModal({
                         {message && (
                           <>
                             <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800">
-                              <p className="text-[10px] text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-gray-400">
                                 📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                               </p>
-                              <p className="text-[10px] text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-gray-400">
                                 🔗 Link: app.wedotalent.com/shared/...
                               </p>
-                              <p className="text-[10px] text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-gray-400">
                                 🔑 Código: A1B2C3
                               </p>
-                              <p className="text-[10px] text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-gray-400">
                                 ⏰ Válido por {getExpiryLabel().toLowerCase()}
                               </p>
                             </div>
                           </>
                         )}
                         <div className="flex justify-end mt-1">
-                          <span className="text-[9px] text-gray-500">
+                          <span className="text-micro text-gray-500">
                             {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -760,7 +760,7 @@ export function ShareSearchModal({
         </div>
 
         <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2 text-[10px] text-gray-500">
+          <div className="flex items-center gap-2 text-micro text-gray-500">
             <Shield className="w-3 h-3" />
             Acesso protegido por OTP
           </div>

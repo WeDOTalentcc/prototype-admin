@@ -267,7 +267,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                 <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   Dicas e Comandos da LIA
                 </h2>
-                <p className="text-[11px] text-gray-800 dark:text-gray-200">
+                <p className="text-xs text-gray-800 dark:text-gray-200">
                   Aprenda a maximizar o potencial da sua assistente de IA
                 </p>
               </div>
@@ -282,7 +282,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
           {/* Sidebar Categories */}
           <div className="w-56 bg-gray-50 dark:bg-gray-900/50 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
             <div className="p-3">
-              <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-2 uppercase tracking-wide">Categorias</h3>
+              <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 uppercase tracking-wide">Categorias</h3>
               <div className="space-y-0.5">
                 {tipCategories.map((category) => (
                   <button
@@ -321,7 +321,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                       {currentContextTips.map((tip, index) => (
                         <div key={index} className="group p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-colors">
                           <div className="flex items-start gap-2">
-                            <span className="text-gray-600 mt-0.5 text-[11px]">•</span>
+                            <span className="text-gray-600 mt-0.5 text-xs">•</span>
                             <div className="flex-1">
                               <p className="text-xs text-gray-800 dark:text-gray-200">{tip}</p>
                               <TipActionButtons tip={tip} isCommand={tip.includes('"') || tip.includes('Analise') || tip.includes('Compare')} />
@@ -342,7 +342,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                     <div key={category.id}>
                       <div className="flex items-center gap-2 mb-3">
                         <category.icon className={`w-4 h-4 ${category.color}`} />
-                        <h3 className="text-[13px] font-semibold text-gray-950 dark:text-gray-50">
+                        <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
                           {category.name}
                         </h3>
                       </div>
@@ -389,7 +389,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 h-7 text-[11px]"
+                        className="gap-1.5 h-7 text-xs"
                         onClick={() => window.open('https://teams.microsoft.com', '_blank')}
                       >
                         <Video className="w-3 h-3" />
@@ -398,7 +398,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 h-7 text-[11px]"
+                        className="gap-1.5 h-7 text-xs"
                         onClick={() => window.open('https://wa.me/5511999999999?text=Olá LIA, preciso de ajuda', '_blank')}
                       >
                         <Phone className="w-3 h-3" />
@@ -418,7 +418,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-1.5">
                       <Copy className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                       <span className="text-gray-600 dark:text-gray-400">Copiar dica</span>

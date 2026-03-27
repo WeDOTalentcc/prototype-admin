@@ -139,7 +139,7 @@ export function WSIScorecard({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm">Score WSI</span>
-                  <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color} text-[11px]`}>
+                  <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color} text-xs`}>
                     {latestResult.classification}
                   </Badge>
                 </div>
@@ -184,7 +184,7 @@ export function WSIScorecard({
             <span className={`text-2xl font-bold ${scoreDisplay.color}`}>
               {latestResult.overall_wsi.toFixed(1)}
             </span>
-            <span className="text-[11px] text-muted-foreground">de 5.0</span>
+            <span className="text-xs text-muted-foreground">de 5.0</span>
           </div>
 
           <div className="flex-1 space-y-2">
@@ -222,11 +222,11 @@ export function WSIScorecard({
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {latestResult.screening_type === 'voice' ? (
-              <Badge variant="outline" className="text-[11px]">
+              <Badge variant="outline" className="text-xs">
                 🎤 Voz
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[11px]">
+              <Badge variant="outline" className="text-xs">
                 💬 Texto
               </Badge>
             )}
@@ -259,7 +259,7 @@ export function WSIScorecard({
                       {new Date(result.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[11px]">
+                  <Badge variant="outline" className="text-xs">
                     {result.classification}
                   </Badge>
                 </div>
@@ -293,7 +293,7 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${display.bgColor} ${display.color}`}>
         {score.toFixed(1)}
       </div>
-      <Badge className={`${badge.bgColor} ${badge.color} text-[11px]`}>
+      <Badge className={`${badge.bgColor} ${badge.color} text-xs`}>
         {classification}
       </Badge>
     </div>

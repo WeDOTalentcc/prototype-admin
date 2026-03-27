@@ -98,7 +98,7 @@ export function InputBar({
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
                   isMuted
                     ? "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                    : "bg-[#60BED1]/10 text-[#60BED1] hover:bg-[#60BED1]/20"
+                    : "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
                 )}
               >
                 {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}

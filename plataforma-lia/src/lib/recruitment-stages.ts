@@ -74,12 +74,32 @@ export interface StandbyReason {
 
 // ==================== RECRUITMENT STAGES ====================
 
+// ──────────────────────────────────────────────────────────────
+// STAGE COLOR SYSTEM — Monocromático (Fase 2 — 2026-03-27)
+//
+// Antes: 17 pastéis únicos (#A8CED5, #BFA8D5, #C5D9ED...)
+// Depois: escala cinza hierárquica — tonalidade = progresso no funil
+//
+// Hierarquia visual:
+//   Estágios iniciais  → cinza claro (--gray-200)
+//   Qualificação       → cinza médio-claro (--gray-300 equivalente)
+//   Entrevistas        → cinza médio (--gray-400)
+//   Decisão final      → cinza escuro (--gray-600 / --gray-700)
+//   Proposta           → quase preto (--gray-800)
+//   Terminal positivo  → único verde semântico (--status-success)
+//   Terminal negativo  → cinza faded (--gray-200, com opacity no componente)
+//
+// Valores hex = mesmos que as CSS vars em design-tokens.css.
+// Componentes que precisam usar CSS vars diretamente podem usar:
+//   style={{ backgroundColor: 'var(--gray-400)' }}
+// ──────────────────────────────────────────────────────────────
+
 export const RECRUITMENT_STAGES: RecruitmentStage[] = [
   {
     name: 'sourcing',
     displayName: 'Funil',
     stageOrder: 1,
-    color: '#A8CED5',
+    color: '#E5E7EB',  // --gray-200 — entrada no funil
     icon: 'search',
     stageType: 'active',
     isInitial: true,
@@ -91,7 +111,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'screening',
     displayName: 'Triagem',
     stageOrder: 2,
-    color: '#BFA8D5',
+    color: '#E5E7EB',  // --gray-200 — triagem inicial
     icon: 'file-text',
     stageType: 'active',
     isInitial: false,
@@ -103,7 +123,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'long_list',
     displayName: 'Long List',
     stageOrder: 3,
-    color: '#C5D9ED',
+    color: '#D1D5DB',  // gray-300 equivalente — qualificação inicial
     icon: 'list',
     stageType: 'active',
     isInitial: false,
@@ -115,7 +135,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'short_list',
     displayName: 'Short List',
     stageOrder: 4,
-    color: '#B8C5D0',
+    color: '#D1D5DB',  // gray-300 equivalente — qualificação refinada
     icon: 'list-checks',
     stageType: 'active',
     isInitial: false,
@@ -127,7 +147,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_hr',
     displayName: 'Entrevista RH',
     stageOrder: 5,
-    color: '#A8D5B7',
+    color: '#9CA3AF',  // --gray-400 — entrevistas iniciam
     icon: 'users',
     stageType: 'active',
     isInitial: false,
@@ -139,7 +159,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'technical_test',
     displayName: 'Teste Técnico',
     stageOrder: 6,
-    color: '#E8B8B8',
+    color: '#9CA3AF',  // --gray-400
     icon: 'code-2',
     stageType: 'active',
     isInitial: false,
@@ -151,7 +171,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'english_test',
     displayName: 'Teste de Inglês',
     stageOrder: 7,
-    color: '#E5C5C5',
+    color: '#9CA3AF',  // --gray-400
     icon: 'languages',
     stageType: 'active',
     isInitial: false,
@@ -163,7 +183,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_technical',
     displayName: 'Entrevista Técnica',
     stageOrder: 8,
-    color: '#B8E0D2',
+    color: '#6B7280',  // gray-500 equivalente — progresso avançado
     icon: 'code',
     stageType: 'active',
     isInitial: false,
@@ -175,7 +195,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager',
     displayName: 'Entrevista Gestor',
     stageOrder: 9,
-    color: '#F5E6B3',
+    color: '#6B7280',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -187,7 +207,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager2',
     displayName: 'Entrevista Gestor 2',
     stageOrder: 10,
-    color: '#F5D6A8',
+    color: '#6B7280',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -199,7 +219,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_final',
     displayName: 'Entrevista Final',
     stageOrder: 11,
-    color: '#D5BFA8',
+    color: '#4B5563',  // --gray-600 — decisão final se aproxima
     icon: 'award',
     stageType: 'active',
     isInitial: false,
@@ -211,7 +231,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'references',
     displayName: 'Referências',
     stageOrder: 12,
-    color: '#E8E4E0',
+    color: '#4B5563',  // --gray-600
     icon: 'phone',
     stageType: 'active',
     isInitial: false,
@@ -223,7 +243,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer',
     displayName: 'Proposta',
     stageOrder: 13,
-    color: '#F5D6A8',
+    color: '#1F2937',  // --gray-800 — quase lá, alta relevância
     icon: 'file-check',
     stageType: 'active',
     isInitial: false,
@@ -235,7 +255,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'hired',
     displayName: 'Contratado',
     stageOrder: 14,
-    color: '#A8D5B7',
+    color: '#16A34A',  // --status-success — ÚNICO verde: vitória/conclusão positiva
     icon: 'check-circle',
     stageType: 'final',
     isInitial: false,
@@ -248,7 +268,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'rejected',
     displayName: 'Reprovado',
     stageOrder: 15,
-    color: '#E5E7EB',
+    color: '#E5E7EB',  // --gray-200 — faded, encerrado sem progressão
     icon: 'x-circle',
     stageType: 'final',
     isInitial: false,
@@ -261,7 +281,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer_declined',
     displayName: 'Proposta Recusada',
     stageOrder: 16,
-    color: '#B8C5D0',
+    color: '#E5E7EB',  // --gray-200 — faded, terminal
     icon: 'x',
     stageType: 'final',
     isInitial: false,
@@ -273,7 +293,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'standby',
     displayName: 'Stand By',
     stageOrder: 17,
-    color: '#E8E4E0',
+    color: '#D1D5DB',  // gray-300 equivalente — parado, aguardando
     icon: 'pause-circle',
     stageType: 'standby',
     isInitial: false,

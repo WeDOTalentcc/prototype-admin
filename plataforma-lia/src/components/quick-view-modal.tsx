@@ -107,17 +107,17 @@ export function QuickViewModal({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">
+              <h2 className="text-base-ui font-semibold text-gray-800 dark:text-gray-200">
                 {candidate.name}
               </h2>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {candidate.position}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className={`text-[10px] px-2 py-1 ${getStatusColor(candidate.status)}`}>
+                <Badge className={`text-micro px-2 py-1 ${getStatusColor(candidate.status)}`}>
                   {getStatusLabel(candidate.status)}
                 </Badge>
-                <div className={`px-2 py-1 rounded-full text-[10px] font-bold ${getScoreColor(candidate.liaAnalysis?.score || candidate.score)}`}>
+                <div className={`px-2 py-1 rounded-full text-micro font-bold ${getScoreColor(candidate.liaAnalysis?.score || candidate.score)}`}>
                   {candidate.liaAnalysis?.score || candidate.score}% LIA
                 </div>
               </div>
@@ -155,7 +155,7 @@ export function QuickViewModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-[11px] ${
+                className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-xs ${
                   activeTab === tab.id
                     ? 'border-gray-800 text-gray-800 dark:text-gray-200 dark:border-gray-200'
                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:border-gray-300'
@@ -177,24 +177,24 @@ export function QuickViewModal({
               {/* Contact & Social */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-3">Contato</h3>
+                  <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3">Contato</h3>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <Mail className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600 dark:text-gray-400">{candidate.email}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <Phone className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600 dark:text-gray-400">{candidate.phone}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <MapPin className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600 dark:text-gray-400">{candidate.location}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <Linkedin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       <a href={candidate.linkedin} target="_blank" rel="noopener noreferrer"
-                         className="text-gray-600 dark:text-gray-400 hover:text-[#50a3b8] transition-colors">
+                         className="text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark transition-colors">
                         LinkedIn Profile
                       </a>
                     </div>
@@ -202,18 +202,18 @@ export function QuickViewModal({
                 </div>
 
                 <div>
-                  <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-3">Informações</h3>
+                  <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3">Informações</h3>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <Briefcase className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600 dark:text-gray-400">{candidate.experience} anos de experiência</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-xs">
                       <GraduationCap className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600 dark:text-gray-400">{candidate.education}</span>
                     </div>
                     {candidate.salary && (
-                      <div className="flex items-center gap-2 text-[11px]">
+                      <div className="flex items-center gap-2 text-xs">
                         <DollarSign className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600 dark:text-gray-400">
                           Atual: R$ {candidate.salary.current.toLocaleString()} |
@@ -227,10 +227,10 @@ export function QuickViewModal({
 
               {/* Skills */}
               <div>
-                <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-3">Competências</h3>
+                <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3">Competências</h3>
                 <div className="flex flex-wrap gap-2">
                   {candidate.skills.map((skill, index) => (
-                    <Badge key={index} variant="outline" className="text-[10px] border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400">
+                    <Badge key={index} variant="outline" className="text-micro border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400">
                       {skill}
                     </Badge>
                   ))}
@@ -240,10 +240,10 @@ export function QuickViewModal({
               {/* Tags */}
               {candidate.tags.length > 0 && (
                 <div>
-                  <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-3">Tags</h3>
+                  <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.tags.map((tag, index) => (
-                      <Badge key={index} className="text-[10px] bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200">
+                      <Badge key={index} className="text-micro bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200">
                         {tag}
                       </Badge>
                     ))}
@@ -257,16 +257,16 @@ export function QuickViewModal({
             <div className="space-y-6">
               {candidate.workHistory && candidate.workHistory.length > 0 ? (
                 <div>
-                  <h3 className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-4">Histórico Profissional</h3>
+                  <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-4">Histórico Profissional</h3>
                   <div className="space-y-4">
                     {candidate.workHistory.map((job, index) => (
                       <div key={index} className="border-l-2 border-gray-200 pl-4 pb-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-800 dark:text-gray-200 text-[11px]">{job.position}</h4>
-                          <Badge variant="outline" className="text-[10px] border-gray-100">{job.period}</Badge>
+                          <h4 className="font-medium text-gray-800 dark:text-gray-200 text-xs">{job.position}</h4>
+                          <Badge variant="outline" className="text-micro border-gray-100">{job.period}</Badge>
                         </div>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400 font-medium mb-2">{job.company}</p>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400">{job.description}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">{job.company}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{job.description}</p>
                       </div>
                     ))}
                   </div>
@@ -274,7 +274,7 @@ export function QuickViewModal({
               ) : (
                 <div className="text-center py-8">
                   <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400 text-[11px]">Histórico profissional não disponível</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs">Histórico profissional não disponível</p>
                 </div>
               )}
             </div>
@@ -289,19 +289,19 @@ export function QuickViewModal({
                     <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-2xl font-bold ${getScoreColor(candidate.liaAnalysis.score)}`}>
                       {candidate.liaAnalysis.score}%
                     </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2">Score de Compatibilidade LIA</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Score de Compatibilidade LIA</p>
                   </div>
 
                   {/* Analysis */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-[11px] font-medium text-green-700 mb-3 flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-green-700 mb-3 flex items-center gap-2">
                         <Award className="w-4 h-4" />
                         Pontos Fortes
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.strengths.map((strength, index) => (
-                          <li key={index} className="text-[11px] text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                          <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                             {strength}
                           </li>
@@ -310,13 +310,13 @@ export function QuickViewModal({
                     </div>
 
                     <div>
-                      <h3 className="text-[11px] font-medium text-yellow-700 mb-3 flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-yellow-700 mb-3 flex items-center gap-2">
                         <Target className="w-4 h-4" />
                         Pontos de Atenção
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.concerns.map((concern, index) => (
-                          <li key={index} className="text-[11px] text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                          <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
                             {concern}
                           </li>
@@ -327,17 +327,17 @@ export function QuickViewModal({
 
                   {/* Recommendation */}
                   <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                    <h3 className="text-[11px] font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
+                    <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
                       Recomendação da LIA
                     </h3>
-                    <p className="text-[11px] text-gray-800 dark:text-gray-200">{candidate.liaAnalysis.recommendation}</p>
+                    <p className="text-xs text-gray-800 dark:text-gray-200">{candidate.liaAnalysis.recommendation}</p>
                   </div>
                 </>
               ) : (
                 <div className="text-center py-8">
                   <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400 text-[11px]">Análise da LIA não disponível</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs">Análise da LIA não disponível</p>
                   <Button variant="outline" size="sm" className="mt-4 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">
                     <Target className="w-4 h-4 mr-2" />
                     Solicitar Análise

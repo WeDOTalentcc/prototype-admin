@@ -294,8 +294,8 @@ export default function TriagemPage() {
 function LGPDFooter() {
   return (
     <div className="py-3 px-4 text-center">
-      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
-        Powered by <span className="text-[#60BED1] font-medium">LIA</span> · WeDOTalent ·{" "}
+      <p className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">
+        Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent ·{" "}
         <a
           href="/privacidade"
           target="_blank"

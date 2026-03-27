@@ -119,7 +119,7 @@ export function JobDuplicateModal({
               <Copy className="w-4 h-4 text-gray-600" />
             </div>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                 Duplicar Vaga
               </DialogTitle>
               <p className="text-xs text-gray-600 mt-0.5">
@@ -133,7 +133,7 @@ export function JobDuplicateModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
               <div className="p-3 rounded-md bg-gray-50 border border-gray-200">
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vaga Original
                 </h4>
                 <div className="flex items-start gap-2">
@@ -143,15 +143,15 @@ export function JobDuplicateModal({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
                       {job.code && (
-                        <span className="text-[10px] font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full">
                           {job.code}
                         </span>
                       )}
-                      <span className="text-[13px] font-semibold text-gray-950 dark:text-gray-50 truncate">
+                      <span className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                         {job.title}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
                       {job.department && (
                         <span className="flex items-center gap-0.5">
                           <Building className="w-2.5 h-2.5" />
@@ -174,7 +174,7 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   O que será mantido
                 </h4>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-gray-50 border border-gray-200">
@@ -188,7 +188,7 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Candidatos
                 </h4>
                 <RadioGroup
@@ -198,21 +198,21 @@ export function JobDuplicateModal({
                 >
                   <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
                     <RadioGroupItem value="all" id="all" className="border-gray-400 text-gray-900" />
-                    <Label htmlFor="all" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+                    <Label htmlFor="all" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
                       <Users className="w-2.5 h-2.5 text-gray-400" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
                     <RadioGroupItem value="approved" id="approved" className="border-gray-400 text-gray-900" />
-                    <Label htmlFor="approved" className="text-[11px] text-gray-800 cursor-pointer flex items-center gap-1">
+                    <Label htmlFor="approved" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
                       <Check className="w-2.5 h-2.5 text-gray-400" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
                     <RadioGroupItem value="none" id="none" className="border-gray-400 text-gray-900" />
-                    <Label htmlFor="none" className="text-[11px] text-gray-800 cursor-pointer">
+                    <Label htmlFor="none" className="text-xs text-gray-800 cursor-pointer">
                       Começar com base vazia
                     </Label>
                   </div>
@@ -222,12 +222,12 @@ export function JobDuplicateModal({
 
             <div className="space-y-3">
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Nova Vaga
                 </h4>
                 <div className="space-y-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-800">Nome</Label>
+                    <Label className="text-xs text-gray-800">Nome</Label>
                     <Input
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
@@ -236,7 +236,7 @@ export function JobDuplicateModal({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-800">Recrutador Responsável</Label>
+                    <Label className="text-xs text-gray-800">Recrutador Responsável</Label>
                     <Select value={recruiterId} onValueChange={setRecruiterId}>
                       <SelectTrigger className="h-8 text-xs border-gray-200 focus:ring-gray-900/20">
                         <SelectValue placeholder="Selecione" />
@@ -254,12 +254,12 @@ export function JobDuplicateModal({
               </div>
 
               <div>
-                <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Novas Datas
                 </h4>
                 <div className="space-y-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-800 flex items-center gap-1">
+                    <Label className="text-xs text-gray-800 flex items-center gap-1">
                       <Calendar className="w-2.5 h-2.5 text-gray-400" />
                       Deadline Short List
                     </Label>
@@ -271,7 +271,7 @@ export function JobDuplicateModal({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-800 flex items-center gap-1">
+                    <Label className="text-xs text-gray-800 flex items-center gap-1">
                       <Calendar className="w-2.5 h-2.5 text-gray-400" />
                       Fim da Triagem
                     </Label>
@@ -283,7 +283,7 @@ export function JobDuplicateModal({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-800 flex items-center gap-1">
+                    <Label className="text-xs text-gray-800 flex items-center gap-1">
                       <Calendar className="w-2.5 h-2.5 text-gray-400" />
                       Conclusão da Vaga
                     </Label>

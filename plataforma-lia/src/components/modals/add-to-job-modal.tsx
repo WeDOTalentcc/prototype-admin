@@ -392,7 +392,7 @@ export function AddToJobModal({
                 {displayNames.map((name, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-gray-700 rounded-full px-2 py-1 border border-gray-100 dark:border-gray-600">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-[8px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         {getInitials(name)}
                       </AvatarFallback>
                     </Avatar>
@@ -417,7 +417,7 @@ export function AddToJobModal({
               placeholder="Buscar vaga..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-gray-200 text-[11px] placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
@@ -518,12 +518,12 @@ export function AddToJobModal({
               <div className="space-y-2">
                 <Label className={textStyles.label}>Etapa inicial</Label>
                 <Select value={selectedStage} onValueChange={setSelectedStage}>
-                  <SelectTrigger className="w-full border-gray-200 text-[11px]">
+                  <SelectTrigger className="w-full border-gray-200 text-xs">
                     <SelectValue placeholder="Selecione a etapa" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableStages.map((stage) => (
-                      <SelectItem key={stage} value={stage} className="text-[11px]">
+                      <SelectItem key={stage} value={stage} className="text-xs">
                         {stage}
                       </SelectItem>
                     ))}

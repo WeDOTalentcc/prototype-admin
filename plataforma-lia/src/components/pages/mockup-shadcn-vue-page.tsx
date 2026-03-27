@@ -135,9 +135,9 @@ function DashboardVersaoAtual() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="outline" className="text-[11px]">React-only</Badge>
-          <Badge variant="outline" className="text-[11px]">Recharts</Badge>
-          <Badge variant="outline" className="text-[11px]">Framer Motion</Badge>
+          <Badge variant="outline" className="text-xs">React-only</Badge>
+          <Badge variant="outline" className="text-xs">Recharts</Badge>
+          <Badge variant="outline" className="text-xs">Framer Motion</Badge>
         </div>
       </div>
 
@@ -186,7 +186,7 @@ function DashboardVersaoAtual() {
               Tendências de Recrutamento (Recharts)
             </CardTitle>
             <div className="flex gap-2">
-              <Badge variant="outline" className="text-[11px] bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
+              <Badge variant="outline" className="text-xs bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
                 React-only
               </Badge>
             </div>
@@ -259,13 +259,13 @@ function DashboardVersaoOtimizada() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge className="text-[11px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
             ✓ Vue-compatible
           </Badge>
-          <Badge className="text-[11px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
             Chart.js
           </Badge>
-          <Badge className="text-[11px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
             CSS Animations
           </Badge>
         </div>
@@ -298,7 +298,7 @@ function DashboardVersaoOtimizada() {
                   <span><strong>CSS transitions:</strong> Hover effects suaves com cubic-bezier (substitui transition do Framer)</span>
                 </li>
               </ul>
-              <p className="text-[11px] text-green-700 dark:text-green-300 italic mt-2">
+              <p className="text-xs text-green-700 dark:text-green-300 italic mt-2">
                 💡 Passe o mouse sobre os cards KPIs abaixo para ver as animações em ação!
               </p>
             </div>
@@ -351,7 +351,7 @@ function DashboardVersaoOtimizada() {
               Tendências de Recrutamento (Chart.js)
             </CardTitle>
             <div className="flex gap-2">
-              <Badge className="text-[11px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 border-green-300 dark:border-green-700">
+              <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 border-green-300 dark:border-green-700">
                 ✓ Vue-compatible
               </Badge>
             </div>
@@ -460,7 +460,7 @@ function KPICard({
           </div>
           <Badge 
             variant="outline" 
-            className={`text-[11px] ${
+            className={`text-xs ${
               trend === 'up' 
                 ? 'text-green-600 dark:text-green-400 border-green-600 dark:border-green-400' 
                 : 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400'
@@ -476,7 +476,7 @@ function KPICard({
           <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
             {title}
           </div>
-          <div className="text-[11px] text-gray-500 dark:text-gray-500">
+          <div className="text-xs text-gray-500 dark:text-gray-500">
             {description}
           </div>
         </div>
@@ -572,7 +572,7 @@ function KPICardOptimized({
             </div>
             <Badge 
               variant="outline" 
-              className={`text-[11px] kpi-badge-optimized ${
+              className={`text-xs kpi-badge-optimized ${
                 trend === 'up' 
                   ? 'text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-950' 
                   : 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-950'
@@ -588,7 +588,7 @@ function KPICardOptimized({
             <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
               {title}
             </div>
-            <div className="text-[11px] text-gray-500 dark:text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-gray-500">
               {description}
             </div>
           </div>

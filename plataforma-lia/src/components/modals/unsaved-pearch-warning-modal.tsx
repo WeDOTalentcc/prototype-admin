@@ -100,7 +100,7 @@ export function UnsavedPearchWarningModal({
                     </p>
                     <div className="flex items-center gap-1.5 mt-2">
                       <Coins className="w-4 h-4 text-amber-600" />
-                      <span className="text-[11px] font-medium text-amber-700">
+                      <span className="text-xs font-medium text-amber-700">
                         {creditsConsumed} crédito{creditsConsumed > 1 ? 's' : ''} consumido{creditsConsumed > 1 ? 's' : ''}
                       </span>
                     </div>

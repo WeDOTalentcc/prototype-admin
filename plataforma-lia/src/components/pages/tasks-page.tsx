@@ -855,15 +855,15 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   const getUrgencyBadge = (urgency: string, daysOpen: number) => {
     if (urgency === 'critical') {
-      return <Badge className="border-0 text-[11px] font-medium" style={{ backgroundColor: 'var(--eleven-sepia-salmon)', color: 'var(--eleven-text-primary)' }}>🔴 Crítico</Badge>
+      return <Badge className="border-0 text-xs font-medium" style={{ backgroundColor: 'var(--eleven-sepia-salmon)', color: 'var(--eleven-text-primary)' }}>🔴 Crítico</Badge>
     }
     if (urgency === 'urgent') {
-      return <Badge className="border-0 text-[11px] font-semibold" style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>⚠ Urgente</Badge>
+      return <Badge className="border-0 text-xs font-semibold" style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>⚠ Urgente</Badge>
     }
     if (daysOpen > 30) {
-      return <Badge className="border-0 text-[11px] font-medium" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>⏰ Atenção</Badge>
+      return <Badge className="border-0 text-xs font-medium" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>⏰ Atenção</Badge>
     }
-    return <Badge className="border-0 text-[11px]" style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>✓ Normal</Badge>
+    return <Badge className="border-0 text-xs" style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>✓ Normal</Badge>
   }
 
   // Nova função para calcular taxa de conversão
@@ -901,7 +901,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
       case 'rejected':
         return { label: 'Rejeitado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--eleven-sepia-salmon)', color: 'var(--eleven-text-primary)' }, icon: '❌' }
       case 'published':
-        return { label: 'Publicado', color: 'border-0 font-medium', style: { backgroundColor: '#1a1a1a', color: '#ffffff' }, icon: '🚀' }
+        return { label: 'Publicado', color: 'border-0 font-medium', style: { backgroundColor: 'var(--gray-950)', color: 'var(--gray-50)' }, icon: '🚀' }
       default:
         return { label: status, color: 'border-0', style: { backgroundColor: 'var(--eleven-sepia-cream)', color: 'var(--eleven-text-secondary)' }, icon: '•' }
     }
@@ -1175,7 +1175,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-gray-950 dark:text-gray-50" />
                       <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Minhas Tarefas</CardTitle>
-                      <Badge variant="outline" className="text-[11px] font-inter">
+                      <Badge variant="outline" className="text-xs font-inter">
                         {filteredPendingTasks.length}
                       </Badge>
                     </div>
@@ -1184,10 +1184,10 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 <CardContent className="pt-0 pb-2">
                   <Tabs defaultValue="tarefas" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-gray-100 dark:bg-gray-800 p-0.5">
-                      <TabsTrigger value="tarefas" className="text-[11px] font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
                         Tarefas ({filteredPendingTasks.length})
                       </TabsTrigger>
-                      <TabsTrigger value="historico" className="text-[11px] font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
                         Histórico
                       </TabsTrigger>
                     </TabsList>
@@ -1197,7 +1197,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                         <button
                           onClick={() => setPendingTaskFilter('all')}
-                          className={`px-2 py-1 text-[11px] font-open-sans rounded-full transition-colors ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors ${
                             pendingTaskFilter === 'all'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -1207,7 +1207,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('feedback')}
-                          className={`px-2 py-1 text-[11px] font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'feedback'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -1218,7 +1218,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('entrevista')}
-                          className={`px-2 py-1 text-[11px] font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'entrevista'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -1229,7 +1229,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('sourcing')}
-                          className={`px-2 py-1 text-[11px] font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'sourcing'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -1249,8 +1249,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--eleven-sepia-gold)' }}></div>
-                                <h3 className="text-[11px] font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Manhã</h3>
-                                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-400">{morningTasks.length} atividades</span>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Manhã</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{morningTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
                                 {morningTasks.map((task) => (
@@ -1265,23 +1265,23 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                            <span className="text-[11px] font-inter font-medium text-gray-950 dark:text-gray-50">
+                                            <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">
                                               {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
-                                            <h4 className="text-[11px] font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                            <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
                                               {task.title}
                                             </h4>
                                             <Badge 
-                                              className="border-0 text-[11px] py-0 px-1.5 font-medium"
+                                              className="border-0 text-xs py-0 px-1.5 font-medium"
                                               style={getTaskPriorityStyle(task.priority)}
                                             >
                                               {getPriorityLabel(task.priority)}
                                             </Badge>
                                           </div>
-                                          <p className="text-[11px] font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                                          <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
                                             {task.description}
                                           </p>
-                                          <div className="flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-500">
+                                          <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
                                             {task.candidateName && (
                                               <span className="flex items-center gap-0.5">
                                                 <User className="w-2.5 h-2.5" />
@@ -1303,7 +1303,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
@@ -1312,7 +1312,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <FileText className="w-2.5 h-2.5" />
                                               Ver CV
@@ -1324,7 +1324,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <Play className="w-2.5 h-2.5" />
@@ -1333,7 +1333,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <FileText className="w-2.5 h-2.5" />
                                               Ver CV
@@ -1345,7 +1345,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <Search className="w-2.5 h-2.5" />
@@ -1354,7 +1354,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <Users className="w-2.5 h-2.5" />
                                               Ver Perfis
@@ -1366,7 +1366,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleConfirmTask(task)}
-                                            className="h-5 px-1.5 text-[11px] gap-0.5"
+                                            className="h-5 px-1.5 text-xs gap-0.5"
                                           >
                                             <CheckCircle className="w-2.5 h-2.5" />
                                             Confirmar
@@ -1375,7 +1375,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-[11px] gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                                           >
                                             <XCircle className="w-2.5 h-2.5" />
                                             Rejeitar
@@ -1398,8 +1398,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}></div>
-                                <h3 className="text-[11px] font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Tarde</h3>
-                                <span className="text-[11px] font-open-sans text-gray-800 dark:text-gray-400">{afternoonTasks.length} atividades</span>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Tarde</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{afternoonTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
                                 {afternoonTasks.map((task) => (
@@ -1414,23 +1414,23 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                            <span className="text-[11px] font-inter font-medium text-gray-950 dark:text-gray-50">
+                                            <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">
                                               {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
-                                            <h4 className="text-[11px] font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                            <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
                                               {task.title}
                                             </h4>
                                             <Badge 
-                                              className="border-0 text-[11px] py-0 px-1.5 font-medium"
+                                              className="border-0 text-xs py-0 px-1.5 font-medium"
                                               style={getTaskPriorityStyle(task.priority)}
                                             >
                                               {getPriorityLabel(task.priority)}
                                             </Badge>
                                           </div>
-                                          <p className="text-[11px] font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                                          <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
                                             {task.description}
                                           </p>
-                                          <div className="flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-500">
+                                          <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
                                             {task.candidateName && (
                                               <span className="flex items-center gap-0.5">
                                                 <User className="w-2.5 h-2.5" />
@@ -1452,7 +1452,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
@@ -1461,7 +1461,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <FileText className="w-2.5 h-2.5" />
                                               Ver CV
@@ -1473,7 +1473,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <Play className="w-2.5 h-2.5" />
@@ -1482,7 +1482,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <FileText className="w-2.5 h-2.5" />
                                               Ver CV
@@ -1494,7 +1494,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-[11px] gap-1 border-0"
+                                              className="h-5 px-2 text-xs gap-1 border-0"
                                               style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}
                                             >
                                               <Search className="w-2.5 h-2.5" />
@@ -1503,7 +1503,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-2 text-[11px] gap-1"
+                                              className="h-5 px-2 text-xs gap-1"
                                             >
                                               <Users className="w-2.5 h-2.5" />
                                               Ver Perfis
@@ -1515,7 +1515,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleConfirmTask(task)}
-                                            className="h-5 px-1.5 text-[11px] gap-0.5"
+                                            className="h-5 px-1.5 text-xs gap-0.5"
                                           >
                                             <CheckCircle className="w-2.5 h-2.5" />
                                             Confirmar
@@ -1524,7 +1524,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-[11px] gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                                           >
                                             <XCircle className="w-2.5 h-2.5" />
                                             Rejeitar
@@ -1543,7 +1543,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <div className="text-center py-8">
                             <CheckCircle2 className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
                             <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhuma tarefa pendente</p>
-                            <p className="text-[11px] text-gray-600 dark:text-gray-400">Todas as tarefas foram concluídas</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Todas as tarefas foram concluídas</p>
                           </div>
                         )}
                       </div>
@@ -1563,25 +1563,25 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     <div className="flex items-center gap-2">
                       <Bell className="w-3.5 h-3.5 text-gray-950 dark:text-gray-50" />
                       <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Alertas Ativos</CardTitle>
-                      <Badge variant="outline" className="text-[11px] font-inter">
+                      <Badge variant="outline" className="text-xs font-inter">
                         {activeAlerts.length}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge 
-                        className="border-0 text-[11px] font-medium"
+                        className="border-0 text-xs font-medium"
                         style={{ backgroundColor: 'var(--eleven-sepia-salmon)', color: 'var(--eleven-text-primary)' }}
                       >
                         {activeAlerts.filter(a => a.severity === 'high').length} Alto
                       </Badge>
                       <Badge 
-                        className="border-0 text-[11px] font-medium"
+                        className="border-0 text-xs font-medium"
                         style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}
                       >
                         {activeAlerts.filter(a => a.severity === 'medium').length} Médio
                       </Badge>
                       <Badge 
-                        className="border-0 text-[11px] font-medium"
+                        className="border-0 text-xs font-medium"
                         style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}
                       >
                         {activeAlerts.filter(a => a.severity === 'low').length} Baixo
@@ -1612,20 +1612,20 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             {/* Conteúdo */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                <h4 className="text-[11px] font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
                                   {alert.title}
                                 </h4>
                                 <Badge 
-                                  className="border-0 text-[11px] py-0 px-1.5 font-medium"
+                                  className="border-0 text-xs py-0 px-1.5 font-medium"
                                   style={getAlertSeverityStyle(alert.severity)}
                                 >
                                   {getSeverityLabel(alert.severity)}
                                 </Badge>
                               </div>
-                              <p className="text-[11px] font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
                                 {alert.description}
                               </p>
-                              <div className="flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-500">
+                              <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
                                 <span className="flex items-center gap-0.5">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   {alert.jobTitle}
@@ -1642,7 +1642,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <Button
                             size="sm"
                             onClick={() => handleAlertAction(alert)}
-                            className="h-6 px-2 text-[11px] gap-1 flex-shrink-0"
+                            className="h-6 px-2 text-xs gap-1 flex-shrink-0"
                           >
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                             {alert.action}
@@ -1655,7 +1655,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="text-center py-8">
                         <Bell className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhum alerta ativo</p>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400">Sem alertas no momento</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Sem alertas no momento</p>
                       </div>
                     )}
                   </div>
@@ -1670,7 +1670,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   <CardTitle className="text-sm font-open-sans font-semibold wedo-text-black">Minhas Vagas Ativas</CardTitle>
                   <div className="flex items-center gap-2">
                     {/* Contador de resultados */}
-                    <Badge variant="outline" className="text-[11px] font-inter">
+                    <Badge variant="outline" className="text-xs font-inter">
                       {filteredAndSortedJobs.length} vaga{filteredAndSortedJobs.length !== 1 ? 's' : ''}
                     </Badge>
                   </div>
@@ -1686,7 +1686,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         placeholder="Buscar vagas por título, ID, gestor ou departamento..."
                         value={jobSearchTerm}
                         onChange={(e) => setJobSearchTerm(e.target.value)}
-                        className="pl-8 h-8 text-[11px]"
+                        className="pl-8 h-8 text-xs"
                       />
                       {jobSearchTerm && (
                         <button
@@ -1704,12 +1704,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       variant={showJobFilters || activeJobFiltersCount > 0 ? "default" : "outline"}
                       size="sm"
                       onClick={() => setShowJobFilters(!showJobFilters)}
-                      className="gap-1.5 h-8 px-3 text-[11px]"
+                      className="gap-1.5 h-8 px-3 text-xs"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5" />
                       Filtros
                       {activeJobFiltersCount > 0 && (
-                        <Badge className="ml-1 bg-white text-gray-950 dark:bg-gray-800 dark:text-gray-50 text-[11px] h-4 px-1 font-semibold">
+                        <Badge className="ml-1 bg-white text-gray-950 dark:bg-gray-800 dark:text-gray-50 text-xs h-4 px-1 font-semibold">
                           {activeJobFiltersCount}
                         </Badge>
                       )}
@@ -1720,7 +1720,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-1.5 h-8 px-3 text-[11px]"
+                        className="gap-1.5 h-8 px-3 text-xs"
                       >
                         <ArrowUpDown className="w-3.5 h-3.5" />
                         Ordenar
@@ -1731,7 +1731,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <div className="py-1">
                           <button
                             onClick={() => setJobSortBy('urgency')}
-                            className={`w-full px-3 py-1.5 text-left text-[11px] hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
                               jobSortBy === 'urgency' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
@@ -1739,7 +1739,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           </button>
                           <button
                             onClick={() => setJobSortBy('daysOpen')}
-                            className={`w-full px-3 py-1.5 text-left text-[11px] hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
                               jobSortBy === 'daysOpen' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
@@ -1747,7 +1747,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           </button>
                           <button
                             onClick={() => setJobSortBy('candidates')}
-                            className={`w-full px-3 py-1.5 text-left text-[11px] hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
                               jobSortBy === 'candidates' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
@@ -1762,11 +1762,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   {showJobFilters && (
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 space-y-3 border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-open-sans font-semibold text-gray-800 dark:text-gray-200">Filtros Avançados</span>
+                        <span className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Filtros Avançados</span>
                         {activeJobFiltersCount > 0 && (
                           <button
                             onClick={clearJobFilters}
-                            className="text-[11px] text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-gray-100 flex items-center gap-1 "
+                            className="text-xs text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-gray-100 flex items-center gap-1 "
                           >
                             <X className="w-3 h-3" />
                             Limpar filtros
@@ -1777,7 +1777,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="grid grid-cols-3 gap-3">
                         {/* Filtro por Departamento */}
                         <div>
-                          <label className="text-[11px] font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
                             Departamento
                           </label>
                           <div className="space-y-1">
@@ -1795,7 +1795,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   }}
                                   className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-[11px] text-gray-800 dark:text-gray-200">{dept}</span>
+                                <span className="text-xs text-gray-800 dark:text-gray-200">{dept}</span>
                               </label>
                             ))}
                           </div>
@@ -1803,7 +1803,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                         {/* Filtro por Urgência */}
                         <div>
-                          <label className="text-[11px] font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
                             Urgência
                           </label>
                           <div className="space-y-1">
@@ -1821,7 +1821,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   }}
                                   className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-[11px] text-gray-800 dark:text-gray-200 capitalize">
+                                <span className="text-xs text-gray-800 dark:text-gray-200 capitalize">
                                   {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
                                 </span>
                               </label>
@@ -1831,7 +1831,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                         {/* Filtro por Publicação */}
                         <div>
-                          <label className="text-[11px] font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
                             Publicado em
                           </label>
                           <div className="space-y-1">
@@ -1853,7 +1853,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   }}
                                   className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-[11px] text-gray-800 dark:text-gray-200">{pub.label}</span>
+                                <span className="text-xs text-gray-800 dark:text-gray-200">{pub.label}</span>
                               </label>
                             ))}
                           </div>
@@ -1865,12 +1865,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   {/* Filtros Ativos (Tags) */}
                   {activeJobFiltersCount > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] text-gray-800 dark:text-gray-500">Filtros ativos:</span>
+                      <span className="text-xs text-gray-800 dark:text-gray-500">Filtros ativos:</span>
                       {selectedDepartments.map(dept => (
                         <Badge
                           key={dept}
                           variant="secondary"
-                          className="text-[11px] flex items-center gap-1 pr-1"
+                          className="text-xs flex items-center gap-1 pr-1"
                         >
                           {dept}
                           <button
@@ -1885,7 +1885,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <Badge
                           key={urgency}
                           variant="secondary"
-                          className="text-[11px] flex items-center gap-1 pr-1"
+                          className="text-xs flex items-center gap-1 pr-1"
                         >
                           {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
                           <button
@@ -1900,7 +1900,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <Badge
                           key={pub}
                           variant="secondary"
-                          className="text-[11px] flex items-center gap-1 pr-1"
+                          className="text-xs flex items-center gap-1 pr-1"
                         >
                           {pub === 'linkedin' ? 'LinkedIn' : pub === 'site' ? 'Site' : 'Indeed'}
                           <button
@@ -1946,29 +1946,29 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             {/* Linha 1: Título + Badges + Publicação */}
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-semibold text-sm text-gray-950 dark:text-gray-50">{job.title}</h3>
-                              <Badge variant="outline" className="text-[11px]">{job.jobId}</Badge>
+                              <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
                               {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
                               {job.publishedLinkedIn && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-[11px] flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
                                   <Linkedin className="w-2.5 h-2.5" />
                                   LI
                                 </Badge>
                               )}
                               {job.publishedWebsite && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-[11px] flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
                                   <Globe className="w-2.5 h-2.5" />
                                   Site
                                 </Badge>
                               )}
                               {job.publishedIndeed && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-[11px] flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   Indeed
                                 </Badge>
                               )}
                             </div>
                             {/* Linha 2: Informações inline compactas */}
-                            <div className="flex items-center gap-3 text-[11px] text-gray-800 dark:text-gray-500 flex-wrap">
+                            <div className="flex items-center gap-3 text-xs text-gray-800 dark:text-gray-500 flex-wrap">
                               <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 <span className={`font-medium ${getUrgencyColor(job.urgencyLevel)}`}>{job.daysOpen}d</span>
@@ -2000,35 +2000,35 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <div className="py-1">
                                 <button
                                   onClick={() => handleLIAAction('kanban', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Ver Kanban Completo
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('report', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
                                 >
                                   <FileText className="w-3 h-3" />
                                   Gerar Relatório
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('share', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
                                 >
                                   <Share2 className="w-3 h-3" />
                                   Compartilhar Vaga
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('edit', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
                                 >
                                   <Edit className="w-3 h-3" />
                                   Editar Requisitos
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('duplicate', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
                                 >
                                   <Copy className="w-3 h-3" />
                                   Duplicar Vaga
@@ -2036,7 +2036,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                                 <button
                                   onClick={() => handleLIAAction('cancel', job)}
-                                  className="w-full px-3 py-2 text-left text-[11px] hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-colors flex items-center gap-2"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                   Cancelar Vaga
@@ -2052,91 +2052,91 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             {/* Novos */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.new}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Novos</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Novos</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.new, job.stages.uncontacted))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.new, job.stages.uncontacted))}`}>
                                 {getConversionRate(job.stages.new, job.stages.uncontacted)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Não Contactados */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.uncontacted}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Triag</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Triag</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.uncontacted, job.stages.contacted))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.uncontacted, job.stages.contacted))}`}>
                                 {getConversionRate(job.stages.uncontacted, job.stages.contacted)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Contactados */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.contacted}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Cont</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Cont</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.contacted, job.stages.replied))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.contacted, job.stages.replied))}`}>
                                 {getConversionRate(job.stages.contacted, job.stages.replied)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Respondidos */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.replied}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Resp</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Resp</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.replied, job.stages.phoneScreen))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.replied, job.stages.phoneScreen))}`}>
                                 {getConversionRate(job.stages.replied, job.stages.phoneScreen)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Telefone */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.phoneScreen}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Tel</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Tel</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.phoneScreen, job.stages.onsite))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.phoneScreen, job.stages.onsite))}`}>
                                 {getConversionRate(job.stages.phoneScreen, job.stages.onsite)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Entrevista */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.onsite}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Entrev</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Entrev</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.onsite, job.stages.makeOffer))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.onsite, job.stages.makeOffer))}`}>
                                 {getConversionRate(job.stages.onsite, job.stages.makeOffer)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Oferta */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.makeOffer}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Ofert</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Ofert</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              <span className={`text-[11px] font-medium ${getConversionColor(getConversionRate(job.stages.makeOffer, job.stages.hired))}`}>
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.makeOffer, job.stages.hired))}`}>
                                 {getConversionRate(job.stages.makeOffer, job.stages.hired)}%
                               </span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
                             </div>
 
                             {/* Contratados */}
                             <div className="flex flex-col items-center">
                               <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.hired}</span>
-                              <span className="text-[11px] text-gray-800 dark:text-gray-500 uppercase">Contr</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Contr</span>
                             </div>
                           </div>
                         </div>
@@ -2147,7 +2147,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           {job.liaPendencies.length > 0 && (
                             <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-1 flex-1">
                               <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
-                              <span className="text-[11px] text-gray-950 dark:text-gray-200 truncate font-medium">
+                              <span className="text-xs text-gray-950 dark:text-gray-200 truncate font-medium">
                                 {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}
                               </span>
                             </div>
@@ -2159,10 +2159,10 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             style={getAlertStyle(job.alert.type)}
                           >
                             {getAlertIcon(job.alert.type)}
-                            <span className="text-[11px] font-medium truncate flex-1">{job.alert.message}</span>
+                            <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>
                             <Button
                               size="sm"
-                              className="gap-0.5 h-4 text-[11px] px-1 hover:scale-105 transition-transform flex-shrink-0"
+                              className="gap-0.5 h-4 text-xs px-1 hover:scale-105 transition-transform flex-shrink-0"
                               onClick={() => {
                                 const actionPrompt = `${job.alert.action} para a vaga ${job.title} (${job.jobId})`
                                 if (typeof window !== 'undefined') {

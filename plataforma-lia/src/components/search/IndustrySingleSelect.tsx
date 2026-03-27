@@ -256,7 +256,7 @@ export function IndustrySingleSelect({
               )}
               <span className="truncate">{item.label}</span>
               {item.industry && (
-                <span className="ml-auto text-[10px] text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full">
+                <span className="ml-auto text-micro text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full">
                   {INDUSTRY_CATEGORIES[item.industry.category as IndustryCategory]?.labelPt}
                 </span>
               )}

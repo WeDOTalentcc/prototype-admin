@@ -113,7 +113,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
             <Badge
               variant="outline"
               className={cn(
-                'text-[10px] border',
+                'text-micro border',
                 colors.border,
                 colors.bg,
                 colors.text
@@ -156,7 +156,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
         )}
       </div>
       {skill.description && (
-        <p className="text-[10px] text-gray-500 line-clamp-2">
+        <p className="text-micro text-gray-500 line-clamp-2">
           {skill.description}
         </p>
       )}
@@ -365,7 +365,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           <Label htmlFor="save-to-catalog" className="text-xs font-medium text-gray-800 cursor-pointer">
             Salvar no Catálogo da Empresa
           </Label>
-          <p className="text-[10px] text-gray-500">
+          <p className="text-micro text-gray-500">
             Skill ficará disponível para futuras vagas
           </p>
         </div>

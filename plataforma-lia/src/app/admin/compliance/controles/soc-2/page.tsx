@@ -266,12 +266,12 @@ export default function SOC2Page() {
             <Card key={tsc.id} className="cursor-pointer hover:transition-shadow" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="info" className="text-[10px]">{tsc.id}</Badge>
+                  <Badge variant="info" className="text-micro">{tsc.id}</Badge>
                   <span className="text-xs font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
                     {tsc.name}
                   </span>
                 </div>
-                <p className="text-[10px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   {tsc.description}
                 </p>
               </CardContent>
@@ -401,7 +401,7 @@ export default function SOC2Page() {
                               {control.controlName}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="info" className="text-[10px]">
+                              <Badge variant="info" className="text-micro">
                                 {control.controlCategory || 'CC'}
                               </Badge>
                             </TableCell>

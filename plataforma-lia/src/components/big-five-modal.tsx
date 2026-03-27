@@ -198,12 +198,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10 ring-2 ring-white">
                 <AvatarImage src={candidate?.avatar} />
-                <AvatarFallback className="text-[11px] bg-gray-100 text-gray-600">
+                <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
                   {candidate?.name?.split(' ').map((n: string) => n[0]).join('') || '?'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                   Relatório Big Five
                 </DialogTitle>
                 <DialogDescription className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
@@ -217,7 +217,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             <div className="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
               <BrainCircuit className="w-7 h-7 text-gray-400" />
             </div>
-            <h3 className="text-[13px] font-medium text-gray-950 dark:text-gray-50 mb-2 font-['Open_Sans',sans-serif]">
+            <h3 className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-2 font-['Open_Sans',sans-serif]">
               Assessment não realizado
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400 max-w-xs font-['Open_Sans',sans-serif]">
@@ -245,12 +245,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10 ring-2 ring-white">
               <AvatarImage src={candidate.avatar} />
-              <AvatarFallback className="text-[11px] bg-gray-100 text-gray-600">
+              <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
                 {candidate.name.split(' ').map((n: string) => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             <div>
-              <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                 Relatório Big Five
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
@@ -264,11 +264,11 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     Score B5
                   </span>
                 </div>
-                <div className="text-[18px] font-semibold text-purple-600">
+                <div className="text-lg font-semibold text-purple-600">
                   {averageScore}
                 </div>
               </div>
@@ -277,12 +277,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     Aderência
                   </span>
                 </div>
                 <div 
-                  className="text-[18px] font-semibold"
+                  className="text-lg font-semibold"
                   style={{ color: fitScore >= 70 ? '#10B981' : fitScore >= 50 ? '#111827' : '#F59E0B' }}
                 >
                   {fitScore}%
@@ -293,10 +293,10 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <div className="flex items-center gap-3">
                 <span className="text-xl">{archetype.icon}</span>
                 <div>
-                  <div className="text-[13px] font-medium text-purple-900">
+                  <div className="text-base-ui font-medium text-purple-900">
                     {archetype.name}
                   </div>
-                  <div className="text-[11px] text-purple-700">
+                  <div className="text-xs text-purple-700">
                     {archetype.description}
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2 lg:col-span-1">
               <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 h-full border border-gray-200 dark:border-gray-700">
-                <h3 className="text-[11px] font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                   Perfil de Personalidade
                 </h3>
@@ -394,7 +394,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                           x={x}
                           y={y}
                           textAnchor="middle"
-                          className="text-[10px] font-medium fill-current text-gray-800"
+                          className="text-micro font-medium fill-current text-gray-800"
                         >
                           <tspan>{info?.icon}</tspan>
                           <tspan x={x} dy="10">{trait}</tspan>
@@ -407,22 +407,22 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div>
                     <div className="w-full h-1 bg-rose-500 rounded mb-1"></div>
-                    <span className="text-[10px] text-gray-600">0-39 Baixo</span>
+                    <span className="text-micro text-gray-600">0-39 Baixo</span>
                   </div>
                   <div>
                     <div className="w-full h-1 bg-amber-500 rounded mb-1"></div>
-                    <span className="text-[10px] text-gray-600">40-69 Moderado</span>
+                    <span className="text-micro text-gray-600">40-69 Moderado</span>
                   </div>
                   <div>
                     <div className="w-full h-1 bg-green-500 rounded mb-1"></div>
-                    <span className="text-[10px] text-gray-600">70-100 Alto</span>
+                    <span className="text-micro text-gray-600">70-100 Alto</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="col-span-2 lg:col-span-1 space-y-3">
-              <h3 className="text-[11px] font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
                 <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full"></div>
                 Scores por Traço
               </h3>
@@ -439,12 +439,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{info.icon}</span>
-                        <span className="text-[13px] font-medium text-gray-950">
+                        <span className="text-base-ui font-medium text-gray-950">
                           {trait}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={`${info.color} text-white text-[10px] px-1.5 py-0.5`}>
+                        <Badge className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
                           {score}
                         </Badge>
                         {getScoreIcon(score)}
@@ -458,7 +458,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                       />
                     </div>
 
-                    <div className={`text-[11px] ${info.textColor} font-medium`}>
+                    <div className={`text-xs ${info.textColor} font-medium`}>
                       {info[level].label}: {score >= 70 ? 'Alto' : score >= 40 ? 'Moderado' : 'Baixo'}
                     </div>
                   </div>
@@ -467,7 +467,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             </div>
 
             <div className="col-span-2 space-y-3 mt-2">
-              <h3 className="text-[11px] font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 Análise Detalhada
               </h3>
@@ -488,10 +488,10 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-[13px] font-medium text-gray-950 font-['Open_Sans',sans-serif]">
+                          <h4 className="text-base-ui font-medium text-gray-950 font-['Open_Sans',sans-serif]">
                             {trait}
                           </h4>
-                          <Badge className={`${info.color} text-white text-[10px] px-1.5 py-0.5`}>
+                          <Badge className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
                             {score} - {details.label}
                           </Badge>
                         </div>
@@ -503,7 +503,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                             <Badge
                               key={t}
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0.5 border-gray-200 text-gray-700"
+                              className="text-micro px-1.5 py-0.5 border-gray-200 text-gray-700"
                             >
                               {t}
                             </Badge>
@@ -520,7 +520,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
         <DialogFooter className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between w-full">
-            <div className="text-[11px] text-gray-600 dark:text-gray-400">
+            <div className="text-xs text-gray-600 dark:text-gray-400">
               Assessment realizado em {new Date().toLocaleDateString('pt-BR')}
             </div>
             <div className="flex gap-2">

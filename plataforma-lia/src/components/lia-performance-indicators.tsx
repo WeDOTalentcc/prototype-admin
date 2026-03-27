@@ -86,7 +86,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
       <div className="flex items-center gap-2">
         <Badge
           variant="outline"
-          className={`text-[11px] px-2 py-1 ${triageStatus.color}`}
+          className={`text-xs px-2 py-1 ${triageStatus.color}`}
         >
           {triageStatus.icon}
           <span className="ml-1">{triageStatus.label}</span>
@@ -149,7 +149,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         <div className="flex gap-1 flex-wrap">
           {candidate.triageData.mobility === 'OK' && (
             <div
-              className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
               title="Mobilidade OK"
             >
               Mob ✓
@@ -157,7 +157,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {candidate.triageData.salary === 'Compatível' && (
             <div
-              className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
               title="Salário compatível"
             >
               Sal ✓
@@ -165,7 +165,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {candidate.triageData.interest === 'Alto' && (
             <div
-              className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
               title="Interesse alto"
             >
               Int ✓

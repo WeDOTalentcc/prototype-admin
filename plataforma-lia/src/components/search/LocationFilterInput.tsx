@@ -274,7 +274,7 @@ export function LocationFilterInput({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-[#8B5CF6]">Localização</span>
+          <span className="text-xs font-semibold text-gray-600">Localização</span>
           {showRadius && onRadiusChange && (
             <RadiusDropdown value={radius} onChange={onRadiusChange} />
           )}
@@ -347,7 +347,7 @@ export function LocationFilterInput({
                   return (
                     <div 
                       key={`header-${item.label}`}
-                      className="px-3 py-1.5 text-xs font-semibold text-[#8B5CF6] bg-gray-50 border-t border-gray-100 first:border-t-0"
+                      className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 border-t border-gray-100 first:border-t-0"
                     >
                       {item.label}
                     </div>
@@ -380,7 +380,7 @@ export function LocationFilterInput({
                   key={location.value}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
                 >
-                  <span className="text-[10px] font-semibold text-gray-500 uppercase">
+                  <span className="text-micro font-semibold text-gray-500 uppercase">
                     {getTypeLabel(location.type)}
                   </span>
                   <span>{location.value.split(',')[0]}</span>

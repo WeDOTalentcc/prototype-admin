@@ -29,7 +29,7 @@ const levelConfig = {
   alta: {
     label: "Alta",
     icon: Crown,
-    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-wedo-purple border border-wedo-purple/20",
+    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-purple border border-wedo-purple/20",
     bgStyle: { background: "rgba(152,96,209,0.1)" },
     darkClassName: "dark:text-wedo-purple dark:border-wedo-purple/30 dark:bg-wedo-purple/20",
     tooltipText: "Vaga de alta qualificação (executiva/especialista). Busca com maior precisão.",
@@ -37,7 +37,7 @@ const levelConfig = {
   media: {
     label: "Média",
     icon: Briefcase,
-    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-wedo-orange border border-wedo-orange/20",
+    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-orange border border-wedo-orange/20",
     bgStyle: { background: "rgba(209,153,96,0.1)" },
     darkClassName: "dark:text-wedo-orange dark:border-wedo-orange/30 dark:bg-wedo-orange/20",
     tooltipText: "Vaga de qualificação média (pleno/sênior). Busca com precisão balanceada.",
@@ -45,7 +45,7 @@ const levelConfig = {
   baixa: {
     label: "Baixa",
     icon: HardHat,
-    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-gray-700 border border-gray-200 bg-gray-100",
+    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-gray-700 border border-gray-200 bg-gray-100",
     bgStyle: {},
     darkClassName: "dark:text-gray-300 dark:border-gray-600 dark:bg-gray-800",
     tooltipText: "Vaga de qualificação básica (júnior/estágio). Busca com alcance amplo.",
@@ -71,7 +71,7 @@ export function QualificationBadge({
 }: QualificationBadgeProps) {
   if (isClassifying) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-gray-500 border border-gray-200 bg-gray-50 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-gray-500 border border-gray-200 bg-gray-50 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800">
         <Loader2 className="w-3 h-3 animate-spin" />
         Classificando...
       </span>
@@ -82,7 +82,7 @@ export function QualificationBadge({
     return (
       <button
         onClick={onClassify}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-gray-400 border border-dashed border-gray-300 hover:border-gray-400 hover:text-gray-500 transition-colors cursor-pointer dark:text-gray-500 dark:border-gray-600 dark:hover:border-gray-500"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-gray-400 border border-dashed border-gray-300 hover:border-gray-400 hover:text-gray-500 transition-colors cursor-pointer dark:text-gray-500 dark:border-gray-600 dark:hover:border-gray-500"
       >
         <Brain className="w-3 h-3 text-wedo-cyan" />
         Classificar
@@ -145,7 +145,7 @@ export function QualificationBadge({
                         <OptIcon className="w-3.5 h-3.5" />
                         {option.label}
                         {level === option.value && (
-                          <span className="ml-auto text-[10px] text-gray-400">atual</span>
+                          <span className="ml-auto text-micro text-gray-400">atual</span>
                         )}
                       </DropdownMenuItem>
                     )

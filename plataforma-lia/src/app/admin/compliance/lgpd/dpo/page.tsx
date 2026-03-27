@@ -301,7 +301,7 @@ export default function DPOPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{dpo.name}</span>
                             {dpo.isPrimary && (
- <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 text-[10px] px-1.5 py-0">
+ <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 text-micro px-1.5 py-0">
                                 <Star className="w-3 h-3 mr-0.5" />
                                 Principal
                               </Badge>

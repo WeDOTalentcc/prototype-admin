@@ -216,7 +216,7 @@ export function CandidateTableRow({
                 title={`${key}: ${value}%`}
               >
                 <div 
-                  className="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-bold transition-opacity group-hover:opacity-80 text-gray-950 dark:text-gray-50"
+                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 text-gray-950 dark:text-gray-50"
                   style={{
                     backgroundColor: value >= 70 ? (index === 0 ? '#A8D5B7' : index === 1 ? '#BFA8D5' : '#A8CED5') :
                                      value >= 40 ? (index === 0 ? '#D5BFA8' : index === 1 ? '#A8CED5' : '#D5BFA8') :
@@ -243,7 +243,7 @@ export function CandidateTableRow({
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
                 <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-950 text-[11px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-950 text-xs font-bold rounded-full flex items-center justify-center">
                   {alerts.length}
                 </span>
               </button>
@@ -257,7 +257,7 @@ export function CandidateTableRow({
                 {alerts.map((alert, index) => (
                   <div
                     key={index}
-                    className={`flex items-start gap-2 p-2 rounded-md border text-[11px] ${alert.color}`}
+                    className={`flex items-start gap-2 p-2 rounded-md border text-xs ${alert.color}`}
                   >
                     <span className="flex-shrink-0 mt-0.5">{alert.icon}</span>
                     <span className="flex-1 font-medium leading-relaxed">{alert.label}</span>

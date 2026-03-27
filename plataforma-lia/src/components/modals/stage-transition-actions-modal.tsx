@@ -624,7 +624,7 @@ export function StageTransitionActionsModal({
               {wsiData && (
                 <div className="flex items-center gap-2 mt-2">
                   <Badge className={cn(
-                    "text-[11px] px-2 py-0.5 font-medium",
+                    "text-xs px-2 py-0.5 font-medium",
                     getWsiClassificationColor(wsiData.classification).bg,
                     getWsiClassificationColor(wsiData.classification).text
                   )}>
@@ -674,7 +674,7 @@ export function StageTransitionActionsModal({
                               {action.name}
                             </span>
                             {action.recommended && (
-                              <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-[10px] px-1.5 py-0">
+                              <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-micro px-1.5 py-0">
                                 <Brain className="h-3 w-3 mr-0.5 text-wedo-cyan" />
                                 Recomendado
                               </Badge>
@@ -707,8 +707,8 @@ export function StageTransitionActionsModal({
                     >
                       <Mail className="w-4 h-4" />
                       <div className="text-left">
-                        <div className="text-[11px] font-medium">Email</div>
-                        <div className="text-[10px] opacity-70 truncate max-w-[120px]">{candidate.email || 'Não informado'}</div>
+                        <div className="text-xs font-medium">Email</div>
+                        <div className="text-micro opacity-70 truncate max-w-[120px]">{candidate.email || 'Não informado'}</div>
                       </div>
                     </button>
                     <button
@@ -722,8 +722,8 @@ export function StageTransitionActionsModal({
                     >
                       <MessageSquare className="w-4 h-4" />
                       <div className="text-left">
-                        <div className="text-[11px] font-medium">WhatsApp</div>
-                        <div className="text-[10px] opacity-70">{candidate.phone || 'Não informado'}</div>
+                        <div className="text-xs font-medium">WhatsApp</div>
+                        <div className="text-micro opacity-70">{candidate.phone || 'Não informado'}</div>
                       </div>
                     </button>
                     <button
@@ -740,8 +740,8 @@ export function StageTransitionActionsModal({
                         <MessageSquare className="w-3.5 h-3.5" />
                       </div>
                       <div className="text-left">
-                        <div className="text-[11px] font-medium">Ambos</div>
-                        <div className="text-[10px] opacity-70">Email + WA</div>
+                        <div className="text-xs font-medium">Ambos</div>
+                        <div className="text-micro opacity-70">Email + WA</div>
                       </div>
                     </button>
                   </div>
@@ -775,7 +775,7 @@ export function StageTransitionActionsModal({
               {needsMessageComposition && (
                 <div className="flex items-center gap-2 p-2 bg-amber-50 rounded-md border border-amber-100">
                   <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                  <p className="text-[11px] text-amber-700">
+                  <p className="text-xs text-amber-700">
                     {channel === 'both' && candidate.email && candidate.phone
                       ? `Email para: ${candidate.email} + WhatsApp para: ${candidate.phone}`
                       : channel === 'both'
@@ -800,14 +800,14 @@ export function StageTransitionActionsModal({
                   <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600">
                     <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-[11px] text-gray-900 dark:text-gray-50 font-medium">
+                      <p className="text-xs text-gray-900 dark:text-gray-50 font-medium">
                         LIA personalizou esta mensagem considerando:
                       </p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
+                      <p className="text-micro text-gray-600 mt-0.5">
                         nome, cargo, vaga e contexto do candidato
                       </p>
                       {isMessageEdited && (
-                        <p className="text-[10px] text-gray-600 mt-1 flex items-center gap-1">
+                        <p className="text-micro text-gray-600 mt-1 flex items-center gap-1">
                           <Edit3 className="w-3 h-3" />
                           (mensagem editada por você)
                         </p>
@@ -830,7 +830,7 @@ export function StageTransitionActionsModal({
                       size="sm"
                       onClick={regenerateMessage}
                       disabled={isRegenerating}
-                      className="h-7 text-[11px]"
+                      className="h-7 text-xs"
                     >
                       <RefreshCw className={cn("h-3 w-3 mr-1", isRegenerating && "animate-spin")} />
                       Regenerar

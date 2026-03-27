@@ -325,7 +325,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 <type.icon className="w-3.5 h-3.5" />
                 {type.label}
                 {type.count > 0 && (
-                  <span className="text-[11px] px-1 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                  <span className="text-xs px-1 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                     {type.count}
                   </span>
                 )}
@@ -464,7 +464,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
 
         {/* Footer */}
         <div className="px-3 py-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-500">
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-500">
             <div className="flex items-center gap-3">
               <span>↑↓ navegar</span>
               <span>Enter selecionar</span>

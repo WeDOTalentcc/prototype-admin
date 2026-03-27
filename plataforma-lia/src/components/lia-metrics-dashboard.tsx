@@ -331,7 +331,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                         <div
                           className={`h-1.5 rounded-full ${
                             stage.rate >= 70 ? 'bg-wedo-green' :
-                            stage.rate >= 50 ? 'bg-[#E5A853]' :
+                            stage.rate >= 50 ? 'bg-wedo-orange' :
                             'bg-red-500'
                           }`}
                           style={{ width: `${stage.rate}%` }}
@@ -480,10 +480,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-medium text-gray-800 dark:text-gray-200">{source.source}</span>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[11px] px-1 py-0">
+                      <Badge variant="outline" className="text-xs px-1 py-0">
                         {source.count} cand.
                       </Badge>
-                      <Badge className={`text-[11px] px-1 py-0 ${
+                      <Badge className={`text-xs px-1 py-0 ${
                         source.conversionRate >= 70 ? 'bg-green-500' :
                         source.conversionRate >= 50 ? 'bg-yellow-500' :
                         'bg-red-500'
@@ -626,13 +626,13 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   {avgLiaScore.toFixed(1)}
                 </div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-[#3B82F6] flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
             <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#3B82F6] transition-all duration-500"
+                className="h-full bg-blue-500 transition-all duration-500"
                 style={{ width: `${avgLiaScore * 10}%` }}
               />
             </div>
@@ -717,7 +717,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
  <div className="p-3 bg-gray-100 rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  <Badge className="bg-green-500 text-white text-[11px]">
+                  <Badge className="bg-green-500 text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
@@ -727,7 +727,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Contato Inicial
                 </div>
-                <div className="text-[11px] text-gray-600 mt-1">
+                <div className="text-xs text-gray-600 mt-1">
                   SLA: 2 dias
                 </div>
               </div>
@@ -735,7 +735,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <div className="p-3 bg-green-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <Badge className="bg-green-500 text-white text-[11px]">
+                  <Badge className="bg-green-500 text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
@@ -745,7 +745,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Triagem Completa
                 </div>
-                <div className="text-[11px] text-gray-600 mt-1">
+                <div className="text-xs text-gray-600 mt-1">
                   SLA: 3 dias
                 </div>
               </div>
@@ -753,7 +753,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <div className="p-3 bg-yellow-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                  <Badge className="bg-yellow-500 text-white text-[11px]">
+                  <Badge className="bg-yellow-500 text-white text-xs">
                     ⚠ Atenção
                   </Badge>
                 </div>
@@ -763,7 +763,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Agendamento
                 </div>
-                <div className="text-[11px] text-gray-600 mt-1">
+                <div className="text-xs text-gray-600 mt-1">
                   SLA: 5 dias
                 </div>
               </div>
@@ -771,7 +771,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <div className="p-3 bg-purple-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <Badge className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-[11px]">
+                  <Badge className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-xs">
                     Total
                   </Badge>
                 </div>
@@ -781,7 +781,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Tempo Total
                 </div>
-                <div className="text-[11px] text-gray-600 mt-1">
+                <div className="text-xs text-gray-600 mt-1">
                   Contato → Entrevista
                 </div>
               </div>
@@ -791,7 +791,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#8B5CF6] rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gray-400 rounded-md flex items-center justify-center">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -825,7 +825,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
                 <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className="absolute h-full bg-[#8B5CF6] rounded-full transition-all duration-500"
+                    className="absolute h-full bg-gray-400 rounded-full transition-all duration-500"
                     style={{ width: `${((avgTimeTotal + 7) / 15) * 100}%` }}
                   />
                   <div
@@ -848,7 +848,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                       {(avgTimeTotal * 0.6).toFixed(1)}d
                     </div>
-                    <div className="text-[11px] text-gray-600">
+                    <div className="text-xs text-gray-600">
                       Melhor caso
                     </div>
                   </div>
@@ -865,7 +865,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                       {avgTimeTotal.toFixed(1)}d
                     </div>
-                    <div className="text-[11px] text-gray-600">
+                    <div className="text-xs text-gray-600">
                       Caso típico
                     </div>
                   </div>
@@ -882,7 +882,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                       {(avgTimeTotal * 1.8).toFixed(1)}d
                     </div>
-                    <div className="text-[11px] text-gray-600">
+                    <div className="text-xs text-gray-600">
                       Pior caso
                     </div>
                   </div>

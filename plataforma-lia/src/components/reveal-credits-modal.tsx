@@ -56,7 +56,7 @@ export function RevealCreditsModal({
             <div className="p-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
               <Icon className="w-5 h-5" />
             </div>
-            <AlertDialogTitle className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">
+            <AlertDialogTitle className="text-base-ui font-semibold text-gray-800 dark:text-gray-200">
               Revelar {typeLabel}
             </AlertDialogTitle>
           </div>

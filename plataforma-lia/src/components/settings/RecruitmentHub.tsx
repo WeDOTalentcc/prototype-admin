@@ -453,7 +453,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {isEditingPipeline && hasStageChanges && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-[10px]">
+              <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
                 Alterações não salvas
               </Badge>
             )}
@@ -609,7 +609,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <span className={textStyles.h4}>
                       Banco de Perguntas Sugeridas
                     </span>
-                    <Badge variant="outline" className="text-[10px]">{ELIGIBILITY_QUESTIONS_BANK.length} perguntas</Badge>
+                    <Badge variant="outline" className="text-micro">{ELIGIBILITY_QUESTIONS_BANK.length} perguntas</Badge>
                   </div>
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setShowQuestionBank(false)}>
                     <X className="w-3.5 h-3.5" />
@@ -637,7 +637,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                           <span className={textStyles.label}>
                             {categoryInfo.label}
                           </span>
-                          <Badge variant="outline" className="text-[9px] py-0 px-1.5">
+                          <Badge variant="outline" className="text-micro py-0 px-1.5">
                             {categoryQuestions.length}
                           </Badge>
                         </div>
@@ -677,14 +677,14 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                     {q.question}
                                   </p>
                                   <div className="flex items-center gap-1.5 mt-1">
-                                    <Badge variant="outline" className="text-[9px] py-0 px-1">
+                                    <Badge variant="outline" className="text-micro py-0 px-1">
                                       {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : q.type === 'scale' ? 'Escala' : 'Múltipla'}
                                     </Badge>
                                     <span className={textStyles.caption}>
                                       {q.contextHint}
                                     </span>
                                     {isAdded && (
-                                      <Badge className="text-[9px] py-0 px-1 bg-green-100 text-green-700">
+                                      <Badge className="text-micro py-0 px-1 bg-green-100 text-green-700">
                                         Já adicionada
                                       </Badge>
                                     )}
@@ -829,19 +829,19 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     {q.question}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className={`text-[10px] py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                    <Badge variant="outline" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                       {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : 'Escala'}
                     </Badge>
                     {q.required && (
-                      <Badge className={`text-[10px] py-0 px-1.5 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
+                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
-                      <Badge className={`text-[10px] py-0 px-1.5 bg-red-100 text-red-700 border border-red-200 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                      <Badge className={`text-micro py-0 px-1.5 bg-red-100 text-red-700 border border-red-200 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                         Eliminatória {q.expected_answer && `(${q.expected_answer})`}
                       </Badge>
                     )}
                     {q.isDefault && (
-                      <span className="text-[10px] text-gray-400">Padrão</span>
+                      <span className="text-micro text-gray-400">Padrão</span>
                     )}
                   </div>
                 </div>

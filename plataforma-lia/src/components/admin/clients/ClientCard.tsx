@@ -67,7 +67,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
               <Users className="w-3 h-3 text-gray-400" />
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Usuários</p>
+              <p className="text-micro text-gray-500 dark:text-gray-400 uppercase">Usuários</p>
               <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
                 {client.active_users}/{client.user_limit}
               </p>
@@ -78,7 +78,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
               <Calendar className="w-3 h-3 text-gray-400" />
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Início</p>
+              <p className="text-micro text-gray-500 dark:text-gray-400 uppercase">Início</p>
               <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
                 {formatDate(client.start_date)}
               </p>
@@ -88,7 +88,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
         
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-micro">
               {client.plan}
             </Badge>
           </div>

@@ -315,7 +315,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                           <h4 className={textStyles.subtitle}>
                             {section.title}
                           </h4>
-                          <Badge className={`${priorityColor.bg} ${priorityColor.text} text-[11px]`}>
+                          <Badge className={`${priorityColor.bg} ${priorityColor.text} text-xs`}>
                             <PriorityIcon className="w-3 h-3 mr-1" />
                             {section.priority === 'high' ? 'Alta' : section.priority === 'medium' ? 'Média' : 'Baixa'}
                           </Badge>
@@ -401,16 +401,16 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                           <h4 className={textStyles.subtitle}>
                             {section.title}
                           </h4>
-                          <Badge className={`${statusColor.bg} ${statusColor.text} text-[11px]`}>
+                          <Badge className={`${statusColor.bg} ${statusColor.text} text-xs`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
                             {section.status === 'completed' ? 'Concluído' :
                              section.status === 'pending' ? 'Pendente' : 'Incompleto'}
                           </Badge>
-                          <Badge className={`${categoryColor.bg} ${categoryColor.text} ${categoryColor.border} border text-[11px]`}>
+                          <Badge className={`${categoryColor.bg} ${categoryColor.text} ${categoryColor.border} border text-xs`}>
                             {section.category === 'basic' ? 'Básico' :
                              section.category === 'advanced' ? 'Avançado' : 'Integração'}
                           </Badge>
-                          <Badge className={`${priorityColor.bg} ${priorityColor.text} text-[11px]`}>
+                          <Badge className={`${priorityColor.bg} ${priorityColor.text} text-xs`}>
                             {section.priority === 'high' ? 'Alta' :
                              section.priority === 'medium' ? 'Média' : 'Baixa'}
                           </Badge>

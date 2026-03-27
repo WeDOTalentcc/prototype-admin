@@ -125,7 +125,7 @@ const MenuItem = React.memo(({
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-[13px] leading-tight min-h-[40px]",
+          "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-[40px]",
           isLocked
             ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
             : "hover:bg-gray-50 dark:hover:bg-gray-800",
@@ -145,7 +145,7 @@ const MenuItem = React.memo(({
         </div>
         {shouldShowContent && (
           <div className="flex items-center justify-between flex-1">
-            <span className="text-[13px]">{item.label}</span>
+            <span className="text-base-ui">{item.label}</span>
             <div className="flex items-center gap-1">
               {item.isPremium && !isLocked && (
                 <Crown className="w-2 h-2 text-gray-800 dark:text-gray-200" />
@@ -181,7 +181,7 @@ const MenuItem = React.memo(({
                   }
                 }}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-[13px] leading-tight min-h-[40px]",
+                  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-[40px]",
                   subIsLocked
                     ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800",
@@ -198,12 +198,12 @@ const MenuItem = React.memo(({
                   {subIsLocked && <Lock className="w-2 h-2" />}
                 </div>
                 <div className="flex items-center justify-between flex-1">
-                  <span className="text-[13px]">{subItem.label}</span>
+                  <span className="text-base-ui">{subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
                     <Crown className="w-2 h-2 text-gray-800 dark:text-gray-200" />
                   )}
                   {subIsLocked && (
-                    <span className="text-[11px] bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded-full">
+                    <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded-full">
                       Premium
                     </span>
                   )}
@@ -241,7 +241,7 @@ const JobFilterItem = React.memo(({
     <button
       onClick={handleClick}
       className={cn(
-        "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-[11px] leading-tight min-h-[36px]",
+        "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-gray-50 dark:hover:bg-gray-800",
         isActive
           ? "bg-gray-100 dark:bg-gray-800 text-gray-950 dark:text-gray-50 font-semibold"
@@ -255,7 +255,7 @@ const JobFilterItem = React.memo(({
       </div>
       {shouldShowContent && (
         <div className="flex items-center justify-between flex-1">
-          <span className="text-[13px]">{item.label}</span>
+          <span className="text-base-ui">{item.label}</span>
           {item.count !== undefined && item.count > 0 && (
             <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded-full h-5 flex items-center">
               {item.count}
@@ -291,7 +291,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-[12px] leading-tight min-h-[32px] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-[32px] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
@@ -519,7 +519,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 Limpar recentes

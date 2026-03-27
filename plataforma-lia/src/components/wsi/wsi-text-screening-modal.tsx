@@ -283,7 +283,7 @@ export function WSITextScreeningModal({
           <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           Matriz Bloom × Dreyfus
         </h4>
-        <div className="grid grid-cols-6 gap-1 text-[10px]">
+        <div className="grid grid-cols-6 gap-1 text-micro">
           {[5, 4, 3, 2, 1].map(d => (
             <div key={`dreyfus-${d}`} className="contents">
               <div className="flex items-center justify-end pr-2 text-gray-600">
@@ -314,7 +314,7 @@ export function WSITextScreeningModal({
             ))}
           </div>
         </div>
-        <div className="flex justify-between text-[10px] text-gray-600 mt-2">
+        <div className="flex justify-between text-micro text-gray-600 mt-2">
           <span>Cognitivo: {result.cognitive_level.name_pt}</span>
           <span>Proficiência: {result.proficiency_level.name_pt}</span>
         </div>
@@ -398,13 +398,13 @@ export function WSITextScreeningModal({
                 <FileText className="w-5 h-5 text-white dark:text-gray-900" />
               </div>
               <div>
-                <DialogTitle className="text-[14px] font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                   Triagem WSI (Texto)
-                  <Badge variant="outline" className="text-[10px] font-normal">
+                  <Badge variant="outline" className="text-micro font-normal">
                     Bloom + Dreyfus + Big Five
                   </Badge>
                 </DialogTitle>
-                <DialogDescription className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">
+                <DialogDescription className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {candidate.name} • {effectiveJobVacancy.title}
                 </DialogDescription>
               </div>
@@ -464,10 +464,10 @@ export function WSITextScreeningModal({
                       <Card className="bg-white border-gray-100">
                         <CardContent className="p-3">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge className={`text-[10px] ${BLOOM_COLORS[question.bloom_level]}`}>
+                            <Badge className={`text-micro ${BLOOM_COLORS[question.bloom_level]}`}>
                               {question.bloom_level_name} (B{question.bloom_level})
                             </Badge>
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-micro">
                               {question.skill_targeted}
                             </Badge>
                           </div>
@@ -519,7 +519,7 @@ export function WSITextScreeningModal({
             <div className="space-y-4">
               <div className="text-center py-4">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                <h3 className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>Triagem WSI Concluída</h3>
+                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>Triagem WSI Concluída</h3>
               </div>
 
               <Card className="bg-white border-gray-200">

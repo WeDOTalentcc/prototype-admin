@@ -153,7 +153,7 @@ export function AgentExplainabilityPanel({
       onOpenChange={handleToggle}
       className={cn("rounded-md border border-zinc-700/50", className)}
     >
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-[#1a1a2e] px-4 py-3 transition-colors hover:bg-[#1a1a2e]/80">
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors hover:bg-gray-900/80">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-cyan-400" />
           <span className="text-sm font-medium text-zinc-200 font-[Inter]">
@@ -162,7 +162,7 @@ export function AgentExplainabilityPanel({
           {summary && !loading && (
             <Badge
               variant="outline"
-              className="ml-2 border-cyan-400/30 text-cyan-400 text-[10px] px-1.5 py-0"
+              className="ml-2 border-cyan-400/30 text-cyan-400 text-micro px-1.5 py-0"
             >
               {summary.total_steps} passos
             </Badge>
@@ -177,7 +177,7 @@ export function AgentExplainabilityPanel({
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="border-t border-zinc-700/50 bg-[#1a1a2e] px-4 py-3">
+        <div className="border-t border-zinc-700/50 bg-gray-900 px-4 py-3">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-8">
               <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
@@ -214,7 +214,7 @@ export function AgentExplainabilityPanel({
                     <div className="flex flex-col items-center">
                       <div
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold",
+                          "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
                             ? "bg-cyan-400 text-zinc-900"
                             : "bg-zinc-600 text-zinc-300"
@@ -229,7 +229,7 @@ export function AgentExplainabilityPanel({
 
                     <div
                       className={cn(
-                        "mb-3 flex-1 rounded bg-[#16213e] p-3",
+                        "mb-3 flex-1 rounded bg-gray-900 p-3",
                         isLast && "mb-0"
                       )}
                     >
@@ -245,7 +245,7 @@ export function AgentExplainabilityPanel({
                           />
                           <span
                             className={cn(
-                              "text-[10px] font-semibold",
+                              "text-micro font-semibold",
                               phase.color
                             )}
                           >
@@ -257,7 +257,7 @@ export function AgentExplainabilityPanel({
                           {step.tool_used && (
                             <Badge
                               variant="outline"
-                              className="border-zinc-600 text-zinc-400 text-[10px] px-1.5 py-0 gap-1"
+                              className="border-zinc-600 text-zinc-400 text-micro px-1.5 py-0 gap-1"
                             >
                               <Wrench className="h-2.5 w-2.5" />
                               {step.tool_used}
@@ -265,7 +265,7 @@ export function AgentExplainabilityPanel({
                           )}
                           <div className="flex items-center gap-1 text-zinc-500">
                             <Clock className="h-3 w-3" />
-                            <span className="text-[10px]">
+                            <span className="text-micro">
                               {formatDuration(step.duration_ms)}
                             </span>
                           </div>
@@ -283,10 +283,10 @@ export function AgentExplainabilityPanel({
           )}
 
           {!loading && !error && summary && (
-            <div className="mt-4 grid grid-cols-2 gap-2 rounded bg-[#16213e] p-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded bg-gray-900 p-3 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-1">
                 <BarChart3 className="h-4 w-4 text-cyan-400" />
-                <span className="text-[10px] text-zinc-500 font-[Inter]">
+                <span className="text-micro text-zinc-500 font-[Inter]">
                   Passos
                 </span>
                 <span className="text-sm font-semibold text-zinc-200">
@@ -295,7 +295,7 @@ export function AgentExplainabilityPanel({
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Wrench className="h-4 w-4 text-amber-400" />
-                <span className="text-[10px] text-zinc-500 font-[Inter]">
+                <span className="text-micro text-zinc-500 font-[Inter]">
                   Ferramentas
                 </span>
                 <span className="text-sm font-semibold text-zinc-200">
@@ -304,7 +304,7 @@ export function AgentExplainabilityPanel({
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Clock className="h-4 w-4 text-green-400" />
-                <span className="text-[10px] text-zinc-500 font-[Inter]">
+                <span className="text-micro text-zinc-500 font-[Inter]">
                   Tempo Total
                 </span>
                 <span className="text-sm font-semibold text-zinc-200">
@@ -313,7 +313,7 @@ export function AgentExplainabilityPanel({
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Target className="h-4 w-4 text-purple-400" />
-                <span className="text-[10px] text-zinc-500 font-[Inter]">
+                <span className="text-micro text-zinc-500 font-[Inter]">
                   Confiança
                 </span>
                 <span className="text-sm font-semibold text-cyan-400">

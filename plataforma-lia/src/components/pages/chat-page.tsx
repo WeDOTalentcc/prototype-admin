@@ -4915,8 +4915,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                           const isRejectAction = action.label.toLowerCase().includes('rejeitar') || action.label.toLowerCase().includes('não')
                           
                           let buttonStyle = {
-                            backgroundColor: '#FFFFFF',
-                            color: '#1F2937',
+                            backgroundColor: 'var(--gray-50)',
+                            color: 'var(--gray-800)',
                             borderColor: '#CCCCCC'
                           }
                           let iconColor = '#6B7280'
@@ -4928,10 +4928,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                             buttonStyle = { backgroundColor: '#FDF4E8', color: '#E5A853', borderColor: '#E5A853' }
                             iconColor = '#E5A853'
                           } else if (isCandidateAction) {
-                            buttonStyle = { backgroundColor: '#F3F4F6' }
+                            buttonStyle = { backgroundColor: 'var(--gray-50)' }
                             iconColor = '#374151'
                           } else if (isRejectAction) {
-                            buttonStyle = { backgroundColor: '#FEE2E2', color: '#DC2626', borderColor: '#DC2626' }
+                            buttonStyle = { backgroundColor: '#FEE2E2', color: 'var(--status-error)', borderColor: '#DC2626' }
                             iconColor = '#DC2626'
                           }
                           
@@ -5113,7 +5113,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                           <span className="max-w-[150px] truncate" style={{ color: 'var(--eleven-text-primary)' }}>
                             {file.name}
                           </span>
-                          <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                             ({sizeDisplay})
                           </span>
                           <button
@@ -5142,7 +5142,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       variant="outline"
                       onClick={stopRecording}
                       className="ml-auto text-xs h-7"
-                      style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: '#EF4444' }}
+                      style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: 'var(--status-error)' }}
                     >
                       <X className="w-3 h-3 mr-1" />
                       Cancelar
@@ -5186,7 +5186,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                         variant="outline"
                         onClick={() => setAudioBlob(null)}
                         className="text-xs h-7"
-                        style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: '#EF4444' }}
+                        style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: 'var(--status-error)' }}
                       >
                         <X className="w-3 h-3 mr-1" />
                         Remover
@@ -5217,7 +5217,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                         variant="outline"
                         onClick={() => setFileAnalysisContext(null)}
                         className="text-xs h-7"
-                        style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: '#EF4444' }}
+                        style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: 'var(--status-error)' }}
                       >
                         <X className="w-3 h-3 mr-1" />
                         Remover

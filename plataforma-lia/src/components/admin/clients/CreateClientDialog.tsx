@@ -204,7 +204,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
           <Button 
             onClick={handleCreateClient}
             disabled={creating}
-            className="bg-gray-900 dark:bg-gray-50 hover:bg-[#4fa9bb] text-white"
+            className="bg-gray-900 dark:bg-gray-50 hover:bg-wedo-cyan-dark text-white"
           >
             {creating ? (
               <>

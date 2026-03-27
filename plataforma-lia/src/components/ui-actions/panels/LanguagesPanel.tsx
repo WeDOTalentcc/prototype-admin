@@ -148,7 +148,7 @@ export function LanguagesPanel({
                           {lang.required && (
                             <Badge 
                               variant="secondary" 
-                              className="text-[11px] border-0"
+                              className="text-xs border-0"
                               style={{ 
                                 backgroundColor: 'var(--lia-bg-tertiary)', 
                                 color: 'var(--lia-text-secondary)' 

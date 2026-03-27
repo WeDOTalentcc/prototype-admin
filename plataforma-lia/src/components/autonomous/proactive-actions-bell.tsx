@@ -169,7 +169,7 @@ export function ProactiveActionsBell({
           {candidate ? (
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-              <AvatarFallback className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+              <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                 {candidate.name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??'}
               </AvatarFallback>
             </Avatar>
@@ -185,33 +185,33 @@ export function ProactiveActionsBell({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className="text-[11px] font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                <p className="text-xs font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
                   {candidate?.name || action.title}
                 </p>
                 {candidate?.score && (
                   <span className={cn(
-                    "text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
+                    "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
                     getScoreColor(candidate.score)
                   )}>
                     {Math.round(candidate.score)}
                   </span>
                 )}
               </div>
-              <span className="text-[9px] text-gray-400 shrink-0">
+              <span className="text-micro text-gray-400 shrink-0">
                 {formatTimeAgo(action.created_at)}
               </span>
             </div>
             {candidate && (
-              <p className="text-[10px] font-medium text-gray-700 dark:text-gray-300 line-clamp-1 mt-0.5">
+              <p className="text-micro font-medium text-gray-700 dark:text-gray-300 line-clamp-1 mt-0.5">
                 {action.title}
               </p>
             )}
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+            <p className="text-micro text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
               {action.description}
             </p>
             <div className="flex items-center gap-1 mt-2">
               <ArrowRight className="h-3 w-3 text-gray-600 dark:text-gray-400 shrink-0" />
-              <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium line-clamp-1">
+              <span className="text-micro text-gray-600 dark:text-gray-400 font-medium line-clamp-1">
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
                   : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -221,7 +221,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[10px] text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="h-6 px-2 text-micro text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 onClick={() => handleReject(action.id)}
                 disabled={isProcessing}
               >
@@ -231,7 +231,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[10px] text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                className="h-6 px-2 text-micro text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                 onClick={() => handleDefer(action.id)}
                 disabled={isProcessing}
               >
@@ -241,7 +241,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="default"
                 size="sm"
-                className="h-6 px-2 text-[10px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-6 px-2 text-micro bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 onClick={() => handleAccept(action.id)}
                 disabled={isProcessing}
               >
@@ -279,7 +279,7 @@ export function ProactiveActionsBell({
           )} />
           {pendingCount > 0 && (
             <span className={cn(
-              "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white px-1",
+              "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
               hasUrgent ? "bg-red-500" : "bg-gray-900 dark:bg-gray-50"
             )}>
               {pendingCount > 9 ? '9+' : pendingCount}
@@ -301,7 +301,7 @@ export function ProactiveActionsBell({
               </span>
             </div>
             {pendingCount > 0 && (
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary" className="text-micro">
                 {pendingCount} {pendingCount === 1 ? 'nova' : 'novas'}
               </Badge>
             )}
@@ -318,14 +318,14 @@ export function ProactiveActionsBell({
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
                 <Brain className="h-5 w-5 text-wedo-cyan" />
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                 {deferredIds.size > 0 ? 'Todas as sugestões foram adiadas' : 'Nenhuma sugestão pendente'}
               </p>
               {deferredIds.size > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-2 text-[10px] text-wedo-cyan-dark hover:text-[#3d8a9a]"
+                  className="mt-2 text-micro text-wedo-cyan-dark hover:text-wedo-cyan-dark"
                   onClick={() => setDeferredIds(new Set())}
                 >
                   Mostrar adiadas ({deferredIds.size})
@@ -337,10 +337,10 @@ export function ProactiveActionsBell({
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
                   <div className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-                    <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
-                    <Badge variant="outline" className="ml-2 text-[9px] py-0 h-4">
+                    <Badge variant="outline" className="ml-2 text-micro py-0 h-4">
                       {group.actions.length}
                     </Badge>
                   </div>
@@ -363,7 +363,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-[10px] text-gray-500 hover:text-gray-700"
+                className="text-micro text-gray-500 hover:text-gray-700"
                 onClick={() => setDeferredIds(new Set())}
               >
                 <Clock className="h-3 w-3 mr-1" />
@@ -373,7 +373,7 @@ export function ProactiveActionsBell({
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto text-[11px] text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
+              className="ml-auto text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
               onClick={() => setOpen(false)}
             >
               Ver todas as sugestões

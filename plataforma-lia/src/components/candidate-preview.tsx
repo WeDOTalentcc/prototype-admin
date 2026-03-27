@@ -1112,24 +1112,24 @@ export function CandidatePreview({
                   {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
                 </span>
                 {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
- <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
+ <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
                     <Briefcase className="w-2.5 h-2.5" />
                     #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
                   </Badge>
                 ) : opinion.job_vacancy_title ? (
- <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
+ <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
                     <Briefcase className="w-2.5 h-2.5" />
                     {opinion.job_vacancy_title}
                   </Badge>
                 ) : !opinion.job_vacancy_id ? (
-                  <Badge className="text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
+                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
                     Sem vaga vinculada
                   </Badge>
                 ) : null}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
                 {displayScore !== null && displayScore !== undefined && (
-                  <span className={`text-[10px] font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
+                  <span className={`text-micro font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
                     {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
                   </span>
                 )}
@@ -1145,7 +1145,7 @@ export function CandidatePreview({
           </div>
           <div className="flex items-center gap-2">
             {opinion.created_at && (
-              <span className="text-[9px] text-gray-400 dark:text-gray-500">{formatOpinionDate(opinion.created_at)}</span>
+              <span className="text-micro text-gray-400 dark:text-gray-500">{formatOpinionDate(opinion.created_at)}</span>
             )}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1163,7 +1163,7 @@ export function CandidatePreview({
                   )}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="text-[10px]">Copiar parecer</TooltipContent>
+              <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
             </Tooltip>
             {isExpanded ? (
               <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
@@ -1177,7 +1177,7 @@ export function CandidatePreview({
           <div className="px-3 pb-3 pt-0 border-t border-gray-100 dark:border-gray-700 space-y-3">
             {opinion.summary && (
               <div className="pt-3">
-                <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed">
+                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                   {opinion.summary}
                 </p>
               </div>
@@ -1192,7 +1192,7 @@ export function CandidatePreview({
                 <div className="grid grid-cols-2 gap-1.5">
                   {Object.entries(opinion.score_breakdown).map(([key, value]: [string, any]) => (
                     value !== null && value !== undefined && (
-                      <div key={key} className="flex items-center justify-between text-[10px] bg-gray-50 dark:bg-gray-800 rounded-full px-2 py-1">
+                      <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-gray-800 rounded-full px-2 py-1">
                         <span className="text-gray-600 dark:text-gray-400 capitalize">{key.replace(/_/g, ' ')}</span>
                         <span className="font-medium text-gray-800 dark:text-gray-200">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
                       </div>
@@ -1341,7 +1341,7 @@ export function CandidatePreview({
                 <h3 className={`${textStyles.title} truncate`}>
                   {candidate.name}
                 </h3>
-                <Badge className="text-[9px] px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 text-gray-600 border border-gray-300">
+                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 text-gray-600 border border-gray-300">
                   {generateShortId(candidate.name, candidate.id || candidate.candidateId || candidate.pearch_id)}
                 </Badge>
                 {(candidate.seniority_level || candidate.seniorityLevel) && (
@@ -1358,7 +1358,7 @@ export function CandidatePreview({
                   </Badge>
                 ) : null}
                 {(candidate.communication_consent !== undefined || candidate.communicationConsent !== undefined) && (
-                  <Badge className={`text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 ${(candidate.communication_consent ?? candidate.communicationConsent) ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(candidate.communication_consent ?? candidate.communicationConsent) ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                     {(candidate.communication_consent ?? candidate.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                     LGPD
                   </Badge>
@@ -1455,7 +1455,7 @@ export function CandidatePreview({
                 {createdAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-[9px] text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-gray-400 flex items-center gap-0.5 cursor-help">
                         <Calendar className="w-2.5 h-2.5" />
                         {formatDate(createdAt)}
                       </span>
@@ -1466,7 +1466,7 @@ export function CandidatePreview({
                 {updatedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-[9px] text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-gray-400 flex items-center gap-0.5 cursor-help">
                         <Clock className="w-2.5 h-2.5" />
                         {formatDate(updatedAt)}
                       </span>
@@ -1477,7 +1477,7 @@ export function CandidatePreview({
                 {lastContactedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-[9px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-gray-500 dark:text-gray-400 flex items-center gap-0.5 cursor-help">
                         <MessageSquare className="w-2.5 h-2.5" />
                         {formatDate(lastContactedAt)}
                       </span>
@@ -1720,7 +1720,7 @@ export function CandidatePreview({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-b-2 border-gray-800 text-gray-800 dark:text-gray-200 font-semibold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'
@@ -1729,7 +1729,7 @@ export function CandidatePreview({
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {'badge' in tab && tab.badge > 0 && (
-                <Badge className="text-[9px] px-1 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Badge className="text-micro px-1 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
                   {tab.badge}
                 </Badge>
               )}
@@ -1917,15 +1917,15 @@ export function CandidatePreview({
                   <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                     <div className="flex items-center gap-1.5">
                       <Code className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                      <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                      <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                         Mapa de Skills
                       </CardTitle>
-                      <Badge className="text-[10px] px-1 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200">
+                      <Badge className="text-micro px-1 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200">
                         {totalItems} itens
                       </Badge>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-gray-400 cursor-help text-[10px]">ⓘ</span>
+                          <span className="text-gray-400 cursor-help text-micro">ⓘ</span>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="text-xs max-w-xs">
                           <div className="space-y-1">
@@ -1948,7 +1948,7 @@ export function CandidatePreview({
                           <span className={textStyles.label}>{category.label}</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-gray-300 cursor-help text-[9px]">ⓘ</span>
+                              <span className="text-gray-300 cursor-help text-micro">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Extraído do currículo (CV)
@@ -1959,7 +1959,7 @@ export function CandidatePreview({
                           {category.skills.map((skill: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-0"
+                              className="text-micro px-1.5 py-0 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-0"
                             >
                               {skill}
                             </Badge>
@@ -1976,7 +1976,7 @@ export function CandidatePreview({
                           <span className={`${textStyles.label} text-gray-700`}>Soft Skills</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-[9px] text-gray-700">ⓘ</span>
+                              <span className="cursor-help text-micro text-gray-700">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Competências comportamentais inferidas pela LIA
@@ -1987,7 +1987,7 @@ export function CandidatePreview({
                           {softSkillsList.map((skill: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-[10px] px-1.5 py-0 border-0"
+                              className="text-micro px-1.5 py-0 border-0"
                               style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#1e3a5f' }}
                             >
                               {skill}
@@ -2005,7 +2005,7 @@ export function CandidatePreview({
                           <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Expertise LinkedIn</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-[9px] text-gray-400 dark:text-gray-500">ⓘ</span>
+                              <span className="cursor-help text-micro text-gray-400 dark:text-gray-500">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Áreas de expertise extraídas do perfil LinkedIn
@@ -2016,7 +2016,7 @@ export function CandidatePreview({
                           {expertiseList.map((item: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-[10px] px-1.5 py-0 border-0"
+                              className="text-micro px-1.5 py-0 border-0"
                               style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#1e3a5f' }}
                             >
                               {item}
@@ -2034,7 +2034,7 @@ export function CandidatePreview({
                           <span className={`${textStyles.label} text-pink-700`}>Interesses</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-pink-300 cursor-help text-[9px]">ⓘ</span>
+                              <span className="text-pink-300 cursor-help text-micro">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Áreas de interesse declaradas pelo candidato
@@ -2045,7 +2045,7 @@ export function CandidatePreview({
                           {interests.map((interest: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-[10px] px-1.5 py-0 bg-pink-50 text-pink-700 border-0"
+                              className="text-micro px-1.5 py-0 bg-pink-50 text-pink-700 border-0"
                             >
                               {interest}
                             </Badge>
@@ -2062,7 +2062,7 @@ export function CandidatePreview({
                           <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Tags</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-[9px] text-gray-400 dark:text-gray-500">ⓘ</span>
+                              <span className="cursor-help text-micro text-gray-400 dark:text-gray-500">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Tags adicionadas pelo recrutador ou sistema
@@ -2073,7 +2073,7 @@ export function CandidatePreview({
                           {tags.map((tag: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-[10px] px-1.5 py-0 border-0"
+                              className="text-micro px-1.5 py-0 border-0"
                               style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#1e3a5f' }}
                             >
                               {tag}
@@ -2103,25 +2103,25 @@ export function CandidatePreview({
               return (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isOpenToWork === true && (
-                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex items-center gap-1">
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex items-center gap-1">
                       <Globe className="w-3 h-3 text-green-600 dark:text-green-400" />
                       Open to Work
                     </Badge>
                   )}
                   {isTopUniversity === true && (
-                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-5 bg-purple-50 text-purple-700 border-purple-200 flex items-center gap-1">
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-purple-50 text-purple-700 border-purple-200 flex items-center gap-1">
                       🎓 Top University
                     </Badge>
                   )}
                   {isDecisionMaker === true && (
- <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
+ <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
                       👔 Decision Maker
                     </Badge>
                   )}
                   {isBlacklisted === true && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-5 bg-red-50 text-red-700 border-red-200 flex items-center gap-1 cursor-help">
+                        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-red-50 text-red-700 border-red-200 flex items-center gap-1 cursor-help">
                           ⚠️ LCNU
                         </Badge>
                       </TooltipTrigger>
@@ -2151,7 +2151,7 @@ export function CandidatePreview({
                   <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                     <div className="flex items-center gap-1.5">
                       <Linkedin className="w-3.5 h-3.5" style={{ color: '#0A66C2' }} />
-                      <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                      <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                         Perfil LinkedIn
                       </CardTitle>
                       <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
@@ -2159,7 +2159,7 @@ export function CandidatePreview({
                   </CardHeader>
                   <CardContent className="p-2.5 space-y-2">
                     {headline && (
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-relaxed">
+                      <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                         {headline}
                       </p>
                     )}
@@ -2196,7 +2196,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <Briefcase className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Experiência Profissional
                   </CardTitle>
                 </div>
@@ -2264,7 +2264,7 @@ export function CandidatePreview({
                               </p>
                             </div>
                             {(startDate || endDate) && (
-                              <span className="text-[10px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                              <span className="text-micro text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 {formatDate(startDate)}{startDate && endDate ? ' - ' : ''}{formatDate(endDate)}
                               </span>
                             )}
@@ -2273,18 +2273,18 @@ export function CandidatePreview({
                           {/* Metadata Row: Industries, Company Size */}
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {industriesList.slice(0, 2).map((ind: string, idx: number) => (
- <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-700 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+ <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-gray-700 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                 <Building className="w-2.5 h-2.5 mr-0.5" />
                                 {ind}
                               </span>
                             ))}
                             {isStartup && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
                                 🚀 Startup
                               </span>
                             )}
                             {companySize && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
                                 <Users className="w-2.5 h-2.5" />
                                 {companySize}
                               </span>
@@ -2294,17 +2294,17 @@ export function CandidatePreview({
                           {/* Technologies */}
                           {technologiesList.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
-                              <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                              <span className="text-micro text-gray-400 flex items-center gap-0.5">
                                 <Code className="w-2.5 h-2.5" />
                                 Stack:
                               </span>
                               {technologiesList.slice(0, 6).map((tech: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
+                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
                                   {tech}
                                 </span>
                               ))}
                               {technologiesList.length > 6 && (
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">+{technologiesList.length - 6}</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500">+{technologiesList.length - 6}</span>
                               )}
                             </div>
                           )}
@@ -2328,7 +2328,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <GraduationCap className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Formação Acadêmica
                   </CardTitle>
                 </div>
@@ -2345,7 +2345,7 @@ export function CandidatePreview({
                           {edu.school || edu.institution || 'Instituição não informada'}
                         </p>
                       </div>
-                      <span className="text-[11px] text-gray-800 dark:text-gray-200 flex-shrink-0">
+                      <span className="text-xs text-gray-800 dark:text-gray-200 flex-shrink-0">
                         {edu.start_date || edu.startDate || ''}{(edu.start_date || edu.startDate) && (edu.end_date || edu.endDate) ? ' - ' : ''}{edu.end_date || edu.endDate || ''}
                       </span>
                     </div>
@@ -2361,7 +2361,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Cursos e Certificações
                   </CardTitle>
                 </div>
@@ -2380,7 +2380,7 @@ export function CandidatePreview({
                           </h5>
                           {certIssuer && <p className={textStyles.bodySmall}>{certIssuer}</p>}
                         </div>
-                        {certDate && <span className="text-[11px] text-gray-800 dark:text-gray-200 flex-shrink-0">{certDate}</span>}
+                        {certDate && <span className="text-xs text-gray-800 dark:text-gray-200 flex-shrink-0">{certDate}</span>}
                       </div>
                     )
                   })
@@ -2395,7 +2395,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <Languages className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Idiomas
                   </CardTitle>
                 </div>
@@ -2408,7 +2408,7 @@ export function CandidatePreview({
                         {lang.language}
                       </span>
                       {lang.proficiency && (
-                        <Badge className="text-[11px] px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold">
+                        <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold">
                           {lang.proficiency}
                         </Badge>
                       )}
@@ -2425,7 +2425,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <DollarSign className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Remuneração
                   </CardTitle>
                 </div>
@@ -2480,7 +2480,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Preferências e Dados Pessoais
                   </CardTitle>
                 </div>
@@ -2517,7 +2517,7 @@ export function CandidatePreview({
                 {candidate.is_remote !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Remoto</span>
-                    <Badge className={`text-[11px] px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {candidate.is_remote ? 'Sim' : 'Não'}
                     </Badge>
                   </div>
@@ -2526,7 +2526,7 @@ export function CandidatePreview({
                 {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Mudança</span>
-                    <Badge className={`text-[11px] px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                        (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                        String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -2537,7 +2537,7 @@ export function CandidatePreview({
                 {candidate.mobility !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-                    <Badge className={`text-[11px] px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
                     </Badge>
                   </div>
@@ -2546,7 +2546,7 @@ export function CandidatePreview({
                 {candidate.communication_consent !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Consentimento LGPD</span>
-                    <Badge className={`text-[11px] px-1.5 py-0 h-4 ${candidate.communication_consent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                       {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
                     </Badge>
                   </div>
@@ -2559,7 +2559,7 @@ export function CandidatePreview({
               <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-1.5">
                   <Home className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-[11px] font-semibold text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                     Endereço
                   </CardTitle>
                 </div>
@@ -2569,7 +2569,7 @@ export function CandidatePreview({
                   <div className="space-y-1">
                     <div className="flex items-start gap-2">
                       <MapPin className="w-3 h-3 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div className="text-[11px] text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                      <div className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-line">
                         {getAddressString()}
                       </div>
                     </div>
@@ -2590,14 +2590,14 @@ export function CandidatePreview({
                 <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                   Feed de Atividades
-                  <Badge className="text-[11px] px-1 py-0">{filteredActivities.length}</Badge>
+                  <Badge className="text-xs px-1 py-0">{filteredActivities.length}</Badge>
                 </h4>
                 <div className="flex items-center gap-2">
                   {/* Filtro de Período */}
                   <select
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as any)}
-                    className="text-[11px] px-2 py-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
+                    className="text-xs px-2 py-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
                   >
                     <option value="7days">Últimos 7 dias</option>
                     <option value="30days">Últimos 30 dias</option>
@@ -2634,7 +2634,7 @@ export function CandidatePreview({
                   <Button
                     onClick={() => setShowLiaModal(true)}
                     size="sm"
-                    className="gap-1 px-2 py-1 text-[11px] h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                    className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                   >
                     <PlusCircle className="w-3 h-3" />
                     Nova Atividade
@@ -2646,7 +2646,7 @@ export function CandidatePreview({
               <div className="flex gap-1 flex-wrap">
                 <button
                   onClick={() => setActivityFilter('all')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'all'
                       ? 'bg-gray-600 text-white'
                       : 'bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
@@ -2656,7 +2656,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('emails')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'emails'
                       ? 'bg-gray-700 text-white font-semibold'
                       : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
@@ -2666,7 +2666,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('interviews')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'interviews'
                       ? 'bg-gray-700 text-white font-semibold'
                       : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
@@ -2676,7 +2676,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('tests')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'tests'
                       ? 'bg-gray-700 text-white font-semibold'
                       : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
@@ -2686,7 +2686,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('lia')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'lia'
                       ? 'text-white font-semibold'
                       : 'hover:opacity-80'
@@ -2700,7 +2700,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('offers')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'offers'
                       ? 'bg-gray-700 text-white font-semibold'
                       : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
@@ -2710,7 +2710,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('applications')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'applications'
                       ? 'bg-gray-700 text-white font-semibold'
                       : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
@@ -2720,7 +2720,7 @@ export function CandidatePreview({
                 </button>
                 <button
                   onClick={() => setActivityFilter('evaluations')}
-                  className={`px-2 py-1 text-[11px] rounded-full transition-colors ${
+                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     activityFilter === 'evaluations'
                       ? 'bg-gray-700 text-white font-semibold'
  : 'text-gray-700 hover:dark:bg-gray-800 dark:hover:bg-gray-700'
@@ -2749,7 +2749,7 @@ export function CandidatePreview({
                             <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200">
                               Previsão de Próximas Etapas - IA
                             </h4>
-                            <Badge className="text-[11px] px-1.5 py-0.5 bg-gray-700 text-white border-gray-600">
+                            <Badge className="text-xs px-1.5 py-0.5 bg-gray-700 text-white border-gray-600">
                               Análise Preditiva
                             </Badge>
                           </div>
@@ -2876,7 +2876,7 @@ export function CandidatePreview({
                                                 {activity.jobId && (
                                                   <a
                                                     href={`#vaga-${activity.jobId}`}
-                                                    className="text-[11px] text-gray-700 dark:text-gray-300 hover:text-[#50a3b8] hover:underline flex items-center gap-0.5"
+                                                    className="text-xs text-gray-700 dark:text-gray-300 hover:text-wedo-cyan-dark hover:underline flex items-center gap-0.5"
                                                     onClick={(e) => e.stopPropagation()}
                                                   >
                                                     <Briefcase className="w-2.5 h-2.5" />
@@ -2896,7 +2896,7 @@ export function CandidatePreview({
                                             <div className="flex items-center gap-1.5">
                                               {activity.score && (
                                                 <Badge
-                                                  className={`text-[11px] px-1.5 py-0 h-4 ${
+                                                  className={`text-xs px-1.5 py-0 h-4 ${
                                                     activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                                     activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
                                                     'bg-red-50 text-red-700 border-red-200 font-medium'
@@ -2907,7 +2907,7 @@ export function CandidatePreview({
                                               )}
                                               {activity.statusLabel && (
                                                 <Badge
-                                                  className={`text-[11px] px-1.5 py-0 h-4 ${
+                                                  className={`text-xs px-1.5 py-0 h-4 ${
                                                     activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                                     activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
                                                     activity.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200 font-medium' :
@@ -2937,37 +2937,37 @@ export function CandidatePreview({
                                             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
                                               <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                                                 <div className="space-y-1.5">
-                                                  <div className="flex items-center gap-2 text-[11px]">
+                                                  <div className="flex items-center gap-2 text-xs">
                                                     <span className="text-gray-500 dark:text-gray-400 w-12">De:</span>
                                                     <span className="text-gray-800 dark:text-gray-200 font-medium">{activity.details.from}</span>
                                                   </div>
-                                                  <div className="flex items-center gap-2 text-[11px]">
+                                                  <div className="flex items-center gap-2 text-xs">
                                                     <span className="text-gray-500 dark:text-gray-400 w-12">Para:</span>
                                                     <span className="text-gray-800 dark:text-gray-200">{activity.details.to}</span>
                                                   </div>
                                                   {activity.details.cc && (
-                                                    <div className="flex items-center gap-2 text-[11px]">
+                                                    <div className="flex items-center gap-2 text-xs">
                                                       <span className="text-gray-500 dark:text-gray-400 w-12">Cc:</span>
                                                       <span className="text-gray-800 dark:text-gray-200">{activity.details.cc}</span>
                                                     </div>
                                                   )}
-                                                  <div className="flex items-center gap-2 text-[11px]">
+                                                  <div className="flex items-center gap-2 text-xs">
                                                     <span className="text-gray-500 dark:text-gray-400 w-12">Assunto:</span>
                                                     <span className="text-gray-800 dark:text-gray-200 font-semibold">{activity.details.subject}</span>
                                                   </div>
                                                 </div>
                                               </div>
                                               <div className="px-4 py-3">
-                                                <div className="text-[11px] text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
+                                                <div className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
                                                   {activity.details.body}
                                                 </div>
                                               </div>
                                               {activity.details.attachments && activity.details.attachments.length > 0 && (
                                                 <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                                                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-1">Anexos:</p>
+                                                  <p className="text-micro text-gray-500 dark:text-gray-400 mb-1">Anexos:</p>
                                                   <div className="flex flex-wrap gap-1">
                                                     {activity.details.attachments.map((att: string, i: number) => (
-                                                      <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 bg-white dark:bg-gray-800">
+                                                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white dark:bg-gray-800">
                                                         📎 {att}
                                                       </Badge>
                                                     ))}
@@ -2976,7 +2976,7 @@ export function CandidatePreview({
                                               )}
                                             </div>
                                             {activity.details.opened && (
-                                              <div className="flex items-center gap-2 text-[11px] text-green-700 bg-green-50 p-2 rounded">
+                                              <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 p-2 rounded">
                                                 <CheckCircle className="w-3 h-3" />
                                                 <span>Email aberto em {activity.details.openedAt}</span>
                                               </div>
@@ -2984,7 +2984,7 @@ export function CandidatePreview({
                                             {activity.details.suggestedTimes && (
                                               <div className="flex flex-wrap gap-1">
                                                 {activity.details.suggestedTimes.map((t: string, i: number) => (
- <Badge key={i} className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+ <Badge key={i} className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                                     📅 {t}
                                                   </Badge>
                                                 ))}
@@ -2997,11 +2997,11 @@ export function CandidatePreview({
                                         {activity.type === 'interview-scheduled' && (
                                           <div className="mt-3 space-y-3">
                                             <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
-                                              <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                                 <Calendar className="w-3 h-3 text-purple-600" />
                                                 {activity.details.interviewType}
                                                 {activity.details.stage && (
-                                                  <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
+                                                  <Badge className="ml-2 text-micro px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
                                                 )}
                                               </h5>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
@@ -3016,9 +3016,9 @@ export function CandidatePreview({
                                               </div>
                                               <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
                                                 <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
-                                                <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
+                                                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
                                                 {activity.details.meetLink && (
-                                                  <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-[11px] text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1 mt-1">
+                                                  <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1 mt-1">
                                                     <ExternalLink className="w-3 h-3" />
                                                     Acessar link da reunião
                                                   </a>
@@ -3026,11 +3026,11 @@ export function CandidatePreview({
                                               </div>
                                               {activity.details.interviewers && (
                                                 <div className="mb-3">
-                                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
+                                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
                                                   <div className="space-y-1">
                                                     {activity.details.interviewers.map((int: any, i: number) => (
-                                                      <div key={i} className="flex items-center gap-2 text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
-                                                        <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[9px] font-medium text-gray-600 dark:text-gray-400">
+                                                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                                                        <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
                                                           {typeof int === 'string' ? int.charAt(0) : int.name?.charAt(0)}
                                                         </div>
                                                         <span className="font-medium text-gray-800 dark:text-gray-200">{typeof int === 'string' ? int : int.name}</span>
@@ -3048,34 +3048,34 @@ export function CandidatePreview({
                                         {activity.type === 'lia-evaluation' && (
                                           <div className="mt-3 space-y-3">
                                             <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
-                                              <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                                 <Brain className="w-3 h-3 text-wedo-cyan" />
                                                 Avaliação Automática da LIA
                                               </h5>
                                               <div className="grid grid-cols-4 gap-2 mb-3">
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
                                                   <p className={textStyles.bodySmall}>Técnico</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
                                                   <p className={textStyles.bodySmall}>Fit Cultural</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
                                                   <p className={textStyles.bodySmall}>Experiência</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
                                                   <p className={textStyles.bodySmall}>Soft Skills</p>
                                                 </div>
                                               </div>
                                               {activity.details.strengths && (
                                                 <div className="mb-2">
-                                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
+                                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
                                                   <div className="flex flex-wrap gap-1">
                                                     {activity.details.strengths.map((s: string, i: number) => (
-                                                      <Badge key={i} className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
+                                                      <Badge key={i} className="text-micro px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
                                                         ✓ {s}
                                                       </Badge>
                                                     ))}
@@ -3083,8 +3083,8 @@ export function CandidatePreview({
                                                 </div>
                                               )}
                                               <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                                <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
-                                                <p className="text-[11px] text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
+                                                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
                                               </div>
                                             </div>
                                           </div>
@@ -3094,39 +3094,39 @@ export function CandidatePreview({
                                         {activity.type === 'job-application' && (
                                           <div className="mt-3 space-y-3">
                                             <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
-                                              <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                                 <FileText className="w-3 h-3 text-green-600" />
                                                 Candidatura Recebida
-                                                <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
+                                                <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
                                               </h5>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                                   <p className={textStyles.bodySmall}>Método</p>
-                                                  <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
+                                                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
                                                 </div>
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                                   <p className={textStyles.bodySmall}>Recebido em</p>
-                                                  <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
+                                                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
                                                 </div>
                                               </div>
                                               <div className="flex gap-2 mb-3">
                                                 {activity.details.resumeAttached && (
- <Badge className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+ <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                                     📄 CV Anexado
                                                   </Badge>
                                                 )}
                                                 {activity.details.coverLetter && (
-                                                  <Badge className="text-[10px] px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                                                  <Badge className="text-micro px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
                                                     ✉️ Carta de Apresentação
                                                   </Badge>
                                                 )}
                                               </div>
                                               {activity.details.screeningQuestions && activity.details.screeningQuestions.length > 0 && (
                                                 <div>
-                                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
+                                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
                                                   <div className="space-y-1">
                                                     {activity.details.screeningQuestions.map((sq: any, i: number) => (
-                                                      <div key={i} className={`p-2 rounded text-[11px] ${sq.passed ? 'bg-green-50' : 'bg-red-50'}`}>
+                                                      <div key={i} className={`p-2 rounded text-xs ${sq.passed ? 'bg-green-50' : 'bg-red-50'}`}>
                                                         <p className="font-medium text-gray-800 dark:text-gray-200">{sq.question}</p>
                                                         <p className={sq.passed ? 'text-green-700' : 'text-red-700'}>
                                                           {sq.passed ? '✓' : '✗'} {sq.answer}
@@ -3153,15 +3153,15 @@ export function CandidatePreview({
                                               </h5>
                                               <div className="grid grid-cols-3 gap-2 mb-3">
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
                                                   <p className={textStyles.caption}>Duração</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
                                                   <p className={textStyles.caption}>Completude</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
                                                   <p className={textStyles.caption}>Precisão Transcrição</p>
                                                 </div>
                                               </div>
@@ -3173,7 +3173,7 @@ export function CandidatePreview({
                                                   </p>
                                                   <div className="flex items-center justify-between">
                                                     <div className="text-center">
-                                                      <p className="text-[16px] font-bold text-gray-900 dark:text-gray-100">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
+                                                      <p className="text-base font-bold text-gray-900 dark:text-gray-100">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
                                                       <p className={textStyles.caption}>Geral</p>
                                                     </div>
                                                     <Badge className={`${
@@ -3181,7 +3181,7 @@ export function CandidatePreview({
                                                       activity.details.wsiScore.classification === 'alto' ? 'bg-green-100 text-green-700' :
                                                       activity.details.wsiScore.classification === 'medio' ? badgeStyles.warning :
                                                       badgeStyles.error
-                                                    } text-[10px]`}>
+                                                    } text-micro`}>
                                                       {activity.details.wsiScore.classification}
                                                     </Badge>
                                                   </div>
@@ -3190,7 +3190,7 @@ export function CandidatePreview({
                                               <div className="flex gap-2 mt-3">
                                                 <Button 
                                                   size="sm" 
-                                                  className="text-[11px] h-7 hover:dark:bg-gray-800 dark:text-gray-900 dark:hover:bg-gray-200"
+                                                  className="text-xs h-7 hover:dark:bg-gray-800 dark:text-gray-900 dark:hover:bg-gray-200"
                                                   onClick={() => {
                                                     const questions: ScreeningQuestion[] = activity.details.questions?.map((q: any) => ({
                                                       id: q.id,
@@ -3226,7 +3226,7 @@ export function CandidatePreview({
                                                   <Button 
                                                     size="sm" 
                                                     variant="outline"
-                                                    className="text-[11px] h-7"
+                                                    className="text-xs h-7"
                                                     onClick={() => onOpenTriagemDetails(candidate)}
                                                   >
                                                     <ClipboardCheck className="w-3 h-3 mr-1" />
@@ -3251,15 +3251,15 @@ export function CandidatePreview({
                                               </h5>
                                               <div className="grid grid-cols-3 gap-2 mb-3">
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
                                                   <p className={textStyles.caption}>Acertos</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
+                                                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
                                                   <p className={textStyles.caption}>Tempo</p>
                                                 </div>
                                                 <div className={`text-center p-2 rounded-md border ${activity.score >= 80 ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : activity.score >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
-                                                  <p className={`text-[16px] font-bold ${activity.score >= 80 ? 'text-green-700 dark:text-green-400' : activity.score >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
+                                                  <p className={`text-base font-bold ${activity.score >= 80 ? 'text-green-700 dark:text-green-400' : activity.score >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
                                                   <p className={textStyles.caption}>Score</p>
                                                 </div>
                                               </div>
@@ -3276,7 +3276,7 @@ export function CandidatePreview({
                                                             style={{ width: `${cat.score}%` }}
                                                           />
                                                         </div>
-                                                        <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{cat.score}%</span>
+                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{cat.score}%</span>
                                                       </div>
                                                     ))}
                                                   </div>
@@ -3298,25 +3298,25 @@ export function CandidatePreview({
                                                 </Badge>
                                               </h5>
                                               <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-gray-200 dark:border-gray-700 mb-3">
- <p className="text-[24px] font-bold text-gray-800 dark:text-gray-100">{activity.details.salary}</p>
+ <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{activity.details.salary}</p>
                                                 {activity.details.annualBonus && (
-                                                  <p className="text-[11px] text-gray-600 dark:text-gray-400">+ Bônus: {activity.details.annualBonus}</p>
+                                                  <p className="text-xs text-gray-600 dark:text-gray-400">+ Bônus: {activity.details.annualBonus}</p>
                                                 )}
                                               </div>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                                   <p className={textStyles.bodySmall}>Data de Início</p>
-                                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
+                                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
                                                 </div>
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                                   <p className={textStyles.bodySmall}>Contrato</p>
-                                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
+                                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
                                                 </div>
                                               </div>
                                               {activity.details.benefits && (
                                                 <div className="flex flex-wrap gap-1">
                                                   {activity.details.benefits.map((b: any, i: number) => (
-                                                    <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0">
+                                                    <Badge key={i} variant="outline" className="text-micro px-1.5 py-0">
                                                       {typeof b === 'object' ? b.name : b}
                                                     </Badge>
                                                   ))}
@@ -3338,15 +3338,15 @@ export function CandidatePreview({
                                                 </Badge>
                                               </h5>
                                               <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-gray-200 dark:border-gray-700 mb-3">
- <p className="text-[28px] font-bold text-gray-800 dark:text-gray-100">{activity.details.overallFit}%</p>
+ <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{activity.details.overallFit}%</p>
                                                 <p className={textStyles.caption}>Fit Geral</p>
                                               </div>
                                               {activity.details.criteriaScores && (
                                                 <div className="space-y-1.5 mb-3">
                                                   {activity.details.criteriaScores.slice(0, 4).map((c: any, i: number) => (
-                                                    <div key={i} className="flex justify-between text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md border border-gray-100 dark:border-gray-700">
+                                                    <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md border border-gray-100 dark:border-gray-700">
                                                       <span className="text-gray-800 dark:text-gray-200">{c.criteria}</span>
-                                                      <Badge className={`text-[9px] px-1.5 ${c.score >= 80 ? badgeStyles.success : c.score >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
+                                                      <Badge className={`text-micro px-1.5 ${c.score >= 80 ? badgeStyles.success : c.score >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                                                         {c.score}%
                                                       </Badge>
                                                     </div>
@@ -3373,16 +3373,16 @@ export function CandidatePreview({
                                                 </Badge>
                                               </h5>
                                               <div className="text-center p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md border border-gray-300 dark:border-gray-600 mb-3">
-                                                <p className="text-[20px] font-bold text-gray-800 dark:text-gray-200">{activity.details.profile}</p>
+                                                <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{activity.details.profile}</p>
                                                 <p className={textStyles.caption}>{activity.details.profileDescription}</p>
                                               </div>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
                                                   <p className={textStyles.caption}>Fit Cultural</p>
                                                 </div>
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.teamworkScore}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.teamworkScore}%</p>
                                                   <p className={textStyles.caption}>Trabalho em Equipe</p>
                                                 </div>
                                               </div>
@@ -3391,7 +3391,7 @@ export function CandidatePreview({
                                                   <p className={`${textStyles.labelSmall} text-gray-800 dark:text-gray-200 mb-1`}>⚠️ Áreas de Desenvolvimento</p>
                                                   <div className="flex flex-wrap gap-1">
                                                     {activity.details.developmentAreas.map((a: string, i: number) => (
-                                                      <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                                                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
                                                         {a}
                                                       </Badge>
                                                     ))}
@@ -3401,7 +3401,7 @@ export function CandidatePreview({
                                               <Button 
                                                 size="sm" 
                                                 variant="outline" 
-                                                className="w-full mt-3 text-[11px] h-7 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800"
+                                                className="w-full mt-3 text-xs h-7 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800"
                                                 onClick={() => {
                                                   if (activity.details.discScores) {
                                                     setDiscModalData(activity.details)
@@ -3435,15 +3435,15 @@ export function CandidatePreview({
                                               </h5>
                                               <div className="grid grid-cols-3 gap-2 mb-3">
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
                                                   <p className={textStyles.caption}>Duração</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate || 100}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate || 100}%</p>
                                                   <p className={textStyles.caption}>Completude</p>
                                                 </div>
                                                 <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                                                  <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
+                                                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
                                                   <p className={textStyles.caption}>Confiança</p>
                                                 </div>
                                               </div>
@@ -3463,7 +3463,7 @@ export function CandidatePreview({
                                                       <p className={textStyles.caption}>Comportamental</p>
                                                     </div>
                                                     <div className="text-center">
-                                                      <p className="text-[16px] font-bold text-purple-600">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
+                                                      <p className="text-base font-bold text-purple-600">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
                                                       <p className={textStyles.caption}>Geral</p>
                                                     </div>
                                                     <Badge className={`${
@@ -3471,7 +3471,7 @@ export function CandidatePreview({
                                                       activity.details.wsiScore.classification === 'alto' ? 'bg-green-100 text-green-700' :
                                                       activity.details.wsiScore.classification === 'medio' ? badgeStyles.warning :
                                                       badgeStyles.error
-                                                    } text-[10px]`}>
+                                                    } text-micro`}>
                                                       {activity.details.wsiScore.classification}
                                                     </Badge>
                                                   </div>
@@ -3499,7 +3499,7 @@ export function CandidatePreview({
                                               <div className="flex gap-2">
                                                 <Button 
                                                   size="sm" 
-                                                  className="text-[11px] h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                                                  className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                                                   onClick={() => {
                                                     const questions: ScreeningQuestion[] = activity.details.questions?.map((q: any) => ({
                                                       id: q.id,
@@ -3550,7 +3550,7 @@ export function CandidatePreview({
                   {/* Indicador de fim da timeline */}
                   <div className="relative flex items-center mt-6">
                     <div className="absolute left-4 w-4 h-4 bg-wedo-green rounded-full z-10"></div>
-                    <span className="ml-12 text-[11px] text-gray-800 dark:text-gray-200">
+                    <span className="ml-12 text-xs text-gray-800 dark:text-gray-200">
                       Início do processo • {candidate.name} adicionado ao banco de talentos
                     </span>
                   </div>
@@ -3604,7 +3604,7 @@ export function CandidatePreview({
                                     {activity.jobId && (
                                       <a
                                         href={`#vaga-${activity.jobId}`}
-                                        className="text-[11px] text-gray-700 dark:text-gray-300 hover:text-[#50a3b8] hover:underline flex items-center gap-0.5"
+                                        className="text-xs text-gray-700 dark:text-gray-300 hover:text-wedo-cyan-dark hover:underline flex items-center gap-0.5"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <Briefcase className="w-2.5 h-2.5" />
@@ -3627,7 +3627,7 @@ export function CandidatePreview({
                                 <div className="flex items-center gap-1.5">
                                   {activity.score && (
                                     <Badge
-                                      className={`text-[11px] px-1.5 py-0 h-4 ${
+                                      className={`text-xs px-1.5 py-0 h-4 ${
                                         activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                         activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
                                         'bg-red-50 text-red-700 border-red-200 font-medium'
@@ -3638,7 +3638,7 @@ export function CandidatePreview({
                                   )}
                                   {activity.statusLabel && (
                                     <Badge
-                                      className={`text-[11px] px-1.5 py-0 h-4 ${
+                                      className={`text-xs px-1.5 py-0 h-4 ${
                                         activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                         activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
                                         activity.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200 font-medium' :
@@ -3667,26 +3667,26 @@ export function CandidatePreview({
                             {activity.type === 'lia-evaluation' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <Brain className="w-3 h-3 text-wedo-cyan" />
                                     Avaliação Automática da LIA
                                   </h5>
 
                                   <div className="grid grid-cols-4 gap-2 mb-3">
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
                                       <p className={textStyles.bodySmall}>Técnico</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
                                       <p className={textStyles.bodySmall}>Fit Cultural</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
                                       <p className={textStyles.bodySmall}>Experiência</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
                                       <p className={textStyles.bodySmall}>Soft Skills</p>
                                     </div>
                                   </div>
@@ -3694,7 +3694,7 @@ export function CandidatePreview({
                                   {activity.details.keyHighlights && (
                                     <div className="grid grid-cols-2 gap-2 mb-3">
                                       {activity.details.keyHighlights.map((h: any, i: number) => (
-                                        <div key={i} className="flex justify-between text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                                        <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
                                           <span className="text-gray-600 dark:text-gray-400">{h.label}:</span>
                                           <span className="font-medium text-gray-800 dark:text-gray-200">{h.value}</span>
                                         </div>
@@ -3703,10 +3703,10 @@ export function CandidatePreview({
                                   )}
 
                                   <div className="mb-3">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
                                     <div className="flex flex-wrap gap-1">
                                       {(activity.details.strengths || []).map((s: string, i: number) => (
-                                        <Badge key={i} className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
+                                        <Badge key={i} className="text-micro px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
                                           ✓ {s}
                                         </Badge>
                                       ))}
@@ -3715,10 +3715,10 @@ export function CandidatePreview({
 
                                   {activity.details.areasToImprove && activity.details.areasToImprove.length > 0 && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos de Atenção</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos de Atenção</p>
                                       <div className="flex flex-wrap gap-1">
                                         {activity.details.areasToImprove.map((a: string, i: number) => (
-                                          <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                          <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
                                             ⚠ {a}
                                           </Badge>
                                         ))}
@@ -3728,15 +3728,15 @@ export function CandidatePreview({
 
                                   {activity.details.comparisonToPool && (
                                     <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded mb-3">
-                                      <p className="text-[11px] text-gray-700 dark:text-gray-300">
+                                      <p className="text-xs text-gray-700 dark:text-gray-300">
                                         📊 Ranking: <strong>#{activity.details.comparisonToPool.ranking}</strong> de {activity.details.comparisonToPool.totalCandidates} candidatos (Top {100 - activity.details.comparisonToPool.percentile}%)
                                       </p>
                                     </div>
                                   )}
 
                                   <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação da LIA</p>
-                                    <p className="text-[11px] text-gray-800 dark:text-gray-200 whitespace-pre-line">{activity.details.recommendation}</p>
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação da LIA</p>
+                                    <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-line">{activity.details.recommendation}</p>
                                   </div>
                                 </div>
                               </div>
@@ -3745,11 +3745,11 @@ export function CandidatePreview({
                             {activity.type === 'interview-scheduled' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <Calendar className="w-3 h-3 text-purple-600" />
                                     {activity.details.interviewType}
                                     {activity.details.stage && (
-                                      <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
+                                      <Badge className="ml-2 text-micro px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
                                     )}
                                   </h5>
 
@@ -3768,9 +3768,9 @@ export function CandidatePreview({
 
                                   <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
                                     <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
-                                    <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
+                                    <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
                                     {activity.details.meetLink && (
-                                      <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-[11px] text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1 mt-1">
+                                      <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1 mt-1">
                                         <ExternalLink className="w-3 h-3" />
                                         Acessar link da reunião
                                       </a>
@@ -3779,11 +3779,11 @@ export function CandidatePreview({
 
                                   {activity.details.interviewers && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
                                       <div className="space-y-1">
                                         {activity.details.interviewers.map((int: any, i: number) => (
-                                          <div key={i} className="flex items-center gap-2 text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
-                                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                                          <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
                                               {typeof int === 'string' ? int.charAt(0) : int.name?.charAt(0)}
                                             </div>
                                             <div>
@@ -3798,10 +3798,10 @@ export function CandidatePreview({
 
                                   {activity.details.topics && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">📋 Tópicos a Abordar</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">📋 Tópicos a Abordar</p>
                                       <div className="flex flex-wrap gap-1">
                                         {activity.details.topics.map((t: string, i: number) => (
-                                          <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0">{t}</Badge>
+                                          <Badge key={i} variant="outline" className="text-micro px-1.5 py-0">{t}</Badge>
                                         ))}
                                       </div>
                                     </div>
@@ -3809,10 +3809,10 @@ export function CandidatePreview({
 
                                   {activity.details.previousInterviews && activity.details.previousInterviews.length > 0 && (
                                     <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-green-800 mb-1">✅ Etapas Anteriores Concluídas</p>
+                                      <p className="text-xs font-semibold text-green-800 mb-1">✅ Etapas Anteriores Concluídas</p>
                                       <div className="space-y-1">
                                         {activity.details.previousInterviews.map((pi: any, i: number) => (
-                                          <div key={i} className="flex justify-between text-[11px]">
+                                          <div key={i} className="flex justify-between text-xs">
                                             <span className="text-green-700">{pi.stage} - {pi.type}</span>
                                             <span className="font-medium text-green-800">{pi.score}%</span>
                                           </div>
@@ -3822,11 +3822,11 @@ export function CandidatePreview({
                                   )}
 
                                   <div className="flex gap-2">
-                                    <Button size="sm" className="text-[11px] h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+                                    <Button size="sm" className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
                                       <Calendar className="w-3 h-3 mr-1" />
                                       Reagendar
                                     </Button>
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <Mail className="w-3 h-3 mr-1" />
                                       Enviar Lembrete
                                     </Button>
@@ -3838,39 +3838,39 @@ export function CandidatePreview({
                             {activity.type === 'job-application' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <FileText className="w-3 h-3 text-green-600" />
                                     Candidatura Recebida
-                                    <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
                                   </h5>
 
                                   <div className="grid grid-cols-2 gap-2 mb-3">
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>ID da Aplicação</p>
-                                      <p className="text-[11px] font-mono font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationId}</p>
+                                      <p className="text-xs font-mono font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationId}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Método</p>
-                                      <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
+                                      <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Recebido em</p>
-                                      <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
+                                      <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Dispositivo</p>
-                                      <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{activity.details.device}</p>
+                                      <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.device}</p>
                                     </div>
                                   </div>
 
                                   <div className="flex gap-2 mb-3">
                                     {activity.details.resumeAttached && (
- <Badge className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+ <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                         📄 CV: {activity.details.resumeFileName}
                                       </Badge>
                                     )}
                                     {activity.details.coverLetter && (
-                                      <Badge className="text-[10px] px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                                      <Badge className="text-micro px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
                                         ✉️ Carta de Apresentação
                                       </Badge>
                                     )}
@@ -3878,12 +3878,12 @@ export function CandidatePreview({
 
                                   {activity.details.screeningQuestions && activity.details.screeningQuestions.length > 0 && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
                                       <div className="space-y-2">
                                         {activity.details.screeningQuestions.map((sq: any, i: number) => (
                                           <div key={i} className={`p-2 rounded border ${sq.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
-                                            <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-1">{sq.question}</p>
-                                            <p className={`text-[11px] ${sq.passed ? 'text-green-700' : 'text-red-700'}`}>
+                                            <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">{sq.question}</p>
+                                            <p className={`text-xs ${sq.passed ? 'text-green-700' : 'text-red-700'}`}>
                                               {sq.passed ? '✓' : '✗'} {sq.answer}
                                             </p>
                                           </div>
@@ -3894,17 +3894,17 @@ export function CandidatePreview({
 
                                   {activity.details.coverLetterPreview && (
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Carta de Apresentação (Preview)</p>
-                                      <p className="text-[11px] text-gray-600 dark:text-gray-400 italic">"{activity.details.coverLetterPreview}"</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Carta de Apresentação (Preview)</p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 italic">"{activity.details.coverLetterPreview}"</p>
                                     </div>
                                   )}
 
                                   <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <Download className="w-3 h-3 mr-1" />
                                       Baixar CV
                                     </Button>
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <Linkedin className="w-3 h-3 mr-1" />
                                       Ver LinkedIn
                                     </Button>
@@ -3916,35 +3916,35 @@ export function CandidatePreview({
                             {activity.type === 'voice-screening' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <Mic className="w-3 h-3 text-red-500" />
                                     Triagem por Voz
-                                    <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-green-50 text-green-700">
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">
                                       {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
                                     </Badge>
                                   </h5>
 
                                   <div className="grid grid-cols-3 gap-2 mb-3">
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
                                       <p className={textStyles.bodySmall}>Duração</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
                                       <p className={textStyles.bodySmall}>Completude</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
                                       <p className={textStyles.bodySmall}>Confiança</p>
                                     </div>
                                   </div>
 
                                   {activity.details.aiAnalysis && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">🤖 Análise da LIA</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">🤖 Análise da LIA</p>
                                       <div className="grid grid-cols-3 gap-1">
                                         {Object.entries(activity.details.aiAnalysis).map(([key, value]: [string, any]) => (
-                                          <div key={key} className="flex justify-between text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                                          <div key={key} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
                                             <span className="text-gray-600 dark:text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
                                             <span className="font-medium text-gray-800 dark:text-gray-200">{value}%</span>
                                           </div>
@@ -3955,19 +3955,19 @@ export function CandidatePreview({
 
                                   {activity.details.questions && activity.details.questions.length > 0 && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas e Respostas</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas e Respostas</p>
                                       <div className="space-y-2 max-h-48 overflow-y-auto">
                                         {activity.details.questions.map((q: any) => (
                                           <div key={q.id} className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                             <div className="flex justify-between items-start mb-1">
-                                              <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">P{q.id}: {q.question}</p>
-                                              <Badge className="text-[9px] px-1 py-0">{q.duration}</Badge>
+                                              <p className="text-xs font-medium text-gray-800 dark:text-gray-200">P{q.id}: {q.question}</p>
+                                              <Badge className="text-micro px-1 py-0">{q.duration}</Badge>
                                             </div>
-                                            <p className="text-[11px] text-gray-600 dark:text-gray-400 italic">{q.transcription}</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400 italic">{q.transcription}</p>
                                             {q.analysis && (
                                               <div className="flex gap-2 mt-1">
                                                 {q.analysis.keywords?.map((kw: string, i: number) => (
-                                                  <Badge key={i} variant="outline" className="text-[9px] px-1 py-0">{kw}</Badge>
+                                                  <Badge key={i} variant="outline" className="text-micro px-1 py-0">{kw}</Badge>
                                                 ))}
                                               </div>
                                             )}
@@ -3979,10 +3979,10 @@ export function CandidatePreview({
 
                                   {activity.details.highlights && (
                                     <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-green-800 mb-1">✨ Destaques</p>
+                                      <p className="text-xs font-semibold text-green-800 mb-1">✨ Destaques</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.highlights.map((h: string, i: number) => (
-                                          <li key={i} className="text-[11px] text-green-700 flex items-start gap-1">
+                                          <li key={i} className="text-xs text-green-700 flex items-start gap-1">
                                             <span>•</span> {h}
                                           </li>
                                         ))}
@@ -3991,16 +3991,16 @@ export function CandidatePreview({
                                   )}
 
                                   <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Impressão Geral</p>
-                                    <p className="text-[11px] text-gray-600 dark:text-gray-400">{activity.details.overallImpression}</p>
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Impressão Geral</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.overallImpression}</p>
                                   </div>
 
                                   <div className="flex gap-2">
-                                    <Button size="sm" className="text-[11px] h-7 bg-red-600 hover:bg-red-700">
+                                    <Button size="sm" className="text-xs h-7 bg-red-600 hover:bg-red-700">
                                       <Play className="w-3 h-3 mr-1" />
                                       Ouvir Gravação
                                     </Button>
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <FileText className="w-3 h-3 mr-1" />
                                       Ver Transcrição
                                     </Button>
@@ -4012,45 +4012,45 @@ export function CandidatePreview({
                             {activity.type === 'test-completed' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <Code className="w-3 h-3 text-amber-600" />
                                     {activity.details.testName}
-                                    <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700">{activity.details.provider}</Badge>
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-amber-50 text-amber-700">{activity.details.provider}</Badge>
                                   </h5>
 
                                   <div className="grid grid-cols-4 gap-2 mb-3">
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
                                       <p className={textStyles.bodySmall}>Acertos</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[18px] font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
+                                      <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
                                       <p className={textStyles.bodySmall}>Tempo</p>
                                     </div>
                                     <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                                      <p className="text-[18px] font-bold text-green-700 dark:text-green-400">{activity.score}%</p>
+                                      <p className="text-lg font-bold text-green-700 dark:text-green-400">{activity.score}%</p>
                                       <p className={textStyles.bodySmall}>Score</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                      <p className="text-[14px] font-bold text-gray-800 dark:text-gray-200">{activity.details.ranking}</p>
+                                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.ranking}</p>
                                       <p className={textStyles.bodySmall}>Ranking</p>
                                     </div>
                                   </div>
 
                                   {activity.details.categories && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">📊 Performance por Categoria</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📊 Performance por Categoria</p>
                                       <div className="space-y-1">
                                         {activity.details.categories.map((cat: any, i: number) => (
                                           <div key={i} className="flex items-center gap-2">
-                                            <span className="text-[11px] text-gray-600 dark:text-gray-400 w-40 truncate">{cat.name}</span>
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 w-40 truncate">{cat.name}</span>
                                             <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                                               <div 
                                                 className={`h-full rounded-full ${cat.score >= 80 ? 'bg-green-500' : cat.score >= 60 ? 'bg-green-400/60' : 'bg-gray-300 dark:bg-gray-600'}`}
                                                 style={{ width: `${cat.score}%` }}
                                               />
                                             </div>
-                                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200 w-10 text-right">{cat.score}%</span>
+                                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-10 text-right">{cat.score}%</span>
                                           </div>
                                         ))}
                                       </div>
@@ -4059,8 +4059,8 @@ export function CandidatePreview({
 
                                   {activity.details.codeChallenge && (
                                     <div className="bg-purple-50 border border-purple-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-purple-800 mb-1">💻 Code Challenge: {activity.details.codeChallenge.name}</p>
-                                      <div className="grid grid-cols-3 gap-2 text-[11px]">
+                                      <p className="text-xs font-semibold text-purple-800 mb-1">💻 Code Challenge: {activity.details.codeChallenge.name}</p>
+                                      <div className="grid grid-cols-3 gap-2 text-xs">
                                         <div>
                                           <span className="text-purple-600">Qualidade:</span>
                                           <span className="font-medium text-purple-800 ml-1">{activity.details.codeChallenge.codeQuality}%</span>
@@ -4074,28 +4074,28 @@ export function CandidatePreview({
                                           <span className="font-medium text-purple-800 ml-1">{activity.details.codeChallenge.bestPractices}%</span>
                                         </div>
                                       </div>
-                                      <p className="text-[11px] text-purple-700 mt-1 italic">{activity.details.codeChallenge.feedback}</p>
+                                      <p className="text-xs text-purple-700 mt-1 italic">{activity.details.codeChallenge.feedback}</p>
                                     </div>
                                   )}
 
                                   {activity.details.proctoring && (
                                     <div className={`p-2 rounded mb-3 ${activity.details.proctoring.status === 'Clean' ? 'bg-green-50 border border-green-100' : 'bg-yellow-50 border border-yellow-100'}`}>
-                                      <p className="text-[11px] font-semibold mb-1 flex items-center gap-1">
+                                      <p className="text-xs font-semibold mb-1 flex items-center gap-1">
                                         <Shield className="w-3 h-3" />
                                         Proctoring: {activity.details.proctoring.status}
                                       </p>
-                                      <p className="text-[11px] text-gray-600 dark:text-gray-400">
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">
                                         Tab switches: {activity.details.proctoring.tabSwitches} | Copy/Paste: {activity.details.proctoring.copyPasteEvents}
                                       </p>
                                     </div>
                                   )}
 
                                   <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <Download className="w-3 h-3 mr-1" />
                                       Baixar Certificado
                                     </Button>
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <FileText className="w-3 h-3 mr-1" />
                                       Ver Detalhes
                                     </Button>
@@ -4107,34 +4107,34 @@ export function CandidatePreview({
                             {activity.type === 'rubric_evaluation' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <ClipboardCheck className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                                     Avaliação por Rubrica (CV vs Vaga)
- <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800">{activity.details.methodVersion}</Badge>
+ <Badge className="ml-2 text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800">{activity.details.methodVersion}</Badge>
                                   </h5>
 
                                   <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded mb-3">
-                                    <p className="text-[32px] font-bold text-gray-800 dark:text-gray-200">{activity.details.overallFit}%</p>
+                                    <p className="text-4xl font-bold text-gray-800 dark:text-gray-200">{activity.details.overallFit}%</p>
                                     <p className={textStyles.bodySmall}>Fit Geral com a Vaga</p>
                                   </div>
 
                                   {activity.details.criteriaScores && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Critérios Avaliados</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Critérios Avaliados</p>
                                       <div className="space-y-2">
                                         {activity.details.criteriaScores.map((c: any, i: number) => (
                                           <div key={i} className={`p-2 rounded border ${c.status === 'exceeded' ? 'bg-green-50 border-green-200' : c.status === 'partial' ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 dark:bg-gray-800 border-gray-200'}`}>
                                             <div className="flex justify-between items-center mb-1">
-                                              <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{c.criteria}</span>
+                                              <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{c.criteria}</span>
                                               <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-gray-500 dark:text-gray-400">Peso: {c.weight}%</span>
-                                                <Badge className={`text-[10px] px-1.5 py-0 ${c.score >= 90 ? 'bg-green-100 text-green-700' : c.score >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                                <span className="text-micro text-gray-500 dark:text-gray-400">Peso: {c.weight}%</span>
+                                                <Badge className={`text-micro px-1.5 py-0 ${c.score >= 90 ? 'bg-green-100 text-green-700' : c.score >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
                                                   {c.score}%
                                                 </Badge>
                                               </div>
                                             </div>
-                                            <p className="text-[11px] text-gray-600 dark:text-gray-400">{c.notes}</p>
-                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-1">{c.evidence}</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">{c.notes}</p>
+                                            <p className="text-micro text-gray-500 dark:text-gray-400 italic mt-1">{c.evidence}</p>
                                           </div>
                                         ))}
                                       </div>
@@ -4144,10 +4144,10 @@ export function CandidatePreview({
                                   <div className="grid grid-cols-2 gap-2 mb-3">
                                     {activity.details.mustHaveRequirements && (
                                       <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                        <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">✓ Requisitos Obrigatórios</p>
+                                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">✓ Requisitos Obrigatórios</p>
                                         <div className="space-y-0.5">
                                           {activity.details.mustHaveRequirements.map((r: any, i: number) => (
-                                            <p key={i} className={`text-[11px] ${r.met ? 'text-green-700' : 'text-red-700'}`}>
+                                            <p key={i} className={`text-xs ${r.met ? 'text-green-700' : 'text-red-700'}`}>
                                               {r.met ? '✓' : '✗'} {r.requirement}
                                             </p>
                                           ))}
@@ -4156,10 +4156,10 @@ export function CandidatePreview({
                                     )}
                                     {activity.details.niceToHaveRequirements && (
                                       <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                        <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">○ Requisitos Desejáveis</p>
+                                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">○ Requisitos Desejáveis</p>
                                         <div className="space-y-0.5">
                                           {activity.details.niceToHaveRequirements.map((r: any, i: number) => (
-                                            <p key={i} className={`text-[11px] ${r.met ? 'text-green-700' : 'text-gray-500'}`}>
+                                            <p key={i} className={`text-xs ${r.met ? 'text-green-700' : 'text-gray-500'}`}>
                                               {r.met ? '✓' : '○'} {r.requirement}
                                             </p>
                                           ))}
@@ -4170,10 +4170,10 @@ export function CandidatePreview({
 
                                   {activity.details.competitiveAdvantages && (
                                     <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-green-800 mb-1">🌟 Diferenciais Competitivos</p>
+                                      <p className="text-xs font-semibold text-green-800 mb-1">🌟 Diferenciais Competitivos</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.competitiveAdvantages.map((a: string, i: number) => (
-                                          <li key={i} className="text-[11px] text-green-700">• {a}</li>
+                                          <li key={i} className="text-xs text-green-700">• {a}</li>
                                         ))}
                                       </ul>
                                     </div>
@@ -4181,18 +4181,18 @@ export function CandidatePreview({
 
                                   {activity.details.gaps && activity.details.gaps.length > 0 && (
                                     <div className="bg-yellow-50 border border-yellow-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-yellow-800 mb-1">⚠️ Gaps Identificados</p>
+                                      <p className="text-xs font-semibold text-yellow-800 mb-1">⚠️ Gaps Identificados</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.gaps.map((g: string, i: number) => (
-                                          <li key={i} className="text-[11px] text-yellow-700">• {g}</li>
+                                          <li key={i} className="text-xs text-yellow-700">• {g}</li>
                                         ))}
                                       </ul>
                                     </div>
                                   )}
 
                                   <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
-                                    <p className="text-[11px] text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
                                   </div>
                                 </div>
                               </div>
@@ -4202,54 +4202,54 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <div className="flex items-center justify-between mb-2">
-                                    <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                       <Gift className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                                       Proposta Salarial
- <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800">{activity.details.offerNumber}</Badge>
+ <Badge className="ml-2 text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800">{activity.details.offerNumber}</Badge>
                                     </h5>
                                     {activity.details.daysRemaining && (
-                                      <Badge className="text-[10px] px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                      <Badge className="text-micro px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
                                         ⏰ {activity.details.daysRemaining} dias restantes
                                       </Badge>
                                     )}
                                   </div>
 
                                   <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded mb-3">
- <p className="text-[28px] font-bold text-gray-800 dark:text-gray-100">{activity.details.salary}</p>
+ <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{activity.details.salary}</p>
                                     <p className={textStyles.bodySmall}>{activity.details.salaryType}</p>
                                     {activity.details.annualBonus && (
-                                      <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">+ Bônus: {activity.details.annualBonus}</p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">+ Bônus: {activity.details.annualBonus}</p>
                                     )}
                                     {activity.details.signingBonus && (
-                                      <p className="text-[11px] text-green-700">+ Signing Bonus: {activity.details.signingBonus}</p>
+                                      <p className="text-xs text-green-700">+ Signing Bonus: {activity.details.signingBonus}</p>
                                     )}
                                   </div>
 
                                   <div className="grid grid-cols-2 gap-2 mb-3">
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Data de Início</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Contrato</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Modelo</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.workModel}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.workModel}</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
                                       <p className={textStyles.bodySmall}>Válido até</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.validUntil}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.validUntil}</p>
                                     </div>
                                   </div>
 
                                   {activity.details.benefits && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">🎁 Pacote de Benefícios</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">🎁 Pacote de Benefícios</p>
                                       <div className="grid grid-cols-2 gap-1">
                                         {activity.details.benefits.map((b: any, i: number) => (
-                                          <div key={i} className="flex items-center gap-1 text-[11px] bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                                          <div key={i} className="flex items-center gap-1 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
                                             <span>{typeof b === 'object' ? b.icon : '•'}</span>
                                             <span className="text-gray-800 dark:text-gray-200">{typeof b === 'object' ? b.name : b}</span>
                                             {typeof b === 'object' && b.value && (
@@ -4263,12 +4263,12 @@ export function CandidatePreview({
 
                                   {activity.details.negotiationHistory && activity.details.negotiationHistory.length > 0 && (
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">📜 Histórico de Negociação</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">📜 Histórico de Negociação</p>
                                       <div className="space-y-1">
                                         {activity.details.negotiationHistory.map((h: any, i: number) => (
-                                          <div key={i} className="flex justify-between text-[11px]">
+                                          <div key={i} className="flex justify-between text-xs">
                                             <span className="text-gray-600 dark:text-gray-400">{h.date} - {h.action}</span>
-                                            <Badge variant="outline" className="text-[9px] px-1">{h.status}</Badge>
+                                            <Badge variant="outline" className="text-micro px-1">{h.status}</Badge>
                                           </div>
                                         ))}
                                       </div>
@@ -4277,23 +4277,23 @@ export function CandidatePreview({
 
                                   {activity.details.negotiationNotes && (
                                     <div className="bg-yellow-50 border border-yellow-100 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-yellow-800 mb-1">📝 Notas da Negociação</p>
-                                      <p className="text-[11px] text-yellow-700">{activity.details.negotiationNotes}</p>
+                                      <p className="text-xs font-semibold text-yellow-800 mb-1">📝 Notas da Negociação</p>
+                                      <p className="text-xs text-yellow-700">{activity.details.negotiationNotes}</p>
                                     </div>
                                   )}
 
                                   {activity.details.viewedAt && (
-                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-3">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                                       👁 Proposta visualizada em {activity.details.viewedAt}
                                     </p>
                                   )}
 
                                   <div className="flex gap-2">
- <Button size="sm" className="text-[11px] h-7 hover:dark:bg-gray-800 dark:text-gray-900 dark:hover:bg-gray-200">
+ <Button size="sm" className="text-xs h-7 hover:dark:bg-gray-800 dark:text-gray-900 dark:hover:bg-gray-200">
                                       <Mail className="w-3 h-3 mr-1" />
                                       Enviar Lembrete
                                     </Button>
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <FileText className="w-3 h-3 mr-1" />
                                       Ver Proposta
                                     </Button>
@@ -4357,35 +4357,35 @@ export function CandidatePreview({
                             {activity.type === 'assessment' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <Brain className="w-3 h-3 text-wedo-cyan" />
                                     {activity.details.assessmentType}
                                     {activity.details.assessmentProvider && (
-                                      <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">{activity.details.assessmentProvider}</Badge>
+                                      <Badge className="ml-2 text-micro px-1.5 py-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">{activity.details.assessmentProvider}</Badge>
                                     )}
                                   </h5>
 
                                   <div className="text-center p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded mb-3 border border-gray-300 dark:border-gray-600">
-                                    <p className="text-[24px] font-bold text-gray-800 dark:text-gray-200">{activity.details.profile}</p>
+                                    <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{activity.details.profile}</p>
                                     <p className={textStyles.bodySmall}>{activity.details.profileDescription}</p>
                                   </div>
 
                                   {activity.details.discScores && (
                                     <div className="grid grid-cols-4 gap-2 mb-3">
                                       <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
-                                        <p className="text-[18px] font-bold text-gray-900 dark:text-gray-50">{activity.details.discScores.dominance}</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-gray-50">{activity.details.discScores.dominance}</p>
                                         <p className={textStyles.bodySmall}>D</p>
                                       </div>
                                       <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-900 dark:border-gray-50/15">
-                                        <p className="text-[18px] font-bold text-gray-900 dark:text-gray-50/80">{activity.details.discScores.influence}</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-gray-50/80">{activity.details.discScores.influence}</p>
                                         <p className={textStyles.bodySmall}>I</p>
                                       </div>
                                       <div className="text-center p-2 bg-gray-100 rounded border border-gray-200 dark:border-gray-700">
-                                        <p className="text-[18px] font-bold text-gray-900 dark:text-gray-50">{activity.details.discScores.steadiness}</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-gray-50">{activity.details.discScores.steadiness}</p>
                                         <p className={textStyles.bodySmall}>S</p>
                                       </div>
                                       <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                                        <p className="text-[18px] font-bold text-gray-500 dark:text-gray-400">{activity.details.discScores.conscientiousness}</p>
+                                        <p className="text-lg font-bold text-gray-500 dark:text-gray-400">{activity.details.discScores.conscientiousness}</p>
                                         <p className={textStyles.bodySmall}>C</p>
                                       </div>
                                     </div>
@@ -4393,18 +4393,18 @@ export function CandidatePreview({
 
                                   {activity.details.primaryTraits && (
                                     <div className="mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">🎯 Características Principais</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">🎯 Características Principais</p>
                                       <div className="space-y-1">
                                         {activity.details.primaryTraits.map((t: any, i: number) => (
                                           <div key={i} className="flex items-center gap-2">
-                                            <span className="text-[11px] text-gray-600 dark:text-gray-400 w-32 truncate">{t.trait}</span>
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 w-32 truncate">{t.trait}</span>
                                             <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                                               <div 
  className={`h-full rounded-full ${t.score >= 80 ? 'bg-gray-900' : t.score >= 60 ? 'bg-gray-200' : 'bg-gray-300 dark:bg-gray-600'}`}
                                                 style={{ width: `${t.score}%` }}
                                               />
                                             </div>
-                                            <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200 w-10 text-right">{t.score}%</span>
+                                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-10 text-right">{t.score}%</span>
                                           </div>
                                         ))}
                                       </div>
@@ -4413,29 +4413,29 @@ export function CandidatePreview({
 
                                   <div className="grid grid-cols-2 gap-2 mb-3">
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-center">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.culturalFitScore}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.culturalFitScore}%</p>
                                       <p className={textStyles.bodySmall}>Fit Cultural</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-center">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.leadershipScore}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.leadershipScore}%</p>
                                       <p className={textStyles.bodySmall}>Liderança</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-center">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.teamworkScore}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.teamworkScore}%</p>
                                       <p className={textStyles.bodySmall}>Trabalho em Equipe</p>
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-center">
-                                      <p className="text-[16px] font-bold text-gray-800 dark:text-gray-200">{activity.details.adaptabilityScore}%</p>
+                                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.adaptabilityScore}%</p>
                                       <p className={textStyles.bodySmall}>Adaptabilidade</p>
                                     </div>
                                   </div>
 
                                   {activity.details.leadershipStrengths && (
                                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-green-700 dark:text-green-400 mb-1">💪 Pontos Fortes de Liderança</p>
+                                      <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">💪 Pontos Fortes de Liderança</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.leadershipStrengths.map((s: string, i: number) => (
-                                          <li key={i} className="text-[11px] text-gray-800 dark:text-gray-200">✓ {s}</li>
+                                          <li key={i} className="text-xs text-gray-800 dark:text-gray-200">✓ {s}</li>
                                         ))}
                                       </ul>
                                     </div>
@@ -4443,10 +4443,10 @@ export function CandidatePreview({
 
                                   {activity.details.developmentAreas && activity.details.developmentAreas.length > 0 && (
                                     <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded mb-3">
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">📈 Áreas de Desenvolvimento</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">📈 Áreas de Desenvolvimento</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.developmentAreas.map((a: string, i: number) => (
-                                          <li key={i} className="text-[11px] text-gray-600 dark:text-gray-400">• {a}</li>
+                                          <li key={i} className="text-xs text-gray-600 dark:text-gray-400">• {a}</li>
                                         ))}
                                       </ul>
                                     </div>
@@ -4454,26 +4454,26 @@ export function CandidatePreview({
 
                                   {activity.details.comparisonToRole && (
                                     <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded mb-3">
-                                      <p className="text-[11px] text-gray-800 dark:text-gray-200">
+                                      <p className="text-xs text-gray-800 dark:text-gray-200">
                                         📊 Match com perfil ideal ({activity.details.comparisonToRole.idealProfile}): <strong className="text-gray-900 dark:text-gray-100">{activity.details.comparisonToRole.matchPercentage}%</strong>
                                       </p>
                                     </div>
                                   )}
 
                                   <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
-                                    <p className="text-[11px] text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
                                   </div>
 
                                   <div className="flex gap-2 mt-3">
-                                    <Button size="sm" variant="outline" className="text-[11px] h-7">
+                                    <Button size="sm" variant="outline" className="text-xs h-7">
                                       <Download className="w-3 h-3 mr-1" />
                                       Baixar Relatório
                                     </Button>
                                     <Button 
                                       size="sm" 
                                       variant="outline" 
-                                      className="text-[11px] h-7 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800"
+                                      className="text-xs h-7 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800"
                                       onClick={() => {
                                         if (activity.details.discScores) {
                                           setDiscModalData(activity.details)
@@ -4504,7 +4504,7 @@ export function CandidatePreview({
                                       <p className={textStyles.bodySmall}>Documentos Verificados</p>
                                       <div className="flex flex-wrap gap-1">
                                         {activity.details.documentsVerified?.map((doc: string) => (
-                                          <Badge key={doc} variant="outline" className="text-[11px] px-1.5 py-0">
+                                          <Badge key={doc} variant="outline" className="text-xs px-1.5 py-0">
                                             {doc}
                                           </Badge>
                                         ))}
@@ -4530,34 +4530,34 @@ export function CandidatePreview({
                             {activity.type === 'onboarding' && (
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
-                                  <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                  <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                                     <UserCheck className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                                     Processo de Onboarding
                                   </h5>
 
                                   {/* Checklist de Onboarding */}
                                   <div className="bg-green-50 p-2 rounded mb-3">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
                                       📋 Checklist de Integração
                                     </p>
                                     <div className="space-y-1">
-                                      <div className="flex items-center gap-2 text-[11px]">
+                                      <div className="flex items-center gap-2 text-xs">
                                         <CheckCircle className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                                         <span className="text-gray-800 dark:text-gray-200">Oferta aceita e assinada</span>
                                       </div>
-                                      <div className="flex items-center gap-2 text-[11px]">
+                                      <div className="flex items-center gap-2 text-xs">
                                         <CheckCircle className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                                         <span className="text-gray-800 dark:text-gray-200">Documentação enviada</span>
                                       </div>
-                                      <div className="flex items-center gap-2 text-[11px]">
+                                      <div className="flex items-center gap-2 text-xs">
                                         <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                                         <span className="text-gray-800 dark:text-gray-200">Equipamentos solicitados</span>
                                       </div>
-                                      <div className="flex items-center gap-2 text-[11px]">
+                                      <div className="flex items-center gap-2 text-xs">
                                         <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                                         <span className="text-gray-800 dark:text-gray-200">Acessos em configuração</span>
                                       </div>
-                                      <div className="flex items-center gap-2 text-[11px]">
+                                      <div className="flex items-center gap-2 text-xs">
                                         <AlertCircle className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                                         <span className="text-gray-800 dark:text-gray-200">Buddy designado (pendente)</span>
                                       </div>
@@ -4568,14 +4568,14 @@ export function CandidatePreview({
                                   <div className="grid grid-cols-2 gap-2 mb-3">
                                     <div className="bg-white dark:bg-gray-900 p-2 rounded">
                                       <p className={`${textStyles.bodySmall} mb-1`}>Data de Início</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
                                         {activity.details.startDate}
                                       </p>
                                       <p className={textStyles.bodySmall}>Segunda-feira</p>
                                     </div>
                                     <div className="bg-white dark:bg-gray-900 p-2 rounded">
                                       <p className={`${textStyles.bodySmall} mb-1`}>Gestor Responsável</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
                                         {activity.details.onboardingManager}
                                       </p>
                                       <p className={textStyles.bodySmall}>People & Culture</p>
@@ -4584,10 +4584,10 @@ export function CandidatePreview({
 
                                   {/* Cronograma da Primeira Semana */}
                                   <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-2 rounded mb-3">
-                                    <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
                                       📅 Agenda - Primeira Semana
                                     </p>
-                                    <div className="space-y-1 text-[11px] text-gray-800 dark:text-gray-200">
+                                    <div className="space-y-1 text-xs text-gray-800 dark:text-gray-200">
                                       <div className="flex items-start gap-2">
                                         <span className="font-medium">Seg:</span>
                                         <span>Welcome meeting + Setup workspace</span>
@@ -4616,22 +4616,22 @@ export function CandidatePreview({
                                     <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                                       <FileText className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                                       <p className={textStyles.bodySmall}>Documentos</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.documentsStatus}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.documentsStatus}</p>
                                     </div>
                                     <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                                       <Building className="w-4 h-4 mx-auto text-gray-600 dark:text-gray-400 mb-1" />
                                       <p className={textStyles.bodySmall}>Equipamentos</p>
-                                      <p className="text-[11px] font-semibold text-gray-900 dark:text-gray-50">{activity.details.equipmentStatus}</p>
+                                      <p className="text-xs font-semibold text-gray-900 dark:text-gray-50">{activity.details.equipmentStatus}</p>
                                     </div>
                                     <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                                       <Shield className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                                       <p className={textStyles.bodySmall}>Acessos</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{activity.details.accessesStatus}</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.accessesStatus}</p>
                                     </div>
                                     <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                                       <Users className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                                       <p className={textStyles.bodySmall}>Buddy</p>
-                                      <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">A definir</p>
+                                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">A definir</p>
                                     </div>
                                   </div>
                                 </div>
@@ -4647,7 +4647,7 @@ export function CandidatePreview({
                                       {activity.details.technicalQuestions.map((q: any, i: number) => (
                                         <div key={i} className="flex items-center justify-between">
                                           <span className={textStyles.bodySmall}>{q.question}</span>
-                                          <Badge className="text-[11px] px-1 py-0">{q.score}/10</Badge>
+                                          <Badge className="text-xs px-1 py-0">{q.score}/10</Badge>
                                         </div>
                                       ))}
                                     </div>
@@ -4658,7 +4658,7 @@ export function CandidatePreview({
                                   <div className="bg-white dark:bg-gray-900 p-2 rounded">
                                     <div className="flex items-center justify-between">
                                       <span className={textStyles.bodySmall}>Score Geral</span>
-                                      <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200">{activity.details.overallScore}/10</span>
+                                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{activity.details.overallScore}/10</span>
                                     </div>
                                     <p className={`${textStyles.bodySmall} mt-1`}>
                                       {activity.details.recommendation}
@@ -4671,7 +4671,7 @@ export function CandidatePreview({
                             {activity.type === 'lia-screening' && activity.details.conversation && (
                               <div className="mt-2 space-y-2">
                                 <div className="bg-white dark:bg-gray-800 p-2 rounded max-h-48 overflow-y-auto">
-                                  <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
+                                  <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
                                   <div className="space-y-2">
                                     {activity.details.conversation.map((msg: any, i: number) => (
                                       <div
@@ -4685,8 +4685,8 @@ export function CandidatePreview({
                                               : 'bg-gray-50 dark:bg-gray-800 text-gray-800'
                                           }`}
                                         >
-                                          <p className="text-[11px]">{msg.message}</p>
-                                          <span className="text-[11px] opacity-70">{msg.time}</span>
+                                          <p className="text-xs">{msg.message}</p>
+                                          <span className="text-xs opacity-70">{msg.time}</span>
                                         </div>
                                       </div>
                                     ))}
@@ -4697,15 +4697,15 @@ export function CandidatePreview({
                                   <div className="bg-white dark:bg-gray-900 p-2 rounded">
                                     <p className={`${textStyles.bodySmall} mb-1`}>Pontos-Chave</p>
                                     <div className="space-y-0.5">
-                                      <div className="flex justify-between text-[11px]">
+                                      <div className="flex justify-between text-xs">
                                         <span className="text-gray-600 dark:text-gray-400">Disponibilidade:</span>
                                         <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.availability}</span>
                                       </div>
-                                      <div className="flex justify-between text-[11px]">
+                                      <div className="flex justify-between text-xs">
                                         <span className="text-gray-600 dark:text-gray-400">Pretensão:</span>
                                         <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.salary}</span>
                                       </div>
-                                      <div className="flex justify-between text-[11px]">
+                                      <div className="flex justify-between text-xs">
                                         <span className="text-gray-600 dark:text-gray-400">Inglês:</span>
                                         <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.english}</span>
                                       </div>
@@ -4726,7 +4726,7 @@ export function CandidatePreview({
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="ml-auto text-[11px] px-2 py-1 h-5"
+                                      className="ml-auto text-xs px-2 py-1 h-5"
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         setSelectedFile({
@@ -4745,7 +4745,7 @@ export function CandidatePreview({
                                     </Button>
                                   </div>
                                   {activity.details.aiAnalysis && (
-                                    <div className="grid grid-cols-2 gap-1 text-[11px]">
+                                    <div className="grid grid-cols-2 gap-1 text-xs">
                                       <div className="flex justify-between">
                                         <span className="text-gray-600 dark:text-gray-400">Confiança:</span>
                                         <span className="font-medium">{formatScorePercent(activity.details.aiAnalysis.confidence)}</span>
@@ -4772,19 +4772,19 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <div className="flex items-center justify-between mb-2">
-                                    <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                       <Mail className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                                       {activity.type === 'email-sent' ? 'Email Enviado' : 'Email Recebido'}
                                     </h5>
                                     {activity.details.opened && (
-                                      <Badge className="text-[11px] px-1.5 py-0.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                                      <Badge className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                                         ✓ Lido
                                       </Badge>
                                     )}
                                   </div>
 
                                   {/* Cabeçalho do Email */}
-                                  <div className="bg-white dark:bg-gray-800 p-2 rounded mb-2 text-[11px] space-y-1">
+                                  <div className="bg-white dark:bg-gray-800 p-2 rounded mb-2 text-xs space-y-1">
                                     <div className="flex items-center gap-2">
                                       <span className="text-gray-800 dark:text-gray-200 font-medium">De:</span>
                                       <span className="text-gray-800 dark:text-gray-200">
@@ -4804,12 +4804,12 @@ export function CandidatePreview({
                                   </div>
 
                                   {/* Assunto */}
-                                  <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
                                     {activity.details.subject}
                                   </p>
 
                                   {/* Corpo do Email Completo */}
-                                  <div className="text-[11px] text-gray-800 dark:text-gray-200 space-y-2">
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 space-y-2">
                                     {activity.details.body ? (
                                       <>
                                         <p>{activity.details.body}</p>
@@ -4818,7 +4818,7 @@ export function CandidatePreview({
                                             <p className={`${textStyles.bodySmall} mb-1`}>📎 Anexos:</p>
                                             <div className="flex flex-wrap gap-1">
                                               {activity.details.attachments.map((file: string, i: number) => (
-                                                <Badge key={i} variant="outline" className="text-[11px] px-1.5 py-0.5">
+                                                <Badge key={i} variant="outline" className="text-xs px-1.5 py-0.5">
                                                   {file}
                                                 </Badge>
                                               ))}
@@ -4834,12 +4834,12 @@ export function CandidatePreview({
                                   {/* Suggested Times se existir */}
                                   {activity.details.suggestedTimes && (
                                     <div className="mt-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-2 rounded">
-                                      <p className="text-[11px] text-gray-800 dark:text-gray-200 font-semibold mb-1">
+                                      <p className="text-xs text-gray-800 dark:text-gray-200 font-semibold mb-1">
                                         Horários Sugeridos:
                                       </p>
                                       <div className="flex gap-1">
                                         {activity.details.suggestedTimes.map((time: string, i: number) => (
-                                          <Badge key={i} variant="outline" className="text-[11px] px-1.5 py-0.5">
+                                          <Badge key={i} variant="outline" className="text-xs px-1.5 py-0.5">
                                             {time}
                                           </Badge>
                                         ))}
@@ -4849,7 +4849,7 @@ export function CandidatePreview({
 
                                   {/* Status de Leitura */}
                                   {activity.details.opened && (
-                                    <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-200">
+                                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-800 dark:text-gray-200">
                                       <CheckCircle className="w-3 h-3" />
                                       <span>Email aberto {activity.details.openedAt}</span>
                                     </div>
@@ -4876,14 +4876,14 @@ export function CandidatePreview({
                 <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                   Arquivos e Documentos
-                  <Badge className="text-[11px] px-1 py-0">{candidateFiles.length}</Badge>
+                  <Badge className="text-xs px-1 py-0">{candidateFiles.length}</Badge>
                   {isLoadingFiles && (
                     <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-gray-700"></div>
                   )}
                 </h4>
                 <Button
                   size="sm"
-                  className="gap-1 px-2 py-1 text-[11px] h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                  className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                   onClick={() => {
                     const input = document.createElement('input')
                     input.type = 'file'
@@ -4906,7 +4906,7 @@ export function CandidatePreview({
               <div className="flex gap-1 flex-wrap">
                 <Badge 
                   variant="outline" 
-                  className={`text-[11px] px-1.5 py-0 cursor-pointer hover:bg-gray-100 ${!selectedCategory ? 'bg-gray-100' : ''}`}
+                  className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-gray-100 ${!selectedCategory ? 'bg-gray-100' : ''}`}
                   onClick={() => setSelectedCategory(null)}
                 >
                   📁 Todos ({candidateFiles.length})
@@ -4915,7 +4915,7 @@ export function CandidatePreview({
                   <Badge 
                     key={cat.category}
                     variant="outline" 
-                    className={`text-[11px] px-1.5 py-0 cursor-pointer hover:bg-gray-100 ${selectedCategory === cat.category ? 'bg-gray-100' : ''}`}
+                    className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-gray-100 ${selectedCategory === cat.category ? 'bg-gray-100' : ''}`}
                     onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
                   >
                     {cat.icon} {cat.label} ({cat.count})
@@ -4963,7 +4963,7 @@ export function CandidatePreview({
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-2">
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-400 border-t-gray-700"></div>
                       </div>
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 font-medium mb-1">
+                      <p className="text-xs text-gray-800 dark:text-gray-200 font-medium mb-1">
                         Enviando... {uploadProgress}%
                       </p>
                       <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -5020,7 +5020,7 @@ export function CandidatePreview({
                                     {formatRelativeTime(file.created_at)}
                                   </span>
                                   <Badge 
-                                    className="text-[11px] px-1 py-0 h-3.5" 
+                                    className="text-xs px-1 py-0 h-3.5" 
                                     style={{ backgroundColor: colors.bg, color: colors.text }}
                                   >
                                     <Tag className="w-2.5 h-2.5 mr-0.5" />
@@ -5071,7 +5071,7 @@ export function CandidatePreview({
               {candidateFiles.length === 0 && !isLoadingFiles && (
                 <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                   <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-[11px]">Nenhum arquivo enviado</p>
+                  <p className="text-xs">Nenhum arquivo enviado</p>
                   <p className={textStyles.description}>Arraste arquivos ou clique acima para enviar</p>
                 </div>
               )}
@@ -5100,7 +5100,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               Enviado há 2 dias
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5" style={{ backgroundColor: '#E85A5A20', color: '#E85A5A' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#E85A5A20', color: '#E85A5A' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Currículo
                             </Badge>
@@ -5143,7 +5143,7 @@ export function CandidatePreview({
                     <div className="mt-2 space-y-2">
                       {/* Mini Preview do PDF */}
                       <div className="bg-white dark:bg-gray-900 p-2 rounded">
-                        <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-2">Preview do documento</p>
+                        <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do documento</p>
                         <div className="bg-gray-100 dark:bg-gray-800 rounded h-32 flex items-center justify-center">
                           <div className="text-center">
                             <FileText className="w-8 h-8 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
@@ -5151,7 +5151,7 @@ export function CandidatePreview({
                             <Button
                               size="sm"
                               variant="outline"
-                              className="mt-2 text-[11px] px-2 py-1 h-5"
+                              className="mt-2 text-xs px-2 py-1 h-5"
                               onClick={() => {
                                 setSelectedFile({ name: 'CV_MariaOliveira_2024.pdf', type: 'pdf' })
                                 setPreviewType('pdf')
@@ -5196,7 +5196,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               Enviado hoje
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5" style={{ backgroundColor: '#2E8B5720', color: '#2E8B57' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#2E8B5720', color: '#2E8B57' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Foto
                             </Badge>
@@ -5263,7 +5263,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               25.4 MB • MP4 • 3:45
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
+                            <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Triagem
                             </Badge>
@@ -5274,7 +5274,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-[11px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                             Analisado
                           </Badge>
                           <Button
@@ -5311,7 +5311,7 @@ export function CandidatePreview({
                     <div className="mt-2 space-y-2">
                       {/* Preview do vídeo com thumbnail */}
                       <div className="bg-white dark:bg-gray-900 p-2 rounded">
-                        <p className="text-[11px] text-gray-800 dark:text-gray-200 mb-2">Preview do vídeo de triagem</p>
+                        <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do vídeo de triagem</p>
                         <div className="relative bg-gray-900 rounded h-24 flex items-center justify-center group cursor-pointer"
                              onClick={() => {
                                setSelectedFile({
@@ -5326,10 +5326,10 @@ export function CandidatePreview({
                           <div className="absolute inset-0 bg-black/50 rounded flex items-center justify-center group-hover:bg-black/40 transition-colors">
                             <Play className="w-8 h-8 text-white" />
                           </div>
-                          <span className="absolute bottom-1 right-1 text-[11px] text-white bg-black/70 px-1 rounded-full">
+                          <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                             3:45
                           </span>
-                          <Badge className="absolute top-1 left-1 text-[11px] px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
+                          <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
                             Prescreening
                           </Badge>
                         </div>
@@ -5338,7 +5338,7 @@ export function CandidatePreview({
                       {/* Análise de IA do vídeo */}
                       <div className="bg-white dark:bg-gray-900 p-2 rounded">
                         <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
-                        <div className="grid grid-cols-2 gap-1 text-[11px]">
+                        <div className="grid grid-cols-2 gap-1 text-xs">
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Confiança:</span>
                             <span className="font-medium text-gray-800 dark:text-gray-200">92%</span>
@@ -5387,7 +5387,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               45.2 MB • MP4 • 8:20
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
+                            <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Entrevista
                             </Badge>
@@ -5398,7 +5398,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-[11px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                             Destaque
                           </Badge>
                           <Button
@@ -5443,7 +5443,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               120.5 MB • MP4 • 30:15
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                            <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Entrevista
                             </Badge>
@@ -5454,7 +5454,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-[11px] px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                             Completa
                           </Badge>
                           <Button
@@ -5499,7 +5499,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               2.8 MB • MP3 • 4:32
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5" style={{ backgroundColor: '#9333EA20', color: '#9333EA' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#9333EA20', color: '#9333EA' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Triagem
                             </Badge>
@@ -5510,7 +5510,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-[11px] px-1.5 py-0 h-4 bg-green-100 text-green-700">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-green-100 text-green-700">
                             Transcrito
                           </Badge>
                           <Button
@@ -5555,7 +5555,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               18.5 MB • WAV • 15:20
                             </span>
-                            <Badge className="text-[11px] px-1 py-0 h-3.5 bg-gray-200">
+                            <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-200">
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Entrevista
                             </Badge>
@@ -5566,7 +5566,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-[11px] px-1.5 py-0 h-4 bg-amber-100 text-amber-700">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-amber-100 text-amber-700">
                             Pendente
                           </Badge>
                           <Button
@@ -5603,7 +5603,7 @@ export function CandidatePreview({
             <div className="flex items-center gap-1 border-b border-gray-100 dark:border-gray-700 pb-2">
               <button
                 onClick={() => setOpinionsSubTab('pareceres')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                   opinionsSubTab === 'pareceres'
                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-b-2 border-gray-900 dark:border-gray-100'
  : 'text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50'
@@ -5612,14 +5612,14 @@ export function CandidatePreview({
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Pareceres da LIA
                 {opinionsHistory.length > 0 && (
-                  <Badge className="text-[9px] px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
                     {opinionsHistory.length}
                   </Badge>
                 )}
               </button>
               <button
                 onClick={() => setOpinionsSubTab('analises')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                   opinionsSubTab === 'analises'
                     ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-500'
  : 'text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50'
@@ -5628,7 +5628,7 @@ export function CandidatePreview({
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Análises
                 {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                  <Badge className="text-[9px] px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
+                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
                     {savedAnalyses.total_analyses}
                   </Badge>
                 )}
@@ -5678,7 +5678,7 @@ export function CandidatePreview({
                     {opinionsHistory.map((opinion: any) => (
                       <div key={opinion.id} className="relative">
                         {!opinion.is_current && (
-                          <Badge className="absolute top-2 right-2 text-[9px] px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-gray-400 z-10">
+                          <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-gray-400 z-10">
                             v{opinion.version} - Histórico
                           </Badge>
                         )}
@@ -5763,7 +5763,7 @@ export function CandidatePreview({
                                 <div className="flex items-center gap-2">
                                   <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                   <Badge 
-                                    className="text-[9px] px-1.5 py-0 h-4"
+                                    className="text-micro px-1.5 py-0 h-4"
                                     style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}
                                   >
                                     {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
@@ -5797,7 +5797,7 @@ export function CandidatePreview({
                                     )}
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="text-[10px]">Copiar análise</TooltipContent>
+                                <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                               </Tooltip>
                               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </div>
@@ -5823,7 +5823,7 @@ export function CandidatePreview({
                                       <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="text-[10px]">Remover análise</TooltipContent>
+                                  <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>
                                 </Tooltip>
                               </div>
                             </div>
@@ -5850,7 +5850,7 @@ export function CandidatePreview({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Avatar className="w-6 h-6">
-                      <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-[11px] font-bold">
+                      <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs font-bold">
                         LIA
                       </AvatarFallback>
                     </Avatar>
@@ -5873,19 +5873,19 @@ export function CandidatePreview({
                 {/* Informações do candidato em foco */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-md px-3 py-2">
                   <Avatar className="w-6 h-6">
-                    <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-[11px]">
+                    <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs">
                       {candidate.name?.split(' ').map((n: string) => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="font-medium text-gray-800 dark:text-gray-200 text-[11px]">
+                    <div className="font-medium text-gray-800 dark:text-gray-200 text-xs">
                       {candidate.candidateId || candidate.id} • {candidate.name}
                     </div>
-                    <div className="text-[11px] text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       {candidate.position} • Score: {formatScorePercent(candidate.score)}
                     </div>
                   </div>
-                  <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 text-[11px] px-2 py-0.5">
+                  <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 text-xs px-2 py-0.5">
                     Foco Individual
                   </Badge>
                 </div>
@@ -5895,8 +5895,8 @@ export function CandidatePreview({
             {/* Ações rápidas sugeridas */}
             <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">Ações rápidas sugeridas</span>
- <Badge className="bg-green-100 text-gray-800 dark:bg-green-900 text-[11px] px-1.5 py-0.5">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Ações rápidas sugeridas</span>
+ <Badge className="bg-green-100 text-gray-800 dark:bg-green-900 text-xs px-1.5 py-0.5">
                   Score {formatScorePercent(candidate.score)}
                 </Badge>
               </div>
@@ -5909,7 +5909,7 @@ export function CandidatePreview({
                       onSendEmail(candidate)
                     }
                   }}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-[11px] hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
                 >
                   <MessageSquare className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                   Contatar
@@ -5924,7 +5924,7 @@ export function CandidatePreview({
                       onSendAgendamento(candidate)
                     }
                   }}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-[11px] hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
                 >
                   <CalendarIcon className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                   Agendar
@@ -5937,7 +5937,7 @@ export function CandidatePreview({
                       onAddToVacancy(candidate)
                     }
                   }}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-[11px] hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
                 >
                   <UserPlus className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                   Adicionar
@@ -5959,10 +5959,10 @@ export function CandidatePreview({
                   >
                     <span className="text-base flex-shrink-0">{action.icon}</span>
                     <div className="flex-1 min-w-0">
- <h4 className="text-[11px] font-medium text-gray-800 group-hover:text-gray-800">
+ <h4 className="text-xs font-medium text-gray-800 group-hover:text-gray-800">
                         {action.title}
                       </h4>
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 truncate">
+                      <p className="text-xs text-gray-800 dark:text-gray-200 truncate">
                         {action.buttonText}
                       </p>
                     </div>
@@ -5979,7 +5979,7 @@ export function CandidatePreview({
                       <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role === 'lia' && (
                           <Avatar className="w-6 h-6 flex-shrink-0">
-                            <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-[9px] font-bold">LIA</AvatarFallback>
+                            <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-micro font-bold">LIA</AvatarFallback>
                           </Avatar>
                         )}
                         <div className={`max-w-[80%] rounded-md px-3 py-2 ${
@@ -5987,14 +5987,14 @@ export function CandidatePreview({
                             ? 'bg-gray-800 text-white' 
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
                         }`}>
-                          <p className="text-[11px] whitespace-pre-wrap">{msg.content}</p>
+                          <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
                         </div>
                       </div>
                     ))}
                     {isLiaChatLoading && (
                       <div className="flex gap-2 justify-start">
                         <Avatar className="w-6 h-6 flex-shrink-0">
-                          <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-[9px] font-bold">LIA</AvatarFallback>
+                          <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-micro font-bold">LIA</AvatarFallback>
                         </Avatar>
                         <div className="bg-gray-100 dark:bg-gray-800 rounded-md px-3 py-2">
                           <div className="flex items-center gap-1">
@@ -6015,7 +6015,7 @@ export function CandidatePreview({
                   <form onSubmit={(e) => { e.preventDefault(); if(liaConversation.trim() && !isLiaChatLoading) { sendLiaMessage(liaConversation); }}} className="flex items-center gap-2">
                     {/* LIA Icon animado */}
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-[11px] font-bold">
+                      <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-xs font-bold">
                         LIA
                       </AvatarFallback>
                     </Avatar>
@@ -6031,7 +6031,7 @@ export function CandidatePreview({
                     />
 
                     {/* Status */}
-                    <div className="text-[11px] text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                    <div className="text-xs text-gray-800 dark:text-gray-200 flex items-center gap-1">
                       {isLiaChatLoading ? (
                         <>
                           <span className="animate-pulse">●</span>
@@ -6072,21 +6072,21 @@ export function CandidatePreview({
                   <div className="flex flex-wrap gap-1 mt-2">
                     <button
                       onClick={() => setLiaConversation(`Agendar entrevista com ${candidate.name}`)}
-                      className="text-[11px] px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                      className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
                       disabled={isLiaChatLoading}
                     >
                       📅 Agendar entrevista
                     </button>
                     <button
                       onClick={() => setLiaConversation(`Enviar email de follow-up para ${candidate.name}`)}
-                      className="text-[11px] px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                      className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
                       disabled={isLiaChatLoading}
                     >
                       📧 Enviar email
                     </button>
                     <button
                       onClick={() => setLiaConversation(`Fazer análise completa de ${candidate.name}`)}
-                      className="text-[11px] px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                      className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
                       disabled={isLiaChatLoading}
                     >
                       🔍 Análise completa
@@ -6123,7 +6123,7 @@ export function CandidatePreview({
                       <Button size="sm" variant="ghost" className="p-0.5 h-5 w-5" onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}>
                         <ChevronLeft className="w-3 h-3" />
                       </Button>
-                      <span className="text-[11px] text-gray-600 dark:text-gray-400 px-1">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 px-1">
                         {pdfPage} / {pdfTotalPages || 5}
                       </span>
                       <Button size="sm" variant="ghost" className="p-0.5 h-5 w-5" onClick={() => setPdfPage(Math.min(pdfTotalPages || 5, pdfPage + 1))}>
@@ -6138,7 +6138,7 @@ export function CandidatePreview({
                     <Button size="sm" variant="ghost" className="p-1 h-6 w-6" onClick={() => setImageZoom(Math.max(25, imageZoom - 25))}>
                       <ZoomOut className="w-3 h-3" />
                     </Button>
-                    <span className="text-[11px] text-gray-600 dark:text-gray-400 w-10 text-center">
+                    <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-center">
                       {imageZoom}%
                     </span>
                     <Button size="sm" variant="ghost" className="p-1 h-6 w-6" onClick={() => setImageZoom(Math.min(200, imageZoom + 25))}>
@@ -6172,7 +6172,7 @@ export function CandidatePreview({
                   </Button>
                 )}
 
-                <Button size="sm" variant="outline" className="gap-1 px-2 py-1 text-[11px] h-6">
+                <Button size="sm" variant="outline" className="gap-1 px-2 py-1 text-xs h-6">
                   <Download className="w-3 h-3" />
                   Baixar
                 </Button>
@@ -6304,11 +6304,11 @@ export function CandidatePreview({
 
                       {/* Parecer da LIA */}
                       <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                        <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                           <Brain className="w-3 h-3 text-wedo-cyan" />
                           Parecer da LIA
                         </h5>
-                        <div className="space-y-2 text-[11px] text-gray-600 dark:text-gray-400">
+                        <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                           <p>
                             <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos Fortes:</span> O candidato demonstra excelente capacidade de comunicação,
                             com respostas claras e estruturadas. Apresenta postura profissional e confiante durante toda a entrevista.
@@ -6324,7 +6324,7 @@ export function CandidatePreview({
                           </p>
                           <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                             <span className={textStyles.bodySmall}>Score Geral</span>
-                            <Badge className="text-[11px] px-2 py-0.5" style={{ backgroundColor: '#10B981', color: 'white' }}>
+                            <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
                               91% - Altamente Recomendado
                             </Badge>
                           </div>
@@ -6343,14 +6343,14 @@ export function CandidatePreview({
                       {/* Indicador do tipo de vídeo */}
                       <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
                         <div className="flex items-center gap-2">
-                          <Badge className="text-[11px] px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
+                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
                             {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
                           </Badge>
                           <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '3:45'}</span>
                         </div>
                       </div>
 
-                      <div className="space-y-3 text-[11px]">
+                      <div className="space-y-3 text-xs">
                         {selectedFile.transcript && selectedFile.transcript.length > 0 ? (
                           <>
                             {selectedFile.transcript.map((segment: any, idx: number) => (
@@ -6366,17 +6366,17 @@ export function CandidatePreview({
                           </>
                         ) : (
                           <div className="text-center py-4 text-gray-600 dark:text-gray-400">
-                            <p className="text-[11px]">Transcrição não disponível para este vídeo</p>
+                            <p className="text-xs">Transcrição não disponível para este vídeo</p>
                           </div>
                         )}
 
                         {/* Highlights identificados pela LIA - only show if data available */}
                         {selectedFile.highlights && selectedFile.highlights.length > 0 && (
                           <div className="mt-4 p-2 bg-white dark:bg-gray-800 rounded">
-                            <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                            <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                               🎯 Highlights da LIA
                             </p>
-                            <ul className="space-y-1 text-[11px] text-gray-600 dark:text-gray-400">
+                            <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                               {selectedFile.highlights.map((highlight: string, idx: number) => (
                                 <li key={idx}>• {highlight}</li>
                               ))}
@@ -6493,11 +6493,11 @@ export function CandidatePreview({
 
                       {/* Parecer da LIA */}
                       <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <h5 className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                        <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                           <Brain className="w-3 h-3 text-wedo-cyan" />
                           Parecer da LIA
                         </h5>
-                        <div className="space-y-2 text-[11px] text-gray-600 dark:text-gray-400">
+                        <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                           <p>
                             <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos Fortes:</span> O candidato demonstra excelente articulação e domínio técnico.
                             Experiência sólida em liderança de times mobile, com resultados mensuráveis (redução de 40% no tempo de desenvolvimento).
@@ -6512,7 +6512,7 @@ export function CandidatePreview({
                           </p>
                           <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                             <span className={textStyles.bodySmall}>Score Geral</span>
-                            <Badge className="text-[11px] px-2 py-0.5" style={{ backgroundColor: '#10B981', color: 'white' }}>
+                            <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
                               93% - Altamente Recomendado
                             </Badge>
                           </div>
@@ -6531,14 +6531,14 @@ export function CandidatePreview({
                       {/* Indicador do tipo de áudio */}
                       <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
                         <div className="flex items-center gap-2">
-                          <Badge className="text-[11px] px-1.5 py-0.5" style={{ backgroundColor: '#9333EA', color: 'white' }}>
+                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#9333EA', color: 'white' }}>
                             {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                           </Badge>
                           <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>
                         </div>
                       </div>
 
-                      <div className="space-y-3 text-[11px]">
+                      <div className="space-y-3 text-xs">
                         {/* Transcrição de exemplo */}
                         <div className="border-l-2 border-purple-400 pl-3">
                           <p className={`${textStyles.bodySmall} mb-1`}>
@@ -6578,10 +6578,10 @@ export function CandidatePreview({
 
                         {/* Highlights identificados pela LIA */}
                         <div className="mt-4 p-2 bg-purple-50 rounded">
-                          <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                          <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                             🎯 Highlights da LIA
                           </p>
-                          <ul className="space-y-1 text-[11px] text-gray-600 dark:text-gray-400">
+                          <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                             <li>• 8+ anos de experiência em mobile</li>
                             <li>• Liderança de time de 6 devs</li>
                             <li>• Redução de 40% no tempo de dev</li>
@@ -6611,10 +6611,10 @@ export function CandidatePreview({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="text-[11px]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={generateNewOpinion}
-              className="bg-gray-900 hover:bg-gray-800 text-[11px] text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-xs text-white"
             >
               Gerar Novo Parecer
             </AlertDialogAction>
@@ -6634,12 +6634,12 @@ export function CandidatePreview({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="text-[11px]" disabled={isDeletingAnalysis}>
+            <AlertDialogCancel className="text-xs" disabled={isDeletingAnalysis}>
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => analysisToDelete && handleDeleteAnalysis(analysisToDelete)}
-              className="bg-red-500 hover:bg-red-600 text-[11px] text-white"
+              className="bg-red-500 hover:bg-red-600 text-xs text-white"
               disabled={isDeletingAnalysis}
             >
               {isDeletingAnalysis ? 'Removendo...' : 'Remover Definitivamente'}

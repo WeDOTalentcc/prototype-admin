@@ -147,7 +147,7 @@ export function TechnicalRequirementsPanel({
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium dark:text-gray-100">{req.name}</span>
                                 {req.required && (
-                                  <Badge variant="secondary" className="text-[11px]">
+                                  <Badge variant="secondary" className="text-xs">
                                     Obrigatória
                                   </Badge>
                                 )}

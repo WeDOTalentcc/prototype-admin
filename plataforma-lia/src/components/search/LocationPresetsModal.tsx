@@ -321,18 +321,18 @@ export function LocationPresetsModal({
                         <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">{preset.name}</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{preset.description}</p>
                       </div>
-                      <Badge className="bg-gray-100 text-gray-600 text-[10px]">
+                      <Badge className="bg-gray-100 text-gray-600 text-micro">
                         {preset.locations.length} locations
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {preset.locations.slice(0, 4).map((loc, i) => (
-                        <Badge key={i} className="bg-gray-50 text-gray-600 text-[10px] font-normal">
+                        <Badge key={i} className="bg-gray-50 text-gray-600 text-micro font-normal">
                           {loc.value.split(',')[0]}
                         </Badge>
                       ))}
                       {preset.locations.length > 4 && (
-                        <Badge className="bg-gray-50 text-gray-500 text-[10px] font-normal">
+                        <Badge className="bg-gray-50 text-gray-500 text-micro font-normal">
                           +{preset.locations.length - 4} more
                         </Badge>
                       )}
@@ -374,18 +374,18 @@ export function LocationPresetsModal({
                       <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">{preset.name}</h3>
                       <p className="text-xs text-gray-500 mt-0.5">{preset.description}</p>
                     </div>
-                    <Badge className="bg-gray-100 text-gray-600 text-[10px]">
+                    <Badge className="bg-gray-100 text-gray-600 text-micro">
                       {preset.locations.length} locations
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {preset.locations.slice(0, 4).map((loc, i) => (
-                      <Badge key={i} className="bg-gray-50 text-gray-600 text-[10px] font-normal">
+                      <Badge key={i} className="bg-gray-50 text-gray-600 text-micro font-normal">
                         {loc.value.split(',')[0]}
                       </Badge>
                     ))}
                     {preset.locations.length > 4 && (
-                      <Badge className="bg-gray-50 text-gray-500 text-[10px] font-normal">
+                      <Badge className="bg-gray-50 text-gray-500 text-micro font-normal">
                         +{preset.locations.length - 4} more
                       </Badge>
                     )}

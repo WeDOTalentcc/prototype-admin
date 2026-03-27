@@ -330,7 +330,7 @@ export function SettingsPage() {
           <nav className="space-y-4 p-4 h-full overflow-y-auto">
             {categories.map((category) => (
               <div key={category.id}>
-                <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4 font-inter 2xl:text-[11px]">
+                <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4 font-inter 2xl:text-xs">
                   {category.name}
                 </h3>
                 <div className="space-y-1">
@@ -348,7 +348,7 @@ export function SettingsPage() {
                       <tab.icon className="w-4 h-4" />
                       <div>
                         <div className="text-sm font-medium 2xl:text-xs">{tab.name}</div>
-                        <div className="text-xs text-gray-800 dark:text-gray-400 2xl:text-[11px]">{tab.description}</div>
+                        <div className="text-xs text-gray-800 dark:text-gray-400 2xl:text-xs">{tab.description}</div>
                       </div>
                     </button>
                   ))}
@@ -1155,7 +1155,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                       <div>
                         <div className="font-medium text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{canal.name}</div>
                         {canal.essential && (
-                          <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">Recomendado</span>
+                          <span className="text-micro text-gray-600 dark:text-gray-400 font-medium">Recomendado</span>
                         )}
                       </div>
                     </div>

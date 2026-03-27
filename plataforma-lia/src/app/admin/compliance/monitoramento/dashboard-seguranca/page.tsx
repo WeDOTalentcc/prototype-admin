@@ -52,10 +52,10 @@ const eventsByDay = [
 ]
 
 const severityDistribution = [
-  { severity: 'Crítico', count: 8, color: '#ef4444', percentage: 0.5 },
+  { severity: 'Crítico', count: 8, color: 'var(--status-error)', percentage: 0.5 },
   { severity: 'Alto', count: 52, color: '#f97316', percentage: 3.2 },
   { severity: 'Médio', count: 283, color: '#eab308', percentage: 17.7 },
-  { severity: 'Baixo', count: 1268, color: '#22c55e', percentage: 78.6 },
+  { severity: 'Baixo', count: 1268, color: 'var(--status-success)', percentage: 78.6 },
 ]
 
 const topEventTypes = [
@@ -249,7 +249,7 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.avgResponseTime}ms
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                       Dentro do SLA
                     </Badge>
                   </div>
@@ -272,7 +272,7 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.securityScore}/100
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                       Excelente
                     </Badge>
                   </div>
@@ -365,10 +365,10 @@ export default function DashboardSegurancaPage() {
                 {eventsByDay.map((item, idx) => (
                   <div key={idx} className="flex flex-col items-center flex-1">
                     <div className="w-full flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${(item.count / maxDayCount) * 100}%`, minHeight: '20px' }}>
-                      <div style={{ height: `${(item.low / item.count) * 100}%`, backgroundColor: '#22c55e' }} />
+                      <div style={{ height: `${(item.low / item.count) * 100}%`, backgroundColor: 'var(--status-success)' }} />
                       <div style={{ height: `${(item.medium / item.count) * 100}%`, backgroundColor: '#eab308' }} />
                       <div style={{ height: `${(item.high / item.count) * 100}%`, backgroundColor: '#f97316' }} />
-                      <div style={{ height: `${(item.critical / item.count) * 100}%`, backgroundColor: '#ef4444' }} />
+                      <div style={{ height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)' }} />
                     </div>
                     <span className="text-xs font-medium mt-2" style={{ color: 'var(--eleven-text-primary)' }}>
                       {item.count}
@@ -381,7 +381,7 @@ export default function DashboardSegurancaPage() {
               </div>
               <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#ef4444' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-error)' }} />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -393,7 +393,7 @@ export default function DashboardSegurancaPage() {
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#22c55e' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Baixo</span>
                 </div>
               </div>

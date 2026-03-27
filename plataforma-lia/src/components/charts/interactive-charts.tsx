@@ -72,7 +72,16 @@ const generateTimeSeriesData = (months: number, baseTrend: 'up' | 'down' | 'stab
   return data
 }
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe', '#00c49f']
+// Paleta monocromática — alinhada com design-tokens.css (--chart-1..4)
+// Série primária = mais escura, séries adicionais = opacidade decrescente
+const COLORS = [
+  'rgba(3,7,18,1.00)',   // --chart-1: série principal
+  'rgba(3,7,18,0.60)',   // --chart-2
+  'rgba(3,7,18,0.35)',   // --chart-3
+  'rgba(3,7,18,0.15)',   // --chart-4
+  'rgba(3,7,18,0.50)',   // extra (fallback)
+  'rgba(3,7,18,0.25)',   // extra (fallback)
+]
 
 interface InteractiveChartProps {
   title: string
@@ -230,10 +239,10 @@ export function InteractiveChart({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: '#fff',
-          titleColor: '#111',
-          bodyColor: '#555',
-          borderColor: '#ddd',
+          backgroundColor: '#F9FAFB',
+          titleColor: '#030712',
+          bodyColor: '#4B5563',
+          borderColor: '#E5E7EB',
           borderWidth: 1,
           padding: 12,
           displayColors: true,
@@ -293,14 +302,14 @@ export function InteractiveChart({
         x: {
           grid: {
             display: true,
-            color: '#f0f0f0',
+            color: '#E5E7EB',
           },
         },
         y: {
           beginAtZero: true,
           grid: {
             display: true,
-            color: '#f0f0f0',
+            color: '#E5E7EB',
           },
         },
       },
@@ -397,7 +406,7 @@ export function InteractiveChart({
         {/* Selected Data Point Details */}
         {selectedDataPoint && (
           <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
-            <h4 className="font-medium text-wedo-cyan-dark mb-2">
+            <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">
               Detalhes - {selectedDataPoint.month || selectedDataPoint.stage}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
@@ -421,11 +430,11 @@ export function ConversionFunnelChart() {
   const [period, setPeriod] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
 
   const funnelData = [
-    { stage: 'Pipeline', count: 2847, percentage: 100, color: '#8884d8' },
-    { stage: 'Triagem', count: 1423, percentage: 50, color: '#82ca9d' },
-    { stage: 'Entrevistas', count: 512, percentage: 18, color: '#ffc658' },
-    { stage: 'Ofertas', count: 127, percentage: 4.5, color: '#ff7300' },
-    { stage: 'Contratações', count: 89, percentage: 3.1, color: '#0088fe' }
+    { stage: 'Pipeline', count: 2847, percentage: 100, color: 'rgba(3,7,18,1.00)' },
+    { stage: 'Triagem', count: 1423, percentage: 50, color: 'rgba(3,7,18,0.75)' },
+    { stage: 'Entrevistas', count: 512, percentage: 18, color: 'rgba(3,7,18,0.55)' },
+    { stage: 'Ofertas', count: 127, percentage: 4.5, color: 'rgba(3,7,18,0.35)' },
+    { stage: 'Contratações', count: 89, percentage: 3.1, color: '#16A34A' }  // status-success
   ]
 
   const handleDrillDown = (dataPoint: any) => {
@@ -455,10 +464,10 @@ export function RecruiterPerformanceChart() {
   const performanceData = generateTimeSeriesData(12, 'up')
 
   const metrics = [
-    { key: 'hires', label: 'Contratações', color: '#8884d8' },
-    { key: 'interviews', label: 'Entrevistas', color: '#82ca9d' },
-    { key: 'timeToFill', label: 'Time to Fill', color: '#ffc658' },
-    { key: 'nps', label: 'NPS Score', color: '#ff7300' }
+    { key: 'hires', label: 'Contratações', color: 'rgba(3,7,18,1.00)' },
+    { key: 'interviews', label: 'Entrevistas', color: 'rgba(3,7,18,0.60)' },
+    { key: 'timeToFill', label: 'Time to Fill', color: 'rgba(3,7,18,0.35)' },
+    { key: 'nps', label: 'NPS Score', color: 'rgba(3,7,18,0.15)' }
   ]
 
   return (
@@ -629,7 +638,7 @@ export function PredictiveAnalyticsChart() {
               <Target className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Precisão Modelo</p>
-                <p className="text-lg font-bold text-wedo-cyan-dark">92.4%</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-50">92.4%</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Últimos 6 meses</p>
               </div>
             </div>

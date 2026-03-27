@@ -3319,16 +3319,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   )}
                   {sourceInfo.label}
                 </div>
-                <div className="text-[11px] text-gray-500 mb-1">
+                <div className="text-xs text-gray-500 mb-1">
                   {sourceInfo.subtext}
                 </div>
                 {isLocal ? (
-                  <div className="text-[11px] font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700 text-wedo-green-light">
+                  <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700 text-wedo-green-light">
                     <CheckCircle className="w-3 h-3" />
                     Sem consumo de créditos
                   </div>
                 ) : (
-                  <div className="text-[11px] font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700" style={{ color: '#F59E0B' }}>
+                  <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700" style={{ color: 'var(--status-warning)' }}>
                     <DollarSign className="w-3 h-3" />
                     {sourceInfo.credits || '5-7 créditos/candidato'}
                   </div>
@@ -3458,10 +3458,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Sem avaliação
                   </div>
-                  <div className="text-[11px] text-gray-500">
+                  <div className="text-xs text-gray-500">
                     Este candidato ainda não participou de nenhum processo seletivo.
                   </div>
-                  <div className="text-[11px] text-gray-800 mt-1.5">
+                  <div className="text-xs text-gray-800 mt-1.5">
                     O Score LIA é calculado quando o candidato é avaliado para uma vaga específica.
                   </div>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
@@ -3502,7 +3502,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 e.stopPropagation()
                 openRevealModal(candidate, 'email')
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
               title="Clique para revelar email (2 créditos)"
             >
               <Mail className="w-3 h-3" />
@@ -3531,7 +3531,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 e.stopPropagation()
                 openRevealModal(candidate, 'phone')
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
               title="Clique para revelar telefone (14 créditos)"
             >
               <Phone className="w-3 h-3" />
@@ -3558,7 +3558,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 e.stopPropagation()
                 openRevealModal(candidate, 'phone')
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
               title="Clique para revelar celular (14 créditos)"
             >
               <Phone className="w-3 h-3" />
@@ -3863,7 +3863,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           <div className="flex flex-col gap-0.5">
             {queryInsights.slice(0, 2).map((insight, idx) => (
               <div key={idx} className="flex items-center gap-1">
-                <Badge className={`text-[10px] px-1 py-0 ${
+                <Badge className={`text-micro px-1 py-0 ${
                   insight.match_level === 'Exceeds' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
                   insight.match_level === 'Meets' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' :
                   insight.match_level === 'Partial' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
@@ -6889,7 +6889,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       value={liaPromptValue}
                       onChange={(e) => setLiaPromptValue(e.target.value)}
                       disabled={isLIAThinking}
-                      className="flex-1 h-full text-[13px] bg-transparent focus:outline-none text-gray-950 placeholder:text-gray-600"
+                      className="flex-1 h-full text-base-ui bg-transparent focus:outline-none text-gray-950 placeholder:text-gray-600"
                       style={{ fontFamily: 'Open Sans, sans-serif' }}
                       onFocus={(e) => {
                         // Focus state: borda cyan + shadow
@@ -7069,22 +7069,22 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`
                   }}
                 >
-                  <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: '#FFFFFF' }}>
+                  <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: 'var(--gray-50)' }}>
                     {/* Header do Prompt Expandido - Design Specs v3.1 */}
-                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: '#FFFFFF' }}>
+                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: 'var(--gray-50)' }}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div 
                             className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: '#FFFFFF' }}
+                            style={{ backgroundColor: 'var(--gray-50)' }}
                           >
                             <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-[14px] font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Olá! Sou a Lia.
                             </h3>
-                            <p className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs leading-tight truncate mt-0.5 text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Posso criar vagas, buscar candidatos, analisar métricas e muito mais!
                             </p>
                           </div>
@@ -7139,7 +7139,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     {/* Ações movidas para banner acima da tabela */}
 
                     {/* Conteúdo das Abas */}
-                    <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{ backgroundColor: '#FFFFFF' }}>
+                    <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{ backgroundColor: 'var(--gray-50)' }}>
                       
                       {/* ABA 1: IA NATURAL - Chat Format */}
                       {activeSearchTab === 'ia-natural' && (
@@ -7171,7 +7171,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       <p className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                         Encontrei <span className="text-gray-600 dark:text-gray-400">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
                                       </p>
-                                      <div className="flex items-center gap-3 text-[11px] mb-2">
+                                      <div className="flex items-center gap-3 text-xs mb-2">
                                         {searchResults.localCount > 0 && (
                                           <div className="flex items-center gap-1 text-emerald-600">
                                             <Home className="w-3 h-3" />
@@ -7186,7 +7186,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                         )}
                                       </div>
                                       <div className="flex items-center justify-between mt-2">
-                                        <p className="text-[11px] text-gray-800 dark:text-gray-400 flex items-center gap-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                        <p className="text-xs text-gray-800 dark:text-gray-400 flex items-center gap-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                           <TrendingUp className="w-3 h-3" />
                                           Ordenados por aderência ao perfil
                                         </p>
@@ -7196,7 +7196,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                             setArchetypeNameInput('')
                                             setArchetypeEmojiInput('🎯')
                                           }}
-                                          className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-full border border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 transition-all"
+                                          className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 transition-all"
                                           style={{ fontFamily: 'Open Sans, sans-serif' }}
                                         >
                                           <Bookmark className="w-3 h-3" />
@@ -7210,7 +7210,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                         <div className="flex items-center gap-2">
                                           <Home className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                          <p className="text-[11px] text-gray-800 dark:text-gray-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                          <p className="text-xs text-gray-800 dark:text-gray-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                             <span className="font-semibold">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
                                           </p>
                                         </div>
@@ -7224,10 +7224,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                           <div className="flex items-center gap-2">
                                             <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                             <div>
-                                              <p className="text-[11px] font-medium text-blue-900 dark:text-blue-300">
+                                              <p className="text-xs font-medium text-blue-900 dark:text-blue-300">
                                                 Expandir para Busca Global?
                                               </p>
-                                              <p className="text-[11px] text-gray-600 dark:text-gray-400">
+                                              <p className="text-xs text-gray-600 dark:text-gray-400">
                                                 Acesse +800M de perfis (1 crédito/candidato)
                                               </p>
                                             </div>
@@ -7236,7 +7236,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="!text-[11px] !px-2.5 !py-1.5 text-gray-800 hover:text-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                              className="!text-xs !px-2.5 !py-1.5 text-gray-800 hover:text-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800"
                                               style={{ fontFamily: 'Open Sans, sans-serif' }}
                                               onClick={() => {
                                                 setSearchResults(prev => ({ ...prev, globalDismissed: true }))
@@ -7247,7 +7247,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                             </Button>
                                             <Button
                                               size="sm"
-                                              className="!text-[11px] !px-3 !py-1.5 bg-gray-900" style={{ color: '#FFFFFF', fontFamily: 'Open Sans, sans-serif' }}
+                                              className="!text-xs !px-3 !py-1.5 bg-gray-900" style={{ color: 'var(--gray-50)', fontFamily: 'Open Sans, sans-serif' }}
                                               onClick={() => setShowGlobalExpansionConfirm(true)}
                                             >
                                               <Globe className="w-3 h-3 mr-1" />
@@ -7264,13 +7264,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                         <div className="flex items-center justify-between">
                                           <div className="flex items-center gap-2">
                                             <Globe className="w-3.5 h-3.5 text-gray-800" />
-                                            <p className="text-[11px] text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                            <p className="text-xs text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                               Busca global disponível
                                             </p>
                                           </div>
                                           <button
                                             onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
-                                            className="text-[11px] text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:underline"
+                                            className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:underline"
                                             style={{ fontFamily: 'Open Sans, sans-serif' }}
                                           >
                                             Expandir busca
@@ -7284,7 +7284,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
  <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200">
                                         <div className="flex items-center gap-2">
                                           <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
- <p className="text-[11px] text-wedo-cyan-dark dark:text-gray-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+ <p className="text-xs text-wedo-cyan-dark dark:text-gray-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                             <span className="font-semibold">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
                                           </p>
                                         </div>
@@ -7326,7 +7326,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                           <p className="text-xs font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                             LIA está buscando...
                                           </p>
-                                          <p className="text-[11px] text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                          <p className="text-xs text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                             Analisando perfis compatíveis
                                           </p>
                                         </div>
@@ -7334,7 +7334,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       
                                       {/* Progress steps */}
                                       <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-500">
+                                        <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
                                           <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
                                             <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -7342,13 +7342,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                           </div>
                                           <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Interpretando critérios</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[11px] text-gray-800 dark:text-gray-500">
+                                        <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
                                           <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin">
                                             <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                                           </div>
                                           <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Buscando na base de candidatos</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[11px] text-gray-800">
+                                        <div className="flex items-center gap-2 text-xs text-gray-800">
                                           <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700" />
                                           <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Rankeando por compatibilidade</span>
                                         </div>
@@ -7384,10 +7384,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       style={{ fontFamily: '"Open Sans", sans-serif' }}
                                     >
                                       <div className="flex items-center gap-1.5 mb-0.5">
-                                        <span className="text-[10px] font-bold text-gray-800">Você</span>
-                                        <span className="text-[9px] text-gray-500">agora</span>
+                                        <span className="text-micro font-bold text-gray-800">Você</span>
+                                        <span className="text-micro text-gray-500">agora</span>
                                       </div>
-                                      <p className="text-[11px] text-gray-800 leading-relaxed">{msg.content}</p>
+                                      <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
                                     </div>
                                   </div>
                                 ) : msg.type === 'proactive_insight' && msg.analytics ? (
@@ -7426,8 +7426,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                         <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                                       </div>
                                       <div className="flex-1">
-                                        <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
-                                        <p className="text-[11px] text-gray-800 leading-relaxed whitespace-pre-wrap mt-0.5">
+                                        <span className="text-micro font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
+                                        <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap mt-0.5">
                                           {msg.content.split(/(\*\*[^*]+\*\*)/).map((part, i) => 
                                             part.startsWith('**') && part.endsWith('**') 
                                               ? <strong key={i}>{part.slice(2, -2)}</strong>
@@ -7455,7 +7455,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                  <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                     Criando novo arquétipo...
                                   </span>
                                 </div>
@@ -7588,10 +7588,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                             
                             {/* Sugestões - abaixo do input conforme design specs */}
                             <div className="flex items-center gap-1.5 mt-1.5">
-                              <span className="text-[9px] font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
+                              <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
                               <button
                                 onClick={() => handleAICommand('Top 5 candidatos')}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium rounded-full transition-all"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
                                 style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5E7EB'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
@@ -7601,7 +7601,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               </button>
                               <button
                                 onClick={() => handleAICommand('Resumir esta busca')}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-medium rounded-full transition-all"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
                                 style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5E7EB'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
@@ -7622,7 +7622,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       {activeSearchTab === 'job-description' && (
                         <div className="space-y-4">
                           {/* Descrição */}
-                          <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
                           </p>
 
@@ -7674,27 +7674,27 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               </div>
                               <div className="flex flex-wrap gap-1.5">
                                 {extractedJDCriteria.job_title && (
-                                  <span className="px-2 py-1 text-[11px] rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
                                     {extractedJDCriteria.job_title}
                                   </span>
                                 )}
                                 {extractedJDCriteria.seniority && (
-                                  <span className="px-2 py-1 text-[11px] rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
                                     {extractedJDCriteria.seniority}
                                   </span>
                                 )}
                                 {extractedJDCriteria.skills.map((skill, idx) => (
-                                  <span key={idx} className="px-2 py-1 text-[11px] rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span key={idx} className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
                                     {skill}
                                   </span>
                                 ))}
                                 {extractedJDCriteria.experience_years && (
-                                  <span className="px-2 py-1 text-[11px] rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
                                     {extractedJDCriteria.experience_years}+ anos
                                   </span>
                                 )}
                                 {extractedJDCriteria.location && (
-                                  <span className="px-2 py-1 text-[11px] rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
                                     {extractedJDCriteria.location}
                                   </span>
                                 )}
@@ -7707,7 +7707,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                             className="w-full h-11 !text-sm font-semibold gap-2"
                             style={{
                               backgroundColor: isSearchingJD ? '#9CA3AF' : '#1a1a1a',
-                              color: '#FFFFFF',
+                              color: 'var(--gray-50)',
                               fontFamily: 'Open Sans, sans-serif'
                             }}
                             onClick={async () => {
@@ -7880,7 +7880,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           </Button>
                           
                           {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (
-                            <p className="text-[11px] text-amber-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs text-amber-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               A descrição precisa ter pelo menos 50 caracteres para análise adequada.
                             </p>
                           )}
@@ -7890,7 +7890,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       {/* ABA 4: SIMILAR */}
                       {activeSearchTab === 'similar' && (
                         <div className="space-y-4">
-                          <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Encontre candidatos similares a um perfil específico
                           </p>
                           
@@ -7907,7 +7907,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
                             <div className="flex items-start gap-2">
                               <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-[11px] text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <p className="text-xs text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                 <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que você considera ideal para encontrar perfis similares.
                               </p>
                             </div>
@@ -8091,7 +8091,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       {/* ABA 5: BOOLEAN */}
                       {activeSearchTab === 'boolean' && (
                         <div className="space-y-4">
-                          <p className="text-[11px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                             Use operadores booleanos para buscas avançadas
                           </p>
                           
@@ -8100,7 +8100,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               <button
                                 key={op}
                                 onClick={() => setBooleanSearchValue(prev => prev + ' ' + op)}
-                                className="px-2 py-1 text-[11px] rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono transition-colors"
+                                className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono transition-colors"
                               >
                                 {op}
                               </button>
@@ -8117,7 +8117,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
                             <div className="flex items-start gap-2">
                               <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-[11px] text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <p className="text-xs text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                 <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições.
                               </p>
                             </div>
@@ -8145,7 +8145,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
                             <div className="flex items-start gap-2">
                               <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-[11px] text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <p className="text-xs text-gray-800 dark:text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                                 <strong>Dica:</strong> Use os filtros avançados para refinar sua busca por localização, experiência, skills, idiomas e muito mais.
                               </p>
                             </div>
@@ -8174,7 +8174,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     education: {},
                                     languages: {}
                                   })}
-                                  className="text-[11px] text-gray-800 hover:text-red-500 transition-colors"
+                                  className="text-xs text-gray-800 hover:text-red-500 transition-colors"
                                   style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 >
                                   Limpar todos
@@ -8188,7 +8188,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                             className="w-full h-12 !text-sm font-semibold"
                             style={{
                               backgroundColor: showTableFiltersPanel ? '#1F2937' : '#374151',
-                              color: '#FFFFFF',
+                              color: 'var(--gray-50)',
                               fontFamily: 'Open Sans, sans-serif'
                             }}
                             onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
@@ -8199,7 +8199,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
                           {/* Info sobre filtros laterais */}
                           {!showTableFiltersPanel && (
-                            <p className="text-[11px] text-gray-800 text-center mt-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs text-gray-800 text-center mt-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                               Os filtros aparecerão ao lado da tabela de candidatos
                             </p>
                           )}
@@ -8290,14 +8290,14 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     {/* Ícone da tabela */}
                     <div className="flex flex-col items-center gap-2 text-gray-800">
                       <Users className="w-5 h-5" />
-                      <span className="text-[11px] font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                      <span className="text-xs font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
                         Candidatos ({sortedCandidates.length})
                       </span>
                     </div>
                     
                     {/* Indicador de candidatos selecionados */}
                     {selectedCandidatesForBatch.size > 0 && (
-                      <Badge className="bg-gray-900 dark:bg-gray-50 text-white text-[11px] px-1.5 py-0.5">
+                      <Badge className="bg-gray-900 dark:bg-gray-50 text-white text-xs px-1.5 py-0.5">
                         {selectedCandidatesForBatch.size}
                       </Badge>
                     )}
@@ -8609,13 +8609,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                             <div key={category} className="mb-5">
                               <div className="flex items-center justify-between mb-2 px-1">
                                 <h4 
-                                  className="text-[11px] font-semibold uppercase tracking-wider text-gray-800"
+                                  className="text-xs font-semibold uppercase tracking-wider text-gray-800"
                                   style={{ fontFamily: 'Open Sans, sans-serif' }}
                                 >
                                   {categoryLabels[category] || category}
                                 </h4>
                                 <span 
-                                  className="text-[11px] px-2 py-0.5 rounded-full"
+                                  className="text-xs px-2 py-0.5 rounded-full"
                                   style={{ 
                                     backgroundColor: visibleCount > 0 ? '#f3f4f6' : '#f3f4f6',
                                     color: visibleCount > 0 ? '#374151' : '#9ca3af',
@@ -9549,7 +9549,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 {pendingSourceChange === 'hybrid' ? (
                   <Zap className="w-4 h-4 text-gray-700" />
                 ) : (
-                  <Globe className="w-4 h-4" style={{ color: '#D97706' }} />
+                  <Globe className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                 )}
               </div>
               <div>
@@ -9565,12 +9565,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             </div>
             
             <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-gray-100">
-              <div className="flex justify-between items-center text-[11px]">
+              <div className="flex justify-between items-center text-xs">
                 <span className={textStyles.bodySmall}>Tipo de busca:</span>
                 <span className={`${textStyles.label} text-gray-800`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
               </div>
               <div className="border-t border-gray-200 pt-2">
-                <div className="flex justify-between items-center text-[11px]">
+                <div className="flex justify-between items-center text-xs">
                   <span className={`${textStyles.label} text-gray-800`}>Custo por candidato:</span>
                   <span className="font-semibold text-gray-700">
                     1 crédito
@@ -9579,7 +9579,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[9px] text-amber-600 bg-amber-50 p-2 rounded-md">
+            <div className="flex items-center gap-1.5 text-micro text-amber-600 bg-amber-50 p-2 rounded-md">
               <AlertCircle className="w-3 h-3 flex-shrink-0" />
               <span>Cada candidato da base global consumirá 1 crédito.</span>
             </div>
@@ -9591,13 +9591,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setShowSourceChangeModal(false)
                 setPendingSourceChange(null)
               }}
-              className="flex-1 h-8 text-[11px] px-3 rounded-md bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 font-medium transition-colors"
+              className="flex-1 h-8 text-xs px-3 rounded-md bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 font-medium transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={confirmSourceChange}
-              className="flex-1 h-8 text-[11px] px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
+              className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
             >
               {pendingSourceChange === 'hybrid' ? (
                 <>
@@ -9714,7 +9714,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 
                 {/* Query atual */}
                 <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <p className="text-[11px] font-medium text-gray-800 mb-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <p className="text-xs font-medium text-gray-800 mb-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                     {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
                   </p>
                   <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-3" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -9937,11 +9937,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           >
             {/* Header */}
             <div className="flex-shrink-0 p-6 pb-4">
-              <h2 className="text-[14px] font-semibold text-gray-800 flex items-center gap-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 <Search className="w-4 h-4 text-gray-700" />
                 Editar sua busca
               </h2>
-              <p className="text-[11px] text-gray-500 mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Refine sua busca com linguagem natural. A LIA irá analisar e sugerir melhorias.
               </p>
             </div>
@@ -10037,7 +10037,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 {previewTags.map((tag, index) => (
                   <Badge 
                     key={index}
-                    className="!text-[11px] !px-2 !py-1 flex items-center gap-1.5"
+                    className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
                     style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', border: '1px solid rgba(96, 190, 209, 0.3)' }}
                   >
                     {tag}
@@ -10265,7 +10265,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               <AlertCircle className="w-5 h-5 text-red-500" />
               Excluir Arquétipo
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[13px] text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <AlertDialogDescription className="text-base-ui text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
               Tem certeza que deseja excluir o arquétipo <strong>"{archetypeToDelete?.name}"</strong>? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>

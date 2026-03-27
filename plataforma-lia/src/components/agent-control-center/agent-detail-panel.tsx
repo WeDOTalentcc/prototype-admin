@@ -146,7 +146,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             <div className="grid grid-cols-3 gap-3 p-4 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
               <div className="text-center">
                 <div className="text-xl font-bold text-gray-900 dark:text-gray-50">{agent.actions_today}</div>
-                <div className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>Ações Hoje</div>
+                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ações Hoje</div>
               </div>
               <div className="text-center">
                 <div 
@@ -155,13 +155,13 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 >
                   {agent.progress}%
                 </div>
-                <div className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>Progresso</div>
+                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Progresso</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-xl font-bold text-gray-900 dark:text-gray-50">{agent.daily_goal}</span>
                 </div>
-                <div className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>Meta Diária</div>
+                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Meta Diária</div>
               </div>
             </div>
 
@@ -247,11 +247,11 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                             <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                               {activity.title}
                             </span>
-                            <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                               {formatTimeAgo(activity.started_at)}
                             </span>
                           </div>
-                          <p className="text-[11px]" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                             {activity.description}
                           </p>
                         </div>
@@ -279,7 +279,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <span className="text-2xl font-bold" style={{ color: getHealthTierColor(healthScore.tier) }}>
                           {healthScore.score}
                         </span>
-                        <span className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                           de 100
                         </span>
                       </div>
@@ -366,7 +366,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <h4 className="text-xs font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
                       Configurações do Agente
                     </h4>
-                    <p className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
@@ -374,7 +374,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <h4 className="text-xs font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
                       Integrações
                     </h4>
-                    <p className="text-[11px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
                       Em breve: Conecte APIs externas e configure webhooks.
                     </p>
                   </div>

@@ -116,14 +116,14 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
           <Code className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
-            <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400">
+            <Badge variant="outline" className="text-micro h-4 px-1.5 border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400">
               Obrigatório
             </Badge>
           )}
         </div>
         <Badge 
           variant="outline" 
-          className={cn("text-[9px] h-4 px-1.5 border", levelConfig.bgClassName, levelConfig.className)}
+          className={cn("text-micro h-4 px-1.5 border", levelConfig.bgClassName, levelConfig.className)}
         >
           {levelConfig.label}
         </Badge>
@@ -131,16 +131,16 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
       
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground">Peso:</span>
+          <span className="text-micro text-muted-foreground">Peso:</span>
           <WeightStars weight={skill.weight} />
         </div>
-        <span className={cn("text-[9px]", sourceConfig.className)}>
+        <span className={cn("text-micro", sourceConfig.className)}>
           {sourceConfig.label}
         </span>
       </div>
       
       {skill.weightJustification && (
-        <p className="text-[10px] text-muted-foreground italic pl-1 border-l-2 border-gray-300 dark:border-gray-600">
+        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-gray-300 dark:border-gray-600">
           {skill.weightJustification}
         </p>
       )}
@@ -159,24 +159,24 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
           <span className="text-xs font-medium truncate">{competency.name}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground">Peso:</span>
+          <span className="text-micro text-muted-foreground">Peso:</span>
           <WeightStars weight={competency.weight} />
         </div>
       </div>
       
       {competency.justification && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-micro text-muted-foreground">
           {competency.justification}
         </p>
       )}
       
       <div className="flex items-center justify-between gap-2">
         {competency.weightJustification && (
-          <p className="text-[10px] text-muted-foreground italic pl-1 border-l-2 border-purple-300/50 flex-1">
+          <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-purple-300/50 flex-1">
             {competency.weightJustification}
           </p>
         )}
-        <span className={cn("text-[9px] flex-shrink-0", sourceConfig.className)}>
+        <span className={cn("text-micro flex-shrink-0", sourceConfig.className)}>
           {sourceConfig.label}
         </span>
       </div>
@@ -234,7 +234,7 @@ export function CompetenciesChatMessage({
               <div className="flex items-center gap-1.5 text-xs font-medium">
                 <Code className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
                 <span>Competências Técnicas</span>
-                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {technicalSkills.length}
                 </Badge>
               </div>
@@ -251,7 +251,7 @@ export function CompetenciesChatMessage({
               <div className="flex items-center gap-1.5 text-xs font-medium">
                 <Brain className="h-3.5 w-3.5 text-purple-500" />
                 <span>Competências Comportamentais</span>
-                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {behavioralCompetencies.length}
                 </Badge>
               </div>

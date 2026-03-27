@@ -12,7 +12,7 @@ export function ChatContainer({ children, className }: ChatContainerProps) {
   return (
     <div
       className={cn(
-        "max-w-[640px] mx-auto min-h-screen bg-gray-50 dark:bg-[#0F1113] flex flex-col font-['Open_Sans',sans-serif] rounded-2xl",
+        "max-w-[640px] mx-auto min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-['Open_Sans',sans-serif] rounded-2xl",
         className
       )}
       role="main"

@@ -37,7 +37,7 @@ const typeConfig = {
     bgColor: 'bg-gray-100 dark:bg-gray-800',
     borderColor: 'border-gray-300 dark:border-gray-600',
     iconColor: 'text-gray-600 dark:text-gray-400',
-    titleColor: 'text-wedo-cyan-dark dark:text-gray-400'
+    titleColor: 'text-gray-700 dark:text-gray-300'
   }
 }
 

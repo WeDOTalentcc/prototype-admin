@@ -25,21 +25,21 @@ export function getTypeBadge(type: RecruitmentStage['type']) {
   switch (type) {
     case 'system':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-micro font-medium">
           <Lock className="h-3 w-3" />
           Sistema
         </span>
       )
     case 'default':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro font-medium">
           <Shield className="h-3 w-3" />
           Padrão
         </span>
       )
     case 'custom':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-micro font-medium">
           <Settings className="h-3 w-3" />
           Custom
         </span>
@@ -73,7 +73,7 @@ export function ActionBehaviorBadge({ behavior }: { behavior?: string }) {
   const label = getActionBehaviorLabel(behavior)
   if (!label) return null
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-wedo-cyan/15 text-wedo-cyan">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/15 text-wedo-cyan">
       {label}
     </span>
   )
@@ -169,7 +169,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
     <div className="border-t border-gray-100 dark:border-gray-700 mt-3 pt-2">
       <button
         onClick={() => setExpanded(v => !v)}
-        className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
         aria-expanded={expanded}
         type="button"
       >
@@ -182,7 +182,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
         <div className="mt-2 space-y-3">
           {Object.entries(byCategory).map(([category, fields]) => (
             <div key={category}>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5 px-1">
+              <p className="text-micro font-semibold text-gray-400 uppercase tracking-wide mb-1.5 px-1">
                 {FIELD_CATEGORY_LABELS[category] || category}
               </p>
               <div className="space-y-1">
@@ -210,7 +210,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-gray-900' : 'bg-gray-200'}`} />
                       )}
 
-                      <span className={`flex-1 text-[11px] font-medium ${active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
+                      <span className={`flex-1 text-xs font-medium ${active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
                         {catalog.displayName}
                       </span>
 
@@ -223,7 +223,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                               onChange={() => toggleRequired(catalog.id)}
                               className="h-3 w-3 rounded border-gray-300 text-gray-900 cursor-pointer"
                             />
-                            <span className="text-[10px] text-gray-500">Obrigatório</span>
+                            <span className="text-micro text-gray-500">Obrigatório</span>
                           </label>
                           <label className="flex items-center gap-1 cursor-pointer">
                             <input
@@ -232,7 +232,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                               onChange={() => toggleAutoCollect(catalog.id)}
                               className="h-3 w-3 rounded border-gray-300 text-gray-900 cursor-pointer"
                             />
-                            <span className="text-[10px] text-gray-500">LIA coleta</span>
+                            <span className="text-micro text-gray-500">LIA coleta</span>
                           </label>
                         </div>
                       )}
@@ -240,12 +240,12 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                       {active && !isEditMode && (
                         <div className="flex items-center gap-1.5">
                           {field?.required && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 text-[10px]">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 text-micro">
                               Obrigatório
                             </span>
                           )}
                           {field?.auto_collect && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-[10px]">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-micro">
                               LIA coleta
                             </span>
                           )}
@@ -257,7 +257,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
               </div>
             </div>
           ))}
-          <p className="text-[10px] text-gray-400 px-1 pt-1">
+          <p className="text-micro text-gray-400 px-1 pt-1">
             Marque "LIA coleta" para que a assistente solicite o dado durante a conversa nesta etapa.
           </p>
         </div>
@@ -292,7 +292,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
     <div className="border-t border-gray-100 dark:border-gray-700 mt-3 pt-2">
       <button
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
         aria-expanded={expanded}
         aria-label={`${expanded ? 'Recolher' : 'Expandir'} subetapas de ${stage.display_name || stage.name}`}
         data-testid={`sub-status-panel-${stage.id}`}
@@ -302,7 +302,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
         <span className="font-medium">Subetapas</span>
         <span className="text-gray-400">({activeCount} ativas)</span>
         {!isRealId(stage.id) && isEditMode && (
-          <span className="ml-auto text-[10px] text-amber-500">Salve a etapa primeiro</span>
+          <span className="ml-auto text-micro text-amber-500">Salve a etapa primeiro</span>
         )}
       </button>
 
@@ -311,12 +311,12 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
           {loading && (
             <div className="flex items-center gap-2 px-1 py-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-400" />
-              <span className="text-[11px] text-gray-400">Carregando subetapas...</span>
+              <span className="text-xs text-gray-400">Carregando subetapas...</span>
             </div>
           )}
 
           {!loading && displayList.length === 0 && (
-            <p className="text-[11px] text-gray-400 px-1 py-1 italic">
+            <p className="text-xs text-gray-400 px-1 py-1 italic">
               Nenhuma subetapa disponível para esta etapa.
             </p>
           )}
@@ -334,12 +334,12 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: ss.color || '#9CA3AF' }}
               />
-              <span className={`flex-1 text-[11px] font-medium ${ss.is_active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
+              <span className={`flex-1 text-xs font-medium ${ss.is_active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
                 {ss.display_name}
               </span>
 
               {ss.is_waiting && ss.is_active && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-micro font-medium">
                   Aguarda
                 </span>
               )}
@@ -380,7 +380,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
           ))}
 
           {canManage && displayList.length > 0 && (
-            <p className="text-[10px] text-gray-400 px-1 pt-1">
+            <p className="text-micro text-gray-400 px-1 pt-1">
               Ative/desative subetapas do catálogo. Subetapas inativas não aparecem no processo seletivo.
             </p>
           )}
@@ -464,7 +464,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
     <div className="border-t border-gray-100 dark:border-gray-700 mt-3 pt-2">
       <button
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
         aria-expanded={expanded}
         type="button"
       >
@@ -478,7 +478,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
           {loading && (
             <div className="flex items-center gap-2 px-1 py-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-400" />
-              <span className="text-[11px] text-gray-400">Carregando configurações...</span>
+              <span className="text-xs text-gray-400">Carregando configurações...</span>
             </div>
           )}
 
@@ -486,7 +486,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <Label className="text-[11px] text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs text-gray-600 dark:text-gray-400">
                     Limite inscrições orgânicas (web/whatsapp)
                   </Label>
                   <input
@@ -496,12 +496,12 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                     disabled={!isEditMode}
                     min={1}
                     max={999}
-                    className="w-full px-2 py-1.5 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
+                    className="w-full px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <Label className="text-[11px] text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs text-gray-600 dark:text-gray-400">
                     Limite busca ativa (sourcing)
                   </Label>
                   <input
@@ -511,16 +511,16 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                     disabled={!isEditMode}
                     min={1}
                     max={999}
-                    className="w-full px-2 py-1.5 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
+                    className="w-full px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <Label className="text-[11px] text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs text-gray-600 dark:text-gray-400">
                     Incremento de desbloqueio
                   </Label>
                   <div className="flex items-center gap-1">
-                    <span className="text-[11px] text-gray-400">+</span>
+                    <span className="text-xs text-gray-400">+</span>
                     <input
                       type="number"
                       value={settings.unlock_increment}
@@ -528,13 +528,13 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                       disabled={!isEditMode}
                       min={1}
                       max={100}
-                      className="w-full px-2 py-1.5 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
+                      className="w-full px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <Label className="text-[11px] text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs text-gray-600 dark:text-gray-400">
                     Horas de desbloqueio temporário
                   </Label>
                   <div className="flex items-center gap-1.5">
@@ -545,9 +545,9 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                       disabled={!isEditMode}
                       min={1}
                       max={168}
-                      className="w-full px-2 py-1.5 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
+                      className="w-full px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all disabled:opacity-50"
                     />
-                    <span className="text-[11px] text-gray-400 whitespace-nowrap">horas</span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">horas</span>
                   </div>
                 </div>
               </div>
@@ -558,7 +558,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                     size="sm"
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md px-3 py-1 text-[11px] font-medium"
+                    className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md px-3 py-1 text-xs font-medium"
                   >
                     {saving ? (
                       <>
@@ -572,7 +572,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                 </div>
               )}
 
-              <p className="text-[10px] text-gray-400 px-1">
+              <p className="text-micro text-gray-400 px-1">
                 Define os limites de candidatos simultâneos em triagem por canal. Quando o limite é atingido, novos candidatos entram em fila de espera.
               </p>
             </>
@@ -609,11 +609,11 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
               {getTypeBadge(stage.type)}
               <ActionBehaviorBadge behavior={stage.action_behavior} />
               {stage.isActive ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-[10px] font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-micro font-medium">
                   <Check className="h-3 w-3" />Ativo
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-micro font-medium">
                   <X className="h-3 w-3" />Inativo
                 </span>
               )}
@@ -631,7 +631,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
 
           {stage.default_channel && stage.default_channel !== 'email' && (
             <div className="flex items-center gap-1.5 pt-1">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-600">
                 Canal: {stage.default_channel === 'whatsapp' ? 'WhatsApp' : 'E-mail + WhatsApp'}
               </span>
             </div>
@@ -640,7 +640,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
           {(stage.sub_statuses?.length ?? 0) > 0 && (
             <div className="flex items-center gap-1 flex-wrap mt-1">
               {stage.sub_statuses?.map(ss => (
-                <span key={ss.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                <span key={ss.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                   {ss.display_name}
                   {ss.is_default && <Star className="h-2.5 w-2.5 text-amber-500" />}
                 </span>
@@ -723,7 +723,7 @@ export function SortableStageCard({
                   type="text"
                   value={getStageDisplayName(stage)}
                   onChange={(e) => onUpdate(stage.id, { display_name: e.target.value, name: stage.name })}
-                  className="flex-1 px-3 py-2 text-[13px] font-medium text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                  className="flex-1 px-3 py-2 text-base-ui font-medium text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   placeholder="Nome da etapa"
                 />
               ) : (
@@ -753,7 +753,7 @@ export function SortableStageCard({
                 value={stage.notes}
                 onChange={(e) => onUpdate(stage.id, { notes: e.target.value })}
                 placeholder="Notas e comentários para a equipe..."
-                className="w-full px-3 py-2 text-[11px] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all resize-none"
+                className="w-full px-3 py-2 text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all resize-none"
                 rows={2}
               />
             )}
@@ -771,7 +771,7 @@ export function SortableStageCard({
                       type="number"
                       value={stage.sla}
                       onChange={(e) => onUpdate(stage.id, { sla: parseInt(e.target.value) || 0 })}
-                      className="w-14 px-2 py-1 text-[11px] text-center text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                      className="w-14 px-2 py-1 text-xs text-center text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                       min={0} max={30}
                     />
                     <span className={textStyles.caption}>dias</span>
@@ -784,7 +784,7 @@ export function SortableStageCard({
                   <select
                     value={stage.action_behavior || 'passive'}
                     onChange={(e) => onUpdate(stage.id, { action_behavior: e.target.value })}
-                    className="px-2 py-1 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                    className="px-2 py-1 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   >
                     <option value="passive">Passivo</option>
                     <option value="screening">Triagem WSI</option>
@@ -805,7 +805,7 @@ export function SortableStageCard({
                   <select
                     value={stage.default_channel || 'email'}
                     onChange={(e) => onUpdate(stage.id, { default_channel: e.target.value })}
-                    className="px-2 py-1 text-[11px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
+                    className="px-2 py-1 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all"
                   >
                     <option value="email">E-mail</option>
                     <option value="whatsapp">WhatsApp</option>

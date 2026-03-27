@@ -434,7 +434,7 @@ export default function MetricasPlataformaPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base font-medium">
-                  <Activity className="w-5 h-5 text-[#22C55E]" />
+                  <Activity className="w-5 h-5 text-status-success" />
                   Resumo Financeiro
                 </CardTitle>
               </CardHeader>

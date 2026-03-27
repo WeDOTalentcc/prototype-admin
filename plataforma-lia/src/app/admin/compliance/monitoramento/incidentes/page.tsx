@@ -356,7 +356,7 @@ export default function IncidentesPage() {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="font-medium text-sm text-red-700">Gap Identificado: Plano de Resposta a Incidentes</p>
-              <Badge className="text-[10px] bg-red-100 text-red-700">Crítico</Badge>
+              <Badge className="text-micro bg-red-100 text-red-700">Crítico</Badge>
             </div>
             <p className="text-xs text-red-600">
               É necessário documentar e formalizar o PRI com procedimentos detalhados para cada tipo de incidente, conforme requisitos do BCB 498 e ISO 27001.
@@ -377,7 +377,7 @@ export default function IncidentesPage() {
                     {openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
                       Em investigação
                     </Badge>
                   </div>
@@ -400,7 +400,7 @@ export default function IncidentesPage() {
                     {criticalIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className={`text-[10px] ${criticalIncidents === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'} hover:bg-emerald-100`}>
+                    <Badge className={`text-micro ${criticalIncidents === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'} hover:bg-emerald-100`}>
                       {criticalIncidents === 0 ? 'Sem críticos' : `${criticalIncidents} ativo(s)`}
                     </Badge>
                   </div>
@@ -423,7 +423,7 @@ export default function IncidentesPage() {
                     {resolvedIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-[10px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                       100% dentro do SLA
                     </Badge>
                   </div>

@@ -198,7 +198,7 @@ export default function ContinuidadePage() {
                   <p className="font-medium text-sm text-red-700">
                     Gap de Compliance - BCB 498/2025
                   </p>
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px]">
+                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-micro">
                     Em implementação
                   </Badge>
                 </div>
@@ -400,11 +400,11 @@ export default function ContinuidadePage() {
                     <div className="flex items-center gap-4 mb-2">
                       <div className="text-xs">
                         <span style={{ color: 'var(--eleven-text-tertiary)' }}>RTO: </span>
-                        <Badge variant="outline" className="font-mono text-[10px]">{test.rtoAchieved}</Badge>
+                        <Badge variant="outline" className="font-mono text-micro">{test.rtoAchieved}</Badge>
                       </div>
                       <div className="text-xs">
                         <span style={{ color: 'var(--eleven-text-tertiary)' }}>RPO: </span>
-                        <Badge variant="outline" className="font-mono text-[10px]">{test.rpoAchieved}</Badge>
+                        <Badge variant="outline" className="font-mono text-micro">{test.rpoAchieved}</Badge>
                       </div>
                     </div>
                     <p className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--eleven-bg-subtle)', color: 'var(--eleven-text-secondary)' }}>

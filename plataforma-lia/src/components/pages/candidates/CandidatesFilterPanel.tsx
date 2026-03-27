@@ -138,7 +138,7 @@ export function CandidatesFilterPanel({
           {/* Ordenação */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <ArrowUpDown className="w-3 h-3" />
@@ -176,7 +176,7 @@ export function CandidatesFilterPanel({
           {/* Filtros Rápidos */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Zap className="w-3 h-3" />
@@ -208,7 +208,7 @@ export function CandidatesFilterPanel({
           {/* Experiência */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Briefcase className="w-3 h-3" />
@@ -216,7 +216,7 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[11px] text-gray-800 mb-1 block">Mín. Anos</label>
+                <label className="text-xs text-gray-800 mb-1 block">Mín. Anos</label>
                 <Input
                   type="number"
                   min={0}
@@ -233,7 +233,7 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-gray-800 mb-1 block">Máx. Anos</label>
+                <label className="text-xs text-gray-800 mb-1 block">Máx. Anos</label>
                 <Input
                   type="number"
                   min={0}
@@ -255,7 +255,7 @@ export function CandidatesFilterPanel({
           {/* Score LIA */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Star className="w-3 h-3" />
@@ -263,7 +263,7 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[11px] text-gray-800 mb-1 block">Mín. Score</label>
+                <label className="text-xs text-gray-800 mb-1 block">Mín. Score</label>
                 <Input
                   type="number"
                   min={0}
@@ -280,7 +280,7 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-gray-800 mb-1 block">Máx. Score</label>
+                <label className="text-xs text-gray-800 mb-1 block">Máx. Score</label>
                 <Input
                   type="number"
                   min={0}
@@ -302,7 +302,7 @@ export function CandidatesFilterPanel({
           {/* Senioridade */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Crown className="w-3 h-3" />
@@ -332,7 +332,7 @@ export function CandidatesFilterPanel({
           {/* Modelo de Trabalho */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <MapPin className="w-3 h-3" />
@@ -360,7 +360,7 @@ export function CandidatesFilterPanel({
           {/* Tipo de Contrato */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <FileText className="w-3 h-3" />
@@ -384,7 +384,7 @@ export function CandidatesFilterPanel({
           {/* Localização */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <MapPin className="w-3 h-3" />
@@ -403,7 +403,7 @@ export function CandidatesFilterPanel({
           {/* Salário */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <DollarSign className="w-3 h-3" />
@@ -448,7 +448,7 @@ export function CandidatesFilterPanel({
           {/* Indicadores de Perfil */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Crown className="w-3 h-3" />
@@ -480,7 +480,7 @@ export function CandidatesFilterPanel({
           {/* Fonte */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Globe className="w-3 h-3" />
@@ -510,7 +510,7 @@ export function CandidatesFilterPanel({
           {/* Tags */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Bookmark className="w-3 h-3" />
@@ -529,7 +529,7 @@ export function CandidatesFilterPanel({
           {/* Empresa */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Building className="w-3 h-3" />
@@ -548,7 +548,7 @@ export function CandidatesFilterPanel({
           {/* Setor/Indústria */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Layers className="w-3 h-3" />
@@ -570,7 +570,7 @@ export function CandidatesFilterPanel({
           {/* Idiomas */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Globe className="w-3 h-3" />
@@ -592,7 +592,7 @@ export function CandidatesFilterPanel({
           {/* Status */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <CheckCircle className="w-3 h-3" />
@@ -623,7 +623,7 @@ export function CandidatesFilterPanel({
           {/* Presença Online */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Github className="w-3 h-3" />
@@ -653,7 +653,7 @@ export function CandidatesFilterPanel({
           {/* Soft Skills */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
@@ -704,7 +704,7 @@ export function CandidatesFilterPanel({
           {/* Certificações */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Code className="w-3 h-3" />
@@ -755,7 +755,7 @@ export function CandidatesFilterPanel({
           {/* Disponibilidade */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <MapPin className="w-3 h-3" />
@@ -796,7 +796,7 @@ export function CandidatesFilterPanel({
                               : (opt.value as TableFilters["availabilityWindow"]),
                         }))
                       }
-                      className="px-2 py-1.5 text-[10px] rounded-md transition-all"
+                      className="px-2 py-1.5 text-micro rounded-md transition-all"
                       style={{
                         backgroundColor:
                           tableFilters.availabilityWindow === opt.value ? "#111827" : "#f9fafb",
@@ -819,7 +819,7 @@ export function CandidatesFilterPanel({
           {/* Shortlisted */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Bookmark className="w-3 h-3" />
@@ -874,7 +874,7 @@ export function CandidatesFilterPanel({
           {/* Placement */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <CheckCircle className="w-3 h-3" />
@@ -944,7 +944,7 @@ export function CandidatesFilterPanel({
           {/* Vaga Específica */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Bookmark className="w-3 h-3" />
@@ -967,7 +967,7 @@ export function CandidatesFilterPanel({
           {/* Data de Cadastro */}
           <div className="mb-5">
             <h4
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
               style={{ fontFamily: "Open Sans, sans-serif" }}
             >
               <Calendar className="w-3 h-3" />
@@ -1078,7 +1078,7 @@ function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) {
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+            <Badge key={tag} variant="secondary" className="text-micro px-2 py-0.5 flex items-center gap-1">
               {tag}
               <button onClick={() => onRemove(tag)}>
                 <X className="w-2.5 h-2.5" />
@@ -1108,7 +1108,7 @@ function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
         <button
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
-          className="flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all"
+          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-all"
           style={{
             backgroundColor: value === opt.value ? "#111827" : "#f9fafb",
             color: value === opt.value ? "white" : "#6b7280",

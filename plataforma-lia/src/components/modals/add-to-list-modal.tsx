@@ -241,7 +241,7 @@ export function AddToListModal({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-[11px] text-gray-800 dark:text-gray-200 hover:text-gray-800"
+                        className="h-6 px-2 text-xs text-gray-800 dark:text-gray-200 hover:text-gray-800"
                         onClick={() => {
                           setIsCreatingNew(false)
                           setNewListName('')

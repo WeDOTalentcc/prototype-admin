@@ -63,7 +63,7 @@ export function ScoreIconButton({
         style={{ color: isClickable ? activeColor : inactiveColor }} 
       />
       {hasScore && displayValue && (
-        <span className="text-[11px] font-bold font-['Open_Sans'] text-gray-700">
+        <span className="text-xs font-bold font-['Open_Sans'] text-gray-700">
           {displayValue}
         </span>
       )}

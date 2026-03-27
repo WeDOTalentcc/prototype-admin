@@ -550,7 +550,7 @@ export function IndicatorsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Recrutadores</p>
-                    <p className="text-2xl font-bold text-wedo-cyan-dark">{teamMetrics.totalRecruiters}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{teamMetrics.totalRecruiters}</p>
                   </div>
                   <Users className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -655,7 +655,7 @@ export function IndicatorsPage() {
                 </div>
                 <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">12</div>
-                  <div className="text-sm text-wedo-cyan-dark">Monitoramentos</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Monitoramentos</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">KPIs em observação</div>
                 </div>
               </div>
@@ -693,7 +693,7 @@ export function IndicatorsPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -838,7 +838,7 @@ export function IndicatorsPage() {
                         {getRankingIcon(recruiter.ranking)}
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -897,7 +897,7 @@ export function IndicatorsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                        <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark font-medium">
+                        <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
                           {recruiter.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
@@ -1030,7 +1030,7 @@ export function IndicatorsPage() {
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1059,7 +1059,7 @@ export function IndicatorsPage() {
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1141,7 +1141,7 @@ export function IndicatorsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-wedo-cyan-dark">87.3%</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">87.3%</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Metas atingidas</div>
                 <div className="mt-3 text-xs text-gray-600">
                   94% das vagas preenchidas dentro do prazo
@@ -1293,7 +1293,7 @@ export function IndicatorsPage() {
                 <div>
                   <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Inclusão PCD</h4>
                   <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                    <div className="text-2xl font-bold text-wedo-cyan-dark">8.2%</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">8.2%</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Pessoas com Deficiência</div>
                     <div className="text-xs text-gray-600 mt-2">
                       Acima da cota legal de 5%
@@ -1322,7 +1322,7 @@ export function IndicatorsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Remoto</p>
-                    <p className="text-2xl font-bold text-wedo-cyan-dark">42%</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">42%</p>
                   </div>
                   <Home className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -1526,7 +1526,7 @@ export function IndicatorsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Time to Fill</p>
-                    <p className="text-2xl font-bold text-wedo-cyan-dark">24 dias</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">24 dias</p>
                     <p className="text-xs text-gray-800 dark:text-gray-200">Previsão média</p>
                   </div>
                   <Clock className="w-8 h-8 text-gray-600 dark:text-gray-400" />

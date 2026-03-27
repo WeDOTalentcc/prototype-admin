@@ -164,7 +164,7 @@ export function KanbanColumn({
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>
               {stage.displayName}
             </h3>
-            <span className="text-[10px] text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
               {sortedCandidates.length}
             </span>
           </div>

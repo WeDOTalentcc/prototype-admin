@@ -78,15 +78,15 @@ export default function IntegracoesPage() {
               </div>
             </div>
             {microsoftStatus === "loading" ? (
-              <Badge variant="outline" className="text-[10px] gap-1">
+              <Badge variant="outline" className="text-micro gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" /> Verificando...
               </Badge>
             ) : microsoftStatus === "connected" ? (
-              <Badge variant="outline" className="text-[10px] gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
+              <Badge variant="outline" className="text-micro gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] gap-1 border-gray-200 text-gray-500">
+              <Badge variant="outline" className="text-micro gap-1 border-gray-200 text-gray-500">
                 <XCircle className="w-3 h-3" /> Não configurado
               </Badge>
             )}
@@ -94,9 +94,9 @@ export default function IntegracoesPage() {
         </CardHeader>
         <CardContent className="px-4 pb-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">
-            Configure as variáveis <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-[10px]">AZURE_CLIENT_ID</code>,{" "}
-            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-[10px]">AZURE_CLIENT_SECRET</code> e{" "}
-            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-[10px]">AZURE_TENANT_ID</code> para habilitar.
+            Configure as variáveis <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_CLIENT_ID</code>,{" "}
+            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_CLIENT_SECRET</code> e{" "}
+            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_TENANT_ID</code> para habilitar.
           </p>
         </CardContent>
       </Card>
@@ -119,11 +119,11 @@ export default function IntegracoesPage() {
               </div>
             </div>
             {googleStatus === "connected" ? (
-              <Badge variant="outline" className="text-[10px] gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
+              <Badge variant="outline" className="text-micro gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] gap-1 border-gray-200 text-gray-500">
+              <Badge variant="outline" className="text-micro gap-1 border-gray-200 text-gray-500">
                 <XCircle className="w-3 h-3" /> Não conectado
               </Badge>
             )}
@@ -136,7 +136,7 @@ export default function IntegracoesPage() {
           {errorMsg && (
             <div className="flex items-center gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
               <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-              <p className="text-[11px] text-red-700 dark:text-red-400 font-['Open_Sans',sans-serif]">{errorMsg}</p>
+              <p className="text-xs text-red-700 dark:text-red-400 font-['Open_Sans',sans-serif]">{errorMsg}</p>
             </div>
           )}
           {googleStatus !== "connected" && (

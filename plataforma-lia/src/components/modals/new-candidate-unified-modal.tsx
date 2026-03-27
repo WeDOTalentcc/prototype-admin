@@ -773,7 +773,7 @@ export function NewCandidateUnifiedModal({
               <p className="text-xs font-medium text-gray-800 dark:text-gray-200">
                 {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
               </p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 PDF, DOCX, DOC ou TXT (máx. 5MB)
               </p>
             </div>
@@ -785,7 +785,7 @@ export function NewCandidateUnifiedModal({
                   <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -808,7 +808,7 @@ export function NewCandidateUnifiedModal({
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
-            <div className="relative flex justify-center text-[11px] uppercase">
+            <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">ou cole o texto</span>
             </div>
           </div>
@@ -822,7 +822,7 @@ export function NewCandidateUnifiedModal({
           />
           <div className="flex justify-between items-center">
             <span className={cn(
-              "text-[11px]",
+              "text-xs",
               cvText.length < 50 ? "text-gray-500" : "text-green-600"
             )}>
               {cvText.length} caracteres (mín. 50)
@@ -870,14 +870,14 @@ export function NewCandidateUnifiedModal({
               onChange={(e) => setLinkedinUrl(e.target.value)}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 font-sans">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-sans">
               Ex: linkedin.com/in/joao-silva
             </p>
           </div>
 
           <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-md">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-[11px] text-gray-600 dark:text-gray-400 font-sans">
+            <p className="text-xs text-gray-600 dark:text-gray-400 font-sans">
               A LIA irá buscar os dados do candidato
             </p>
           </div>
@@ -961,14 +961,14 @@ export function NewCandidateUnifiedModal({
                 />
               </div>
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
-                <p className="text-[10px] text-gray-600 dark:text-gray-400 flex items-center gap-1 font-sans">
+                <p className="text-micro text-gray-600 dark:text-gray-400 flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   A LIA irá buscar os dados do candidato
                 </p>
               )}
             </div>
 
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               * Informe pelo menos um contato (email ou telefone)
             </p>
           </div>
@@ -1034,20 +1034,20 @@ export function NewCandidateUnifiedModal({
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {duplicateResult.candidate.current_company && (
-                    <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                    <Badge variant="outline" className="text-micro py-0 px-1.5">
                       <Building className="w-2.5 h-2.5 mr-1" />
                       {duplicateResult.candidate.current_company}
                     </Badge>
                   )}
                   {duplicateResult.candidate.location_city && (
-                    <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                    <Badge variant="outline" className="text-micro py-0 px-1.5">
                       <MapPin className="w-2.5 h-2.5 mr-1" />
                       {duplicateResult.candidate.location_city}
                     </Badge>
                   )}
                 </div>
                 {duplicateResult.matchType && (
-                  <p className="text-[10px] text-amber-700 mt-2">
+                  <p className="text-micro text-amber-700 mt-2">
                     Encontrado por: {
                       duplicateResult.matchType === 'email' ? 'E-mail' :
                       duplicateResult.matchType === 'phone' ? 'Telefone' :

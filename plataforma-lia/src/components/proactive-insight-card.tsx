@@ -245,7 +245,7 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={level} 
                       variant="secondary"
-                      className="text-[11px] py-0.5 px-1.5 bg-gray-100 dark:bg-gray-800"
+                      className="text-xs py-0.5 px-1.5 bg-gray-100 dark:bg-gray-800"
                     >
                       {level}: {count}
                     </Badge>
@@ -265,7 +265,7 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={location} 
                       variant="outline"
-                      className="text-[11px] py-0.5 px-1.5"
+                      className="text-xs py-0.5 px-1.5"
                     >
                       {location}: {count}
                     </Badge>
@@ -286,7 +286,7 @@ export function ProactiveInsightCard({
                       key={model} 
                       variant="outline"
                       className={cn(
-                        "text-[11px] py-0.5 px-1.5",
+                        "text-xs py-0.5 px-1.5",
                         model.toLowerCase().includes('remoto') && "bg-green-50 border-green-200 text-green-700",
                         model.toLowerCase().includes('híbrido') && "bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-wedo-cyan-dark",
                         model.toLowerCase().includes('presencial') && "bg-purple-50 border-purple-200 text-purple-700"
@@ -309,7 +309,7 @@ export function ProactiveInsightCard({
                   {top_skills.slice(0, 8).map((skill) => (
                     <Badge 
                       key={skill.skill} 
-                      className="text-[11px] py-0.5 px-1.5 bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
+                      className="text-xs py-0.5 px-1.5 bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
                     >
                       {skill.skill} ({skill.count})
                     </Badge>
@@ -329,7 +329,7 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={company.company} 
                       variant="secondary"
-                      className="text-[11px] py-0.5 px-1.5"
+                      className="text-xs py-0.5 px-1.5"
                     >
                       {company.company} ({company.count})
                     </Badge>

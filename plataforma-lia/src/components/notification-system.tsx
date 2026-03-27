@@ -153,20 +153,20 @@ const NotificationItem = React.memo(({
               <X className="w-3 h-3" />
             </Button>
           </div>
-          <p className={`text-[11px] mt-0.5 leading-relaxed ${
+          <p className={`text-xs mt-0.5 leading-relaxed ${
  !notification.read ? "text-gray-600" : "text-gray-800 dark:text-gray-200"
           }`}>
             {notification.message}
           </p>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-[11px] text-gray-600 dark:text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {timeAgo}
             </span>
             {!notification.read && (
               <button
                 onClick={handleMarkAsRead}
-                className="text-[11px] font-medium hover:underline text-gray-700"
+                className="text-xs font-medium hover:underline text-gray-700"
               >
                 Marcar lida
               </button>
@@ -316,7 +316,7 @@ export function NotificationSystem({
         <Bell className="w-3.5 h-3.5" />
         {unreadCount > 0 && (
           <Badge
-            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-[11px] p-0 flex items-center justify-center bg-red-500 text-white border-0"
+            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-xs p-0 flex items-center justify-center bg-red-500 text-white border-0"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </Badge>
@@ -331,7 +331,7 @@ export function NotificationSystem({
                 <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   Notificações
                   {unreadCount > 0 && (
-                    <span className="ml-2 text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                       {unreadCount} nova{unreadCount > 1 ? 's' : ''}
                     </span>
                   )}
@@ -345,7 +345,7 @@ export function NotificationSystem({
                       variant="ghost"
                       size="sm"
                       onClick={markAllAsRead}
-                      className="text-[11px] h-6 px-2 text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-200"
+                      className="text-xs h-6 px-2 text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-200"
                       style={{ fontFamily: 'Open Sans, sans-serif' }}
                     >
                       Marcar lidas

@@ -113,13 +113,13 @@ function VacancyCard({
             </h4>
             <Badge 
               variant="outline" 
-              className={cn("text-[9px] h-5 px-1.5 border flex-shrink-0", statusConfig.bgClassName, statusConfig.borderClassName, statusConfig.className)}
+              className={cn("text-micro h-5 px-1.5 border flex-shrink-0", statusConfig.bgClassName, statusConfig.borderClassName, statusConfig.className)}
             >
               {statusConfig.label}
             </Badge>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Building2 className="h-3 w-3 text-gray-600 dark:text-gray-400" />
               <span className="truncate">{vacancy.department}</span>
@@ -141,12 +141,12 @@ function VacancyCard({
           <div className="flex items-center justify-between gap-2">
             <Badge 
               variant="outline" 
-              className={cn("text-[9px] h-4 px-1.5 border", workModelConfig.className)}
+              className={cn("text-micro h-4 px-1.5 border", workModelConfig.className)}
             >
               {workModelConfig.label}
             </Badge>
             {vacancy.hired_candidate && vacancy.status === 'hired' && (
-              <span className="text-[10px] text-green-600 dark:text-green-400 flex items-center gap-1">
+              <span className="text-micro text-green-600 dark:text-green-400 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {vacancy.hired_candidate}
               </span>
