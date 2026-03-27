@@ -123,12 +123,12 @@ const commands: Command[] = [
 
 const categories = [
   { value: 'all', label: 'Todos', icon: Brain, color: 'var(--wedo-cyan)' },
-  { value: 'candidates', label: 'Candidatos', icon: Users, color: '#7C9885' },
-  { value: 'jobs', label: 'Vagas', icon: Target, color: '#C4A484' },
-  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: '#8B7355' },
-  { value: 'automations', label: 'Automações', icon: Zap, color: '#D4A574' },
-  { value: 'reports', label: 'Relatórios', icon: Calendar, color: '#A0522D' },
-  { value: 'communication', label: 'Comunicação', icon: Mail, color: '#CD8C8C' }
+  { value: 'candidates', label: 'Candidatos', icon: Users, color: 'var(--gray-500)' },
+  { value: 'jobs', label: 'Vagas', icon: Target, color: 'var(--gray-400)' },
+  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: 'var(--gray-600)' },
+  { value: 'automations', label: 'Automações', icon: Zap, color: 'var(--wedo-orange)' },
+  { value: 'reports', label: 'Relatórios', icon: Calendar, color: 'var(--gray-600)' },
+  { value: 'communication', label: 'Comunicação', icon: Mail, color: 'var(--gray-400)' }
 ]
 
 export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
@@ -326,7 +326,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
-                        style={{ color: isFavorite ? '#D4A574' : 'var(--gray-400)' }}
+                        style={{ color: isFavorite ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                       />
                     </button>
                   </div>

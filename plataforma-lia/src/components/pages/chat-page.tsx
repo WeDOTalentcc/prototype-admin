@@ -4917,7 +4917,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                           let buttonStyle = {
                             backgroundColor: 'var(--gray-50)',
                             color: 'var(--gray-800)',
-                            borderColor: '#CCCCCC'
+                            borderColor: 'var(--gray-300)'
                           }
                           let iconColor = 'var(--gray-400)'
                           
@@ -4925,13 +4925,13 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                             buttonStyle = { backgroundColor: 'var(--gray-50)', color: 'var(--wedo-green)', borderColor: 'var(--wedo-green)' }
                             iconColor = 'var(--wedo-green)'
                           } else if (isScheduleAction) {
-                            buttonStyle = { backgroundColor: '#FDF4E8', color: 'var(--wedo-orange)', borderColor: 'var(--wedo-orange)' }
+                            buttonStyle = { backgroundColor: 'var(--gray-50)', color: 'var(--wedo-orange)', borderColor: 'var(--wedo-orange)' }
                             iconColor = 'var(--wedo-orange)'
                           } else if (isCandidateAction) {
                             buttonStyle = { backgroundColor: 'var(--gray-50)' }
                             iconColor = 'var(--gray-600)'
                           } else if (isRejectAction) {
-                            buttonStyle = { backgroundColor: '#FEE2E2', color: 'var(--status-error)', borderColor: 'var(--status-error)' }
+                            buttonStyle = { backgroundColor: 'var(--gray-50)', color: 'var(--status-error)', borderColor: 'var(--status-error)' }
                             iconColor = 'var(--status-error)'
                           }
                           
