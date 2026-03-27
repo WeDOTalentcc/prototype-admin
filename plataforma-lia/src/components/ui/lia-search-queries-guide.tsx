@@ -129,7 +129,7 @@ export function LiaSearchQueriesGuide({
             className
           )}
           style={{ 
-            borderColor: isOpen ? 'var(--gray-950)' : '#E0E0E0', 
+            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)', 
             fontFamily: '"Open Sans", sans-serif', 
             fontWeight: 500
           }}
@@ -146,7 +146,7 @@ export function LiaSearchQueriesGuide({
           backgroundColor: 'var(--gray-50)',
           borderRadius: '12px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
-          border: '1px solid #E8E8E8'
+          border: '1px solid var(--gray-200)'
         }}
       >
         {/* Header com busca */}
@@ -155,7 +155,7 @@ export function LiaSearchQueriesGuide({
             className="flex items-center gap-2 px-2.5 py-2 rounded-md"
             style={{ 
               backgroundColor: 'var(--gray-100)',
-              border: '1px solid #E8E8E8'
+              border: '1px solid var(--gray-200)'
             }}
           >
             <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />

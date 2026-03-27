@@ -227,7 +227,7 @@ export function AiCreditsPage({ companyId }: Props) {
                   unit="K"
                 />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid #e5e7eb' }}
+                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--gray-200)' }}
                   formatter={(value: number, name: string) => [
                     name === 'tokens' ? `${value}K tokens` : `$${value}`,
                     name === 'tokens' ? 'Tokens' : 'Custo',

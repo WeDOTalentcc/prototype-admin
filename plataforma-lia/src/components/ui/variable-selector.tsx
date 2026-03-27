@@ -125,10 +125,10 @@ export function VariableSelector({
         align={align}
         style={{ 
           backgroundColor: 'white',
-          borderColor: 'var(--eleven-border, #e5e7eb)'
+          borderColor: 'var(--eleven-border, var(--gray-200))'
         }}
       >
-        <div className="p-3 border-b" style={{ borderColor: 'var(--eleven-border, #e5e7eb)' }}>
+        <div className="p-3 border-b" style={{ borderColor: 'var(--eleven-border, var(--gray-200))' }}>
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -203,7 +203,7 @@ export function VariableSelector({
           )}
         </div>
 
-        <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border, #e5e7eb)' }}>
+        <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border, var(--gray-200))' }}>
           <p className="text-micro text-gray-500 text-center" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             Clique para inserir a variável no template
           </p>

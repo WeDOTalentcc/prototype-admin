@@ -455,7 +455,7 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#A8CCE8' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--gray-300)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -466,7 +466,7 @@ export function BigFiveDashboardPage() {
                   -67% vs tradicional
                 </p>
               </div>
-              <UserX className="w-8 h-8" style={{ color: '#A8CCE8' }} />
+              <UserX className="w-8 h-8" style={{ color: 'var(--gray-300)' }} />
             </div>
           </CardContent>
         </Card>
@@ -558,7 +558,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" style={{ color: '#A8CCE8' }} />
+              <Target className="w-5 h-5" style={{ color: 'var(--gray-300)' }} />
               Precisão: Big Five vs Métodos Tradicionais
             </CardTitle>
           </CardHeader>

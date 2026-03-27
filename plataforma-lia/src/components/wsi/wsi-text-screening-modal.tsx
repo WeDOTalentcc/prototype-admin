@@ -117,9 +117,9 @@ const DREYFUS_NAMES: Record<number, string> = {
 const BIG_FIVE_LABELS: Record<string, { label: string; color: string }> = {
   openness: { label: 'Abertura' },
   conscientiousness: { label: 'Conscienciosidade' },
-  extraversion: { label: 'Extroversão', color: '#16a34a' },
-  agreeableness: { label: 'Amabilidade', color: '#ea580c' },
-  neuroticism: { label: 'Estabilidade', color: '#dc2626' }
+  extraversion: { label: 'Extroversão', color: 'var(--status-success)' },
+  agreeableness: { label: 'Amabilidade', color: 'var(--wedo-orange)' },
+  neuroticism: { label: 'Estabilidade', color: 'var(--status-error)' }
 }
 
 export function WSITextScreeningModal({

@@ -79,7 +79,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
   const getHealthTierColor = (tier: string) => {
     switch (tier) {
       case 'excellent': return 'var(--gray-600)'
-      case 'good': return '#60D186'
+      case 'good': return 'var(--wedo-green-bright)'
       case 'watch': return 'var(--status-warning)'
       case 'critical': return 'var(--status-error)'
       default: return 'var(--gray-400)'
@@ -88,7 +88,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'positive': return '#60D186'
+      case 'positive': return 'var(--wedo-green-bright)'
       case 'negative': return 'var(--status-error)'
       default: return 'var(--gray-400)'
     }
@@ -151,7 +151,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="text-center">
                 <div 
                   className="text-xl font-bold"
-                  style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
+                  style={{ color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                 >
                   {agent.progress}%
                 </div>
@@ -181,7 +181,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   )}
                   <span 
                     className="text-xs"
-                    style={{ color: agent.delta > 0 ? '#60D186' : agent.delta < 0 ? 'var(--status-error)' : 'var(--eleven-text-tertiary)' }}
+                    style={{ color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : 'var(--eleven-text-tertiary)' }}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
