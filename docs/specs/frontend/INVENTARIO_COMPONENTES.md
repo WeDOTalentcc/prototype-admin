@@ -1000,21 +1000,169 @@ Adicionar `fill-opacity` como atributo nos SVG para séries adicionais (sem cria
 
 ### Fase 3 — Consolidação de Badges e Status
 
-**Esforço:** 2-3 dias | **Risco:** Médio | **Impacto visual:** Nenhum
+**Esforço:** 2-3 dias | **Risco:** Baixo-Médio | **Impacto visual:** Nenhum
 
-**Ações:**
+> **Revisão pós-Fase 2 (2026-03-27):** Code review profundo revelou que 2 dos 7 badges são
+> órfãos (0 importações), que `field-origin-badge` usa classes Tailwind de cor raw sem tokens,
+> e que `badge.tsx` tem 3 valores rgba() hardcoded. Esta fase aplica os tokens semânticos
+> da Fase 2 em toda a camada de badges, com estratégia compatível com Vue/Vuetify.
 
-| Componente atual | Ação | Como |
-|-----------------|------|------|
-| `ui/badge.tsx` | Manter | É o primitivo — está correto |
-| `ui/status-badge.tsx` | Refatorar | Extrair 17 cores de pipeline para constante. Usar badge.tsx como base com prop `pipelineStage` |
-| `ui/setup-alert-badge.tsx` | Simplificar | Usar badge.tsx com variante `warning` |
-| `job-creation/field-origin-badge.tsx` | Simplificar | Usar badge.tsx com variante `info` para IA, `secondary` para manual |
-| `wizard/suggestion-badge.tsx` | Simplificar | Usar badge.tsx com variante custom `suggestion` |
-| `screening/auto-screening-badge.tsx` | Simplificar | Usar badge.tsx com variante `success` |
-| `ui/chat-status-indicators.tsx` | Manter separado | Padrão diferente — são indicadores temporários, não badges |
+---
 
-**Resultado:** 7 → 3 componentes (badge, status-badge refatorado, chat-status-indicators)
+#### Diagnóstico Atual (resultado do code review)
+
+| Componente | Linhas | Importações | Estado dos Tokens | Decisão |
+|-----------|--------|-------------|-------------------|---------|
+| `ui/badge.tsx` | 41 | **295** | 3 rgba() hardcoded | Manter + limpar tokens |
+| `ui/status-badge.tsx` | 606 | 2 | Fase 2 aplicada, 5 hex residuais | Manter + limpar hex |
+| `ui/setup-alert-badge.tsx` | 207 | 1 (layout.tsx) | 1 hex residual (`#4BA8BA`) | Manter (draggable/fixed — arquitetura ≠ badge) + limpar |
+| `job-creation/field-origin-badge.tsx` | 122 | 2 | Tailwind colors raw (bg-blue-100 etc) | Refatorar → tokens DS |
+| `wizard/suggestion-badge.tsx` | 146 | **0** | Tailwind colors raw | **Deletar** (órfão) |
+| `screening/auto-screening-badge.tsx` | 72 | **0** | Tailwind colors raw | **Deletar** (órfão, só funciona com `source === 'website'`) |
+| `ui/chat-status-indicators.tsx` | 339 | 1 (chat-page.tsx) | Já alinhado (gray + wedo-cyan) | Manter separado |
+
+**Resultado real:** 7 → 5 componentes (deletar 2 órfãos, refatorar field-origin)
+
+---
+
+#### Token Contract — Tabela de Mapeamento Canônico
+
+> Regra fundamental: **nenhum badge introduz cor fora desta tabela.** Toda cor nova
+> exige atualização aqui antes de ser implementada.
+
+| Variante/Contexto | bg (light) | text (light) | bg (dark) | text (dark) | Semântica |
+|-------------------|------------|--------------|-----------|-------------|-----------|
+| `default` | `var(--gray-100)` | `var(--gray-800)` | `var(--gray-700)` | `var(--gray-100)` | Neutro genérico |
+| `secondary` | `var(--gray-100)` | `var(--gray-600)` | `var(--gray-700)` | `var(--gray-300)` | Secundário |
+| `outline` | transparent | `var(--gray-600)` | transparent | `var(--gray-300)` | Contorno sutil |
+| `success` | `var(--status-success)/15` | `var(--status-success)` | `var(--status-success)/20` | `var(--status-success)` | Aprovado, ativo |
+| `warning` | `var(--status-warning)/15` | `var(--status-warning)` | `var(--status-warning)/20` | `var(--status-warning)` | Atenção, pendente |
+| `destructive` | `var(--status-error)/15` | `var(--status-error)` | `var(--status-error)/20` | `var(--status-error)` | Erro, rejeitado |
+| `info` (LIA/IA only) | `var(--wedo-cyan)/15` | `var(--wedo-cyan-dark)` | `var(--wedo-cyan)/20` | `var(--wedo-cyan)` | Contexto IA — reservado |
+| `lilac` | `var(--wedo-purple)/15` | `var(--wedo-purple)` | `var(--wedo-purple)/20` | `var(--wedo-purple)` | Benchmark, especulativo |
+| Pipeline early (sourcing/screening) | `var(--gray-200)` | `var(--gray-600)` | `var(--gray-600)` | `var(--gray-200)` | Funil inicial |
+| Pipeline mid (long_list → tests) | `var(--gray-300)`–`var(--gray-400)` | `var(--gray-800)` | — | — | Em triagem |
+| Pipeline advanced (interviews) | `var(--gray-500)`–`var(--gray-600)` | `#FFFFFF` | — | — | Avançando |
+| Pipeline final (offer) | `var(--gray-800)` | `#FFFFFF` | — | — | Decisão |
+| Pipeline hired | `var(--status-success)` | `#FFFFFF` | — | — | Contratado |
+| Pipeline rejected/declined | `var(--gray-200)` | `var(--gray-600)` | — | — | Terminal |
+
+> `#FFFFFF` nas linhas de pipeline advanced/final/hired é semântico: texto branco
+> sobre fundo escuro não muda com tema — não é um token, é uma constante visual.
+
+---
+
+#### Mapeamento Vue/Vuetify
+
+> Cada variante de badge deve ter um mapeamento explícito para Vue/Vuetify.
+> CSS vars definidos na Fase 2 sobrevivem à migração de framework.
+
+| badge.tsx variant | Vuetify component | Props Vuetify |
+|-------------------|------------------|---------------|
+| `default` | `v-chip` | `:color="undefined"` (uses default) |
+| `secondary` | `v-chip` | `variant="tonal"` |
+| `outline` | `v-chip` | `variant="outlined"` |
+| `success` | `v-chip` | `color="success"` (mapear p/ status-success token) |
+| `warning` | `v-chip` | `color="warning"` (mapear p/ status-warning token) |
+| `destructive` | `v-chip` | `color="error"` (mapear p/ status-error token) |
+| `info` | `v-chip` | `color="info"` (mapear p/ wedo-cyan token) |
+| `lilac` | `v-chip` | `:color="'var(--wedo-purple)'"` |
+| StatusBadge pipeline | `v-chip` | `:style="{ backgroundColor: stageColor }"` |
+| FieldOriginBadge | `v-chip` | `:prepend-icon` + `:color` por origin |
+| SetupAlertBadge | `v-fab` / `v-sheet` | Componente flutuante — sem equivalente direto em chip |
+| ChatStatusIndicators | `v-progress-linear` + `v-alert` | Padrão de feedback de IA |
+
+---
+
+#### Fase 3A — Limpeza de Tokens no `badge.tsx` (½ dia)
+
+**Problema:** 3 valores `rgba()` hardcoded nas variantes success, warning/danger, lilac.
+
+**Ação:** Substituir por CSS vars com opacidade.
+
+```typescript
+// ANTES
+'success': 'bg-[rgba(123,194,154,0.15)] text-wedo-green ...',
+'warning': 'bg-[rgba(232,168,124,0.15)] text-wedo-orange ...',
+'lilac':   'bg-[rgba(201,160,220,0.15)] text-wedo-purple ...',
+
+// DEPOIS — usando tokens semânticos da Fase 2
+'success': 'bg-wedo-green/15 text-wedo-green dark:bg-wedo-green/20 ...',
+'warning': 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 ...',
+'danger':  'bg-status-error/15 text-status-error dark:bg-status-error/20 ...',
+'lilac':   'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 ...',
+```
+
+> Nota: `bg-wedo-green/15` requer hex no tailwind.config.ts (não CSS var) — já existe.
+
+---
+
+#### Fase 3B — Limpeza de Hex Residuais no `status-badge.tsx` (½ dia)
+
+**5 hex residuais identificados no code review:**
+
+| Hex | Localização | Substituição |
+|-----|-------------|-------------|
+| `#374151` | STAGE_PASTEL_COLORS_DARK (gray-600 dark) | `var(--gray-600)` |
+| `#15803D` | hired dark mode icon | `var(--status-success)` |
+| `#FFFFFF` | text/icon em variantes dark/scheduled/hired | Manter (semântico: branco sobre escuro) |
+| `#E3DADC` | fallback pastel color default | `var(--gray-200)` |
+| `#4A3D40` | fallback pastel dark color | `var(--gray-600)` |
+
+---
+
+#### Fase 3C — Refatorar `field-origin-badge.tsx` → Tokens DS (1 dia)
+
+**Problema:** Usa Tailwind color classes raw (`bg-blue-100 text-blue-700`) sem relação com design system.
+
+**Mapeamento de origens → tokens:**
+
+| Origem | Antes | Depois | Justificativa |
+|--------|-------|--------|---------------|
+| `detected` (IA) | `bg-blue-100 text-blue-700` | `bg-wedo-cyan/15 text-wedo-cyan-dark` | Contexto IA = wedo-cyan (token info) |
+| `default` (empresa) | `bg-green-100 text-green-700` | `bg-wedo-green/15 text-wedo-green` | Configuração padrão = verde positivo |
+| `manual` (humano) | `bg-gray-100 text-gray-700` | `bg-[var(--gray-200)] text-[var(--gray-600)]` | Manual = neutro gray |
+| `suggested` (similar) | `bg-yellow-100 text-yellow-700` | `bg-status-warning/15 text-status-warning` | Sugestão = atenção (warning) |
+| `benchmark` (mercado) | `bg-purple-100 text-purple-700` | `bg-wedo-purple/15 text-wedo-purple` | Especulativo = lilac |
+
+**Estrutura após refator:** manter toda a lógica de origins, substituir apenas as strings de classes de cor.
+
+---
+
+#### Fase 3D — Limpar `setup-alert-badge.tsx` (¼ dia)
+
+**1 hex residual:**
+- `#4BA8BA` → `var(--wedo-cyan)` (progresso 50-80%)
+
+**Manter:** toda a lógica draggable, localStorage, fetch, progress bar — arquitetura específica que não tem equivalente em `badge.tsx`.
+
+---
+
+#### Fase 3E — Deletar Órfãos (¼ dia)
+
+**Verificar antes de deletar** (grep por usos dinâmicos):
+```bash
+grep -r "SuggestionBadge\|AutoScreeningBadge\|suggestion-badge\|auto-screening-badge" src/ --include="*.tsx" --include="*.ts"
+```
+
+Se confirmado 0 usos:
+- Deletar `src/components/wizard/suggestion-badge.tsx` (146 linhas)
+- Deletar `src/components/screening/auto-screening-badge.tsx` (72 linhas)
+- Total: **218 linhas removidas**
+
+---
+
+#### Resultado Esperado da Fase 3
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Componentes de badge | 7 | **5** (deletar 2 órfãos) |
+| Hex/rgba hardcoded em badges | ~11 | **~2** (só `#FFFFFF` semântico) |
+| field-origin usando tokens DS | ✗ | ✓ |
+| Token Contract documentado | ✗ | ✓ |
+| Vuetify migration map | ✗ | ✓ |
+| Linhas de código eliminadas | — | ~218 (órfãos) |
+| Arquivos que precisam ser alterados | — | 4 (badge, status-badge, field-origin, setup-alert) |
 
 ### Fase 4 — Split de Componentes Gigantes
 
