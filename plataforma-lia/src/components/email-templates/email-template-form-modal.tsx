@@ -328,14 +328,14 @@ export function EmailTemplateFormModal({
               <TabsContent value="variables" className="h-full m-0">
                 <div className="space-y-4">
                   {detectedVariables.length > 0 && (
-                    <Card className="border-green-200 bg-green-50">
+                    <Card className="border-wedo-green/30 bg-wedo-green/10">
                       <CardContent className="pt-4">
-                        <h4 className="font-medium text-green-800 mb-2">
+                        <h4 className="font-medium text-wedo-green mb-2">
                           Variáveis detectadas no template:
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {detectedVariables.map((v) => (
-                            <Badge key={v} className="bg-green-100 text-green-800">
+                            <Badge key={v} className="bg-wedo-green/15 text-wedo-green">
                               {`{{${v}}}`}
                             </Badge>
                           ))}

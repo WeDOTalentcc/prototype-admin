@@ -400,16 +400,16 @@ export function RecruitmentMLDashboard({
 
   const getPredictionIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-5 h-5 text-green-600" />
-      case 'down': return <TrendingDown className="w-5 h-5 text-red-600" />
+      case 'up': return <TrendingUp className="w-5 h-5 text-status-success" />
+      case 'down': return <TrendingDown className="w-5 h-5 text-status-error" />
       default: return <Activity className="w-5 h-5 text-gray-600" />
     }
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 85) return 'text-green-600 bg-green-100'
-    if (confidence >= 70) return 'text-yellow-600 bg-yellow-100'
-    return 'text-red-600 bg-red-100'
+    if (confidence >= 85) return 'text-status-success bg-status-success/10'
+    if (confidence >= 70) return 'text-status-warning bg-status-warning/10'
+    return 'text-status-error bg-status-error/10'
   }
 
   if (isLoading) {
@@ -482,8 +482,8 @@ export function RecruitmentMLDashboard({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Previsto:</span>
                   <span className={`font-bold ${
-                    prediction.trend === 'up' ? 'text-green-600' :
-                    prediction.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                    prediction.trend === 'up' ? 'text-status-success' :
+                    prediction.trend === 'down' ? 'text-status-error' : 'text-gray-600'
                   }`}>
                     {prediction.predictedValue}
                   </span>
@@ -518,7 +518,7 @@ export function RecruitmentMLDashboard({
       <Card>
         <CardHeader>
           <CardTitle className="font-sans flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-600" />
+            <Zap className="w-5 h-5 text-status-warning" />
             Insights de Machine Learning
           </CardTitle>
         </CardHeader>
@@ -529,31 +529,31 @@ export function RecruitmentMLDashboard({
                 <div
                   key={index}
                   className={`p-4 rounded-md border-l-4 ${
-                    insight.impact === 'high' ? 'bg-red-50 border-red-500' :
-                    insight.impact === 'medium' ? 'bg-yellow-50 border-yellow-500' :
+                    insight.impact === 'high' ? 'bg-status-error/10 border-status-error' :
+                    insight.impact === 'medium' ? 'bg-status-warning/10 border-status-warning' :
                     'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className={`font-medium mb-1 ${
-                        insight.impact === 'high' ? 'text-red-900' :
-                        insight.impact === 'medium' ? 'text-yellow-900' :
+                        insight.impact === 'high' ? 'text-status-error/90' :
+                        insight.impact === 'medium' ? 'text-status-warning/90' :
                         'text-wedo-cyan-dark'
                       }`}>
                         {insight.title}
                       </h4>
                       <p className={`text-sm mb-2 ${
-                        insight.impact === 'high' ? 'text-red-800' :
-                        insight.impact === 'medium' ? 'text-yellow-800' :
+                        insight.impact === 'high' ? 'text-status-error' :
+                        insight.impact === 'medium' ? 'text-status-warning' :
                         'text-wedo-cyan-dark'
                       }`}>
                         {insight.description}
                       </p>
                       {insight.suggestion && (
                         <p className={`text-sm font-medium ${
-                          insight.impact === 'high' ? 'text-red-900' :
-                          insight.impact === 'medium' ? 'text-yellow-900' :
+                          insight.impact === 'high' ? 'text-status-error/90' :
+                          insight.impact === 'medium' ? 'text-status-warning/90' :
                           'text-wedo-cyan-dark'
                         }`}>
                           💡 {insight.suggestion}
@@ -562,15 +562,15 @@ export function RecruitmentMLDashboard({
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <Badge className={`text-xs ${
-                        insight.impact === 'high' ? 'bg-red-100 text-red-800' :
-                        insight.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        insight.impact === 'high' ? 'bg-status-error/10 text-status-error' :
+                        insight.impact === 'medium' ? 'bg-status-warning/10 text-status-warning' :
                         'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark'
                       }`}>
                         {insight.type}
                       </Badge>
                       <Badge className={`text-xs ${
-                        insight.impact === 'high' ? 'bg-red-600 text-white' :
-                        insight.impact === 'medium' ? 'bg-yellow-600 text-white' :
+                        insight.impact === 'high' ? 'bg-status-error text-white' :
+                        insight.impact === 'medium' ? 'bg-status-warning text-white' :
                         'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
                       }`}>
                         {insight.impact}
@@ -595,7 +595,7 @@ export function RecruitmentMLDashboard({
         <Card>
           <CardHeader>
             <CardTitle className="font-sans flex items-center gap-2">
-              <Star className="w-5 h-5 text-orange-600" />
+              <Star className="w-5 h-5 text-wedo-orange" />
               Scoring Inteligente de Candidatos
             </CardTitle>
           </CardHeader>
@@ -606,9 +606,9 @@ export function RecruitmentMLDashboard({
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-gray-950 dark:text-gray-50">{score.name}</h4>
                     <Badge className={`${
-                      score.overallScore >= 85 ? 'bg-green-100 text-green-800' :
-                      score.overallScore >= 70 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
+                      score.overallScore >= 85 ? 'bg-status-success/10 text-status-success' :
+                      score.overallScore >= 70 ? 'bg-status-warning/10 text-status-warning' :
+                      'bg-status-error/10 text-status-error'
                     }`}>
                       {score.overallScore}
                     </Badge>
@@ -629,7 +629,7 @@ export function RecruitmentMLDashboard({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Prob. Sucesso:</span>
-                      <span className="font-medium text-green-600">{score.successProbability}%</span>
+                      <span className="font-medium text-status-success">{score.successProbability}%</span>
                     </div>
                   </div>
                 </div>

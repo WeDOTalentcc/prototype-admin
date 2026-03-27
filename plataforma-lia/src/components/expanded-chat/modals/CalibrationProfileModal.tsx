@@ -163,7 +163,7 @@ export function CalibrationProfileModal({
                           <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
                             {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
                             {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />}
-                            {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-violet-500" />}
+                            {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-wedo-purple" />}
                             {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-wedo-green" />}
                             {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-pink-500" />}
                           </div>
@@ -210,7 +210,7 @@ export function CalibrationProfileModal({
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-sm text-gray-800">{exp.role}</p>
                             {exp.isPromotion && (
-                              <span className="px-2 py-0.5 text-xs font-medium text-violet-500 bg-violet-500/10 rounded-full">
+                              <span className="px-2 py-0.5 text-xs font-medium text-wedo-purple bg-wedo-purple/10 rounded-full">
                                 Promotion
                               </span>
                             )}

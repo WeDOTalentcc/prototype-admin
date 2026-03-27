@@ -265,31 +265,31 @@ export function SuccessPredictionAnalytics() {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <ArrowUp className="w-4 h-4 text-green-600" />
-      case 'down': return <ArrowDown className="w-4 h-4 text-red-600" />
+      case 'up': return <ArrowUp className="w-4 h-4 text-status-success" />
+      case 'down': return <ArrowDown className="w-4 h-4 text-status-error" />
       default: return <Minus className="w-4 h-4 text-gray-600" />
     }
   }
 
   const getTrendColor = (trend: string) => {
     switch (trend) {
-      case 'up': return 'text-green-600'
-      case 'down': return 'text-red-600'
+      case 'up': return 'text-status-success'
+      case 'down': return 'text-status-error'
       default: return 'text-gray-600'
     }
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600'
-    if (score >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 85) return 'text-status-success'
+    if (score >= 70) return 'text-status-warning'
+    return 'text-status-error'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-green-700 border-green-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      case 'high': return 'bg-red-100 text-red-700 border-red-200'
+      case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
+      case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
     }
   }
@@ -303,7 +303,7 @@ export function SuccessPredictionAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Taxa de Sucesso Prevista</p>
-                <p className="text-2xl font-bold text-green-600">87.3%</p>
+                <p className="text-2xl font-bold text-status-success">87.3%</p>
                 <div className="flex items-center gap-1 mt-1">
                   {getTrendIcon(historicalAnalysis.trends.quality)}
                   <span className={`text-sm ${getTrendColor(historicalAnalysis.trends.quality)}`}>
@@ -311,8 +311,8 @@ export function SuccessPredictionAnalytics() {
                   </span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center">
-                <Target className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-status-success/10 rounded-md flex items-center justify-center">
+                <Target className="w-6 h-6 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -343,14 +343,14 @@ export function SuccessPredictionAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Performance Média</p>
-                <p className="text-2xl font-bold text-purple-600">{historicalAnalysis.averagePerformance}%</p>
+                <p className="text-2xl font-bold text-wedo-purple">{historicalAnalysis.averagePerformance}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   {getTrendIcon('up')}
-                  <span className="text-sm text-green-600">+3.4% vs anterior</span>
+                  <span className="text-sm text-status-success">+3.4% vs anterior</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-md flex items-center justify-center">
-                <Award className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-wedo-purple/10 rounded-md flex items-center justify-center">
+                <Award className="w-6 h-6 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -361,10 +361,10 @@ export function SuccessPredictionAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Modelos Ativos</p>
-                <p className="text-2xl font-bold text-orange-600">{mlModels.filter(m => m.status === 'active').length}</p>
+                <p className="text-2xl font-bold text-wedo-orange">{mlModels.filter(m => m.status === 'active').length}</p>
                 <p className="text-sm text-gray-800 dark:text-gray-200">de {mlModels.length} total</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-wedo-orange/10 rounded-md flex items-center justify-center">
                 <Brain className="w-6 h-6 text-wedo-cyan" />
               </div>
             </div>
@@ -671,16 +671,16 @@ interface CandidatePredictionModalProps {
 
 function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionModalProps) {
   const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600'
-    if (score >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 85) return 'text-status-success'
+    if (score >= 70) return 'text-status-warning'
+    return 'text-status-error'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-green-700 border-green-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      case 'high': return 'bg-red-100 text-red-700 border-red-200'
+      case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
+      case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
     }
   }
@@ -740,7 +740,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Nível de Performance</p>
-                      <p className="text-lg font-bold text-purple-600 capitalize">
+                      <p className="text-lg font-bold text-wedo-purple capitalize">
                         {candidate.predictions.performanceLevel.replace('_', ' ')}
                       </p>
                     </div>
@@ -764,7 +764,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </div>
                       <div className="flex justify-between items-center mt-1">
                         <span className="text-sm">Ofertas Ótima:</span>
-                        <span className="font-bold text-green-600">
+                        <span className="font-bold text-status-success">
                           R$ {candidate.predictions.salaryRecommendation.optimal.toLocaleString()}
                         </span>
                       </div>
@@ -781,13 +781,13 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-medium text-green-700 mb-2 flex items-center gap-1">
+                      <h4 className="text-sm font-medium text-status-success mb-2 flex items-center gap-1">
                         <CheckCircle className="w-4 h-4" />
                         Fatores Positivos
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.positive.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-green-50 p-2 rounded">
+                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-success/10 p-2 rounded">
                             • {factor}
                           </div>
                         ))}
@@ -795,13 +795,13 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-medium text-red-700 mb-2 flex items-center gap-1">
+                      <h4 className="text-sm font-medium text-status-error mb-2 flex items-center gap-1">
                         <AlertTriangle className="w-4 h-4" />
                         Pontos de Atenção
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.negative.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-red-50 p-2 rounded">
+                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-error/10 p-2 rounded">
                             • {factor}
                           </div>
                         ))}
@@ -817,7 +817,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-yellow-600" />
+                    <Lightbulb className="w-4 h-4 text-status-warning" />
                     Recomendações
                   </CardTitle>
                 </CardHeader>
@@ -835,15 +835,15 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-orange-600" />
+                    <AlertTriangle className="w-4 h-4 text-wedo-orange" />
                     Fatores de Risco
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {candidate.riskFactors.map((risk, index) => (
-                      <div key={index} className="p-3 bg-orange-50 rounded-md">
-                        <p className="text-sm text-orange-900">{risk}</p>
+                      <div key={index} className="p-3 bg-wedo-orange/10 rounded-md">
+                        <p className="text-sm text-wedo-orange">{risk}</p>
                       </div>
                     ))}
                   </div>

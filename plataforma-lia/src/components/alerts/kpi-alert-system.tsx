@@ -512,27 +512,27 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
 
   const getAlertIcon = (type: KPIAlert['type']) => {
     switch (type) {
-      case 'critical': return <AlertTriangle className="w-5 h-5 text-red-600" />
-      case 'warning': return <AlertCircle className="w-5 h-5 text-yellow-600" />
+      case 'critical': return <AlertTriangle className="w-5 h-5 text-status-error" />
+      case 'warning': return <AlertCircle className="w-5 h-5 text-status-warning" />
       case 'info': return <Info className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-      case 'success': return <CheckCircle className="w-5 h-5 text-green-600" />
+      case 'success': return <CheckCircle className="w-5 h-5 text-status-success" />
     }
   }
 
   const getAlertBadgeColor = (type: KPIAlert['type']) => {
     switch (type) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200'
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
+      case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'info': return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
-      case 'success': return 'bg-green-100 text-green-800 border-green-200'
+      case 'success': return 'bg-status-success/10 text-status-success border-status-success/30'
     }
   }
 
   const getPriorityBadgeColor = (priority: KPIAlert['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-600 text-white'
-      case 'high': return 'bg-orange-600 text-white'
-      case 'medium': return 'bg-yellow-600 text-white'
+      case 'urgent': return 'bg-status-error text-white'
+      case 'high': return 'bg-wedo-orange text-white'
+      case 'medium': return 'bg-status-warning text-white'
       case 'low': return 'bg-gray-600 text-white'
     }
   }
@@ -582,19 +582,19 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
               <div className="text-sm text-gray-600">Total de Alertas</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{alertStats.critical}</div>
+              <div className="text-2xl font-bold text-status-error">{alertStats.critical}</div>
               <div className="text-sm text-gray-600">Críticos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{alertStats.warning}</div>
+              <div className="text-2xl font-bold text-status-warning">{alertStats.warning}</div>
               <div className="text-sm text-gray-600">Avisos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{alertStats.byCategory.performance}</div>
+              <div className="text-2xl font-bold text-wedo-purple">{alertStats.byCategory.performance}</div>
               <div className="text-sm text-gray-600">Performance</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{alertStats.byCategory.deadline}</div>
+              <div className="text-2xl font-bold text-wedo-orange">{alertStats.byCategory.deadline}</div>
               <div className="text-sm text-gray-600">Prazos</div>
             </div>
           </div>
@@ -732,7 +732,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                             <div className="text-xs text-gray-600">Meta</div>
                           </div>
                           <div className="text-center">
-                            <div className={`text-lg font-bold ${alert.variance > 25 ? 'text-red-600' : 'text-yellow-600'}`}>
+                            <div className={`text-lg font-bold ${alert.variance > 25 ? 'text-status-error' : 'text-status-warning'}`}>
                               {alert.variance.toFixed(1)}%
                             </div>
                             <div className="text-xs text-gray-600">Variação</div>
@@ -740,9 +740,9 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                           <div className="text-center">
                             <div className="flex items-center justify-center">
                               {alert.trend === 'up' ? (
-                                <TrendingUp className="w-5 h-5 text-red-600" />
+                                <TrendingUp className="w-5 h-5 text-status-error" />
                               ) : (
-                                <TrendingDown className="w-5 h-5 text-green-600" />
+                                <TrendingDown className="w-5 h-5 text-status-success" />
                               )}
                             </div>
                             <div className="text-xs text-gray-600">Tendência</div>

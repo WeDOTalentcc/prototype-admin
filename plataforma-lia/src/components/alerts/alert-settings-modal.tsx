@@ -213,8 +213,8 @@ export function AlertSettingsModal({
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <AlertTriangle className="w-4 h-4 text-red-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
+      case 'critical': return <AlertTriangle className="w-4 h-4 text-status-error" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
       case 'info': return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
       default: return <Info className="w-4 h-4 text-gray-600" />
     }
@@ -222,8 +222,8 @@ export function AlertSettingsModal({
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200'
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
+      case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'info': return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -307,7 +307,7 @@ export function AlertSettingsModal({
                               handleToggleRule(rule.id)
                             }}
                             className={`w-8 h-4 rounded-full transition-colors ${
-                              rule.enabled ? 'bg-green-500' : 'bg-gray-300'
+                              rule.enabled ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
@@ -342,8 +342,8 @@ export function AlertSettingsModal({
                         </span>
                         <div className="flex items-center gap-1">
                           {rule.notifications.email && <Mail className="w-3 h-3 text-gray-600 dark:text-gray-400" />}
-                          {rule.notifications.push && <Smartphone className="w-3 h-3 text-green-500" />}
-                          {rule.notifications.inApp && <Monitor className="w-3 h-3 text-purple-500" />}
+                          {rule.notifications.push && <Smartphone className="w-3 h-3 text-status-success" />}
+                          {rule.notifications.inApp && <Monitor className="w-3 h-3 text-wedo-purple" />}
                         </div>
                       </div>
                     </CardContent>
@@ -523,7 +523,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, email: !prev.notifications.email }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors ${
-                              editingRule.notifications.email ? 'bg-green-500' : 'bg-gray-300'
+                              editingRule.notifications.email ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
@@ -534,7 +534,7 @@ export function AlertSettingsModal({
 
                         <label className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <Smartphone className="w-4 h-4 text-green-500" />
+                            <Smartphone className="w-4 h-4 text-status-success" />
                             Push Notification
                           </span>
                           <button
@@ -543,7 +543,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, push: !prev.notifications.push }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors ${
-                              editingRule.notifications.push ? 'bg-green-500' : 'bg-gray-300'
+                              editingRule.notifications.push ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-white rounded-full transition-transform ${
@@ -554,7 +554,7 @@ export function AlertSettingsModal({
 
                         <label className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <Monitor className="w-4 h-4 text-purple-500" />
+                            <Monitor className="w-4 h-4 text-wedo-purple" />
                             No Sistema
                           </span>
                           <button
@@ -563,7 +563,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, inApp: !prev.notifications.inApp }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors ${
-                              editingRule.notifications.inApp ? 'bg-green-500' : 'bg-gray-300'
+                              editingRule.notifications.inApp ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-white rounded-full transition-transform ${

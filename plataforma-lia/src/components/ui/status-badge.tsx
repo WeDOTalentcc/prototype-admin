@@ -550,10 +550,10 @@ export interface OriginBadgeProps {
 }
 
 const originConfig: Record<string, { label: string; bg: string; border: string; text: string; icon: React.ElementType }> = {
-  web: { label: 'Web', bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-700', text: 'text-blue-700 dark:text-blue-300', icon: Globe },
-  whatsapp: { label: 'WhatsApp', bg: 'bg-green-50 dark:bg-green-900/30', border: 'border-green-200 dark:border-green-700', text: 'text-green-700 dark:text-green-300', icon: MessageCircle },
+  web: { label: 'Web', bg: 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15', border: 'border-wedo-cyan/30', text: 'text-wedo-cyan-dark dark:text-wedo-cyan', icon: Globe },
+  whatsapp: { label: 'WhatsApp', bg: 'bg-wedo-green/15 dark:bg-wedo-green/20', border: 'border-wedo-green/30', text: 'text-wedo-green', icon: MessageCircle },
   sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-gray-700', border: 'border-gray-200 dark:border-gray-600', text: 'text-gray-700 dark:text-gray-300', icon: Search },
-  ats: { label: 'ATS', bg: 'bg-purple-50 dark:bg-purple-900/30', border: 'border-purple-200 dark:border-purple-700', text: 'text-purple-700 dark:text-purple-300', icon: Briefcase },
+  ats: { label: 'ATS', bg: 'bg-wedo-purple/15 dark:bg-wedo-purple/20', border: 'border-wedo-purple/30', text: 'text-wedo-purple', icon: Briefcase },
 }
 
 export function OriginBadge({ origin, className }: OriginBadgeProps) {
@@ -588,15 +588,15 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
     <div
       className={cn(
         'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-amber-50 dark:bg-amber-900/30',
-        'border border-amber-200 dark:border-amber-700',
+        'bg-status-warning/10 dark:bg-status-warning/15',
+        'border border-status-warning/30',
         className
       )}
-     
+
       title="Aguardando na fila de saturação"
     >
-      <Clock className="w-2 h-2 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-      <span className="text-micro font-medium text-amber-700 dark:text-amber-300">
+      <Clock className="w-2 h-2 flex-shrink-0 text-status-warning" />
+      <span className="text-micro font-medium text-status-warning">
         Aguardando
       </span>
     </div>

@@ -29,11 +29,11 @@ import { liaApi, type EmailTemplate } from "@/services/lia-api"
 import { EmailTemplateFormModal } from "./email-template-form-modal"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
-  interview: { label: "Entrevista", color: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" },
+  interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
   rejection: { label: "Rejeição", color: "bg-gray-100 text-gray-800 dark:text-gray-200" },
-  offer: { label: "Proposta", color: "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" },
+  offer: { label: "Proposta", color: "bg-status-success/10 text-status-success" },
   followup: { label: "Follow-up", color: "bg-gray-100 text-gray-800 dark:text-gray-200" },
-  screening: { label: "Triagem", color: "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" },
+  screening: { label: "Triagem", color: "bg-status-warning/10 text-status-warning" },
 }
 
 const DEFAULT_TEMPLATES: EmailTemplate[] = [
@@ -408,7 +408,7 @@ export function EmailTemplatesManager() {
                           setTemplateToDelete(template)
                           setIsDeleteModalOpen(true)
                         }}
-                        className="text-red-600"
+                        className="text-status-error"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Excluir
@@ -523,7 +523,7 @@ export function EmailTemplatesManager() {
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-red-600">Excluir Template</DialogTitle>
+            <DialogTitle className="text-status-error">Excluir Template</DialogTitle>
             <DialogDescription>
               Tem certeza que deseja excluir o template "{templateToDelete?.name}"? Esta ação não pode ser desfeita.
             </DialogDescription>

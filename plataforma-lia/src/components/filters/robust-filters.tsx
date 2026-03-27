@@ -48,18 +48,18 @@ interface RobustFiltersProps {
 
 const candidateStatuses = [
   { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', count: 45 },
-  { id: 'em_triagem', label: 'Em Triagem', color: 'bg-yellow-100 text-yellow-800', count: 23 },
-  { id: 'aprovado', label: 'Aprovado', color: 'bg-green-100 text-green-800', count: 12 },
-  { id: 'entrevista', label: 'Entrevista', color: 'bg-purple-100 text-purple-800', count: 8 },
-  { id: 'finalista', label: 'Finalista', color: 'bg-orange-100 text-orange-800', count: 5 },
-  { id: 'contratado', label: 'Contratado', color: 'bg-emerald-100 text-emerald-800', count: 3 }
+  { id: 'em_triagem', label: 'Em Triagem', color: 'bg-status-warning/10 text-status-warning', count: 23 },
+  { id: 'aprovado', label: 'Aprovado', color: 'bg-status-success/10 text-status-success', count: 12 },
+  { id: 'entrevista', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple', count: 8 },
+  { id: 'finalista', label: 'Finalista', color: 'bg-wedo-orange/15 text-wedo-orange', count: 5 },
+  { id: 'contratado', label: 'Contratado', color: 'bg-status-success/10 text-status-success', count: 3 }
 ]
 
 const jobStatuses = [
-  { id: 'ativa', label: 'Ativa', color: 'bg-green-100 text-green-800', count: 15 },
-  { id: 'pausada', label: 'Pausada', color: 'bg-yellow-100 text-yellow-800', count: 5 },
+  { id: 'ativa', label: 'Ativa', color: 'bg-status-success/10 text-status-success', count: 15 },
+  { id: 'pausada', label: 'Pausada', color: 'bg-status-warning/10 text-status-warning', count: 5 },
   { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 text-gray-800', count: 8 },
-  { id: 'urgente', label: 'Urgente', color: 'bg-red-100 text-red-800', count: 3 },
+  { id: 'urgente', label: 'Urgente', color: 'bg-status-error/10 text-status-error', count: 3 },
   { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', count: 2 }
 ]
 
@@ -191,7 +191,7 @@ export function RobustFilters({
             variant="ghost"
             size="sm"
             onClick={clearAllFilters}
-            className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="h-8 text-status-error hover:text-status-error/80 hover:bg-status-error/10"
           >
             <X className="w-3 h-3 mr-1" />
             Limpar ({activeFiltersCount})
@@ -250,7 +250,7 @@ export function RobustFilters({
                         "w-full text-left px-3 py-2 rounded-md text-sm transition-all border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.experience.includes(level)
-                          ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800"
+                          ? "bg-status-success/10 text-status-success border-status-success/30"
                           : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
                       )}
                     >
@@ -275,7 +275,7 @@ export function RobustFilters({
                         "w-full text-left px-3 py-2 rounded-md text-sm transition-all border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.contractType.includes(contract)
-                          ? "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
+                          ? "bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30"
                           : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
                       )}
                     >
@@ -341,7 +341,7 @@ export function RobustFilters({
                       "px-3 py-1 rounded-full text-xs font-medium transition-all",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.skills.includes(skill)
-                        ? "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300"
+                        ? "bg-wedo-orange/15 text-wedo-orange"
  : "text-gray-800 hover:dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                     )}
                   >

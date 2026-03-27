@@ -77,11 +77,11 @@ const CATEGORY_LABELS: Record<Skill['category'], string> = {
 }
 
 const CATEGORY_COLORS: Record<Skill['category'], { bg: string; text: string; border: string }> = {
-  language: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  framework: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
-  database: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  tool: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
-  infrastructure: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+  language: { bg: 'bg-wedo-cyan/10', text: 'text-wedo-cyan-dark', border: 'border-wedo-cyan/30' },
+  framework: { bg: 'bg-wedo-purple/15', text: 'text-wedo-purple', border: 'border-wedo-purple/30' },
+  database: { bg: 'bg-wedo-green/15', text: 'text-wedo-green', border: 'border-wedo-green/30' },
+  tool: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
+  infrastructure: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
   general: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
 }
 
@@ -377,14 +377,14 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       </div>
 
       {successMessage && (
-        <div className="p-2.5 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-xs text-green-700">{successMessage}</p>
+        <div className="p-2.5 bg-wedo-green/15 border border-wedo-green/30 rounded-md">
+          <p className="text-xs text-wedo-green">{successMessage}</p>
         </div>
       )}
 
       {error && (
-        <div className="p-2.5 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-xs text-red-700">{error}</p>
+        <div className="p-2.5 bg-status-error/10 border border-status-error/30 rounded-md">
+          <p className="text-xs text-status-error">{error}</p>
         </div>
       )}
 

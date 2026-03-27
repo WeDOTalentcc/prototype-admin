@@ -67,8 +67,8 @@ interface MetricCardProps {
 export function MetricCard({ title, value, trend, trendValue, icon, description }: MetricCardProps) {
   const getTrendColor = () => {
     switch (trend) {
-      case 'up': return 'text-green-600'
-      case 'down': return 'text-red-600'
+      case 'up': return 'text-status-success'
+      case 'down': return 'text-status-error'
       default: return 'text-gray-600'
     }
   }

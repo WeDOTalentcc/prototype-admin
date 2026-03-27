@@ -150,8 +150,8 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
         {sendStatus === "success" ? (
           <div className="flex-1 flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-                <CheckCircle className="w-7 h-7 text-green-600" />
+              <div className="w-14 h-14 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-7 h-7 text-status-success" />
               </div>
               <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1">
                 Email Enviado!
@@ -310,8 +310,8 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
             </div>
 
             {sendStatus === "error" && (
-              <div className="px-4 py-2 border-t border-gray-100 bg-red-50">
-                <div className="flex items-center gap-1.5 text-red-700">
+              <div className="px-4 py-2 border-t border-gray-100 bg-status-error/10">
+                <div className="flex items-center gap-1.5 text-status-error">
                   <AlertCircle className="w-3.5 h-3.5" />
                   <span className="text-xs">{errorMessage}</span>
                 </div>

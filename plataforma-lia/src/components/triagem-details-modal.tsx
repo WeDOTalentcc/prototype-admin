@@ -63,22 +63,22 @@ const dreyfusLabel = (n: number) =>
   (["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"] as const)[n] ?? `Nível ${n}`
 
 const getScoreColor = (score: number) =>
-  score >= 4.5 ? "text-emerald-700" :
-  score >= 4.0 ? "text-green-600" :
-  score >= 3.5 ? "text-blue-600" :
-  score >= 3.0 ? "text-amber-600" :
-  score >= 2.25 ? "text-orange-600" :
-  "text-red-600"
+  score >= 4.5 ? "text-status-success" :
+  score >= 4.0 ? "text-status-success" :
+  score >= 3.5 ? "text-wedo-cyan-dark" :
+  score >= 3.0 ? "text-status-warning" :
+  score >= 2.25 ? "text-wedo-orange" :
+  "text-status-error"
 
 const getScoreColor3Tier = (score: number) =>
-  score >= 4.5 ? "text-emerald-600" :
-  score >= 3.5 ? "text-amber-600" :
-  "text-red-500"
+  score >= 4.5 ? "text-status-success" :
+  score >= 3.5 ? "text-status-warning" :
+  "text-status-error"
 
 const gapConfig = {
-  ok:    { label: "Alinhado",          icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },
-  acima: { label: "Acima do esperado", icon: Star,        color: "text-blue-600",    bg: "bg-blue-50",     border: "border-blue-200"    },
-  gap:   { label: "Gap identificado",  icon: AlertTriangle, color: "text-amber-600",   bg: "bg-amber-50",    border: "border-amber-200"   },
+  ok:    { label: "Alinhado",          icon: CheckCircle,   color: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" },
+  acima: { label: "Acima do esperado", icon: Star,          color: "text-wedo-cyan-dark",  bg: "bg-wedo-cyan/10",     border: "border-wedo-cyan/30"       },
+  gap:   { label: "Gap identificado",  icon: AlertTriangle, color: "text-status-warning",  bg: "bg-status-warning/10",border: "border-status-warning/30"  },
 }
 
 const starComponents = [
@@ -89,9 +89,9 @@ const starComponents = [
 ]
 
 const sevConfig = {
-  alta:  { label: "ALTA",  color: "text-red-600",   bg: "bg-red-50",   border: "border-red-200",   dot: "bg-red-500"   },
-  media: { label: "MÉDIA", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" },
-  baixa: { label: "BAIXA", color: "text-gray-500",  bg: "bg-gray-50",  border: "border-gray-200",  dot: "bg-gray-400"  },
+  alta:  { label: "ALTA",  color: "text-status-error",   bg: "bg-status-error/10",   border: "border-status-error/30",   dot: "bg-status-error"   },
+  media: { label: "MÉDIA", color: "text-status-warning",  bg: "bg-status-warning/10", border: "border-status-warning/30", dot: "bg-status-warning" },
+  baixa: { label: "BAIXA", color: "text-gray-500",        bg: "bg-gray-50",           border: "border-gray-200",          dot: "bg-gray-400"       },
 }
 
 function DreyfusRow({
@@ -101,8 +101,8 @@ function DreyfusRow({
   const isCritical = delta <= -2
   const isAtencao  = delta === -1
   const isAcima    = delta > 0
-  const color = isCritical ? "text-red-600" : isAtencao ? "text-amber-600" : isAcima ? "text-blue-600" : "text-emerald-600"
-  const bg    = isCritical ? "bg-red-50 border-red-200" : isAtencao ? "bg-amber-50 border-amber-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200"
+  const color = isCritical ? "text-status-error" : isAtencao ? "text-status-warning" : isAcima ? "text-wedo-cyan-dark" : "text-status-success"
+  const bg    = isCritical ? "bg-status-error/10 border-status-error/30" : isAtencao ? "bg-status-warning/10 border-status-warning/30" : isAcima ? "bg-wedo-cyan/10 border-wedo-cyan/30" : "bg-status-success/10 border-status-success/30"
   const lbl   = isCritical ? "Gap crítico" : isAtencao ? "Atenção" : isAcima ? "Acima" : "Alinhado"
   return (
     <div className={`flex items-center justify-between text-micro rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
@@ -530,7 +530,7 @@ export function TriagemDetailsModal({
                               <span className="text-sm font-medium text-gray-800" style={font}>{resp.competency}</span>
                               <span className="text-micro bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
                               {isCritical && (
-                                <span className="flex items-center gap-0.5 text-micro font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+                                <span className="flex items-center gap-0.5 text-micro font-bold text-status-error bg-status-error/10 border border-status-error/30 px-1.5 py-0.5 rounded-full">
                                   <ShieldAlert className="w-2.5 h-2.5" /> Crítica
                                 </span>
                               )}
@@ -567,7 +567,7 @@ export function TriagemDetailsModal({
                                         title={desc}
                                         className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                                           present
-                                            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                            ? "bg-status-success/10 border-status-success/30 text-status-success"
                                             : "bg-gray-100 border-gray-200 text-gray-400"
                                         }`}
                                       >
@@ -580,7 +580,7 @@ export function TriagemDetailsModal({
                                     )
                                   })}
                                   {!starData.R && (
-                                    <span className="text-micro text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                                    <span className="text-micro text-status-warning bg-status-warning/10 border border-status-warning/20 px-2 py-0.5 rounded-full">
                                       Resultado não evidenciado
                                     </span>
                                   )}
@@ -627,7 +627,7 @@ export function TriagemDetailsModal({
                                   <div className="flex flex-wrap gap-2">
                                     {resp.evidences.map((ev, i) => (
                                       <span key={i} className="flex items-center gap-1 text-xs bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                                        <CheckCircle className="w-3 h-3 text-emerald-500" /> {ev}
+                                        <CheckCircle className="w-3 h-3 text-status-success" /> {ev}
                                       </span>
                                     ))}
                                   </div>
@@ -651,16 +651,16 @@ export function TriagemDetailsModal({
 
               {/* Alertas — apenas para EM_AVALIACAO */}
               {(scores.overall_wsi >= 3.0 && scores.overall_wsi < 3.75) && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="rounded-xl border border-status-warning/30 bg-status-warning/10 p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-amber-600" />
-                    <h3 className="text-sm font-semibold text-amber-700" style={font}>Pontos de Atenção</h3>
-                    <span className="ml-auto text-micro bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium border border-amber-200">Revisão humana recomendada</span>
+                    <AlertCircle className="w-4 h-4 text-status-warning" />
+                    <h3 className="text-sm font-semibold text-status-warning" style={font}>Pontos de Atenção</h3>
+                    <span className="ml-auto text-micro bg-status-warning/10 text-status-warning px-2 py-0.5 rounded-full font-medium border border-status-warning/30">Revisão humana recomendada</span>
                   </div>
                   <ul className="space-y-1.5">
                     {(f11Report?.attention_flags || report?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-amber-800" style={font}>
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" /> {a}
+                      <li key={i} className="flex items-start gap-2 text-xs text-status-warning/90" style={font}>
+                        <AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" /> {a}
                       </li>
                     ))}
                   </ul>
@@ -685,10 +685,10 @@ export function TriagemDetailsModal({
                       </h3>
                       {report.technical_analysis.pontos_fortes && (
                         <div className="mb-2">
-                          <p className="text-micro font-medium text-emerald-700 mb-1 flex items-center gap-1" style={font}><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
+                          <p className="text-micro font-medium text-status-success mb-1 flex items-center gap-1" style={font}><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
                           {report.technical_analysis.pontos_fortes.map((p: string, i: number) => (
                             <div key={i} className="flex items-start gap-1.5 mb-1">
-                              <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-emerald-500" />
+                              <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
                               <p className="text-xs text-gray-700" style={font}>{p}</p>
                             </div>
                           ))}
@@ -696,7 +696,7 @@ export function TriagemDetailsModal({
                       )}
                       {report.technical_analysis.gaps && report.technical_analysis.gaps.length > 0 && (
                         <div className="mb-2">
-                          <p className="text-micro font-medium text-gray-600 mb-1 flex items-center gap-1" style={font}><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Gaps Identificados:</p>
+                          <p className="text-micro font-medium text-gray-600 mb-1 flex items-center gap-1" style={font}><AlertTriangle className="w-3.5 h-3.5 text-status-warning" /> Gaps Identificados:</p>
                           <ul className="space-y-2">
                             {report.technical_analysis.gaps.map((g: any, i: number) => {
                               const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : g
@@ -775,7 +775,7 @@ export function TriagemDetailsModal({
                             Perfil de Personalidade
                           </h3>
                           <p className="text-micro text-gray-400 mt-0.5" style={font}>
-                            Dimensões <span className="text-purple-600 font-medium">críticas</span> determinam fit de performance e cultura.
+                            Dimensões <span className="text-wedo-purple font-medium">críticas</span> determinam fit de performance e cultura.
                           </p>
                         </div>
                         <div className="flex items-center gap-4 text-micro text-gray-400">
@@ -797,11 +797,11 @@ export function TriagemDetailsModal({
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="text-xs font-medium text-gray-800" style={font}>{traitName}</span>
                                   {val.is_critical && (
-                                    <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-purple-700 bg-purple-50 border-purple-200">Crítica para esta vaga</span>
+                                    <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple bg-wedo-purple/10 border-wedo-purple/30">Crítica para esta vaga</span>
                                   )}
-                                  {status === "gap"   && <span className="text-micro font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
-                                  {status === "acima" && <span className="text-micro font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
-                                  {status === "ok"    && <span className="text-micro font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
+                                  {status === "gap"   && <span className="text-micro font-bold text-status-warning bg-status-warning/10 px-1.5 py-0.5 rounded-full border border-status-warning/30">⚠️ Diferença</span>}
+                                  {status === "acima" && <span className="text-micro font-bold text-wedo-cyan-dark bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full border border-wedo-cyan/30">↑ Acima</span>}
+                                  {status === "ok"    && <span className="text-micro font-bold text-status-success bg-status-success/10 px-1.5 py-0.5 rounded-full border border-status-success/30">✓ Alinhado</span>}
                                   {hint && (
                                     <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
                                       <Info className="w-3 h-3 text-gray-300 hover:text-gray-500 transition-colors" />
@@ -813,7 +813,7 @@ export function TriagemDetailsModal({
                                 )}
                                 <div className="relative h-3">
                                   <div className="absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${vagaEsperado}%` }} />
-                                  <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-amber-400" : status === "acima" ? "bg-blue-400" : "bg-gray-800"}`} style={{ width: `${candidato}%` }} />
+                                  <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-status-warning" : status === "acima" ? "bg-wedo-cyan" : "bg-gray-800"}`} style={{ width: `${candidato}%` }} />
                                 </div>
                                 <div className="flex items-center justify-between text-micro text-gray-400" style={font}>
                                   <span>Candidato: <span className="font-semibold text-gray-600">{candidato}%</span></span>
@@ -887,7 +887,7 @@ export function TriagemDetailsModal({
               {isPendingDecision && !!details && (
                 <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
-                    <BookOpen className="w-4 h-4 text-blue-500" /> Feedback para o Candidato
+                    <BookOpen className="w-4 h-4 text-wedo-cyan-dark" /> Feedback para o Candidato
                   </h3>
                   <p className="text-xs text-gray-500 italic" style={font}>Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
                   <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
@@ -943,7 +943,7 @@ export function TriagemDetailsModal({
                 <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
-                      <BookOpen className="w-4 h-4 text-blue-500" />
+                      <BookOpen className="w-4 h-4 text-wedo-cyan-dark" />
                       Feedback para o Candidato
                     </h3>
                     <button
@@ -967,7 +967,7 @@ export function TriagemDetailsModal({
                       className="flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                       style={font}
                     >
-                      {copiedFeedback ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                      {copiedFeedback ? <CheckCircle className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
                       {copiedFeedback ? "Copiado!" : "Copiar feedback"}
                     </button>
                   </div>
@@ -1014,7 +1014,7 @@ export function TriagemDetailsModal({
                       <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Oportunidades de Desenvolvimento:</p>
                       {feedback.development_opportunities.map((d: string, i: number) => (
                         <div key={i} className="flex items-start gap-1.5 mb-0.5">
-                          <BookOpen className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500" />
+                          <BookOpen className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan-dark" />
                           <p className="text-xs text-gray-700" style={font}>{d}</p>
                         </div>
                       ))}
@@ -1082,9 +1082,9 @@ export function TriagemDetailsModal({
                           >
                             {/* Rank badge */}
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-bold flex-shrink-0 ${
-                              entry.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
+                              entry.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
                               entry.rank === 2 ? 'bg-gray-100 text-gray-600' :
-                              entry.rank === 3 ? 'bg-orange-100 text-orange-700' :
+                              entry.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
                               isCurrent ? 'bg-white text-gray-900' : 'bg-gray-100 text-gray-500'
                             }`} style={font}>
                               {entry.rank}
@@ -1144,7 +1144,7 @@ export function TriagemDetailsModal({
           <div className="flex items-center gap-2">
             {confirmReject ? (
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-red-600 font-medium" style={font}>Confirmar reprovação?</span>
+                <span className="text-xs text-status-error font-medium" style={font}>Confirmar reprovação?</span>
                 <button
                   onClick={async () => {
                     setRejecting(true)
@@ -1169,7 +1169,7 @@ export function TriagemDetailsModal({
             ) : (
               <button
                 onClick={() => setConfirmReject(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-red-50 border border-gray-200" style={{ ...font, backgroundColor: 'var(--gray-50)', color: 'var(--status-error)' }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-status-error/10 border border-gray-200 text-status-error"
               >
                 <ThumbsDown className="w-3.5 h-3.5" />
                 Reprovar

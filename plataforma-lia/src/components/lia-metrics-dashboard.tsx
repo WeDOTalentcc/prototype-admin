@@ -113,8 +113,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: triageConversionRate,
       avgTime: avgTimeTriage,
       icon: <CheckCircle className="w-4 h-4" />,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-900/20'
+      color: 'text-status-success',
+      bgColor: 'bg-status-success/10'
     },
     {
       stage: 'Triagem Aprovada',
@@ -123,8 +123,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: triageApprovalRate,
       avgTime: 0.5,
       icon: <Award className="w-4 h-4" />,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20'
+      color: 'text-status-success',
+      bgColor: 'bg-status-success/10'
     },
     {
       stage: 'Entrevista Agendada',
@@ -133,8 +133,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: interviewConversionRate,
       avgTime: avgTimeInterview,
       icon: <Calendar className="w-4 h-4" />,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20'
+      color: 'text-wedo-purple',
+      bgColor: 'bg-wedo-purple/10'
     }
   ]
 
@@ -193,7 +193,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
               <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <Badge className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-green-500' : contactRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+              <Badge className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-status-success' : contactRate >= 60 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {contactRate.toFixed(0)}%
               </Badge>
             </div>
@@ -210,8 +210,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <Badge className={`text-xs px-1.5 py-0.5 ${triageConversionRate >= 70 ? 'bg-green-500' : triageConversionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+              <CheckCircle className="w-4 h-4 text-status-success" />
+              <Badge className={`text-xs px-1.5 py-0.5 ${triageConversionRate >= 70 ? 'bg-status-success' : triageConversionRate >= 50 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {triageConversionRate.toFixed(0)}%
               </Badge>
             </div>
@@ -228,8 +228,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <Badge className={`text-xs px-1.5 py-0.5 ${triageApprovalRate >= 60 ? 'bg-green-500' : triageApprovalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+              <Award className="w-4 h-4 text-status-success" />
+              <Badge className={`text-xs px-1.5 py-0.5 ${triageApprovalRate >= 60 ? 'bg-status-success' : triageApprovalRate >= 40 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {triageApprovalRate.toFixed(0)}%
               </Badge>
             </div>
@@ -246,8 +246,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <Badge className={`text-xs px-1.5 py-0.5 ${interviewConversionRate >= 50 ? 'bg-green-500' : interviewConversionRate >= 30 ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+              <Calendar className="w-4 h-4 text-wedo-purple" />
+              <Badge className={`text-xs px-1.5 py-0.5 ${interviewConversionRate >= 50 ? 'bg-status-success' : interviewConversionRate >= 30 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {interviewConversionRate.toFixed(0)}%
               </Badge>
             </div>
@@ -264,8 +264,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-              <TrendingUp className="w-3 h-3 text-green-500" />
+              <Clock className="w-4 h-4 text-wedo-orange" />
+              <TrendingUp className="w-3 h-3 text-status-success" />
             </div>
             <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
               {avgTimeContact.toFixed(1)}h
@@ -332,7 +332,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                           className={`h-1.5 rounded-full ${
                             stage.rate >= 70 ? 'bg-wedo-green' :
                             stage.rate >= 50 ? 'bg-wedo-orange' :
-                            'bg-red-500'
+                            'bg-status-error'
                           }`}
                           style={{ width: `${stage.rate}%` }}
                         />
@@ -358,7 +358,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-              <TrendingUp className="w-4 h-4 text-green-600" />
+              <TrendingUp className="w-4 h-4 text-status-success" />
               Distribuição de Scores LIA
             </CardTitle>
           </CardHeader>
@@ -399,7 +399,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-              <TrendingUp className="w-4 h-4 text-green-600" />
+              <TrendingUp className="w-4 h-4 text-status-success" />
               Taxa de Conversão (7 dias)
             </CardTitle>
           </CardHeader>
@@ -418,7 +418,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-              <Target className="w-4 h-4 text-purple-600" />
+              <Target className="w-4 h-4 text-wedo-purple" />
               Match de Skills (7 dias)
             </CardTitle>
           </CardHeader>
@@ -436,23 +436,23 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
       {/* Alertas e Ações Pendentes */}
       {pendingApproval > 0 && (
-        <Card className="bg-orange-50 dark:bg-orange-900/10">
+        <Card className="bg-wedo-orange/10">
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-md flex items-center justify-center">
-                  <AlertCircle className="w-4 h-4 text-orange-600" />
+                <div className="w-8 h-8 bg-wedo-orange/20 rounded-md flex items-center justify-center">
+                  <AlertCircle className="w-4 h-4 text-wedo-orange" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+                  <div className="text-sm font-semibold text-wedo-orange">
                     {pendingApproval} Ações Pendentes
                   </div>
-                  <div className="text-xs text-orange-700 dark:text-orange-300">
+                  <div className="text-xs text-wedo-orange/80">
                     Aguardando aprovação para contato ou próximo passo
                   </div>
                 </div>
               </div>
-              <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
+              <Button size="sm" className="bg-wedo-orange hover:bg-wedo-orange/90 text-white">
                 <Zap className="w-3 h-3 mr-1" />
                 Revisar Agora
               </Button>
@@ -484,9 +484,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                         {source.count} cand.
                       </Badge>
                       <Badge className={`text-xs px-1 py-0 ${
-                        source.conversionRate >= 70 ? 'bg-green-500' :
-                        source.conversionRate >= 50 ? 'bg-yellow-500' :
-                        'bg-red-500'
+                        source.conversionRate >= 70 ? 'bg-status-success' :
+                        source.conversionRate >= 50 ? 'bg-status-warning' :
+                        'bg-status-error'
                       } text-white`}>
                         {source.conversionRate.toFixed(0)}%
                       </Badge>
@@ -495,9 +495,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
                     <div
                       className={`h-1 rounded-full ${
-                        source.conversionRate >= 70 ? 'bg-green-500' :
-                        source.conversionRate >= 50 ? 'bg-yellow-500' :
-                        'bg-red-500'
+                        source.conversionRate >= 70 ? 'bg-status-success' :
+                        source.conversionRate >= 50 ? 'bg-status-warning' :
+                        'bg-status-error'
                       }`}
                       style={{ width: `${source.conversionRate}%` }}
                     />
@@ -546,9 +546,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Insight 1: Taxa de Contato */}
             <div className={`p-3 rounded-md ${
-              contactRate >= 80 ? 'bg-green-50 dark:bg-green-900/20' :
-              contactRate >= 60 ? 'bg-yellow-50 dark:bg-yellow-900/20' :
-              'bg-red-50 dark:bg-red-900/20'
+              contactRate >= 80 ? 'bg-status-success/10' :
+              contactRate >= 60 ? 'bg-status-warning/10' :
+              'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
                 <Phone className="w-3 h-3 text-gray-600 dark:text-gray-400" />
@@ -568,12 +568,12 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Insight 2: Taxa de Conversão */}
             <div className={`p-3 rounded-md ${
-              triageConversionRate >= 70 ? 'bg-green-50 dark:bg-green-900/20' :
-              triageConversionRate >= 50 ? 'bg-yellow-50 dark:bg-yellow-900/20' :
-              'bg-red-50 dark:bg-red-900/20'
+              triageConversionRate >= 70 ? 'bg-status-success/10' :
+              triageConversionRate >= 50 ? 'bg-status-warning/10' :
+              'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-3 h-3 text-green-600" />
+                <Target className="w-3 h-3 text-status-success" />
                 <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                   Taxa de Conversão
                 </span>
@@ -590,12 +590,12 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Insight 3: Tempo de Resposta */}
             <div className={`p-3 rounded-md ${
-              avgTimeContact <= 2 ? 'bg-green-50 dark:bg-green-900/20' :
-              avgTimeContact <= 4 ? 'bg-yellow-50 dark:bg-yellow-900/20' :
-              'bg-red-50 dark:bg-red-900/20'
+              avgTimeContact <= 2 ? 'bg-status-success/10' :
+              avgTimeContact <= 4 ? 'bg-status-warning/10' :
+              'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="w-3 h-3 text-orange-600" />
+                <Clock className="w-3 h-3 text-wedo-orange" />
                 <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                   Velocidade
                 </span>
@@ -626,13 +626,13 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   {avgLiaScore.toFixed(1)}
                 </div>
               </div>
-              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-bold">
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
             <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 transition-all duration-500"
+                className="h-full bg-wedo-cyan transition-all duration-500"
                 style={{ width: `${avgLiaScore * 10}%` }}
               />
             </div>
@@ -717,7 +717,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
  <div className="p-3 bg-gray-100 rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  <Badge className="bg-green-500 text-white text-xs">
+                  <Badge className="bg-status-success text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
@@ -732,10 +732,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-green-50 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-status-success/10 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <Timer className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <Badge className="bg-green-500 text-white text-xs">
+                  <Timer className="w-5 h-5 text-status-success" />
+                  <Badge className="bg-status-success text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
@@ -750,10 +750,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-yellow-50 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-status-warning/10 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <Timer className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                  <Badge className="bg-yellow-500 text-white text-xs">
+                  <Timer className="w-5 h-5 text-status-warning" />
+                  <Badge className="bg-status-warning text-white text-xs">
                     ⚠ Atenção
                   </Badge>
                 </div>
@@ -768,9 +768,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-purple-50 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-wedo-purple/10 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Clock className="w-5 h-5 text-wedo-purple" />
                   <Badge className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-xs">
                     Total
                   </Badge>
@@ -810,7 +810,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
                     15 dias
                   </div>
-                  <Badge className="mt-2 bg-green-500 text-white">
+                  <Badge className="mt-2 bg-status-success text-white">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     Dentro da Meta
                   </Badge>
@@ -843,7 +843,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   Mais Rápido
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   <div>
                     <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                       {(avgTimeTotal * 0.6).toFixed(1)}d
@@ -877,7 +877,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   Mais Lento
                 </div>
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-orange-600" />
+                  <AlertCircle className="w-4 h-4 text-wedo-orange" />
                   <div>
                     <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                       {(avgTimeTotal * 1.8).toFixed(1)}d
