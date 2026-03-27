@@ -227,16 +227,10 @@ function ExpandedChatModalContent({
   const [internalJobCreationMode, setInternalJobCreationMode] = useState(false)
   const [generatedJobDescription, setGeneratedJobDescription] = useState<string>('')
   
-  // Fast Track state
-  const [wizardMode, setWizardMode] = useState<WizardMode>('pre_wizard')
-  const [fastTrackState, setFastTrackState] = useState<FastTrackState>('initial')
-  const [fastTrackSearchResults, setFastTrackSearchResults] = useState<VacancySummary[]>([])
-  const [fastTrackSelectedVacancy, setFastTrackSelectedVacancy] = useState<VacancyFullDetails | null>(null)
-  const [fastTrackAdjustments, setFastTrackAdjustments] = useState<VacancyAdjustments>({})
-  const [fastTrackSearchCriteria, setFastTrackSearchCriteria] = useState<VacancySearchCriteria>({})
-  const [isSearchingVacancies, setIsSearchingVacancies] = useState(false)
+  // Fast Track state (from useFastTrackState — Sprint 4.2)
+  const { wizardMode, fastTrackState, fastTrackSearchResults, fastTrackSelectedVacancy, fastTrackAdjustments, fastTrackSearchCriteria, isSearchingVacancies, wizardFastTrackSourceJobId } = fastTrackHookState
+  const { setWizardMode, setFastTrackState, setFastTrackSearchResults, setFastTrackSelectedVacancy, setFastTrackAdjustments, setFastTrackSearchCriteria, setIsSearchingVacancies, setWizardFastTrackSourceJobId } = fastTrackActions
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [wizardFastTrackSourceJobId, setWizardFastTrackSourceJobId] = useState<string | null>(null)
   
   // Control panel visibility based on wizard mode
   useEffect(() => {
@@ -407,31 +401,13 @@ function ExpandedChatModalContent({
   // Calibration state (from useCalibrationState — Sprint 4.2)
   const { calibrationCandidates, currentCalibrationIndex, approvedCandidates, rejectedCandidates, calibrationComplete, isLoadingCalibration, showCalibrationModal, calibrationSessionId, awaitingCalibrationChoice, showEditCriteriaModal, candidateProfileTab, calibrationComment, publishedJobId, calibrationCriteria, postCalibrationProcessing, localCandidateCount, globalSearchAuthorized, postCalibrationComplete, hasAttemptedCalibrationGeneration, searchPhase, globalCandidateCount, preferredCandidateCount, showClearDraftConfirm } = calibrationState
   const { setCalibrationCandidates, setCurrentCalibrationIndex, setApprovedCandidates, setRejectedCandidates, setCalibrationComplete, setIsLoadingCalibration, setShowCalibrationModal, setCalibrationSessionId, setAwaitingCalibrationChoice, setShowEditCriteriaModal, setCandidateProfileTab, setCalibrationComment, setPublishedJobId, setCalibrationCriteria, setPostCalibrationProcessing, setLocalCandidateCount, setGlobalSearchAuthorized, setPostCalibrationComplete, setHasAttemptedCalibrationGeneration, setSearchPhase, setGlobalCandidateCount, setPreferredCandidateCount, setShowClearDraftConfirm } = calibrationActions
-  const { competenciesTab: _competenciesTabFromCalib } = calibrationState
   
   // Field origins state to track where each value came from (backend integration)
   const [fieldOrigins, setFieldOrigins] = useState<Record<string, { source: FieldOrigin; confidence: number }>>({})
-  
-  // Salary benchmark data from backend
-  const [salaryBenchmark, setSalaryBenchmark] = useState<{
-    internal?: { min: number; max: number; median: number; sample_size: number; trend?: string }
-    market?: { min: number; max: number; median: number; sources: string[]; confidence: string; learning_adjusted?: boolean }
-    combined?: { min: number; max: number; median: number; confidence: string; recommendation: string }
-  } | null>(null)
-  const [isLoadingBenchmark, setIsLoadingBenchmark] = useState(false)
-  
-  // Compensation analysis state for proactive evaluation
-  const [compensationAnalysis, setCompensationAnalysis] = useState<CompensationAnalysisResult | null>(null)
-  
-  // Competencies chat display state
-  const [showCompetenciesInChat, setShowCompetenciesInChat] = useState(false)
-  const [competenciesChatLoading, setCompetenciesChatLoading] = useState(false)
-  
-  // Competency suggestions for chat integration
-  const [competencySuggestions, setCompetencySuggestions] = useState<{
-    technicalSkills: TechnicalSkillSuggestion[]
-    behavioralCompetencies: BehavioralCompetencySuggestion[]
-  } | null>(null)
+
+  // Salary benchmark + compensation analysis (from useSalaryState — Sprint 4.2)
+  const { salaryBenchmark, isLoadingBenchmark, compensationAnalysis } = salaryState
+  const { setSalaryBenchmark, setIsLoadingBenchmark, setCompensationAnalysis } = salaryActions
   
   // Job Wizard Backend integration
   const { 
@@ -503,55 +479,9 @@ function ExpandedChatModalContent({
     }
   })
   
-  // Publishing platforms state (Stage 7.5 - Pre-publish)
-  const [publishingPlatforms, setPublishingPlatforms] = useState<{
-    id: string
-    name: string
-    type: 'ats' | 'jobboard' | 'website'
-    enabled: boolean
-    logo?: string
-  }[]>([
-    { id: 'gupy', name: 'Gupy', type: 'ats', enabled: true },
-    { id: 'pandape', name: 'Pandapé', type: 'ats', enabled: false },
-    { id: 'linkedin', name: 'LinkedIn', type: 'jobboard', enabled: true },
-    { id: 'indeed', name: 'Indeed', type: 'jobboard', enabled: false },
-    { id: 'website', name: 'Website da Empresa', type: 'website', enabled: true },
-  ])
-  
-  // Job configuration state (Stage 7.5 - Pre-publish optional fields)
-  // Note: stage, target_audience, interview_stages are calculated in handlePublishJob
-  const [jobConfig, setJobConfig] = useState<{
-    urgencyLevel: number
-    visibility: 'public' | 'internal' | 'confidential'
-    isConfidential: boolean
-    isAffirmative: boolean
-    deadline: string
-    deadlineScreening: string
-    deadlineShortlist: string
-    languages: { name: string; level: string }[]
-    hybridDaysOnsite?: number
-  }>(() => {
-    const now = new Date()
-    const deadline = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // +30 dias
-    const deadlineScreening = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // +7 dias
-    const deadlineShortlist = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // +14 dias
-    
-    return {
-      urgencyLevel: 3,
-      visibility: 'public',
-      isConfidential: false,
-      isAffirmative: false,
-      deadline: deadline.toISOString().split('T')[0],
-      deadlineScreening: deadlineScreening.toISOString().split('T')[0],
-      deadlineShortlist: deadlineShortlist.toISOString().split('T')[0],
-      languages: [],
-      hybridDaysOnsite: undefined
-    }
-  })
-  
-  // Job description state (for review stage)
-  const [jobDescription, setJobDescription] = useState<string>('')
-  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
+  // Publishing state (from usePublishingState — Sprint 4.2)
+  const { publishingPlatforms, jobConfig, jobDescription, isGeneratingDescription } = publishingState
+  const { setPublishingPlatforms, setJobConfig, setJobDescription, setIsGeneratingDescription, updateLanguages } = publishingActions
   
   // Company configuration state (fetched from settings)
   const [companyConfig, setCompanyConfig] = useState<{
@@ -860,24 +790,9 @@ function ExpandedChatModalContent({
     }
   }, [detectedCriteria?.cargo, detectedCriteria?.departamento, mode, fetchWizardSuggestions])
   
-  // Track Fast Track conversation state
-  const [fastTrackMessageSent, setFastTrackMessageSent] = useState(false)
-  const [fastTrackSuggestionsShownTracked, setFastTrackSuggestionsShownTracked] = useState(false)
-  const [awaitingFastTrackSelection, setAwaitingFastTrackSelection] = useState(false)
-  const [awaitingSensitiveFieldsConfirmation, setAwaitingSensitiveFieldsConfirmation] = useState(false)
-  const [fastTrackAppliedData, setFastTrackAppliedData] = useState<{
-    gestor: string
-    localidade: string
-    sourceJobTitle: string
-  } | null>(null)
-  
-  // Track original competencies from Fast Track for WSI regeneration detection
-  const [fastTrackOriginalCompetencies, setFastTrackOriginalCompetencies] = useState<{
-    technicalSkillNames: string[]
-    behavioralCompetencyNames: string[]
-  } | null>(null)
-  const [wsiRegenerationPrompted, setWsiRegenerationPrompted] = useState(false)
-  const [awaitingWSIRegenerationConfirmation, setAwaitingWSIRegenerationConfirmation] = useState(false)
+  // Fast Track conversation state (from useFastTrackState — Sprint 4.2)
+  const { fastTrackMessageSent, fastTrackSuggestionsShownTracked, awaitingFastTrackSelection, awaitingSensitiveFieldsConfirmation, fastTrackAppliedData, fastTrackOriginalCompetencies, wsiRegenerationPrompted, awaitingWSIRegenerationConfirmation } = fastTrackHookState
+  const { setFastTrackMessageSent, setFastTrackSuggestionsShownTracked, setAwaitingFastTrackSelection, setAwaitingSensitiveFieldsConfirmation, setFastTrackAppliedData, setFastTrackOriginalCompetencies, setWsiRegenerationPrompted, setAwaitingWSIRegenerationConfirmation, resetFastTrackConversationState } = fastTrackActions
   
   // Note: Extract functions to avoid stale closure issues and infinite loops
   const { 
@@ -913,17 +828,10 @@ function ExpandedChatModalContent({
   // Reset Fast Track message flag when starting new job creation
   useEffect(() => {
     if (!isOpen || mode !== 'job-creation') {
-      setFastTrackMessageSent(false)
-      setFastTrackSuggestionsShownTracked(false)
-      setAwaitingFastTrackSelection(false)
-      setAwaitingSensitiveFieldsConfirmation(false)
-      setFastTrackAppliedData(null)
-      setFastTrackOriginalCompetencies(null)
-      setWsiRegenerationPrompted(false)
-      setAwaitingWSIRegenerationConfirmation(false)
+      resetFastTrackConversationState()
       clearFastTrackSuggestions()
     }
-  }, [isOpen, mode, clearFastTrackSuggestions])
+  }, [isOpen, mode, clearFastTrackSuggestions, resetFastTrackConversationState])
   
   // Clear awaiting state when suggestions disappear (centralized cleanup)
   useEffect(() => {
@@ -1088,19 +996,17 @@ function ExpandedChatModalContent({
     }
   }, [wizardGreeting, isFieldRequiredForWizard])
   
-  // Map of company member names to emails (for manager notification lookup)
-  const [companyMembersMap, setCompanyMembersMap] = useState<Map<string, string>>(new Map())
-  
+  // Publishing state — company members, languages (from usePublishingState — Sprint 4.2)
+  const { companyMembersMap, languagesUserEdited } = publishingState
+  const { setCompanyMembersMap, setLanguagesUserEdited } = publishingActions
+
   // Determine if we're in job creation mode (either from prop or internal state)
   const isInJobCreationMode = isJobCreationMode || internalJobCreationMode
-  
-  // Track if languages have been manually edited by user
-  const [languagesUserEdited, setLanguagesUserEdited] = useState(false)
-  
+
   // Extract languages from conversation messages (only once, when not edited by user)
   useEffect(() => {
     if (languagesUserEdited || jobConfig.languages.length > 0) return // Don't overwrite user edits
-    
+
     const languagePatterns = [
       { pattern: /ingl[eê]s\s*(fluente|avan[cç]ado|intermedi[aá]rio|b[aá]sico)?/gi, name: 'Inglês' },
       { pattern: /espanhol\s*(fluente|avan[cç]ado|intermedi[aá]rio|b[aá]sico)?/gi, name: 'Espanhol' },
@@ -1110,10 +1016,10 @@ function ExpandedChatModalContent({
       { pattern: /mandarim\s*(fluente|avan[cç]ado|intermedi[aá]rio|b[aá]sico)?/gi, name: 'Mandarim' },
       { pattern: /japon[eê]s\s*(fluente|avan[cç]ado|intermedi[aá]rio|b[aá]sico)?/gi, name: 'Japonês' },
     ]
-    
+
     const allText = messages.map(m => m.content).join(' ').toLowerCase()
     const detectedLanguages: { name: string; level: string }[] = []
-    
+
     languagePatterns.forEach(({ pattern, name }) => {
       const match = allText.match(pattern)
       if (match) {
@@ -1127,17 +1033,11 @@ function ExpandedChatModalContent({
         detectedLanguages.push({ name, level })
       }
     })
-    
+
     if (detectedLanguages.length > 0) {
       setJobConfig(prev => ({ ...prev, languages: detectedLanguages }))
     }
   }, [messages, languagesUserEdited, jobConfig.languages.length])
-  
-  // Helper function to update languages and mark as user-edited
-  const updateLanguages = (newLanguages: { name: string; level: string }[]) => {
-    setLanguagesUserEdited(true)
-    setJobConfig(prev => ({ ...prev, languages: newLanguages }))
-  }
   
   // Check if we have any config data
   const hasConfigData = companyConfig && (

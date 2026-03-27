@@ -49,7 +49,31 @@ A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a c
 
 **Princípio:** Nenhum componente deve referenciar diretamente um valor de cor, tamanho ou espaçamento. Tudo passa pela bridge.
 
-### 0.3 Por Que Funciona
+### 0.3 As 6 Dimensões de Padronização
+
+A Bridge Architecture não se limita a tokens CSS. Todo trabalho de refatoração do front segue **6 dimensões** que determinam como cada sprint é planejado e executado:
+
+| # | Dimensão | O que governa | Onde se aplica |
+|---|----------|---------------|----------------|
+| 1 | **Bridge Architecture (CSS vars)** | Tokens visuais — cores, tipografia, espaçamento, sombras | Sprints de tokenização (ex: 4.1.5). Hooks e lógica de estado **não tocam CSS** — a bridge já cuida |
+| 2 | **Monochromatic Design System** | Paleta Notion/ElevenLabs — preto + wedo-cyan como accent | Componentes com JSX/UI. Sprints de extração de UI (ex: 4.3). Não afeta hooks TS puros |
+| 3 | **Token Inventory (status-*, chart-*, gray-*)** | Vocabulário semântico: `status-error`, `wedo-green`, `chart-1` | Idem — aplica-se quando se cria/modifica componentes visuais |
+| 4 | **WeDOTalent Color Standardization** | Consolidação das 298 cores únicas em ~30 tokens canônicos | Sprints de cores (Fase 2). Hooks são TS puro — não afetados |
+| 5 | **Vue Migration Prep** | Estrutura de código compatível com Pinia/Vue 3 | **Crítico em hooks:** padrão `{ state, actions }` compatível com Pinia stores. Sem `useContext`, sem HOCs, sem `cloneElement` |
+| 6 | **Separação de Concerns** | Lógica de estado separada de apresentação | Sprints de extração de hooks (ex: 4.2). Objetivo: cada componente com estado zero — tudo em hooks reutilizáveis |
+
+**Como as dimensões interagem por sprint:**
+
+```
+Sprint 4.1.5 (Tokenização)     → Dimensões 1, 2, 3, 4 (CSS vars, paleta, tokens, cores)
+Sprint 4.2   (Extração hooks)  → Dimensões 5, 6 (Vue prep, separação de concerns)
+Sprint 4.3   (Extração UI)     → Dimensões 1, 2, 3, 4, 5 (tokens + componentes Vue-ready)
+Sprint 4.4+  (Integração)      → Todas as 6 dimensões auditadas
+```
+
+> **Regra:** Nenhum sprint modifica código sem validar qual subconjunto das 6 dimensões se aplica.
+
+### 0.4 Impacto: Sem Bridge vs Com Bridge
 
 | Cenário | Sem Bridge | Com Bridge |
 |---------|-----------|------------|
@@ -59,7 +83,7 @@ A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a c
 | Ajustar tipografia | Encontrar 1.287 ocorrências | Mudar 4 tokens |
 | Auditar consistência | Impossível sem varredura | Grep em design-tokens.css |
 
-### 0.4 Arquivos da Bridge
+### 0.5 Arquivos da Bridge
 
 | Camada | Arquivo | Linhas | Papel |
 |--------|---------|--------|-------|
@@ -69,7 +93,7 @@ A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a c
 | 2→3 | `src/lib/design-tokens.ts` | 644 | Tokens em TypeScript + mapeamento Tailwind→Vuetify |
 | 2→3 | `src/lib/theme-colors.ts` | ~150 | Temas por página (6 variantes) |
 
-### 0.5 O que Já Está Implementado
+### 0.6 O que Já Está Implementado
 
 **Fase 0 — Limpeza (concluída 2026-03-27):**
 - 16 arquivos de dead code removidos (9.820 linhas)
@@ -85,7 +109,7 @@ A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a c
 **Infraestrutura de Migração Vue:**
 - `design-tokens.ts` contém `tailwindToVuetify` com mapeamentos completos de cores, tipografia, espaçamento, border-radius, sombras e layout — pronto para consumo por scripts de conversão automatizada
 
-### 0.6 O que Falta (Fases 2-5)
+### 0.7 O que Falta (Fases 2-5)
 
 | Fase | Escopo | Impacto | Status |
 |------|--------|---------|--------|
@@ -96,9 +120,11 @@ A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a c
 
 > **Detalhamento completo das fases:** seções 29-32 deste documento.
 
-### 0.7 Regra Para Novos Desenvolvimentos
+### 0.8 Regras Para Novos Desenvolvimentos
 
-Qualquer componente novo ou modificado **deve** seguir a bridge:
+Qualquer código novo ou modificado **deve** seguir as dimensões aplicáveis:
+
+**Componentes com UI (JSX/TSX) — Dimensões 1-5:**
 
 ```
 ✅ CORRETO — Usa token semântico:
@@ -108,6 +134,32 @@ Qualquer componente novo ou modificado **deve** seguir a bridge:
   className="text-[11px] text-green-600"
   style={{ color: '#60BED1', fontSize: '11px' }}
 ```
+
+**Hooks e lógica de estado (TS puro) — Dimensões 5-6:**
+
+```
+✅ CORRETO — Padrão { state, actions } compatível com Pinia:
+  export function useJobFilters() {
+    const [filters, setFilters] = useState<JobFilters>(defaults)
+    const actions = { setStatus, clearAll, applyPreset }
+    return { ...filters, ...actions }        // → Pinia store shape
+  }
+
+❌ ERRADO — Acoplado a React internals:
+  // useContext direto no hook de estado (não traduz para Pinia)
+  // cloneElement / HOCs (não existem em Vue 3)
+  // Estado misturado com renderização JSX
+```
+
+**Checklist por tipo de mudança:**
+
+| Tipo de mudança | Dimensões obrigatórias |
+|-----------------|----------------------|
+| Novo componente UI | 1 (tokens CSS), 2 (monocromático), 3 (vocabulário semântico), 5 (Vue-ready) |
+| Novo hook de estado | 5 (padrão Pinia), 6 (concerns separados) |
+| Modificar cores | 1 (via design-tokens.css), 4 (consolidação WeDOTalent) |
+| Novo modal/dialog | 1 (tokens), 2 (palette), 5 (composable pattern) |
+| Refatorar componente gigante | Todas as 6 dimensões |
 
 > **Esta seção é um documento vivo.** Será atualizada conforme as fases avançam e a arquitetura evolui.
 
