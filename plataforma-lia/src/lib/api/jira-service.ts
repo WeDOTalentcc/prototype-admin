@@ -115,7 +115,7 @@ async function getUncachableJiraClient() {
   });
 }
 
-async function agileApiRequest(path: string): Promise<any> {
+async function agileApiRequest(path: string): Promise<Record<string, unknown>> {
   const { accessToken, apiBaseUrl } = await getAccessToken();
   
   const response = await fetch(`${apiBaseUrl}/rest/agile/1.0${path}`, {
@@ -177,7 +177,7 @@ export class JiraService {
       const params = projectKey ? `?projectKeyOrId=${projectKey}&type=kanban` : '?type=kanban';
       const response = await agileApiRequest(`/board${params}`);
 
-      return (response.values || []).map((board: Record<string, unknown>) => ({
+      return ((response.values || []) as Record<string, unknown>[]).map((board: Record<string, unknown>) => ({
         id: board.id as number,
         name: board.name as string,
         type: board.type as string,
@@ -192,7 +192,8 @@ export class JiraService {
     try {
       const response = await agileApiRequest(`/board/${boardId}/configuration`);
       
-      return (response.columnConfig?.columns || []).map((col: Record<string, unknown>) => ({
+      const columnConfig = response.columnConfig as Record<string, unknown> | undefined
+      return ((columnConfig?.columns || []) as Record<string, unknown>[]).map((col: Record<string, unknown>) => ({
         id: col.name as string,
         name: col.name as string,
         statusIds: ((col.statuses as Array<{ id: string }>) || []).map(s => s.id),

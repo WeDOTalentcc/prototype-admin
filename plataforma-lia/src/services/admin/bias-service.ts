@@ -130,7 +130,7 @@ class BiasAuditService {
 
   async getSummary(clientId: string): Promise<BiasAuditSummary> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/summary`,
         { clientId }
       )
@@ -151,7 +151,7 @@ class BiasAuditService {
 
   async getLatest(clientId: string): Promise<BiasAuditReport | null> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/latest`,
         { clientId }
       )
@@ -182,12 +182,12 @@ class BiasAuditService {
         ? `${this.baseEndpoint}?${queryParams}`
         : this.baseEndpoint
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        audits: (data.audits || []).map(mapBackendBiasAudit),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        audits: ((data.audits || []) as Record<string, unknown>[]).map(mapBackendBiasAudit),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 50,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -199,7 +199,7 @@ class BiasAuditService {
 
   async getAudit(clientId: string, auditId: string): Promise<BiasAuditReport | null> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/${auditId}`,
         { clientId }
       )

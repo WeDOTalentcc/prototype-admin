@@ -146,14 +146,14 @@ export function AdvancedInteractiveChart({
   drillDownEnabled = true,
   onDataPointClick
 }: AdvancedChartProps) {
-  const [selectedDataPoint, setSelectedDataPoint] = useState<any>(null)
+  const [selectedDataPoint, setSelectedDataPoint] = useState<Record<string, unknown> | null>(null)
   const [chartConfig, setChartConfig] = useState({
     showGrid: true,
     showLegend: true,
     showTooltip: true,
     animationDuration: 1000
   })
-  const chartRef = useRef<any>(null)
+  const chartRef = useRef<ChartJS | null>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!chartRef.current || !drillDownEnabled) return
@@ -299,8 +299,8 @@ export function AdvancedInteractiveChart({
     return { labels, datasets }
   }
 
-  const getChartOptions = (): ChartOptions<any> => {
-    const baseOptions: ChartOptions<any> = {
+  const getChartOptions = (): ChartOptions => {
+    const baseOptions: ChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
@@ -340,10 +340,11 @@ export function AdvancedInteractiveChart({
           tooltip: {
             ...baseOptions.plugins?.tooltip,
             callbacks: {
-              label: (context: { label?: string; raw?: number; dataset: { label: string; data?: number[] }; parsed: { y: number } }) => {
-                const label = context.label || ''
-                const value = context.raw || 0
-                const total = (context.dataset?.data || []).reduce((a: number, b: number) => a + b, 0)
+              label: (context) => {
+                const label = String(context.label || '')
+                const value = Number(context.raw || 0)
+                const dataArr = (context.dataset?.data || []) as number[]
+                const total = dataArr.reduce((a, b) => a + b, 0)
                 const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : '0'
                 return `${label}: ${value} (${percentage}%)`
               }
@@ -447,20 +448,20 @@ export function AdvancedInteractiveChart({
     switch (type) {
       case 'line':
       case 'area':
-        return <Line ref={chartRef} data={chartData as ChartData<'line'>} options={options} />
+        return <Line ref={chartRef as React.RefObject<ChartJS<'line'> | null>} data={chartData as ChartData<'line'>} options={options as ChartOptions<'line'>} />
       
       case 'bar':
       case 'funnel':
-        return <Bar ref={chartRef} data={chartData as ChartData<'bar'>} options={options} />
+        return <Bar ref={chartRef as React.RefObject<ChartJS<'bar'> | null>} data={chartData as ChartData<'bar'>} options={options as ChartOptions<'bar'>} />
       
       case 'pie':
-        return <Pie ref={chartRef} data={chartData as ChartData<'pie'>} options={options} />
+        return <Pie ref={chartRef as React.RefObject<ChartJS<'pie'> | null>} data={chartData as ChartData<'pie'>} options={options as ChartOptions<'pie'>} />
       
       case 'radar':
-        return <Radar ref={chartRef} data={chartData as ChartData<'radar'>} options={options} />
+        return <Radar ref={chartRef as React.RefObject<ChartJS<'radar'> | null>} data={chartData as ChartData<'radar'>} options={options as ChartOptions<'radar'>} />
       
       case 'composed':
-        return <Chart ref={chartRef} type='bar' data={chartData as ChartData<'bar'>} options={options} />
+        return <Chart ref={chartRef as React.RefObject<ChartJS<'bar'> | null>} type='bar' data={chartData as ChartData<'bar'>} options={options as ChartOptions<'bar'>} />
       
       case 'treemap':
       case 'scatter':
@@ -490,7 +491,7 @@ export function AdvancedInteractiveChart({
             </CardTitle>
             {selectedDataPoint && (
               <p className="text-sm text-gray-600 mt-1">
-                📊 Selecionado: {selectedDataPoint[dataKeys[0]]}
+                📊 Selecionado: {String(selectedDataPoint[dataKeys[0]] ?? '')}
               </p>
             )}
           </div>
@@ -559,7 +560,7 @@ export function AdvancedInteractiveChart({
         {selectedDataPoint && (
           <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-3">
-              📊 Detalhes - {selectedDataPoint[dataKeys[0]]}
+              📊 Detalhes - {String(selectedDataPoint[dataKeys[0]] ?? '')}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(selectedDataPoint).map(([key, value]) => (

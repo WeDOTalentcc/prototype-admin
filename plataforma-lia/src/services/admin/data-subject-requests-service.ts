@@ -187,7 +187,7 @@ class DataSubjectRequestsService {
   async getStats(clientId?: string): Promise<DataSubjectRequestStats> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/stats`, options)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/stats`, options)
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -226,12 +226,12 @@ class DataSubjectRequestsService {
         : this.baseEndpoint
 
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(endpoint, options)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, options)
       return {
-        requests: (data.requests || data.items || []).map(mapBackendRequest),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        requests: (Array.isArray(data.requests) ? data.requests as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendRequest),
+        total: Number(data.total ?? 0),
+        limit: Number(data.limit ?? 50),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -244,7 +244,7 @@ class DataSubjectRequestsService {
   async getRequest(id: string, clientId?: string): Promise<DataSubjectRequest | null> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/${id}`, options)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/${id}`, options)
       return mapBackendRequest(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -264,7 +264,7 @@ class DataSubjectRequestsService {
       requester_phone: data.requesterPhone,
       description: data.description,
     }
-    const result = await apiClient.post<any>(this.baseEndpoint, payload)
+    const result = await apiClient.post<Record<string, unknown>>(this.baseEndpoint, payload)
     return mapBackendRequest(result)
   }
 
@@ -285,20 +285,20 @@ class DataSubjectRequestsService {
   async assignRequest(id: string, data: AssignRequestData, clientId?: string): Promise<DataSubjectRequest> {
     const options: ApiClientOptions = clientId ? { clientId } : {}
     const payload = { assigned_to: data.assignedTo }
-    const result = await apiClient.put<any>(`${this.baseEndpoint}/${id}/assign`, payload, options)
+    const result = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}/assign`, payload, options)
     return mapBackendRequest(result)
   }
 
   async verifyIdentity(id: string, clientId?: string): Promise<DataSubjectRequest> {
     const options: ApiClientOptions = clientId ? { clientId } : {}
-    const result = await apiClient.put<any>(`${this.baseEndpoint}/${id}/verify-identity`, {}, options)
+    const result = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}/verify-identity`, {}, options)
     return mapBackendRequest(result)
   }
 
   async processRequest(id: string, data: ProcessRequestData = {}, clientId?: string): Promise<DataSubjectRequest> {
     const options: ApiClientOptions = clientId ? { clientId } : {}
     const payload = { notes: data.notes }
-    const result = await apiClient.put<any>(`${this.baseEndpoint}/${id}/process`, payload, options)
+    const result = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}/process`, payload, options)
     return mapBackendRequest(result)
   }
 
@@ -308,14 +308,14 @@ class DataSubjectRequestsService {
       response: data.response,
       attachments: data.attachments,
     }
-    const result = await apiClient.put<any>(`${this.baseEndpoint}/${id}/complete`, payload, options)
+    const result = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}/complete`, payload, options)
     return mapBackendRequest(result)
   }
 
   async rejectRequest(id: string, data: RejectRequestData, clientId?: string): Promise<DataSubjectRequest> {
     const options: ApiClientOptions = clientId ? { clientId } : {}
     const payload = { reason: data.reason }
-    const result = await apiClient.put<any>(`${this.baseEndpoint}/${id}/reject`, payload, options)
+    const result = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}/reject`, payload, options)
     return mapBackendRequest(result)
   }
 }

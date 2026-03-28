@@ -223,7 +223,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
   const [combinedProfileKeywords, setCombinedProfileKeywords] = useState<string[]>([])
 
   const [archetypes, setArchetypes] = useState<ArchetypeData[]>([])
-  const [closedJobsForArchetype, setClosedJobsForArchetype] = useState<any[]>([])
+  const [closedJobsForArchetype, setClosedJobsForArchetype] = useState<Record<string, unknown>[]>([])
   const [archetypeSearchFilter, setArchetypeSearchFilter] = useState("")
   const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
   const [newArchetypeDescription, setNewArchetypeDescription] = useState("")

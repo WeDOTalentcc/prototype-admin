@@ -119,10 +119,11 @@ class TemplatesService {
         ? `${this.baseEndpoint}?${queryParams}`
         : this.baseEndpoint
 
-      const data = await apiClient.get<any>(endpoint)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint)
+      const rawTemplates = (data.templates || data || []) as Record<string, unknown>[]
       return {
-        templates: (data.templates || data || []).map(mapBackendTemplate),
-        total: data.total || (data.templates || data || []).length,
+        templates: rawTemplates.map(mapBackendTemplate),
+        total: (data.total as number) || rawTemplates.length,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -134,7 +135,7 @@ class TemplatesService {
 
   async getTemplateById(id: string): Promise<DefaultTemplate | null> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/${id}`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/${id}`)
       return mapBackendTemplate(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -153,7 +154,7 @@ class TemplatesService {
       status: templateData.status || 'draft',
     }
 
-    const data = await apiClient.post<any>(this.baseEndpoint, payload)
+    const data = await apiClient.post<Record<string, unknown>>(this.baseEndpoint, payload)
     return mapBackendTemplate(data)
   }
 
@@ -165,7 +166,7 @@ class TemplatesService {
     if (templateData.body !== undefined) payload.body = templateData.body
     if (templateData.status !== undefined) payload.status = templateData.status
 
-    const data = await apiClient.put<any>(`${this.baseEndpoint}/${id}`, payload)
+    const data = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}`, payload)
     return mapBackendTemplate(data)
   }
 
@@ -174,14 +175,14 @@ class TemplatesService {
   }
 
   async duplicateTemplate(id: string): Promise<DefaultTemplate> {
-    const data = await apiClient.post<any>(`${this.baseEndpoint}/${id}/duplicate`, {})
+    const data = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/${id}/duplicate`, {})
     return mapBackendTemplate(data)
   }
 
   async getVariables(): Promise<TemplateVariable[]> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/variables`)
-      return (data.variables || data || []).map(mapBackendVariable)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/variables`)
+      return ((data.variables || data || []) as Record<string, unknown>[]).map(mapBackendVariable)
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.isAuthError || error.isForbidden) throw error
@@ -191,10 +192,10 @@ class TemplatesService {
   }
 
   async seedTemplates(): Promise<{ message: string; count: number }> {
-    const data = await apiClient.post<any>(`${this.baseEndpoint}/seed`, {})
+    const data = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/seed`, {})
     return {
-      message: data.message || 'Templates seeded successfully',
-      count: data.count || 0,
+      message: (data.message as string) || 'Templates seeded successfully',
+      count: (data.count as number) || 0,
     }
   }
 

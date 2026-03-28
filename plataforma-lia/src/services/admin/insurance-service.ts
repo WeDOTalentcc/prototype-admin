@@ -292,7 +292,7 @@ class InsuranceService {
 
   async getDashboard(clientId: string): Promise<InsuranceDashboard> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/dashboard`,
         { clientId }
       )
@@ -314,13 +314,13 @@ class InsuranceService {
 
   async getAlerts(clientId: string): Promise<AlertListResponse> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/alerts`,
         { clientId }
       )
       return {
-        alerts: (data.alerts || []).map(mapBackendAlert),
-        total: data.total || 0,
+        alerts: (Array.isArray(data.alerts) ? data.alerts as Record<string, unknown>[] : []).map(mapBackendAlert),
+        total: Number(data.total ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -332,15 +332,15 @@ class InsuranceService {
 
   async getCoverageChecklist(clientId: string): Promise<ChecklistResponse> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/coverage-checklist`,
         { clientId }
       )
       return {
-        items: (data.items || []).map(mapBackendChecklistItem),
-        totalItems: data.total_items || 0,
-        coveredItems: data.covered_items || 0,
-        compliancePercentage: data.compliance_percentage || 0,
+        items: (Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendChecklistItem),
+        totalItems: Number(data.total_items ?? 0),
+        coveredItems: Number(data.covered_items ?? 0),
+        compliancePercentage: Number(data.compliance_percentage ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -364,12 +364,12 @@ class InsuranceService {
         ? `${this.baseEndpoint}/policies?${queryParams}`
         : `${this.baseEndpoint}/policies`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        policies: (data.policies || data.items || []).map(mapBackendPolicy),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        policies: (Array.isArray(data.policies) ? data.policies as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendPolicy),
+        total: Number(data.total ?? 0),
+        limit: Number(data.limit ?? 50),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -381,7 +381,7 @@ class InsuranceService {
 
   async getPolicy(clientId: string, policyId: string): Promise<InsurancePolicy | null> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/policies/${policyId}`,
         { clientId }
       )
@@ -406,7 +406,7 @@ class InsuranceService {
       policy_type: input.policyType || 'cyber',
       notes: input.notes,
     }
-    const data = await apiClient.post<any>(
+    const data = await apiClient.post<Record<string, unknown>>(
       `${this.baseEndpoint}/policies`,
       payload,
       { clientId }
@@ -430,7 +430,7 @@ class InsuranceService {
     if (input.notes !== undefined) payload.notes = input.notes
     if (input.status !== undefined) payload.status = input.status
 
-    const data = await apiClient.put<any>(
+    const data = await apiClient.put<Record<string, unknown>>(
       `${this.baseEndpoint}/policies/${policyId}`,
       payload,
       { clientId }
@@ -447,13 +447,13 @@ class InsuranceService {
 
   async getCoverages(clientId: string, policyId: string): Promise<CoverageListResponse> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/policies/${policyId}/coverages`,
         { clientId }
       )
       return {
-        coverages: (data.coverages || data.items || []).map(mapBackendCoverage),
-        total: data.total || 0,
+        coverages: (Array.isArray(data.coverages) ? data.coverages as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendCoverage),
+        total: Number(data.total ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -475,7 +475,7 @@ class InsuranceService {
       coverage_limit: input.coverageLimit,
       bcb_article: input.bcbArticle,
     }
-    const data = await apiClient.post<any>(
+    const data = await apiClient.post<Record<string, unknown>>(
       `${this.baseEndpoint}/policies/${policyId}/coverages`,
       payload,
       { clientId }
@@ -485,13 +485,13 @@ class InsuranceService {
 
   async getDocuments(clientId: string, policyId: string): Promise<DocumentListResponse> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/policies/${policyId}/documents`,
         { clientId }
       )
       return {
-        documents: (data.documents || data.items || []).map(mapBackendDocument),
-        total: data.total || 0,
+        documents: (Array.isArray(data.documents) ? data.documents as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendDocument),
+        total: Number(data.total ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -516,12 +516,12 @@ class InsuranceService {
         ? `${this.baseEndpoint}/claims?${queryParams}`
         : `${this.baseEndpoint}/claims`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        claims: (data.claims || data.items || []).map(mapBackendClaim),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        claims: (Array.isArray(data.claims) ? data.claims as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendClaim),
+        total: Number(data.total ?? 0),
+        limit: Number(data.limit ?? 50),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -538,7 +538,7 @@ class InsuranceService {
       description: input.description,
       claim_amount: input.claimAmount,
     }
-    const data = await apiClient.post<any>(
+    const data = await apiClient.post<Record<string, unknown>>(
       `${this.baseEndpoint}/claims`,
       payload,
       { clientId }

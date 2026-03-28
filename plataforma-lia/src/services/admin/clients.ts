@@ -114,7 +114,7 @@ class ClientsService {
         ? `/clients?${queryParams}`
         : `/clients`
 
-      const response = await apiClient.get<any>(endpoint, options)
+      const response = await apiClient.get<Record<string, unknown>>(endpoint, options)
       
       if (Array.isArray(response)) {
         return {
@@ -126,11 +126,11 @@ class ClientsService {
         }
       }
       
-      const data = response.data || response
-      const rawClients = data.clients || data.items || []
+      const data = (response.data || response) as Record<string, unknown>
+      const rawClients = ((data.clients || data.items || []) as Record<string, unknown>[])
       const clients = rawClients.map(mapBackendClientToClient)
-      const total = data.total || data.count || clients.length
-      const responseLimit = data.limit || limit
+      const total = (data.total as number) || (data.count as number) || clients.length
+      const responseLimit = (data.limit as number) || limit
       const calculatedTotalPages = Math.ceil(total / responseLimit) || 1
       
       return {
@@ -138,7 +138,7 @@ class ClientsService {
         total: total,
         page: page,
         limit: responseLimit,
-        totalPages: data.total_pages || data.totalPages || calculatedTotalPages
+        totalPages: (data.total_pages as number) || (data.totalPages as number) || calculatedTotalPages
       }
     } catch (error) {
       if (error instanceof ApiClientError) {

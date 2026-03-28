@@ -251,12 +251,12 @@ class ComplianceService {
         ? `${this.baseEndpoint}/controls?${queryParams}`
         : `${this.baseEndpoint}/controls`
 
-      const data = await apiClient.get<any>(endpoint)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint)
       return {
-        controls: (data.controls || []).map(mapBackendControlLibrary),
-        total: data.total || 0,
-        limit: data.limit || 100,
-        offset: data.offset || 0,
+        controls: ((data.controls || []) as Record<string, unknown>[]).map(mapBackendControlLibrary),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 100,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -281,12 +281,12 @@ class ComplianceService {
         ? `${this.baseEndpoint}/company-controls?${queryParams}`
         : `${this.baseEndpoint}/company-controls`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        controls: (data.controls || []).map(mapBackendCompanyControl),
-        total: data.total || 0,
-        limit: data.limit || 100,
-        offset: data.offset || 0,
+        controls: ((data.controls || []) as Record<string, unknown>[]).map(mapBackendCompanyControl),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 100,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -298,7 +298,7 @@ class ComplianceService {
 
   async getDashboard(clientId: string): Promise<ComplianceDashboard> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/audits/dashboard`,
         { clientId }
       )
@@ -328,12 +328,12 @@ class ComplianceService {
         ? `${this.baseEndpoint}/audits?${queryParams}`
         : `${this.baseEndpoint}/audits`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        audits: (data.audits || []).map(mapBackendAudit),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        audits: ((data.audits || []) as Record<string, unknown>[]).map(mapBackendAudit),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 50,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -357,12 +357,12 @@ class ComplianceService {
         ? `${this.baseEndpoint}/sox?${queryParams}`
         : `${this.baseEndpoint}/sox`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        controls: (data.controls || []).map(mapBackendSOXControl),
-        total: data.total || 0,
-        limit: data.limit || 100,
-        offset: data.offset || 0,
+        controls: ((data.controls || []) as Record<string, unknown>[]).map(mapBackendSOXControl),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 100,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {

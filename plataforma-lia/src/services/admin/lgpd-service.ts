@@ -178,7 +178,7 @@ class LGPDService {
 
   async getStats(clientId: string): Promise<LGPDStats> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/stats`,
         { clientId }
       )
@@ -203,7 +203,7 @@ class LGPDService {
 
   async getDPO(clientId: string): Promise<DPORegistry | null> {
     try {
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/dpo/${clientId}`,
         { clientId }
       )
@@ -233,12 +233,12 @@ class LGPDService {
         ? `${this.baseEndpoint}/breaches?${queryParams}`
         : `${this.baseEndpoint}/breaches`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        breaches: (data.breaches || []).map(mapBackendBreach),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        breaches: ((data.breaches || []) as Record<string, unknown>[]).map(mapBackendBreach),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 50,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -265,12 +265,12 @@ class LGPDService {
         ? `${this.baseEndpoint}/decisions?${queryParams}`
         : `${this.baseEndpoint}/decisions`
 
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        decisions: (data.decisions || []).map(mapBackendDecision),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        decisions: ((data.decisions || []) as Record<string, unknown>[]).map(mapBackendDecision),
+        total: (data.total as number) || 0,
+        limit: (data.limit as number) || 50,
+        offset: (data.offset as number) || 0,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {

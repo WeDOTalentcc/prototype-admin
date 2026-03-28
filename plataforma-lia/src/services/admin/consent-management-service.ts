@@ -253,7 +253,7 @@ class ConsentManagementService {
   async getStats(clientId?: string): Promise<ConsentStats> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/stats`, options)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/stats`, options)
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -295,12 +295,12 @@ class ConsentManagementService {
         : `${this.baseEndpoint}/versions`
 
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(endpoint, options)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, options)
       return {
-        versions: (data.versions || data.items || []).map(mapBackendVersion),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        versions: (Array.isArray(data.versions) ? data.versions as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendVersion),
+        total: Number(data.total ?? 0),
+        limit: Number(data.limit ?? 50),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -313,7 +313,7 @@ class ConsentManagementService {
   async getVersion(id: string, clientId?: string): Promise<ConsentVersion | null> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/versions/${id}`, options)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/versions/${id}`, options)
       return mapBackendVersion(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -327,7 +327,7 @@ class ConsentManagementService {
   async getCurrentVersion(consentType: ConsentType, clientId?: string): Promise<ConsentVersion | null> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/versions/current/${consentType}`,
         options
       )
@@ -350,7 +350,7 @@ class ConsentManagementService {
       summary: data.summary,
       validity_months: data.validityMonths || 12,
     }
-    const result = await apiClient.post<any>(`${this.baseEndpoint}/versions`, payload, options)
+    const result = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/versions`, payload, options)
     return mapBackendVersion(result)
   }
 
@@ -373,12 +373,12 @@ class ConsentManagementService {
         : `${this.baseEndpoint}/events`
 
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(endpoint, options)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, options)
       return {
-        events: (data.events || data.items || []).map(mapBackendEvent),
-        total: data.total || 0,
-        limit: data.limit || 50,
-        offset: data.offset || 0,
+        events: (Array.isArray(data.events) ? data.events as Record<string, unknown>[] : Array.isArray(data.items) ? data.items as Record<string, unknown>[] : []).map(mapBackendEvent),
+        total: Number(data.total ?? 0),
+        limit: Number(data.limit ?? 50),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -391,7 +391,7 @@ class ConsentManagementService {
   async getSubjectHistory(subjectIdentifier: string, clientId?: string): Promise<SubjectHistory | null> {
     try {
       const options: ApiClientOptions = clientId ? { clientId } : {}
-      const data = await apiClient.get<any>(
+      const data = await apiClient.get<Record<string, unknown>>(
         `${this.baseEndpoint}/events/subject/${encodeURIComponent(subjectIdentifier)}`,
         options
       )
@@ -417,7 +417,7 @@ class ConsentManagementService {
       user_agent: data.userAgent,
       metadata: data.metadata,
     }
-    const result = await apiClient.post<any>(`${this.baseEndpoint}/events`, payload, options)
+    const result = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/events`, payload, options)
     return mapBackendEvent(result)
   }
 
@@ -428,7 +428,7 @@ class ConsentManagementService {
       consent_type: data.consentType,
       reason: data.reason,
     }
-    const result = await apiClient.post<any>(`${this.baseEndpoint}/events/revoke`, payload, options)
+    const result = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/events/revoke`, payload, options)
     return mapBackendEvent(result)
   }
 }

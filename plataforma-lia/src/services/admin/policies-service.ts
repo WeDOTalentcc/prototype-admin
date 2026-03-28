@@ -101,10 +101,10 @@ class PoliciesService {
         ? `${this.baseEndpoint}?${queryParams}`
         : this.baseEndpoint
 
-      const data = await apiClient.get<any>(endpoint)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint)
       return {
-        policies: (data.policies || data || []).map(mapBackendPolicy),
-        total: data.total || (data.policies || data || []).length,
+        policies: (Array.isArray(data.policies) ? data.policies as Record<string, unknown>[] : []).map(mapBackendPolicy),
+        total: Number(data.total ?? (Array.isArray(data.policies) ? (data.policies as unknown[]).length : 0)),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -116,7 +116,7 @@ class PoliciesService {
 
   async getPolicyById(id: string): Promise<Policy | null> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/${id}`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/${id}`)
       return mapBackendPolicy(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -136,12 +136,12 @@ class PoliciesService {
       payload.change_reason = reason
     }
 
-    const data = await apiClient.put<any>(`${this.baseEndpoint}/${id}`, payload)
+    const data = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}`, payload)
     return mapBackendPolicy(data)
   }
 
   async togglePolicy(id: string, isActive: boolean): Promise<Policy> {
-    const data = await apiClient.put<any>(`${this.baseEndpoint}/${id}`, {
+    const data = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}`, {
       is_active: isActive,
     })
     return mapBackendPolicy(data)
@@ -149,10 +149,10 @@ class PoliciesService {
 
   async getPolicyHistory(id: string): Promise<PolicyHistoryResponse> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/${id}/history`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/${id}/history`)
       return {
-        history: (data.history || data || []).map(mapBackendHistoryEntry),
-        total: data.total || (data.history || data || []).length,
+        history: (Array.isArray(data.history) ? data.history as Record<string, unknown>[] : []).map(mapBackendHistoryEntry),
+        total: Number(data.total ?? (Array.isArray(data.history) ? (data.history as unknown[]).length : 0)),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -164,10 +164,10 @@ class PoliciesService {
 
   async getAllHistory(): Promise<PolicyHistoryResponse> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/history`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/history`)
       return {
-        history: (data.history || data || []).map(mapBackendHistoryEntry),
-        total: data.total || (data.history || data || []).length,
+        history: (Array.isArray(data.history) ? data.history as Record<string, unknown>[] : []).map(mapBackendHistoryEntry),
+        total: Number(data.total ?? (Array.isArray(data.history) ? (data.history as unknown[]).length : 0)),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -179,9 +179,9 @@ class PoliciesService {
 
   async getCategories(): Promise<CategoriesResponse> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/categories`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/categories`)
       return {
-        categories: data.categories || data || [],
+        categories: (Array.isArray(data.categories) ? data.categories : []) as PolicyCategory[],
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -193,11 +193,11 @@ class PoliciesService {
 
   async seedPolicies(): Promise<{ success: boolean; message: string; count?: number }> {
     try {
-      const data = await apiClient.post<any>(`${this.baseEndpoint}/seed`, {})
+      const data = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/seed`, {})
       return {
         success: true,
-        message: data.message || 'Policies seeded successfully',
-        count: data.count,
+        message: String(data.message ?? 'Policies seeded successfully'),
+        count: data.count != null ? Number(data.count) : undefined,
       }
     } catch (error) {
       if (error instanceof ApiClientError) {

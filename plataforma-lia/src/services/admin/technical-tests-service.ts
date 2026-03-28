@@ -139,7 +139,7 @@ function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
     avgScore: d.num('avg_score') || d.num('avgScore'),
     completionRate: d.num('completion_rate') || d.num('completionRate'),
     lastUsed: d.str('last_used') || d.str('lastUsed') || undefined,
-    test: d.raw('test') ? mapBackendTest(d.rec('test')) : ({} as TechnicalTest),
+    test: mapBackendTest(d.raw('test') ? d.rec('test') : {}),
     createdAt: d.str('created_at') || d.str('createdAt'),
     updatedAt: d.str('updated_at') || d.str('updatedAt'),
   }
@@ -194,12 +194,12 @@ class TechnicalTestsService {
         ? `${this.baseEndpoint}?${queryParams}`
         : this.baseEndpoint
 
-      const data = await apiClient.get<any>(endpoint)
+      const data = await apiClient.get<Record<string, unknown>>(endpoint)
       return {
-        tests: (data.tests || data || []).map(mapBackendTest),
-        total: data.total || (Array.isArray(data) ? data.length : 0),
-        limit: data.limit || 100,
-        offset: data.offset || 0,
+        tests: (Array.isArray(data.tests) ? data.tests as Record<string, unknown>[] : Array.isArray(data) ? data : []).map(mapBackendTest),
+        total: Number(data.total ?? (Array.isArray(data.tests) ? (data.tests as unknown[]).length : 0)),
+        limit: Number(data.limit ?? 100),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -211,7 +211,7 @@ class TechnicalTestsService {
 
   async getTestById(id: string): Promise<TechnicalTest | null> {
     try {
-      const data = await apiClient.get<any>(`${this.baseEndpoint}/${id}`)
+      const data = await apiClient.get<Record<string, unknown>>(`${this.baseEndpoint}/${id}`)
       return mapBackendTest(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -233,7 +233,7 @@ class TechnicalTestsService {
         passing_score: data.passingScore,
         total_questions: data.totalQuestions,
       }
-      const response = await apiClient.post<any>(this.baseEndpoint, payload)
+      const response = await apiClient.post<Record<string, unknown>>(this.baseEndpoint, payload)
       return mapBackendTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -257,7 +257,7 @@ class TechnicalTestsService {
       if (data.totalQuestions !== undefined) payload.total_questions = data.totalQuestions
       if (data.isActive !== undefined) payload.is_active = data.isActive
 
-      const response = await apiClient.put<any>(`${this.baseEndpoint}/${id}`, payload)
+      const response = await apiClient.put<Record<string, unknown>>(`${this.baseEndpoint}/${id}`, payload)
       return mapBackendTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -282,12 +282,12 @@ class TechnicalTestsService {
   async getClientTests(clientId: string): Promise<ClientTestListResponse> {
     try {
       const endpoint = `${this.clientsEndpoint}/${clientId}/tests`
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return {
-        tests: (data.tests || data || []).map(mapBackendClientTest),
-        total: data.total || (Array.isArray(data) ? data.length : 0),
-        limit: data.limit || 100,
-        offset: data.offset || 0,
+        tests: (Array.isArray(data.tests) ? data.tests as Record<string, unknown>[] : Array.isArray(data) ? data : []).map(mapBackendClientTest),
+        total: Number(data.total ?? (Array.isArray(data.tests) ? (data.tests as unknown[]).length : 0)),
+        limit: Number(data.limit ?? 100),
+        offset: Number(data.offset ?? 0),
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -309,7 +309,7 @@ class TechnicalTestsService {
       if (config.customDuration !== undefined) payload.custom_duration = config.customDuration
 
       const endpoint = `${this.clientsEndpoint}/${clientId}/tests/${testId}`
-      const response = await apiClient.put<any>(endpoint, payload, { clientId })
+      const response = await apiClient.put<Record<string, unknown>>(endpoint, payload, { clientId })
       return mapBackendClientTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -322,7 +322,7 @@ class TechnicalTestsService {
   async getClientTestStats(clientId: string): Promise<ClientTestStats | null> {
     try {
       const endpoint = `${this.clientsEndpoint}/${clientId}/tests/stats`
-      const data = await apiClient.get<any>(endpoint, { clientId })
+      const data = await apiClient.get<Record<string, unknown>>(endpoint, { clientId })
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -334,8 +334,8 @@ class TechnicalTestsService {
 
   async seedTests(): Promise<{ message: string; count: number } | null> {
     try {
-      const response = await apiClient.post<any>(`${this.baseEndpoint}/seed`, {})
-      return response
+      const response = await apiClient.post<Record<string, unknown>>(`${this.baseEndpoint}/seed`, {})
+      return { message: String(response.message ?? ''), count: Number(response.count ?? 0) }
     } catch (error) {
       if (error instanceof ApiClientError) {
         throw error
