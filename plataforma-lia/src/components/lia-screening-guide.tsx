@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 "use client"
 
 import React, { useState } from "react"
@@ -15,8 +16,8 @@ import {
 interface LiaScreeningGuideProps {
   isOpen: boolean
   onClose: () => void
-  job: Record<string, unknown>
-  candidate?: Record<string, unknown>
+  job: BackendRecord
+  candidate?: BackendRecord
 }
 
 export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreeningGuideProps) {
@@ -47,13 +48,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
     
     if (savedQuestions && Array.isArray(savedQuestions) && savedQuestions.length > 0) {
       // Agrupar perguntas salvas por categoria
-      const technicalQuestions = savedQuestions.filter((q: Record<string, unknown>) => 
+      const technicalQuestions = savedQuestions.filter((q: BackendRecord) => 
         q.category === 'technical' || q.type === 'micro_case' || q.type === 'situacional'
       )
-      const behavioralQuestions = savedQuestions.filter((q: Record<string, unknown>) => 
+      const behavioralQuestions = savedQuestions.filter((q: BackendRecord) => 
         q.category === 'behavioral' || q.type === 'autodeclaracao_contexto'
       )
-      const otherQuestions = savedQuestions.filter((q: Record<string, unknown>) => 
+      const otherQuestions = savedQuestions.filter((q: BackendRecord) => 
         !['technical', 'behavioral'].includes(q.category) && 
         !['micro_case', 'situacional', 'autodeclaracao_contexto'].includes(q.type)
       )
@@ -75,7 +76,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       if (technicalQuestions.length > 0) {
         result.push({
           category: "Perguntas Técnicas (WSI)",
-          questions: technicalQuestions.map((q: Record<string, unknown>) => q.question || q.text),
+          questions: technicalQuestions.map((q: BackendRecord) => q.question || q.text),
           purpose: "Avaliar competências técnicas através de situações reais",
           isWSI: true
         })
@@ -85,7 +86,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       if (behavioralQuestions.length > 0) {
         result.push({
           category: "Perguntas Comportamentais",
-          questions: behavioralQuestions.map((q: Record<string, unknown>) => q.question || q.text),
+          questions: behavioralQuestions.map((q: BackendRecord) => q.question || q.text),
           purpose: "Avaliar competências comportamentais e soft skills",
           isWSI: true
         })
@@ -95,7 +96,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       if (otherQuestions.length > 0) {
         result.push({
           category: "Perguntas Adicionais",
-          questions: otherQuestions.map((q: Record<string, unknown>) => q.question || q.text),
+          questions: otherQuestions.map((q: BackendRecord) => q.question || q.text),
           purpose: "Perguntas complementares definidas para a vaga"
         })
       }

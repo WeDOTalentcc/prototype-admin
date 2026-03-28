@@ -1,6 +1,7 @@
+import type { BackendRecord } from '@/types/api'
 import { Version3Client } from 'jira.js';
 
-let connectionSettings: Record<string, unknown> | null;
+let connectionSettings: BackendRecord | null;
 let cachedCloudId: string | null = null;
 
 interface JiraAuth {
@@ -75,7 +76,7 @@ async function getAccessToken(): Promise<JiraAuth> {
   }
   
   const resources = await resourcesResp.json();
-  const targetResource = resources.find((r: Record<string, unknown>) => r.url === hostName) || resources[0];
+  const targetResource = resources.find((r: BackendRecord) => r.url === hostName) || resources[0];
   
   if (!targetResource?.id) {
     throw new Error('No accessible Jira cloud found');
@@ -164,7 +165,7 @@ export class JiraService {
       const params = projectKey ? `?projectKeyOrId=${projectKey}&type=kanban` : '?type=kanban';
       const response = await agileApiRequest(`/board${params}`);
 
-      return (response.values || []).map((board: Record<string, unknown>) => ({
+      return (response.values || []).map((board: BackendRecord) => ({
         id: board.id,
         name: board.name,
         type: board.type,
@@ -179,7 +180,7 @@ export class JiraService {
     try {
       const response = await agileApiRequest(`/board/${boardId}/configuration`);
       
-      return (response.columnConfig?.columns || []).map((col: Record<string, unknown>) => ({
+      return (response.columnConfig?.columns || []).map((col: BackendRecord) => ({
         id: col.name,
         name: col.name,
         statusIds: ((col.statuses as Array<{ id: string }>) || []).map(s => s.id),
@@ -240,11 +241,11 @@ export class JiraService {
         fields: ['summary', 'status', 'assignee', 'updated'],
       });
 
-      return (response.issues || []).map((issue: Record<string, unknown>) => {
-        const fields = issue.fields as Record<string, unknown> | undefined
-        const status = fields?.status as Record<string, unknown> | undefined
-        const assignee = fields?.assignee as Record<string, unknown> | undefined
-        const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
+      return (response.issues || []).map((issue: BackendRecord) => {
+        const fields = issue.fields as BackendRecord | undefined
+        const status = fields?.status as BackendRecord | undefined
+        const assignee = fields?.assignee as BackendRecord | undefined
+        const statusCategory = status?.statusCategory as BackendRecord | undefined
         return {
           issueKey: issue.key as string,
           summary: (fields?.summary as string) || '',
@@ -355,7 +356,7 @@ export class JiraService {
       }
       
       const data = await response.json();
-      return (data.values || []).map((project: Record<string, unknown>) => ({
+      return (data.values || []).map((project: BackendRecord) => ({
         id: project.id,
         key: project.key,
         name: project.name,
@@ -373,7 +374,7 @@ export class JiraService {
   }): Promise<{ success: boolean }> {
     const { accessToken, apiBaseUrl } = await getAccessToken();
     
-    const fields: Record<string, unknown> = {};
+    const fields: BackendRecord = {};
 
     if (params.summary) {
       fields.summary = params.summary;
@@ -433,10 +434,10 @@ export class JiraService {
         fields: ['summary', 'status', 'description', 'updated'],
       });
 
-      return (response.issues || []).map((issue: Record<string, unknown>) => {
-        const fields = issue.fields as Record<string, unknown> | undefined
-        const status = fields?.status as Record<string, unknown> | undefined
-        const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
+      return (response.issues || []).map((issue: BackendRecord) => {
+        const fields = issue.fields as BackendRecord | undefined
+        const status = fields?.status as BackendRecord | undefined
+        const statusCategory = status?.statusCategory as BackendRecord | undefined
         return {
           issueKey: issue.key as string,
           summary: (fields?.summary as string) || '',
@@ -459,11 +460,11 @@ export class JiraService {
     priority?: string;
     storyPoints?: number;
     epicKey?: string;
-    customFields?: Record<string, unknown>;
+    customFields?: BackendRecord;
   }): Promise<{ issueKey: string; issueId: string; success: boolean }> {
     const { accessToken, apiBaseUrl } = await getAccessToken();
     
-    const fields: Record<string, unknown> = {
+    const fields: BackendRecord = {
       project: { key: params.projectKey },
       summary: params.summary,
       description: {

@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export type ConsentType = 
@@ -146,7 +147,7 @@ export interface RevokeConsentData {
 
 export { ApiClientError }
 
-function mapBackendVersion(data: Record<string, unknown>): ConsentVersion {
+function mapBackendVersion(data: BackendRecord): ConsentVersion {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -168,7 +169,7 @@ function mapBackendVersion(data: Record<string, unknown>): ConsentVersion {
   }
 }
 
-function mapBackendEvent(data: Record<string, unknown>): ConsentEvent {
+function mapBackendEvent(data: BackendRecord): ConsentEvent {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -189,7 +190,7 @@ function mapBackendEvent(data: Record<string, unknown>): ConsentEvent {
   }
 }
 
-function mapBackendStats(data: Record<string, unknown>): ConsentStats {
+function mapBackendStats(data: BackendRecord): ConsentStats {
   const byType: Record<string, any> = {}
   if (data.by_type) {
     for (const [key, value] of Object.entries(data.by_type as Record<string, any>)) {
@@ -221,13 +222,13 @@ function mapBackendStats(data: Record<string, unknown>): ConsentStats {
   }
 }
 
-function mapBackendSubjectHistory(data: Record<string, unknown>): SubjectHistory {
+function mapBackendSubjectHistory(data: BackendRecord): SubjectHistory {
   return {
     subjectIdentifier: data.subject_identifier,
     subjectName: data.subject_name,
     subjectEmail: data.subject_email,
     events: (data.events || []).map(mapBackendEvent),
-    currentConsents: (data.current_consents || []).map((c: Record<string, unknown>) => ({
+    currentConsents: (data.current_consents || []).map((c: BackendRecord) => ({
       consentType: c.consent_type,
       version: c.version,
       grantedAt: c.granted_at,

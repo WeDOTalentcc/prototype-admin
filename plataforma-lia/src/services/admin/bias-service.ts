@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface BiasResult {
@@ -63,7 +64,7 @@ export interface BiasAuditListParams {
 
 export { ApiClientError }
 
-function mapBackendBiasResult(data: Record<string, unknown>): BiasResult {
+function mapBackendBiasResult(data: BackendRecord): BiasResult {
   return {
     category: data.category || '',
     status: data.status || 'clear',
@@ -73,7 +74,7 @@ function mapBackendBiasResult(data: Record<string, unknown>): BiasResult {
   }
 }
 
-function mapBackendBiasAudit(data: Record<string, unknown>): BiasAuditReport {
+function mapBackendBiasAudit(data: BackendRecord): BiasAuditReport {
   const biasResults: Record<string, BiasResult> = {}
   if (data.bias_results) {
     for (const [key, value] of Object.entries(data.bias_results as Record<string, any>)) {
@@ -105,7 +106,7 @@ function mapBackendBiasAudit(data: Record<string, unknown>): BiasAuditReport {
   }
 }
 
-function mapBackendSummary(data: Record<string, unknown>): BiasAuditSummary {
+function mapBackendSummary(data: BackendRecord): BiasAuditSummary {
   return {
     totalAudits: data.total_audits || 0,
     latestAuditDate: data.latest_audit_date,

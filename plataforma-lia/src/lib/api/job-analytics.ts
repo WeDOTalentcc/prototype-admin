@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 export interface CommandTemplate {
   id: string;
   name: string;
@@ -9,8 +10,8 @@ export interface AnalyticsResponse {
   command: string;
   agent_used: string;
   response: string;
-  data: Record<string, unknown>;
-  charts: Array<{type: string; title: string; data: Record<string, unknown>}>;
+  data: BackendRecord;
+  charts: Array<{type: string; title: string; data: BackendRecord}>;
   suggestions: string[];
   metadata: {execution_time_ms: number};
   success?: boolean;

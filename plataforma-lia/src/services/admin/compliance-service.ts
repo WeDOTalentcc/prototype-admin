@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface ControlLibrary {
@@ -40,7 +41,7 @@ export interface ComplianceAudit {
   auditStartDate?: string
   auditEndDate?: string
   scopeDescription?: string
-  findings?: Record<string, unknown>[]
+  findings?: BackendRecord[]
   status: string
   createdAt: string
   updatedAt: string
@@ -129,7 +130,7 @@ export interface CompanyControlListParams {
 
 export { ApiClientError }
 
-function mapBackendControlLibrary(data: Record<string, unknown>): ControlLibrary {
+function mapBackendControlLibrary(data: BackendRecord): ControlLibrary {
   return {
     id: data.id,
     framework: data.framework,
@@ -145,7 +146,7 @@ function mapBackendControlLibrary(data: Record<string, unknown>): ControlLibrary
   }
 }
 
-function mapBackendCompanyControl(data: Record<string, unknown>): CompanyControl {
+function mapBackendCompanyControl(data: BackendRecord): CompanyControl {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -163,7 +164,7 @@ function mapBackendCompanyControl(data: Record<string, unknown>): CompanyControl
   }
 }
 
-function mapBackendAudit(data: Record<string, unknown>): ComplianceAudit {
+function mapBackendAudit(data: BackendRecord): ComplianceAudit {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -181,7 +182,7 @@ function mapBackendAudit(data: Record<string, unknown>): ComplianceAudit {
   }
 }
 
-function mapBackendSOXControl(data: Record<string, unknown>): SOXControl {
+function mapBackendSOXControl(data: BackendRecord): SOXControl {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -200,7 +201,7 @@ function mapBackendSOXControl(data: Record<string, unknown>): SOXControl {
   }
 }
 
-function mapBackendDashboard(data: Record<string, unknown>): ComplianceDashboard {
+function mapBackendDashboard(data: BackendRecord): ComplianceDashboard {
   const byFramework: Record<string, FrameworkStats> = {}
   if (data.by_framework) {
     for (const [key, value] of Object.entries(data.by_framework as Record<string, any>)) {

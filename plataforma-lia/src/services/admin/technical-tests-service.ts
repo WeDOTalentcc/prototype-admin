@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export type TestCategory = 'coding' | 'logic' | 'domain' | 'personality'
@@ -106,7 +107,7 @@ export interface TestFilters {
 
 export { ApiClientError }
 
-function mapBackendTest(data: Record<string, unknown>): TechnicalTest {
+function mapBackendTest(data: BackendRecord): TechnicalTest {
   return {
     id: data.id,
     name: data.name,
@@ -124,7 +125,7 @@ function mapBackendTest(data: Record<string, unknown>): TechnicalTest {
   }
 }
 
-function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
+function mapBackendClientTest(data: BackendRecord): ClientTest {
   return {
     id: data.id,
     clientId: data.client_id ?? data.clientId,
@@ -142,7 +143,7 @@ function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
   }
 }
 
-function mapBackendStats(data: Record<string, unknown>): ClientTestStats {
+function mapBackendStats(data: BackendRecord): ClientTestStats {
   return {
     totalTests: data.total_tests ?? data.totalTests ?? 0,
     enabledTests: data.enabled_tests ?? data.enabledTests ?? 0,

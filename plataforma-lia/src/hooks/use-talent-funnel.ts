@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -183,7 +184,7 @@ export function useTalentFunnel() {
         limit: validIds.length,
         offset: 0
       })
-      const items = result.candidates || (result as Record<string, unknown>).items as typeof result.candidates || []
+      const items = result.candidates || (result as BackendRecord).items as typeof result.candidates || []
       setFavoriteCandidatesData(items)
     } catch (error) {
     } finally {

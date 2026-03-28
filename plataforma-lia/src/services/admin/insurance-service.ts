@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface InsurancePolicy {
@@ -177,7 +178,7 @@ export interface CreateClaimInput {
 
 export { ApiClientError }
 
-function mapBackendPolicy(data: Record<string, unknown>): InsurancePolicy {
+function mapBackendPolicy(data: BackendRecord): InsurancePolicy {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -195,7 +196,7 @@ function mapBackendPolicy(data: Record<string, unknown>): InsurancePolicy {
   }
 }
 
-function mapBackendCoverage(data: Record<string, unknown>): InsuranceCoverage {
+function mapBackendCoverage(data: BackendRecord): InsuranceCoverage {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -210,7 +211,7 @@ function mapBackendCoverage(data: Record<string, unknown>): InsuranceCoverage {
   }
 }
 
-function mapBackendDocument(data: Record<string, unknown>): InsuranceDocument {
+function mapBackendDocument(data: BackendRecord): InsuranceDocument {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -224,7 +225,7 @@ function mapBackendDocument(data: Record<string, unknown>): InsuranceDocument {
   }
 }
 
-function mapBackendClaim(data: Record<string, unknown>): InsuranceClaim {
+function mapBackendClaim(data: BackendRecord): InsuranceClaim {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -241,7 +242,7 @@ function mapBackendClaim(data: Record<string, unknown>): InsuranceClaim {
   }
 }
 
-function mapBackendAlert(data: Record<string, unknown>): InsuranceAlert {
+function mapBackendAlert(data: BackendRecord): InsuranceAlert {
   return {
     id: data.id,
     type: data.type,
@@ -254,7 +255,7 @@ function mapBackendAlert(data: Record<string, unknown>): InsuranceAlert {
   }
 }
 
-function mapBackendDashboard(data: Record<string, unknown>): InsuranceDashboard {
+function mapBackendDashboard(data: BackendRecord): InsuranceDashboard {
   return {
     activePolicy: data.active_policy ? mapBackendPolicy(data.active_policy) : undefined,
     daysUntilExpiry: data.days_until_expiry ?? -1,
@@ -266,7 +267,7 @@ function mapBackendDashboard(data: Record<string, unknown>): InsuranceDashboard 
   }
 }
 
-function mapBackendChecklistItem(data: Record<string, unknown>): BCBCoverageChecklistItem {
+function mapBackendChecklistItem(data: BackendRecord): BCBCoverageChecklistItem {
   return {
     coverageType: data.coverage_type,
     name: data.name,

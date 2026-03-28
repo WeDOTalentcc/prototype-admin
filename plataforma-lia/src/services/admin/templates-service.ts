@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface DefaultTemplate {
@@ -73,7 +74,7 @@ export interface VariablesListResponse {
 
 export { ApiClientError }
 
-function mapBackendTemplate(data: Record<string, unknown>): DefaultTemplate {
+function mapBackendTemplate(data: BackendRecord): DefaultTemplate {
   return {
     id: data.id,
     name: data.name,
@@ -88,7 +89,7 @@ function mapBackendTemplate(data: Record<string, unknown>): DefaultTemplate {
   }
 }
 
-function mapBackendVariable(data: Record<string, unknown>): TemplateVariable {
+function mapBackendVariable(data: BackendRecord): TemplateVariable {
   return {
     key: data.key,
     label: data.label,

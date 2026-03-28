@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useRef } from "react"
@@ -86,12 +87,12 @@ const COLORS = [
 
 interface InteractiveChartProps {
   title: string
-  data: Record<string, unknown>[]
+  data: BackendRecord[]
   type: 'line' | 'area' | 'bar' | 'pie' | 'composed'
   dataKeys: string[]
   period: 'monthly' | 'quarterly' | 'yearly'
   onPeriodChange?: (period: 'monthly' | 'quarterly' | 'yearly') => void
-  onDrillDown?: (dataPoint: Record<string, unknown>) => void
+  onDrillDown?: (dataPoint: BackendRecord) => void
   showControls?: boolean
   height?: number
 }
@@ -133,9 +134,9 @@ export function InteractiveChart({
       // Para pie, dataKeys[0] é o campo de dados (ex: 'value', 'count')
       const valueKey = dataKeys[0]
       return {
-        labels: data.map((item: Record<string, unknown>) => item.name || item.stage || item.month),
+        labels: data.map((item: BackendRecord) => item.name || item.stage || item.month),
         datasets: [{
-          data: data.map((item: Record<string, unknown>) => item[valueKey]),
+          data: data.map((item: BackendRecord) => item[valueKey]),
           backgroundColor: data.map((_, index) => COLORS[index % COLORS.length]),
           borderColor: 'white',
           borderWidth: 2,
@@ -164,7 +165,7 @@ export function InteractiveChart({
     }
     
     const labelField = getLabelField()
-    const labels = data.map((item: Record<string, unknown>) => item[labelField])
+    const labels = data.map((item: BackendRecord) => item[labelField])
     
     // Para composed: primeiro dataset é bar, segundo é line
     if (type === 'composed') {
@@ -174,7 +175,7 @@ export function InteractiveChart({
           {
             type: 'bar' as const,
             label: dataKeys[0],
-            data: data.map((item: Record<string, unknown>) => item[dataKeys[0]]),
+            data: data.map((item: BackendRecord) => item[dataKeys[0]]),
             backgroundColor: COLORS[0] + 'CC',
             borderColor: COLORS[0],
             yAxisID: 'y',
@@ -182,7 +183,7 @@ export function InteractiveChart({
           {
             type: 'line' as const,
             label: dataKeys[1],
-            data: data.map((item: Record<string, unknown>) => item[dataKeys[1]]),
+            data: data.map((item: BackendRecord) => item[dataKeys[1]]),
             backgroundColor: COLORS[1],
             borderColor: COLORS[1],
             borderWidth: 3,
@@ -197,7 +198,7 @@ export function InteractiveChart({
     const datasets = dataKeys.map((key, index) => {
       const baseConfig = {
         label: key,
-        data: data.map((item: Record<string, unknown>) => item[key]),
+        data: data.map((item: BackendRecord) => item[key]),
         backgroundColor: COLORS[index % COLORS.length],
         borderColor: COLORS[index % COLORS.length],
         borderWidth: highlightedSeries === key ? 3 : 2,
@@ -438,7 +439,7 @@ export function ConversionFunnelChart() {
     { stage: 'Contratações', count: 89, percentage: 3.1, color: 'var(--status-success)' }
   ]
 
-  const handleDrillDown = (dataPoint: Record<string, unknown>) => {
+  const handleDrillDown = (dataPoint: BackendRecord) => {
     // Implementar navegação para detalhes
   }
 

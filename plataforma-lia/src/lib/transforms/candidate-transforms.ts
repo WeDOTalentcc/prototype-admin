@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 /**
  * candidate-transforms.ts — Sprint G4.
  *
@@ -291,7 +292,7 @@ export function mapCandidateLocalToCandidate(c: CandidateLocal, index: number): 
     is_opentowork: c.is_opentowork,
     is_decision_maker: c.is_decision_maker,
     is_top_universities: c.is_top_universities,
-    is_startup: c.is_startup || (c.company_info as Record<string, unknown> | undefined)?.is_startup,
+    is_startup: c.is_startup || (c.company_info as BackendRecord | undefined)?.is_startup,
     expertise: c.expertise,
     outreach_message: c.outreach_message,
   }

@@ -65,7 +65,7 @@ afterEach(() => {
 
 describe("useCompanyPipeline", () => {
   it("inicia com loading=true e pipeline=null", () => {
-    ;(fetch as jest.Mock).mockReturnValueOnce(new Promise(() => {})) // nunca resolve
+    ;(vi.mocked(fetch)).mockReturnValueOnce(new Promise(() => {})) // nunca resolve
 
     const { result } = renderHook(() => useCompanyPipeline())
 
@@ -74,7 +74,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("popula pipeline e define loading=false após fetch bem-sucedido", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -88,7 +88,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("filtra etapas com is_active=false", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -103,7 +103,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("mapeia corretamente: stageName, order, type, slaDays", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -121,7 +121,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("mapeia stage_category 'catalog' como 'default'", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -135,7 +135,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("marca liaAssisted=true para etapas conhecidas", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -152,7 +152,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("define slaDays=3 (padrão) quando sla_hours é null", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })
@@ -166,7 +166,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("fallback silencioso: pipeline=null, loading=false quando backend falha (500)", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: false,
       status: 500,
     })
@@ -179,7 +179,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("fallback silencioso: pipeline=null, loading=false quando fetch lança exceção", async () => {
-    ;(fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"))
+    ;(vi.mocked(fetch)).mockRejectedValueOnce(new Error("Network error"))
 
     const { result } = renderHook(() => useCompanyPipeline())
 
@@ -189,7 +189,7 @@ describe("useCompanyPipeline", () => {
   })
 
   it("propriedades de edição: system=não removível, custom=removível", async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
+    ;(vi.mocked(fetch)).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_PIPELINE_RESPONSE,
     })

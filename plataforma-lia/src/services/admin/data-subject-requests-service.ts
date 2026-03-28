@@ -1,3 +1,4 @@
+import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export type DataSubjectRequestType = 
@@ -116,7 +117,7 @@ export interface TrackingResult {
 
 export { ApiClientError }
 
-function mapBackendRequest(data: Record<string, unknown>): DataSubjectRequest {
+function mapBackendRequest(data: BackendRecord): DataSubjectRequest {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -150,7 +151,7 @@ function mapBackendRequest(data: Record<string, unknown>): DataSubjectRequest {
   }
 }
 
-function mapBackendStats(data: Record<string, unknown>): DataSubjectRequestStats {
+function mapBackendStats(data: BackendRecord): DataSubjectRequestStats {
   return {
     totalRequests: data.total_requests || 0,
     pendingRequests: data.pending_requests || 0,
@@ -165,7 +166,7 @@ function mapBackendStats(data: Record<string, unknown>): DataSubjectRequestStats
   }
 }
 
-function mapBackendTracking(data: Record<string, unknown>): TrackingResult {
+function mapBackendTracking(data: BackendRecord): TrackingResult {
   return {
     id: data.id,
     status: data.status,
