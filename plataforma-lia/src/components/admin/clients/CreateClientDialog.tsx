@@ -88,7 +88,6 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       setNewClient(initialFormState)
       onSuccess?.()
     } catch (err) {
-      console.error('Error creating client:', err)
       toast.error(err instanceof Error ? err.message : 'Erro ao criar cliente')
     } finally {
       setCreating(false)

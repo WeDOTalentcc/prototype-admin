@@ -467,7 +467,6 @@ export function StageTransitionActionsModal({
         }
       }
     } catch (err) {
-      console.error('Error generating message:', err)
       if (action) {
         const defaultContent = generateDefaultMessage(action, candidate, job, newStage, wsiData)
         setSubject(defaultContent.subject)
@@ -541,7 +540,6 @@ export function StageTransitionActionsModal({
 
       onClose()
     } catch (error) {
-      console.error('Error confirming action:', error)
       toast.error('Erro ao executar ação', {
         description: 'Tente novamente ou contate o suporte',
       })
@@ -762,7 +760,7 @@ export function StageTransitionActionsModal({
                     <SelectTrigger className="text-xs">
                       <SelectValue placeholder="Selecionar template..." />
                     </SelectTrigger>
-                    <SelectContent className="z-[9999]">
+                    <SelectContent className="z-modal">
                       {filteredTemplates.map(t => (
                         <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                       ))}

@@ -24,7 +24,6 @@ export async function GET(
         })
       }
       const errorText = await response.text()
-      console.error("Backend error:", response.status, errorText)
       return NextResponse.json(
         { error: "Backend error", details: errorText },
         { status: response.status }
@@ -34,7 +33,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error fetching opinions summary:", error)
     return NextResponse.json(
       { error: "Failed to fetch opinions summary" },
       { status: 500 }

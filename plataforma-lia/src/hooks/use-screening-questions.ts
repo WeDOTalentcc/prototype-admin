@@ -107,7 +107,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
       setCulturalQuestions(data.cultural_questions)
       setMetadata(data.metadata)
     } catch (err) {
-      console.error('Error generating screening questions:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setIsLoading(false)
@@ -159,7 +158,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
         setCulturalQuestions(newQuestions)
       }
     } catch (err) {
-      console.error('Error regenerating questions:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setIsLoading(false)
@@ -356,7 +354,6 @@ export function useWSIScreeningPipeline(): UseWSIScreeningPipelineResult {
       setTotalCount(data.total_count)
       setBlockDistribution(data.block_distribution || {})
     } catch (err) {
-      console.error('Error generating WSI screening pipeline:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setIsLoading(false)

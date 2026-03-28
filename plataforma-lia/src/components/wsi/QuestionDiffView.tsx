@@ -34,7 +34,7 @@ export function QuestionDiffView({
   const getActionBadge = (action: string) => {
     switch (action) {
       case "modified":
-        return { label: "Modificada", className: "text-micro px-1.5 py-0 h-4 border" , style: { backgroundColor: "rgba(96,190,209,0.1)", borderColor: "rgba(96,190,209,0.3)" }}
+        return { label: "Modificada", className: "text-micro px-1.5 py-0 h-4 border bg-wedo-cyan/10 border-wedo-cyan/30" , style: {} }
       case "added":
         return { label: "Nova", className: "text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30" , style: {} }
       case "removed":
@@ -83,7 +83,7 @@ export function QuestionDiffView({
               )}
 
               {diff.after && (
-                <div className="px-3 py-2" style={{ backgroundColor: "rgba(96,190,209,0.04)" }}>
+                <div className="px-3 py-2 bg-wedo-cyan/[.04]">
                   <div className="flex items-start gap-2">
                     <span className="text-micro font-medium shrink-0 text-gray-700">DEPOIS</span>
                     <p className="text-xs text-gray-800 leading-relaxed font-medium">

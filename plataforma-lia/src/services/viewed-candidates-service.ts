@@ -42,14 +42,12 @@ export async function getViewedCandidateIds(
     })
 
     if (!response.ok) {
-      console.error('Failed to fetch viewed candidates:', response.statusText)
       return []
     }
 
     const data: ViewedCandidatesResponse = await response.json()
     return data.candidate_ids || []
   } catch (error) {
-    console.error('Error fetching viewed candidates:', error)
     return []
   }
 }
@@ -104,7 +102,6 @@ export async function markCandidateAsViewed(
 
     return response.ok
   } catch (error) {
-    console.error('Error marking candidate as viewed:', error)
     return false
   }
 }
@@ -127,7 +124,6 @@ export async function markCandidateAsShortlisted(
 
     return response.ok
   } catch (error) {
-    console.error('Error marking candidate as shortlisted:', error)
     return false
   }
 }

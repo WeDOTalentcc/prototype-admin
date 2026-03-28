@@ -131,7 +131,6 @@ export function WorkModelAnalyticsPage() {
 
   // Função para exportar dados
   const handleExport = (format: 'csv' | 'pdf' | 'excel') => {
-    console.log(`Exportando dados em formato ${format}`)
     // TODO: Implementar exportação real
     alert(`📊 Relatório de Modelos de Trabalho exportado em ${format.toUpperCase()}!`)
   }

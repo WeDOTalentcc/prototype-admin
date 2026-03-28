@@ -216,7 +216,6 @@ export function UnifiedCommunicationModal({
         setVacancies(Array.isArray(vacancyList) ? vacancyList : [])
       }
     } catch (error) {
-      console.error('Error loading vacancies:', error)
       setVacancies([])
     } finally {
       setIsLoadingVacancies(false)
@@ -305,10 +304,8 @@ export function UnifiedCommunicationModal({
               description: `${candidateCount} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title || 'selecionada'}"`,
             })
           } else {
-            console.warn('Failed to add candidate(s) to vacancy')
           }
         } catch (error) {
-          console.error('Error adding candidate(s) to vacancy:', error)
         }
       }
 
@@ -440,7 +437,6 @@ export function UnifiedCommunicationModal({
           }
         })
       } catch (logError) {
-        console.warn('Failed to log communication (non-blocking):', logError)
         toast({
           title: "Aviso",
           description: "Mensagem enviada, mas o registro do histórico falhou.",
@@ -468,7 +464,6 @@ export function UnifiedCommunicationModal({
 
       onClose()
     } catch (error) {
-      console.error('Error sending message:', error)
       toast({
         title: "Erro ao enviar",
         description: error instanceof Error ? error.message : 'Erro desconhecido',
@@ -489,7 +484,7 @@ export function UnifiedCommunicationModal({
   }
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
       <div 
         className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
        

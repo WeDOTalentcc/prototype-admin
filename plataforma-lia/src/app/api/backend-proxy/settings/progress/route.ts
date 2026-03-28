@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       return NextResponse.json({
         overall: 50,
         sections: {
@@ -37,7 +36,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Settings progress proxy error:', error)
     return NextResponse.json({
       overall: 50,
       sections: {

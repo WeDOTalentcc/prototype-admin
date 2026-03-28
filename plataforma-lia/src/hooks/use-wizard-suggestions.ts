@@ -42,7 +42,6 @@ export function useWizardSuggestions() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
-      console.error('Error fetching suggestion:', err);
       return null;
     } finally {
       setLoading(false);
@@ -70,7 +69,6 @@ export function useWizardSuggestions() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
-      console.error('Error fetching all suggestions:', err);
       return null;
     } finally {
       setLoading(false);
@@ -103,7 +101,6 @@ export function useWizardSuggestions() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
-      console.error('Error fetching similar jobs:', err);
       return [];
     } finally {
       setLoading(false);
@@ -125,7 +122,6 @@ export function useWizardSuggestions() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
-      console.error('Error fetching data coverage:', err);
       return null;
     } finally {
       setLoading(false);
@@ -148,7 +144,6 @@ export function useWizardSuggestions() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(message);
-      console.error('Error fetching sources priority:', err);
       return [];
     } finally {
       setLoading(false);

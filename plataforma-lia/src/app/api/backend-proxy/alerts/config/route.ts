@@ -69,7 +69,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { 
@@ -91,7 +90,6 @@ export async function GET(request: NextRequest) {
       briefing_frequency: data.briefing_frequency || 'daily'
     })
   } catch (error) {
-    console.error('Alert config proxy error:', error)
     return NextResponse.json(
       { 
         success: true,
@@ -120,7 +118,6 @@ export async function PUT(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao salvar configuração de alertas', details: errorData },
@@ -134,7 +131,6 @@ export async function PUT(request: NextRequest) {
       ...data
     })
   } catch (error) {
-    console.error('Alert config proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

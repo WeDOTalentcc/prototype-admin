@@ -118,7 +118,6 @@ export function IndustrySingleSelect({
       }
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        console.error("AI suggestion error:", err)
       }
     } finally {
       setIsLoadingAI(false)

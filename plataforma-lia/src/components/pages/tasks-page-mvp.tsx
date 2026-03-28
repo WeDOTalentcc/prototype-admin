@@ -329,7 +329,6 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
       setTodayInterviews(upcomingItems)
       setPastInterviews(pastItems)
     } catch (err: any) {
-      console.error('Erro ao buscar entrevistas:', err)
       setError(err.message || 'Erro ao carregar entrevistas')
     } finally {
       setIsLoading(false)

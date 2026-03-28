@@ -437,7 +437,6 @@ Só preciso confirmar alguns dados:
         })
       })
     } catch (error) {
-      console.error('Error recording Fast Track usage:', error)
     }
   }, [companyId, state.appliedFromJobId])
   

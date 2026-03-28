@@ -291,7 +291,6 @@ class InsuranceService {
       return mapBackendDashboard(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching insurance dashboard:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -317,7 +316,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching insurance alerts:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { alerts: [], total: 0 }
@@ -338,7 +336,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching coverage checklist:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { items: [], totalItems: 0, coveredItems: 0, compliancePercentage: 0 }
@@ -368,7 +365,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching policies:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { policies: [], total: 0, limit: 50, offset: 0 }
@@ -385,7 +381,6 @@ class InsuranceService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching policy:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -454,7 +449,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching coverages:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { coverages: [], total: 0 }
@@ -493,7 +487,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching documents:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { documents: [], total: 0 }
@@ -524,7 +517,6 @@ class InsuranceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching claims:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { claims: [], total: 0, limit: 50, offset: 0 }

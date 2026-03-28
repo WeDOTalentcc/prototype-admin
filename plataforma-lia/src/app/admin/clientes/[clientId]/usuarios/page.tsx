@@ -135,7 +135,6 @@ export default function ClientUsuariosPage({
         }
       }
     } catch (err) {
-      console.log('SCIM config not available')
     }
   }, [clientId])
 
@@ -157,7 +156,6 @@ export default function ClientUsuariosPage({
         toast.error('Erro ao carregar usuários. Tente novamente.')
       }
     } catch (err) {
-      console.error('Erro ao carregar usuários:', err)
       setUsers([])
       toast.error('Erro ao carregar usuários. Verifique sua conexão.')
     } finally {

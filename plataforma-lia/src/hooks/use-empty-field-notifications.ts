@@ -71,7 +71,6 @@ export function useEmptyFieldNotifications(): UseEmptyFieldNotificationsReturn {
       
       if (!response.ok) {
         // On error, clear notifications to avoid blocking the user
-        console.warn('Failed to fetch empty field notifications, proceeding without blocking')
         setNotifications([])
         setCurrentIndex(0)
         return
@@ -82,7 +81,6 @@ export function useEmptyFieldNotifications(): UseEmptyFieldNotificationsReturn {
       setCurrentIndex(0)
     } catch (err) {
       // On network error, don't block the user - just log and clear
-      console.warn('Network error fetching notifications:', err)
       setError(null) // Don't show error to user, just proceed
       setNotifications([])
     } finally {

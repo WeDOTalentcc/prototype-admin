@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao listar favoritos', details: errorData },
@@ -29,7 +28,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Favorites list proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

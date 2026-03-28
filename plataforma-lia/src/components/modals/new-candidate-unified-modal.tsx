@@ -266,13 +266,11 @@ export function NewCandidateUnifiedModal({
       })
 
       if (!enrichResponse.ok) {
-        console.error('Enrichment failed:', await enrichResponse.text())
         return false
       }
 
       return true
     } catch (err) {
-      console.error('Enrichment error:', err)
       return false
     } finally {
       setIsEnriching(false)

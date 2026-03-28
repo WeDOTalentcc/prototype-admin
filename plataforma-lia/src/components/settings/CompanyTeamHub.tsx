@@ -760,7 +760,6 @@ export function CompanyTeamHub({
           }
         }
       } catch (err) {
-        console.error("Error fetching company data:", err);
       } finally {
         setLoading(false);
       }
@@ -933,7 +932,6 @@ export function CompanyTeamHub({
         });
         setHasCultureProfile(true);
       } catch (saveErr) {
-        console.log("Could not save culture data from LIA analysis");
       }
 
       setLiaAnalysisProgress(100);
@@ -949,7 +947,6 @@ export function CompanyTeamHub({
         setLiaAnalysisStep(null);
       }, 2000);
     } catch (err) {
-      console.error("LIA analysis error:", err);
       setLiaAnalysisProgress(0);
       setLiaAnalysisStep(null);
       setError(
@@ -997,7 +994,6 @@ export function CompanyTeamHub({
     stability_score?: number;
   }) => {
     if (!companyId) {
-      console.log("Company ID not available, cannot save culture data");
       return;
     }
     try {
@@ -1010,14 +1006,10 @@ export function CompanyTeamHub({
         },
       );
       if (!response.ok) {
-        console.log(
-          "Culture profile not found, will be created on next analysis",
-        );
       } else {
         setHasCultureProfile(true);
       }
     } catch (err) {
-      console.error("Error saving culture data:", err);
     }
   };
 
@@ -1088,7 +1080,6 @@ export function CompanyTeamHub({
         }
       }
     } catch (err) {
-      console.error("Error loading departments:", err);
     }
   };
 
@@ -1175,7 +1166,6 @@ export function CompanyTeamHub({
         }
       );
     } catch (error) {
-      console.error('Error saving LIA toggle:', error);
     }
   };
 
@@ -1219,7 +1209,6 @@ export function CompanyTeamHub({
       const result = await response.json();
       return result;
     } catch (err) {
-      console.error("Error saving department:", err);
       throw err;
     }
   };
@@ -1237,7 +1226,6 @@ export function CompanyTeamHub({
         throw new Error("Falha ao remover departamento");
       }
     } catch (err) {
-      console.error("Error deleting department:", err);
     }
   };
 
@@ -1270,7 +1258,6 @@ export function CompanyTeamHub({
       const result = await response.json();
       return result;
     } catch (err) {
-      console.error("Error saving approver:", err);
       throw err;
     }
   };
@@ -1288,7 +1275,6 @@ export function CompanyTeamHub({
         throw new Error("Falha ao remover aprovador");
       }
     } catch (err) {
-      console.error("Error deleting approver:", err);
     }
   };
 
@@ -1512,7 +1498,6 @@ export function CompanyTeamHub({
         setDepartmentMembers(Array.isArray(data) ? data : []);
       }
     } catch (err) {
-      console.error("Error loading members:", err);
       setDepartmentMembers([]);
     }
   };
@@ -1561,7 +1546,6 @@ export function CompanyTeamHub({
         setMemberError(errorData.detail || "Erro ao salvar colaborador");
       }
     } catch (err) {
-      console.error("Error saving member:", err);
       setMemberError("Erro de conexão. Tente novamente.");
     } finally {
       setSavingMember(false);
@@ -1590,7 +1574,6 @@ export function CompanyTeamHub({
         await loadDepartmentMembers(editingDepartment.id);
       }
     } catch (err) {
-      console.error("Error deleting member:", err);
     }
   };
 
@@ -1606,7 +1589,6 @@ export function CompanyTeamHub({
         setOrgChartMembers(Array.isArray(data) ? data : []);
       }
     } catch (err) {
-      console.error("Error loading org chart members:", err);
       setOrgChartMembers([]);
     } finally {
       setLoadingOrgChart(false);

@@ -72,7 +72,6 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       const variablesData = await templatesService.getVariables()
       setVariables(variablesData)
     } catch (err) {
-      console.error('Error fetching variables:', err)
     }
   }, [])
 

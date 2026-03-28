@@ -70,7 +70,6 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       } catch (err) {
         if ((err as Error)?.name !== "AbortError") {
           setError("Erro ao carregar candidatos. Tente novamente.")
-          console.error("useCandidatesList fetch error:", err)
         }
       } finally {
         setLoading(false)

@@ -137,7 +137,6 @@ export function AdvancedReportExporter({
       downloadFile(pdfContent, `relatorio-${selectedTemplate?.id}-${new Date().toISOString().split('T')[0]}.pdf`, 'pdf')
 
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error)
       alert('Erro ao gerar PDF. Tente novamente.')
     } finally {
       setIsExporting(false)
@@ -161,7 +160,6 @@ export function AdvancedReportExporter({
       downloadFile(excelContent, `dados-${selectedTemplate?.id}-${new Date().toISOString().split('T')[0]}.xlsx`, 'excel')
 
     } catch (error) {
-      console.error('Erro ao exportar Excel:', error)
       alert('Erro ao gerar Excel. Tente novamente.')
     } finally {
       setIsExporting(false)
@@ -210,7 +208,6 @@ export function AdvancedReportExporter({
 
   const downloadFile = (content: any, filename: string, type: 'pdf' | 'excel') => {
     // Mock de download - integraria com geração real de arquivo
-    console.log(`Downloading ${type}:`, { filename, content })
 
     // Simulação de download
     const blob = new Blob([JSON.stringify(content, null, 2)], {

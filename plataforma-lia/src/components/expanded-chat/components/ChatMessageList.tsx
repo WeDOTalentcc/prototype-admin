@@ -283,7 +283,6 @@ export function ChatMessageList({
                       onSetMessages(prev => [...prev, feedbackMessage])
                       onSetActiveToolConfirmationMessageId(null)
                     } catch (error) {
-                      console.error('[ToolCalling] Error:', error)
                       const errorMessage: Message = {
                         id: `tool-error-${Date.now()}`,
                         role: 'assistant',
@@ -488,7 +487,6 @@ export function ChatMessageList({
                         messageId={message.id}
                         originalResponse={message.content}
                         onFeedbackSubmitted={(type) => {
-                          console.log(`Feedback type ${type} submitted for message ${message.id}`)
                         }}
                       />
                     </div>

@@ -425,7 +425,6 @@ export function UniversityPresetsModal({
           setCustomPresets(formatted)
         }
       } catch (e) {
-        console.error('Error loading custom presets:', e)
       }
     }
   }, [isOpen])
@@ -440,7 +439,6 @@ export function UniversityPresetsModal({
         setCustomPresets(prev => prev.filter(p => p.id !== presetId))
       }
     } catch (e) {
-      console.error('Error deleting custom preset:', e)
     }
   }
 
@@ -475,7 +473,7 @@ export function UniversityPresetsModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-overlay flex items-center justify-center p-4">
       <div className="bg-white rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">University Presets</h2>

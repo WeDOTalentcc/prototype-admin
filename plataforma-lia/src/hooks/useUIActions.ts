@@ -82,7 +82,6 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
       }
       closePanel()
     } catch (error) {
-      console.error("Error submitting panel:", error)
       throw error
     } finally {
       setState(prev => ({ ...prev, isLoading: false }))
@@ -148,7 +147,6 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
             ws.close()
             return
           }
-          console.log("UI Actions WebSocket connected")
           reconnectAttemptRef.current = 0
           setState(prev => ({ ...prev, connectionStatus: "connected" }))
         }
@@ -162,36 +160,30 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
               handleUIAction(message.action as UIAction)
             }
           } catch (error) {
-            console.error("Error parsing WebSocket message:", error)
           }
         }
         
         ws.onclose = () => {
           if (!isMountedRef.current) return
           
-          console.log("UI Actions WebSocket disconnected")
           setState(prev => ({ ...prev, connectionStatus: "disconnected" }))
           
           if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
             const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptRef.current)
             reconnectAttemptRef.current += 1
-            console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptRef.current}/${MAX_RECONNECT_ATTEMPTS})`)
             
             reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay)
           } else {
-            console.log("Max reconnect attempts reached")
             setState(prev => ({ ...prev, connectionStatus: "error" }))
           }
         }
         
         ws.onerror = (error) => {
-          console.error("WebSocket error:", error)
           setState(prev => ({ ...prev, connectionStatus: "error" }))
         }
         
         wsRef.current = ws
       } catch (error) {
-        console.error("Failed to create WebSocket:", error)
         setState(prev => ({ ...prev, connectionStatus: "error" }))
       }
     }

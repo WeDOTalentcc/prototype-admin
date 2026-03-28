@@ -174,7 +174,6 @@ class SaasMetricsClientService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client SaaS metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -194,7 +193,6 @@ class SaasMetricsClientService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client revenue metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -214,7 +212,6 @@ class SaasMetricsClientService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client usage metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -234,7 +231,6 @@ class SaasMetricsClientService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client health metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -255,7 +251,6 @@ class SaasMetricsClientService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client payments:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -272,7 +267,6 @@ class SaasMetricsClientService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching platform metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }

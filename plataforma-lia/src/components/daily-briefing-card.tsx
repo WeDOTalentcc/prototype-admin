@@ -214,7 +214,6 @@ export function DailyBriefingCard({
         }
       }
     } catch (error) {
-      console.error('Error fetching briefing:', error)
     }
   }
 
@@ -231,7 +230,6 @@ export function DailyBriefingCard({
         setBriefing(result.data)
       }
     } catch (error) {
-      console.error('Error refreshing briefing:', error)
     } finally {
       setRefreshing(false)
     }

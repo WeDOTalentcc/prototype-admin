@@ -26,7 +26,6 @@ export async function PATCH(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Hiring policy block proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

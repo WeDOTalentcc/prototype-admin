@@ -128,7 +128,6 @@ export function DataRequestModal({
       })
       onClose()
     } catch (err) {
-      console.error('Error submitting data request:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -165,7 +164,7 @@ export function DataRequestModal({
               <SelectTrigger className="w-full h-9">
                 <SelectValue placeholder="Selecione um template" />
               </SelectTrigger>
-              <SelectContent className="z-[200]">
+              <SelectContent className="z-select">
                 {DATA_REQUEST_TEMPLATES.map((template) => (
                   <SelectItem key={template.id} value={template.id}>
                     <div className="flex flex-col items-start">
@@ -239,7 +238,7 @@ export function DataRequestModal({
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[200]">
+                <SelectContent className="z-select">
                   <SelectItem value="email">
                     <div className="flex items-center gap-2">
                       <Mail className="w-3.5 h-3.5" />
@@ -272,7 +271,7 @@ export function DataRequestModal({
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[200]">
+                <SelectContent className="z-select">
                   <SelectItem value="3"><span className="text-xs">3 dias</span></SelectItem>
                   <SelectItem value="5"><span className="text-xs">5 dias</span></SelectItem>
                   <SelectItem value="7"><span className="text-xs">7 dias</span></SelectItem>

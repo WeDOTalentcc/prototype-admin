@@ -232,8 +232,7 @@ export function HiringPoliciesHub() {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div
-                  className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
+                  className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/[.12]"
                 >
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                 </div>

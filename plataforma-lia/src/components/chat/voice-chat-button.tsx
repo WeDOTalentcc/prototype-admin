@@ -81,7 +81,6 @@ export function VoiceChatButton({
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (err) {
-      console.error('Error accessing microphone:', err)
       onError?.('Não foi possível acessar o microfone. Verifique as permissões do navegador.')
     }
   }, [onError])
@@ -116,7 +115,6 @@ export function VoiceChatButton({
         playAudioResponse(result.response_audio_base64)
       }
     } catch (err) {
-      console.error('Error processing audio:', err)
       onError?.('Erro ao processar áudio. Tente novamente.')
     } finally {
       setIsProcessing(false)
@@ -138,7 +136,6 @@ export function VoiceChatButton({
         audioRef.current = null
       }
     } catch (err) {
-      console.error('Error playing audio:', err)
     }
   }
 

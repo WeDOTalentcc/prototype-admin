@@ -75,7 +75,6 @@ export function useComplianceControls(clientId: string): UseComplianceControlsRe
       setControls(data.controls)
       setTotalControls(data.total)
     } catch (err) {
-      console.error('Error fetching controls:', err)
     }
   }, [clientId])
 
@@ -87,7 +86,6 @@ export function useComplianceControls(clientId: string): UseComplianceControlsRe
       setAudits(data.audits)
       setTotalAudits(data.total)
     } catch (err) {
-      console.error('Error fetching audits:', err)
     }
   }, [clientId])
 
@@ -99,7 +97,6 @@ export function useComplianceControls(clientId: string): UseComplianceControlsRe
       setSoxControls(data.controls)
       setTotalSoxControls(data.total)
     } catch (err) {
-      console.error('Error fetching SOX controls:', err)
     }
   }, [clientId])
 

@@ -220,14 +220,12 @@ export function JobUnpublishModal({
               }
             }
           } catch (err) {
-            console.warn(`Error fetching candidates for job ${job.id}:`, err)
           }
         }
         
         setFetchedCandidates(allFetched)
         setSelectedCandidateIds(new Set(allFetched.map(c => c.id)))
       } catch (error) {
-        console.error('Error fetching candidates:', error)
       } finally {
         setLoadingCandidates(false)
       }
@@ -344,7 +342,6 @@ export function JobUnpublishModal({
         onClose()
       }
     } catch (error) {
-      console.error('Erro ao despublicar:', error)
       toast.error('Erro ao processar. Tente novamente.')
     } finally {
       setIsSubmitting(false)
@@ -382,7 +379,6 @@ export function JobUnpublishModal({
         onComplete?.()
       }
     } catch (error) {
-      console.error('Erro ao despublicar:', error)
       toast.error('Erro ao processar. Tente novamente.')
     } finally {
       setIsSubmitting(false)

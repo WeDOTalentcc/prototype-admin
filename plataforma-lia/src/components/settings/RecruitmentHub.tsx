@@ -135,7 +135,6 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         }
         
       } catch (err) {
-        console.error('Error fetching recruitment data:', err)
       } finally {
         setLoading(false)
       }
@@ -189,7 +188,6 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
       setSuccessMessage('Perguntas salvas com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
-      console.error('Error saving questions:', err)
       setError('Erro ao salvar perguntas. Tente novamente.')
       setTimeout(() => setError(null), 3000)
     } finally {
@@ -273,7 +271,6 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         setTimeout(() => setError(null), 3000)
       }
     } catch (error) {
-      console.error('Erro ao salvar pipeline:', error)
       setError('Erro ao salvar pipeline. Tente novamente.')
       setTimeout(() => setError(null), 3000)
     } finally {

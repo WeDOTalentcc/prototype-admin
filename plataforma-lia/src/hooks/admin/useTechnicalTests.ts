@@ -67,7 +67,6 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
       }
       return false
     } catch (err) {
-      console.error('Error toggling test:', err)
       return false
     } finally {
       setIsUpdating(false)
@@ -88,7 +87,6 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
       }
       return false
     } catch (err) {
-      console.error('Error configuring test:', err)
       return false
     } finally {
       setIsUpdating(false)
@@ -105,7 +103,6 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
       }
       return false
     } catch (err) {
-      console.error('Error seeding tests:', err)
       return false
     } finally {
       setIsUpdating(false)

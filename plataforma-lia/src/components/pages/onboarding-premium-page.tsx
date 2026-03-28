@@ -261,7 +261,6 @@ export function OnboardingPremiumPage() {
   const handleDrop = (e: React.DragEvent, targetStage: string) => {
     e.preventDefault()
     const candidateId = e.dataTransfer.getData('candidateId')
-    console.log(`Moving candidate ${candidateId} to ${targetStage}`)
     // Aqui implementaríamos a lógica de mover o candidato
   }
 

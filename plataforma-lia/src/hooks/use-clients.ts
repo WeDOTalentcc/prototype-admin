@@ -76,7 +76,6 @@ export function useClients(options: UseClientsOptions = {}): UseClientsResult {
       setTotal(result.total)
       setTotalPages(result.totalPages)
     } catch (err) {
-      console.error('Error fetching clients:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch clients')
       setClients([])
       setTotal(0)
@@ -157,7 +156,6 @@ export function useClients(options: UseClientsOptions = {}): UseClientsResult {
     try {
       return await clientsService.getClient(id)
     } catch (err) {
-      console.error('Error fetching client:', err)
       return null
     }
   }, [])

@@ -137,7 +137,6 @@ export function useSemanticSearch({
           return
         }
 
-        console.error("Semantic search error:", err)
         setError(err instanceof Error ? err.message : "Search failed")
         setSuggestions([])
       } finally {

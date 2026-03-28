@@ -27,7 +27,6 @@ export async function GET(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Interview notes candidate proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }

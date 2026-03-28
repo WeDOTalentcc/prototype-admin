@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error marking chat notifications as delivered:", error)
     return NextResponse.json(
       { success: false, error: "Failed to mark chat notifications as delivered" },
       { status: 500 }

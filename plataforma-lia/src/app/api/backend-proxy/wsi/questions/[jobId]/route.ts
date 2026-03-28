@@ -16,7 +16,6 @@ export async function GET(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`WSI questions get error: ${response.status}`, errorText)
       return NextResponse.json(
         { success: false, error: 'Failed to retrieve questions' },
         { status: response.status }
@@ -26,7 +25,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('WSI questions get proxy error:', error)
     return NextResponse.json(
       { success: false, error: 'Proxy connection error' },
       { status: 500 }

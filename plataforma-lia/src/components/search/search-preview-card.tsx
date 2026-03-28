@@ -112,7 +112,7 @@ export function SearchPreviewCard({
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
                       style={{ 
-                        backgroundColor: hasLocalResults ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        backgroundColor: hasLocalResults ? "rgb(16 185 129 / 0.1)" : "rgb(239 68 68 / 0.1)",
                         color: hasLocalResults ? "var(--status-success)" : "var(--status-error)"
                       }}
                     >

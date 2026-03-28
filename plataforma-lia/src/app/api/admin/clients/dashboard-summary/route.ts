@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Dashboard summary proxy error:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch dashboard summary' },
       { status: 500 }

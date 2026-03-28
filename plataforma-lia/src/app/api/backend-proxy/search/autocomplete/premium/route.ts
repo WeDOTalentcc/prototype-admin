@@ -32,9 +32,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(data)
       }
 
-      console.warn("Backend autocomplete failed:", response.status)
     } catch (backendError) {
-      console.warn("Backend unavailable for autocomplete:", backendError)
     }
 
     const fallbackSuggestions = generateFallbackSuggestions(query)
@@ -43,7 +41,6 @@ export async function GET(request: NextRequest) {
       query,
     })
   } catch (error) {
-    console.error("Error fetching autocomplete:", error)
     return NextResponse.json({ suggestions: [], query: "" }, { status: 500 })
   }
 }

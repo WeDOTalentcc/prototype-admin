@@ -119,7 +119,6 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
         setSettings(mapped)
         setOriginalSettings(mapped)
       } catch (e) {
-        console.error('Error loading settings from API:', e)
       }
       setLoading(false)
     }
@@ -160,7 +159,6 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
       
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
-      console.error('Error saving settings:', error)
       setErrorMessage('Erro ao salvar configurações. Tente novamente.')
       setTimeout(() => setErrorMessage(null), 5000)
     } finally {

@@ -90,7 +90,6 @@ export function AlertSettingsModal({
         setPreferences(data.preferences || [])
       }
     } catch (error) {
-      console.error('Error fetching preferences:', error)
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +105,6 @@ export function AlertSettingsModal({
       if (!response.ok) throw new Error('Failed to save preferences')
       return true
     } catch (error) {
-      console.error('Error saving preferences:', error)
       return false
     }
   }

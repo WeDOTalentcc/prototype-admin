@@ -198,7 +198,6 @@ class TechnicalTestsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching technical tests:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { tests: [], total: 0, limit: 100, offset: 0 }
@@ -211,7 +210,6 @@ class TechnicalTestsService {
       return mapBackendTest(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching test by id:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -234,7 +232,6 @@ class TechnicalTestsService {
       return mapBackendTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error creating test:', error.message)
         throw error
       }
       return null
@@ -259,7 +256,6 @@ class TechnicalTestsService {
       return mapBackendTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error updating test:', error.message)
         throw error
       }
       return null
@@ -272,7 +268,6 @@ class TechnicalTestsService {
       return true
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error deleting test:', error.message)
         throw error
       }
       return false
@@ -291,7 +286,6 @@ class TechnicalTestsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client tests:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { tests: [], total: 0, limit: 100, offset: 0 }
@@ -314,7 +308,6 @@ class TechnicalTestsService {
       return mapBackendClientTest(response)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error configuring client test:', error.message)
         throw error
       }
       return null
@@ -328,7 +321,6 @@ class TechnicalTestsService {
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client test stats:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -341,7 +333,6 @@ class TechnicalTestsService {
       return response
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error seeding tests:', error.message)
         throw error
       }
       return null

@@ -38,7 +38,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Client tests proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -73,7 +72,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error('Client tests proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

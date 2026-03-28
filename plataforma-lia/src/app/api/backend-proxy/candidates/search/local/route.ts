@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Local search backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro na busca local de candidatos', details: errorData },
@@ -30,7 +29,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Local search proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

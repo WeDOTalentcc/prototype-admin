@@ -86,7 +86,6 @@ export function useJobFiltersPersistence() {
         setSavedSearches(Array.isArray(parsed) ? parsed.slice(0, MAX_SAVED_SEARCHES) : [])
       }
     } catch (error) {
-      console.error('Error loading job filters from localStorage:', error)
     }
 
     setIsLoaded(true)
@@ -98,7 +97,6 @@ export function useJobFiltersPersistence() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtersState))
     } catch (error) {
-      console.error('Error saving job filters to localStorage:', error)
     }
   }, [filtersState, isLoaded])
 
@@ -108,7 +106,6 @@ export function useJobFiltersPersistence() {
     try {
       localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(savedSearches.slice(0, MAX_SAVED_SEARCHES)))
     } catch (error) {
-      console.error('Error saving searches to localStorage:', error)
     }
   }, [savedSearches, isLoaded])
 

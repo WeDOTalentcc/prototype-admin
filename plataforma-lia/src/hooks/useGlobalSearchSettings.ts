@@ -45,7 +45,6 @@ export function useGlobalSearchSettings() {
       })
       setError(null)
     } catch (e) {
-      console.error('Error loading global search settings:', e)
       setError('Failed to load settings')
     } finally {
       setLoading(false)

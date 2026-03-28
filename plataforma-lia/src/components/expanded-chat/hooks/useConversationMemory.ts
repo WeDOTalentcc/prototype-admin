@@ -71,7 +71,6 @@ function loadConversationId(contextType: string, contextId?: string): string | n
   try {
     return localStorage.getItem(getStorageKey(contextType, contextId))
   } catch {
-    console.warn('[useConversationMemory] Failed to load conversation ID from localStorage')
     return null
   }
 }
@@ -81,7 +80,6 @@ function saveConversationId(contextType: string, contextId: string | undefined, 
   try {
     localStorage.setItem(getStorageKey(contextType, contextId), conversationId)
   } catch {
-    console.warn('[useConversationMemory] Failed to save conversation ID to localStorage')
   }
 }
 
@@ -90,7 +88,6 @@ function clearStoredConversationId(contextType: string, contextId?: string): voi
   try {
     localStorage.removeItem(getStorageKey(contextType, contextId))
   } catch {
-    console.warn('[useConversationMemory] Failed to clear conversation ID from localStorage')
   }
 }
 
@@ -128,7 +125,6 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
   const handleError = useCallback((err: Error) => {
     setError(err)
     onError?.(err)
-    console.error('[useConversationMemory]', err)
   }, [onError])
 
   const createConversation = useCallback(async (
@@ -245,7 +241,6 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
     intent?: string
   ): Promise<Message | null> => {
     if (!conversationId) {
-      console.warn('[useConversationMemory] Cannot add message: no active conversation')
       return null
     }
 
@@ -318,7 +313,6 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
 
   const getContext = useCallback(async (): Promise<ConversationContext | null> => {
     if (!conversationId || !currentContextRef.current) {
-      console.warn('[useConversationMemory] Cannot get context: no active conversation')
       return null
     }
 

@@ -6,11 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    console.log('[Proxy] Smart Orchestrate request:', {
-      message: body.message?.substring(0, 100),
-      current_stage: body.current_stage,
-      company_id: body.company_id
-    })
     
     const response = await fetch(`${BACKEND_URL}/api/v1/wizard/smart-orchestrate`, {
       method: 'POST',
@@ -30,7 +25,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[Proxy] Smart Orchestrate error:', response.status, errorText)
       return NextResponse.json({
         success: false,
         lia_message: 'Erro ao processar sua mensagem. Tente novamente.',
@@ -45,16 +39,9 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('[Proxy] Smart Orchestrate response:', {
-      success: data.success,
-      intent: data.intent,
-      next_stage: data.next_stage,
-      confidence: data.confidence
-    })
     
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[Proxy] Smart Orchestrate exception:', error)
     return NextResponse.json({
       success: false,
       lia_message: 'Erro de conexão com o servidor. Tente novamente.',

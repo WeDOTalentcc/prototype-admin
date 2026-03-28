@@ -151,7 +151,6 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       }
       pdf.save(`Relatorio_Vaga_${job.jobId}_${new Date().getTime()}.pdf`)
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error)
     } finally {
       setIsGenerating(false)
     }

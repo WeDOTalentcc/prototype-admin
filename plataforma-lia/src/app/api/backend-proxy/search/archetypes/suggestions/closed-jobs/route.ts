@@ -18,14 +18,12 @@ export async function GET(request: NextRequest) {
     )
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status}`)
       return NextResponse.json({ jobs: [], total: 0 })
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Closed jobs suggestions proxy error:', error)
     return NextResponse.json({ jobs: [], total: 0 })
   }
 }

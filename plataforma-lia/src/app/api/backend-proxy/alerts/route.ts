@@ -21,14 +21,12 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       return NextResponse.json([], { status: 200 })
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Alerts proxy error:', error)
     return NextResponse.json([], { status: 200 })
   }
 }
@@ -48,7 +46,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       return NextResponse.json(
         { error: 'Erro ao verificar alertas' },
         { status: response.status }
@@ -58,7 +55,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Alerts check proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

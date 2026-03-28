@@ -45,7 +45,6 @@ export function useAIConsumption(options: UseAIConsumptionOptions): UseAIConsump
       const data = await aiConsumptionService.getSummary(clientId)
       setSummary(data)
     } catch (err) {
-      console.error('Error fetching AI consumption summary:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch summary')
     }
   }, [clientId])
@@ -57,7 +56,6 @@ export function useAIConsumption(options: UseAIConsumptionOptions): UseAIConsump
       const data = await aiConsumptionService.getDailyUsage(clientId, startDate, endDate)
       setDailyUsage(data)
     } catch (err) {
-      console.error('Error fetching daily AI consumption:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch daily usage')
     }
   }, [clientId, startDate, endDate])
@@ -69,7 +67,6 @@ export function useAIConsumption(options: UseAIConsumptionOptions): UseAIConsump
       const data = await aiConsumptionService.getByAgent(clientId)
       setAgentUsage(data)
     } catch (err) {
-      console.error('Error fetching AI consumption by agent:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch agent usage')
     }
   }, [clientId])
@@ -86,7 +83,6 @@ export function useAIConsumption(options: UseAIConsumptionOptions): UseAIConsump
       setDailyUsage(data.dailyUsage)
       setAgentUsage(data.agentUsage)
     } catch (err) {
-      console.error('Error fetching AI consumption data:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch AI consumption data')
     } finally {
       setIsLoading(false)

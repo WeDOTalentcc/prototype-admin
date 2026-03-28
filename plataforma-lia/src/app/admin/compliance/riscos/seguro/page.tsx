@@ -214,7 +214,6 @@ export default function SeguroCiberneticoPage() {
         setDocuments(documentsData.documents)
       }
     } catch (error) {
-      console.error('Error loading insurance data:', error)
     } finally {
       setLoading(false)
     }
@@ -232,7 +231,6 @@ export default function SeguroCiberneticoPage() {
       resetPolicyForm()
       await loadData()
     } catch (error) {
-      console.error('Error creating policy:', error)
     } finally {
       setSubmitting(false)
     }
@@ -256,7 +254,6 @@ export default function SeguroCiberneticoPage() {
       resetPolicyForm()
       await loadData()
     } catch (error) {
-      console.error('Error updating policy:', error)
     } finally {
       setSubmitting(false)
     }
@@ -268,7 +265,6 @@ export default function SeguroCiberneticoPage() {
       await insuranceService.deletePolicy(clientId, policyId)
       await loadData()
     } catch (error) {
-      console.error('Error deleting policy:', error)
     }
   }
 
@@ -281,7 +277,6 @@ export default function SeguroCiberneticoPage() {
       resetCoverageForm()
       await loadData()
     } catch (error) {
-      console.error('Error adding coverage:', error)
     } finally {
       setSubmitting(false)
     }
@@ -295,7 +290,6 @@ export default function SeguroCiberneticoPage() {
       resetClaimForm()
       await loadData()
     } catch (error) {
-      console.error('Error creating claim:', error)
     } finally {
       setSubmitting(false)
     }

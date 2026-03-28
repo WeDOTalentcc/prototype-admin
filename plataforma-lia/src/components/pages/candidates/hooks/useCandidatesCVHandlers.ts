@@ -121,7 +121,6 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
         })
       }
     } catch (error) {
-      console.error('CV upload error:', error)
       toast({
         title: "Erro ao processar CV",
         description: error instanceof Error ? error.message : 'Erro desconhecido',

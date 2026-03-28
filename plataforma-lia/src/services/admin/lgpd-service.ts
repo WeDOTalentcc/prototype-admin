@@ -180,7 +180,6 @@ class LGPDService {
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching LGPD stats:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -207,7 +206,6 @@ class LGPDService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching DPO:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -239,7 +237,6 @@ class LGPDService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching breaches:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { breaches: [], total: 0, limit: 50, offset: 0 }
@@ -272,7 +269,6 @@ class LGPDService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching automated decisions:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { decisions: [], total: 0, limit: 50, offset: 0 }

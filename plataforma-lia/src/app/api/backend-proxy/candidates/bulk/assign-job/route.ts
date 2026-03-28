@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('Bulk assign job error:', errorData)
       return NextResponse.json(
         { error: 'Erro ao atribuir candidatos à vaga', details: errorData },
         { status: response.status }
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Bulk assign job proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

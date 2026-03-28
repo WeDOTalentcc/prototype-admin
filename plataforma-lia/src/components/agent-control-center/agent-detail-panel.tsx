@@ -46,7 +46,6 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
       setActivities(activityData)
       setHealthScore(healthData)
     } catch (error) {
-      console.error('Error fetching agent details:', error)
     } finally {
       setIsLoading(false)
     }
@@ -205,7 +204,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors"
                   style={{
                     color: activeTab === tab.id ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
-                    backgroundColor: activeTab === tab.id ? 'rgba(229, 231, 235, 0.2)' : 'transparent',
+                    backgroundColor: activeTab === tab.id ? 'rgb(229 231 235 / 0.2)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'
                   }}
                 >
@@ -344,8 +343,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         {healthScore.recommendations.map((rec, i) => (
                           <div 
                             key={i}
-                            className="p-3 rounded-md flex items-start gap-2"
-                            style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
+                            className="p-3 rounded-md flex items-start gap-2 bg-gray-200/20"
                           >
                             <ChevronRight className="w-3 h-3 mt-0.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
                             <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>

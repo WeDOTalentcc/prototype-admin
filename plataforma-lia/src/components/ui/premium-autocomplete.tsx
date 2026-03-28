@@ -87,7 +87,6 @@ export function PremiumAutocomplete({
         setSuggestions(generateFallbackSuggestions(query))
       }
     } catch (error) {
-      console.error("Error fetching premium suggestions:", error)
       setSuggestions(generateFallbackSuggestions(query))
     } finally {
       setIsLoading(false)

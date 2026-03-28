@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("[ml/predict/time-to-fill] erro:", error)
     return NextResponse.json(
       { success: false, error: "Erro de conexão com o backend" },
       { status: 500 },

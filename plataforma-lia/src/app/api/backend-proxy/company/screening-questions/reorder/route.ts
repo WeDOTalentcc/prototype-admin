@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao reordenar perguntas', details: errorData },
@@ -43,7 +42,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Reorder screening questions proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to reorder questions' },
       { status: 500 }

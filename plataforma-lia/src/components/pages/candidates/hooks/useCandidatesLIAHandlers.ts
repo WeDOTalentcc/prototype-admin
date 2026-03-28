@@ -239,7 +239,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
           }
           setChatMessages(prev => [...prev, successMessage])
         } catch (error) {
-          console.error('Erro ao exportar:', error)
         }
         break
 
@@ -315,7 +314,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
 
       return response
     } catch (error) {
-      console.error('Orchestrated talent chat error:', error)
       return {
         success: false,
         content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.',
@@ -398,7 +396,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
         description: "Candidato marcado como interessante",
       })
     } catch (error) {
-      console.error('Erro ao enviar feedback:', error)
     }
   }
 
@@ -420,7 +417,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
         description: "Preferência salva para calibração",
       })
     } catch (error) {
-      console.error('Erro ao enviar feedback:', error)
     }
   }
 
@@ -554,7 +550,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
           throw new Error('Orchestrator returned unsuccessful response')
         }
       } catch (error) {
-        console.error('Orchestrator error, using fallback:', error)
 
         const fallbackContent = isConversationalMessage(trimmedMessage)
           ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
@@ -766,7 +761,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
 
               if (!response.ok) {
                 const errorText = await response.text().catch(() => 'Erro desconhecido')
-                console.error('API Error:', response.status, errorText)
 
                 // Mostrar erro específico ao usuário antes do fallback
                 let userErrorMessage = ''
@@ -825,7 +819,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
                 }
               }
             } catch (apiError) {
-              console.error('API Error:', apiError)
               // Extrair mensagem de erro legível
               const errorMessage = apiError instanceof Error ? apiError.message : 'Erro desconhecido'
 
@@ -1002,7 +995,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
 
       setChatMessages(prev => [...prev, liaResponse])
     } catch (error) {
-      console.error('handleAICommand error:', error)
       const errorMessage: LIAChatMessage = {
         id: `lia-error-${Date.now()}`,
         type: 'lia',

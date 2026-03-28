@@ -523,7 +523,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         description: "A vaga está ativa e o link de candidatura foi gerado.",
       })
     } catch (error: any) {
-      console.error("[JobKanbanPage] Failed to publish job:", error)
       const detail = error?.message || "Erro desconhecido"
       toast({
         title: "Erro ao publicar",
@@ -673,7 +672,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         })
       }
     } catch (error) {
-      console.error('Transition error:', error)
       toast({
         title: 'Erro na transição',
         description: 'Não foi possível completar a transição.',
@@ -737,7 +735,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         }
         break
       default:
-        console.log('Opening specialized modal:', modalType, context)
     }
     closeTransition()
   }, [closeTransition])
@@ -813,7 +810,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   }, [candidatesData, toast])
 
   const handleDataRequestSubmit = useCallback(async (data: DataRequestSubmitData) => {
-    console.log('Submitting data request:', data)
     toast({
       title: "Solicitação Enviada",
       description: `Solicitação de dados enviada para ${dataRequestModalCandidate?.name || 'candidato'}`,
@@ -852,11 +848,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
   // Carregar candidatos reais do backend
   useEffect(() => {
-    console.log('🔄 JobKanbanPage: Iniciando fetch de candidatos...')
     setIsLoadingCandidates(true)
     liaApi.listCandidates(undefined, undefined, 0, 200)
       .then(response => {
-        console.log('✅ JobKanbanPage: Resposta recebida:', response?.items?.length, 'candidatos')
         try {
           if (response.items && response.items.length > 0) {
             const mapCandidateToKanban = (c: CandidateLocal, index: number) => {
@@ -873,14 +867,12 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 try {
                   educationData = generateEducation(c, experience)
                 } catch (e) {
-                  console.warn('⚠️ Erro ao gerar educação para', c.name, e)
                   educationData = []
                 }
                 
                 try {
                   workHistoryData = generateWorkHistory(c, experience)
                 } catch (e) {
-                  console.warn('⚠️ Erro ao gerar histórico para', c.name, e)
                   workHistoryData = []
                 }
                 
@@ -948,7 +940,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   status: c.status || 'novo'
                 }
               } catch (mapError) {
-                console.error('❌ Erro ao mapear candidato:', c.name, mapError)
                 return null
               }
             }
@@ -957,7 +948,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               .map(mapCandidateToKanban)
               .filter((c): c is NonNullable<typeof c> => c !== null)
             
-            console.log('📊 JobKanbanPage: Candidatos mapeados:', backendCandidates.length)
             
             // Usar etapas dinâmicas da vaga para organizar candidatos
             const currentDynamicStages = mapInterviewStagesToKanban(job?.interviewStages)
@@ -1039,21 +1029,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             currentDynamicStages.forEach(stage => {
               stageCounts[stage.displayName] = (newOrganizedData[stage.id] || []).length
             })
-            console.log('📊 JobKanbanPage: Candidatos organizados por etapas dinâmicas:', stageCounts)
-            console.log('✅ JobKanbanPage: Atualizando candidatesData com dados do backend')
             setCandidatesData(newOrganizedData)
           } else {
-            console.log('⚠️ JobKanbanPage: Nenhum candidato retornado do backend')
           }
         } catch (processError) {
-          console.error('❌ JobKanbanPage: Erro ao processar candidatos:', processError)
         } finally {
-          console.log('🏁 JobKanbanPage: Finalizando loading (finally block)')
           setIsLoadingCandidates(false)
         }
       })
       .catch(error => {
-        console.error('❌ JobKanbanPage: Erro ao carregar candidatos:', error)
         setIsLoadingCandidates(false)
       })
   }, [])
@@ -1290,7 +1274,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           setViewedCandidateIds(viewedIds)
         }
       } catch (error) {
-        console.error('Error loading viewed candidates:', error)
       }
     }
     loadViewedCandidates()
@@ -1351,7 +1334,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           }, 500)
         }
       } catch (e) {
-        console.error('Erro ao processar ação pendente:', e)
         localStorage.removeItem('pendingCommunicationAction')
       }
     }
@@ -1456,7 +1438,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
       pendingNavigationRef.current = { nav, prompt }
       processPendingNavigation()
     } catch (e) {
-      console.error('Erro ao processar navigateToCandidate no Kanban:', e)
       localStorage.removeItem('navigateToCandidate')
       localStorage.removeItem('liaPrompt')
     }
@@ -1649,7 +1630,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         })
       })
       .catch(err => {
-        console.warn('WSI scores enrichment skipped:', err.message)
       })
   }, [isLoadingCandidates, currentJob?.id])
 
@@ -1926,7 +1906,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
       })
       setViewedCandidateIds(prev => new Set([...prev, candidateId]))
     } catch (error) {
-      console.error('Error marking candidate as viewed:', error)
     }
   }
 
@@ -2028,7 +2007,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
       })
 
       if (!response.ok) {
-        console.error('Failed to update candidate status:', response.statusText)
         return false
       }
 
@@ -2047,7 +2025,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
       return true
     } catch (error) {
-      console.error('Error updating candidate status:', error)
       return false
     }
   }
@@ -2387,7 +2364,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           setTableColumnOrder(defaultOrder)
         }
       } catch (e) {
-        console.error('Erro ao carregar ordem das colunas:', e)
         setTableColumnOrder(defaultOrder)
       }
     }

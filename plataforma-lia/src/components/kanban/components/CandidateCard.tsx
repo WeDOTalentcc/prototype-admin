@@ -178,7 +178,7 @@ export function CandidateCard({
       onMouseEnter={(e) => {
         if (!isDragging) {
           e.currentTarget.style.transform = 'translateY(-1px)'
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+          e.currentTarget.style.boxShadow = '0 4px 12px rgb(0 0 0 / 0.1)'
         }
       }}
       onMouseLeave={(e) => {

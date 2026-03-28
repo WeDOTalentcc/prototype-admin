@@ -52,7 +52,6 @@ async function proxyRequest(
       })
     }
   } catch (error) {
-    console.error(`Error proxying ${method} request to portal data-request:`, error)
     return NextResponse.json(
       { success: false, error: "Failed to proxy request to backend" },
       { status: 500 }

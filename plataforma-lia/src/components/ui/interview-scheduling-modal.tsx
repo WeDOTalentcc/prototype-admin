@@ -76,7 +76,6 @@ export function InterviewSchedulingModal({
         body: data.body,
       })
     } catch (error) {
-      console.error("Error generating email:", error)
     } finally {
       setIsGeneratingEmail(false)
     }
@@ -121,7 +120,6 @@ export function InterviewSchedulingModal({
         setError(null)
       }, 4000)
     } catch (error: any) {
-      console.error("Error scheduling interview:", error)
       setError(error.message || "Erro ao agendar entrevista. Por favor, tente novamente.")
     } finally {
       setIsScheduling(false)

@@ -490,7 +490,6 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               setChatMessages(prev => [...prev, insightMessage])
             }
           } catch (analyzeError) {
-            console.warn('Erro ao analisar resultados da busca global:', analyzeError)
           }
         }
       }
@@ -498,7 +497,6 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       setShowExpandGlobalOption(false)
 
     } catch (error) {
-      console.error('Erro ao expandir busca para global:', error)
       toast({
         title: "Erro ao expandir busca",
         description: "Não foi possível expandir para busca global. Tente novamente.",

@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error(`[UniversalChat] Backend error ${response.status}:`, errorData)
       return NextResponse.json(
         { error: 'Erro ao processar mensagem', details: errorData },
         { status: response.status }
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[UniversalChat] Proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

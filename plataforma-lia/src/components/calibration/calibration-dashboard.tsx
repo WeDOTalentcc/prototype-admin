@@ -193,7 +193,6 @@ export function CalibrationDashboard() {
         }
       }
     } catch (error) {
-      console.log("Using mock data for calibration dashboard")
     } finally {
       setLoading(false)
     }
@@ -217,7 +216,6 @@ export function CalibrationDashboard() {
         setSelectedSuggestion(null)
       }
     } catch (error) {
-      console.error("Error approving suggestion:", error)
     } finally {
       setActionLoading(false)
     }
@@ -240,7 +238,6 @@ export function CalibrationDashboard() {
         setRejectReason("")
       }
     } catch (error) {
-      console.error("Error rejecting suggestion:", error)
     } finally {
       setActionLoading(false)
     }

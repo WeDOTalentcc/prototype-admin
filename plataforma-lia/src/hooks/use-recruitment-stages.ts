@@ -64,11 +64,9 @@ export function useRecruitmentStages(): UseRecruitmentStagesResult {
       } else if (data && Array.isArray(data)) {
         setStages(data)
       } else {
-        console.warn('Invalid stages data from API, using defaults')
         setStages(DEFAULT_STAGES)
       }
     } catch (err) {
-      console.error('Error fetching recruitment stages:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setStages(DEFAULT_STAGES)
     } finally {

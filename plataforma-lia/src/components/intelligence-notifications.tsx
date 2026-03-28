@@ -109,7 +109,6 @@ export function IntelligenceNotifications({
         setUrgentCount(response.data.urgent_count || 0)
       }
     } catch (err) {
-      console.error('Error fetching unread count:', err)
     }
   }, [userId])
 
@@ -183,23 +182,17 @@ export function IntelligenceNotifications({
 
       switch (action) {
         case 'approach':
-          console.log('Starting talent approach for notification:', notificationId)
           break
         case 'track':
-          console.log('Adding talent to tracking for notification:', notificationId)
           break
         case 'review_salaries':
-          console.log('Opening salary analysis for notification:', notificationId)
           break
         case 'map_candidates':
-          console.log('Mapping related candidates for notification:', notificationId)
           break
         case 'counter_strategy':
-          console.log('Developing counter-strategy for notification:', notificationId)
           break
       }
     } catch (err) {
-      console.error('Error handling notification action:', err)
     }
   }
 
@@ -209,7 +202,6 @@ export function IntelligenceNotifications({
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
     } catch (err) {
-      console.error('Error marking all as read:', err)
     }
   }
 

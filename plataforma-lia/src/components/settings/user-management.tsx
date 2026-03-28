@@ -90,7 +90,6 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       }))
       setUsers(mappedUsers)
     } catch (err) {
-      console.error('Error fetching users:', err)
       setError('Erro ao carregar usuários')
     } finally {
       setIsLoading(false)
@@ -220,7 +219,6 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       setIsEditing(false)
       setSelectedUser(null)
     } catch (err: any) {
-      console.error('Error saving user:', err)
       alert(err.message || 'Erro ao salvar usuário')
     }
   }
@@ -240,7 +238,6 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       setSuccessMessage(`Convite reenviado com sucesso para ${userEmail}!`)
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err: any) {
-      console.error('Error resending invitation:', err)
       alert(err.message || 'Erro ao reenviar convite')
     } finally {
       setResendingInvite(null)
@@ -257,7 +254,6 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         if (!response.ok) throw new Error('Failed to delete user')
         await fetchUsers()
       } catch (err) {
-        console.error('Error deleting user:', err)
         alert('Erro ao excluir usuário')
       }
     }

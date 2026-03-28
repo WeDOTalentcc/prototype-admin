@@ -24,7 +24,6 @@ export async function GET(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Sub-statuses GET proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }

@@ -187,7 +187,6 @@ export function EmailTemplatesManager() {
         setTemplates(apiTemplates)
       }
     } catch (error) {
-      console.error("Erro ao carregar templates:", error)
       const category = categoryFilter === "all" ? undefined : categoryFilter
       const filteredDefaults = category 
         ? DEFAULT_TEMPLATES.filter(t => t.category === category)
@@ -220,7 +219,6 @@ export function EmailTemplatesManager() {
       })
       loadTemplates()
     } catch (error) {
-      console.error("Erro ao duplicar template:", error)
     }
   }
 
@@ -234,7 +232,6 @@ export function EmailTemplatesManager() {
       setTemplateToDelete(null)
       loadTemplates()
     } catch (error) {
-      console.error("Erro ao excluir template:", error)
     } finally {
       setDeleting(false)
     }

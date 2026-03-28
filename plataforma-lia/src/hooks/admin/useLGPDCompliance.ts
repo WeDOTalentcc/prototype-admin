@@ -70,7 +70,6 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
       setBreaches(data.breaches)
       setTotalBreaches(data.total)
     } catch (err) {
-      console.error('Error fetching breaches:', err)
     }
   }, [clientId])
 
@@ -82,7 +81,6 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
       setDecisions(data.decisions)
       setTotalDecisions(data.total)
     } catch (err) {
-      console.error('Error fetching decisions:', err)
     }
   }, [clientId])
 

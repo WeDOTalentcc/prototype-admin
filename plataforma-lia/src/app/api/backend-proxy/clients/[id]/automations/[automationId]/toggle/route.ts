@@ -26,7 +26,6 @@ export async function PATCH(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao alternar status da automação', details: errorData },
@@ -37,7 +36,6 @@ export async function PATCH(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Client automation toggle proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

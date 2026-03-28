@@ -373,7 +373,6 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
     if (onNavigate) {
       onNavigate('Chat com LIA')
     } else {
-      console.log('Navegando para Chat LIA com prompt:', prompt)
     }
   }
 

@@ -22,7 +22,6 @@ export async function POST(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('Add candidates to vacancy error:', errorData)
       return NextResponse.json(
         { error: 'Erro ao adicionar candidatos à vaga', details: errorData },
         { status: response.status }
@@ -32,7 +31,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Add candidates to vacancy proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

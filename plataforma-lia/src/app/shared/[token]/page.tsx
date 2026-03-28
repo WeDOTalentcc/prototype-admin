@@ -128,7 +128,6 @@ export default function SharedSearchPage() {
       })
       setFeedbacks(feedbackMap)
     } catch (err) {
-      console.error('Error fetching shared data:', err)
       setError('Erro de conexão. Verifique sua internet e tente novamente.')
     } finally {
       setLoading(false)
@@ -172,7 +171,6 @@ export default function SharedSearchPage() {
 
       setOtpSent(true)
     } catch (err) {
-      console.error('Error requesting OTP:', err)
       setAuthError('Erro de conexão. Tente novamente.')
     } finally {
       setAuthLoading(false)
@@ -212,7 +210,6 @@ export default function SharedSearchPage() {
         setEmail('')
       }
     } catch (err) {
-      console.error('Error verifying OTP:', err)
       setAuthError('Erro de conexão. Tente novamente.')
     } finally {
       setAuthLoading(false)
@@ -264,7 +261,6 @@ export default function SharedSearchPage() {
         return updated
       })
     } catch (err) {
-      console.error('Error saving feedback:', err)
       alert('Erro de conexão. Tente novamente.')
     } finally {
       setSavingFeedback(null)

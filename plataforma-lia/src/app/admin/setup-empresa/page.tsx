@@ -212,13 +212,10 @@ function BenefitsContent({
   handleDeleteBenefit,
   defaultBenefit,
 }: BenefitsContentProps) {
-  console.log("[BenefitsContent] Rendering - isLoading:", isLoading, "benefits.length:", benefits.length)
   
   const renderingBranch = isLoading ? "LOADING" : benefits.length === 0 ? "EMPTY" : "LIST"
-  console.log("[BenefitsContent] Rendering branch:", renderingBranch)
   
   if (!isLoading && benefits.length > 0) {
-    console.log("[BenefitsContent] Benefits data:", JSON.stringify(benefits.map(b => ({ name: b.name, category: b.category }))))
   }
 
   const getBenefitsByCategory = (categoryId: string) => {
@@ -454,23 +451,16 @@ function SetupEmpresaContent() {
   }, [])
 
   const loadBenefits = useCallback(async () => {
-    console.log("[BenefitsTab] Starting loadBenefits...")
     try {
       const response = await fetch('/api/backend-proxy/company/benefits/')
-      console.log("[BenefitsTab] Response status:", response.status, response.ok)
       if (response.ok) {
         const data = await response.json()
-        console.log("[BenefitsTab] Data received:", data)
         const items = Array.isArray(data) ? data : data.items || []
-        console.log("[BenefitsTab] Setting benefits:", items.length, "items")
         setBenefits(items)
       } else {
-        console.error("[BenefitsTab] Response not OK:", response.status)
       }
     } catch (error) {
-      console.error("[BenefitsTab] Error loading benefits:", error)
     } finally {
-      console.log("[BenefitsTab] Setting isLoading to false")
       setIsLoading(false)
     }
   }, [])
@@ -493,7 +483,6 @@ function SetupEmpresaContent() {
         }
       }
     } catch (error) {
-      console.error("Error loading company profile:", error)
     }
   }, [])
 
@@ -505,7 +494,6 @@ function SetupEmpresaContent() {
         setDepartments(Array.isArray(data) ? data : data.items || [])
       }
     } catch (error) {
-      console.error("Error loading departments:", error)
     }
   }, [])
 
@@ -609,7 +597,6 @@ function SetupEmpresaContent() {
                     }
                   }
                 } catch (e) {
-                  console.error("Error auto-generating EVP:", e)
                 }
               }
             }, 100)
@@ -627,7 +614,6 @@ function SetupEmpresaContent() {
         setEnrichmentError(errorData.detail || 'Erro ao conectar com o serviço de enriquecimento')
       }
     } catch (error) {
-      console.error("Error enriching profile:", error)
       setEnrichmentError('Erro ao processar enriquecimento. Tente novamente.')
     } finally {
       setIsEnriching(false)
@@ -671,10 +657,8 @@ function SetupEmpresaContent() {
           tagline: additionalData.tagline || ''
         })
       } else {
-        console.error("Error saving profile:", response.status)
       }
     } catch (error) {
-      console.error("Error saving profile:", error)
     } finally {
       setIsSavingProfile(false)
     }
@@ -708,7 +692,6 @@ function SetupEmpresaContent() {
         setEvpError(errorData.detail || 'Erro ao conectar com o serviço')
       }
     } catch (error) {
-      console.error("Error generating EVP:", error)
       setEvpError('Erro ao processar geração de EVP')
     } finally {
       setIsGeneratingEvp(false)
@@ -719,24 +702,18 @@ function SetupEmpresaContent() {
     let cancelled = false
     
     const fetchData = async () => {
-      console.log("[SetupEmpresa] Loading data...")
       
       try {
         const benefitsResponse = await fetch('/api/backend-proxy/company/benefits/')
-        console.log("[SetupEmpresa] Benefits response:", benefitsResponse.status)
         
         if (!cancelled && benefitsResponse.ok) {
           const data = await benefitsResponse.json()
-          console.log("[SetupEmpresa] Benefits data:", data)
           const items = Array.isArray(data) ? data : data.items || []
-          console.log("[SetupEmpresa] Setting", items.length, "benefits")
           setBenefits(items)
         }
       } catch (error) {
-        console.error("[SetupEmpresa] Error fetching benefits:", error)
       } finally {
         if (!cancelled) {
-          console.log("[SetupEmpresa] Setting isLoading to false")
           setIsLoading(false)
         }
       }
@@ -764,7 +741,6 @@ function SetupEmpresaContent() {
       }
       return 0
     } catch (err) {
-      console.error("Error loading templates:", err)
       return 0
     } finally {
       setIsLoadingTemplates(false)
@@ -778,7 +754,6 @@ function SetupEmpresaContent() {
       })
       await loadTemplates()
     } catch (err) {
-      console.error("Error seeding templates:", err)
     }
   }, [loadTemplates])
 
@@ -856,7 +831,6 @@ function SetupEmpresaContent() {
         setEditingBenefit(null)
       }
     } catch (error) {
-      console.error("Error saving benefit:", error)
     } finally {
       setIsSaving(false)
     }
@@ -873,7 +847,6 @@ function SetupEmpresaContent() {
         await loadBenefits()
       }
     } catch (error) {
-      console.error("Error deleting benefit:", error)
     }
   }
 
@@ -889,7 +862,6 @@ function SetupEmpresaContent() {
         await loadBenefits()
       }
     } catch (error) {
-      console.error("Error toggling benefit status:", error)
     }
   }
 
@@ -912,7 +884,6 @@ function SetupEmpresaContent() {
         setImportFile(null)
       }
     } catch (error) {
-      console.error("Error importing benefits:", error)
     } finally {
       setIsImporting(false)
     }

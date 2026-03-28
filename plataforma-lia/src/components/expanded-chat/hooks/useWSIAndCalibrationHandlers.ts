@@ -208,7 +208,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       ctx.setMessages(prev => [...prev, feedbackMessage])
       
     } catch (error) {
-      console.error('Error generating WSI questions:', error)
       
       // Fallback to static questions if API fails
       const baseTs = Date.now()
@@ -409,7 +408,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       ctx.setMessages(prev => [...prev, feedbackMessage])
       
     } catch (error) {
-      console.error('Error fetching calibration candidates:', error)
       ctx.setIsLoadingCalibration(false)
       
       // Fallback message
@@ -440,7 +438,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         approved: true,
         lia_score: currentCandidate.overallScore,
         feedback_reason: ctx.calibrationComment || undefined
-      }).catch(err => console.error('Error saving calibration feedback:', err))
+      }).catch(() => {})
     }
     
     // Save comment if any
@@ -507,7 +505,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
             }
           }
         } catch (error) {
-          console.error('Error in active search:', error)
           ctx.setSearchPhase('local-complete')
           ctx.setLocalCandidateCount(0)
         }
@@ -537,7 +534,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         approved: false,
         lia_score: currentCandidate.overallScore,
         feedback_reason: ctx.calibrationComment || undefined
-      }).catch(err => console.error('Error saving calibration feedback:', err))
+      }).catch(() => {})
     }
     
     // Save comment if any
@@ -686,7 +683,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         ctx.setFastTrackState('selecting')
       }
     } catch (error) {
-      console.error('Failed to load vacancy details:', error)
       const errorMessage: Message = {
         id: `lia-error-${Date.now()}`,
         role: 'assistant',
@@ -720,7 +716,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       ctx.setMessages(prev => [...prev, searchResultsMessage])
       ctx.setFastTrackState('selecting')
     } catch (error) {
-      console.error('Failed to search vacancies:', error)
       const errorMessage: Message = {
         id: `lia-error-${Date.now()}`,
         role: 'assistant',
@@ -757,9 +752,8 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
             new_job_id: newJobId,
             modified_fields: modifiedFields,
             was_published: true
-          }).catch(err => console.error('Non-blocking: Fast Track usage recording failed:', err))
+          }).catch(() => {})
         } else {
-          console.warn('Fast Track usage not recorded: new_job_id not returned or same as source')
         }
         
         const successMessage: Message = {
@@ -782,7 +776,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         ctx.setFastTrackState('reviewing')
       }
     } catch (error) {
-      console.error('Failed to publish vacancy:', error)
       const errorMessage: Message = {
         id: `lia-error-${Date.now()}`,
         role: 'assistant',
@@ -854,12 +847,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     orchestratorResult: WizardOrchestratorResponse,
     processingMessageId: string
   ) => {
-    console.log('[SmartOrchestrate] Processing response:', {
-      success: orchestratorResult.success,
-      auto_transition: orchestratorResult.auto_transition,
-      next_stage: orchestratorResult.next_stage,
-      detected_criteria: orchestratorResult.detected_criteria
-    })
     
     // Use new response format from smart-orchestrate endpoint
     const liaMessage = orchestratorResult.lia_message || orchestratorResult.response || ''
@@ -877,7 +864,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Apply detected_criteria to form fields
     if (detectedCriteriaFromBackend && Object.keys(detectedCriteriaFromBackend).length > 0) {
-      console.log('[SmartOrchestrate] Applying detected criteria:', detectedCriteriaFromBackend)
       
       // Job title / cargo
       if (detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo) {
@@ -1101,7 +1087,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Process tool_results if present (e.g., salary benchmark, skills suggestions)
     if (toolResults.length > 0) {
-      console.log('[SmartOrchestrate] Processing tool results:', toolResults)
       toolResults.forEach((toolResult: any) => {
         if (toolResult.tool === 'salary_benchmark' && toolResult.result) {
           ctx.setCompensationAnalysis(toolResult.result)
@@ -1126,7 +1111,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         }
         // Process JD enrichment data
         if (toolResult.tool === 'generate_enriched_jd' && toolResult.result) {
-          console.log('[SmartOrchestrate] Processing enriched JD data:', toolResult.result)
           const enrichmentResult = toolResult.result
           // Map backend response to EnrichedJDData format
           const enrichedData: EnrichedJDData = {
@@ -1144,7 +1128,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Handle action results from WizardActionExecutor
     if (orchestratorResult.action_executed && orchestratorResult.action_type) {
-      console.log('[SmartOrchestrate] Action executed:', orchestratorResult.action_type, orchestratorResult.action_result)
       
       // Apply draft_updates to form fields if present
       if (orchestratorResult.draft_updates && Object.keys(orchestratorResult.draft_updates).length > 0) {
@@ -1202,10 +1185,8 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Handle automatic stage transition
     if (autoTransition && nextStage) {
-      console.log('[SmartOrchestrate] Auto-transition to stage:', nextStage)
       const frontendStage = getFrontendStageFromBackend(nextStage)
       if (frontendStage && frontendStage !== ctx.currentStage) {
-        console.log('[SmartOrchestrate] Mapped to frontend stage:', frontendStage)
         setTimeout(() => {
           ctx.setCurrentStage(frontendStage as WizardStage)
         }, 1500)
@@ -1220,7 +1201,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       Object.keys(detectedCriteriaFromBackend).length > 0 // Has detected criteria
     
     if (shouldShowProactiveConfirmation) {
-      console.log('[SmartOrchestrate] Backend awaiting confirmation for input-evaluation, showing proactive message')
       
       // Build summary of detected fields (support both snake_case and camelCase)
       const detectedFields: string[] = []

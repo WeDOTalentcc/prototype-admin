@@ -243,7 +243,7 @@ export function UniversalTransitionModal({
         setPolicyWarnings(data.warnings || [])
         setPolicyMetadata(data.metadata || {})
       })
-      .catch(err => console.error('Policy validation error:', err))
+      .catch(() => {})
   }, [isOpen, companyId, selectedToStage, candidates])
 
   useEffect(() => {
@@ -345,7 +345,6 @@ export function UniversalTransitionModal({
       })
       onClose()
     } catch (err) {
-      console.error('Error confirming transition:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -767,7 +766,7 @@ export function UniversalTransitionModal({
               <SelectTrigger className="w-[220px] h-8 rounded-md text-xs bg-white dark:bg-gray-800">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
-              <SelectContent className="z-[9999]" position="popper" sideOffset={4} side="top">
+              <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
                 {currentSubStatusOptions.map((opt) => (
                   <SelectItem key={opt.code} value={opt.code} className="text-xs">
                     {opt.display_name}

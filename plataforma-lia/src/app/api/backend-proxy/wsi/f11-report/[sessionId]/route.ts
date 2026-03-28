@@ -18,7 +18,6 @@ export async function GET(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`WSI F11 report error ${response.status} for session ${sessionId}:`, errorText)
       return NextResponse.json(
         { success: false, error: 'Failed to fetch F11 report' },
         { status: response.status }
@@ -28,7 +27,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('WSI F11 report proxy error:', error)
     return NextResponse.json(
       { success: false, error: 'Proxy connection error' },
       { status: 500 }

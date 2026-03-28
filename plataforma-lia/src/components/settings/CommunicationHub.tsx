@@ -547,7 +547,6 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             }
           }
         } catch (e) {
-          console.warn('Could not fetch company profile:', e)
         }
         
         const headers: HeadersInit = fetchedCompanyId 
@@ -613,10 +612,8 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             setBriefingFrequency(alertsResult.briefing_frequency)
           }
         } else if (alertsResponse.status === 403) {
-          console.warn('Alerts config requires company ID - using default alerts')
         }
       } catch (err) {
-        console.error('Error fetching data:', err)
         setError('Erro ao carregar dados. Por favor, tente novamente.')
       } finally {
         setLoading(false)
@@ -781,7 +778,6 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
         setTimeout(() => setError(null), 5000)
       }
     } catch (err) {
-      console.error('Error adjusting template with AI:', err)
       setError('Erro ao conectar com o serviço de IA')
       setTimeout(() => setError(null), 5000)
     } finally {
@@ -1622,7 +1618,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   <div 
                     className="w-7 h-7 rounded-md flex items-center justify-center"
                     style={{ 
-                      backgroundColor: alert.enabled ? 'rgba(55, 65, 81, 0.1)' : undefined,
+                      backgroundColor: alert.enabled ? 'rgb(55 65 81 / 0.1)' : undefined,
                       color: alert.enabled ? 'var(--gray-600)' : undefined
                     }}
                   >
@@ -1679,7 +1675,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ 
                 borderColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'twice_daily' ? 'rgba(55, 65, 81, 0.1)' : undefined
+                backgroundColor: briefingFrequency === 'twice_daily' ? 'rgb(55 65 81 / 0.1)' : undefined
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -1696,7 +1692,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ 
                 borderColor: briefingFrequency === 'daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'daily' ? 'rgba(55, 65, 81, 0.1)' : undefined
+                backgroundColor: briefingFrequency === 'daily' ? 'rgb(55 65 81 / 0.1)' : undefined
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -1713,7 +1709,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ 
                 borderColor: briefingFrequency === 'weekly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'weekly' ? 'rgba(55, 65, 81, 0.1)' : undefined
+                backgroundColor: briefingFrequency === 'weekly' ? 'rgb(55 65 81 / 0.1)' : undefined
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -1730,7 +1726,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ 
                 borderColor: briefingFrequency === 'monthly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'monthly' ? 'rgba(55, 65, 81, 0.1)' : undefined
+                backgroundColor: briefingFrequency === 'monthly' ? 'rgb(55 65 81 / 0.1)' : undefined
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -1743,7 +1739,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             </button>
           </div>
 
-          <div className="rounded-md p-2.5" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}>
+          <div className="rounded-md p-2.5 bg-wedo-cyan/[.08]">
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>

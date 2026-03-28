@@ -91,7 +91,7 @@ const successPrediction = [
   { range: "12+ meses", tradicional: 59, bigFive: 78, diferenca: 19 }
 ]
 
-const COLORS = ['rgba(3,7,18,0.8)', 'var(--wedo-green-pastel)', 'var(--status-warning)', 'rgba(3,7,18,0.4)', 'var(--status-error)']
+const COLORS = ['rgb(3 7 18 / 0.8)', 'var(--wedo-green-pastel)', 'var(--status-warning)', 'rgb(3 7 18 / 0.4)', 'var(--status-error)']
 
 export function BigFiveDashboardPage() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("Todos")
@@ -192,7 +192,7 @@ export function BigFiveDashboardPage() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)'
+          color: 'rgb(0 0 0 / 0.05)'
         }
       },
       x: {
@@ -211,7 +211,7 @@ export function BigFiveDashboardPage() {
         label: 'Performance',
         data: hiringOutcomes.map(d => d.performance),
         borderColor: 'var(--wedo-green-pastel)',
-        backgroundColor: 'rgba(184, 230, 211, 0.1)',
+        backgroundColor: 'rgb(184 230 211 / 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -220,7 +220,7 @@ export function BigFiveDashboardPage() {
         label: 'Fit Cultural %',
         data: hiringOutcomes.map(d => d.fit),
         borderColor: 'var(--gray-400)',
-        backgroundColor: 'rgba(107, 155, 209, 0.1)',
+        backgroundColor: 'rgb(107 155 209 / 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -229,7 +229,7 @@ export function BigFiveDashboardPage() {
         label: 'Turnover %',
         data: hiringOutcomes.map(d => d.turnover),
         borderColor: 'var(--status-error)',
-        backgroundColor: 'rgba(232, 90, 90, 0.1)',
+        backgroundColor: 'rgb(232 90 90 / 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -253,7 +253,7 @@ export function BigFiveDashboardPage() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)'
+          color: 'rgb(0 0 0 / 0.05)'
         }
       },
       x: {
@@ -293,35 +293,35 @@ export function BigFiveDashboardPage() {
         label: 'Abertura',
         data: departmentData.map(d => d.openness),
         borderColor: 'var(--gray-400)',
-        backgroundColor: 'rgba(107, 155, 209, 0.2)',
+        backgroundColor: 'rgb(107 155 209 / 0.2)',
         borderWidth: 2
       },
       {
         label: 'Conscienciosidade',
         data: departmentData.map(d => d.conscientiousness),
         borderColor: 'var(--wedo-green-pastel)',
-        backgroundColor: 'rgba(184, 230, 211, 0.2)',
+        backgroundColor: 'rgb(184 230 211 / 0.2)',
         borderWidth: 2
       },
       {
         label: 'Extroversão',
         data: departmentData.map(d => d.extraversion),
         borderColor: 'var(--status-warning)',
-        backgroundColor: 'rgba(244, 208, 63, 0.2)',
+        backgroundColor: 'rgb(244 208 63 / 0.2)',
         borderWidth: 2
       },
       {
         label: 'Amabilidade',
         data: departmentData.map(d => d.agreeableness),
         borderColor: 'var(--wedo-cyan-light)',
-        backgroundColor: 'rgba(96, 190, 209, 0.15)',
+        backgroundColor: 'rgb(96 190 209 / 0.15)',
         borderWidth: 2
       },
       {
         label: 'Estabilidade',
         data: departmentData.map(d => d.neuroticism),
         borderColor: 'var(--status-error)',
-        backgroundColor: 'rgba(232, 90, 90, 0.2)',
+        backgroundColor: 'rgb(232 90 90 / 0.2)',
         borderWidth: 2
       }
     ]
@@ -347,7 +347,7 @@ export function BigFiveDashboardPage() {
           stepSize: 20
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
+          color: 'rgb(0 0 0 / 0.1)'
         }
       }
     }

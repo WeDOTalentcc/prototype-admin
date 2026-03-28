@@ -190,7 +190,6 @@ export default function CandidatePortalPage() {
         initializeFormValues(data)
       }
     } catch (error) {
-      console.error("Error fetching portal data:", error)
       setErrorMessage("Erro de conexão. Tente novamente.")
       setStep("error")
     }
@@ -236,7 +235,6 @@ export default function CandidatePortalPage() {
       setOtpSent(true)
       setOtpResendTimer(60)
     } catch (error) {
-      console.error("Error requesting OTP:", error)
       setOtpError("Erro de conexão. Tente novamente.")
     } finally {
       setOtpLoading(false)
@@ -272,7 +270,6 @@ export default function CandidatePortalPage() {
         setOtpError(data.message || "Código incorreto.")
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error)
       setOtpError("Erro de conexão. Tente novamente.")
     } finally {
       setOtpLoading(false)
@@ -409,7 +406,6 @@ export default function CandidatePortalPage() {
       }
       return true
     } catch (error) {
-      console.error("Upload error:", error)
       setFormErrors((prev) => ({
         ...prev,
         [fieldName]: "Erro no upload. Tente novamente.",
@@ -434,14 +430,12 @@ export default function CandidatePortalPage() {
 
       const data = await response.json()
       if (!response.ok) {
-        console.error("Save error:", data)
       } else {
         if (portalData) {
           setPortalData({ ...portalData, completion_percentage: data.completion_percentage })
         }
       }
     } catch (error) {
-      console.error("Save error:", error)
     } finally {
       setSaving(false)
     }
@@ -535,7 +529,6 @@ export default function CandidatePortalPage() {
         }
       }
     } catch (error) {
-      console.error("Submit error:", error)
       setErrorMessage("Erro de conexão. Tente novamente.")
     } finally {
       setSubmitting(false)

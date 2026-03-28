@@ -57,7 +57,6 @@ export function useSaasMetrics(options: UseSaasMetricsOptions = {}): UseSaasMetr
       const data = await saasMetricsService.getSummary()
       setSummary(data)
     } catch (err) {
-      console.error('Error fetching SaaS metrics summary:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch summary')
     }
   }, [])
@@ -67,7 +66,6 @@ export function useSaasMetrics(options: UseSaasMetricsOptions = {}): UseSaasMetr
       const data = await saasMetricsService.getRevenueByPlan()
       setRevenueByPlan(data)
     } catch (err) {
-      console.error('Error fetching revenue by plan:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch revenue by plan')
     }
   }, [])
@@ -77,7 +75,6 @@ export function useSaasMetrics(options: UseSaasMetricsOptions = {}): UseSaasMetr
       const data = await saasMetricsService.getClientGrowth(growthPeriod)
       setClientGrowth(data)
     } catch (err) {
-      console.error('Error fetching client growth:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch client growth')
     }
   }, [growthPeriod])
@@ -87,7 +84,6 @@ export function useSaasMetrics(options: UseSaasMetricsOptions = {}): UseSaasMetr
       const data = await saasMetricsService.getUsageMetrics()
       setUsageMetrics(data)
     } catch (err) {
-      console.error('Error fetching usage metrics:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch usage metrics')
     }
   }, [])
@@ -109,7 +105,6 @@ export function useSaasMetrics(options: UseSaasMetricsOptions = {}): UseSaasMetr
       setClientGrowth(growthData)
       setUsageMetrics(usageData)
     } catch (err) {
-      console.error('Error fetching SaaS metrics:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch SaaS metrics')
     } finally {
       setIsLoading(false)

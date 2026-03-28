@@ -137,7 +137,7 @@ export function LiaExpandedPanel({
           <div 
             className="flex-shrink-0 px-4 py-3" 
             style={{ 
-              backgroundColor: 'rgba(0, 184, 184, 0.04)',
+              backgroundColor: 'rgb(0 184 184 / 0.04)',
               borderBottom: '1px solid var(--gray-200)' 
             }}
           >

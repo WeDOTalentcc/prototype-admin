@@ -144,7 +144,6 @@ export function useWizardAutoSave(
       }
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataWithTimestamp))
     } catch (error) {
-      console.error('Failed to save draft to localStorage:', error)
     }
   }, [jobDraftId])
 
@@ -175,14 +174,12 @@ export function useWizardAutoSave(
 
       if (!response.ok) {
         // Only log warning, don't throw - backend saves are non-critical
-        console.warn(`Backend draft save failed: ${response.status}`)
         return false
       }
 
       return true
     } catch (error) {
       // Silently handle backend errors - localStorage is the fallback
-      console.warn('Backend draft save error:', error)
       return false
     }
   }, [jobDraftId])
@@ -211,7 +208,6 @@ export function useWizardAutoSave(
       setLastSavedAt(new Date())
       setHasPendingChanges(false)
     } catch (error) {
-      console.error('Error during save:', error)
       // Keep hasPendingChanges true so user knows something wasn't saved
     } finally {
       setIsSaving(false)
@@ -250,7 +246,6 @@ export function useWizardAutoSave(
         return
       }
     } catch (error) {
-      console.warn('Failed to load draft from backend:', error)
     }
 
     // Fallback to localStorage
@@ -266,7 +261,6 @@ export function useWizardAutoSave(
         setHasPendingChanges(false)
       }
     } catch (error) {
-      console.warn('Failed to load draft from localStorage:', error)
     }
   }, [])
 
@@ -288,7 +282,6 @@ export function useWizardAutoSave(
             setLastSavedAt(parsed.lastSavedAt ? new Date(parsed.lastSavedAt) : null)
           }
         } catch (error) {
-          console.warn('Failed to load initial draft:', error)
         }
       }
       // Mark restore attempt as complete (regardless of success or failure)
@@ -373,11 +366,9 @@ export function useWizardAutoSave(
             'Content-Type': 'application/json'
           }
         }).catch(error => {
-          console.warn('Failed to delete draft from backend:', error)
         })
       }
     } catch (error) {
-      console.error('Error clearing draft:', error)
     }
   }, [jobDraftId])
 

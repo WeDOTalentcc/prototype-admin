@@ -199,7 +199,6 @@ export function UniversitiesFilterInput({
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Error fetching AI suggestions:', error)
       }
     } finally {
       if (currentRequestId === requestIdRef.current) {
@@ -243,7 +242,6 @@ export function UniversitiesFilterInput({
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Error finding similar universities:', error)
       }
     } finally {
       if (currentRequestId === requestIdRef.current) {

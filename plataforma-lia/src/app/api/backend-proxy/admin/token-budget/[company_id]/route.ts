@@ -35,7 +35,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[token-budget proxy] erro:', error)
     return NextResponse.json(
       { error: 'Erro interno ao consultar token budget' },
       { status: 500 }

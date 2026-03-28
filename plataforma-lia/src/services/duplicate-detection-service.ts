@@ -84,7 +84,6 @@ export class DuplicateDetectionService {
         this.lastFetchTime = Date.now()
       }
     } catch (error) {
-      console.error('Failed to refresh candidates for duplicate detection:', error)
       this.candidates = []
     }
   }

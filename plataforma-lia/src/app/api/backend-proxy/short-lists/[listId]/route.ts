@@ -27,7 +27,6 @@ export async function GET(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('[short-lists/[listId] GET]', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

@@ -21,7 +21,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error incrementing template usage:", error)
     return NextResponse.json(
       { error: "Failed to increment template usage" },
       { status: 500 }

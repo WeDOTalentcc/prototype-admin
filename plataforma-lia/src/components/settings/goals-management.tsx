@@ -420,7 +420,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         return data
       }
     } catch (error) {
-      console.error('Error fetching goals for user:', userId, error)
     }
     return { monthly: [], quarterly: [], yearly: [] }
   }, [])
@@ -431,7 +430,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       try {
         await Promise.all(users.map(user => fetchUserGoals(user.id)))
       } catch (error) {
-        console.error('Error loading goals:', error)
       } finally {
         setIsLoading(false)
       }
@@ -655,7 +653,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         return true
       }
     } catch (error) {
-      console.error('Error persisting goal:', error)
       return false
     }
   }, [findUserGoal, getEffectiveTemplate, fetchUserGoals])
@@ -882,7 +879,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         isCustom: createdGoal.is_custom
       }
     } catch (error) {
-      console.error('Error creating goal:', error)
       throw error
     }
   }
@@ -911,7 +907,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
       return true
     } catch (error) {
-      console.error('Error updating goal:', error)
       throw error
     }
   }
@@ -929,7 +924,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
       return true
     } catch (error) {
-      console.error('Error deleting goal:', error)
       throw error
     }
   }

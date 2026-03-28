@@ -102,7 +102,6 @@ function mapBackendFieldsToFrontend(updates: Record<string, any>): OrchestratorF
     const frontendPath = BACKEND_TO_FRONTEND_FIELD_MAP[backendKey]
     
     if (!frontendPath) {
-      console.warn(`Unknown backend field: ${backendKey}`)
       continue
     }
 

@@ -244,12 +244,10 @@ export function SettingsPage() {
 
   const handleSave = () => {
     setHasChanges(false)
-    console.log("Configurações salvas!")
   }
 
   const handleReset = () => {
     setHasChanges(false)
-    console.log("Configurações resetadas!")
   }
 
   // Carregar largura salva do localStorage
@@ -699,7 +697,6 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
           companyId = companyData?.id || null
         }
       } catch (e) {
-        console.warn('Could not fetch company profile:', e)
       }
       
       if (!companyId) {
@@ -735,9 +732,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
       setSubmitSuccess(true)
       onSettingsChange(false) // Reset dirty state
       
-      console.log('Journey Mapping saved:', result)
     } catch (error) {
-      console.error('Error saving journey mapping:', error)
       setSubmitError(error instanceof Error ? error.message : 'Erro desconhecido')
     } finally {
       setIsSubmitting(false)

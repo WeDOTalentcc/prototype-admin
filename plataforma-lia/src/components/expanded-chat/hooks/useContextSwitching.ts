@@ -109,7 +109,6 @@ function loadStoredSnapshots(): { wizard: WizardSnapshot | null; general: Genera
       }
     }
   } catch {
-    console.warn('[useContextSwitching] Failed to load stored snapshots')
   }
   return { wizard: null, general: null }
 }
@@ -119,7 +118,6 @@ function saveStoredSnapshots(wizard: WizardSnapshot | null, general: GeneralChat
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ wizard, general }))
   } catch {
-    console.warn('[useContextSwitching] Failed to save snapshots')
   }
 }
 

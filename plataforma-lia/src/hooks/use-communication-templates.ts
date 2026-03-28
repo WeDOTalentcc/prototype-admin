@@ -491,14 +491,12 @@ export function useCommunicationTemplates(options: UseCommunicationTemplatesOpti
           setTemplates(filteredDefaults)
         }
       } else {
-        console.warn('Failed to fetch templates from backend, using defaults')
         const filteredDefaults = channel 
           ? DEFAULT_TEMPLATES.filter(t => t.channel === channel)
           : DEFAULT_TEMPLATES
         setTemplates(filteredDefaults)
       }
     } catch (err) {
-      console.error('Error fetching templates:', err)
       setError('Erro ao carregar templates')
       const filteredDefaults = channel 
         ? DEFAULT_TEMPLATES.filter(t => t.channel === channel)

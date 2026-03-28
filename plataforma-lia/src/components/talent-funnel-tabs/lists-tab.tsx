@@ -117,7 +117,6 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       const response = await liaApi.getCandidateLists({ limit: 100 })
       setLists(response.items || [])
     } catch (error) {
-      console.error('Failed to load lists:', error)
       toast({
         title: "Erro ao carregar listas",
         description: "Não foi possível carregar as listas de candidatos.",
@@ -137,7 +136,6 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         setSharedSearches(data.items || data || [])
       }
     } catch (error) {
-      console.error('Failed to load shared searches:', error)
     } finally {
       setLoadingShared(false)
     }
@@ -217,7 +215,6 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       closeModal()
       loadLists()
     } catch (error) {
-      console.error('Failed to save list:', error)
       toast({
         title: "Erro ao salvar",
         description: "Não foi possível salvar a lista. Tente novamente.",
@@ -241,7 +238,6 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       setListToDelete(null)
       loadLists()
     } catch (error) {
-      console.error('Failed to delete list:', error)
       toast({
         title: "Erro ao excluir",
         description: "Não foi possível excluir a lista. Tente novamente.",
@@ -371,7 +367,6 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         setShowDetailsModal(false)
       }
     } catch (error) {
-      console.error('Failed to create list from shared:', error)
       toast({
         title: "Erro ao criar lista",
         description: "Não foi possível criar a lista. Tente novamente.",

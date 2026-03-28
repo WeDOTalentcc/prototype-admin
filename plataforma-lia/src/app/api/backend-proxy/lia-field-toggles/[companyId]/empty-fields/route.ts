@@ -30,7 +30,6 @@ export async function GET(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Empty fields fetch error:', errorText)
       return NextResponse.json(
         { error: 'Failed to fetch empty fields', details: errorText },
         { status: response.status }
@@ -40,7 +39,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Empty fields proxy error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

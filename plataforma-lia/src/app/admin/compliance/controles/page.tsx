@@ -60,7 +60,6 @@ export default function ControlesPage() {
       const data = await complianceService.getDashboard(ADMIN_CLIENT_ID)
       setDashboard(data)
     } catch (err) {
-      console.error('Error fetching compliance data:', err)
       toast.error('Erro ao carregar dados de controles')
     } finally {
       setIsRefreshing(false)

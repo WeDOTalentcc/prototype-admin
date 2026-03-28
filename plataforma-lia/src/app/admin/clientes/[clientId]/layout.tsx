@@ -101,7 +101,6 @@ export default function ClientLayout({
       const data = await response.json()
       setClient(data.data || data)
     } catch (err) {
-      console.error('Error fetching client:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar cliente')
     } finally {
       setLoading(false)

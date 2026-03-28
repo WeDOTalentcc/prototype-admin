@@ -186,7 +186,6 @@ export function MessageComposer({
         setTimeout(() => setErrorMessage(null), 5000)
       }
     } catch (err) {
-      console.error('Error adjusting with LIA:', err)
       setErrorMessage('Erro ao conectar com o serviço de IA')
       setTimeout(() => setErrorMessage(null), 5000)
     } finally {
@@ -211,7 +210,7 @@ export function MessageComposer({
   return (
     <div className={className}>
       {successMessage && (
-        <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', borderColor: 'rgba(96, 190, 209, 0.3)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
+        <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
           <Check className="w-4 h-4 text-gray-700" />
           <span className="text-xs">{successMessage}</span>
         </div>
@@ -341,7 +340,7 @@ export function MessageComposer({
         <Card className="mt-4 rounded-md border border-gray-200 bg-white">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div className="flex-1">
@@ -396,7 +395,7 @@ export function MessageComposer({
             </div>
 
             {isGenerating && (
-              <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}>
+              <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '0ms' }}></span>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
@@ -417,7 +416,7 @@ export function MessageComposer({
             <div className="border-b border-gray-100 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <div>
@@ -441,7 +440,7 @@ export function MessageComposer({
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--wedo-cyan-dark)' }}>
+                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-gray-200/30 text-wedo-cyan-dark">
                       <Check className="w-3 h-3 mr-1" />
                       {change}
                     </Badge>

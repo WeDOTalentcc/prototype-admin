@@ -133,7 +133,6 @@ class BiasAuditService {
       return mapBackendSummary(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching bias audit summary:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -156,7 +155,6 @@ class BiasAuditService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching latest bias audit:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -189,7 +187,6 @@ class BiasAuditService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching bias audits:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { audits: [], total: 0, limit: 50, offset: 0 }
@@ -206,7 +203,6 @@ class BiasAuditService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching bias audit:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null

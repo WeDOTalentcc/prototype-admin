@@ -27,7 +27,6 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    console.error('[short-lists/[listId]/candidates/[candidateId] DELETE]', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

@@ -97,7 +97,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching global metrics:', error)
       return this.getMockGlobalMetrics()
     }
   }
@@ -110,7 +109,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching agents summary:', error)
       return this.getMockAgentsSummary()
     }
   }
@@ -123,7 +121,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching agent summary:', error)
       return null
     }
   }
@@ -138,7 +135,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching agent activities:', error)
       return this.getMockActivityFeed({ agentId })
     }
   }
@@ -157,7 +153,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching activity feed:', error)
       return this.getMockActivityFeed(filters)
     }
   }
@@ -170,7 +165,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching agent health:', error)
       return this.getMockAgentHealth(agentId)
     }
   }
@@ -183,7 +177,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error fetching proactive alerts:', error)
       return this.getMockProactiveAlerts()
     }
   }
@@ -198,7 +191,6 @@ class AgentMonitoringService {
       }
       return response.json()
     } catch (error) {
-      console.error('Error seeding demo data:', error)
       return { success: false, activities_created: 0 }
     }
   }

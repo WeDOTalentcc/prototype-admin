@@ -205,7 +205,6 @@ export function AddCandidatesToVacancyModal({
         setVacancies(mockVacancies)
       }
     } catch (error) {
-      console.warn('Failed to load vacancies from API, using mock data:', error)
       setVacancies(mockVacancies)
     } finally {
       setIsLoading(false)
@@ -273,7 +272,6 @@ export function AddCandidatesToVacancyModal({
       onSuccess?.()
       onClose()
     } catch (error) {
-      console.error('Error adding candidates to vacancy:', error)
       toast({
         title: "Erro ao adicionar candidatos",
         description: "Tente novamente",
@@ -367,7 +365,7 @@ export function AddCandidatesToVacancyModal({
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-modal flex items-center justify-center"
      
       role="dialog"
       aria-modal="true"

@@ -79,7 +79,6 @@ export function SharedSearchDetailsModal({
       const data = await liaApi.getSharedSearchDetail(sharedSearchId)
       setSharedSearch(data)
     } catch (error) {
-      console.error('Failed to load shared search details:', error)
       toast({
         title: "Erro ao carregar detalhes",
         description: "Não foi possível carregar os detalhes do compartilhamento.",

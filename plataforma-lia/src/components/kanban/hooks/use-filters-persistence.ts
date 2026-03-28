@@ -64,7 +64,6 @@ export function useFiltersPersistence(
         const parsed = JSON.parse(saved) as Partial<KanbanFiltersPersisted>
         setFiltersState(prev => ({ ...prev, ...parsed }))
       } catch (e) {
-        console.error('Erro ao carregar filtros:', e)
       }
     }
   }, [fullStorageKey, enabled])

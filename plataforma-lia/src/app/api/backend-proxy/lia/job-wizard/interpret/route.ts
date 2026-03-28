@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Backend interpret error:', response.status, errorText);
       return NextResponse.json(
         { error: `Backend error: ${response.status}`, details: errorText },
         { status: response.status }
@@ -26,7 +25,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error proxying interpret request:', error);
     return NextResponse.json(
       { error: 'Failed to interpret message', details: String(error) },
       { status: 500 }

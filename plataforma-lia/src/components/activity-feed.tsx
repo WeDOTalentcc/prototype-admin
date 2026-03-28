@@ -74,7 +74,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
         setActivities(data.activities || [])
         setTotal(data.total || 0)
       } catch (err) {
-        console.error('Erro ao buscar atividades:', err)
         setError(err instanceof Error ? err.message : 'Erro desconhecido')
       } finally {
         setLoading(false)
@@ -384,10 +383,8 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   data={activity.extra_data}
                   summary={activity.summary}
                   onViewAnalysis={() => {
-                    console.log('View full analysis:', activity.id)
                   }}
                   onScheduleInterview={() => {
-                    console.log('Schedule interview:', activity.id)
                   }}
                 />
               )}
@@ -483,7 +480,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   size="sm"
                   className={`h-5 px-2 gap-1 mt-1.5 ${textStyles.bodySmall}`}
                   onClick={() => {
-                    console.log('Navigate to:', activity.action?.url)
                   }}
                 >
                   {activity.action.label}

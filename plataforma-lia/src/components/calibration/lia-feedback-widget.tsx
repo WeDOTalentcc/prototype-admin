@@ -78,7 +78,6 @@ export function LIAFeedbackWidget({
         setIsOpen(false)
       }
     } catch (error) {
-      console.error("Error submitting feedback:", error)
     } finally {
       setIsSubmitting(false)
     }

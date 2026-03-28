@@ -26,7 +26,6 @@ export async function POST(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao alternar favorito', details: errorData },
@@ -37,7 +36,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Favorite proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -64,7 +62,6 @@ export async function PUT(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao atualizar favorito', details: errorData },
@@ -75,7 +72,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Favorite update proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -96,7 +92,6 @@ export async function DELETE(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao remover favorito', details: errorData },
@@ -107,7 +102,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Favorite delete proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

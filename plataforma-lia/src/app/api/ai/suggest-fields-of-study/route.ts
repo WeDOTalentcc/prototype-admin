@@ -76,12 +76,10 @@ Focus on recognized academic field names that universities commonly use.`
         return NextResponse.json({ suggestions: filteredSuggestions })
       }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
     }
 
     return NextResponse.json({ suggestions: [] })
   } catch (error) {
-    console.error('Error suggesting fields of study:', error)
     return NextResponse.json(
       { error: 'Failed to generate suggestions' },
       { status: 500 }

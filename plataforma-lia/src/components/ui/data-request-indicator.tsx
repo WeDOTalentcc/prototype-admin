@@ -41,30 +41,30 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   pending: {
     icon: <ClipboardList className="w-3 h-3" />,
     label: 'Aguardando',
-    bgColor: 'rgba(96, 190, 209, 0.15)',
+    bgColor: 'rgb(96 190 209 / 0.15)',
   },
   complete: {
     icon: <Check className="w-3 h-3" />,
     label: 'Completo',
     color: 'var(--status-success)',
-    bgColor: 'rgba(123, 194, 154, 0.15)',
+    bgColor: 'rgb(123 194 154 / 0.15)',
   },
   partial: {
     icon: <AlertTriangle className="w-3 h-3" />,
     label: 'Parcial',
     color: 'var(--wedo-orange)',
-    bgColor: 'rgba(232, 168, 124, 0.15)',
+    bgColor: 'rgb(232 168 124 / 0.15)',
   },
   expired: {
     icon: <Clock className="w-3 h-3" />,
     label: 'Expirado',
     color: 'var(--status-error)',
-    bgColor: 'rgba(239, 68, 68, 0.15)',
+    bgColor: 'rgb(239 68 68 / 0.15)',
   },
   cancelled: {
     icon: <XCircle className="w-3 h-3" />,
     label: 'Cancelado',
-    bgColor: 'rgba(107, 114, 128, 0.15)',
+    bgColor: 'rgb(107 114 128 / 0.15)',
   },
 }
 
@@ -224,10 +224,7 @@ export function DataRequestIndicator({
               <Button
                 size="sm"
                 variant="secondary"
-                className="flex-1 h-7 text-xs gap-1"
-                style={{
-                  backgroundColor: 'rgba(96, 190, 209, 0.15)',
-                  }}
+                className="flex-1 h-7 text-xs gap-1 bg-wedo-cyan/15"
                 onClick={(e) => {
                   e.stopPropagation()
                   onViewDetails?.(candidateId)

@@ -107,7 +107,6 @@ export function useCompanyCulture(): UseCompanyCultureResult {
         }
       })
     } catch (err) {
-      console.error('Error fetching company culture:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setCulture(null)
     } finally {

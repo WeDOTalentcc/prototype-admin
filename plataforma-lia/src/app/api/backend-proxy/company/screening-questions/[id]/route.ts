@@ -36,7 +36,6 @@ export async function PUT(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao atualizar pergunta de triagem', details: errorData },
@@ -47,7 +46,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Update screening question proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to update screening question' },
       { status: 500 }
@@ -71,7 +69,6 @@ export async function DELETE(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao deletar pergunta de triagem', details: errorData },
@@ -82,7 +79,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Delete screening question proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to delete screening question' },
       { status: 500 }

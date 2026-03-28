@@ -61,7 +61,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Agent memory proxy GET error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -104,7 +103,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Agent memory proxy DELETE error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }

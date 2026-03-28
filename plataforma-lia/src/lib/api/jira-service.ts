@@ -171,7 +171,6 @@ export class JiraService {
         projectKey: board.location?.projectKey || '',
       }));
     } catch (error) {
-      console.error('Error fetching boards:', error);
       throw error;
     }
   }
@@ -186,7 +185,6 @@ export class JiraService {
         statusIds: col.statuses?.map((s: any) => s.id) || [],
       }));
     } catch (error) {
-      console.error('Error fetching board columns:', error);
       throw error;
     }
   }
@@ -214,7 +212,6 @@ export class JiraService {
       if (error.status === 404) {
         return null;
       }
-      console.error('Error fetching issue:', error);
       throw error;
     }
   }
@@ -252,7 +249,6 @@ export class JiraService {
         updatedAt: issue.fields?.updated || new Date().toISOString(),
       }));
     } catch (error) {
-      console.error('Error searching issues:', error);
       throw error;
     }
   }
@@ -359,7 +355,6 @@ export class JiraService {
         name: project.name,
       }));
     } catch (error) {
-      console.error('Error fetching projects:', error);
       throw error;
     }
   }
@@ -418,7 +413,6 @@ export class JiraService {
       
       return { success: true };
     } catch (error: any) {
-      console.error('Error updating issue:', error);
       throw error;
     }
   }
@@ -441,7 +435,6 @@ export class JiraService {
         updatedAt: issue.fields?.updated || new Date().toISOString(),
       }));
     } catch (error) {
-      console.error('Error searching issues:', error);
       throw error;
     }
   }
@@ -519,7 +512,6 @@ export class JiraService {
         success: true,
       };
     } catch (error: any) {
-      console.error('Error creating issue:', error);
       throw error;
     }
   }

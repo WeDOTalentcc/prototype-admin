@@ -112,7 +112,6 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
       }))
       setIntegrations(mappedIntegrations)
     } catch (err) {
-      console.error('Error fetching integrations:', err)
       toast.error('Erro ao carregar integrações')
     } finally {
       setIntegrationsLoading(false)

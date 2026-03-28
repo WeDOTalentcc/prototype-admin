@@ -56,7 +56,6 @@ export function useColumnConfig(options: UseColumnConfigOptions = {}): UseColumn
           setColumnOrder(defaultOrder)
         }
       } catch (e) {
-        console.error('Erro ao carregar ordem das colunas:', e)
         setColumnOrder(defaultOrder)
       }
     }

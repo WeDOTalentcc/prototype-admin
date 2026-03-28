@@ -29,12 +29,10 @@ export async function GET(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions endpoint not found, returning defaults')
       return NextResponse.json(DEFAULT_SCREENING_QUESTIONS)
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao buscar perguntas de screening', 
@@ -46,7 +44,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions proxy error:', error)
     return NextResponse.json(DEFAULT_SCREENING_QUESTIONS)
   }
 }
@@ -66,7 +63,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions endpoint not found, returning success stub')
       return NextResponse.json({
         success: true,
         message: 'Screening question created',
@@ -75,7 +71,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao criar pergunta de screening', details: errorData },
@@ -86,7 +81,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Screening question created (fallback)',
@@ -110,7 +104,6 @@ export async function PUT(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions endpoint not found, returning success stub')
       return NextResponse.json({
         success: true,
         message: 'Screening questions updated',
@@ -119,7 +112,6 @@ export async function PUT(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao atualizar perguntas de screening', details: errorData },
@@ -130,7 +122,6 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Screening questions updated (fallback)',
@@ -161,7 +152,6 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions endpoint not found, returning success stub')
       return NextResponse.json({
         success: true,
         message: 'Screening question deleted',
@@ -170,7 +160,6 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao deletar pergunta de screening', details: errorData },
@@ -181,7 +170,6 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Screening question deleted (fallback)'

@@ -165,7 +165,6 @@ export default function SOC2Page() {
       setCompanyControls(companyData.controls)
       setStats(dashboardData.byFramework?.[FRAMEWORK_KEY] || null)
     } catch (err) {
-      console.error('Error fetching SOC 2 controls:', err)
       toast.error('Erro ao carregar controles SOC 2')
     } finally {
       setIsRefreshing(false)

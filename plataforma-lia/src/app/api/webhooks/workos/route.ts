@@ -49,12 +49,10 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('workos-signature')
 
     if (!signature) {
-      console.error('Missing WorkOS signature header')
       return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
     }
 
     if (!WORKOS_WEBHOOK_SECRET) {
-      console.error('WORKOS_WEBHOOK_SECRET not configured')
       return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
     }
 
@@ -66,11 +64,9 @@ export async function POST(req: NextRequest) {
         secret: WORKOS_WEBHOOK_SECRET,
       }) as { event: string; data: unknown }
     } catch (err) {
-      console.error('Webhook signature verification failed')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
-    console.log(`WorkOS webhook: ${event.event}`)
 
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
 
@@ -90,7 +86,6 @@ export async function POST(req: NextRequest) {
             raw_attributes: userData.raw_attributes,
           }),
         })
-        console.log(`SCIM user.created: ${userData.id}`)
         break
       }
 
@@ -108,7 +103,6 @@ export async function POST(req: NextRequest) {
             raw_attributes: userData.raw_attributes,
           }),
         })
-        console.log(`SCIM user.updated: ${userData.id}`)
         break
       }
 
@@ -122,7 +116,6 @@ export async function POST(req: NextRequest) {
             email: userData.emails?.[0]?.value,
           }),
         })
-        console.log(`SCIM user.deleted: ${userData.id}`)
         break
       }
 
@@ -140,7 +133,6 @@ export async function POST(req: NextRequest) {
             directory_id: groupData.directory_id,
           }),
         })
-        console.log(`SCIM group.${action}: ${groupData.id}`)
         break
       }
 
@@ -157,7 +149,6 @@ export async function POST(req: NextRequest) {
             action: memberAction,
           }),
         })
-        console.log(`SCIM membership.${memberAction}: user=${membershipData.user?.id} group=${membershipData.group?.id}`)
         break
       }
 
@@ -166,7 +157,6 @@ export async function POST(req: NextRequest) {
       case 'connection.deleted': {
         const connectionData = event.data as WorkOSConnection
         const connAction = event.event.split('.')[1]
-        console.log(`SSO connection.${connAction}: ${connectionData.id}`)
         break
       }
 
@@ -175,17 +165,14 @@ export async function POST(req: NextRequest) {
       case 'directory.deleted': {
         const directoryData = event.data as WorkOSDirectory
         const dirAction = event.event.split('.')[1]
-        console.log(`Directory.${dirAction}: ${directoryData.id}`)
         break
       }
 
       default:
-        console.log(`Unhandled WorkOS event: ${event.event}`)
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Webhook processing error:', error)
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 }

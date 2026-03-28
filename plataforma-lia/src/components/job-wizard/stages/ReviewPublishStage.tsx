@@ -88,7 +88,6 @@ export function ReviewPublishStage() {
         generateFallbackDescription()
       }
     } catch (error) {
-      console.error('Error generating description:', error)
       generateFallbackDescription()
     } finally {
       setIsGeneratingDescription(false)

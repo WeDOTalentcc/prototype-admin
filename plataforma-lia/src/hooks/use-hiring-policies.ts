@@ -82,7 +82,6 @@ export function useHiringPolicies() {
         setPolicy(data)
       }
     } catch (err) {
-      console.error('Failed to fetch policy:', err)
     }
   }, [])
 
@@ -94,7 +93,6 @@ export function useHiringPolicies() {
         setProgress(data)
       }
     } catch (err) {
-      console.error('Failed to fetch progress:', err)
     }
   }, [])
 
@@ -168,7 +166,6 @@ export function useHiringPolicies() {
         }])
       }
     } catch (err) {
-      console.error('Chat error:', err)
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Erro de conexao. Verifique sua internet e tente novamente.',
@@ -227,7 +224,6 @@ export function useHiringPolicies() {
         await fetchProgress()
       }
     } catch (err) {
-      console.error('Failed to save field:', err)
     } finally {
       setIsSavingBlock(false)
       setEditingField(null)

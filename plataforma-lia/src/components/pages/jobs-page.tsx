@@ -305,7 +305,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
           setIsLoadingStats(false)
           statsLoaded.current = true
         } catch (statsError) {
-          console.error('[JobsPage] Failed to load stats:', statsError)
           // Use fallback data from loaded jobs
           const stats = {
             total: convertedJobs.length,
@@ -330,7 +329,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
           setIsLoadingStats(false)
         }
       } catch (error) {
-        console.error('[JobsPage] Failed to load jobs from backend:', error)
         setJobsError(error instanceof Error ? error.message : 'Failed to load jobs')
         setIsLoadingStats(false)
       } finally {
@@ -442,7 +440,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
         localStorage.removeItem('liaPrompt')
       }
     } catch (e) {
-      console.error('Erro ao processar navigateToCandidate:', e)
       localStorage.removeItem('navigateToCandidate')
       localStorage.removeItem('liaPrompt')
     }
@@ -556,7 +553,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
           setJobMetrics(metrics)
         })
         .catch((error) => {
-          console.error('Failed to load job metrics:', error)
           setJobMetrics(null)
         })
         .finally(() => {
@@ -700,7 +696,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
       }
       setPreviewJob(updatedJob)
     } catch (error) {
-      console.error('Erro ao salvar:', error)
       toast.error('Erro ao salvar. Tente novamente.')
     } finally {
       setSavingSection(null)
@@ -715,7 +710,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
       ))
       return true
     } catch (error) {
-      console.error('Error updating screening status:', error)
       return false
     }
   }
@@ -868,7 +862,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
           setCompanyRecruiters(recruiters)
         })
         .catch((error) => {
-          console.error('Failed to load company recruiters:', error)
         })
         .finally(() => {
           setIsLoadingRecruiters(false)
@@ -1097,7 +1090,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
         const finalOrder = ['checkbox', ...innerCols, 'acoes']
         setJobsColumnOrder(finalOrder)
       } catch (e) {
-        console.error('Erro ao carregar ordem das colunas:', e)
       }
     }
 
@@ -1107,7 +1099,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
         const parsed = JSON.parse(savedWidths)
         setJobsColumnWidths(prev => ({ ...prev, ...parsed }))
       } catch (e) {
-        console.error('Erro ao carregar larguras das colunas:', e)
       }
     }
   }, [])
@@ -1198,7 +1189,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
       }
       setLiaInlineMessages(prev => [...prev, liaMessage])
     } catch (error) {
-      console.error('Erro no chat LIA:', error)
       const errorMessage: LiaInlineMessage = {
         id: `lia-${Date.now()}`,
         role: 'assistant',
@@ -1502,7 +1492,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
       }
       toast.success(`${fieldLabels[field]} atualizado para "${value}"`)
     } catch (error) {
-      console.error('Erro ao atualizar vaga:', error)
       toast.error('Erro ao atualizar campo. Tente novamente.')
     }
   }
@@ -1848,7 +1837,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
       }
       
     } catch (error) {
-      console.error('Orchestrator call failed, using local fallback:', error)
       
       // Fallback to local logic
       const responseContent = processLocalJobCommand(command, jobs)
@@ -2191,7 +2179,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
       })
       toast.success(isCurrentlyUrgent ? 'Vaga marcada como normal' : 'Vaga marcada como urgente')
     } catch (error) {
-      console.error('Erro ao atualizar urgência:', error)
       toast.error('Erro ao atualizar urgência da vaga')
     }
   }
@@ -3389,7 +3376,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                         })
                                       }
                                     } catch (error) {
-                                      console.error("Error generating public link:", error)
                                       toast.error("Erro ao gerar link", {
                                         description: "Não foi possível gerar o link público. Tente novamente."
                                       })
@@ -4084,7 +4070,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                       toast.info(`LinkedIn: ${linkedInResult.message}`)
                     }
                   } catch (err) {
-                    console.error('LinkedIn publish error:', err)
                   }
                 }
                 
@@ -4095,7 +4080,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                       toast.info(`Indeed: ${indeedResult.note}`)
                     }
                   } catch (err) {
-                    console.error('Indeed publish error:', err)
                   }
                 }
               }
@@ -4105,7 +4089,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               deselectAllJobs()
               loadBackendJobs()
             } catch (error) {
-              console.error('Erro ao publicar vagas:', error)
               toast.error('Erro ao publicar vagas. Tente novamente.')
             }
           }}
@@ -4121,7 +4104,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   try {
                     await liaApi.unpublishFromPlatform(job.backendId, 'linkedin')
                   } catch (err) {
-                    console.error('LinkedIn unpublish error:', err)
                   }
                 }
                 
@@ -4129,7 +4111,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   try {
                     await liaApi.unpublishFromPlatform(job.backendId, 'indeed')
                   } catch (err) {
-                    console.error('Indeed unpublish error:', err)
                   }
                 }
                 
@@ -4141,7 +4122,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                       status: 'Paralisada'
                     } as any)
                   } catch (err) {
-                    console.error('Error freezing job:', err)
                   }
                 }
               }
@@ -4151,7 +4131,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               deselectAllJobs()
               loadBackendJobs()
             } catch (error) {
-              console.error('Erro ao despublicar vagas:', error)
               toast.error('Erro ao despublicar vagas. Tente novamente.')
             }
           }}
@@ -4214,7 +4193,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               deselectAllJobs()
               loadBackendJobs()
             } catch (error) {
-              console.error('Erro na despublicação:', error)
               throw error
             }
           }}
@@ -4336,7 +4314,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                 router.push(`/jobs/${newJobId}?action=sourcing`)
               }
             } catch (error) {
-              console.error('Erro ao duplicar vaga:', error)
               toast.error('Erro ao duplicar vaga. Tente novamente.')
             }
           }}
@@ -4401,7 +4378,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     notified_candidates_count: data.notifyApplicants ? data.candidateIds?.length || 0 : 0,
                   })
                 } catch (notifError) {
-                  console.error('Erro ao enviar notificação aos recrutadores:', notifError)
                 }
               }
               
@@ -4418,13 +4394,11 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   try {
                     await liaApi.updateScreeningStatus(job.backendId, 'paused', { pause_reason: 'Vaga pausada automaticamente' })
                   } catch (err) {
-                    console.error('Error auto-pausing screening:', err)
                   }
                 }
               }
               deselectAllJobs()
             } catch (error) {
-              console.error('Erro ao pausar vagas:', error)
               throw error
             }
           }}
@@ -4466,7 +4440,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     channels,
                   })
                 } catch (notifError) {
-                  console.error('Erro ao enviar notificação aos recrutadores:', notifError)
                 }
               }
               
@@ -4485,7 +4458,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               }
               deselectAllJobs()
             } catch (error) {
-              console.error('Erro ao ativar vagas:', error)
               throw error
             }
           }}
@@ -4554,7 +4526,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     channels: ['bell', 'email', 'teams'],
                   })
                 } catch (notifError) {
-                  console.error('Erro ao notificar recrutador:', notifError)
                 }
               }
               
@@ -4566,7 +4537,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     to_recruiter_id: recruiterId
                   })
                 } catch (transferError) {
-                  console.error('Erro ao transferir comunicações:', transferError)
                   toast.warning('Comunicações não foram transferidas')
                 }
               }
@@ -4581,7 +4551,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               setShowAssignRecruiterModal(false)
               deselectAllJobs()
             } catch (error) {
-              console.error('Erro ao atribuir recrutador:', error)
               toast.error('Erro ao atribuir recrutador. Tente novamente.')
             }
           }}
@@ -4625,7 +4594,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
               // Recarregar para aplicar alterações (reload simples e confiável)
               window.location.reload()
             } catch (error) {
-              console.error('Erro ao atualizar vaga:', error)
               toast.error('Erro ao atualizar vaga. Tente novamente.')
               throw error
             }
@@ -4699,7 +4667,6 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                             scheduled_end_date: reactivateEndDate || undefined 
                           })
                         } catch (err) {
-                          console.error('Error reactivating screening:', err)
                         }
                       }
                     }

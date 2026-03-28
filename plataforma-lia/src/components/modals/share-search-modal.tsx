@@ -545,7 +545,7 @@ export function ShareSearchModal({
                         )}>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="z-[9999]" position="popper" sideOffset={4}>
+                        <SelectContent className="z-modal" position="popper" sideOffset={4}>
                           {EXPIRY_OPTIONS.map((option) => (
                             <SelectItem key={option.value} value={option.value} className="text-xs">
                               {option.label}

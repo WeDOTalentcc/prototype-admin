@@ -84,7 +84,6 @@ export function useCreditEstimator() {
       setState(prev => ({ ...prev, balance }))
       return balance
     } catch (error) {
-      console.error("Erro ao buscar saldo:", error)
       throw error
     }
   }, [])

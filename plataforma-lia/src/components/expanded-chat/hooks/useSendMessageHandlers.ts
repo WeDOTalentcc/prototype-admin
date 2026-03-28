@@ -407,7 +407,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
     const isClearConfirmation = (isShortMessage && isStandaloneConfirmation && !isAdjustmentRequest)
 
     if (isClearConfirmation) {
-      console.log('[ProactiveConfirmation] Detected clear confirmation:', lowerMessage)
 
       if (awaitingStageAdvanceConfirmation === 'calibration-complete') {
         setCalibrationComplete(true)
@@ -426,7 +425,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       const nextStage = awaitingStageAdvanceConfirmation
 
       if (nextStage === 'jd-enrichment') {
-        console.log('[ProactiveConfirmation] Transitioning to jd-enrichment, calling smart-orchestrate')
         setAwaitingStageAdvanceConfirmation(null)
         setIsLoadingEnrichment(true)
         const loadingMsg: Message = {
@@ -466,7 +464,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
             setAwaitingStageAdvanceConfirmation('salary')
           }, 1000)
         }).catch(error => {
-          console.error('[ProactiveConfirmation] Failed to get enriched JD:', error)
           setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
           setIsLoadingEnrichment(false)
           const errorMsg: Message = {
@@ -507,7 +504,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
     }
 
     // Not a clear confirmation — clear state and fall through to backend
-    console.log('[ProactiveConfirmation] Not a clear confirmation, routing to backend:', lowerMessage)
     setAwaitingStageAdvanceConfirmation(null)
     return false
   }
@@ -696,7 +692,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
           }, 500)
         }
       } catch (error) {
-        console.error('[ToolCalling] Error executing tool:', error)
         const errorMessage: Message = {
           id: `tool-error-${Date.now()}`,
           role: 'assistant',
@@ -789,7 +784,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
           setMessages(prev => [...prev, warningMessage])
         }
       } catch (error) {
-        console.error('WSI regeneration failed:', error)
         const errorMessage: Message = {
           id: `wsi-regen-error-${Date.now()}`,
           role: 'assistant',
@@ -983,7 +977,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       try {
         fastTrackData = await fastTrack.applyFastTrack(jobToApply)
       } catch (error) {
-        console.error('Fast Track apply failed:', error)
         setAwaitingFastTrackSelection(false)
         const errorMessage: Message = {
           id: `fasttrack-error-${Date.now()}`,
@@ -1157,7 +1150,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
         }
         setMessages(prev => [...prev, liaMessage])
       } catch (error) {
-        console.error('Error getting conversational response:', error)
         const liaMessage: Message = {
           id: `lia-guidance-fallback-${Date.now()}`,
           role: 'assistant',
@@ -1321,7 +1313,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       })
 
       setMessages(prev => prev.filter(m => m.id !== thinkingId))
-      console.log('AI Interpretation:', interpretation)
 
       const MIN_CONFIDENCE = 0.65
       const isHighConfidence = interpretation.confidence >= MIN_CONFIDENCE
@@ -1440,7 +1431,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       // action === 'ask_question' or low confidence — fall through to fallback patterns
 
     } catch (error) {
-      console.error('AI interpretation failed, using fallback:', error)
       setMessages(prev => prev.filter(m => m.id !== thinkingId))
     }
 
@@ -1709,7 +1699,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
         user_id: user?.email || undefined
       })
 
-      console.log('[SmartOrchestrate] Using smart-orchestrate response (confidence:', orchestratorResult.confidence, ')')
       await processOrchestratorResponse(orchestratorResult, processingMessageId)
       setIsLoading(false)
 
@@ -1751,10 +1740,9 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
               }, 1000)
             }
           }
-        }).catch((err) => { console.error('Error calling evaluation step:', err) })
+        }).catch(() => {})
       }
     } catch (error) {
-      console.error('Error in wizard step:', error)
       const newCriteria = extractCriteriaFromText(content)
       const fallbackText = generateCriteriaResponse(newCriteria)
       const fallbackFieldsData: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
@@ -1864,7 +1852,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
                 setIsLoading(false)
                 return
               } catch (error) {
-                console.error('[ToolCalling] Error executing tool directly:', error)
               }
             }
           }
@@ -1891,7 +1878,6 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       setTimeout(() => { typeText(responseText, assistantMessage.id) }, 300)
 
     } catch (error) {
-      console.error('Error sending message:', error)
       extractCriteriaFromText(content)
       const errorText = "Entendi as informações! Detectei alguns critérios da vaga. Continue adicionando mais detalhes ou avance para a próxima etapa."
       const errorMessage: Message = {

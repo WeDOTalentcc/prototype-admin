@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`[Chat Message] Backend ${response.status}:`, JSON.stringify(errorData).slice(0, 200))
       }
       return NextResponse.json(
         { content: 'Erro ao processar mensagem. Tente novamente.', error: 'backend_error' },
@@ -28,7 +27,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[Chat Message] Proxy error:', (error as Error)?.message || error)
     }
     return NextResponse.json(
       { content: 'Erro ao conectar com o backend.', error: 'connection_error' },

@@ -224,7 +224,6 @@ export function useCompanyLiaInstructions(): UseCompanyLiaInstructionsResult {
         headcount_planning: data.headcount_planning || {}
       })
     } catch (err) {
-      console.error('Error fetching company config:', err)
       setError(err instanceof Error ? err.message : 'Failed to load company config')
       setConfig(DEFAULT_CONFIG)
     } finally {

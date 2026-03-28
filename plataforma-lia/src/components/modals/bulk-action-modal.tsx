@@ -205,7 +205,6 @@ export function BulkActionModal({
       
       setIsComplete(true)
     } catch (error) {
-      console.error('Bulk action error:', error)
       setProgress(prev => ({
         ...prev,
         completed: candidates.length,
@@ -327,7 +326,7 @@ export function BulkActionModal({
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
-                <SelectContent className="z-[200]">
+                <SelectContent className="z-select">
                   {availableStages.map((stage) => (
                     <SelectItem key={stage.name} value={stage.name}>
                       {stage.displayName}
@@ -346,7 +345,7 @@ export function BulkActionModal({
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o motivo" />
                   </SelectTrigger>
-                  <SelectContent className="z-[200]">
+                  <SelectContent className="z-select">
                     {rejectionReasonOptions.map((reason) => (
                       <SelectItem key={reason.code} value={reason.code}>
                         {reason.displayName}

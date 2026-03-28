@@ -42,7 +42,6 @@ class AIConsumptionService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching AI consumption summary:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -70,7 +69,6 @@ class AIConsumptionService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching daily AI consumption:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -89,7 +87,6 @@ class AIConsumptionService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching AI consumption by agent:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }

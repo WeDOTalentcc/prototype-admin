@@ -92,7 +92,6 @@ export async function GET(request: NextRequest) {
         }, { status: 400 });
     }
   } catch (error: any) {
-    console.error('Jira API error:', error);
     return NextResponse.json({ 
       success: false, 
       error: error.message || 'Jira API error' 
@@ -204,7 +203,6 @@ export async function POST(request: NextRequest) {
     }, { status: 400 });
     
   } catch (error: any) {
-    console.error('Jira API error:', error);
     return NextResponse.json({ 
       success: false, 
       error: error.message || 'Jira API error' 

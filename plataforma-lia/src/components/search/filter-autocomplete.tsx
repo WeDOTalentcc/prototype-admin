@@ -75,7 +75,6 @@ export function FilterAutocomplete({
       const data = await response.json()
       setSuggestions(data.suggestions || [])
     } catch (err) {
-      console.error('Error fetching suggestions:', err)
       setError('Erro ao buscar sugestões')
       setSuggestions([])
     } finally {

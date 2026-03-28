@@ -183,7 +183,6 @@ export function TriagemDetailsModal({
         const fbStatus = await liaApi.wsiGetFeedbackStatus(latestResult.result_id)
         setFeedbackStatus(fbStatus)
       } catch (e) {
-        console.warn('Feedback status not available:', e)
       }
 
       const vacId = jobVacancyId || detailsData.job_vacancy_id
@@ -196,7 +195,6 @@ export function TriagemDetailsModal({
           setRanking(rankData)
           setVacancyRanking(vacRankData)
         } catch (e) {
-          console.warn('Ranking data not available:', e)
         }
       }
 
@@ -206,11 +204,9 @@ export function TriagemDetailsModal({
           const f11 = await fetch(`/api/backend-proxy/wsi/f11-report/${sessionId}`)
           if (f11.ok) setF11Report(await f11.json())
         } catch (e) {
-          console.warn('F11 report not available:', e)
         }
       }
     } catch (err) {
-      console.error('Failed to load WSI details:', err)
       setError('Erro ao carregar dados da triagem.')
     } finally {
       setLoading(false)
@@ -259,7 +255,7 @@ export function TriagemDetailsModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
         <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-white dark:bg-gray-800" style={{ boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
           <Loader2 className="w-8 h-8 animate-spin text-wedo-cyan" />
           <p className="text-sm text-gray-500" style={font}>Carregando dados da triagem...</p>
@@ -270,7 +266,7 @@ export function TriagemDetailsModal({
 
   if (error || !details) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
         <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-white dark:bg-gray-800" style={{ boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
           <AlertCircle className="w-8 h-8 text-gray-400" />
           <p className="text-sm text-gray-500" style={font}>{error || 'Dados não disponíveis.'}</p>
@@ -286,11 +282,11 @@ export function TriagemDetailsModal({
   const DecisionIcon = decisionDisplay.icon
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
       <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>
+            <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/[0.12]">
               <Brain className="w-4 h-4 text-wedo-cyan" />
             </div>
             <div>
@@ -907,13 +903,13 @@ export function TriagemDetailsModal({
                     O candidato obteve classificação "{scores.classification}" e pode receber feedback construtivo automaticamente.
                   </p>
                   {feedbackSuccess && (
-                    <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                    <div className="flex items-center gap-2 p-2 mb-3 rounded-lg bg-status-success/[0.08] border border-status-success/20">
                       <CheckCircle className="w-4 h-4" style={{ color: 'var(--status-success)' }} />
                       <span className="text-xs font-medium" style={{ ...font, color: 'var(--status-success)' }}>Feedback enviado com sucesso</span>
                     </div>
                   )}
                   {feedbackError && (
-                    <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                    <div className="flex items-center gap-2 p-2 mb-3 rounded-lg bg-status-error/[0.08] border border-status-error/20">
                       <AlertCircle className="w-4 h-4" style={{ color: 'var(--status-error)' }} />
                       <span className="text-xs font-medium" style={{ ...font, color: 'var(--status-error)' }}>{feedbackError}</span>
                     </div>
@@ -1022,7 +1018,7 @@ export function TriagemDetailsModal({
                   )}
 
                   {feedback?.personalized_tip && (
-                    <div className="p-2 rounded-lg mt-2" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}>
+                    <div className="p-2 rounded-lg mt-2 bg-wedo-cyan/[0.08] border border-wedo-cyan/20">
                       <p className="text-micro font-medium mb-0.5 text-wedo-cyan" style={{ ...font }}>Dica Personalizada</p>
                       <p className="text-xs text-gray-700" style={font}>{feedback.personalized_tip}</p>
                     </div>

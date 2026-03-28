@@ -133,7 +133,6 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
       fetchedRef.current = candidate.id
     } catch (err: any) {
       if (err?.name === 'AbortError') return
-      console.error('Error fetching/generating highlight:', err)
       setError('Não foi possível gerar o resumo')
     } finally {
       setIsLoading(false)

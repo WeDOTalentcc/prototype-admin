@@ -144,7 +144,6 @@ export function SkillsFilterInput({
         addSkill(query)
       }
     } catch (error) {
-      console.error('Error fetching AI suggestions:', error)
       addSkill(query)
     } finally {
       setIsLoadingAI(false)
@@ -175,7 +174,6 @@ export function SkillsFilterInput({
         }
       }
     } catch (error) {
-      console.error('Error finding similar skills:', error)
     } finally {
       setIsFindingSimilar(false)
     }

@@ -77,7 +77,6 @@ export function useAiCredits(): UseAiCreditsReturn {
       }
     } catch (err) {
       setError('Falha ao carregar dados de consumo de IA')
-      console.error('useAiCredits error:', err)
     } finally {
       setIsLoading(false)
     }
@@ -117,7 +116,6 @@ export function useAiConsumptionHistory(days: number = 30): UseAiConsumptionHist
         }
       } catch (err) {
         setError('Falha ao carregar histórico de consumo de IA')
-        console.error('useAiConsumptionHistory error:', err)
       } finally {
         setIsLoading(false)
       }

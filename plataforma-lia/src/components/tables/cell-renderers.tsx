@@ -96,8 +96,7 @@ export function CandidateCell({
       <Avatar className="w-7 h-7">
         <AvatarImage src={avatarUrl} />
         <AvatarFallback 
-          className="text-xs font-medium" 
-          style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}
+          className="text-xs font-medium bg-wedo-cyan/15"
         >
           {initials}
         </AvatarFallback>
@@ -390,10 +389,10 @@ export function NoteCell({
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
   if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: 'var(--gray-600)' }
-  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgba(239, 68, 68, 0.15)', textStyle: 'var(--status-error)' }
-  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgba(245, 158, 11, 0.15)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgb(96 190 209 / 0.15)', textStyle: 'var(--gray-600)' }
+  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgb(239 68 68 / 0.15)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgb(245 158 11 / 0.15)', textStyle: 'var(--status-warning)' }
+  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgb(107 114 128 / 0.15)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
@@ -453,7 +452,6 @@ export function InteractiveSubStatusCell({
       })
       setOpen(false)
     } catch (error) {
-      console.error('Failed to update sub-status:', error)
       toast.error('Erro ao atualizar status', {
         description: 'Não foi possível atualizar o status do candidato. Tente novamente.',
       })
@@ -648,7 +646,7 @@ export function InteractiveStageCell({
                 <SelectTrigger className="text-xs">
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
-                <SelectContent className="max-h-60 z-[9999]">
+                <SelectContent className="max-h-60 z-modal">
                   <div className="px-2 py-1 text-xs font-semibold text-gray-500">Etapas Ativas</div>
                   {activeStages.map(stage => (
                     <SelectItem key={stage.name} value={stage.name} disabled={stage.name === currentStage}>
@@ -732,8 +730,7 @@ export function ActionButtons({
       {needsAction && (
         <div className="absolute inset-0 flex items-center justify-end pr-1 group-hover:opacity-0 group-hover:pointer-events-none transition-opacity duration-200">
           <div 
-            className="flex items-center gap-1 px-2 py-1 rounded-full"
-            style={{ backgroundColor: 'rgba(31, 41, 55, 0.08)' }}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-800/[.08]"
           >
             <Zap className="w-3 h-3 text-gray-800 dark:text-gray-200 animate-pulse" />
             <span className="text-micro font-semibold text-gray-800 dark:text-gray-200">

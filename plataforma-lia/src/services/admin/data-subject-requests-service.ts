@@ -187,7 +187,6 @@ class DataSubjectRequestsService {
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching DSR stats:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -232,7 +231,6 @@ class DataSubjectRequestsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching DSR requests:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { requests: [], total: 0, limit: 50, offset: 0 }
@@ -247,7 +245,6 @@ class DataSubjectRequestsService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching DSR request:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -277,7 +274,6 @@ class DataSubjectRequestsService {
       const data = await response.json()
       return mapBackendTracking(data)
     } catch (error) {
-      console.error('Error tracking DSR request:', error)
       return null
     }
   }

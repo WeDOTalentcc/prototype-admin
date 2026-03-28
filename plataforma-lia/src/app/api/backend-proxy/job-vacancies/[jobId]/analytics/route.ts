@@ -21,7 +21,6 @@ export async function GET(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Backend error:', errorText)
       return NextResponse.json(
         { error: 'Backend request failed', details: errorText },
         { status: response.status }
@@ -31,7 +30,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job analytics proxy error:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: String(error) },
       { status: 500 }

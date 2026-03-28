@@ -1860,7 +1860,6 @@ function VoiceScreeningDashboard() {
         setScreenings(screeningsData.screenings || [])
       }
     } catch (error) {
-      console.error('Failed to fetch voice screening data:', error)
     } finally {
       setIsLoading(false)
     }

@@ -60,7 +60,6 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
       setProactiveAlerts(alertsData)
       setLastUpdated(new Date())
     } catch (error) {
-      console.error('Error fetching agent data:', error)
     } finally {
       setIsLoading(false)
     }
@@ -454,7 +453,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
           </div>
 
           {/* Activity List */}
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-content-lg overflow-y-auto">
             {activities.length === 0 ? (
               <div className="p-8 text-center" style={{ color: 'var(--eleven-text-tertiary)' }}>
                 Nenhuma atividade encontrada com os filtros selecionados

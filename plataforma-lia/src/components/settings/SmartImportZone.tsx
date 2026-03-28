@@ -158,7 +158,6 @@ export function SmartImportZone({
       })
       setState('preview')
     } catch (err) {
-      console.error('Error analyzing file:', err)
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao analisar o arquivo')
       setState('error')
     }
@@ -192,7 +191,6 @@ export function SmartImportZone({
       setState('success')
       onImportSuccess()
     } catch (err) {
-      console.error('Error importing file:', err)
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao importar dados')
       setState('error')
     }
@@ -224,7 +222,6 @@ export function SmartImportZone({
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (err) {
-      console.error('Error downloading template:', err)
       setErrorMessage('Erro ao baixar template')
       setTimeout(() => setErrorMessage(null), 3000)
     }

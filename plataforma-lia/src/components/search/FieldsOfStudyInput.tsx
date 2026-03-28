@@ -357,7 +357,6 @@ export function FieldsOfStudyInput({
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Error fetching AI suggestions:', error)
       }
     } finally {
       if (currentRequestId === requestIdRef.current) {

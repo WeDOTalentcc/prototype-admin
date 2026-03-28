@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       return NextResponse.json(
         { error: 'Erro ao baixar template' },
         { status: response.status }
@@ -31,7 +30,6 @@ export async function GET(request: NextRequest) {
       headers,
     })
   } catch (error) {
-    console.error('Template download proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

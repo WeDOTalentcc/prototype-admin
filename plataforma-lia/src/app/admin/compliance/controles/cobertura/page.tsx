@@ -68,7 +68,6 @@ export default function CoberturaPage() {
       setAllControls(controlsData.controls)
       setCompanyControls(companyData.controls)
     } catch (err) {
-      console.error('Error fetching coverage data:', err)
       toast.error('Erro ao carregar dados de cobertura')
     } finally {
       setIsRefreshing(false)

@@ -121,7 +121,6 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
         onClose()
       }, 2000)
     } catch (error: any) {
-      console.error("Erro ao enviar email:", error)
       setSendStatus("error")
       setErrorMessage(error.message || "Erro ao enviar email. Tente novamente.")
     } finally {

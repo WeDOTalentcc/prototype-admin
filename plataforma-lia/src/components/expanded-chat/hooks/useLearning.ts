@@ -227,7 +227,6 @@ export function useLearning() {
       return data.patterns || []
       
     } catch (error) {
-      console.error('Error fetching similar jobs:', error)
       return []
     }
   }, [])
@@ -259,7 +258,6 @@ export function useLearning() {
       return await response.json()
       
     } catch (error) {
-      console.error('Error fetching salary suggestion:', error)
       return null
     }
   }, [])
@@ -293,7 +291,6 @@ export function useLearning() {
       return await response.json()
       
     } catch (error) {
-      console.error('Error fetching skills recommendation:', error)
       return null
     }
   }, [])
@@ -327,7 +324,6 @@ export function useLearning() {
       return await response.json()
       
     } catch (error) {
-      console.error('Error fetching time-to-fill prediction:', error)
       return null
     }
   }, [])
@@ -355,7 +351,6 @@ export function useLearning() {
       return await response.json()
       
     } catch (error) {
-      console.error('Error recording job outcome:', error)
       return null
     }
   }, [])

@@ -188,7 +188,6 @@ export function InterviewNoteCard({
           const status = await getInterviewAnalysisStatus(note.interviewId)
           setAnalysisStatus(status)
         } catch (error) {
-          console.error('Failed to load analysis status:', error)
         } finally {
           setIsAnalysisLoading(false)
         }
@@ -235,7 +234,6 @@ export function InterviewNoteCard({
       const result = await triggerInterviewAnalysis(note.interviewId, false)
       setAnalysisStatus(result)
     } catch (error) {
-      console.error('Failed to analyze interview:', error)
     } finally {
       setIsAnalysisLoading(false)
     }
@@ -248,7 +246,6 @@ export function InterviewNoteCard({
       const result = await triggerInterviewAnalysis(note.interviewId, true)
       setAnalysisStatus(result)
     } catch (error) {
-      console.error('Failed to refresh analysis:', error)
     } finally {
       setIsAnalysisLoading(false)
     }

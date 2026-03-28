@@ -148,7 +148,6 @@ export function SaveArchetypeModal({
       onSuccess?.(data)
       onClose()
     } catch (error) {
-      console.error("Error saving archetype:", error)
       toast({
         title: "Erro ao salvar",
         description: error instanceof Error ? error.message : "Não foi possível salvar o arquétipo.",

@@ -189,7 +189,6 @@ export function BenefitsTab() {
         return company.id || 'default'
       }
     } catch (e) {
-      console.error('Error fetching company:', e)
     }
     return 'default'
   }
@@ -207,12 +206,10 @@ export function BenefitsTab() {
       })
 
       if (!response.ok) {
-        console.error('Error saving LIA field toggles:', response.status)
       } else {
         await refetchLia()
       }
     } catch (err) {
-      console.error('Error saving LIA field toggles:', err)
     }
   }
 
@@ -243,7 +240,6 @@ export function BenefitsTab() {
         setBenefits(rawBenefits.map(normalizeBenefit))
       }
     } catch (err) {
-      console.error("Error loading benefits:", err)
       setError("Erro ao carregar benefícios")
     } finally {
       setIsLoading(false)
@@ -263,7 +259,6 @@ export function BenefitsTab() {
         setTemplates(data.items || [])
       }
     } catch (err) {
-      console.error("Error loading templates:", err)
     } finally {
       setIsLoadingTemplates(false)
     }
@@ -276,7 +271,6 @@ export function BenefitsTab() {
       })
       await loadTemplates()
     } catch (err) {
-      console.error("Error seeding templates:", err)
     }
   }, [loadTemplates])
 
@@ -323,7 +317,6 @@ export function BenefitsTab() {
         throw new Error('Falha ao adicionar benefício')
       }
     } catch (err) {
-      console.error("Error adding benefit from template:", err)
       setError("Erro ao adicionar benefício")
       setTimeout(() => setError(null), 3000)
     }
@@ -374,7 +367,6 @@ export function BenefitsTab() {
         throw new Error('Falha ao salvar benefício')
       }
     } catch (err) {
-      console.error("Error saving benefit:", err)
       setError("Erro ao salvar benefício")
     } finally {
       setIsSaving(false)
@@ -394,7 +386,6 @@ export function BenefitsTab() {
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
-      console.error("Error deleting benefit:", err)
       setError("Erro ao excluir benefício")
     }
   }
@@ -451,7 +442,6 @@ export function BenefitsTab() {
         throw new Error('Algumas alterações não puderam ser salvas')
       }
     } catch (err) {
-      console.error("Error saving changes:", err)
       setError("Erro ao salvar alterações")
     } finally {
       setIsSaving(false)

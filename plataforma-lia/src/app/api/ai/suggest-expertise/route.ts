@@ -67,13 +67,11 @@ Focus on professional expertise areas like:
           return NextResponse.json({ suggestions: filtered })
         }
       } catch {
-        console.error('Failed to parse AI response:', text)
       }
     }
 
     return NextResponse.json({ suggestions: [] })
   } catch (error) {
-    console.error("Error suggesting expertise:", error)
     return NextResponse.json(
       { error: "Failed to get suggestions" },
       { status: 500 }

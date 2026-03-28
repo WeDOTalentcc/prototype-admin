@@ -100,7 +100,6 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
       const statsData = await auditLogsService.getAuditStats(filters)
       setStats(statsData)
     } catch (err) {
-      console.error('Error fetching audit stats:', err)
     }
   }, [])
 
@@ -109,7 +108,6 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
       const response = await auditLogsService.getRetentionPolicies()
       setRetentionPolicies(response.policies)
     } catch (err) {
-      console.error('Error fetching retention policies:', err)
     }
   }, [])
 

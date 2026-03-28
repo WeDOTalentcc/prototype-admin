@@ -170,11 +170,7 @@ export function CreateAdhocNoteModal({
           {/* Warning Alert */}
           {selectedJobId && (
             <div
-              className="flex gap-3 rounded-md p-3 text-sm"
-              style={{
-                backgroundColor: "rgba(229, 231, 235, 0.3)",
-                border: "1px solid rgba(96, 190, 209, 0.3)",
-              }}
+              className="flex gap-3 rounded-md p-3 text-sm bg-gray-200/30 border border-wedo-cyan/30"
             >
               <AlertCircle
                 className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700"

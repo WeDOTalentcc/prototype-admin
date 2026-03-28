@@ -21,7 +21,6 @@ export async function POST(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao verificar completude da vaga', 
@@ -33,7 +32,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Check completeness proxy error:', error)
     return NextResponse.json({ 
       error: 'Erro ao conectar com o backend',
       status: 500 

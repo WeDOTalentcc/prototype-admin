@@ -253,7 +253,6 @@ class ComplianceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching control library:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { controls: [], total: 0, limit: 100, offset: 0 }
@@ -284,7 +283,6 @@ class ComplianceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching company controls:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { controls: [], total: 0, limit: 100, offset: 0 }
@@ -300,7 +298,6 @@ class ComplianceService {
       return mapBackendDashboard(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching compliance dashboard:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -333,7 +330,6 @@ class ComplianceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching audits:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { audits: [], total: 0, limit: 50, offset: 0 }
@@ -363,7 +359,6 @@ class ComplianceService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching SOX controls:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { controls: [], total: 0, limit: 100, offset: 0 }

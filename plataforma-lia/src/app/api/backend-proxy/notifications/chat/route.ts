@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error fetching chat notifications:", error)
     return NextResponse.json(
       { success: false, error: "Failed to fetch chat notifications" },
       { status: 500 }

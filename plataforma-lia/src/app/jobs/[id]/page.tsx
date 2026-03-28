@@ -55,7 +55,6 @@ export default function JobPage() {
         })
       })
       .catch(err => {
-        console.error('[JobPage] Failed to fetch job vacancy:', err)
         setError('Erro ao carregar a vaga')
       })
       .finally(() => setIsLoading(false))

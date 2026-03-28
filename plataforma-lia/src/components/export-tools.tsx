@@ -48,11 +48,6 @@ export function ExportTools({ data, className }: ExportToolsProps) {
     setIsExporting(false)
 
     // Simular download
-    console.log(`Exportando dados em formato ${format}:`, {
-      ...exportConfig,
-      format,
-      timestamp
-    })
   }
 
   const handleScheduleExport = () => {

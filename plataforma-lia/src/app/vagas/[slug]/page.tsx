@@ -161,7 +161,6 @@ export default function PublicVacancyPage() {
         const data = await response.json()
         setVacancy(data)
       } catch (err) {
-        console.error("Error fetching public vacancy:", err)
         setError("Erro ao carregar a vaga. Verifique sua conexão.")
       } finally {
         setLoading(false)
@@ -276,7 +275,6 @@ export default function PublicVacancyPage() {
 
       setApplicationResult(data)
     } catch (err) {
-      console.error("Application submission error:", err)
       setApplicationResult({
         status: "error",
         message: "Erro de conexão. Verifique sua internet e tente novamente."

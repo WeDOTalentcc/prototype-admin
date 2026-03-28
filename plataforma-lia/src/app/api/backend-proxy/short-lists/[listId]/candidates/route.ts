@@ -29,7 +29,6 @@ export async function POST(
 
     return NextResponse.json(await response.json(), { status: 201 })
   } catch (error) {
-    console.error('[short-lists/[listId]/candidates POST]', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

@@ -25,7 +25,6 @@ export async function POST(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao testar webhook', details: errorData, success: false },
@@ -36,7 +35,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json({ ...data, success: true })
   } catch (error) {
-    console.error('Webhook test proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend', success: false },
       { status: 500 }

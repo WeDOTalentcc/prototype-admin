@@ -222,7 +222,6 @@ export function AdminTemplateHub() {
           setTemplates([])
         }
       } catch (err) {
-        console.error('Error fetching data:', err)
         setError('Erro ao carregar dados. Por favor, tente novamente.')
       } finally {
         setLoading(false)
@@ -305,7 +304,6 @@ export function AdminTemplateHub() {
         setTimeout(() => setError(null), 5000)
       }
     } catch (err) {
-      console.error('Error adjusting template with AI:', err)
       setError('Erro ao conectar com o serviço de IA')
       setTimeout(() => setError(null), 5000)
     } finally {
@@ -355,7 +353,7 @@ export function AdminTemplateHub() {
       </div>
 
       {successMessage && (
-        <div className="px-3 py-2 rounded-md flex items-center gap-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', borderColor: 'rgba(96, 190, 209, 0.3)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
+        <div className="px-3 py-2 rounded-md flex items-center gap-2 border border-wedo-cyan/30 text-wedo-cyan-dark bg-gray-200/30">
           <CheckCircle className="w-4 h-4 text-gray-700" />
           <span>{successMessage}</span>
         </div>
@@ -432,10 +430,10 @@ export function AdminTemplateHub() {
               <Card key={i} className="rounded-md animate-pulse">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}></div>
+                    <div className="w-8 h-8 rounded-md bg-wedo-cyan/20"></div>
                     <div className="flex-1">
-                      <div className="h-4 w-32 rounded mb-2" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}></div>
-                      <div className="h-3 w-24 rounded" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}></div>
+                      <div className="h-4 w-32 rounded mb-2 bg-wedo-cyan/20"></div>
+                      <div className="h-3 w-24 rounded bg-wedo-cyan/15"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -444,8 +442,8 @@ export function AdminTemplateHub() {
           </div>
           <Card className="border-dashed border-2 border-gray-200 rounded-md h-64 flex items-center justify-center animate-pulse">
             <CardContent className="text-center">
-              <div className="w-10 h-10 rounded-full mx-auto mb-3" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}></div>
-              <div className="h-4 w-40 rounded mx-auto" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}></div>
+              <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-wedo-cyan/20"></div>
+              <div className="h-4 w-40 rounded mx-auto bg-wedo-cyan/20"></div>
             </CardContent>
           </Card>
         </div>
@@ -455,7 +453,7 @@ export function AdminTemplateHub() {
             {filteredTemplates.length === 0 ? (
               <Card className="border border-dashed border-gray-200 rounded-md">
                 <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-200/30">
                     <Search className="w-4 h-4 text-gray-700" />
                   </div>
                   <p className="text-sm text-gray-600">
@@ -500,7 +498,7 @@ export function AdminTemplateHub() {
                                   ? 'border-gray-900 dark:border-gray-50' 
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                               }`}
-                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px rgba(96, 190, 209, 0.2)' } : {}}
+                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px rgb(96 190 209 / 0.2)' } : {}}
                               onClick={() => setSelectedTemplate(template)}
                             >
                               <CardContent className="p-2.5">
@@ -667,7 +665,7 @@ export function AdminTemplateHub() {
                   <Card className="rounded-md border border-gray-200 bg-white">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
@@ -708,7 +706,7 @@ export function AdminTemplateHub() {
                         </Button>
                       </div>
                       {isGenerating && (
-                        <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}>
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                           <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '0ms' }}></span>
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
@@ -729,7 +727,7 @@ export function AdminTemplateHub() {
                       <div className="border-b border-gray-100 p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
@@ -753,7 +751,7 @@ export function AdminTemplateHub() {
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--wedo-cyan-dark)' }}>
+                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-gray-200/30 text-wedo-cyan-dark">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Badge>
@@ -809,7 +807,7 @@ export function AdminTemplateHub() {
             ) : (
               <Card className="border-dashed border-2 border-gray-200 rounded-md h-96 flex items-center justify-center">
                 <CardContent className="text-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-gray-200/30">
                     <Settings className="w-6 h-6 text-gray-700" />
                   </div>
                   <p className="text-sm text-gray-600 mb-1">

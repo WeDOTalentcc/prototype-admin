@@ -26,7 +26,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching policy:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -58,7 +57,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating policy:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -88,7 +86,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting policy:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -101,7 +101,6 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
       const data = await response.json()
       setApprovals(data)
     } catch (err) {
-      console.error('Error fetching approvals:', err)
       setError('Erro ao carregar aprovações')
     } finally {
       setIsLoading(false)
@@ -130,7 +129,6 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
       setSelectedApproval(null)
       fetchApprovals()
     } catch (err) {
-      console.error('Error approving:', err)
       setError('Erro ao aprovar solicitação')
     } finally {
       setIsSubmitting(false)
@@ -155,7 +153,6 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
       setSelectedApproval(null)
       fetchApprovals()
     } catch (err) {
-      console.error('Error rejecting:', err)
       setError('Erro ao rejeitar solicitação')
     } finally {
       setIsSubmitting(false)

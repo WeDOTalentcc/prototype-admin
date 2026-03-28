@@ -554,7 +554,6 @@ export function EditArchetypeModal({
                           }
                         }
                       } catch (error) {
-                        console.error("Error finding similar skills:", error)
                       } finally {
                         onIsFindingSimilarSkillsChange(false)
                       }
@@ -768,7 +767,6 @@ export function EditArchetypeModal({
                           }
                         }
                       } catch (error) {
-                        console.error("Error finding similar tags:", error)
                       } finally {
                         onIsFindingSimilarTagsChange(false)
                       }

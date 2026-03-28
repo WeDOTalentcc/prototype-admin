@@ -148,6 +148,8 @@ import { useCandidatesSearch } from "@/components/pages/candidates/hooks/useCand
 import { useCandidatesLIAHandlers } from "@/components/pages/candidates/hooks/useCandidatesLIAHandlers"
 import { useCandidatesActions } from "@/components/pages/candidates/hooks/useCandidatesActions"
 import { createCellRenderer } from "@/components/pages/candidates/CandidateTableCellRenderer"
+import { useCandidatesSearchState } from "@/hooks/use-candidates-search-state"
+import { useCandidatesViewState } from "@/hooks/use-candidates-view-state"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
@@ -159,223 +161,8 @@ const SmartSearchInput = dynamic(
 )
 const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false })
 
-const SALARY_RANGES = {
-  junior: { min: 4000, max: 7000 },
-  pleno: { min: 8000, max: 14000 },
-  senior: { min: 15000, max: 25000 },
-  specialist: { min: 20000, max: 35000 },
-  lead: { min: 25000, max: 40000 }
-}
-
-const getSalaryByExperience = (experience: number, index: number): number => {
-  let range = SALARY_RANGES.junior
-  if (experience >= 10) range = SALARY_RANGES.lead
-  else if (experience >= 7) range = SALARY_RANGES.specialist
-  else if (experience >= 4) range = SALARY_RANGES.senior
-  else if (experience >= 2) range = SALARY_RANGES.pleno
-  
-  const variation = (index * 1234) % (range.max - range.min + 1)
-  return range.min + variation
-}
-
-const generateWorkHistory = (candidate: CandidateLocal, experience: number): Array<{
-  company: string
-  title: string
-  position: string
-  period: string
-  startDate: string
-  endDate?: string
-  description: string
-}> => {
-  const workHistory: Array<{
-    company: string
-    title: string
-    position: string
-    period: string
-    startDate: string
-    endDate?: string
-    description: string
-  }> = []
-  
-  const currentYear = new Date().getFullYear()
-  const title = candidate.current_title || 'Profissional'
-  const company = candidate.current_company || ''
-  const seniority = candidate.seniority_level?.toLowerCase() || ''
-  
-  const techCompanies = ['TechCorp Brasil', 'Nubank', 'iFood', 'Mercado Livre', 'Stone', 'PicPay', 'Itaú Digital', 'Bradesco Next', 'Movile', 'VTEX', 'Creditas', 'Loft', 'QuintoAndar', 'Wildlife Studios', 'Loggi']
-  const startups = ['Startup XYZ', 'InnovaTech', 'FinTech Solutions', 'DataDriven Co', 'CloudFirst', 'AgileHub', 'ScaleTech', 'GrowthLabs']
-  const consultancies = ['Accenture', 'McKinsey Digital', 'BCG Gamma', 'KPMG Tech', 'Deloitte Digital', 'EY Brasil']
-  
-  const getDescriptionByTitle = (t: string): string => {
-    const lower = t.toLowerCase()
-    if (lower.includes('cto') || lower.includes('chief')) return 'Liderança técnica e estratégica, definição de arquitetura e roadmap tecnológico'
-    if (lower.includes('head') || lower.includes('diretor')) return 'Gestão de equipes multidisciplinares e entrega de projetos estratégicos'
-    if (lower.includes('gerente') || lower.includes('manager')) return 'Coordenação de times, gestão de projetos e processos ágeis'
-    if (lower.includes('tech lead') || lower.includes('líder')) return 'Liderança técnica de squad, code reviews e mentoria de desenvolvedores'
-    if (lower.includes('senior') || lower.includes('sênior')) return 'Desenvolvimento de soluções complexas e mentoria de desenvolvedores juniores'
-    if (lower.includes('arquiteto') || lower.includes('architect')) return 'Definição de arquitetura de sistemas e padrões técnicos'
-    if (lower.includes('full stack') || lower.includes('fullstack')) return 'Desenvolvimento end-to-end de aplicações web e APIs'
-    if (lower.includes('frontend') || lower.includes('front-end')) return 'Desenvolvimento de interfaces responsivas e experiência do usuário'
-    if (lower.includes('backend') || lower.includes('back-end')) return 'Desenvolvimento de APIs RESTful e microsserviços'
-    if (lower.includes('devops') || lower.includes('sre')) return 'Automação de infraestrutura, CI/CD e monitoramento'
-    if (lower.includes('data') || lower.includes('dados')) return 'Análise de dados, machine learning e pipelines de dados'
-    if (lower.includes('product') || lower.includes('produto')) return 'Definição de roadmap, discovery e entrega de valor ao usuário'
-    if (lower.includes('design') || lower.includes('ux')) return 'Pesquisa de usuário, prototipagem e design de interfaces'
-    return 'Desenvolvimento de software e entrega de soluções técnicas'
-  }
-  
-  if (company) {
-    const startYear = currentYear - Math.min(experience, 3)
-    workHistory.push({
-      company: company,
-      title: title,
-      position: title,
-      period: `${startYear} - Atual`,
-      startDate: `${startYear}-01-01`,
-      description: getDescriptionByTitle(title)
-    })
-  }
-  
-  if (experience >= 3) {
-    const prevCompanies = seniority.includes('senior') || seniority.includes('lead') || seniority.includes('specialist') ? techCompanies : startups
-    const prevCompany = prevCompanies[Math.floor(Math.random() * prevCompanies.length)]
-    const prevTitle = title.replace(/Senior|Sênior|Lead|Principal|Staff/gi, '').trim() || 'Desenvolvedor'
-    const endYear = company ? currentYear - Math.min(experience, 3) : currentYear - 1
-    const startYear = endYear - Math.min(2, Math.floor(experience / 2))
-    
-    workHistory.push({
-      company: prevCompany,
-      title: prevTitle,
-      position: prevTitle,
-      period: `${startYear} - ${endYear}`,
-      startDate: `${startYear}-01-01`,
-      endDate: `${endYear}-12-01`,
-      description: getDescriptionByTitle(prevTitle)
-    })
-  }
-  
-  if (experience >= 6) {
-    const earlyCompany = consultancies[Math.floor(Math.random() * consultancies.length)]
-    const earlyTitle = 'Analista de Sistemas'
-    const endYear = currentYear - Math.floor(experience / 2) - 1
-    const startYear = endYear - 2
-    
-    workHistory.push({
-      company: earlyCompany,
-      title: earlyTitle,
-      position: earlyTitle,
-      period: `${startYear} - ${endYear}`,
-      startDate: `${startYear}-01-01`,
-      endDate: `${endYear}-12-01`,
-      description: 'Desenvolvimento de software e suporte técnico a clientes enterprise'
-    })
-  }
-  
-  if (workHistory.length === 0) {
-    workHistory.push({
-      company: 'Empresa Atual',
-      title: title,
-      position: title,
-      period: `${currentYear - 1} - Atual`,
-      startDate: `${currentYear - 1}-01-01`,
-      description: getDescriptionByTitle(title)
-    })
-  }
-  
-  return workHistory
-}
-
-const generateEducation = (candidate: CandidateLocal, experience: number): Array<{
-  school: string
-  institution: string
-  degree: string
-  field_of_study: string
-  fieldOfStudy: string
-  startDate: string
-  endDate: string
-}> => {
-  const education: Array<{
-    school: string
-    institution: string
-    degree: string
-    field_of_study: string
-    fieldOfStudy: string
-    startDate: string
-    endDate: string
-  }> = []
-  
-  const currentYear = new Date().getFullYear()
-  const title = (candidate.current_title || '').toLowerCase()
-  const seniority = (candidate.seniority_level || '').toLowerCase()
-  
-  const topUniversities = ['USP', 'UNICAMP', 'UFRJ', 'UFMG', 'UFRGS', 'PUC-Rio', 'PUC-SP', 'Insper', 'FGV', 'ITA', 'IME']
-  const otherUniversities = ['Mackenzie', 'FIAP', 'FATEC', 'Unisinos', 'PUCRS', 'UFSCar', 'UFSC', 'UFPR', 'UnB', 'UFBA']
-  const mbaSchools = ['Insper', 'FGV', 'USP/FIA', 'Fundação Dom Cabral', 'IBMEC', 'BSP', 'Saint Paul']
-  
-  const getFieldByTitle = (t: string): string => {
-    if (t.includes('data') || t.includes('dados') || t.includes('machine learning') || t.includes('ai')) return 'Ciência de Dados'
-    if (t.includes('frontend') || t.includes('front-end') || t.includes('design') || t.includes('ux')) return 'Design Digital'
-    if (t.includes('devops') || t.includes('sre') || t.includes('infra')) return 'Engenharia de Computação'
-    if (t.includes('product') || t.includes('produto')) return 'Administração de Empresas'
-    if (t.includes('security') || t.includes('segurança')) return 'Segurança da Informação'
-    return 'Ciência da Computação'
-  }
-  
-  const isLeadership = seniority.includes('lead') || seniority.includes('head') || seniority.includes('director') || 
-                       title.includes('cto') || title.includes('gerente') || title.includes('manager') ||
-                       title.includes('head') || title.includes('diretor') || experience >= 10
-  
-  if (isLeadership && experience >= 8) {
-    const mbaSchool = mbaSchools[Math.floor(Math.random() * mbaSchools.length)]
-    const endYear = currentYear - Math.floor(experience / 3)
-    const startYear = endYear - 2
-    
-    education.push({
-      school: mbaSchool,
-      institution: mbaSchool,
-      degree: 'MBA',
-      field_of_study: 'Gestão de Tecnologia e Inovação',
-      fieldOfStudy: 'Gestão de Tecnologia e Inovação',
-      startDate: `${startYear}-02-01`,
-      endDate: `${endYear}-12-01`
-    })
-  }
-  
-  const isSenior = seniority.includes('senior') || seniority.includes('specialist') || seniority.includes('lead') || experience >= 5
-  const universities = isSenior ? topUniversities : otherUniversities
-  const university = universities[Math.floor(Math.random() * universities.length)]
-  const field = getFieldByTitle(title)
-  const gradEndYear = currentYear - experience - 1
-  const gradStartYear = gradEndYear - 4
-  
-  education.push({
-    school: university,
-    institution: university,
-    degree: 'Bacharelado',
-    field_of_study: field,
-    fieldOfStudy: field,
-    startDate: `${gradStartYear}-02-01`,
-    endDate: `${gradEndYear}-12-01`
-  })
-  
-  if (isSenior && !isLeadership && experience >= 5) {
-    const pgSchool = topUniversities[Math.floor(Math.random() * topUniversities.length)]
-    const pgEndYear = currentYear - Math.floor(experience / 2)
-    const pgStartYear = pgEndYear - 2
-    
-    education.push({
-      school: pgSchool,
-      institution: pgSchool,
-      degree: 'Pós-Graduação',
-      field_of_study: 'Engenharia de Software',
-      fieldOfStudy: 'Engenharia de Software',
-      startDate: `${pgStartYear}-02-01`,
-      endDate: `${pgEndYear}-12-01`
-    })
-  }
-  
-  return education
-}
+// Mock data helpers → moved to @/lib/candidates-mock-data (Sprint 4.11)
+// Canonical implementations live in @/lib/transforms/candidate-transforms
 
 // Tipo para controle de origem de busca (local, global ou híbrido)
 type SearchSource = 'local' | 'global' | 'hybrid'
@@ -473,54 +260,77 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }, [pendingCandidateOpen, candidates, onCandidateOpened])
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [quickFilters, setQuickFilters] = useState<Set<string>>(new Set())
+  // ========== SEARCH STATE (Sprint 4.11 — extracted to useCandidatesSearchState) ==========
+  const {
+    state: {
+      searchTerm, quickFilters, activeTab,
+      lastSearchQuery, lastSearchEntities, lastSearchMode, lastSearchMetadata, lastSearchUsedPearch,
+      hasSearchResults, searchResultsCount, localResultsCount, pearchResultsCount,
+      creditsUsedInSearch, creditsRemaining, showExpandGlobalOption,
+      openCreditModals, showEditQueryModal, editQueryValue,
+      showSearchResults, searchSource, currentSearchSource,
+      showGlobalExpansionConfirm, hasSearched, isExpandingToGlobal,
+      searchExecutionId, searchSortBy, searchFeedbacks,
+      displayedResultsCount, isLoadingMore, showOnlyNew,
+      isDroppingCV, cvUploadLoading,
+    },
+    actions: {
+      setSearchTerm, setQuickFilters, setActiveTab,
+      setLastSearchQuery, setLastSearchEntities, setLastSearchMode,
+      setLastSearchMetadata, setLastSearchUsedPearch,
+      setHasSearchResults, setSearchResultsCount, setLocalResultsCount, setPearchResultsCount,
+      setCreditsUsedInSearch, setCreditsRemaining, setShowExpandGlobalOption,
+      setOpenCreditModals, setShowEditQueryModal, setEditQueryValue,
+      setShowSearchResults, setSearchSource, setCurrentSearchSource,
+      setShowGlobalExpansionConfirm, setHasSearched, setIsExpandingToGlobal,
+      setSearchExecutionId, setSearchSortBy, setSearchFeedbacks,
+      setDisplayedResultsCount, setIsLoadingMore, setShowOnlyNew,
+      setIsDroppingCV, setCvUploadLoading,
+    },
+  } = useCandidatesSearchState()
 
-  const [activeTab, setActiveTab] = useState<'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents'>('search')
-  const [lastSearchQuery, setLastSearchQuery] = useState<string>("")
-  const [lastSearchEntities, setLastSearchEntities] = useState<ParsedEntities | null>(null)
-  const [lastSearchMode, setLastSearchMode] = useState<string>("")
-  const [lastSearchMetadata, setLastSearchMetadata] = useState<SearchMetadata | undefined>(undefined)
-  const [lastSearchUsedPearch, setLastSearchUsedPearch] = useState<boolean>(false)
-  const [hasSearchResults, setHasSearchResults] = useState(false)
-  const [searchResultsCount, setSearchResultsCount] = useState<number>(0)
-  const [localResultsCount, setLocalResultsCount] = useState<number>(0)
-  const [pearchResultsCount, setPearchResultsCount] = useState<number>(0)
-  const [creditsUsedInSearch, setCreditsUsedInSearch] = useState<number>(0)
-  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null) // Saldo atual de créditos Pearch
-  const [showExpandGlobalOption, setShowExpandGlobalOption] = useState(false)
-  
-  // Estados para modais de crédito floatantes na busca inteligente
-  const [openCreditModals, setOpenCreditModals] = useState({
-    hybrid: false,
-    global: false,
-    email: false,
-    phone: false
-  })
-  
-  // Estados para modal de edição de query
-  const [showEditQueryModal, setShowEditQueryModal] = useState(false)
-  const [editQueryValue, setEditQueryValue] = useState("")
-  
   const { toast } = useToast()
-  
+
   const { saveTalentFunnelState } = useNavigationPersistence()
-  
+
+  // ========== VIEW STATE (Sprint 4.11 — extracted to useCandidatesViewState) ==========
+  // Declared here (before effects) so setters are in scope for all effect closures below
+  const {
+    state: {
+      selectedCandidate, showPreview, isPreviewMaximized,
+      showCandidatePage, showCandidatePreview, previewCandidate,
+      showSidePreview, sidePreviewCandidate,
+      selectedCandidateForLIA, showLIAPromptForCandidate,
+      showExpandedLIA, liaPromptValue, userCollapsedLIA, talentConversationId,
+      viewedCandidateIds,
+      currentPage, crossTabFilter, showCrossTabBanner, viewingList,
+      sortBy, sortOrder,
+    },
+    actions: {
+      setSelectedCandidate, setShowPreview, setIsPreviewMaximized,
+      setShowCandidatePage, setShowCandidatePreview, setPreviewCandidate,
+      setShowSidePreview, setSidePreviewCandidate,
+      setSelectedCandidateForLIA, setShowLIAPromptForCandidate,
+      setShowExpandedLIA, setLiaPromptValue, setUserCollapsedLIA, setTalentConversationId,
+      setViewedCandidateIds,
+      setCurrentPage, setCrossTabFilter, setShowCrossTabBanner, setViewingList,
+      setSortBy, setSortOrder,
+    },
+  } = useCandidatesViewState()
+
   useEffect(() => {
     if (activeTab === 'search' || activeTab === 'favorites' || activeTab === 'lists') {
       saveTalentFunnelState(activeTab, lastSearchQuery)
     }
   }, [activeTab, lastSearchQuery, saveTalentFunnelState])
-  const [showSearchResults, setShowSearchResults] = useState(false) // Controla se mostra resultados inline na tab Busca
-  const [searchSource, setSearchSource] = useState<'local' | 'global' | 'hybrid'>('hybrid') // Toggle local vs Global
-  
+
   // Reset search source to local if global search is disabled
   useEffect(() => {
     if (!showGlobalSearchOptions && (searchSource === 'hybrid' || searchSource === 'global')) {
       setSearchSource('local')
     }
   }, [showGlobalSearchOptions, searchSource])
-  
+
   // Handle expandedSearch URL parameter - open results view with expanded prompt
   useEffect(() => {
     if (expandedSearchParam === 'true') {
@@ -529,31 +339,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       setActiveTab('search')
     }
   }, [expandedSearchParam])
-  
-  // ========== SEARCH SOURCE CONTROLS ==========
-  const [currentSearchSource, setCurrentSearchSource] = useState<SearchSource>('local') // Fonte atual da busca exibida
-  const [showGlobalExpansionConfirm, setShowGlobalExpansionConfirm] = useState(false) // Modal de confirmação de créditos para expansão global
-  const [hasSearched, setHasSearched] = useState(false) // Flag para saber se já executou uma busca
-  const [isExpandingToGlobal, setIsExpandingToGlobal] = useState(false) // Loading state para expansão global
-  
-  // ========== VIEWED CANDIDATES STATE ==========
-  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
-  const [showOnlyNew, setShowOnlyNew] = useState(false)
-  const [isDroppingCV, setIsDroppingCV] = useState(false)
-  const [cvUploadLoading, setCvUploadLoading] = useState(false)
-  
-  // Counter to track each unique search execution
-  const [searchExecutionId, setSearchExecutionId] = useState<number>(0)
-  
-  // ========== FASE 1 FUNIL DE TALENTOS STATE ==========
-  const [searchSortBy, setSearchSortBy] = useState<string>('relevance')
-  const [searchFeedbacks, setSearchFeedbacks] = useState<Record<string, 'like' | 'dislike'>>({})
-  const [displayedResultsCount, setDisplayedResultsCount] = useState(10)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  
+
   // ========== CANDIDATE LISTS STATE (for unified modal) ==========
   const [candidateListsForModal, setCandidateListsForModal] = useState<Array<{ id: string; name: string; color?: string }>>([])
-  
+
   // Load candidate lists for modal
   useEffect(() => {
     const loadCandidateLists = async () => {
@@ -572,7 +361,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
     loadCandidateLists()
   }, [])
-  
+
   // Load viewed candidates on mount
   useEffect(() => {
     const loadViewedCandidates = async () => {
@@ -585,7 +374,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           }
         }
       } catch (error) {
-        console.error('Error loading viewed candidates:', error)
       }
     }
     loadViewedCandidates()
@@ -635,7 +423,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       })
       setViewedCandidateIds(prev => new Set([...prev, candidateId]))
     } catch (error) {
-      console.error('Error marking candidate as viewed:', error)
     }
   }
   
@@ -646,35 +433,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const pinnedCandidates = talentFunnel.getPinnedIds()
   const favoriteNotes = talentFunnel.getFavoriteNotes()
   
-  // Estados para paginação tradicional (como Gestão de Vagas)
-  const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  // ✨ Estados para integração cross-tab
-  const [crossTabFilter, setCrossTabFilter] = useState<any>(null)
-  const [showCrossTabBanner, setShowCrossTabBanner] = useState(false)
-  
-  // ✨ Estado para visualização de lista
-  const [viewingList, setViewingList] = useState<{ id: string; name: string; color?: string } | null>(null)
-
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
-  const [showPreview, setShowPreview] = useState(false)
-  const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
-  const [showCandidatePage, setShowCandidatePage] = useState(false)
-  const [showCandidatePreview, setShowCandidatePreview] = useState(false)
-  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(null)
-  const [sortBy, setSortBy] = useState<string>('score')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [showSidePreview, setShowSidePreview] = useState(false)
-  const [sidePreviewCandidate, setSidePreviewCandidate] = useState<Candidate | null>(null)
-  const [selectedCandidateForLIA, setSelectedCandidateForLIA] = useState<Candidate | null>(null)
-  const [showLIAPromptForCandidate, setShowLIAPromptForCandidate] = useState(false)
-  const [showExpandedLIA, setShowExpandedLIA] = useState(false)
-  const [liaPromptValue, setLiaPromptValue] = useState("")
-  const [userCollapsedLIA, setUserCollapsedLIA] = useState(false)
-  const [talentConversationId, setTalentConversationId] = useState<string | undefined>(undefined)
-  
   // Estados para critérios de busca, sugestões e assistente no modal expandido da LIA
   const [liaPromptEntities, setLiaPromptEntities] = useState<ParsedEntities>({
     job_title: undefined,
@@ -777,7 +538,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           }
         }
       } catch (error) {
-        console.error('Error parsing entities:', error)
       } finally {
         setLiaIsParsingEntities(false)
       }
@@ -990,7 +750,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
         sessionStorage.removeItem('candidates-filter-data')
       } catch (error) {
-        console.error('Erro ao processar filtro cross-tab:', error)
       }
     } else if (tabParam === 'candidates' && filterParam === 'company' && companyParam) {
       const companies = companyParam.split(',')
@@ -1016,7 +775,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       const data = await response.json()
       setBackendArchetypes(data.archetypes || [])
     } catch (error) {
-      console.error('Erro ao carregar arquétipos:', error)
       setArchetypesLoadError(error instanceof Error ? error.message : 'Erro ao carregar arquétipos')
     } finally {
       setIsLoadingArchetypes(false)
@@ -1113,7 +871,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         })
       }
     } catch (error) {
-      console.error('Erro na busca por arquétipo:', error)
       toast({
         title: "Erro na busca",
         description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo',
@@ -1249,7 +1006,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           setBulkJobVacancies(response.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft'))
         }
       })
-      .catch(error => console.error('Error loading job vacancies:', error))
+      .catch(() => {})
 
     liaApi.listEmailTemplates(undefined, true)
       .then(response => {
@@ -1257,7 +1014,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           setBulkEmailTemplates(response.items)
         }
       })
-      .catch(error => console.error('Error loading email templates:', error))
+      .catch(() => {})
   }, [])
 
   // Handler para abrir modal de reveal
@@ -1360,7 +1117,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               })
             }
           } catch (persistError) {
-            console.error('Error persisting revealed contact:', persistError)
             // Toast de aviso sobre falha na persistência
             toast({
               title: "Aviso",
@@ -1379,7 +1135,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         })
       }
     } catch (error) {
-      console.error('Error revealing contact:', error)
       // Toast de erro genérico
       toast({
         variant: "destructive",
@@ -1434,7 +1189,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setIsLoading(false)
       })
       .catch(error => {
-        console.error('Error refreshing candidates:', error)
         setIsLoading(false)
       })
   }
@@ -1580,7 +1334,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
             }
           } else {
-            console.error('Erro na busca similar:', await response.text())
           }
         }
       }
@@ -1612,7 +1365,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
           }
         } else {
-          console.error('Erro na busca por JD:', await response.text())
         }
       }
       // ============== MODO ARCHETYPES - Busca por arquétipo ==============
@@ -1643,7 +1395,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
           }
         } else {
-          console.error('Erro na busca por arquétipo:', await response.text())
         }
       }
       // ============== MODO NATURAL/BOOLEAN/FILTROS - Busca padrão ==============
@@ -1982,7 +1733,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       
       // Log de créditos se usou Pearch
       if (creditsUsed) {
-        console.log(`Créditos utilizados: ${creditsUsed}`)
       }
       
       // 🎯 Chamar análise proativa após busca com resultados
@@ -2028,11 +1778,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setChatMessages(prev => [...prev, insightMessage])
           }
         } catch (analyzeError) {
-          console.warn('Erro ao analisar resultados:', analyzeError)
         }
       }
     } catch (error) {
-      console.error('Erro na busca:', error)
       // IMPORTANTE: Reset searchResults.isLoading em caso de erro
       setSearchResults(prev => ({
         ...prev,
@@ -3245,7 +2993,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
           <Button
             className="w-full gap-2 bg-gray-900 hover:bg-gray-800"
-            onClick={() => console.log('Agendar entrevista')}
+            onClick={() => {}}
           >
             <Calendar className="w-4 h-4" />
             Agendar Entrevista
@@ -3255,7 +3003,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => console.log('Enviar email')}
+              onClick={() => {}}
             >
               <Mail className="w-4 h-4" />
               Email
@@ -3264,7 +3012,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => console.log('Perguntar à LIA')}
+              onClick={() => {}}
             >
               <LIAIcon size="sm" />
               LIA
@@ -3375,7 +3123,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   }
 
   const handleWSIScreeningComplete = (result: any) => {
-    console.log('WSI Screening completed:', result)
   }
 
   // Handler para resize do preview
@@ -3713,12 +3460,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
   // Handlers para ações dos modais
   const handleSendMessage = (data: any) => {
-    console.log('Send message:', data)
     setShowContactModal(false)
   }
 
   const handleScheduleComplete = (data: any) => {
-    console.log('Schedule complete:', data)
     setShowScheduleModal(false)
   }
 
@@ -3835,7 +3580,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   }
 
   const handleUnifiedModalSend = (data: any) => {
-    console.log('Unified modal send:', data)
     toast({
       title: "Mensagem enviada!",
       description: `${data.type === 'email' ? 'Email' : data.type === 'whatsapp' ? 'WhatsApp' : data.type === 'triagem' ? 'Convite de triagem' : data.type === 'agendamento' ? 'Convite de entrevista' : 'Feedback'} enviado com sucesso.`,
@@ -3844,7 +3588,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   }
 
   const handleBatchApprovalComplete = (data: any) => {
-    console.log('Batch approval complete:', data)
     setShowBatchApproval(false)
     setSelectedCandidatesForBatch(new Set())
   }
@@ -3920,7 +3663,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const handleSaveColumns = () => {
     // Salvar no localStorage
     localStorage.setItem('candidate-table-columns', JSON.stringify(tableColumns))
-    console.log('Columns saved:', tableColumns)
     setShowColumnConfig(false)
   }
 
@@ -4062,7 +3804,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           setColumnOrder(defaultOrder)
         }
       } catch (e) {
-        console.error('Erro ao carregar ordem das colunas:', e)
         setColumnOrder(defaultOrder)
       }
     }
@@ -4528,7 +4269,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   description: `Exibindo ${mappedCandidates.length} candidatos da lista "${listDetails.name}"`,
                 })
               } catch (error) {
-                console.error('Failed to load list:', error)
                 toast({
                   title: "Erro ao carregar lista",
                   description: error instanceof Error ? error.message : "Não foi possível carregar os candidatos da lista.",
@@ -4918,7 +4658,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShowWSIInviteModal(false)
             setWsiInviteCandidate(null)
           } catch (error) {
-            console.error('Error sending WSI invite:', error)
             setShowWSIInviteModal(false)
             setWsiInviteCandidate(null)
           }

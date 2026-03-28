@@ -82,7 +82,6 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar dados do usuário:', error)
       try {
         localStorage.removeItem('lia_user_data')
       } catch (e) {
@@ -114,7 +113,6 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         localStorage.setItem('lia_user_data', JSON.stringify(demoUser))
         localStorage.setItem('lia_can_replay_onboarding', 'true')
       } catch (e) {
-        console.warn('Could not save to localStorage:', e)
       }
     }
 
@@ -542,7 +540,6 @@ export function useUserData() {
       try {
         setUserData(JSON.parse(storedUserData))
       } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error)
       }
     }
   }, [])

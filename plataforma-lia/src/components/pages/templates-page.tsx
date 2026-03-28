@@ -128,7 +128,6 @@ export function TemplatesPage() {
         }))
         setTemplates(parsed)
       } catch (error) {
-        console.error('Erro ao carregar templates:', error)
       }
     }
   }, [])

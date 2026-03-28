@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
         }
         return []
       } catch (e) {
-        console.warn(`Failed to fetch data requests for candidate ${candidateId}:`, e)
         return []
       }
     })
@@ -103,7 +102,6 @@ export async function GET(request: NextRequest) {
       byCandidate,
     })
   } catch (error) {
-    console.error('Data requests by-candidates proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

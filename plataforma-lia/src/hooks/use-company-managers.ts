@@ -95,7 +95,6 @@ export function useCompanyManagers(options: UseCompanyManagersOptions = {}): Use
 
       setManagers(managersList)
     } catch (err) {
-      console.error('Error fetching company managers:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setManagers([])
     } finally {

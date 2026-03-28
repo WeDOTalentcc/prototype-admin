@@ -45,7 +45,6 @@ export function ClientProvider({ children }: { children: ReactNode }) {
       setClients(clientsList)
       return clientsList
     } catch (error) {
-      console.error("Error fetching clients:", error)
       setClients([])
       return []
     } finally {

@@ -65,7 +65,6 @@ export function useSCIMConfig(): UseSCIMConfigResult {
           })
         }
       } catch (err) {
-        console.error('Error fetching SCIM config:', err)
         setError('Erro ao verificar configuração SCIM')
         setSCIMConfig({
           enabled: false,

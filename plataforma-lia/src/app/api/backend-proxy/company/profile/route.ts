@@ -20,12 +20,10 @@ export async function GET(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Company profile not found - returning 404 indicator')
       return NextResponse.json({ notFound: true, status: 404 })
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao buscar perfil da empresa', 
@@ -37,7 +35,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Company profile proxy error:', error)
     return NextResponse.json({ 
       error: 'Erro ao conectar com o backend',
       status: 500 
@@ -60,7 +57,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao criar perfil da empresa', details: errorData },
@@ -71,7 +67,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Company profile proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -133,7 +128,6 @@ export async function PUT(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao atualizar perfil da empresa', details: errorData },
@@ -144,7 +138,6 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Company profile update proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

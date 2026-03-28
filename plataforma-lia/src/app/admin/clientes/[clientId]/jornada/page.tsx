@@ -72,7 +72,6 @@ export default function ClientJornadaPage({
         }
       }
     } catch (err) {
-      console.error('Erro ao carregar etapas:', err)
       setError('Erro ao carregar jornada de recrutamento')
     } finally {
       setIsLoading(false)

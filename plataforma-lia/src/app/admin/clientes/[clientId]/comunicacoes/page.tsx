@@ -126,7 +126,6 @@ export default function ClientComunicacoesPage({
           setTemplates(data.items || [])
         }
       } catch (error) {
-        console.error('Error fetching templates:', error)
       } finally {
         setLoading(false)
       }

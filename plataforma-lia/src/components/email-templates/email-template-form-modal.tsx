@@ -199,7 +199,6 @@ export function EmailTemplateFormModal({
 
       onSuccess()
     } catch (error) {
-      console.error("Erro ao salvar template:", error)
     } finally {
       setSaving(false)
     }

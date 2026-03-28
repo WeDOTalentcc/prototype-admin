@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao processar mensagem da LIA', details: errorData },
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
       metadata: data.message?.message_metadata || {}
     })
   } catch (error) {
-    console.error('LIA Chat proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend da LIA' },
       { status: 500 }

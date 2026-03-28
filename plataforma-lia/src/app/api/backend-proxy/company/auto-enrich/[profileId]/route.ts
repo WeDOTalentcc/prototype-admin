@@ -20,7 +20,6 @@ export async function POST(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Backend error:', response.status, errorText)
       return NextResponse.json(
         { error: 'Failed to auto-enrich company profile', details: errorText },
         { status: response.status }
@@ -30,7 +29,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error in auto-enrich proxy:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

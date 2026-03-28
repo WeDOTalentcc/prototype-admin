@@ -151,7 +151,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
           setSubStatusOptions(data.options || [])
         }
       } catch (err) {
-        console.error('Error fetching substatus options:', err)
         setSubStatusOptions(getDefaultSubStatusOptions(toStage))
       }
     }
@@ -213,7 +212,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
         setPredictedSubStatuses(predictions)
         setPredictionReasonings(reasonings)
       } catch (err) {
-        console.error('Error in bulk predict:', err)
         for (const candidate of candidates) {
           predictions[candidate.id] = getDefaultSubStatus(toStage)
         }
@@ -263,7 +261,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
               predictions[candidate.id] = getDefaultSubStatus(toStage)
             }
           } catch (err) {
-            console.error(`Error predicting substatus for ${candidate.id}:`, err)
             predictions[candidate.id] = getDefaultSubStatus(toStage)
           }
         }
@@ -338,7 +335,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
             generated[candidate.id] = generateFallbackMessage(candidate, toStage, subStatus, jobContext, channel)
           }
         } catch (err) {
-          console.error(`Error generating message for ${candidate.id}:`, err)
           generated[candidate.id] = generateFallbackMessage(candidate, toStage, subStatus, jobContext, channel)
         }
       }
@@ -346,7 +342,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
       setMessages(generated)
     } catch (err) {
       setError('Erro ao gerar mensagens')
-      console.error(err)
     } finally {
       setIsGenerating(false)
     }
@@ -444,7 +439,6 @@ export function useTransitionContext(options: UseTransitionContextOptions): UseT
         }))
       }
     } catch (err) {
-      console.error(`Error regenerating message for ${candidateId}:`, err)
     } finally {
       setIsGenerating(false)
     }

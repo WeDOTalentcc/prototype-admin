@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error('Backend error:', response.status, response.statusText)
       return NextResponse.json(
         { 
           response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error calling LIA conversational endpoint:', error)
     return NextResponse.json(
       { 
         response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",

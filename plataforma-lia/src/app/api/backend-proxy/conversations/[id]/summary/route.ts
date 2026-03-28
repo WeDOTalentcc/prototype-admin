@@ -31,7 +31,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Generate summary proxy error:', error)
     return NextResponse.json(
       { error: 'Internal error', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

@@ -64,7 +64,6 @@ export default function SSOAdminPage() {
       })
       mutateGroups()
     } catch (error) {
-      console.error('Failed to update role mapping:', error)
     }
   }
 

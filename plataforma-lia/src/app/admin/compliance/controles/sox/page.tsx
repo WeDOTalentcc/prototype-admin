@@ -163,7 +163,6 @@ export default function SOXPage() {
       setControls(soxData.controls)
       setStats(dashboardData.byFramework?.['SOX'] || null)
     } catch (err) {
-      console.error('Error fetching SOX controls:', err)
       toast.error('Erro ao carregar controles SOX')
     } finally {
       setIsRefreshing(false)

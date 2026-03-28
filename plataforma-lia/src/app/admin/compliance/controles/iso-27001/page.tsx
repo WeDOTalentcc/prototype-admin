@@ -157,7 +157,6 @@ export default function ISO27001Page() {
       setCompanyControls(companyData.controls)
       setStats(dashboardData.byFramework?.[FRAMEWORK_KEY] || null)
     } catch (err) {
-      console.error('Error fetching ISO 27001 controls:', err)
       toast.error('Erro ao carregar controles ISO 27001')
     } finally {
       setIsRefreshing(false)

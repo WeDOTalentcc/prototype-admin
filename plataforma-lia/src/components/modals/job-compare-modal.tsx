@@ -329,7 +329,6 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
         description: "Arquivo salvo com sucesso.",
       })
     } catch (error) {
-      console.error("Erro ao exportar PDF:", error)
       toast({
         title: "Erro ao exportar",
         description: "Não foi possível gerar o PDF.",
@@ -521,7 +520,6 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
       }
     } catch (error) {
       if ((error as Error).name !== "AbortError") {
-        console.error("Erro ao compartilhar:", error)
         toast({
           title: "Erro",
           description: "Não foi possível compartilhar o PDF.",

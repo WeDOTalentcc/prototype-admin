@@ -135,7 +135,6 @@ export function ExpertiseAreasInput({
         addExpertise(query)
       }
     } catch (error) {
-      console.error('Error fetching AI suggestions:', error)
       addExpertise(query)
     } finally {
       setIsLoadingAI(false)
@@ -164,7 +163,6 @@ export function ExpertiseAreasInput({
         }
       }
     } catch (error) {
-      console.error('Error finding similar expertise:', error)
     } finally {
       setIsFindingSimilar(false)
     }

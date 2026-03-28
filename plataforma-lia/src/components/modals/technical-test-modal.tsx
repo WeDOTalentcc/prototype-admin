@@ -17,19 +17,19 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'rgba(156, 163, 175, 0.12)'
+    bgColor: 'rgb(156 163 175 / 0.12)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'rgba(245, 158, 11, 0.12)'
+    bgColor: 'rgb(245 158 11 / 0.12)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'rgba(16, 185, 129, 0.12)'
+    bgColor: 'rgb(16 185 129 / 0.12)'
   }
 }
 
@@ -200,10 +200,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 </div>
               </div>
 
-              <div 
-                className="flex items-center gap-2 p-3 rounded-md mb-4"
-                style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}
-              >
+              <div className="flex items-center gap-2 p-3 rounded-md mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 <span 
                   className="text-xs text-gray-600 dark:text-gray-400"

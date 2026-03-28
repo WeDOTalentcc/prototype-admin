@@ -805,7 +805,7 @@ export function ScreeningQuestionsPanel({
               </Button>
             </div>
 
-            <div className="p-3 rounded-md border" style={{ backgroundColor: 'rgba(96,190,209,0.1)', borderColor: 'rgba(96,190,209,0.2)' }}>
+            <div className="p-3 rounded-md border bg-wedo-cyan/10 border-wedo-cyan/20">
               <div className="flex items-start gap-2">
                 <Brain className="h-4 w-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div>

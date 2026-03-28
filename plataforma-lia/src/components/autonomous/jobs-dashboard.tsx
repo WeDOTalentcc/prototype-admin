@@ -83,7 +83,6 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       )
       setJobs(result || [])
     } catch (error) {
-      console.error('Erro ao carregar jobs:', error)
       setJobs([])
     }
     setLoading(false)
@@ -95,7 +94,6 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       await executeJob(jobId)
       await loadJobs()
     } catch (error) {
-      console.error('Erro ao executar job:', error)
     }
     setExecutingJobId(null)
   }

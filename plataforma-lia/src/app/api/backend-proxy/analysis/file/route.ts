@@ -28,9 +28,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(data)
       }
 
-      console.warn("Backend returned error, using fallback:", response.status)
     } catch (backendError) {
-      console.warn("Backend unavailable, using fallback:", backendError)
     }
 
     const mockAnalysis = {
@@ -50,7 +48,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(mockAnalysis)
   } catch (error) {
-    console.error("Error analyzing file:", error)
     return NextResponse.json(
       { success: false, error: "Failed to analyze file" },
       { status: 500 }

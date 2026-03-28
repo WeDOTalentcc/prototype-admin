@@ -114,7 +114,7 @@ export function SearchSourceSelector({
               onClick={(e) => { e.stopPropagation(); onToggleEmails() }}
               className={`p-1.5 rounded-md transition-all ${
                 requireEmails
-                  ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light'
+                  ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'
               }`}
             >
@@ -137,7 +137,7 @@ export function SearchSourceSelector({
               onClick={(e) => { e.stopPropagation(); onTogglePhones() }}
               className={`p-1.5 rounded-md transition-all ${
                 requirePhoneNumbers
-                  ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light'
+                  ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'
               }`}
             >

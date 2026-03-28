@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`Skills suggest error: ${response.status}`, errorText)
       return NextResponse.json(
         { success: false, error: 'Failed to suggest skills' },
         { status: response.status }
@@ -24,7 +23,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Skills suggest proxy error:', error)
     return NextResponse.json(
       { success: false, error: 'Proxy connection error' },
       { status: 500 }

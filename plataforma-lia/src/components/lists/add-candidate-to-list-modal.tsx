@@ -72,7 +72,6 @@ export function AddCandidateToListModal({
       })
       setSearchResults(response.candidates || [])
     } catch (error) {
-      console.error("Search failed:", error)
       setSearchResults([])
     } finally {
       setSearching(false)
@@ -119,7 +118,6 @@ export function AddCandidateToListModal({
       onCandidatesAdded(candidateIds)
       onOpenChange(false)
     } catch (error) {
-      console.error("Failed to add candidates:", error)
       toast({
         title: "Erro ao adicionar",
         description: "Não foi possível adicionar os candidatos. Tente novamente.",
@@ -193,7 +191,6 @@ export function AddCandidateToListModal({
         })
       }
     } catch (error) {
-      console.error("LinkedIn import failed:", error)
       toast({
         title: "Erro na importação",
         description: "Não foi possível importar o candidato do LinkedIn.",
@@ -275,7 +272,6 @@ export function AddCandidateToListModal({
         })
       }
     } catch (error) {
-      console.error("CV upload failed:", error)
       toast({
         title: "Erro no upload",
         description: "Não foi possível processar o CV.",

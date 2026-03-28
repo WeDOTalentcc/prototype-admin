@@ -46,15 +46,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(data)
       }
       
-      console.warn("Backend returned error, using fallback:", response.status)
     } catch (backendError) {
-      console.warn("Backend unavailable, using fallback:", backendError)
     }
     
     const mockResponse = generateMockCombinedProfile(urls, cvFiles.length)
     return NextResponse.json(mockResponse)
   } catch (error) {
-    console.error("Error combining profiles:", error)
     return NextResponse.json(
       { error: "Failed to process profiles" },
       { status: 500 }

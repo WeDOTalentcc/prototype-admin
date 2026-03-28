@@ -535,7 +535,6 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
       setLocalCandidateCount(response.total_results || response.candidates?.length || 0)
       setSearchPhase('local-complete')
     } catch (error) {
-      console.error('Local search error:', error)
       setLocalCandidateCount(0)
       setSearchPhase('local-complete')
     }
@@ -554,7 +553,6 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
       setGlobalCandidateCount(response.total_results || response.candidates?.length || 0)
       setSearchPhase('global-complete')
     } catch (error) {
-      console.error('Global search error:', error)
       setGlobalCandidateCount(0)
       setSearchPhase('global-complete')
     }
@@ -682,7 +680,7 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
           new_job_id: jobId,
           modified_fields: [],
           was_published: true
-        }).catch(err => console.error('Non-blocking: Fast Track usage recording failed:', err))
+        }).catch(() => {})
         setWizardFastTrackSourceJobId(null)
       }
 
@@ -738,7 +736,6 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
           channels: ['email', 'teams']
         })
       } catch (notifError) {
-        console.error('Failed to send job created notification (non-blocking):', notifError)
       }
 
       const publishMessage = {
@@ -770,7 +767,6 @@ Posso apresentar alguns candidatos para você avaliar agora. Isso me ajuda a ent
       clearWizardDraft()
       startLocalSearch()
     } catch (error) {
-      console.error('Error creating job vacancy:', error)
 
       const errorMessage = {
         id: `error-${Date.now()}`,

@@ -65,7 +65,6 @@ function AceitarConviteContent() {
         setInvitationInfo(data)
         setPageState("valid")
       } catch (err: any) {
-        console.error("Erro ao validar convite:", err)
         setError("Erro ao conectar com o servidor")
         setPageState("error")
       }
@@ -99,7 +98,6 @@ function AceitarConviteContent() {
         router.push("/login")
       }, 2000)
     } catch (err: any) {
-      console.error("Erro ao aceitar convite:", err)
       setError(err.message || "Erro ao aceitar convite. Tente novamente.")
     } finally {
       setIsAccepting(false)

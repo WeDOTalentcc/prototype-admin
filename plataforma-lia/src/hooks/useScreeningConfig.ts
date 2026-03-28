@@ -138,7 +138,6 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       
       if (!response.ok) {
         // Don't throw for expected cases - just use defaults
-        console.warn(`[useScreeningConfig] Screening config not found (${response.status}), using defaults`)
         setConfig(DEFAULT_CONFIG)
         setIsDefault(true)
         setIsLoading(false)
@@ -175,7 +174,6 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       setConfig(mergedConfig)
       setIsDefault(data.is_default ?? true)
     } catch (err) {
-      console.error('[useScreeningConfig] Error fetching config:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setConfig(DEFAULT_CONFIG)
       setIsDefault(true)
@@ -225,7 +223,6 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
       setIsDefault(false)
       return true
     } catch (err) {
-      console.error('[useScreeningConfig] Error updating config:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       return false
     } finally {

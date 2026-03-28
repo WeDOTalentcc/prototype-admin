@@ -130,7 +130,7 @@ export function RobustFilters({
     <div className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_rgba(0,0,0,0.1)]">
+        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_rgb(0_0_0/0.1)]">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-600" />
             <input

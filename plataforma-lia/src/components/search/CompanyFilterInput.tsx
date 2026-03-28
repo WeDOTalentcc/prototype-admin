@@ -235,7 +235,6 @@ export function CompanyFilterInput({
         }
       }
     } catch (error) {
-      console.error('Error fetching AI suggestions:', error)
     } finally {
       setIsLoadingAI(false)
       setInputValue("")
@@ -263,7 +262,6 @@ export function CompanyFilterInput({
         }
       }
     } catch (error) {
-      console.error('Error finding similar companies:', error)
     } finally {
       setIsFindingSimilar(false)
     }

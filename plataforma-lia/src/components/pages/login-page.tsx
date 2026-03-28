@@ -45,7 +45,6 @@ export function LoginPage() {
         setSsoInfo(null)
       }
     } catch (error) {
-      console.error('Error checking SSO domain:', error)
       setSsoInfo(null)
     } finally {
       setCheckingSSO(false)

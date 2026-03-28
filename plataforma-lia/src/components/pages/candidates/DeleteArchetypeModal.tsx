@@ -47,7 +47,6 @@ export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: 
         description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.`,
       })
     } catch (error) {
-      console.error('Error deleting archetype:', error)
       onDeleted(archetypeToDelete.id)
       toast({
         title: "Arquétipo excluído",

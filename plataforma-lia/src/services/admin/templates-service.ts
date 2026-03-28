@@ -123,7 +123,6 @@ class TemplatesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching templates:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { templates: [], total: 0 }
@@ -136,7 +135,6 @@ class TemplatesService {
       return mapBackendTemplate(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching template:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -183,7 +181,6 @@ class TemplatesService {
       return (data.variables || data || []).map(mapBackendVariable)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching variables:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return []

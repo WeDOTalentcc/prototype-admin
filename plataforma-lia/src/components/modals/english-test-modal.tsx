@@ -17,19 +17,19 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'rgba(156, 163, 175, 0.12)'
+    bgColor: 'rgb(156 163 175 / 0.12)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'rgba(245, 158, 11, 0.12)'
+    bgColor: 'rgb(245 158 11 / 0.12)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'rgba(16, 185, 129, 0.12)'
+    bgColor: 'rgb(16 185 129 / 0.12)'
   }
 }
 
@@ -88,14 +88,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div 
         className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md"
         style={{ 
-          boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)'
+          boxShadow: '0 16px 32px -8px rgb(0 0 0 / 0.12)'
         }}
       >
         <div 
@@ -103,8 +102,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
         >
           <div className="flex items-center gap-2">
             <div 
-              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)' }}
+              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-blue/[.12]"
             >
               <Globe className="w-4 h-4" style={{ color: 'var(--gray-600)' }} />
             </div>
@@ -272,10 +270,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 </div>
               </div>
 
-              <div 
-                className="p-3 rounded-md"
-                style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}
-              >
+              <div className="p-3 rounded-md bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <p 
                   className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"
                  

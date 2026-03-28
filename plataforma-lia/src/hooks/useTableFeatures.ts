@@ -66,7 +66,6 @@ function safeLocalStorageSet(key: string, value: string): void {
   try {
     localStorage.setItem(key, value)
   } catch {
-    console.warn('Failed to save to localStorage:', key)
   }
 }
 
@@ -75,7 +74,6 @@ function safeLocalStorageRemove(key: string): void {
   try {
     localStorage.removeItem(key)
   } catch {
-    console.warn('Failed to remove from localStorage:', key)
   }
 }
 

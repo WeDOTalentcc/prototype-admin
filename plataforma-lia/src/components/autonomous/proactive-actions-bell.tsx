@@ -66,7 +66,6 @@ export function ProactiveActionsBell({
       const result = await getProactiveActions('pending', 10)
       setActions(result || [])
     } catch (error) {
-      console.error('Erro ao carregar ações:', error)
     }
     setLoading(false)
   }
@@ -78,7 +77,6 @@ export function ProactiveActionsBell({
       setActions(actions.filter(a => a.id !== actionId))
       onActionTaken?.(actionId, true)
     } catch (error) {
-      console.error('Erro ao aceitar ação:', error)
     }
     setProcessingId(null)
   }
@@ -90,7 +88,6 @@ export function ProactiveActionsBell({
       setActions(actions.filter(a => a.id !== actionId))
       onActionTaken?.(actionId, false)
     } catch (error) {
-      console.error('Erro ao rejeitar ação:', error)
     }
     setProcessingId(null)
   }

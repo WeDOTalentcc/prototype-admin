@@ -116,7 +116,6 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
         setBackendAlerts(data)
       }
     } catch (error) {
-      console.error('Error fetching alerts:', error)
     }
   }, [])
 
@@ -130,7 +129,6 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
         setAlertRules(rules)
       }
     } catch (error) {
-      console.error('Error fetching preferences:', error)
       setAlertRules(defaultAlertRules)
     }
   }, [])

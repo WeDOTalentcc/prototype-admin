@@ -47,8 +47,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
 
         {searchAnalysis.next_recommended_action && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-wedo-cyan/[.08]"
           >
             <TrendingUp className="w-3 h-3" />
             <span>{searchAnalysis.next_recommended_action}</span>
@@ -66,8 +65,8 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               style={{
                 backgroundColor:
                   alert.severity === 'warning'
-                    ? 'rgba(245, 158, 11, 0.08)'
-                    : 'rgba(96, 190, 209, 0.08)',
+                    ? 'rgb(245 158 11 / 0.08)'
+                    : 'rgb(96 190 209 / 0.08)',
                 color: 'var(--eleven-text-secondary)',
               }}
             >

@@ -37,7 +37,6 @@ class IntegrationsService {
 
     try {
       // Simular chamada HTTP para webhook
-      console.log(`Sending webhook to ${integration.name}:`, payload)
 
       // Em produção, seria algo como:
       // const response = await fetch(integration.webhookUrl, {
@@ -53,14 +52,11 @@ class IntegrationsService {
       const success = Math.random() > 0.05
 
       if (success) {
-        console.log(`✅ Webhook sent successfully to ${integration.name}`)
       } else {
-        console.error(`❌ Failed to send webhook to ${integration.name}`)
       }
 
       return success
     } catch (error) {
-      console.error(`Error sending webhook to ${integration.name}:`, error)
       return false
     }
   }

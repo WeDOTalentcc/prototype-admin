@@ -458,7 +458,6 @@ export function SmartSearchInput({
         setEntities(data.entities || {})
       }
     } catch (error) {
-      console.error("Error parsing query:", error)
     } finally {
       setIsParsingEntities(false)
     }
@@ -483,7 +482,6 @@ export function SmartSearchInput({
         setSearchAnalysis(data)
       }
     } catch (error) {
-      console.error("Error analyzing search:", error)
     } finally {
       setIsAnalyzing(false)
     }
@@ -517,7 +515,6 @@ export function SmartSearchInput({
         }
       }
     } catch (error) {
-      console.error("Error fetching prompt enhancement:", error)
       setPromptEnhancement(null)
     } finally {
       setIsEnhancingPrompt(false)
@@ -622,7 +619,6 @@ export function SmartSearchInput({
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error("Error fetching autocomplete:", error)
       }
       setShowAutocomplete(false)
     }
@@ -673,7 +669,6 @@ export function SmartSearchInput({
         setArchetypeVacancies(data.archetypes || [])
       }
     } catch (error) {
-      console.error("Error loading archetypes:", error)
     } finally {
       setIsLoadingArchetypes(false)
     }
@@ -688,7 +683,6 @@ export function SmartSearchInput({
         setClosedJobSuggestions(data.suggestions || [])
       }
     } catch (error) {
-      console.error("Error loading closed job suggestions:", error)
     } finally {
       setIsLoadingClosedJobs(false)
     }
@@ -715,7 +709,6 @@ export function SmartSearchInput({
         setJobSearchResults(filtered.slice(0, 10))
       }
     } catch (error) {
-      console.error("Error searching jobs:", error)
       setJobSearchResults([])
     } finally {
       setIsSearchingJobs(false)
@@ -783,7 +776,6 @@ export function SmartSearchInput({
         return newArchetype
       }
     } catch (error) {
-      console.error("Error creating archetype from job:", error)
     } finally {
       setIsCreatingArchetype(false)
     }
@@ -825,7 +817,6 @@ export function SmartSearchInput({
       setArchetypeDescription("")
       setArchetypeTab("list")
     } catch (error) {
-      console.error("Error extracting archetype info:", error)
       // Fallback: open modal with description as query
       setEditingArchetype({ id: null, is_default: false, fromDescription: true })
       setEditArchetypeName("Novo Arquétipo")
@@ -950,11 +941,9 @@ export function SmartSearchInput({
         setArchetypeTab("list")
       } else {
         const error = await response.json()
-        console.error("Error saving archetype:", error)
         alert(error.detail || "Erro ao salvar arquétipo")
       }
     } catch (error) {
-      console.error("Error saving archetype:", error)
     } finally {
       setIsSavingArchetype(false)
     }
@@ -976,11 +965,9 @@ export function SmartSearchInput({
         }
       } else {
         const error = await response.json()
-        console.error("Error deleting archetype:", error)
         alert(error.detail || "Erro ao excluir arquétipo")
       }
     } catch (error) {
-      console.error("Error deleting archetype:", error)
     } finally {
       setIsDeletingArchetype(null)
       setShowArchetypeActions(null)
@@ -1052,7 +1039,6 @@ export function SmartSearchInput({
         setShowCombinedSuggestions(true)
       }
     } catch (error) {
-      console.error("Error analyzing profiles:", error)
       const mockKeywords = ["Sênior", "Python", "AWS", "Data Engineer", "Fintech", "SQL", "Spark"]
       setCombinedSuggestions(mockKeywords)
       setShowCombinedSuggestions(true)
@@ -1400,7 +1386,6 @@ export function SmartSearchInput({
       setJdContent(text)
       setSelectedVacancy(null)
     } catch (error) {
-      console.error("Error reading file:", error)
     }
   }
 
@@ -1420,7 +1405,6 @@ export function SmartSearchInput({
         setShowVacancyResults(true)
       }
     } catch (error) {
-      console.error("Error searching vacancies:", error)
       setJdVacancyResults([])
     } finally {
       setIsSearchingVacancies(false)
@@ -1474,7 +1458,6 @@ export function SmartSearchInput({
         }
       }
     } catch (error) {
-      console.error("Error fetching full vacancy:", error)
       if (vacancy.description_preview) {
         setJdContent(vacancy.description_preview.replace('...', ''))
       }

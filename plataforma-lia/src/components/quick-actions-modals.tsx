@@ -189,7 +189,6 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
           const response = await liaApi.listEmailTemplates(undefined, true, undefined, 0, 50, channel)
           setApiTemplates(response.items || [])
         } catch (error) {
-          console.error('Error fetching templates:', error)
         } finally {
           setLoadingTemplates(false)
         }
@@ -376,7 +375,6 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
         alert(`📞 Ligação registrada para ${candidate.name}`)
       }
     } catch (error) {
-      console.error('Error sending message:', error)
       alert(`❌ Erro ao enviar mensagem: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     }
 
@@ -948,7 +946,6 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       alert(confirmMsg)
       onClose()
     } catch (error) {
-      console.error('Error scheduling interview:', error)
       alert(`❌ Erro ao agendar entrevista: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsScheduling(false)
@@ -969,7 +966,6 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (error) {
-      console.error('Error downloading ICS:', error)
       alert('Erro ao baixar arquivo de calendário')
     }
   }

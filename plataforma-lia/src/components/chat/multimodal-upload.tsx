@@ -152,7 +152,6 @@ export function MultimodalUpload({
       setResultType(type)
       onAnalysisComplete?.(analysisResult, type)
     } catch (err) {
-      console.error('Error analyzing file:', err)
       const errorMsg = 'Erro ao analisar arquivo. Tente novamente.'
       setError(errorMsg)
       onError?.(errorMsg)

@@ -400,7 +400,6 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[LIA] Orchestrator indisponivel, usando fallback:', (error as Error)?.message || error)
       }
       try {
         const jobContext = {
@@ -540,7 +539,6 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('Orchestrated message error:', error)
       }
       return {
         content: getFallbackResponse(message),

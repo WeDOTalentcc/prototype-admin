@@ -119,7 +119,6 @@ export function useArchetypes({
           setClosedJobsForArchetype(data.jobs || data || [])
         }
       } catch (error) {
-        console.error('Error loading archetypes:', error)
       }
     }
     loadArchetypesAndJobs()
@@ -203,7 +202,6 @@ export function useArchetypes({
         setSelectedJobForArchetype(null)
       }
     } catch (error) {
-      console.error('Error creating archetype from job:', error)
     } finally {
       setIsCreatingArchetype(false)
     }

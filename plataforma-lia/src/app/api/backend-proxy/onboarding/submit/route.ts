@@ -17,11 +17,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       
       if (response.status === 404) {
-        console.log('Onboarding endpoint not found in backend, returning success stub')
         return NextResponse.json({
           success: true,
           message: 'Onboarding data received successfully',
@@ -38,7 +36,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Onboarding proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Onboarding data received (fallback)',

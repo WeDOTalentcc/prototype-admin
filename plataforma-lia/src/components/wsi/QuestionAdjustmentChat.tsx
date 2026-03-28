@@ -177,7 +177,7 @@ export function QuestionAdjustmentChat({
             )}
           >
             {msg.role === "assistant" && (
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(96,190,209,0.15)" }}>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15">
                 <Brain className="h-3 w-3 text-wedo-cyan" />
               </div>
             )}
@@ -209,7 +209,7 @@ export function QuestionAdjustmentChat({
         ))}
         {isLoading && (
           <div className="flex gap-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(96,190,209,0.15)" }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15">
               <Brain className="h-3 w-3 text-wedo-cyan" />
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
@@ -231,7 +231,7 @@ export function QuestionAdjustmentChat({
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
           className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ focusRingColor: "rgba(96,190,209,0.3)" }}
+          style={{ focusRingColor: "rgb(96 190 209 / 0.3)" }}
         />
         <Button
           variant="ghost"

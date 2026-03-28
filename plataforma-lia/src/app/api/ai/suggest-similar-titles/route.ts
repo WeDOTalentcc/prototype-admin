@@ -53,12 +53,10 @@ Example format: ["Senior Software Engineer", "Staff Engineer", "Principal Develo
         return NextResponse.json({ suggestions: filteredSuggestions.slice(0, 10) })
       }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
     }
 
     return NextResponse.json({ suggestions: [] })
   } catch (error) {
-    console.error('Error suggesting similar titles:', error)
     return NextResponse.json(
       { error: 'Failed to generate suggestions' },
       { status: 500 }

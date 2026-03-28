@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("navigation-intent proxy error:", error)
     return NextResponse.json(
       { error: "Internal error", message: error instanceof Error ? error.message : "Unknown" },
       { status: 500 }

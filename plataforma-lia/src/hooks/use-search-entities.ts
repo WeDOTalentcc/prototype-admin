@@ -169,7 +169,6 @@ export function useSearchEntities({
         })
       }
     } catch (error) {
-      console.error('Error parsing entities:', error)
     } finally {
       setIsParsingEntities(false)
     }
@@ -198,7 +197,6 @@ export function useSearchEntities({
         }
       }
     } catch (error) {
-      console.error('Error fetching prompt enhancement:', error)
     } finally {
       setIsEnhancingPrompt(false)
     }

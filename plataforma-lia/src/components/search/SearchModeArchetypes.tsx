@@ -640,10 +640,10 @@ export function SearchModeArchetypes({
                                 style={{
                                   backgroundColor:
                                     job.status === "Publicada"
-                                      ? "rgba(34, 197, 94, 0.15)"
+                                      ? "rgb(34 197 94 / 0.15)"
                                       : job.status === "Encerrada"
-                                      ? "rgba(156, 163, 175, 0.2)"
-                                      : "rgba(245, 158, 11, 0.15)",
+                                      ? "rgb(156 163 175 / 0.2)"
+                                      : "rgb(245 158 11 / 0.15)",
                                   color:
                                     job.status === "Publicada"
                                       ? "var(--status-success)"
@@ -822,7 +822,7 @@ function ScopeButtons({
                 className={cn(
                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                   searchSource === "local"
-                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green"
+                    ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                     : "hover:bg-gray-100"
                 )}
                 style={{
@@ -857,7 +857,7 @@ function ScopeButtons({
                   className={cn(
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                     searchSource === "hybrid"
-                      ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange"
+                      ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
                       : "hover:bg-gray-100"
                   )}
                   style={{
@@ -932,7 +932,7 @@ function ScopeButtons({
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                         requireEmails
-                          ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green"
+                          ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
                       )}
                       style={{
@@ -968,7 +968,7 @@ function ScopeButtons({
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                         requirePhoneNumbers
-                          ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green"
+                          ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
                       )}
                       style={{

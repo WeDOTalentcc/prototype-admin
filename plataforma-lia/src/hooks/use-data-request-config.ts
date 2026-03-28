@@ -247,7 +247,6 @@ export function useDataRequestConfig(companyId?: string) {
       setConfig(mergedConfig)
       setOriginalConfig(mergedConfig)
     } catch (err) {
-      console.error('Error loading data request config:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar configurações')
       const defaultConfig = getDefaultConfig()
       setConfig(defaultConfig)
@@ -351,7 +350,6 @@ export function useDataRequestConfig(companyId?: string) {
 
   const saveConfig = useCallback(async () => {
     if (!companyId) {
-      console.error('Cannot save config without company_id')
       setError('Empresa não identificada')
       return
     }
@@ -381,7 +379,6 @@ export function useDataRequestConfig(companyId?: string) {
       setOriginalConfig(config)
       setHasChanges(false)
     } catch (err) {
-      console.error('Error saving data request config:', err)
       setError(err instanceof Error ? err.message : 'Erro ao salvar configurações')
       throw err
     } finally {

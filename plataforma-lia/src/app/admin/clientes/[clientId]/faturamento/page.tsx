@@ -169,7 +169,6 @@ export default function ClientFaturamentoPage({
       const data = await response.json()
       setBillingData(data.data || data)
     } catch (err) {
-      console.error('Error fetching billing data:', err)
       setError('Erro ao carregar dados de faturamento. Verifique sua conexão.')
     } finally {
       setLoading(false)

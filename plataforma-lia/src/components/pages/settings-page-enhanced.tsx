@@ -263,7 +263,6 @@ export default function SettingsPageEnhanced() {
         }))
       }
     } catch (error) {
-      console.error('Failed to fetch progress from backend:', error)
     } finally {
       setProgressLoading(false)
     }

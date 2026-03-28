@@ -36,7 +36,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Triagem proxy GET error:", error)
     return NextResponse.json(
       { detail: "Serviço indisponível. Tente novamente em instantes." },
       { status: 500 }
@@ -83,7 +82,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Triagem proxy POST error:", error)
     return NextResponse.json(
       { detail: "Serviço indisponível. Tente novamente em instantes." },
       { status: 500 }

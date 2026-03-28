@@ -64,7 +64,6 @@ export default function ClientIntegracoesPage({
         setIntegrations([])
       }
     } catch (err) {
-      console.error('Error fetching integrations:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
@@ -88,7 +87,6 @@ export default function ClientIntegracoesPage({
       
       await fetchIntegrations()
     } catch (err) {
-      console.error('Error syncing integrations:', err)
       setError(err instanceof Error ? err.message : 'Erro ao sincronizar')
     } finally {
       setSyncing(false)

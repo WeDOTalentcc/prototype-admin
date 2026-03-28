@@ -315,7 +315,6 @@ export default function OnboardingClientesPage() {
   }
 
   const handleResendEmail = (clientId: string) => {
-    console.log("Resending email to client:", clientId)
   }
 
   if (!mounted) {

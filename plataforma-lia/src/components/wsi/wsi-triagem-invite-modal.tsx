@@ -111,7 +111,6 @@ export function WSITriagemInviteModal({
       const vacancyList = data.vacancies || data.items || data || []
       setVacancies(Array.isArray(vacancyList) ? vacancyList : [])
     } catch (error) {
-      console.error('Failed to load vacancies:', error)
       setVacancies([])
     } finally {
       setIsLoadingVacancies(false)
@@ -223,7 +222,6 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           })
           
           if (!response.ok) {
-            console.warn('Failed to add candidate to vacancy')
           } else {
             const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
             toast({
@@ -232,7 +230,6 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             })
           }
         } catch (error) {
-          console.error('Error adding candidate to vacancy:', error)
         }
       }
 
@@ -313,7 +310,6 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       
       onClose()
     } catch (error) {
-      console.error('Error sending invite:', error)
       toast({
         title: "Erro ao enviar",
         description: "Erro de conexão. Verifique sua internet e tente novamente.",
@@ -340,7 +336,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
   if (!isOpen || !candidate || !mounted) return null
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
       <div 
         className={`${cardStyles.elevated} w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col rounded-md`}
        

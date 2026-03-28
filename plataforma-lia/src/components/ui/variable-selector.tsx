@@ -120,7 +120,7 @@ export function VariableSelector({
         )}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 border rounded-md overflow-hidden z-[10000]" 
+        className="w-80 p-0 border rounded-md overflow-hidden z-max" 
         side={side} 
         align={align}
         style={{ 

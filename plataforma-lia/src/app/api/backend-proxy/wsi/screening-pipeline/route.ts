@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`WSI Pipeline backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({
         error: 'Erro ao gerar perguntas WSI',
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('WSI Pipeline proxy error:', error)
     return NextResponse.json(
       { error: 'Erro interno ao processar pipeline WSI', detail: String(error) },
       { status: 500 }

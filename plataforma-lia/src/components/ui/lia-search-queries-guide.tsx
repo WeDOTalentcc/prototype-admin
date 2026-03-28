@@ -145,7 +145,7 @@ export function LiaSearchQueriesGuide({
         style={{ 
           backgroundColor: 'var(--gray-50)',
           borderRadius: '12px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
+          boxShadow: '0 4px 16px rgb(0 0 0 / 0.10), 0 1px 4px rgb(0 0 0 / 0.06)',
           border: '1px solid var(--gray-200)'
         }}
       >

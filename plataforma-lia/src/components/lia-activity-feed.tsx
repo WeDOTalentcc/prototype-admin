@@ -62,7 +62,6 @@ export function LIAActivityFeed() {
         }))
         setActivities(parsed)
       } catch (error) {
-        console.error('Erro ao carregar atividades:', error)
         loadMockActivities()
       }
     } else {

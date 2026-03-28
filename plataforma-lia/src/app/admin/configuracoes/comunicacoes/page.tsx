@@ -153,7 +153,6 @@ export default function AdminComunicacoesPage() {
       const templates = (data.items || []).map(mapApiTemplateToLocal)
       setSystemTemplates(templates)
     } catch (err) {
-      console.error('Error fetching templates:', err)
       showError(err instanceof Error ? err.message : 'Erro ao carregar templates')
     } finally {
       setTemplatesLoading(false)
@@ -170,7 +169,7 @@ export default function AdminComunicacoesPage() {
     for (const automation of seedAutomations) {
       try {
         await fetch('/api/backend-proxy/automations?company_id=admin_company', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(automation) })
-      } catch (err) { console.error('Error seeding automation:', err) }
+      } catch (err) { }
     }
   }, [])
 
@@ -182,7 +181,6 @@ export default function AdminComunicacoesPage() {
       const data = await response.json()
       setAutomations((data.data?.automations || []).map(mapApiAutomationToLocal))
     } catch (err) {
-      console.error('Error fetching automations:', err)
       setAutomations([])
     } finally {
       setAutomationsLoading(false)
@@ -225,7 +223,6 @@ export default function AdminComunicacoesPage() {
       setCommunicationLogs((responseData.communications || []).map(mapApiCommunicationToLocal))
       setHistoryTotal(responseData.total || 0)
     } catch (err) {
-      console.error('Error fetching communication history:', err)
       setCommunicationLogs([])
       setHistoryTotal(0)
     } finally {
@@ -241,7 +238,6 @@ export default function AdminComunicacoesPage() {
       const data = await response.json()
       setWebhooks((data.webhooks || data.data?.webhooks || []).map(mapApiWebhookToLocal))
     } catch (err) {
-      console.error('Error fetching webhooks:', err)
       setWebhooks([])
     } finally {
       setWebhooksLoading(false)
@@ -255,7 +251,7 @@ export default function AdminComunicacoesPage() {
         const data = await response.json()
         setAvailableEvents(data.events || [])
       }
-    } catch (err) { console.error('Error fetching available events:', err) }
+    } catch (err) { }
   }, [])
 
   const fetchWebhookLogs = useCallback(async (webhookId: string) => {
@@ -267,7 +263,6 @@ export default function AdminComunicacoesPage() {
         setWebhookLogs(data.logs || data.data?.logs || [])
       }
     } catch (err) {
-      console.error('Error fetching webhook logs:', err)
       setWebhookLogs([])
     } finally {
       setWebhookLogsLoading(false)
@@ -282,7 +277,6 @@ export default function AdminComunicacoesPage() {
       const data = await response.json()
       setPolicies((data.data?.policies || []).map(mapApiPolicyToLocal))
     } catch (err) {
-      console.error('Error fetching policies:', err)
       setPolicies([])
     } finally {
       setPoliciesLoading(false)
@@ -297,7 +291,7 @@ export default function AdminComunicacoesPage() {
         setPolicyTypes(data.types || [])
         setPolicyScopes(data.scopes || [])
       }
-    } catch (err) { console.error('Error fetching policy types:', err) }
+    } catch (err) { }
   }, [])
 
   const fetchTechnicalAlerts = useCallback(async () => {
@@ -310,7 +304,6 @@ export default function AdminComunicacoesPage() {
         setTechnicalAlertsHasChanges(false)
       }
     } catch (err) {
-      console.error('Error fetching technical alerts:', err)
     } finally {
       setTechnicalAlertsLoading(false)
     }
@@ -375,7 +368,6 @@ export default function AdminComunicacoesPage() {
         setMatrixModules(modules)
       }
     } catch (err) {
-      console.error('Error fetching matrix entries:', err)
     } finally {
       setMatrixLoading(false)
     }
@@ -398,7 +390,6 @@ export default function AdminComunicacoesPage() {
         }
       }
     } catch (err) {
-      console.error('Error updating matrix entry:', err)
     } finally {
       setUpdatingMatrixEntry(null)
     }

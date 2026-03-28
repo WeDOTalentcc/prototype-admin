@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("Backend error:", response.status, errorText)
       return NextResponse.json(
         { error: "Backend error", details: errorText },
         { status: response.status }
@@ -27,7 +26,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error analyzing candidates:", error)
     return NextResponse.json(
       { error: "Failed to analyze candidates" },
       { status: 500 }

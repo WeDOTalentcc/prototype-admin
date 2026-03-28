@@ -114,7 +114,6 @@ export default function PortalTitularPage() {
       setRequests(requestsData.requests)
       setTotalRequests(requestsData.total)
     } catch (error) {
-      console.error('Error loading data:', error)
     } finally {
       setLoading(false)
     }
@@ -223,7 +222,6 @@ export default function PortalTitularPage() {
       await dataSubjectRequestsService.verifyIdentity(request.id)
       loadData()
     } catch (error) {
-      console.error('Error verifying identity:', error)
     }
   }
 
@@ -232,7 +230,6 @@ export default function PortalTitularPage() {
       await dataSubjectRequestsService.processRequest(request.id)
       loadData()
     } catch (error) {
-      console.error('Error processing request:', error)
     }
   }
 
@@ -261,7 +258,6 @@ export default function PortalTitularPage() {
       setActionModalOpen(false)
       loadData()
     } catch (error) {
-      console.error('Error submitting action:', error)
     } finally {
       setActionLoading(false)
     }

@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`, data)
       return NextResponse.json(
         { 
           success: false,
@@ -50,7 +49,6 @@ export async function GET(request: NextRequest) {
       ...data
     })
   } catch (error) {
-    console.error('Communication history proxy error:', error)
     return NextResponse.json(
       { 
         success: false,

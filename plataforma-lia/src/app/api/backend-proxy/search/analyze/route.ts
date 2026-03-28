@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao analisar resultados de busca', details: errorData },
@@ -24,7 +23,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Search analyze proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to analyze search results' },
       { status: 500 }

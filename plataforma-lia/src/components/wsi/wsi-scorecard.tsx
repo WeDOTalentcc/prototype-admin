@@ -76,7 +76,6 @@ export function WSIScorecard({
       const data = await liaApi.wsiGetCandidateResults(candidateId)
       setResults(data)
     } catch (err) {
-      console.error('Failed to load WSI results:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar resultados')
     } finally {
       setLoading(false)

@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
         )
       }
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`[Orchestrator Job Chat] Backend ${response.status}: ${JSON.stringify(errorData).slice(0, 200)}`)
       }
       return NextResponse.json(
         { error: 'Erro ao processar chat da vaga', details: errorData },
@@ -36,7 +35,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[Orchestrator Job Chat] Proxy error:', (error as Error)?.message || error)
     }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
@@ -59,7 +57,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ intents: [] }, { status: 200 })
       }
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`[Orchestrator Job Chat] Intents ${response.status}`)
       }
       return NextResponse.json(
         { error: 'Erro ao buscar intents do job chat' },
@@ -71,7 +68,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[Orchestrator Job Chat] Intents proxy error:', (error as Error)?.message || error)
     }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },

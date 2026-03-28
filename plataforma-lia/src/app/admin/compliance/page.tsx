@@ -126,7 +126,6 @@ async function fetchAlerts(): Promise<Alert[]> {
       status: item.status || 'pending'
     }))
   } catch (error) {
-    console.error('Error fetching alerts:', error)
     return []
   }
 }
@@ -158,7 +157,6 @@ export default function ComplianceDashboardPage() {
       if (lgpdData) setLgpdStats(lgpdData)
       setAlerts(alertsData)
     } catch (err) {
-      console.error('Error fetching compliance data:', err)
       toast.error('Erro ao carregar dados de compliance')
     } finally {
       setIsRefreshing(false)

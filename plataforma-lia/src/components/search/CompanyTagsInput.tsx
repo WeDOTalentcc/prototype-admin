@@ -179,7 +179,6 @@ export function CompanyTagsInput({
     } catch (error) {
       if ((error as Error).name === 'AbortError') return
       if (currentRequestId !== requestIdRef.current) return
-      console.error('Error fetching AI suggestions:', error)
       setAiError('Error fetching AI suggestions')
     } finally {
       if (currentRequestId === requestIdRef.current) {
@@ -257,7 +256,6 @@ export function CompanyTagsInput({
     } catch (error) {
       if ((error as Error).name === 'AbortError') return
       if (currentRequestId !== requestIdRef.current) return
-      console.error('Error fetching AI suggestions:', error)
       addTag({ name: query, highConfidence: false })
     } finally {
       if (currentRequestId === requestIdRef.current) {

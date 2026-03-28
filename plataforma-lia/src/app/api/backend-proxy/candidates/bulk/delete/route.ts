@@ -18,7 +18,6 @@ export async function DELETE(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('Bulk delete error:', errorData)
       return NextResponse.json(
         { error: 'Erro ao excluir candidatos', details: errorData },
         { status: response.status }
@@ -28,7 +27,6 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Bulk delete proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

@@ -31,12 +31,10 @@ const fetcher = async (url: string): Promise<CandidateDataRequestsResponse> => {
   try {
     const res = await fetch(url)
     if (!res.ok) {
-      console.warn(`Failed to fetch data requests: ${res.status}`)
       return { requests: [], activeRequest: null, hasActiveRequest: false }
     }
     return res.json()
   } catch (e) {
-    console.warn("Failed to fetch data requests:", e)
     return { requests: [], activeRequest: null, hasActiveRequest: false }
   }
 }
@@ -93,10 +91,8 @@ export function useCandidateDataRequests({
         mutate()
         return true
       }
-      console.error("Failed to resend data request:", res.status)
       return false
     } catch (e) {
-      console.error("Failed to resend data request:", e)
       return false
     }
   }
@@ -111,10 +107,8 @@ export function useCandidateDataRequests({
         mutate()
         return true
       }
-      console.error("Failed to cancel data request:", res.status)
       return false
     } catch (e) {
-      console.error("Failed to cancel data request:", e)
       return false
     }
   }
@@ -209,12 +203,10 @@ const bulkFetcher = async (url: string): Promise<BulkCandidateDataRequestsRespon
   try {
     const res = await fetch(url)
     if (!res.ok) {
-      console.warn(`Failed to fetch bulk data requests: ${res.status}`)
       return { items: [], byCandidate: {} }
     }
     return res.json()
   } catch (e) {
-    console.warn("Failed to fetch bulk data requests:", e)
     return { items: [], byCandidate: {} }
   }
 }

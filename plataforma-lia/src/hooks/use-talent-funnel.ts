@@ -92,7 +92,6 @@ async function toggleFavoriteAPI(candidateId: string, note?: string, isPinned?: 
     })
     return response.ok
   } catch (error) {
-    console.error('Error toggling favorite via API:', error)
     return false
   }
 }
@@ -106,7 +105,6 @@ async function updateFavoriteAPI(candidateId: string, note?: string, isPinned?: 
     })
     return response.ok
   } catch (error) {
-    console.error('Error updating favorite via API:', error)
     return false
   }
 }
@@ -162,7 +160,6 @@ export function useTalentFunnel() {
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar dados do Funnel:', error)
     } finally {
       setIsLoading(false)
     }
@@ -189,7 +186,6 @@ export function useTalentFunnel() {
       const items = result.candidates || (result as any).items || []
       setFavoriteCandidatesData(items)
     } catch (error) {
-      console.error('Error fetching favorite candidates data:', error)
     } finally {
       setFavoritesDataLoading(false)
     }
@@ -360,7 +356,6 @@ export function useTalentFunnel() {
     })
     
     toggleFavoriteAPI(candidateId, note).catch(err => {
-      console.error('Failed to persist favorite toggle:', err)
     })
   }, [])
 
@@ -382,11 +377,9 @@ export function useTalentFunnel() {
       
       if (existing) {
         updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch(err => {
-          console.error('Failed to persist pinned status:', err)
         })
       } else {
         toggleFavoriteAPI(candidateId, undefined, true).catch(err => {
-          console.error('Failed to persist pinned status:', err)
         })
       }
       
@@ -403,7 +396,6 @@ export function useTalentFunnel() {
         localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
         
         updateFavoriteAPI(candidateId, note, existing.isPinned).catch(err => {
-          console.error('Failed to persist favorite note:', err)
         })
       }
       return updated

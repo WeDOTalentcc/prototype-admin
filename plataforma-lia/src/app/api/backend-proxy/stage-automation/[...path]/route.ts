@@ -48,7 +48,6 @@ async function proxyRequest(
       })
     }
   } catch (error) {
-    console.error(`Error proxying ${method} request to stage-automation:`, error)
     return NextResponse.json(
       { success: false, error: "Failed to proxy request to backend" },
       { status: 500 }

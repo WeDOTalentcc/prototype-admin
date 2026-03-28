@@ -140,7 +140,6 @@ class ClientsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching clients:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -163,7 +162,6 @@ class ClientsService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client:', error.message)
         if (error.status === 404) return null
         if (error.isAuthError || error.isForbidden) {
           throw error
@@ -208,7 +206,6 @@ class ClientsService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client users:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }

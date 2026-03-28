@@ -70,7 +70,6 @@ export function useProactiveAlerts({
       
       setLastCheck(new Date())
     } catch (err: any) {
-      console.error('Error checking proactive alerts:', err)
       setError(err.message || 'Erro ao verificar alertas')
     } finally {
       setIsLoading(false)

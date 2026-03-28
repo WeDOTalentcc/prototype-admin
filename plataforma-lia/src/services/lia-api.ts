@@ -283,12 +283,10 @@ class LIAApiClient {
         headers: this.getAuthHeaders(),
       })
       if (!response.ok) {
-        console.warn(`Failed to fetch departments: ${response.status}`)
         return []
       }
       return response.json()
     } catch (error) {
-      console.warn('Failed to fetch departments:', error)
       return []
     }
   }
@@ -303,12 +301,10 @@ class LIAApiClient {
         headers: this.getAuthHeaders(),
       })
       if (!response.ok) {
-        console.warn(`Failed to fetch benefits: ${response.status}`)
         return []
       }
       return response.json()
     } catch (error) {
-      console.warn('Failed to fetch benefits:', error)
       return []
     }
   }
@@ -325,12 +321,10 @@ class LIAApiClient {
         body: JSON.stringify(benefit)
       })
       if (!response.ok) {
-        console.warn(`Failed to create benefit: ${response.status}`)
         return null
       }
       return await response.json()
     } catch (error) {
-      console.warn('Failed to create benefit:', error)
       return null
     }
   }
@@ -434,7 +428,6 @@ class LIAApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: response.statusText }))
-      console.error('Orchestrator process error:', error)
       return {
         success: false,
         error: error.detail || 'Orchestrator process failed',
@@ -558,13 +551,11 @@ class LIAApiClient {
       })
       
       if (!response.ok) {
-        console.warn(`Salary benchmark endpoint not available (${response.status})`)
         return {}
       }
 
       return response.json()
     } catch (error) {
-      console.warn('Salary benchmark fetch failed:', error)
       return {}
     }
   }
@@ -585,7 +576,6 @@ class LIAApiClient {
       })
       
       if (!response.ok) {
-        console.warn(`Credit balance endpoint not available (${response.status}), using defaults`)
         return {
           available_credits: 10000,
           total_consumed: 0,
@@ -596,7 +586,6 @@ class LIAApiClient {
 
       return response.json()
     } catch (error) {
-      console.warn('Credit balance fetch failed, using defaults:', error)
       return {
         available_credits: 10000,
         total_consumed: 0,
@@ -917,7 +906,7 @@ class LIAApiClient {
           company_id: companyId,
           job_id: id,
           outcome_status: outcomeStatus,
-        }).catch(err => console.error('Non-blocking: Job outcome update failed:', err))
+        }).catch(() => {})
       }
     }
     
@@ -2051,7 +2040,6 @@ class LIAApiClient {
       })
       return await response.json()
     } catch (error) {
-      console.error('Error executing action:', error)
       return { success: false, error: String(error) }
     }
   }
@@ -2110,7 +2098,6 @@ class LIAApiClient {
       })
       return await response.json()
     } catch (error) {
-      console.error('Error screening candidate:', error)
       return { success: false, error: String(error) }
     }
   }
@@ -2136,7 +2123,6 @@ class LIAApiClient {
       })
       return await response.json()
     } catch (error) {
-      console.error('Error triggering event:', error)
       return { success: false, error: String(error) }
     }
   }
@@ -2218,13 +2204,11 @@ class LIAApiClient {
       })
       
       if (!response.ok) {
-        console.warn(`Job vacancy metrics endpoint not available (${response.status}), using defaults`)
         return this.getDefaultJobVacancyMetrics(jobId)
       }
       
       return response.json()
     } catch (error) {
-      console.warn('Job vacancy metrics fetch failed, using defaults:', error)
       return this.getDefaultJobVacancyMetrics(jobId)
     }
   }
@@ -2253,13 +2237,11 @@ class LIAApiClient {
       })
       
       if (!response.ok) {
-        console.warn(`Company users endpoint not available (${response.status}), using empty list`)
         return { users: [], total: 0 }
       }
       
       return response.json()
     } catch (error) {
-      console.warn('Company users fetch failed, using empty list:', error)
       return { users: [], total: 0 }
     }
   }
@@ -2448,12 +2430,10 @@ class LIAApiClient {
         body: JSON.stringify(criteria)
       })
       if (!response.ok) {
-        console.warn(`Failed to search previous vacancies: ${response.status}`)
         return { vacancies: [], total: 0 }
       }
       return response.json()
     } catch (error) {
-      console.warn('Failed to search previous vacancies:', error)
       return { vacancies: [], total: 0 }
     }
   }
@@ -2464,7 +2444,6 @@ class LIAApiClient {
         headers: this.getAuthHeaders()
       })
       if (!response.ok) {
-        console.warn(`Failed to get vacancy details: ${response.status}`)
         return null
       }
       const data = await response.json()
@@ -2502,7 +2481,6 @@ class LIAApiClient {
         manager_email: data.hiring_manager_email || data.manager_email || ''
       }
     } catch (error) {
-      console.warn('Failed to get vacancy details:', error)
       return null
     }
   }
@@ -2541,7 +2519,6 @@ class LIAApiClient {
         message: 'Vaga publicada com sucesso!'
       }
     } catch (error) {
-      console.error('Failed to publish fast track vacancy:', error)
       return {
         success: false,
         message: 'Erro ao publicar a vaga. Tente novamente.'
@@ -2565,13 +2542,11 @@ class LIAApiClient {
       
       if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
-        console.error('Failed to record Fast Track usage:', error)
         return { success: false, error: error.detail }
       }
       
       return { success: true }
     } catch (error) {
-      console.error('Error recording Fast Track usage:', error)
       return { success: false, error: String(error) }
     }
   }
@@ -2592,13 +2567,11 @@ class LIAApiClient {
       
       if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
-        console.error('Failed to update job outcome:', error)
         return { success: false, error: error.detail }
       }
       
       return { success: true }
     } catch (error) {
-      console.error('Error updating job outcome:', error)
       return { success: false, error: String(error) }
     }
   }
@@ -2624,12 +2597,10 @@ class LIAApiClient {
         { headers: this.getAuthHeaders() }
       )
       if (!response.ok) {
-        console.warn(`getCandidates failed: ${response.status}`)
         return { candidates: [], total: 0, page: 1, per_page: params.limit ?? 20 }
       }
       return response.json()
     } catch (error) {
-      console.warn('getCandidates error:', error)
       return { candidates: [], total: 0, page: 1, per_page: params.limit ?? 20 }
     }
   }
@@ -4159,7 +4130,6 @@ export async function interpretMessage(request: InterpretMessageRequest): Promis
     })
 
     if (!response.ok) {
-      console.error('Interpret message failed:', response.status)
       return {
         action: 'other',
         confidence: 0.5,
@@ -4171,7 +4141,6 @@ export async function interpretMessage(request: InterpretMessageRequest): Promis
 
     return await response.json()
   } catch (error) {
-    console.error('Error interpreting message:', error)
     return {
       action: 'other',
       confidence: 0.5,
@@ -4206,7 +4175,6 @@ export async function getConversationalResponse(request: ConversationalRequest):
     })
 
     if (!response.ok) {
-      console.error('Conversational response failed:', response.status)
       return {
         response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
         understood_intent: "fallback",
@@ -4216,7 +4184,6 @@ export async function getConversationalResponse(request: ConversationalRequest):
 
     return await response.json()
   } catch (error) {
-    console.error('Error getting conversational response:', error)
     return {
       response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
       understood_intent: "fallback",
@@ -4275,11 +4242,6 @@ export interface WizardOrchestratorResponse {
 
 export async function orchestrateWizardMessage(request: WizardOrchestratorRequest): Promise<WizardOrchestratorResponse> {
   try {
-    console.log('[SmartOrchestrate] Calling /api/v1/wizard/smart-orchestrate with:', {
-      message: request.message,
-      current_stage: request.current_stage,
-      has_collected_data: Object.keys(request.collected_data).length > 0
-    })
     
     const response = await fetch(`${BACKEND_URL}/wizard/smart-orchestrate/`, {
       method: 'POST',
@@ -4298,7 +4260,6 @@ export async function orchestrateWizardMessage(request: WizardOrchestratorReques
     })
 
     if (!response.ok) {
-      console.error('[SmartOrchestrate] Request failed:', response.status)
       return {
         success: false,
         lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
@@ -4312,20 +4273,9 @@ export async function orchestrateWizardMessage(request: WizardOrchestratorReques
     }
 
     const result = await response.json()
-    console.log('[SmartOrchestrate] Response received:', {
-      success: result.success,
-      next_stage: result.next_stage,
-      auto_transition: result.auto_transition,
-      awaiting_confirmation: result.awaiting_confirmation,
-      job_vacancy_id: result.job_vacancy_id,
-      job_published: result.job_published,
-      confidence: result.confidence,
-      detected_criteria_count: result.detected_criteria ? Object.keys(result.detected_criteria).length : 0
-    })
     
     return result
   } catch (error) {
-    console.error('[SmartOrchestrate] Error:', error)
     return {
       success: false,
       lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
@@ -4382,12 +4332,10 @@ export async function submitThumbsFeedback(
       })
     })
     if (!response.ok) {
-      console.warn('Thumbs feedback submission failed:', response.status)
       return { feedback_id: '', status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Thumbs feedback error:', error)
     return { feedback_id: '', status: 'error' }
   }
 }
@@ -4412,12 +4360,10 @@ export async function submitRatingFeedback(
       })
     })
     if (!response.ok) {
-      console.warn('Rating feedback submission failed:', response.status)
       return { feedback_id: '', status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Rating feedback error:', error)
     return { feedback_id: '', status: 'error' }
   }
 }
@@ -4440,12 +4386,10 @@ export async function submitCorrectionFeedback(
       })
     })
     if (!response.ok) {
-      console.warn('Correction feedback submission failed:', response.status)
       return { feedback_id: '', status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Correction feedback error:', error)
     return { feedback_id: '', status: 'error' }
   }
 }
@@ -4457,12 +4401,10 @@ export async function getFeedbackMetrics(days?: number): Promise<FeedbackMetrics
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Feedback metrics fetch failed:', response.status)
       return { satisfaction_rate: 0, total_feedback: 0, rating_average: 0 }
     }
     return response.json()
   } catch (error) {
-    console.warn('Feedback metrics error:', error)
     return { satisfaction_rate: 0, total_feedback: 0, rating_average: 0 }
   }
 }
@@ -4504,12 +4446,10 @@ export async function transcribeAudio(
       body: formData
     })
     if (!response.ok) {
-      console.warn('Audio transcription failed:', response.status)
       return { text: '', confidence: 0, duration: 0 }
     }
     return response.json()
   } catch (error) {
-    console.warn('Audio transcription error:', error)
     return { text: '', confidence: 0, duration: 0 }
   }
 }
@@ -4525,12 +4465,10 @@ export async function synthesizeSpeech(
       body: JSON.stringify({ text, voice })
     })
     if (!response.ok) {
-      console.warn('Speech synthesis failed:', response.status)
       return new Blob()
     }
     return response.blob()
   } catch (error) {
-    console.warn('Speech synthesis error:', error)
     return new Blob()
   }
 }
@@ -4549,7 +4487,6 @@ export async function voiceChat(
       body: formData
     })
     if (!response.ok) {
-      console.warn('Voice chat failed:', response.status)
       return {
         transcription: '',
         response_text: 'Desculpe, não consegui processar o áudio.',
@@ -4559,7 +4496,6 @@ export async function voiceChat(
     }
     return response.json()
   } catch (error) {
-    console.warn('Voice chat error:', error)
     return {
       transcription: '',
       response_text: 'Desculpe, ocorreu um erro ao processar o áudio.',
@@ -4575,12 +4511,10 @@ export async function getVoiceStatus(): Promise<VoiceStatusResponse> {
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Voice status fetch failed:', response.status)
       return { transcription_available: false, synthesis_available: false }
     }
     return response.json()
   } catch (error) {
-    console.warn('Voice status error:', error)
     return { transcription_available: false, synthesis_available: false }
   }
 }
@@ -4630,12 +4564,10 @@ export async function analyzeImage(
       body: formData
     })
     if (!response.ok) {
-      console.warn('Image analysis failed:', response.status)
       return { analysis: '', confidence: 0 }
     }
     return response.json()
   } catch (error) {
-    console.warn('Image analysis error:', error)
     return { analysis: '', confidence: 0 }
   }
 }
@@ -4654,12 +4586,10 @@ export async function analyzeDocument(
       body: formData
     })
     if (!response.ok) {
-      console.warn('Document analysis failed:', response.status)
       return { text_content: '', structure: {}, formatting_quality: 0 }
     }
     return response.json()
   } catch (error) {
-    console.warn('Document analysis error:', error)
     return { text_content: '', structure: {}, formatting_quality: 0 }
   }
 }
@@ -4674,7 +4604,6 @@ export async function analyzeResume(file: File): Promise<ResumeAnalysisResponse>
       body: formData
     })
     if (!response.ok) {
-      console.warn('Resume analysis failed:', response.status)
       return {
         candidate_name: '',
         contact_info: {},
@@ -4684,7 +4613,6 @@ export async function analyzeResume(file: File): Promise<ResumeAnalysisResponse>
     }
     return response.json()
   } catch (error) {
-    console.warn('Resume analysis error:', error)
     return {
       candidate_name: '',
       contact_info: {},
@@ -4700,12 +4628,10 @@ export async function getMultimodalStatus(): Promise<MultimodalStatusResponse> {
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Multimodal status fetch failed:', response.status)
       return { image_analysis: false, video_analysis: false, document_analysis: false }
     }
     return response.json()
   } catch (error) {
-    console.warn('Multimodal status error:', error)
     return { image_analysis: false, video_analysis: false, document_analysis: false }
   }
 }
@@ -4764,12 +4690,10 @@ export async function createBackgroundJob(
       })
     })
     if (!response.ok) {
-      console.warn('Background job creation failed:', response.status)
       return { job_id: '', status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Background job creation error:', error)
     return { job_id: '', status: 'error' }
   }
 }
@@ -4788,12 +4712,10 @@ export async function listBackgroundJobs(
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Background jobs list failed:', response.status)
       return []
     }
     return response.json()
   } catch (error) {
-    console.warn('Background jobs list error:', error)
     return []
   }
 }
@@ -4805,12 +4727,10 @@ export async function executeJob(jobId: string): Promise<ExecuteJobResponse> {
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Job execution failed:', response.status)
       return { status: 'error', result: {} }
     }
     return response.json()
   } catch (error) {
-    console.warn('Job execution error:', error)
     return { status: 'error', result: {} }
   }
 }
@@ -4829,12 +4749,10 @@ export async function getProactiveActions(
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Proactive actions fetch failed:', response.status)
       return []
     }
     return response.json()
   } catch (error) {
-    console.warn('Proactive actions error:', error)
     return []
   }
 }
@@ -4846,12 +4764,10 @@ export async function acceptProactiveAction(actionId: string): Promise<ActionRes
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Action accept failed:', response.status)
       return { status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Action accept error:', error)
     return { status: 'error' }
   }
 }
@@ -4863,12 +4779,10 @@ export async function rejectProactiveAction(actionId: string): Promise<ActionRes
       headers: { 'Content-Type': 'application/json' }
     })
     if (!response.ok) {
-      console.warn('Action reject failed:', response.status)
       return { status: 'error' }
     }
     return response.json()
   } catch (error) {
-    console.warn('Action reject error:', error)
     return { status: 'error' }
   }
 }
@@ -4915,7 +4829,6 @@ export async function regenerateWSIQuestions(
     })
     
     if (!response.ok) {
-      console.error('WSI regeneration failed:', response.status)
       return {
         success: false,
         questions: request.current_questions,
@@ -4927,7 +4840,6 @@ export async function regenerateWSIQuestions(
     
     return response.json()
   } catch (error) {
-    console.error('WSI regeneration error:', error)
     return {
       success: false,
       questions: request.current_questions,

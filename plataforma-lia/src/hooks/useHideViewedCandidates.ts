@@ -129,11 +129,9 @@ export function useHideViewedCandidates({
         setViewedCandidateIds(data.candidate_ids || [])
         setLastFetchParams(fetchParams)
       } else {
-        console.error('Failed to fetch viewed candidates')
         setViewedCandidateIds([])
       }
     } catch (error) {
-      console.error('Error fetching viewed candidates:', error)
       setViewedCandidateIds([])
     } finally {
       setIsLoading(false)

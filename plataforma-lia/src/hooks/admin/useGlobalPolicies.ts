@@ -59,7 +59,6 @@ export function useGlobalPolicies(initialCategory?: string): UseGlobalPoliciesRe
         setHistory(response.history)
       }
     } catch (err) {
-      console.error('Error fetching policy history:', err)
     }
   }, [])
 
@@ -68,7 +67,6 @@ export function useGlobalPolicies(initialCategory?: string): UseGlobalPoliciesRe
       const response = await policiesService.getCategories()
       setCategories(response.categories)
     } catch (err) {
-      console.error('Error fetching categories:', err)
     }
   }, [])
 

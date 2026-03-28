@@ -23,7 +23,6 @@ export async function GET(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Interview notes proxy error (GET):', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }
@@ -57,7 +56,6 @@ export async function PATCH(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Interview notes proxy error (PATCH):', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }

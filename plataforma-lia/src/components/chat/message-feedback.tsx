@@ -40,7 +40,6 @@ export function MessageFeedback({
       await submitThumbsFeedback(sessionId, messageId, value)
       onFeedbackSubmitted?.('thumbs')
     } catch (error) {
-      console.warn('Failed to submit thumbs feedback:', error)
     }
   }
 
@@ -52,7 +51,6 @@ export function MessageFeedback({
       onFeedbackSubmitted?.('rating')
       setTimeout(() => setRatingPopoverOpen(false), 500)
     } catch (error) {
-      console.warn('Failed to submit rating feedback:', error)
     }
   }
 
@@ -65,7 +63,6 @@ export function MessageFeedback({
       onFeedbackSubmitted?.('correction')
       setTimeout(() => setCorrectionPopoverOpen(false), 1000)
     } catch (error) {
-      console.warn('Failed to submit correction feedback:', error)
     } finally {
       setIsSubmitting(false)
     }

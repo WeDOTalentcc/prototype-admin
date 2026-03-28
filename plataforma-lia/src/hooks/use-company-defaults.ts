@@ -86,7 +86,6 @@ export function useCompanyDefaults(): UseCompanyDefaultsResult {
 
       setDefaults({ workModel, employmentTypes, defaultLanguages, benefits })
     } catch (err) {
-      console.error('Error fetching company defaults:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar padrões da empresa')
     } finally {
       setIsLoading(false)

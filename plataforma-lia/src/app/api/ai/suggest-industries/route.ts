@@ -75,12 +75,10 @@ Focus on practical, recognized industry names that LinkedIn and job platforms us
         return NextResponse.json({ suggestions: filteredSuggestions })
       }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
     }
 
     return NextResponse.json({ suggestions: [] })
   } catch (error) {
-    console.error('Error suggesting industries:', error)
     return NextResponse.json(
       { error: 'Failed to generate suggestions' },
       { status: 500 }

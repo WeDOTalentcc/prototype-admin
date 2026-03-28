@@ -172,7 +172,6 @@ export function CultureAnalyzer({
         }
       }
     } catch (error) {
-      console.error("Error fetching culture profile:", error)
     }
     return null
   }, [companyId, onAnalysisComplete])
@@ -202,7 +201,6 @@ export function CultureAnalyzer({
         setShowErrorDialog(true)
       }
     } catch (error) {
-      console.error("Error polling job status:", error)
     }
   }, [jobId, stopPolling, fetchCultureProfile])
 
@@ -302,7 +300,6 @@ export function CultureAnalyzer({
       onAnalysisComplete(profile)
       setStatus("completed")
     } catch (error) {
-      console.error("Error in culture analysis:", error)
       isAnalyzingRef.current = false
       setStatus("failed")
       setErrorMessage(error instanceof Error ? error.message : "Erro ao analisar cultura. Tente novamente.")
@@ -339,7 +336,6 @@ export function CultureAnalyzer({
         onAnalysisComplete(updatedProfile)
       }
     } catch (error) {
-      console.error("Error saving adjustments:", error)
     }
   }
 

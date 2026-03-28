@@ -82,7 +82,6 @@ export function useCompanyBenefits({
       setBenefits(benefitsList)
       setLastFetched(new Date())
     } catch (err: any) {
-      console.error('Error fetching benefits:', err)
       setError(err.message || 'Erro ao carregar benefícios')
     } finally {
       setIsLoading(false)

@@ -110,7 +110,6 @@ export async function getDashboardSummary(startDate?: Date, endDate?: Date): Pro
     }
   } catch (error) {
     if (error instanceof ApiClientError) {
-      console.error('Error fetching dashboard summary:', error.message)
       if (error.isAuthError || error.isForbidden) {
         throw error
       }

@@ -93,7 +93,7 @@ export function InputEvaluationStage() {
                     : "bg-white"
                 )}
                 style={{ 
-                  boxShadow: isDetected ? '0 1px 3px rgba(34,197,94,0.12)' : '0 1px 2px rgba(0,0,0,0.04)'
+                  boxShadow: isDetected ? '0 1px 3px rgb(34 197 94 / 0.12)' : '0 1px 2px rgb(0 0 0 / 0.04)'
                 }}
               >
                 <div 

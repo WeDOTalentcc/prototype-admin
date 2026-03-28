@@ -114,7 +114,6 @@ export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompa
       
       setCatalog(transformedCatalog)
     } catch (err) {
-      console.error('Error fetching company skills catalog:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setCatalog(null)
     } finally {
@@ -166,7 +165,6 @@ export function useSkillSuggestions(jobTitle: string, seniority: string): UseSki
         const data = await response.json()
         setSuggestions(data.suggestions || [])
       } catch (err) {
-        console.error('Error fetching skill suggestions:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
         setSuggestions([])
       } finally {

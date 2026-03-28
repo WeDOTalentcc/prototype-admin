@@ -40,7 +40,6 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
         const commands = JSON.parse(savedCommands)
         setUserCommands(commands)
       } catch (error) {
-        console.error('Erro ao carregar comandos do usuário:', error)
       }
     } else {
       // Mock data inicial

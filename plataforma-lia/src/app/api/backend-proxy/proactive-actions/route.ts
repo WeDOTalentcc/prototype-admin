@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Proactive actions proxy error:", error)
     return NextResponse.json(
       { success: false, error: "Failed to fetch proactive actions" },
       { status: 500 }
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Proactive actions proxy error:", error)
     return NextResponse.json(
       { success: false, error: "Failed to process proactive action" },
       { status: 500 }

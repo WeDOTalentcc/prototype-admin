@@ -89,12 +89,10 @@ Focus on well-known companies. Include both global and Brazilian companies when 
         return NextResponse.json({ suggestions: filteredSuggestions.slice(0, 12) })
       }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
     }
 
     return NextResponse.json({ suggestions: [] })
   } catch (error) {
-    console.error('Error suggesting similar companies:', error)
     return NextResponse.json(
       { error: 'Failed to generate suggestions' },
       { status: 500 }

@@ -60,7 +60,6 @@ export function useCompanyEligibilityQuestions(): UseCompanyEligibilityQuestions
       )
       setQuestions(activeQuestions)
     } catch (err) {
-      console.error('Error fetching company eligibility questions:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setQuestions([])
     } finally {

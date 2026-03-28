@@ -106,7 +106,6 @@ export default function CandidateProfilePage() {
           }
         } catch (e) {
           // Fail gracefully if endpoint doesn't exist
-          console.log('Could not fetch favorite status:', e)
         }
         
         try {
@@ -122,10 +121,8 @@ export default function CandidateProfilePage() {
           }
         } catch (e) {
           // Fail gracefully if endpoint doesn't exist
-          console.log('Could not fetch hidden status:', e)
         }
       } catch (err) {
-        console.error("Error loading candidate:", err)
         setError("Não foi possível carregar o perfil do candidato")
       } finally {
         setLoading(false)
@@ -145,7 +142,6 @@ export default function CandidateProfilePage() {
         setOpinionsData(data)
       }
     } catch (error) {
-      console.error('Error fetching opinions:', error)
     } finally {
       setIsLoadingOpinions(false)
     }
@@ -160,7 +156,6 @@ export default function CandidateProfilePage() {
         setOpinionsHistory(data)
       }
     } catch (error) {
-      console.error('Error fetching opinions history:', error)
     }
   }, [candidateId])
 
@@ -177,7 +172,6 @@ export default function CandidateProfilePage() {
         })
       }
     } catch (error) {
-      console.error('Error fetching analyses:', error)
     } finally {
       setIsLoadingAnalyses(false)
     }
@@ -196,7 +190,6 @@ export default function CandidateProfilePage() {
         setFileCategories(data.categories || [])
       }
     } catch (error) {
-      console.error('Error fetching files:', error)
     } finally {
       setIsLoadingFiles(false)
     }
@@ -251,7 +244,6 @@ export default function CandidateProfilePage() {
         }
       } catch (error) {
         errorCount++
-        console.error('Upload error:', error)
       }
       
       setUploadProgress(Math.round(((i + 1) / files.length) * 100))
@@ -293,7 +285,6 @@ export default function CandidateProfilePage() {
         })
       }
     } catch (error) {
-      console.error('Delete error:', error)
       toast({
         title: "Erro",
         description: "Erro ao excluir arquivo",
@@ -344,7 +335,6 @@ export default function CandidateProfilePage() {
           setActivities(Array.isArray(data) ? data : data?.activities || [])
         }
       } catch (error) {
-        console.log('Could not fetch activities:', error)
       } finally {
         setIsLoadingActivities(false)
       }
@@ -536,7 +526,6 @@ export default function CandidateProfilePage() {
         description: `${candidate.name} foi ${isFavorite ? 'removido dos' : 'adicionado aos'} favoritos`
       })
     } catch (error) {
-      console.error('Error toggling favorite:', error)
     }
   }
 
@@ -554,7 +543,6 @@ export default function CandidateProfilePage() {
         description: `${candidate.name} foi ${isHidden ? 'tornado visível' : 'ocultado'}`
       })
     } catch (error) {
-      console.error('Error hiding candidate:', error)
     }
   }
 

@@ -140,7 +140,6 @@ export function useInterpretContext() {
         return data
       }
     } catch (error) {
-      console.error('Error interpreting context:', error)
       const errorMessage: ChatMessage = {
         role: 'lia',
         content: 'Desculpe, não consegui processar sua mensagem. Tente novamente.',
@@ -167,7 +166,6 @@ export function useInterpretContext() {
         return data
       }
     } catch (error) {
-      console.error('Error interpreting context:', error)
     } finally {
       setIsLoading(false)
     }

@@ -150,7 +150,6 @@ export function JobPublishModal({
       )
       onClose()
     } catch (error) {
-      console.error('Error publishing jobs:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -181,7 +180,6 @@ export function JobPublishModal({
         }, 300)
       }
     } catch (error) {
-      console.error('Error unpublishing jobs:', error)
     } finally {
       setIsSubmitting(false)
     }

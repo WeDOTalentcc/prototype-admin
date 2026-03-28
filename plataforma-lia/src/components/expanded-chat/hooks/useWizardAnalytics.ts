@@ -94,7 +94,6 @@ export function useWizardAnalytics(companyId?: string, recruiterId?: string) {
   
   const startSession = useCallback(() => {
     if (!companyId || !recruiterId) {
-      console.warn('Cannot start analytics session without companyId and recruiterId')
       return null
     }
     

@@ -167,7 +167,6 @@ export function CandidatePreview({
         setOpinionsData(data)
       }
     } catch (error) {
-      console.error('Error fetching opinions:', error)
     } finally {
       setIsLoadingOpinions(false)
     }
@@ -183,7 +182,6 @@ export function CandidatePreview({
         setSavedAnalyses(data)
       }
     } catch (error) {
-      console.error('Error fetching saved analyses:', error)
     } finally {
       setIsLoadingAnalyses(false)
     }
@@ -208,7 +206,6 @@ export function CandidatePreview({
       }
       return false
     } catch (error) {
-      console.error('Error saving analysis:', error)
       return false
     }
   }
@@ -245,7 +242,6 @@ export function CandidatePreview({
         setOpinionsHistory(data)
       }
     } catch (error) {
-      console.error('Error fetching opinions history:', error)
     } finally {
       setIsLoadingHistory(false)
     }
@@ -317,7 +313,6 @@ export function CandidatePreview({
         throw new Error(data.error || 'Erro desconhecido')
       }
     } catch (error) {
-      console.error('Error sending message to LIA:', error)
       toast({
         title: "Erro ao enviar mensagem",
         description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente.",
@@ -412,7 +407,6 @@ export function CandidatePreview({
       
       if (!opinionResponse.ok) {
         const errorData = await opinionResponse.json().catch(() => ({}))
-        console.error('Opinion creation error:', errorData)
         throw new Error('Falha ao salvar parecer')
       }
       
@@ -425,7 +419,6 @@ export function CandidatePreview({
         description: "A LIA gerou um novo parecer para o candidato."
       })
     } catch (error) {
-      console.error('Error generating opinion:', error)
       toast({
         title: "Erro ao gerar parecer",
         description: "Não foi possível gerar o parecer. Tente novamente.",
@@ -468,7 +461,6 @@ export function CandidatePreview({
         }
       }
     } catch (error) {
-      console.error('Error checking existing opinion:', error)
     }
     
     await generateNewOpinion()
@@ -492,7 +484,6 @@ export function CandidatePreview({
         }
       }
     } catch (error) {
-      console.error('Error checking existing opinion:', error)
     }
     
     await generateNewOpinion()
@@ -714,7 +705,6 @@ export function CandidatePreview({
       setCopiedItemId(`opinion-${opinion.id}`)
       setTimeout(() => setCopiedItemId(null), 2000)
     } catch (error) {
-      console.error('Failed to copy:', error)
     }
   }
 
@@ -737,7 +727,6 @@ export function CandidatePreview({
       setCopiedItemId(`analysis-${analysis.id}`)
       setTimeout(() => setCopiedItemId(null), 2000)
     } catch (error) {
-      console.error('Failed to copy:', error)
     }
   }
 
@@ -764,7 +753,6 @@ export function CandidatePreview({
         description: "A análise foi removida com sucesso.",
       })
     } catch (error) {
-      console.error('Failed to delete analysis:', error)
       toast({
         title: "Erro ao remover",
         description: "Não foi possível remover a análise.",
@@ -1474,7 +1462,7 @@ export function CandidatePreview({
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {'badge' in tab && tab.badge > 0 && (
-                <Badge className="text-micro px-1 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Badge className="text-micro px-1 py-0 h-4 ml-1 bg-wedo-cyan/15">
                   {tab.badge}
                 </Badge>
               )}
@@ -1732,8 +1720,7 @@ export function CandidatePreview({
                           {softSkillsList.map((skill: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: 'var(--gray-800)' }}
+                              className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 text-gray-800"
                             >
                               {skill}
                             </Badge>
@@ -1759,10 +1746,9 @@ export function CandidatePreview({
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
                           {expertiseList.map((item: string, idx: number) => (
-                            <Badge 
-                              key={idx} 
-                              className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--gray-800)' }}
+                            <Badge
+                              key={idx}
+                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 text-gray-800"
                             >
                               {item}
                             </Badge>
@@ -1816,10 +1802,9 @@ export function CandidatePreview({
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
                           {tags.map((tag: string, idx: number) => (
-                            <Badge 
-                              key={idx} 
-                              className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--gray-800)' }}
+                            <Badge
+                              key={idx}
+                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 text-gray-800"
                             >
                               {tag}
                             </Badge>
@@ -2368,7 +2353,7 @@ export function CandidatePreview({
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Pareceres da LIA
                 {opinionsHistory.length > 0 && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
                     {opinionsHistory.length}
                   </Badge>
                 )}

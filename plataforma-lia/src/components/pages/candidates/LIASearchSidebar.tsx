@@ -930,7 +930,6 @@ export function LIASearchSidebar({
                         setChatMessages(prev => [...prev, liaMessage])
                       }
                     } catch (error) {
-                      console.error('Erro na busca por JD:', error)
                       const liaMessage: ChatMessage = {
                         id: `lia-jd-error-${Date.now()}`,
                         type: 'lia',
@@ -1141,7 +1140,6 @@ export function LIASearchSidebar({
                         setChatMessages(prev => [...prev, liaMessage])
                       }
                     } catch (error: any) {
-                      console.error('Erro na busca similar:', error)
                       const liaMessage: ChatMessage = {
                         id: `lia-similar-error-${Date.now()}`,
                         type: 'lia',

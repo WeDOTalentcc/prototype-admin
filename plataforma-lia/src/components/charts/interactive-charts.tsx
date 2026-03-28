@@ -75,12 +75,12 @@ const generateTimeSeriesData = (months: number, baseTrend: 'up' | 'down' | 'stab
 // Paleta monocromática — alinhada com design-tokens.css (--chart-1..4)
 // Série primária = mais escura, séries adicionais = opacidade decrescente
 const COLORS = [
-  'rgba(3,7,18,1.00)',   // --chart-1: série principal
-  'rgba(3,7,18,0.60)',   // --chart-2
-  'rgba(3,7,18,0.35)',   // --chart-3
-  'rgba(3,7,18,0.15)',   // --chart-4
-  'rgba(3,7,18,0.50)',   // extra (fallback)
-  'rgba(3,7,18,0.25)',   // extra (fallback)
+  'rgb(3 7 18 / 1.00)',   // --chart-1: série principal
+  'rgb(3 7 18 / 0.60)',   // --chart-2
+  'rgb(3 7 18 / 0.35)',   // --chart-3
+  'rgb(3 7 18 / 0.15)',   // --chart-4
+  'rgb(3 7 18 / 0.50)',   // extra (fallback)
+  'rgb(3 7 18 / 0.25)',   // extra (fallback)
 ]
 
 interface InteractiveChartProps {
@@ -430,15 +430,14 @@ export function ConversionFunnelChart() {
   const [period, setPeriod] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
 
   const funnelData = [
-    { stage: 'Pipeline', count: 2847, percentage: 100, color: 'rgba(3,7,18,1.00)' },
-    { stage: 'Triagem', count: 1423, percentage: 50, color: 'rgba(3,7,18,0.75)' },
-    { stage: 'Entrevistas', count: 512, percentage: 18, color: 'rgba(3,7,18,0.55)' },
-    { stage: 'Ofertas', count: 127, percentage: 4.5, color: 'rgba(3,7,18,0.35)' },
+    { stage: 'Pipeline', count: 2847, percentage: 100, color: 'rgb(3 7 18 / 1.00)' },
+    { stage: 'Triagem', count: 1423, percentage: 50, color: 'rgb(3 7 18 / 0.75)' },
+    { stage: 'Entrevistas', count: 512, percentage: 18, color: 'rgb(3 7 18 / 0.55)' },
+    { stage: 'Ofertas', count: 127, percentage: 4.5, color: 'rgb(3 7 18 / 0.35)' },
     { stage: 'Contratações', count: 89, percentage: 3.1, color: 'var(--status-success)' }
   ]
 
   const handleDrillDown = (dataPoint: any) => {
-    console.log('Drill down para:', dataPoint)
     // Implementar navegação para detalhes
   }
 
@@ -464,10 +463,10 @@ export function RecruiterPerformanceChart() {
   const performanceData = generateTimeSeriesData(12, 'up')
 
   const metrics = [
-    { key: 'hires', label: 'Contratações', color: 'rgba(3,7,18,1.00)' },
-    { key: 'interviews', label: 'Entrevistas', color: 'rgba(3,7,18,0.60)' },
-    { key: 'timeToFill', label: 'Time to Fill', color: 'rgba(3,7,18,0.35)' },
-    { key: 'nps', label: 'NPS Score', color: 'rgba(3,7,18,0.15)' }
+    { key: 'hires', label: 'Contratações', color: 'rgb(3 7 18 / 1.00)' },
+    { key: 'interviews', label: 'Entrevistas', color: 'rgb(3 7 18 / 0.60)' },
+    { key: 'timeToFill', label: 'Time to Fill', color: 'rgb(3 7 18 / 0.35)' },
+    { key: 'nps', label: 'NPS Score', color: 'rgb(3 7 18 / 0.15)' }
   ]
 
   return (

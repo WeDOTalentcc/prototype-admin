@@ -269,7 +269,6 @@ export function JDEvaluationPanel({
         setAiTechSuggestions(filtered)
       }
     } catch (error) {
-      console.error("Failed to fetch AI tech suggestions, using fallback:", error)
       const filtered = FALLBACK_TECH_SKILLS
         .filter(s => !editTechSkills.includes(s))
         .map(s => ({ skill: s, confidence: 0.7 }))
@@ -306,7 +305,6 @@ export function JDEvaluationPanel({
         setAiBehavSuggestions(filtered)
       }
     } catch (error) {
-      console.error("Failed to fetch AI behav suggestions, using fallback:", error)
       const filtered = FALLBACK_BEHAV_COMPETENCIES
         .filter(c => !editBehavCompetencies.includes(c.name))
       setAiBehavSuggestions(filtered)
@@ -360,7 +358,6 @@ export function JDEvaluationPanel({
         })
       }
     } catch (error) {
-      console.error("Failed to generate JD:", error)
       setJdDynamicMessage('Erro ao gerar descrição. Tente novamente.')
     } finally {
       setIsGeneratingJD(false)
@@ -374,7 +371,6 @@ export function JDEvaluationPanel({
         setCopiedJD(true)
         setTimeout(() => setCopiedJD(false), 2000)
       } catch {
-        console.error("Failed to copy JD")
       }
     }
   }
@@ -412,7 +408,6 @@ export function JDEvaluationPanel({
         setEvaluation(data)
       }
     } catch (error) {
-      console.error("Failed to evaluate JD:", error)
       const respCount = evalResponsibilities.length
       const techCount = evalTechSkills.length
       const behavCount = evalBehavCompetencies.length
@@ -891,13 +886,13 @@ export function JDEvaluationPanel({
                     <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
 
                     {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
-                      <div className="border rounded-md p-3 space-y-3 dark:bg-gray-800/30" style={{ borderColor: 'rgba(96,190,209,0.2)', backgroundColor: 'rgba(96,190,209,0.02)' }}>
+                      <div className="border rounded-md p-3 space-y-3 dark:bg-gray-800/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
                         <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Inter', sans-serif" }}>
                           {enrichedJd.generated_jd_text || enrichedJd.description}
                         </p>
 
                         {enrichedJd.updated_at && (
-                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full" style={{ backgroundColor: "rgba(96,190,209,0.08)", fontFamily: "'Inter', sans-serif" }}>
+                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full bg-wedo-cyan/[.08]" style={{ fontFamily: "'Inter', sans-serif" }}>
                             Gerado em {new Date(enrichedJd.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
                           </span>
                         )}
@@ -921,7 +916,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.technical_skills.map((skill, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300" style={{ backgroundColor: "rgba(96,190,209,0.1)", fontFamily: "'Inter', sans-serif" }}>
+                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" style={{ fontFamily: "'Inter', sans-serif" }}>
                                   {skill}
                                 </span>
                               ))}
@@ -934,7 +929,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.behavioral_competencies.map((comp, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300" style={{ backgroundColor: "rgba(96,190,209,0.1)", fontFamily: "'Inter', sans-serif" }}>
+                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" style={{ fontFamily: "'Inter', sans-serif" }}>
                                   {comp}
                                 </span>
                               ))}
@@ -943,7 +938,7 @@ export function JDEvaluationPanel({
                         )}
                       </div>
                     ) : (
-                      <div className="border rounded-md p-3 dark:bg-gray-800/30" style={{ borderColor: 'rgba(96,190,209,0.15)', backgroundColor: 'rgba(96,190,209,0.02)' }}>
+                      <div className="border rounded-md p-3 dark:bg-gray-800/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
                         <div className="flex flex-col items-center justify-center py-6">
                           <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
                           <p className="text-xs text-gray-400 dark:text-gray-500 text-center leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -1023,8 +1018,7 @@ export function JDEvaluationPanel({
                           <button
                             onClick={fetchTechSuggestions}
                             disabled={isLoadingTechSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border transition-colors hover:opacity-80 disabled:opacity-50"
-                            style={{ borderColor: "rgba(96,190,209,0.4)", backgroundColor: "rgba(96,190,209,0.06)" }}
+                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors hover:opacity-80 disabled:opacity-50"
                           >
                             {isLoadingTechSuggestions ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
                             Sugerir com IA
@@ -1084,8 +1078,7 @@ export function JDEvaluationPanel({
                           <button
                             onClick={fetchBehavSuggestions}
                             disabled={isLoadingBehavSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border transition-colors hover:opacity-80 disabled:opacity-50"
-                            style={{ borderColor: "rgba(96,190,209,0.4)", backgroundColor: "rgba(96,190,209,0.06)" }}
+                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors hover:opacity-80 disabled:opacity-50"
                           >
                             {isLoadingBehavSuggestions ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
                             Sugerir com IA

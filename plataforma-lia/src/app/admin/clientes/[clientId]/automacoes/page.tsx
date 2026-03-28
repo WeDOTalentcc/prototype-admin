@@ -58,7 +58,6 @@ export default function ClientAutomacoesPage({
       const result = await response.json()
       setAutomations(result.data?.automations || [])
     } catch (err) {
-      console.error('Erro ao buscar automações:', err)
       setError('Erro ao carregar automações')
     } finally {
       setLoading(false)
@@ -86,7 +85,6 @@ export default function ClientAutomacoesPage({
         )
       )
     } catch (err) {
-      console.error('Erro ao alternar automação:', err)
     } finally {
       setTogglingId(null)
     }

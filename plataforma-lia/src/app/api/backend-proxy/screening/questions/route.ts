@@ -89,7 +89,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions generator endpoint not found, returning fallback')
       return NextResponse.json({
         ...FALLBACK_QUESTIONS,
         metadata: {
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao gerar perguntas de triagem', 
@@ -114,7 +112,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions generator proxy error:', error)
     return NextResponse.json(FALLBACK_QUESTIONS)
   }
 }

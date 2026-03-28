@@ -111,7 +111,7 @@ export function useKeyboardShortcuts({
   // Mostrar modal de ajuda com atalhos
   const showKeyboardShortcutsHelp = () => {
     const helpModal = document.createElement('div')
-    helpModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-[100]'
+    helpModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-toast'
     helpModal.innerHTML = `
       <div class="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full mx-4">
         <div class="flex items-center justify-between mb-4">

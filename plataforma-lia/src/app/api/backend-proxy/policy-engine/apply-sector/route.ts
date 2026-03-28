@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("[policy-engine/apply-sector] erro:", error)
     return NextResponse.json(
       { success: false, error: "Erro de conexão com o backend" },
       { status: 500 },

@@ -151,7 +151,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         }
       }
     } catch (err) {
-      console.error('Error fetching departments:', err)
       setDepartmentsLoaded(true)
     }
   }, [])
@@ -174,7 +173,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       }
       return null
     } catch (err) {
-      console.error('Error creating department in backend:', err)
       return null
     }
   }, [])
@@ -196,7 +194,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         setFetchedUsers(mappedUsers)
       }
     } catch (err) {
-      console.error('Error fetching company users:', err)
     }
   }, [])
 
@@ -228,7 +225,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         }
       }
     } catch (err) {
-      console.error('Error fetching workforce data:', err)
     }
   }, [])
 
@@ -276,7 +272,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
           }
         }
       } catch (err) {
-        console.error('Error fetching goals data:', err)
       } finally {
         setLoading(false)
       }
@@ -354,7 +349,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         return company.id || 'default'
       }
     } catch (e) {
-      console.error('Error fetching company:', e)
     }
     return 'default'
   }
@@ -381,7 +375,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       
       await refetchLiaConfig()
     } catch (err) {
-      console.error('Error saving LIA field toggle:', err)
       setError(err instanceof Error ? err.message : 'Erro ao salvar toggle')
       setTimeout(() => setError(null), 3000)
     }
@@ -411,7 +404,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       setSuccessMessage('Instrução salva com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
-      console.error('Error saving LIA instruction:', err)
       setError(err instanceof Error ? err.message : 'Erro ao salvar instrução')
       setTimeout(() => setError(null), 3000)
     }
@@ -543,7 +535,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         body: JSON.stringify({ name })
       })
     } catch (err) {
-      console.error('Error updating department name in backend:', err)
     }
   }
 

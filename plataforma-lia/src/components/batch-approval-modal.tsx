@@ -285,9 +285,7 @@ export function BatchApprovalModal({
           batch_url: window.location.href,
           total_processed: selectedCount
         })
-        console.log('✅ Notifications sent to integrated platforms')
       } catch (error) {
-        console.error('❌ Error sending notifications:', error)
       }
     }
   }

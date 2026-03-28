@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('[short-lists GET]', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
@@ -52,7 +51,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(await response.json(), { status: 201 })
   } catch (error) {
-    console.error('[short-lists POST]', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

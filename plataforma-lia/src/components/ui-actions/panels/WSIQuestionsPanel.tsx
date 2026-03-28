@@ -202,7 +202,7 @@ export function WSIQuestionsPanel({
   return (
     <div className="space-y-6">
       <Card 
-        className="border-2 border-dashed rounded-md dark:bg-gray-800 dark:border-gray-700 border-gray-400" style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
+        className="border-2 border-dashed rounded-md dark:bg-gray-800 dark:border-gray-700 border-gray-400 bg-gray-200/20"
       >
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">

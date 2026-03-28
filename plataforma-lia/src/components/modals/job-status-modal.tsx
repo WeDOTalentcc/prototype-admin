@@ -297,14 +297,12 @@ export function JobStatusModal({
               }
             }
           } catch (err) {
-            console.warn(`Error fetching candidates for job ${job.id}:`, err)
           }
         }
         
         setFetchedCandidates(allFetched)
         setSelectedCandidateIds(new Set(allFetched.map(c => c.id)))
       } catch (error) {
-        console.error('Error fetching candidates:', error)
       } finally {
         setLoadingCandidates(false)
       }
@@ -394,7 +392,6 @@ export function JobStatusModal({
         onClose()
       }
     } catch (error) {
-      console.error('Erro ao pausar:', error)
       toast.error('Erro ao processar. Tente novamente.')
     } finally {
       setIsSubmitting(false)
@@ -455,7 +452,6 @@ export function JobStatusModal({
         onClose()
       }
     } catch (error) {
-      console.error('Erro:', error)
       toast.error('Erro ao processar. Tente novamente.')
     } finally {
       setIsSubmitting(false)

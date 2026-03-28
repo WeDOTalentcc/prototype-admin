@@ -32,7 +32,6 @@ export async function POST(
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Empty field action error:', errorText)
       return NextResponse.json(
         { error: 'Failed to update field preference', details: errorText },
         { status: response.status }
@@ -42,7 +41,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Empty field action proxy error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

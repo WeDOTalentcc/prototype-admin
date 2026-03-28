@@ -137,7 +137,6 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
       handleClose()
       onJobCreated?.(jobId, jobTitle)
     } catch (error: any) {
-      console.error("[CreateJobModal] Failed to create job:", error)
       const detail = error?.message || "Erro desconhecido"
       toast.error(`Erro ao criar vaga: ${detail}`)
     } finally {

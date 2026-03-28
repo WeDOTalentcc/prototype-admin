@@ -106,7 +106,6 @@ export default function ClientSetupPage({
           setSections(data.data.sections)
         }
       } catch (err) {
-        console.error('Error fetching setup:', err)
         setError(err instanceof Error ? err.message : 'Erro ao carregar dados')
       } finally {
         setLoading(false)

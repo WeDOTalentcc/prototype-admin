@@ -17,7 +17,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job qualification get proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job qualification classify proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }
@@ -59,7 +57,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job qualification override proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }

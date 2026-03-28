@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error seeding default templates:", error)
     return NextResponse.json(
       { error: "Failed to seed default templates" },
       { status: 500 }

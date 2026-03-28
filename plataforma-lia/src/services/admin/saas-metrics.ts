@@ -50,7 +50,6 @@ class SaasMetricsService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching SaaS metrics summary:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -68,7 +67,6 @@ class SaasMetricsService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching revenue by plan:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -89,7 +87,6 @@ class SaasMetricsService {
       return Array.isArray(data) ? data : data.items || []
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching client growth:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }
@@ -106,7 +103,6 @@ class SaasMetricsService {
       )
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching usage metrics:', error.message)
         if (error.isAuthError || error.isForbidden) {
           throw error
         }

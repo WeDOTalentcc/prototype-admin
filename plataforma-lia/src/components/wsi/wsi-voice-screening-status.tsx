@@ -140,7 +140,6 @@ export function WSIVoiceScreeningStatus({
           break
       }
     } catch (err) {
-      console.error('Error polling status:', err)
     }
   }, [sessionId, onComplete])
 
@@ -213,7 +212,6 @@ export function WSIVoiceScreeningStatus({
       setQuestionsCount(response.questions_generated)
       setStatus('calling')
     } catch (err) {
-      console.error('Failed to start voice screening:', err)
       setError(err instanceof Error ? err.message : 'Erro ao iniciar chamada')
       setStatus('failed')
     }

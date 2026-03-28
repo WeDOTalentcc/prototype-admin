@@ -84,7 +84,6 @@ export default function JornadaRecrutamentoPage() {
       }
     } catch (error: any) {
       if (error.name === 'AbortError') return
-      console.error('Erro ao carregar etapas:', error)
     } finally {
       if (isMountedRef.current) {
         setIsLoading(false)
@@ -164,7 +163,6 @@ export default function JornadaRecrutamentoPage() {
         setSaveStatus('error')
       }
     } catch (error) {
-      console.error('Erro ao salvar:', error)
       setSaveStatus('error')
     } finally {
       setIsSaving(false)

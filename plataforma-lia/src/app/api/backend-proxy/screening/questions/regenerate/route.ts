@@ -23,12 +23,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (response.status === 404) {
-      console.log('Screening questions regenerate endpoint not found, returning empty array')
       return NextResponse.json([])
     }
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao regenerar perguntas', 
@@ -40,7 +38,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Screening questions regenerate proxy error:', error)
     return NextResponse.json([])
   }
 }

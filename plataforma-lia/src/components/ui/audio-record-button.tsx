@@ -103,7 +103,6 @@ export function AudioRecordButton({
         })
       }, 1000)
     } catch (err) {
-      console.error("Error starting recording:", err)
       setError("Não foi possível acessar o microfone")
       isRecordingRef.current = false
     }
@@ -135,7 +134,6 @@ export function AudioRecordButton({
         setError(data.error)
       }
     } catch (err) {
-      console.error("Transcription error:", err)
       setError("Erro ao transcrever áudio")
     } finally {
       setIsTranscribing(false)

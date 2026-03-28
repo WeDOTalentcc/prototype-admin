@@ -140,7 +140,6 @@ export function FileUploadButton({
 
       return await response.json()
     } catch (error) {
-      console.error("File analysis error:", error)
       return {
         success: false,
         filename: file.name,

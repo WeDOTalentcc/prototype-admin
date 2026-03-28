@@ -128,7 +128,6 @@ export default function ConsentimentosPage() {
       })
       setVersions(response.versions)
     } catch (error) {
-      console.error('Error loading versions:', error)
     } finally {
       setIsLoadingVersions(false)
     }
@@ -144,7 +143,6 @@ export default function ConsentimentosPage() {
       })
       setEvents(response.events)
     } catch (error) {
-      console.error('Error loading events:', error)
     } finally {
       setIsLoadingEvents(false)
     }
@@ -156,7 +154,6 @@ export default function ConsentimentosPage() {
       const data = await consentManagementService.getStats()
       setStats(data)
     } catch (error) {
-      console.error('Error loading stats:', error)
     } finally {
       setIsLoadingStats(false)
     }
@@ -169,7 +166,6 @@ export default function ConsentimentosPage() {
       setSubjectHistory(data)
       setIsHistoryModalOpen(true)
     } catch (error) {
-      console.error('Error loading subject history:', error)
     } finally {
       setIsLoadingHistory(false)
     }
@@ -193,7 +189,6 @@ export default function ConsentimentosPage() {
       loadVersions()
       loadStats()
     } catch (error) {
-      console.error('Error creating version:', error)
     }
   }
 
@@ -211,7 +206,6 @@ export default function ConsentimentosPage() {
       loadEvents()
       loadStats()
     } catch (error) {
-      console.error('Error revoking consent:', error)
     }
   }
 

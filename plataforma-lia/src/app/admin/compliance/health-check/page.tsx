@@ -187,18 +187,14 @@ export default function HealthCheckPage() {
     let isMounted = true
     
     const loadData = async () => {
-      console.log('[HealthCheck] Starting loadData...')
       setIsRefreshing(true)
       try {
-        console.log('[HealthCheck] Fetching summary...')
         const summaryResponse = await fetch(`${API_BASE}summary/`, { redirect: 'follow' })
         
         if (!isMounted) return
         
-        console.log('[HealthCheck] Summary response status:', summaryResponse.status)
         if (summaryResponse.ok) {
           const summaryData = await summaryResponse.json()
-          console.log('[HealthCheck] Summary data received:', summaryData)
           const frameworks = summaryData.by_framework || summaryData.frameworks || []
           const mappedSummary: FrameworkSummary[] = frameworks.map((fw: any) => ({
             framework: fw.framework,
@@ -211,12 +207,10 @@ export default function HealthCheckPage() {
             total: fw.total || 0,
             icon: FRAMEWORK_ICONS[fw.framework] || <ShieldCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           }))
-          console.log('[HealthCheck] Mapped summary:', mappedSummary.length, 'frameworks')
           if (isMounted) {
             setSummary(mappedSummary)
           }
         } else {
-          console.log('[HealthCheck] Summary response NOT ok')
           if (isMounted) setSummary([])
         }
 
@@ -228,15 +222,12 @@ export default function HealthCheckPage() {
           ? `${API_BASE}?${queryParams}`
           : API_BASE
         
-        console.log('[HealthCheck] Fetching items from:', itemsUrl)
         const itemsResponse = await fetch(itemsUrl, { redirect: 'follow' })
         
         if (!isMounted) return
         
-        console.log('[HealthCheck] Items response status:', itemsResponse.status)
         if (itemsResponse.ok) {
           const itemsData = await itemsResponse.json()
-          console.log('[HealthCheck] Items data received:', itemsData.items?.length, 'items')
           const mappedItems: HealthCheckItem[] = (itemsData.items || []).map((item: any) => ({
             id: item.id,
             reqId: item.req_id,
@@ -254,23 +245,18 @@ export default function HealthCheckPage() {
             referenceUrl: item.reference_url,
             referenceLabel: item.reference_label
           }))
-          console.log('[HealthCheck] Mapped items:', mappedItems.length)
           if (isMounted) {
             setItems(mappedItems)
           }
         } else {
-          console.log('[HealthCheck] Items response NOT ok')
           if (isMounted) setItems([])
         }
-        console.log('[HealthCheck] loadData completed successfully')
       } catch (error) {
-        console.error('[HealthCheck] Error fetching health check data:', error)
         if (isMounted) {
           setSummary([])
           setItems([])
         }
       } finally {
-        console.log('[HealthCheck] Setting loading to false')
         if (isMounted) {
           setIsRefreshing(false)
           setIsLoading(false)
@@ -333,7 +319,6 @@ export default function HealthCheckPage() {
         setItems([])
       }
     } catch (error) {
-      console.error('[HealthCheck] Error:', error)
       setSummary([])
       setItems([])
     } finally {

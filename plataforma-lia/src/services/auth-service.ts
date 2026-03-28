@@ -129,7 +129,6 @@ class AuthService {
         credentials: 'include',
       })
     } catch (error) {
-      console.error('SSO logout error:', error)
     }
     this.clearTokens()
   }

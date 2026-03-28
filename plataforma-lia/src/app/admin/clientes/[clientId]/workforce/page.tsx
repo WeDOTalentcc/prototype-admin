@@ -155,7 +155,6 @@ export default function ClientWorkforcePage({
               headcounts = await hcResponse.json()
             }
           } catch (e) {
-            console.warn('Failed to fetch headcounts for plan', planItem.id)
           }
         }
         
@@ -187,7 +186,6 @@ export default function ClientWorkforcePage({
         plannedVacancies: vacancies
       })
     } catch (err) {
-      console.error('Error fetching workforce plan:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar plano')
       setPlan(null)
     } finally {
@@ -203,7 +201,6 @@ export default function ClientWorkforcePage({
         setAlerts(Array.isArray(data) ? data : [])
       }
     } catch (e) {
-      console.warn('Failed to fetch workforce alerts')
     }
   }, [clientId])
 

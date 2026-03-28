@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('Analyze match all error:', errorData)
       return NextResponse.json(
         { error: 'Erro ao analisar match para todas as vagas', details: errorData },
         { status: response.status }
@@ -35,7 +34,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Analyze match all proxy error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

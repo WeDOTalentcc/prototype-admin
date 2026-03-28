@@ -142,7 +142,6 @@ export function useJobColumnConfig() {
         }
       }
     } catch (e) {
-      console.error('Error loading column config:', e)
     }
     setIsLoaded(true)
   }, [])
@@ -152,7 +151,6 @@ export function useJobColumnConfig() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ columns: cols, savedViews: views }))
     } catch (e) {
-      console.error('Error saving column config:', e)
     }
   }, [])
 

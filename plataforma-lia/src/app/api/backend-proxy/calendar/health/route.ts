@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Calendar health proxy error:', error)
     return NextResponse.json({ graph_configured: false }, { status: 500 })
   }
 }

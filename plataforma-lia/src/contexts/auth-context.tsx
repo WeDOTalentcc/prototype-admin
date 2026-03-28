@@ -79,7 +79,6 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
           setUser(userData)
           setAuthMethod('jwt')
         } catch {
-          console.log('Token refresh failed, clearing tokens')
           authService.clearTokens()
           setUser(null)
           setAuthMethod(null)

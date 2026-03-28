@@ -12,12 +12,12 @@ interface LIAIconProps {
 function SoundWaveBars({ size }: { size: string }) {
   const barHeight = size === "xs" ? "h-2" : size === "sm" ? "h-3" : "h-4"
   return (
-    <div className="absolute inset-0 flex items-center justify-center gap-[2px]">
+    <div className="absolute inset-0 flex items-center justify-center gap-0.5">
       {[0, 1, 2, 3].map((i) => (
         <span
           key={i}
           className={cn(
-            "inline-block w-[2px] rounded-full bg-chat-cyan lia-sound-wave-bar",
+            "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
             barHeight
           )}
           style={{ animationDelay: `${i * 0.15}s` }}

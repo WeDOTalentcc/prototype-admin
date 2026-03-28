@@ -142,10 +142,8 @@ export function useSimilarProfiles({ onNaturalSearchValueChange }: UseSimilarPro
           onNaturalSearchValueChange(keywords.slice(0, 6).join(', '))
         }
       } else {
-        console.error("Error analyzing profiles:", response.status, await response.text())
       }
     } catch (error) {
-      console.error("Error analyzing profiles:", error)
     } finally {
       setIsAnalyzingProfiles(false)
     }

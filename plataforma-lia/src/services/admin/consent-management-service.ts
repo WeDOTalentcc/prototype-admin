@@ -247,7 +247,6 @@ class ConsentManagementService {
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching consent stats:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -295,7 +294,6 @@ class ConsentManagementService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching consent versions:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { versions: [], total: 0, limit: 50, offset: 0 }
@@ -310,7 +308,6 @@ class ConsentManagementService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching consent version:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -328,7 +325,6 @@ class ConsentManagementService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching current consent version:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -376,7 +372,6 @@ class ConsentManagementService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching consent events:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { events: [], total: 0, limit: 50, offset: 0 }
@@ -394,7 +389,6 @@ class ConsentManagementService {
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.status === 404) return null
-        console.error('Error fetching subject history:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null

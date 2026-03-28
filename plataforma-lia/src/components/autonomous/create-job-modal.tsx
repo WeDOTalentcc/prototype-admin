@@ -103,7 +103,6 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
       resetForm()
       onJobCreated?.()
     } catch (error) {
-      console.error('Erro ao criar job:', error)
     }
     setLoading(false)
   }

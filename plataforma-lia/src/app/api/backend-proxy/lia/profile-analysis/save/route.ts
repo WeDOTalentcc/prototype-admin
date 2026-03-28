@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error saving profile analysis:', error)
     return NextResponse.json({ error: 'Failed to save analysis' }, { status: 500 })
   }
 }

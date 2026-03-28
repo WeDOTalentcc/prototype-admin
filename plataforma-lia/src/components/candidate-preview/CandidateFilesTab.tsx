@@ -187,7 +187,6 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido'
-      console.error('Delete error:', message)
       toast({
         title: "Erro",
         description: "Erro ao excluir arquivo",

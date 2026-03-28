@@ -490,7 +490,6 @@ export function CandidatePage({
         setOpinionsSubTab('analises')
       }
     } catch (error) {
-      console.error('Error refreshing analyses:', error)
     }
   }
 
@@ -505,7 +504,6 @@ export function CandidatePage({
           setOpinionsHistory(data.opinions || [])
         }
       } catch (error) {
-        console.error('Error fetching opinions:', error)
       } finally {
         setIsLoadingHistory(false)
       }
@@ -521,7 +519,6 @@ export function CandidatePage({
           setSavedAnalyses(data)
         }
       } catch (error) {
-        console.error('Error fetching analyses:', error)
       } finally {
         setIsLoadingAnalyses(false)
       }
@@ -775,7 +772,7 @@ export function CandidatePage({
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {tab.badge !== undefined && tab.badge > 0 && (
-                <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
                   {tab.badge}
                 </Badge>
               )}
@@ -1721,7 +1718,6 @@ export function CandidatePage({
                       e.preventDefault()
                       setIsDragging(false)
                       const files = Array.from(e.dataTransfer.files)
-                      console.log('Files dropped:', files)
                     }}
                     onClick={() => {
                       const input = document.createElement('input')
@@ -1730,7 +1726,6 @@ export function CandidatePage({
                       input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov,.mp3,.wav,.m4a,.webm,.ogg'
                       input.onchange = (e) => {
                         const files = Array.from((e.target as HTMLInputElement).files || [])
-                        console.log('Files selected:', files)
                       }
                       input.click()
                     }}
@@ -1991,7 +1986,7 @@ export function CandidatePage({
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Pareceres da LIA
                     {opinionsHistory.length > 0 && (
-                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
                         {opinionsHistory.length}
                       </Badge>
                     )}
@@ -2007,7 +2002,7 @@ export function CandidatePage({
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análises
                     {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: 'var(--wedo-purple)' }}>
+                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-purple/15 text-wedo-purple">
                         {savedAnalyses.total_analyses}
                       </Badge>
                     )}
@@ -2333,8 +2328,7 @@ export function CandidatePage({
                                     <div className="flex items-center gap-2">
                                       <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                       <Badge 
-                                        className="text-micro px-1.5 py-0 h-4"
-                                        style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: 'var(--wedo-purple)' }}
+                                        className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple"
                                       >
                                         {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                       </Badge>
@@ -2477,7 +2471,6 @@ export function CandidatePage({
               <div className="flex gap-2 mt-4">
                 <Button
                   onClick={() => {
-                    console.log('Executando:', liaCommand)
                     setShowLiaModal(false)
                     setLiaCommand('')
                   }}

@@ -1030,8 +1030,8 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
       onClick={onClick}
       className="flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all hover:bg-gray-50"
       style={{
-        backgroundColor: checked ? "rgba(96,190,209,0.08)" : "transparent",
-        border: checked ? "1px solid rgba(96,190,209,0.2)" : "1px solid transparent",
+        backgroundColor: checked ? "rgb(96 190 209 / 0.08)" : "transparent",
+        border: checked ? "1px solid rgb(96 190 209 / 0.2)" : "1px solid transparent",
       }}
     >
       <div

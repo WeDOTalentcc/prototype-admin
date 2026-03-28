@@ -34,12 +34,12 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, style, ...props }, ref) => (
   <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-    <div className="fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-backdrop flex items-center justify-center pointer-events-none">
       <DialogOverlay className="pointer-events-auto" />
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-[9999] grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+          "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
           className
         )}
         style={style}
@@ -112,7 +112,7 @@ const DraggableDialogContent = React.forwardRef<
 
   return (
     <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-      <div className="fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none">
+      <div className="fixed inset-0 z-backdrop flex items-center justify-center pointer-events-none">
         <DialogOverlay className="pointer-events-auto" />
         <DialogPrimitive.Content
           ref={(node) => {
@@ -121,7 +121,7 @@ const DraggableDialogContent = React.forwardRef<
             dialogRef.current = node
           }}
           className={cn(
-            "relative z-[9999] grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+            "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
             className
           )}
           style={{

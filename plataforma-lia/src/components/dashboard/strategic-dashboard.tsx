@@ -98,7 +98,6 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
         setRecruiters(data.recruiters || [])
       }
     } catch (err) {
-      console.error("Error fetching dashboard data:", err)
       setError("Erro ao carregar dados do dashboard")
     } finally {
       setLoading(false)

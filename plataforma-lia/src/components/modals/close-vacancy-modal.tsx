@@ -283,12 +283,11 @@ export function CloseVacancyModal({
         job_id: vacancy.id,
         outcome_status: 'hired',
         hire_quality_score: 1.0
-      }).catch(err => console.error('Non-blocking: Job outcome update failed:', err))
+      }).catch(() => {})
       
       toast.success('Vaga fechada com sucesso!')
       onClose()
     } catch (error) {
-      console.error('Error closing vacancy:', error)
       toast.error('Erro ao fechar vaga. Tente novamente.')
     } finally {
       setIsSubmitting(false)

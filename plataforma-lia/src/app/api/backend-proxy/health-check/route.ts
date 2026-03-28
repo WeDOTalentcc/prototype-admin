@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Health Check API request failed', details: errorData },
@@ -35,7 +34,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Health Check proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -61,7 +59,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Health Check API request failed', details: errorData },
@@ -72,7 +69,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Health Check proxy POST error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }

@@ -266,7 +266,6 @@ export function useAgentStreaming(
   ) => {
     const ws = wsRef.current
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.warn('[useAgentStreaming] sendMessage: WS not connected')
       return
     }
     ws.send(JSON.stringify({ type: 'message', content, context, domain }))
@@ -279,7 +278,6 @@ export function useAgentStreaming(
   const sendRaw = useCallback((data: Record<string, unknown>) => {
     const ws = wsRef.current
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.warn('[useAgentStreaming] sendRaw: WS not connected')
       return
     }
     ws.send(JSON.stringify(data))

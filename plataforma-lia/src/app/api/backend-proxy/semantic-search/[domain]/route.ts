@@ -28,7 +28,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Semantic search proxy error:", error)
     return NextResponse.json(
       { success: false, error: "Failed to fetch semantic suggestions" },
       { status: 500 }

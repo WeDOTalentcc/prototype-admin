@@ -71,7 +71,6 @@ Extraia informações reais da descrição. Se algum campo não puder ser inferi
     })
 
   } catch (error) {
-    console.error('Error extracting archetype info:', error)
     return NextResponse.json(
       { error: 'Erro ao extrair informações', details: String(error) },
       { status: 500 }

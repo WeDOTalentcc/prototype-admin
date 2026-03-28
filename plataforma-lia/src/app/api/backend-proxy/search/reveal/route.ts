@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Reveal proxy error:", error)
     return NextResponse.json(
       { error: "Failed to connect to backend" },
       { status: 500 }
@@ -66,7 +65,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Reveal cost proxy error:", error)
     return NextResponse.json(
       { error: "Failed to connect to backend" },
       { status: 500 }

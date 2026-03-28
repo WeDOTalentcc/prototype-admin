@@ -23,7 +23,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error cloning pipeline template:", error)
     return NextResponse.json(
       { error: "Failed to clone pipeline template" },
       { status: 500 }

@@ -213,7 +213,6 @@ export function AddToJobModal({
         setJobs([])
       }
     } catch (error) {
-      console.warn('Failed to load jobs from API:', error)
       setJobs([])
     } finally {
       setIsLoading(false)
@@ -311,7 +310,6 @@ export function AddToJobModal({
       onSuccess?.()
       onClose()
     } catch (error) {
-      console.error('Error adding candidates to job:', error)
       toast({
         title: "Erro ao adicionar candidatos",
         description: "Tente novamente",
@@ -331,7 +329,7 @@ export function AddToJobModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-modal flex items-center justify-center"
      
       role="dialog"
       aria-modal="true"

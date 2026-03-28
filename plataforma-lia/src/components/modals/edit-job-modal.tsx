@@ -383,7 +383,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
         }
       }
     } catch (error) {
-      console.error('Error fetching pipeline templates:', error)
     } finally {
       setIsLoadingTemplates(false)
     }
@@ -611,7 +610,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
         toast.error('Erro ao carregar perguntas padrão')
       }
     } catch (error) {
-      console.error('Error fetching default questions:', error)
       toast.error('Erro ao carregar perguntas padrão')
     } finally {
       setIsLoadingDefaultQuestions(false)
@@ -795,14 +793,12 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
           }),
         })
       } catch (syncError) {
-        console.warn('Failed to sync wsi_skills with screening config:', syncError)
         // Don't fail the save operation if sync fails
       }
 
       toast.success('Vaga atualizada com sucesso!')
       onClose()
     } catch (error) {
-      console.error('Error saving job:', error)
       toast.error('Erro ao salvar alterações')
     } finally {
       setIsSaving(false)
@@ -1877,7 +1873,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       </div>
 
       {showImportQuestionsModal && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 flex items-center justify-center z-overlay p-4">
           <div className="bg-white dark:bg-gray-800 rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">

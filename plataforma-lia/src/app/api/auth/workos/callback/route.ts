@@ -16,14 +16,12 @@ export async function GET(req: NextRequest) {
     const errorDescription = searchParams.get('error_description')
 
     if (error) {
-      console.error('SSO callback error:', error)
       const loginUrl = new URL('/login', req.url)
       loginUrl.searchParams.set('error', errorDescription || error)
       return NextResponse.redirect(loginUrl)
     }
 
     if (!code) {
-      console.error('No authorization code received')
       const loginUrl = new URL('/login', req.url)
       loginUrl.searchParams.set('error', 'No authorization code received')
       return NextResponse.redirect(loginUrl)
@@ -40,7 +38,6 @@ export async function GET(req: NextRequest) {
         const decodedState = JSON.parse(Buffer.from(state, 'base64').toString())
         returnTo = decodedState.returnTo || '/dashboard'
       } catch {
-        console.warn('Failed to decode state parameter')
       }
     }
 
@@ -91,7 +88,6 @@ export async function GET(req: NextRequest) {
     })
 
     if (!syncResponse.ok) {
-      console.warn('Failed to sync user with backend, SSO login continues')
     }
 
     const welcomeUrl = new URL('/login/welcome', req.url)
@@ -99,7 +95,6 @@ export async function GET(req: NextRequest) {
     welcomeUrl.searchParams.set('returnTo', returnTo)
     return NextResponse.redirect(welcomeUrl)
   } catch (error) {
-    console.error('SSO callback processing error:', error)
     const loginUrl = new URL('/login', req.url)
     loginUrl.searchParams.set('error', 'Failed to complete SSO login')
     return NextResponse.redirect(loginUrl)

@@ -72,7 +72,6 @@ export function useCandidateSuggestions(
       })
       mutate()
     } catch (e) {
-      console.error("Failed to approve suggestion:", e)
     }
   }
 
@@ -85,7 +84,6 @@ export function useCandidateSuggestions(
       })
       mutate()
     } catch (e) {
-      console.error("Failed to reject suggestion:", e)
     }
   }
 

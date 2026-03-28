@@ -19,7 +19,6 @@ export async function GET(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao buscar field toggles', 
@@ -31,7 +30,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Field toggles GET proxy error:', error)
     return NextResponse.json({ 
       error: 'Erro ao conectar com o backend',
       status: 500 
@@ -58,7 +56,6 @@ export async function PUT(
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao atualizar field toggles', 
@@ -70,7 +67,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Field toggles PUT proxy error:', error)
     return NextResponse.json({ 
       error: 'Erro ao conectar com o backend',
       status: 500 

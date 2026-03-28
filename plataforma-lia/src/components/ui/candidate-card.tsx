@@ -131,7 +131,6 @@ export function CandidateCard({
         setHasLoaded(true)
       }
     } catch (error) {
-      console.error('Error fetching communication history:', error)
     } finally {
       setIsLoading(false)
     }

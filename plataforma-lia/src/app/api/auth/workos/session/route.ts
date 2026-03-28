@@ -36,7 +36,6 @@ export async function GET(req: NextRequest) {
       refreshAt: sessionData.expiresAt - (30 * 60 * 1000),
     })
   } catch (error) {
-    console.error('Session check error:', error)
     return NextResponse.json({ authenticated: false }, { status: 500 })
   }
 }
@@ -47,7 +46,6 @@ export async function DELETE(req: NextRequest) {
     cookieStore.delete(WORKOS_SESSION_COOKIE)
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Session deletion error:', error)
     return NextResponse.json({ error: 'Failed to logout' }, { status: 500 })
   }
 }

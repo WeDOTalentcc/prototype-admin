@@ -384,7 +384,6 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
       onSend(finalTemplate, recipients, customizations)
       onClose()
     } catch (error) {
-      console.error('Erro ao enviar email:', error)
     } finally {
       setIsSending(false)
     }

@@ -210,7 +210,6 @@ export function PredictiveAnalyticsTab() {
         }
       }
     } catch (error) {
-      console.log("Using mock data for predictions")
     } finally {
       setLoading(false)
     }

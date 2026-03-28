@@ -86,7 +86,6 @@ export function useCompanyTechStack(): UseCompanyTechStackResult {
       const data = await response.json()
       setTechStack(data.tech_stack || [])
     } catch (err) {
-      console.error('Error fetching company tech stack:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setTechStack([])
     } finally {

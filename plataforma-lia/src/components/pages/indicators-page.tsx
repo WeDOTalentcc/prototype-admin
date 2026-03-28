@@ -321,25 +321,19 @@ export function IndicatorsPage() {
   ]
 
   const handleCommandAction = (command: string, action: string) => {
-    console.log('Executando comando LIA:', { command, action })
     // Implementar ações da LIA aqui
   }
 
   const handleAlertAction = (alertId: string, action: string) => {
-    console.log('Ação do alerta:', { alertId, action })
     // Implementar ações específicas do sistema de alertas
     switch (action) {
       case 'mark_read':
-        console.log('Marcando alerta como lido:', alertId)
         break
       case 'archive':
-        console.log('Arquivando alerta:', alertId)
         break
       case 'delete':
-        console.log('Deletando alerta:', alertId)
         break
       case 'send_notification':
-        console.log('Enviando notificação para:', alertId)
         break
     }
   }

@@ -27,7 +27,7 @@ export function SkipCompetenciesWarningModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-2xl w-[400px] p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-status-warning/10 rounded-full flex items-center justify-center">

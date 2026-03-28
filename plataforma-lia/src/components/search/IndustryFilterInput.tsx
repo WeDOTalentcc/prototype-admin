@@ -187,7 +187,6 @@ export function IndustryFilterInput({
     } catch (error) {
       if ((error as Error).name === 'AbortError') return
       if (currentRequestId !== requestIdRef.current) return
-      console.error('Error fetching AI suggestions:', error)
       setAiError('Error fetching AI suggestions')
     } finally {
       if (currentRequestId === requestIdRef.current) {
@@ -262,7 +261,6 @@ export function IndustryFilterInput({
     } catch (error) {
       if ((error as Error).name === 'AbortError') return
       if (currentRequestId !== requestIdRef.current) return
-      console.error('Error fetching AI suggestions:', error)
       addIndustry(query)
     } finally {
       if (currentRequestId === requestIdRef.current) {

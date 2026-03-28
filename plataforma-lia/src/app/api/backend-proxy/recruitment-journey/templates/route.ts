@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       return NextResponse.json(
         { templates: [], total: 0 },
         { status: 200 }
@@ -34,7 +33,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Recruitment journey templates proxy error:', error)
     return NextResponse.json({ templates: [], total: 0 })
   }
 }
@@ -63,11 +61,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       
       if (response.status === 404) {
-        console.log('Recruitment journey endpoint not found, returning success stub')
         return NextResponse.json({
           success: true,
           message: 'Recruitment stages saved successfully (stub)',
@@ -84,7 +80,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Recruitment journey templates proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Recruitment stages saved (fallback)',
@@ -125,7 +120,6 @@ export async function PUT(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend PUT error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao atualizar template', details: errorData },
@@ -136,7 +130,6 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Recruitment journey templates PUT proxy error:', error)
     return NextResponse.json(
       { error: 'Erro interno ao atualizar template' },
       { status: 500 }
@@ -174,7 +167,6 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend DELETE error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao deletar template', details: errorData },
@@ -185,7 +177,6 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Recruitment journey templates DELETE proxy error:', error)
     return NextResponse.json(
       { error: 'Erro interno ao deletar template' },
       { status: 500 }

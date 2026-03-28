@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ 
         error: 'Erro ao buscar perguntas de triagem', 
@@ -48,7 +47,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Company screening questions proxy error:', error)
     return NextResponse.json({ 
       items: [],
       total_count: 0,
@@ -71,7 +69,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: 'Erro ao criar pergunta de triagem', details: errorData },
@@ -82,7 +79,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Company screening questions proxy error:', error)
     return NextResponse.json(
       { error: 'Failed to create screening question' },
       { status: 500 }

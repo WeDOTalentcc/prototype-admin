@@ -260,7 +260,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+              <div className="w-9 h-9 rounded-md flex items-center justify-center bg-wedo-cyan/15">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>

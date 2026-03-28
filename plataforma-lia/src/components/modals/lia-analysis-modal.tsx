@@ -91,7 +91,6 @@ export function LiaAnalysisModal({
         }
       }))
     } catch (error) {
-      console.error('Error generating analysis:', error)
       toast({
         title: "Erro ao gerar análise",
         description: "Não foi possível gerar a análise. Tente novamente.",
@@ -156,7 +155,6 @@ export function LiaAnalysisModal({
       setSavedMessage(`${tabLabel} salvo com sucesso`)
       setTimeout(() => setSavedMessage(null), 3000)
     } catch (error) {
-      console.error('Error saving analysis:', error)
       setSavedMessage('Erro ao salvar')
       setTimeout(() => setSavedMessage(null), 3000)
     }

@@ -158,7 +158,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       deselectAllCandidates()
 
     } catch (error) {
-      console.error('Error saving candidates to local base:', error)
       toast({
         title: "Erro ao salvar candidatos",
         description: "Tente novamente em alguns instantes.",
@@ -287,7 +286,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           localIds.push(localId)
         } else {
           // Fallback: usar ID original se não encontrar mapeamento
-          console.warn(`No mapping found for Pearch candidate: ${pearchId}`)
           localIds.push(c.id)
         }
       })
@@ -306,7 +304,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       }
 
     } catch (error) {
-      console.error('Error importing Pearch candidates:', error)
       toast({
         title: "Erro ao importar candidatos",
         description: "Não foi possível salvar candidatos Pearch na base. Tente novamente.",
@@ -420,7 +417,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       }
 
     } catch (error: any) {
-      console.error('Error saving candidates:', error)
       const errorMessage = error?.message || 'Erro desconhecido ao salvar candidatos'
       toast({
         title: "Erro ao salvar",

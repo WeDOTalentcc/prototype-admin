@@ -23,7 +23,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job pipeline proxy error:', error)
     return NextResponse.json(
       { error: 'Backend unavailable' },
       { status: 503 }
@@ -52,7 +51,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Job pipeline update proxy error:', error)
     return NextResponse.json(
       { error: 'Backend unavailable' },
       { status: 503 }

@@ -37,7 +37,6 @@ export async function POST(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Public vacancy apply error:', error)
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

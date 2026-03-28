@@ -170,7 +170,6 @@ class AuditLogsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching audit logs:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { logs: [], total: 0, limit: 50, offset: 0, hasMore: false }
@@ -183,7 +182,6 @@ class AuditLogsService {
       return mapBackendAuditLog(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching audit log:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -206,7 +204,6 @@ class AuditLogsService {
       return mapBackendStats(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching audit stats:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return {
@@ -251,7 +248,6 @@ class AuditLogsService {
 
       return await response.blob()
     } catch (error) {
-      console.error('Error exporting audit logs:', error)
       throw error
     }
   }
@@ -266,7 +262,6 @@ class AuditLogsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching retention policies:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { policies: [], total: 0 }
@@ -284,7 +279,6 @@ class AuditLogsService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error seeding retention policies:', error.message)
         throw error
       }
       throw error

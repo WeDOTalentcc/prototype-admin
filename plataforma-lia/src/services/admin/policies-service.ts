@@ -105,7 +105,6 @@ class PoliciesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching policies:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { policies: [], total: 0 }
@@ -118,7 +117,6 @@ class PoliciesService {
       return mapBackendPolicy(data)
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching policy:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return null
@@ -155,7 +153,6 @@ class PoliciesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching policy history:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { history: [], total: 0 }
@@ -171,7 +168,6 @@ class PoliciesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching all policy history:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { history: [], total: 0 }
@@ -186,7 +182,6 @@ class PoliciesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error fetching categories:', error.message)
         if (error.isAuthError || error.isForbidden) throw error
       }
       return { categories: [] }
@@ -203,7 +198,6 @@ class PoliciesService {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        console.error('Error seeding policies:', error.message)
         throw error
       }
       throw error

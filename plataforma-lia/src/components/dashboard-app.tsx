@@ -82,10 +82,8 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
 
   useKeyboardShortcuts({
     onAIActivate: () => {
-      console.log('Atalho Ctrl+K ativado - modo IA')
     },
     onVoiceActivate: () => {
-      console.log('Atalho Ctrl+; ativado - busca por voz')
     },
     onLibraryOpen: () => {
       setCurrentPage("Biblioteca LIA")

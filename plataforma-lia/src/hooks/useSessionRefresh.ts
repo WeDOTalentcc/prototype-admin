@@ -34,7 +34,6 @@ export function useSessionRefresh(enabled: boolean = true): SessionRefreshHook {
       const data = await response.json()
       return data.refreshed
     } catch (error) {
-      console.error('Session refresh failed:', error)
       return false
     } finally {
       isRefreshingRef.current = false

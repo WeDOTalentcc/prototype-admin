@@ -89,7 +89,6 @@ export function useWorkforcePlanning(): UseWorkforcePlanningResult {
               headcounts = await hcResponse.json()
             }
           } catch (e) {
-            console.warn('Failed to fetch headcounts for plan', planItem.id)
           }
         }
         
@@ -121,7 +120,6 @@ export function useWorkforcePlanning(): UseWorkforcePlanningResult {
         plannedVacancies: vacancies
       })
     } catch (err) {
-      console.error('Error fetching workforce plan:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
       setPlan(null)
     } finally {

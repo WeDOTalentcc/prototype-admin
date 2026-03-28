@@ -21,7 +21,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error fetching pipeline template:", error)
     return NextResponse.json(
       { error: "Failed to fetch pipeline template" },
       { status: 500 }
@@ -50,7 +49,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error updating pipeline template:", error)
     return NextResponse.json(
       { error: "Failed to update pipeline template" },
       { status: 500 }
@@ -77,7 +75,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error("Error deleting pipeline template:", error)
     return NextResponse.json(
       { error: "Failed to delete pipeline template" },
       { status: 500 }

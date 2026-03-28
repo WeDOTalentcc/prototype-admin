@@ -242,7 +242,6 @@ export function NotificationSystem({
         method: "POST"
       })
     } catch (err) {
-      console.error("Error marking notification as read:", err)
     }
   }, [userId])
 
@@ -254,7 +253,6 @@ export function NotificationSystem({
         method: "POST"
       })
     } catch (err) {
-      console.error("Error marking all as read:", err)
     }
   }, [userId])
 
@@ -266,7 +264,6 @@ export function NotificationSystem({
         method: "POST"
       })
     } catch (err) {
-      console.error("Error dismissing notification:", err)
     }
   }, [userId])
 
@@ -443,7 +440,6 @@ export async function sendNotification(
 
     return await response.json()
   } catch (error) {
-    console.error("Error sending notification:", error)
     return { success: false }
   }
 }

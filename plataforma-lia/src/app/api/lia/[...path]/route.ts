@@ -18,7 +18,6 @@ async function proxyRequest(
     const searchParams = request.nextUrl.searchParams.toString()
     const backendUrl = `${BACKEND_URL}/${pathname}${searchParams ? `?${searchParams}` : ''}`
 
-    console.log(`[LIA Proxy] ${request.method} /${pathname} → ${backendUrl}`)
 
     const contentType = request.headers.get('content-type')
     const isMultipart = contentType?.includes('multipart/form-data')
@@ -61,19 +60,16 @@ async function proxyRequest(
     }
 
     if (!response.ok) {
-      console.error(`[LIA Proxy] Error ${response.status}: ${JSON.stringify(data)}`)
       return NextResponse.json(
         { error: data.detail || data || 'Backend request failed' },
         { status: response.status }
       )
     }
 
-    console.log(`[LIA Proxy] Success ${response.status}`)
 
     return NextResponse.json(data, { status: response.status })
     
   } catch (error) {
-    console.error('[LIA Proxy] Request failed:', error)
     return NextResponse.json(
       { error: 'Failed to connect to LIA backend' },
       { status: 500 }

@@ -1738,7 +1738,7 @@ export function AdvancedFiltersModal({
 
         {/* Presets Modal */}
         {showPresetsModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="fixed inset-0 z-overlay flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onClick={() => { setShowPresetsModal(false); setSelectedPreset(null) }} />
             <div className="relative bg-white rounded-md w-full max-w-lg max-h-[70vh] overflow-hidden dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -1881,7 +1881,7 @@ export function AdvancedFiltersModal({
 
         {/* Save Preset Modal */}
         {showSavePresetModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="fixed inset-0 z-overlay flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onClick={() => setShowSavePresetModal(false)} />
             <div className="relative bg-white rounded-md w-full max-w-md p-4 dark:bg-gray-800 dark:border-gray-700">
               <h3 className="font-medium text-gray-800 mb-4">Salvar como Preset</h3>
@@ -2294,7 +2294,7 @@ export function AdvancedFiltersModal({
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t space-y-1.5" style={{ borderColor: "rgba(96, 190, 209, 0.2)" }}>
+                  <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-gray-600">
                         Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
@@ -2327,7 +2327,7 @@ export function AdvancedFiltersModal({
                       </div>
                     )}
                     
-                    <div className="flex justify-between text-xs pt-1.5 border-t" style={{ borderColor: "rgba(96, 190, 209, 0.15)" }}>
+                    <div className="flex justify-between text-xs pt-1.5 border-t border-wedo-cyan/15">
                       <span className="flex items-center gap-1 font-medium text-gray-800">
                         <TrendingUp className="w-3 h-3" />
                         Total por Candidato

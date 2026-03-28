@@ -57,7 +57,6 @@ export async function GET(
     })
 
     if (response.status === 404) {
-      console.log(`[screening-config] Endpoint not found for job ${id}, returning defaults`)
       return NextResponse.json({
         ...DEFAULT_SCREENING_CONFIG,
         job_id: id,
@@ -66,7 +65,6 @@ export async function GET(
     }
 
     if (!response.ok) {
-      console.error(`[screening-config] Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: `Failed to fetch screening config: ${response.statusText}`, details: errorData },
@@ -82,7 +80,6 @@ export async function GET(
       is_default: false
     })
   } catch (error) {
-    console.error('[screening-config] Proxy error:', error)
     return NextResponse.json({
       ...DEFAULT_SCREENING_CONFIG,
       is_default: true,
@@ -110,7 +107,6 @@ export async function PUT(
     })
 
     if (response.status === 404) {
-      console.log(`[screening-config] PUT endpoint not found for job ${id}, returning success stub`)
       return NextResponse.json({
         success: true,
         message: 'Screening config saved (stub)',
@@ -119,7 +115,6 @@ export async function PUT(
     }
 
     if (!response.ok) {
-      console.warn(`[screening-config] Backend PUT returned ${response.status} for job ${id}, saving locally`)
       return NextResponse.json({
         success: true,
         message: 'Screening config saved (local)',
@@ -130,7 +125,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[screening-config] PUT proxy error:', error)
     return NextResponse.json({
       success: true,
       message: 'Screening config saved (fallback)',

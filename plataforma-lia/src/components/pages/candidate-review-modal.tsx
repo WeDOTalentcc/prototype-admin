@@ -146,7 +146,6 @@ const EditCriteriaPopup: React.FC<{
         }
       }
     } catch (error) {
-      console.error('Error loading presets from localStorage:', error)
       setSavedPresets([])
     }
   }, [])
@@ -219,7 +218,7 @@ const EditCriteriaPopup: React.FC<{
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div 
         className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-lg p-6 z-10"

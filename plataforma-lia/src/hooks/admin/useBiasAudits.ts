@@ -61,7 +61,6 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
       setAudits(data.audits)
       setTotalAudits(data.total)
     } catch (err) {
-      console.error('Error fetching bias audits:', err)
     }
   }, [clientId])
 
@@ -71,7 +70,6 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
     try {
       return await biasAuditService.getAudit(clientId, auditId)
     } catch (err) {
-      console.error('Error fetching bias audit:', err)
       return null
     }
   }, [clientId])

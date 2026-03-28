@@ -373,7 +373,6 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         setRubricEvaluationData(mockEvaluation)
       }
     } catch (error) {
-      console.error('Error fetching rubric evaluation:', error)
       const mockEvaluation: RubricEvaluationData = {
         overall_score: candidate.fitScore || candidate.score || 75,
         recommendation: 'review',

@@ -670,7 +670,6 @@ export function InlineChatPanel({
                       variant="outline"
                       className="w-full h-9 !text-xs font-medium rounded-md text-gray-800 border border-gray-100"
                       onClick={() => {
-                        console.log("Criar template a partir de vaga")
                       }}
                     >
                       <Plus className="w-3.5 h-3.5 mr-1.5 text-gray-600" />

@@ -27,7 +27,6 @@ export async function PATCH(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Sub-status PATCH proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }
@@ -56,7 +55,6 @@ export async function PUT(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Sub-status PUT proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }
@@ -83,7 +81,6 @@ export async function DELETE(
 
     return NextResponse.json(await response.json())
   } catch (error) {
-    console.error('Sub-status DELETE proxy error:', error)
     return NextResponse.json({ error: 'Erro ao conectar com o backend' }, { status: 500 })
   }
 }

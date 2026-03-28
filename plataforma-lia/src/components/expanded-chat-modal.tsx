@@ -261,10 +261,8 @@ function ExpandedChatModalContent({
   // Tool Calling hook - executes tools via chat with confirmation flow
   const toolCalling = useToolCalling({
     onToolExecuted: (result) => {
-      console.log('[ToolCalling] Tool executed:', result.tool_name, result.success ? 'success' : 'failed')
     },
     onToolError: (error, toolName) => {
-      console.error('[ToolCalling] Tool error:', toolName, error)
     },
   })
   
@@ -273,10 +271,8 @@ function ExpandedChatModalContent({
     summaryThreshold: 10,
     maxMessages: 50,
     onError: (error) => {
-      console.warn('[ConversationMemory] Error:', error.message)
     },
     onConversationLoaded: (conv) => {
-      console.log('[ConversationMemory] Conversation loaded:', conv.id, 'messages:', conv.message_count)
     },
   })
   
@@ -477,7 +473,6 @@ function ExpandedChatModalContent({
       setFieldOrigins(prev => ({ ...prev, ...newOrigins }))
     },
     onError: (error) => {
-      console.error('Backend wizard error:', error)
     }
   })
   
@@ -542,7 +537,6 @@ function ExpandedChatModalContent({
         setMessages(prev => [...prev, confirmMsg])
       }
     } catch (err) {
-      console.error('Failed to accept proactive action:', err)
     }
   }, [user])
 
@@ -558,7 +552,6 @@ function ExpandedChatModalContent({
         setMessages(prev => prev.filter(m => m.id !== messageId))
       }
     } catch (err) {
-      console.error('Failed to reject proactive action:', err)
     }
   }, [user])
 
@@ -608,7 +601,6 @@ function ExpandedChatModalContent({
   const contextSwitching = useContextSwitching({
     autoDetectIntent: true,
     onContextSwitch: (from, to) => {
-      console.log(`[ContextSwitch] ${from} → ${to}`)
       if (to === 'wizard') {
         setWizardMode('pre_wizard')
       } else if (to === 'general') {
@@ -683,7 +675,6 @@ function ExpandedChatModalContent({
                 }
               }
             } catch (error) {
-              console.warn('[onGeneralRestore] Failed to restore conversation:', error)
             }
           })()
         }
@@ -1553,13 +1544,11 @@ function ExpandedChatModalContent({
                     }
                   }
                 } catch (err) {
-                  console.warn(`Failed to fetch members for department ${dept.id}:`, err)
                 }
               })
               await Promise.all(memberPromises)
               setCompanyMembersMap(membersMap)
             } catch (err) {
-              console.warn('Failed to fetch company members:', err)
             }
           }
         }
@@ -1726,7 +1715,6 @@ function ExpandedChatModalContent({
         setConfigLoaded(true)
         
       } catch (error) {
-        console.error('Error fetching company config:', error)
         setConfigLoaded(true)
         // Also mark greeting as loaded to prevent blocking (fallback message will be used)
         setWizardGreetingLoaded(true)
@@ -1805,7 +1793,6 @@ function ExpandedChatModalContent({
           }
         }
       } catch (error) {
-        console.error('Failed to fetch salary benchmark:', error)
       } finally {
         setIsLoadingBenchmark(false)
       }
@@ -3346,7 +3333,6 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
             proceedToNextStage()
           }, 500)
         }).catch((error) => {
-          console.error('Failed to fetch deduplicated skills:', error)
           setMessages(prev => prev.filter(m => m.id !== thinkingMessage.id))
           setStageTransition('idle')
           proceedToNextStage()
@@ -4411,8 +4397,8 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
 export function ExpandedChatModal(props: ExpandedChatModalProps) {
   const wizardState = useWizardState({
     initialStage: 'input-evaluation',
-    onStageChange: (stage) => console.log('Stage changed to:', stage),
-    onPendingChanges: (hasPending) => console.log('Has pending changes:', hasPending)
+    onStageChange: () => {},
+    onPendingChanges: () => {}
   })
   
   return (

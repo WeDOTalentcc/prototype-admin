@@ -61,7 +61,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Insurance proxy GET error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -115,7 +114,6 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Insurance proxy POST error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -151,7 +149,6 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Insurance proxy PUT error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -188,7 +185,6 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Insurance proxy DELETE error:', error)
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }

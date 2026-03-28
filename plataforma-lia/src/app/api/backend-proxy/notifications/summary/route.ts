@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error fetching notification summary:", error)
     return NextResponse.json(
       { success: false, error: "Failed to fetch notification summary" },
       { status: 500 }

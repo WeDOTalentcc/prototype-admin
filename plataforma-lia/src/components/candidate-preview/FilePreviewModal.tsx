@@ -55,7 +55,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
   if (!showPreview || !selectedFile) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-overlay flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-900 rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header do Preview */}
         <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">

@@ -28,9 +28,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(data)
       }
 
-      console.warn("Backend transcription failed:", response.status)
     } catch (backendError) {
-      console.warn("Backend unavailable for transcription:", backendError)
     }
 
     return NextResponse.json({
@@ -38,7 +36,6 @@ export async function POST(request: NextRequest) {
       error: "Transcrição temporariamente indisponível. Por favor, digite sua mensagem.",
     })
   } catch (error) {
-    console.error("Error transcribing audio:", error)
     return NextResponse.json(
       { error: "Failed to transcribe audio" },
       { status: 500 }

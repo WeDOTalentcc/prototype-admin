@@ -44,7 +44,6 @@ function saveToLocalStorage(settings: GlobalSearchSettings): void {
       globalSearchEnabled: settings.global_search_enabled
     }))
   } catch (e) {
-    console.error('Error saving to localStorage:', e)
   }
 }
 
@@ -65,7 +64,6 @@ function loadFromLocalStorage(): GlobalSearchSettings | null {
       }
     }
   } catch (e) {
-    console.error('Error loading from localStorage:', e)
   }
   return null
 }
@@ -86,7 +84,6 @@ export async function getGlobalSearchSettings(): Promise<GlobalSearchSettings> {
     saveToLocalStorage(settings)
     return settings
   } catch (error) {
-    console.error('Error fetching global search settings:', error)
     const cachedSettings = loadFromLocalStorage()
     if (cachedSettings) {
       return cachedSettings
@@ -147,7 +144,6 @@ export async function updateGlobalSearchSettings(
     
     return settings
   } catch (error) {
-    console.error('Error updating global search settings:', error)
     throw error
   }
 }

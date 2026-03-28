@@ -350,7 +350,6 @@ export function ExpandableAIPrompt({
           setClosedJobsForArchetype(data.jobs || data || [])
         }
       } catch (error) {
-        console.error('Error loading archetypes:', error)
       }
     }
     
@@ -497,7 +496,6 @@ export function ExpandableAIPrompt({
         setSearchAnalysis(adaptedAnalysis)
       }
     } catch (error) {
-      console.error('Error parsing entities:', error)
     } finally {
       setIsParsingEntities(false)
     }
@@ -525,7 +523,6 @@ export function ExpandableAIPrompt({
         }
       }
     } catch (error) {
-      console.error('Error fetching prompt enhancement:', error)
     } finally {
       setIsEnhancingPrompt(false)
     }
@@ -667,7 +664,6 @@ export function ExpandableAIPrompt({
         setShowAutocomplete(suggestions.length > 0)
       }
     } catch (error) {
-      console.error('Error fetching autocomplete:', error)
     }
   }, [])
   
@@ -695,7 +691,6 @@ export function ExpandableAIPrompt({
         setCombinedProfileKeywords(data.keywords || [])
       }
     } catch (error) {
-      console.error('Error analyzing combined profiles:', error)
     } finally {
       setIsAnalyzingProfiles(false)
     }
@@ -715,7 +710,6 @@ export function ExpandableAIPrompt({
         setSelectedJobForArchetype(null)
       }
     } catch (error) {
-      console.error('Error creating archetype from job:', error)
     } finally {
       setIsCreatingArchetype(false)
     }
@@ -826,7 +820,6 @@ export function ExpandableAIPrompt({
         })
       } else {
         const error = await res.json()
-        console.error('Error creating archetype from search:', error)
         toast({
           title: "Erro ao salvar arquétipo",
           description: error.detail || error.error || "Não foi possível salvar o arquétipo.",
@@ -834,7 +827,6 @@ export function ExpandableAIPrompt({
         })
       }
     } catch (error) {
-      console.error('Error creating archetype from search:', error)
       toast({
         title: "Erro ao salvar arquétipo",
         description: "Ocorreu um erro de conexão. Tente novamente.",
@@ -881,7 +873,6 @@ export function ExpandableAIPrompt({
           })
         } else {
           const error = await res.json()
-          console.error('Error creating archetype from search:', error)
           toast({
             title: "Erro ao criar arquétipo",
             description: error.detail || error.error || "Não foi possível criar o arquétipo.",
@@ -913,7 +904,6 @@ export function ExpandableAIPrompt({
           })
         } else {
           const error = await res.json()
-          console.error('Error creating archetype from description:', error)
           toast({
             title: "Erro ao criar arquétipo",
             description: error.detail || error.error || "Não foi possível criar o arquétipo.",
@@ -922,7 +912,6 @@ export function ExpandableAIPrompt({
         }
       }
     } catch (error) {
-      console.error('Error creating archetype from description:', error)
       toast({
         title: "Erro ao criar arquétipo",
         description: "Ocorreu um erro de conexão. Tente novamente.",
@@ -997,7 +986,6 @@ export function ExpandableAIPrompt({
         })
       } else {
         const error = await res.json()
-        console.error('Error updating archetype:', error)
         toast({
           title: "Erro ao atualizar arquétipo",
           description: error.detail || error.error || "Não foi possível salvar as alterações.",
@@ -1005,7 +993,6 @@ export function ExpandableAIPrompt({
         })
       }
     } catch (error) {
-      console.error('Error saving archetype:', error)
       toast({
         title: "Erro ao atualizar arquétipo",
         description: "Ocorreu um erro de conexão. Tente novamente.",
@@ -1045,7 +1032,6 @@ export function ExpandableAIPrompt({
         })
       } else {
         const error = await res.json()
-        console.error('Error deleting archetype:', error)
         toast({
           title: "Erro ao excluir arquétipo",
           description: error.detail || error.error || "Não foi possível excluir o arquétipo.",
@@ -1053,7 +1039,6 @@ export function ExpandableAIPrompt({
         })
       }
     } catch (error) {
-      console.error('Error deleting archetype:', error)
       toast({
         title: "Erro ao excluir arquétipo",
         description: "Ocorreu um erro de conexão. Tente novamente.",
@@ -1161,10 +1146,8 @@ export function ExpandableAIPrompt({
         }
       } else {
         const errorText = await response.text()
-        console.error("Error analyzing profiles:", response.status, errorText)
       }
     } catch (error) {
-      console.error("Error analyzing profiles:", error)
     } finally {
       setIsAnalyzingProfiles(false)
     }
@@ -1507,7 +1490,6 @@ export function ExpandableAIPrompt({
 
         sessionStorage.removeItem('lia-execute-template')
       } catch (error) {
-        console.error('Erro ao executar template:', error)
       }
     }
   }, [])
@@ -1526,7 +1508,6 @@ export function ExpandableAIPrompt({
           .slice(0, 3)
         setSavedTemplates(topTemplates)
       } catch (error) {
-        console.error('Erro ao carregar templates:', error)
       }
     }
   }, [])

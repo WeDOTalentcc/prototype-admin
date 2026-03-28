@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-      console.error(`WSI generate-batch backend error: ${response.status} ${response.statusText}`, { requestBody: backendPayload, errorData })
       return NextResponse.json({
         error: 'Erro ao gerar perguntas WSI em lote',
         details: errorData,
@@ -64,7 +63,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('WSI generate-batch proxy error:', error)
     return NextResponse.json(
       { error: 'Erro interno ao processar geração WSI em lote', detail: String(error) },
       { status: 500 }

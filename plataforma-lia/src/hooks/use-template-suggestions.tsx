@@ -56,7 +56,6 @@ export const useTemplateSuggestions = () => {
         }))
         setCommandHistory(parsed)
       } catch (error) {
-        console.error('Erro ao carregar histórico:', error)
       }
     }
 
@@ -65,7 +64,6 @@ export const useTemplateSuggestions = () => {
       try {
         setSettings(JSON.parse(savedSettings))
       } catch (error) {
-        console.error('Erro ao carregar configurações:', error)
       }
     }
 

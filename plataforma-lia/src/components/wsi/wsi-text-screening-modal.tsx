@@ -186,7 +186,6 @@ export function WSITextScreeningModal({
       setQuestions(data.questions)
       setStep('questions')
     } catch (err) {
-      console.error('Failed to initialize screening:', err)
       setError(err instanceof Error ? err.message : 'Erro ao iniciar triagem')
       setStep('error')
     }
@@ -208,7 +207,6 @@ export function WSITextScreeningModal({
         await completeScreening()
       }
     } catch (err) {
-      console.error('Failed to submit answer:', err)
       setError(err instanceof Error ? err.message : 'Erro ao enviar resposta')
     } finally {
       setIsSubmitting(false)
@@ -245,7 +243,6 @@ export function WSITextScreeningModal({
       setStep('completed')
       onComplete?.(wsiResult)
     } catch (err) {
-      console.error('Failed to calculate WSI:', err)
       setError(err instanceof Error ? err.message : 'Erro ao calcular score')
       setStep('error')
     }

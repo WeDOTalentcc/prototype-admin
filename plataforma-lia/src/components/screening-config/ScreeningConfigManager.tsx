@@ -1406,7 +1406,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   })
                   onJobUpdate?.({ ...job, enrichedJd: enrichedData })
                 } catch (error) {
-                  console.error('Error saving enriched JD:', error)
                   throw error
                 }
               }}
@@ -1432,7 +1431,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies,
                   })
                 } catch (error) {
-                  console.error('Error updating official JD:', error)
                   throw error
                 }
               }}
@@ -1458,7 +1456,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies,
                   })
                 } catch (error) {
-                  console.error('Error saving JD inline:', error)
                   throw error
                 }
               }}
@@ -1480,7 +1477,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   })
                   onJobUpdate?.({ ...job, description: jdText })
                 } catch (error) {
-                  console.error('Error updating job description:', error)
                   throw error
                 }
               }}
@@ -2303,7 +2299,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           toast.error('Erro ao salvar roteiro. Tente novamente.')
                         }
                       } catch (error) {
-                        console.error('Error saving screening questions:', error)
                         toast.error('Erro ao salvar roteiro. Tente novamente.')
                       }
                     }}>
@@ -2358,7 +2353,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             toast.error('Erro ao salvar roteiro. Tente novamente.')
                           }
                         } catch (error) {
-                          console.error('Error saving and activating screening:', error)
                           toast.error('Erro ao salvar roteiro. Tente novamente.')
                         }
                       }}>
