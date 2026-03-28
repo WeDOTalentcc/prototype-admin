@@ -7,11 +7,30 @@ import { DollarSign, Star, CheckCircle2, Plus, Check, Brain, Loader2, TrendingUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { textStyles } from '@/lib/design-tokens'
-import type { JobBenefit } from '@/types/benefits'
 import { BENEFIT_CATEGORY_META, type BenefitCategory } from '@/types/benefits'
-import type { SalaryInfo } from '@/components/job-wizard/types'
 
-export type { SalaryInfo }
+export interface Benefit {
+  id: string
+  name: string
+  enabled: boolean
+  category?: string
+  value?: string
+  value_type?: string
+  percentage_value?: number
+  value_details?: string
+  is_highlighted?: boolean
+  is_mandatory?: boolean
+  provider?: string
+}
+
+export interface SalaryInfo {
+  minSalary: string
+  maxSalary: string
+  minBonus: string
+  maxBonus: string
+  bonusCriteria: string
+  benefits: Benefit[]
+}
 
 export interface SalaryBenchmark {
   internal?: {
@@ -34,7 +53,7 @@ export interface SalaryBenchmark {
 }
 
 export interface CompanyConfig {
-  benefits?: string[]
+  benefits?: string[] | { name: string; category: string; value?: number; is_active: boolean }[]
   [key: string]: any
 }
 
@@ -62,9 +81,10 @@ const CATEGORY_ICONS: Record<BenefitCategory, any> = {
   security: ShieldIcon,
 }
 
-function formatBenefitDisplay(benefit: { value_type?: string; value?: number; percentage_value?: number; value_details?: string }): string {
+function formatBenefitDisplay(benefit: { value_type?: string; value?: string; percentage_value?: number; value_details?: string }): string {
   if (benefit.value_type === 'monetary' && benefit.value) {
-    return `R$ ${benefit.value.toLocaleString('pt-BR')}`
+    const numValue = parseFloat(benefit.value)
+    return `R$ ${isNaN(numValue) ? benefit.value : numValue.toLocaleString('pt-BR')}`
   }
   if (benefit.value_type === 'percentage' && benefit.percentage_value) {
     return `${benefit.percentage_value}%`

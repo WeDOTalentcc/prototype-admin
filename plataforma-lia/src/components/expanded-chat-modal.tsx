@@ -71,6 +71,9 @@ import {
   INITIAL_GENERAL_MESSAGE,
 } from './expanded-chat'
 import { useWizardState, useWSIQualityGates, useWizardNavigation, useChatSync, useToolCalling, useFieldHighlight, useWSIState, useCalibrationState, useSalaryState, useCompetenciesState, usePublishingState, useFastTrackState, type ChatNavigationResult, type GroupedChange, type ToolCall, type ToolExecutionResult } from './expanded-chat/hooks'
+import { useSendMessageHandlers, type SendMessageHandlersContext } from './expanded-chat/hooks/useSendMessageHandlers'
+import { useWizardPublishHandlers } from './expanded-chat/hooks/useWizardPublishHandlers'
+import { useWSIAndCalibrationHandlers } from './expanded-chat/hooks/useWSIAndCalibrationHandlers'
 import { useConversationMemory } from './expanded-chat/hooks/useConversationMemory'
 import { useLearning } from './expanded-chat/hooks/useLearning'
 import { useFastTrack, type FastTrackSuggestion, type FastTrackJobData } from '@/hooks/useFastTrack'
@@ -78,8 +81,8 @@ import { FastTrackSuggestions } from './job-wizard/FastTrackSuggestions'
 import { FastTrackReviewPanel } from './job-wizard/FastTrackReviewPanel'
 import { useWizardAnalytics } from './expanded-chat/hooks/useWizardAnalytics'
 import { useContextSwitching, type WizardSnapshot, type GeneralChatSnapshot } from './expanded-chat/hooks/useContextSwitching'
-import { WizardHeader, WSIQualityBar, ToolConfirmationMessage, ToolExecutionFeedback, ChatMessageList } from './expanded-chat/components'
-import { SalaryStage, CompetenciesStage, WSIQuestionsStage, EnrichedJDStage, SearchCalibrationStage, SearchCalibrationNavButtons, ReviewPublishStage, InputEvaluationStage, type EnrichedJDData } from './expanded-chat/stages'
+import { ToolConfirmationMessage, ToolExecutionFeedback, ChatMessageList, ExpandedChatInput, WizardRightPanel } from './expanded-chat/components'
+import { type EnrichedJDData } from './expanded-chat/stages'
 import {
   parseCommand,
   isLocalCommand,
@@ -1087,9 +1090,9 @@ function ExpandedChatModalContent({
         employmentType: basicInfoFields.tipoContrato
       },
       salaryInfo: salaryInfo,
-      technicalSkills: technicalSkills,
-      behavioralCompetencies: behavioralCompetencies,
-      wsiCandidates: wsiCandidates,
+      technicalSkills: technicalSkills as any,
+      behavioralCompetencies: behavioralCompetencies as any,
+      wsiCandidates: wsiCandidates as any,
       currentStage: currentStage,
       jobDescription: generatedJobDescription || ''
     },
@@ -3090,244 +3093,165 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
     return newCriteria
   }
 
-  const generateCriteriaResponse = (criteria: DetectedCriteria): string => {
-    const detected: string[] = []
-    const missing: string[] = []
-    
-    if (criteria.cargo) detected.push(`**Cargo**: ${criteria.cargo}`)
-    else missing.push('cargo')
-    
-    if (criteria.gestorArea) detected.push(`**Gestor**: ${criteria.gestorArea}`)
-    
-    if (criteria.responsabilidades.length > 0) {
-      detected.push(`**Responsabilidades**: ${criteria.responsabilidades.slice(0, 4).join(', ')}${criteria.responsabilidades.length > 4 ? ` (+${criteria.responsabilidades.length - 4})` : ''}`)
-    }
-    
-    if (criteria.competenciasTecnicas.length > 0) {
-      detected.push(`**Skills técnicos**: ${criteria.competenciasTecnicas.slice(0, 5).join(', ')}${criteria.competenciasTecnicas.length > 5 ? ` (+${criteria.competenciasTecnicas.length - 5})` : ''}`)
-    } else {
-      missing.push('competências técnicas')
-    }
-    
-    if (criteria.competenciasComportamentais.length > 0) {
-      detected.push(`**Competências comportamentais**: ${criteria.competenciasComportamentais.slice(0, 3).join(', ')}`)
-    }
-    
-    if (criteria.idiomas && criteria.idiomas.length > 0) {
-      detected.push(`**Idiomas**: ${criteria.idiomas.join(', ')}`)
-    }
-    
-    if (criteria.senioridadeIdiomas) detected.push(`**Senioridade**: ${criteria.senioridadeIdiomas}`)
-    else missing.push('senioridade')
-    
-    if (criteria.modeloTrabalho) {
-      let modeloText = `**Modelo**: ${criteria.modeloTrabalho}`
-      if (criteria.diasPresenciais) {
-        modeloText += ` (${criteria.diasPresenciais}x por semana no escritório)`
+  // State for validation error display
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  // Proceed to next stage (called after modal or directly if no suggestions)
+  // Defined before hook so it can be passed as context
+  const proceedToNextStage = () => {
+    const nextIndex = currentStageIndex + 1
+    if (nextIndex < WIZARD_STAGES.length) {
+      const currentStageConfig = WIZARD_STAGES[currentStageIndex] as ExtendedWizardStageConfig
+      const nextStage = WIZARD_STAGES[nextIndex] as ExtendedWizardStageConfig
+
+      // Generate transition message from current stage
+      let transitionContent = ""
+      if (currentStageConfig.transition) {
+        const { congratsMessage, nextStepExplanation, whyItMatters, proactiveTips } = currentStageConfig.transition
+        transitionContent = `${congratsMessage}\n\n`
+        transitionContent += `**Próximo passo:** ${nextStepExplanation}\n\n`
+        transitionContent += `💡 *${whyItMatters}*`
+
+        if (proactiveTips && proactiveTips.length > 0) {
+          transitionContent += `\n\n**O que vou fazer:**\n`
+          proactiveTips.forEach(tip => {
+            transitionContent += `• ${tip}\n`
+          })
+        }
       }
-      detected.push(modeloText)
-    }
-    if (criteria.localizacao) detected.push(`**Local**: ${criteria.localizacao}`)
-    if (criteria.tipoContrato) detected.push(`**Contrato**: ${criteria.tipoContrato}`)
-    if (criteria.salario) detected.push(`**Salário**: ${criteria.salario}`)
-    if (criteria.bonus) detected.push(`**Bônus**: ${criteria.bonus}`)
-    if (criteria.isAffirmative !== null) {
-      let affirmText = `**Vaga Afirmativa**: ${criteria.isAffirmative ? 'Sim' : 'Não'}`
-      if (criteria.affirmativeCriteriaPrimary) {
-        affirmText += ` (${criteria.affirmativeCriteriaPrimary}${criteria.affirmativeCriteriaSecondary ? `, ${criteria.affirmativeCriteriaSecondary}` : ''})`
+
+      // Check for missing recommended fields and add gentle reminders
+      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria)
+      if (missingFields.recommended.length > 0) {
+        transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`
       }
-      detected.push(affirmText)
-    }
-    
-    // Novos campos detectáveis
-    if (criteria.experienciaMinima) detected.push(`**Experiência**: ${criteria.experienciaMinima}`)
-    if (criteria.formacao && criteria.formacao.length > 0) {
-      detected.push(`**Formação**: ${criteria.formacao.join(', ')}`)
-    }
-    if (criteria.certificacoes && criteria.certificacoes.length > 0) {
-      detected.push(`**Certificações**: ${criteria.certificacoes.join(', ')}`)
-    }
-    if (criteria.ferramentas && criteria.ferramentas.length > 0) {
-      detected.push(`**Ferramentas**: ${criteria.ferramentas.slice(0, 5).join(', ')}${criteria.ferramentas.length > 5 ? ` (+${criteria.ferramentas.length - 5})` : ''}`)
-    }
-    if (criteria.beneficiosMencionados && criteria.beneficiosMencionados.length > 0) {
-      detected.push(`**Benefícios**: ${criteria.beneficiosMencionados.slice(0, 4).join(', ')}${criteria.beneficiosMencionados.length > 4 ? ` (+${criteria.beneficiosMencionados.length - 4})` : ''}`)
-    }
-    if (criteria.viagensFrequentes) detected.push(`**Viagens**: Sim`)
-    if (criteria.disponibilidade) detected.push(`**Início**: ${criteria.disponibilidade}`)
-    if (criteria.cnh) detected.push(`**CNH**: ${criteria.cnh}`)
-    if (criteria.horario) detected.push(`**Horário**: ${criteria.horario}`)
-    
-    let response = ''
-    
-    if (detected.length > 0) {
-      response = `Detectei os seguintes critérios:\n\n${detected.map(d => `- ${d}`).join('\n')}`
-      
-      if (missing.length > 0 && missing.length <= 2) {
-        response += `\n\nPara completar, informe: **${missing.join('** e **')}**.`
-      } else if (detected.length >= 3) {
-        response += `\n\nÓtimo progresso! Você pode adicionar mais detalhes para enriquecer a vaga.`
+
+      // Add transition message first
+      if (transitionContent) {
+        const transitionMessage: Message = {
+          id: `transition-${currentStageConfig.id}-${Date.now()}`,
+          role: 'assistant',
+          content: transitionContent,
+          timestamp: new Date(),
+          isTyping: true
+        }
+        setMessages(prev => [...prev, transitionMessage])
+
+        // Type transition message, then after delay add next stage message
+        typeText(transitionContent, transitionMessage.id)
+
+        setTimeout(() => {
+          setCurrentStage(nextStage.id)
+          saveWizardDraft()
+
+          const stageMessage: Message = {
+            id: `stage-${nextStage.id}-${Date.now()}`,
+            role: 'assistant',
+            content: nextStage.liaMessage,
+            timestamp: new Date(),
+            isTyping: true
+          }
+
+          setMessages(prev => [...prev, stageMessage])
+          setDisplayedText("")
+          setTimeout(() => {
+            typeText(nextStage.liaMessage, stageMessage.id)
+          }, 300)
+        }, 2000) // Wait 2 seconds for transition message to be read
+      } else {
+        // No transition config, proceed directly
+        setCurrentStage(nextStage.id)
+        saveWizardDraft()
+
+        const stageMessage: Message = {
+          id: `stage-${nextStage.id}-${Date.now()}`,
+          role: 'assistant',
+          content: nextStage.liaMessage,
+          timestamp: new Date(),
+          isTyping: true
+        }
+
+        setMessages(prev => [...prev, stageMessage])
+        setDisplayedText("")
+        setTimeout(() => {
+          typeText(nextStage.liaMessage, stageMessage.id)
+        }, 300)
       }
-    } else {
-      response = 'Não consegui detectar critérios específicos. Tente descrever o cargo, senioridade, skills técnicos e modelo de trabalho.'
     }
-    
-    return response
   }
 
-  const generateParecerData = useCallback((): ParecerLIAData => {
-    const sections: Array<{ title: string; status: "good" | "attention" | "missing"; items: string[]; suggestions?: string[] }> = []
-    
-    const descItems: string[] = []
-    const descSuggestions: string[] = []
-    if (detectedCriteria.cargo) descItems.push(`Cargo: ${detectedCriteria.cargo}`)
-    if (detectedCriteria.senioridadeIdiomas) descItems.push(`Senioridade: ${detectedCriteria.senioridadeIdiomas}`)
-    if (detectedCriteria.departamento) descItems.push(`Departamento: ${detectedCriteria.departamento}`)
-    if (detectedCriteria.modeloTrabalho) descItems.push(`Modelo: ${detectedCriteria.modeloTrabalho}`)
-    if (detectedCriteria.localizacao) descItems.push(`Local: ${detectedCriteria.localizacao}`)
-    if (!detectedCriteria.senioridadeIdiomas) descSuggestions.push("Adicionar senioridade para melhor calibração de candidatos")
-    if (!detectedCriteria.modeloTrabalho) descSuggestions.push("Definir modelo de trabalho (remoto, híbrido, presencial)")
-    sections.push({
-      title: "Descrição da Vaga",
-      status: descItems.length >= 4 ? "good" : descItems.length >= 2 ? "attention" : "missing",
-      items: descItems,
-      suggestions: descSuggestions.length > 0 ? descSuggestions : undefined
-    })
-
-    const respItems = detectedCriteria.responsabilidades || []
-    sections.push({
-      title: "Responsabilidades",
-      status: respItems.length >= 3 ? "good" : respItems.length >= 1 ? "attention" : "missing",
-      items: respItems.length > 0 ? respItems.slice(0, 5) : ["Nenhuma responsabilidade identificada"],
-      suggestions: respItems.length < 3 ? ["Adicionar pelo menos 3 responsabilidades principais"] : undefined
-    })
-
-    const techItems = technicalSkills.map(s => `${s.name} (${s.level})`)
-    const techFromCriteria = detectedCriteria.competenciasTecnicas || []
-    const techDisplay = techItems.length > 0 ? techItems : techFromCriteria.map(s => s)
-    sections.push({
-      title: "Competências Técnicas",
-      status: techDisplay.length >= 3 ? "good" : techDisplay.length >= 1 ? "attention" : "missing",
-      items: techDisplay.length > 0 ? techDisplay.slice(0, 6) : ["Nenhuma competência técnica identificada"],
-      suggestions: techDisplay.length < 3 ? ["Incluir pelo menos 3 skills técnicos para melhor triagem WSI"] : undefined
-    })
-
-    const behavItems = behavioralCompetencies.filter(c => c.enabled).map(c => c.name)
-    const behavFromCriteria = detectedCriteria.competenciasComportamentais || []
-    const behavDisplay = behavItems.length > 0 ? behavItems : behavFromCriteria
-    sections.push({
-      title: "Competências Comportamentais",
-      status: behavDisplay.length >= 2 ? "good" : behavDisplay.length >= 1 ? "attention" : "missing",
-      items: behavDisplay.length > 0 ? behavDisplay.slice(0, 5) : ["Nenhuma competência comportamental identificada"],
-      suggestions: behavDisplay.length < 2 ? ["Definir competências comportamentais para avaliação cultural"] : undefined
-    })
-
-    const salaryItems: string[] = []
-    const salarySuggestions: string[] = []
-    if (salaryInfo.minSalary && salaryInfo.maxSalary) {
-      salaryItems.push(`Faixa: R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}`)
-    }
-    if (salaryInfo.minBonus || salaryInfo.maxBonus) {
-      salaryItems.push(`Bônus: ${salaryInfo.minBonus || '0'}% - ${salaryInfo.maxBonus || '0'}%`)
-    }
-    const enabledBenefits = salaryInfo.benefits?.filter(b => b.enabled) || []
-    if (enabledBenefits.length > 0) {
-      salaryItems.push(`${enabledBenefits.length} benefício(s) definido(s)`)
-    }
-    if (!salaryInfo.minSalary) salarySuggestions.push("Definir faixa salarial para atrair candidatos adequados")
-    sections.push({
-      title: "Remuneração",
-      status: salaryItems.length >= 2 ? "good" : salaryItems.length >= 1 ? "attention" : "missing",
-      items: salaryItems.length > 0 ? salaryItems : ["Remuneração ainda não definida"],
-      suggestions: salarySuggestions.length > 0 ? salarySuggestions : undefined
-    })
-
-    const marketComparisons: Array<{ field: string; yourValue: string; marketValue: string; status: "above" | "aligned" | "below" }> = []
-    if (learning.suggestions?.salary?.has_suggestion && salaryInfo.minSalary) {
-      const yourMin = parseFloat(salaryInfo.minSalary.replace(/\./g, '').replace(',', '.')) || 0
-      const marketMin = learning.suggestions.salary.min_salary || 0
-      const marketMax = learning.suggestions.salary.max_salary || 0
-      if (marketMin > 0) {
-        marketComparisons.push({
-          field: "Faixa Salarial",
-          yourValue: `R$ ${salaryInfo.minSalary} - ${salaryInfo.maxSalary}`,
-          marketValue: `R$ ${marketMin.toLocaleString('pt-BR')} - ${marketMax.toLocaleString('pt-BR')}`,
-          status: yourMin > marketMax ? "above" : yourMin < marketMin * 0.8 ? "below" : "aligned"
-        })
-      }
-    }
-
-    let timeToFillEstimate: ParecerLIAData['timeToFillEstimate']
-    if (learning.suggestions?.time_to_fill?.has_prediction) {
-      const ttf = learning.suggestions.time_to_fill
-      timeToFillEstimate = {
-        days: ttf.estimated_days || ttf.median_days || 30,
-        rangeMin: ttf.range_min || 20,
-        rangeMax: ttf.range_max || 45,
-        confidence: ttf.confidence || 0.5
-      }
-    }
-
-    const sectionScores = sections.map(s => s.status === "good" ? 1 : s.status === "attention" ? 0.5 : 0)
-    const overallScore = Math.round((sectionScores.reduce((a, b) => a + b, 0) / sectionScores.length) * 100)
-    
-    const totalFields = 10
-    const filledFields = [
-      detectedCriteria.cargo,
-      detectedCriteria.senioridadeIdiomas,
-      detectedCriteria.departamento,
-      detectedCriteria.modeloTrabalho,
-      detectedCriteria.localizacao,
-      (detectedCriteria.responsabilidades?.length || 0) > 0,
-      techDisplay.length > 0,
-      behavDisplay.length > 0,
-      salaryInfo.minSalary,
-      detectedCriteria.gestorArea
-    ].filter(Boolean).length
-    const completenessScore = Math.round((filledFields / totalFields) * 100)
-
-    const recommendations: string[] = []
-    sections.forEach(s => {
-      if (s.suggestions) {
-        s.suggestions.forEach(sug => recommendations.push(sug))
-      }
-    })
-    if (recommendations.length === 0) {
-      recommendations.push("A vaga está bem estruturada! Revise os detalhes e avance para a próxima etapa.")
-    }
-
-    const dataSourcesUsed: string[] = ["Critérios informados pelo recrutador"]
-    if (learning.suggestions?.has_suggestions) {
-      dataSourcesUsed.push(`${learning.suggestions.total_samples || 0} vagas similares`)
-      if (learning.suggestions.patterns_found > 0) {
-        dataSourcesUsed.push(`${learning.suggestions.patterns_found} padrões identificados`)
-      }
-    }
-
-    return {
-      overallScore,
-      completenessScore,
-      sections,
-      marketComparisons: marketComparisons.length > 0 ? marketComparisons : undefined,
-      timeToFillEstimate,
-      similarJobsCount: learning.suggestions?.total_samples,
-      dataSourcesUsed,
-      recommendations
-    }
-  }, [detectedCriteria, technicalSkills, behavioralCompetencies, salaryInfo, learning.suggestions])
+  const {
+    generateCriteriaResponse,
+    generateParecerData,
+    generateCompetencyAnalysisMessage,
+    generateWSIExplanationMessage,
+    handleAcceptSuggestions,
+    handleSkipSuggestions,
+    handleClearDraftAndReset,
+    handlePublishJob,
+    buildCandidateSearchQuery,
+    generateJobDescription,
+    startLocalSearch,
+    startGlobalSearch,
+  } = useWizardPublishHandlers({
+    detectedCriteria,
+    setDetectedCriteria,
+    basicInfoFields,
+    setBasicInfoFields,
+    technicalSkills,
+    setTechnicalSkills,
+    behavioralCompetencies,
+    setBehavioralCompetencies,
+    salaryInfo,
+    setSalaryInfo,
+    messages,
+    setMessages,
+    currentStage,
+    setCurrentStage,
+    publishingPlatforms,
+    jobConfig,
+    setJobDescription,
+    setIsGeneratingDescription,
+    setPublishedJobId,
+    setAwaitingCalibrationChoice,
+    setSearchPhase,
+    setLocalCandidateCount,
+    setGlobalCandidateCount,
+    preferredCandidateCount,
+    selectedSuggestedTechnical,
+    selectedSuggestedBehavioral,
+    setShowCompetenciesSuggestionsModal,
+    clearWizardDraft,
+    setHasAppliedRestoredDraft,
+    setShowClearDraftConfirm,
+    setWsiCandidates,
+    setGeneratedJobDescription,
+    companyConfig,
+    interviewStages,
+    companyMembersMap,
+    companyDefaultQuestions,
+    wsiCandidates,
+    user,
+    wizardFastTrackSourceJobId,
+    setWizardFastTrackSourceJobId,
+    conversationId,
+    learning,
+    setIsLoading,
+    proceedToNextStage,
+  })
 
   // Stage validation function
   const validateCurrentStage = (): { isValid: boolean; errorMessage?: string } => {
     switch (currentStage) {
       case 'input-evaluation':
         return { isValid: true }
-      
+
       case 'jd-enrichment':
         return { isValid: true }
-        
+
       case 'competencies':
         return { isValid: true }
-        
+
       case 'salary':
         const minSalary = parseFloat(salaryInfo.minSalary)
         const maxSalary = parseFloat(salaryInfo.maxSalary)
@@ -3341,20 +3265,17 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
           return { isValid: false, errorMessage: 'O salário máximo deve ser maior que o mínimo.' }
         }
         return { isValid: true }
-        
+
       case 'wsi-questions':
         return { isValid: true }
-        
+
       case 'review-publish':
         return { isValid: true }
-        
+
       default:
         return { isValid: true }
     }
   }
-
-  // State for validation error display
-  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Navigation functions for wizard
   const goToNextStage = () => {
@@ -3366,17 +3287,16 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
       return
     }
     setValidationError(null)
-    
+
     const nextIndex = currentStageIndex + 1
     if (nextIndex < WIZARD_STAGES.length) {
       const nextStage = WIZARD_STAGES[nextIndex]
-      
+
       // Show loading state during transition
       setStageTransition('loading')
-      
+
       // Intercept transition from salary to competencies to show LIA analysis
       if (currentStage === 'salary' && nextStage.id === 'competencies') {
-        // Add LIA thinking message
         const thinkingMessage: Message = {
           id: `lia-thinking-${Date.now()}`,
           role: 'assistant',
@@ -3385,32 +3305,28 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
           processingState: 'thinking' as const
         }
         setMessages(prev => [...prev, thinkingMessage])
-        
-        // Use backend deduplication API for better suggestions
+
         const alreadySelectedSkills = [
           ...technicalSkills.map(s => s.name),
           ...behavioralCompetencies.filter(c => c.enabled).map(c => c.name)
         ]
-        
+
         fetchDeduplicatedSkills(
           basicInfoFields.cargo || 'profissional',
           alreadySelectedSkills,
           detectedCriteria.senioridadeIdiomas || undefined
         ).then(deduplicatedSkills => {
-          // Remove thinking message
           setMessages(prev => prev.filter(m => m.id !== thinkingMessage.id))
-          
-          // Extract skill names from deduplicated skills
+
           const skillNames = deduplicatedSkills.map(s => s.name)
-          
-          // Generate LIA analysis message with competency suggestions
+
           const analysisContent = generateCompetencyAnalysisMessage(
             basicInfoFields.cargo,
             basicInfoFields.area,
             detectedCriteria,
             skillNames.length > 0 ? skillNames : undefined
           )
-          
+
           const analysisMessage: Message = {
             id: `lia-competencies-analysis-${Date.now()}`,
             role: 'assistant',
@@ -3420,30 +3336,26 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
           }
           setMessages(prev => [...prev, analysisMessage])
           setDisplayedText("")
-          
-          // Type the analysis message
+
           setTimeout(() => {
             typeText(analysisContent, analysisMessage.id)
           }, 200)
-          
-          // Proceed to next stage after brief delay
+
           setTimeout(() => {
             setStageTransition('idle')
             proceedToNextStage()
           }, 500)
         }).catch((error) => {
           console.error('Failed to fetch deduplicated skills:', error)
-          // Remove thinking message and proceed anyway
           setMessages(prev => prev.filter(m => m.id !== thinkingMessage.id))
           setStageTransition('idle')
           proceedToNextStage()
         })
-        return // Don't advance yet, wait for async completion
+        return
       }
-      
+
       // Intercept transition from competencies to wsi-questions to show LIA message
       if (currentStage === 'competencies' && nextStage.id === 'wsi-questions') {
-        // Add LIA thinking message
         const thinkingMessage: Message = {
           id: `lia-thinking-wsi-${Date.now()}`,
           role: 'assistant',
@@ -3452,20 +3364,17 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
           processingState: 'thinking' as const
         }
         setMessages(prev => [...prev, thinkingMessage])
-        
-        // Brief delay then show WSI generation message
+
         setTimeout(() => {
-          // Remove thinking message
           setMessages(prev => prev.filter(m => m.id !== thinkingMessage.id))
-          
-          // Generate WSI explanation message
+
           const enabledCompetencies = behavioralCompetencies.filter(c => c.enabled).map(c => c.name)
           const wsiExplanation = generateWSIExplanationMessage(
             technicalSkills.map(s => s.name),
             enabledCompetencies,
             basicInfoFields.cargo
           )
-          
+
           const wsiMessage: Message = {
             id: `lia-wsi-explanation-${Date.now()}`,
             role: 'assistant',
@@ -3475,12 +3384,11 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
           }
           setMessages(prev => [...prev, wsiMessage])
           setDisplayedText("")
-          
+
           setTimeout(() => {
             typeText(wsiExplanation, wsiMessage.id)
           }, 200)
-          
-          // Proceed to next stage
+
           setTimeout(() => {
             setStageTransition('idle')
             proceedToNextStage()
@@ -3488,218 +3396,13 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
         }, 800)
         return
       }
-      
+
       // Default: proceed directly
       setTimeout(() => {
         setStageTransition('idle')
         proceedToNextStage()
       }, 300)
     }
-  }
-  
-  // Generate competency analysis message from LIA
-  const generateCompetencyAnalysisMessage = (
-    cargo: string | null,
-    area: string | null,
-    criteria: typeof detectedCriteria,
-    deduplicatedSkills?: string[]
-  ): string => {
-    const role = cargo || 'profissional'
-    const department = area || 'a área'
-    
-    let message = `**Análise de Competências para ${role}**\n\n`
-    message += `Com base nas informações da vaga e dados de mercado, preparei sugestões de competências:\n\n`
-    
-    if (criteria.competenciasTecnicas.length > 0) {
-      message += `**Competências Técnicas Identificadas:**\n`
-      criteria.competenciasTecnicas.slice(0, 5).forEach(skill => {
-        message += `• ${skill}\n`
-      })
-      message += `\n`
-    }
-    
-    if (criteria.competenciasComportamentais.length > 0) {
-      message += `**Competências Comportamentais Sugeridas:**\n`
-      criteria.competenciasComportamentais.slice(0, 4).forEach(comp => {
-        message += `• ${comp}\n`
-      })
-      message += `\n`
-    }
-    
-    message += `📊 *Fontes: histórico de vagas similares + dados de mercado*\n\n`
-    message += `Me informe aqui no chat se deseja adicionar, remover ou alterar os pesos das competências.`
-    
-    return message
-  }
-  
-  // Generate WSI explanation message from LIA
-  const generateWSIExplanationMessage = (
-    technicalSkills: string[],
-    behavioralCompetencies: string[],
-    cargo: string | null
-  ): string => {
-    const role = cargo || 'a vaga'
-    const totalCompetencies = technicalSkills.length + behavioralCompetencies.length
-    
-    let message = `**Gerando Perguntas de Triagem WSI**\n\n`
-    message += `Vou criar perguntas baseadas na metodologia WSI (Work Sample Interview), que combina:\n\n`
-    message += `• **Taxonomia de Bloom** - níveis cognitivos\n`
-    message += `• **Modelo Dreyfus** - proficiência técnica\n`
-    message += `• **Big Five** - traços comportamentais\n\n`
-    
-    message += `Considerando as ${totalCompetencies} competências definidas para ${role}, `
-    message += `as perguntas avaliarão tanto habilidades técnicas quanto comportamentais.\n\n`
-    
-    message += `⏳ *Aguarde enquanto gero as perguntas personalizadas...*`
-    
-    return message
-  }
-  
-  // Proceed to next stage (called after modal or directly if no suggestions)
-  const proceedToNextStage = () => {
-    const nextIndex = currentStageIndex + 1
-    if (nextIndex < WIZARD_STAGES.length) {
-      const currentStageConfig = WIZARD_STAGES[currentStageIndex] as ExtendedWizardStageConfig
-      const nextStage = WIZARD_STAGES[nextIndex] as ExtendedWizardStageConfig
-      
-      // Generate transition message from current stage
-      let transitionContent = ""
-      if (currentStageConfig.transition) {
-        const { congratsMessage, nextStepExplanation, whyItMatters, proactiveTips } = currentStageConfig.transition
-        transitionContent = `${congratsMessage}\n\n`
-        transitionContent += `**Próximo passo:** ${nextStepExplanation}\n\n`
-        transitionContent += `💡 *${whyItMatters}*`
-        
-        if (proactiveTips && proactiveTips.length > 0) {
-          transitionContent += `\n\n**O que vou fazer:**\n`
-          proactiveTips.forEach(tip => {
-            transitionContent += `• ${tip}\n`
-          })
-        }
-      }
-      
-      // Check for missing recommended fields and add gentle reminders
-      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria)
-      if (missingFields.recommended.length > 0) {
-        transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`
-      }
-      
-      // Add transition message first
-      if (transitionContent) {
-        const transitionMessage: Message = {
-          id: `transition-${currentStageConfig.id}-${Date.now()}`,
-          role: 'assistant',
-          content: transitionContent,
-          timestamp: new Date(),
-          isTyping: true
-        }
-        setMessages(prev => [...prev, transitionMessage])
-        
-        // Type transition message, then after delay add next stage message
-        typeText(transitionContent, transitionMessage.id)
-        
-        setTimeout(() => {
-          setCurrentStage(nextStage.id)
-          saveWizardDraft()
-          
-          const stageMessage: Message = {
-            id: `stage-${nextStage.id}-${Date.now()}`,
-            role: 'assistant',
-            content: nextStage.liaMessage,
-            timestamp: new Date(),
-            isTyping: true
-          }
-          
-          setMessages(prev => [...prev, stageMessage])
-          setDisplayedText("")
-          setTimeout(() => {
-            typeText(nextStage.liaMessage, stageMessage.id)
-          }, 300)
-        }, 2000) // Wait 2 seconds for transition message to be read
-      } else {
-        // No transition config, proceed directly
-        setCurrentStage(nextStage.id)
-        saveWizardDraft()
-        
-        const stageMessage: Message = {
-          id: `stage-${nextStage.id}-${Date.now()}`,
-          role: 'assistant',
-          content: nextStage.liaMessage,
-          timestamp: new Date(),
-          isTyping: true
-        }
-        
-        setMessages(prev => [...prev, stageMessage])
-        setDisplayedText("")
-        setTimeout(() => {
-          typeText(nextStage.liaMessage, stageMessage.id)
-        }, 300)
-      }
-    }
-  }
-  
-  // Handle accepting selected suggestions from the modal
-  const handleAcceptSuggestions = () => {
-    // Add selected technical skills
-    const skillCategories: Record<string, 'language' | 'framework' | 'database' | 'tool'> = {
-      'Python': 'language', 'Java': 'language', 'Node.js': 'framework', 'React': 'framework',
-      'TypeScript': 'language', 'SQL': 'database', 'Docker': 'tool', 'AWS': 'tool',
-      'Git': 'tool', 'Linux': 'tool', 'MongoDB': 'database', 'PostgreSQL': 'database',
-      'Kubernetes': 'tool', 'CI/CD': 'tool', 'REST API': 'tool',
-      'Excel Avançado': 'tool', 'Power BI': 'tool', 'SAP': 'tool', 'ERP': 'tool'
-    }
-    
-    const newTechnicalSkills: TechnicalSkill[] = Array.from(selectedSuggestedTechnical).map((skill, idx) => ({
-      id: `suggested-tech-${Date.now()}-${idx}`,
-      name: skill,
-      level: 'Intermediário' as const,
-      required: idx < 3,
-      category: skillCategories[skill] || 'tool',
-      weight: idx < 3 ? 3 : 2
-    }))
-    
-    setTechnicalSkills(prev => {
-      const existingNames = prev.map(s => s.name.toLowerCase())
-      const filteredNew = newTechnicalSkills.filter(s => !existingNames.includes(s.name.toLowerCase()))
-      return [...prev, ...filteredNew]
-    })
-    
-    // Add selected behavioral competencies
-    const newBehavioralCompetencies: BehavioralCompetency[] = Array.from(selectedSuggestedBehavioral).map((comp, idx) => ({
-      id: `suggested-behav-${Date.now()}-${idx}`,
-      name: comp,
-      weight: 4,
-      justification: 'Sugerido pela LIA com base no cargo/área',
-      enabled: true
-    }))
-    
-    setBehavioralCompetencies(prev => {
-      const existingNames = prev.map(c => c.name.toLowerCase())
-      const filteredNew = newBehavioralCompetencies.filter(c => !existingNames.includes(c.name.toLowerCase()))
-      return [...prev, ...filteredNew]
-    })
-    
-    // Add feedback message
-    const acceptedCount = selectedSuggestedTechnical.size + selectedSuggestedBehavioral.size
-    if (acceptedCount > 0) {
-      const feedbackMessage: Message = {
-        id: `suggestions-accepted-${Date.now()}`,
-        role: 'assistant',
-        content: `Ótimo! Adicionei **${selectedSuggestedTechnical.size} competências técnicas** e **${selectedSuggestedBehavioral.size} comportamentais** baseadas no perfil da vaga. Me informe aqui no chat se precisar ajustar os pesos e níveis.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, feedbackMessage])
-    }
-    
-    // Close modal and proceed
-    setShowCompetenciesSuggestionsModal(false)
-    proceedToNextStage()
-  }
-  
-  // Handle skipping suggestions
-  const handleSkipSuggestions = () => {
-    setShowCompetenciesSuggestionsModal(false)
-    proceedToNextStage()
   }
 
   const goToPreviousStage = () => {
@@ -3710,76 +3413,12 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
     }
   }
 
-  const handleClearDraftAndReset = () => {
-    clearWizardDraft()
-    setMessages([])
-    setBasicInfoFields({
-      cargo: '',
-      area: '',
-      gestor: '',
-      localidade: '',
-      modeloTrabalho: '',
-      tipoContrato: ''
-    })
-    setTechnicalSkills([])
-    setBehavioralCompetencies([
-      { id: '1', name: 'Comunicação Eficaz', weight: 4, justification: '', enabled: false },
-      { id: '2', name: 'Resolução de Problemas', weight: 5, justification: '', enabled: false },
-      { id: '3', name: 'Adaptabilidade', weight: 4, justification: '', enabled: false },
-      { id: '4', name: 'Trabalho em Equipe', weight: 4, justification: '', enabled: false },
-      { id: '5', name: 'Proatividade', weight: 3, justification: '', enabled: false },
-    ])
-    setSalaryInfo({
-      minSalary: '',
-      maxSalary: '',
-      minBonus: '',
-      maxBonus: '',
-      bonusCriteria: '',
-      benefits: []
-    })
-    setWsiCandidates([])
-    setDetectedCriteria({
-      cargo: null,
-      gestorArea: null,
-      responsabilidades: [],
-      competenciasTecnicas: [],
-      competenciasComportamentais: [],
-      idiomas: [],
-      senioridadeIdiomas: null,
-      modeloTrabalho: null,
-      localizacao: null,
-      tipoContrato: null,
-      salario: null,
-      departamento: null,
-      isAffirmative: null,
-      affirmativeCriteriaPrimary: null,
-      affirmativeCriteriaSecondary: null,
-      affirmativeDescription: null,
-      experienciaMinima: null,
-      formacao: [],
-      certificacoes: [],
-      ferramentas: [],
-      diasPresenciais: null,
-      beneficiosMencionados: [],
-      bonus: null,
-      viagensFrequentes: null,
-      disponibilidade: null,
-      cnh: null,
-      horario: null
-    })
-    setCurrentStage('input-evaluation')
-    setGeneratedJobDescription('')
-    setHasAppliedRestoredDraft(false)
-    setShowClearDraftConfirm(false)
-  }
-
   const canAdvanceToNextStage = (): boolean => {
     switch (currentStage) {
       case 'input-evaluation':
-        // User must have sent at least one message before advancing
         const hasUserSentMessage = messages.some(m => m.role === 'user')
         if (!hasUserSentMessage) return false
-        
+
         const filledCriteria = [
           detectedCriteria.cargo,
           detectedCriteria.gestorArea,
@@ -3790,27 +3429,23 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
         ].filter(Boolean).length
         return filledCriteria >= 2
       case 'jd-enrichment':
-        // User can advance after reviewing enriched JD (at least cargo must be detected)
         return !!detectedCriteria.cargo
       case 'competencies':
-        // Require at least one technical skill AND WSI quality gate score >= 70%
         const hasMinimumTechnicalSkills = technicalSkills.length >= 1
         return hasMinimumTechnicalSkills && wsiQualityGates.canAdvance
       case 'salary':
-        const hasSalaryRange = !!(salaryInfo.minSalary && salaryInfo.maxSalary && 
-          parseFloat(salaryInfo.minSalary.replace(/\./g, '').replace(',', '.')) > 0 && 
+        const hasSalaryRange = !!(salaryInfo.minSalary && salaryInfo.maxSalary &&
+          parseFloat(salaryInfo.minSalary.replace(/\./g, '').replace(',', '.')) > 0 &&
           parseFloat(salaryInfo.maxSalary.replace(/\./g, '').replace(',', '.')) > 0)
-        // Bonus is optional: only validate if user started filling either field
         const bonusStarted = !!(salaryInfo.minBonus || salaryInfo.maxBonus)
         const bonusValid = !bonusStarted || !!(
-          salaryInfo.minBonus && salaryInfo.maxBonus && 
-          parseFloat(salaryInfo.minBonus.replace(/\./g, '').replace(',', '.')) > 0 && 
+          salaryInfo.minBonus && salaryInfo.maxBonus &&
+          parseFloat(salaryInfo.minBonus.replace(/\./g, '').replace(',', '.')) > 0 &&
           parseFloat(salaryInfo.maxBonus.replace(/\./g, '').replace(',', '.')) > 0
         )
         const hasAtLeastOneBenefit = salaryInfo.benefits.some(b => b.enabled)
         return hasSalaryRange && bonusValid && hasAtLeastOneBenefit
       case 'wsi-questions':
-        // Require at least one question selected AND WSI quality gate score >= 70%
         const hasMinimumQuestions = wsiCandidates.filter(q => q.selected).length >= 1 || companyDefaultQuestions.filter(q => q.enabled).length >= 1
         return hasMinimumQuestions && wsiQualityGates.canAdvance
       case 'review-publish':
@@ -3820,325 +3455,6 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
       default:
         return true
     }
-  }
-
-  const handlePublishJob = async () => {
-    setIsLoading(true)
-    
-    try {
-      // Prepare job vacancy data for API
-      const linkedinPlatform = publishingPlatforms.find(p => p.id === 'linkedin')
-      const indeedPlatform = publishingPlatforms.find(p => p.id === 'indeed')
-      const websitePlatform = publishingPlatforms.find(p => p.id === 'website')
-      
-      const jobData = {
-        title: basicInfoFields.cargo || 'Nova Vaga',
-        department: basicInfoFields.area || undefined,
-        location: basicInfoFields.localidade || undefined,
-        work_model: basicInfoFields.modeloTrabalho || undefined,
-        hybrid_days_onsite: basicInfoFields.modeloTrabalho === 'Híbrido' 
-          ? (jobConfig.hybridDaysOnsite || companyConfig?.hybridDaysOnsite || 3) 
-          : undefined,
-        employment_type: basicInfoFields.tipoContrato || 'CLT',
-        seniority_level: detectedCriteria.senioridadeIdiomas || 'Pleno',
-        description: messages.find(m => m.role === 'user')?.content || `Vaga de ${basicInfoFields.cargo}`,
-        requirements: technicalSkills.filter(s => s.required).map(s => s.name),
-        technical_requirements: technicalSkills.map(s => ({
-          name: s.name,
-          level: s.level,
-          required: s.required,
-          weight: s.weight
-        })),
-        behavioral_competencies: behavioralCompetencies.filter(c => c.enabled).map(c => ({
-          name: c.name,
-          weight: c.weight,
-          justification: c.justification
-        })),
-        salary: salaryInfo.minSalary && salaryInfo.maxSalary ? 
-          `R$ ${parseInt(salaryInfo.minSalary).toLocaleString('pt-BR')} - R$ ${parseInt(salaryInfo.maxSalary).toLocaleString('pt-BR')}` : undefined,
-        salary_range: (salaryInfo.minSalary || salaryInfo.maxSalary || salaryInfo.minBonus || salaryInfo.maxBonus) ? {
-          min: salaryInfo.minSalary ? parseInt(salaryInfo.minSalary) : undefined,
-          max: salaryInfo.maxSalary ? parseInt(salaryInfo.maxSalary) : undefined,
-          currency: 'BRL',
-          bonus_min: salaryInfo.minBonus ? parseInt(salaryInfo.minBonus) : undefined,
-          bonus_max: salaryInfo.maxBonus ? parseInt(salaryInfo.maxBonus) : undefined
-        } : undefined,
-        benefits: salaryInfo.benefits.filter(b => b.enabled).map(b => b.name),
-        manager: basicInfoFields.gestor || undefined,
-        status: 'active' as const,
-        recruiter: user?.name || user?.email?.split('@')[0] || 'Recrutador',
-        recruiter_email: user?.email || '',
-        open_date: new Date().toISOString(),
-        // Visible editable fields
-        urgency_level: jobConfig.urgencyLevel,
-        visibility: jobConfig.visibility,
-        is_confidential: jobConfig.isConfidential,
-        is_affirmative: jobConfig.isAffirmative,
-        affirmative_criteria_primary: detectedCriteria.affirmativeCriteriaPrimary,
-        affirmative_criteria_secondary: detectedCriteria.affirmativeCriteriaSecondary,
-        affirmative_description: detectedCriteria.affirmativeDescription,
-        deadline: jobConfig.deadline,
-        deadline_screening: jobConfig.deadlineScreening,
-        deadline_shortlist: jobConfig.deadlineShortlist,
-        languages: jobConfig.languages.map(l => ({ name: l.name, level: l.level })),
-        // Calculated invisible fields (for email/Teams summary)
-        stage: 'screening',
-        target_audience: jobConfig.visibility === 'internal' || jobConfig.visibility === 'confidential' ? 'internal' : 'external',
-        masked_company_name: jobConfig.isConfidential ? 'Empresa Confidencial' : undefined,
-        interview_stages: interviewStages.length > 0 
-          ? interviewStages.map((stage, index) => ({
-              stageName: stage.name,
-              order: index + 1,
-              type: stage.name.toLowerCase().includes('triagem') ? 'screening' :
-                    stage.name.toLowerCase().includes('técnic') ? 'technical' :
-                    stage.name.toLowerCase().includes('rh') ? 'interview' :
-                    stage.name.toLowerCase().includes('final') || stage.name.toLowerCase().includes('gestor') ? 'final' :
-                    'interview',
-              sla: stage.sla
-            }))
-          : [
-              { stageName: 'Triagem', order: 1, type: 'screening' },
-              { stageName: 'Entrevista RH', order: 2, type: 'interview' },
-              { stageName: 'Entrevista Técnica', order: 3, type: 'technical' },
-              { stageName: 'Entrevista Final', order: 4, type: 'final' },
-            ],
-        hiring_process: interviewStages.length > 0 
-          ? interviewStages.map(stage => stage.name)
-          : ['Triagem', 'Entrevista RH', 'Entrevista Técnica', 'Entrevista Final'],
-        // Publishing platforms
-        published_linkedin: linkedinPlatform?.enabled || false,
-        published_indeed: indeedPlatform?.enabled || false,
-        published_website: websitePlatform?.enabled || false,
-        eligibility_questions: companyDefaultQuestions.filter(q => q.enabled).map(q => ({
-          question: q.question,
-          category: 'eligibility',
-          type: q.type,
-          weight: 3,
-          is_eliminatory: true
-        })),
-        screening_questions: wsiCandidates.filter(q => q.selected).map(q => ({
-          question: q.question,
-          category: q.category,
-          expected_answer: q.expectedAnswer,
-          weight: 5,
-          type: q.type
-        })),
-        conversation_id: conversationId || undefined
-      }
-      
-      console.log('Creating job vacancy with data:', jobData)
-      
-      // Call API to create job vacancy
-      const createdJob = await liaApi.createJobVacancy(jobData)
-      
-      const jobId = (createdJob as any).job_id || createdJob.id
-      setPublishedJobId(jobId)
-      
-      console.log('Job vacancy created successfully:', createdJob)
-      
-      if (wizardFastTrackSourceJobId && jobId && jobId !== wizardFastTrackSourceJobId) {
-        const tenantId = user?.company || 'default'
-        liaApi.recordFastTrackUsage({
-          company_id: tenantId,
-          source_job_id: wizardFastTrackSourceJobId,
-          new_job_id: jobId,
-          modified_fields: [],
-          was_published: true
-        }).catch(err => console.error('Non-blocking: Fast Track usage recording failed:', err))
-        setWizardFastTrackSourceJobId(null)
-      }
-      
-      // Send workplan notification to recruiter and manager
-      try {
-        await liaApi.sendJobCreatedNotification({
-          job_id: jobId,
-          job_title: basicInfoFields.cargo || 'Nova Vaga',
-          department: basicInfoFields.area || undefined,
-          location: basicInfoFields.localidade || undefined,
-          work_model: basicInfoFields.modeloTrabalho || undefined,
-          seniority_level: detectedCriteria.senioridadeIdiomas || undefined,
-          job_description: messages.find(m => m.role === 'user')?.content || `Vaga de ${basicInfoFields.cargo}`,
-          technical_requirements: technicalSkills.map(s => ({
-            name: s.name,
-            level: s.level,
-            required: s.required,
-            weight: s.weight
-          })),
-          behavioral_competencies: behavioralCompetencies.filter(c => c.enabled).map(c => ({
-            name: c.name,
-            weight: String(c.weight)
-          })),
-          languages: jobConfig.languages.map(l => ({ name: l.name, level: l.level })),
-          salary_range: (salaryInfo.minSalary || salaryInfo.maxSalary) ? {
-            min: salaryInfo.minSalary ? parseInt(salaryInfo.minSalary) : undefined,
-            max: salaryInfo.maxSalary ? parseInt(salaryInfo.maxSalary) : undefined,
-            currency: 'BRL'
-          } : undefined,
-          benefits: salaryInfo.benefits.filter(b => b.enabled).map(b => b.name),
-          deadline_screening: jobConfig.deadlineScreening,
-          deadline_shortlist: jobConfig.deadlineShortlist,
-          deadline_closing: jobConfig.deadline,
-          interview_stages: interviewStages.map((stage, index) => ({
-            stageName: stage.name,
-            order: index + 1,
-            sla: stage.sla
-          })),
-          publishing_platforms: {
-            linkedin: linkedinPlatform?.enabled || false,
-            indeed: indeedPlatform?.enabled || false,
-            website: websitePlatform?.enabled || false
-          },
-          urgency_level: jobConfig.urgencyLevel,
-          is_confidential: jobConfig.isConfidential,
-          is_affirmative: jobConfig.isAffirmative,
-          recruiter_email: user?.email || '',
-          recruiter_name: user?.name || user?.email?.split('@')[0] || 'Recrutador',
-          // Manager notification: lookup email from company members map
-          manager_email: basicInfoFields.gestor 
-            ? (companyMembersMap.get(basicInfoFields.gestor.trim()) || 
-               companyMembersMap.get(basicInfoFields.gestor.trim().toLowerCase()))
-            : undefined,
-          manager_name: basicInfoFields.gestor || undefined,
-          channels: ['email', 'teams']
-        })
-        console.log('Job created notification sent successfully')
-      } catch (notifError) {
-        console.error('Failed to send job created notification (non-blocking):', notifError)
-        // Non-blocking error - job was created successfully, notification is secondary
-      }
-      
-      // Add publish confirmation message with calibration choice
-      const publishMessage: Message = {
-        id: `publish-${Date.now()}`,
-        role: 'assistant',
-        content: `A vaga **${basicInfoFields.cargo || 'Nova Vaga'}** foi criada e publicada com sucesso! 🎉
-
-📋 **ID da Vaga:** ${jobId}
-🏢 **Área:** ${basicInfoFields.area || 'A definir'}
-📍 **Local:** ${basicInfoFields.localidade || 'A definir'}
-
----
-
-**Próximo passo: Calibração de Busca**
-
-Posso apresentar alguns candidatos para você avaliar agora. Isso me ajuda a entender melhor o perfil ideal e melhora a precisão das próximas sugestões em até 60%.
-
-**OU** você pode ir direto para o Kanban e eu aprendo naturalmente conforme você move candidatos pelo funil (aprovar → entrevista, reprovar → descartado).
-
-*O que prefere?*
-• "Calibrar agora" - mostro 5 perfis rápidos para você avaliar
-• "Ir para o kanban" - já adiciono os candidatos e você avalia lá`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, publishMessage])
-      
-      // Set awaiting calibration choice state
-      setAwaitingCalibrationChoice(true)
-      
-      // Transition to search-calibration stage (unified search and calibration)
-      setCurrentStage('search-calibration')
-      
-      // Clear wizard draft after successful publish
-      clearWizardDraft()
-      
-      // Start local candidate search in background (results used for both paths)
-      startLocalSearch()
-      
-      // NOTE: Do NOT call onJobCreated here - it causes the parent to switch modes and close the wizard.
-      // The wizard needs to remain open to show the candidate-search and calibration stages.
-      // onJobCreated will be called later when the user explicitly finishes or closes the wizard.
-    } catch (error) {
-      console.error('Error creating job vacancy:', error)
-      
-      // Add error message
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: `Desculpe, ocorreu um erro ao criar a vaga. Por favor, tente novamente.\n\nErro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const buildCandidateSearchQuery = (): string => {
-    const parts: string[] = []
-    if (basicInfoFields.cargo) parts.push(basicInfoFields.cargo)
-    if (detectedCriteria.senioridadeIdiomas) parts.push(detectedCriteria.senioridadeIdiomas)
-    if (basicInfoFields.area) parts.push(basicInfoFields.area)
-    const topSkills = technicalSkills.slice(0, 5).map(s => s.name)
-    if (topSkills.length > 0) parts.push(topSkills.join(', '))
-    if (basicInfoFields.localidade) parts.push(basicInfoFields.localidade)
-    return parts.join(' ') || 'profissional'
-  }
-
-  const startLocalSearch = async () => {
-    setSearchPhase('local-searching')
-    try {
-      const searchQuery = buildCandidateSearchQuery()
-      const response = await liaApi.searchCandidatesLocal({
-        query: searchQuery,
-        limit: Math.max(20, preferredCandidateCount * 5)
-      })
-      setLocalCandidateCount(response.total_results || response.candidates?.length || 0)
-      setSearchPhase('local-complete')
-    } catch (error) {
-      console.error('Local search error:', error)
-      setLocalCandidateCount(0)
-      setSearchPhase('local-complete')
-    }
-  }
-
-  const startGlobalSearch = async () => {
-    setSearchPhase('global-searching')
-    try {
-      const searchQuery = buildCandidateSearchQuery()
-      const response = await liaApi.searchCandidates({
-        query: searchQuery,
-        search_type: 'fast',
-        limit: Math.max(100, preferredCandidateCount * 20)
-      })
-      setGlobalCandidateCount(response.total_results || response.candidates?.length || 0)
-      setSearchPhase('global-complete')
-    } catch (error) {
-      console.error('Global search error:', error)
-      setGlobalCandidateCount(0)
-      setSearchPhase('global-complete')
-    }
-  }
-
-  const generateJobDescription = () => {
-    setIsGeneratingDescription(true)
-    
-    const skills = technicalSkills.slice(0, 5).map(s => s.name).join(', ')
-    const competencies = behavioralCompetencies.filter(c => c.enabled).slice(0, 3).map(c => c.name).join(', ')
-    const benefits = salaryInfo.benefits.filter(b => b.enabled).slice(0, 4).map(b => b.name).join(', ')
-    
-    const description = `Estamos em busca de um(a) ${basicInfoFields.cargo || 'profissional'} para integrar nossa equipe de ${basicInfoFields.area || 'alto desempenho'}.
-
-📍 **Local:** ${basicInfoFields.localidade || 'A definir'} | ${basicInfoFields.modeloTrabalho || 'Flexível'}
-📝 **Contrato:** ${basicInfoFields.tipoContrato || 'CLT'}
-
-**O que você vai encontrar:**
-• Oportunidade de crescimento em ambiente ${companyConfig?.values?.includes('inovação') ? 'inovador' : 'dinâmico'}
-• Projetos desafiadores na área de ${basicInfoFields.area || 'tecnologia'}
-${benefits ? `• Benefícios: ${benefits}` : '• Pacote de benefícios competitivo'}
-
-**O que buscamos:**
-${skills ? `• Experiência com: ${skills}` : '• Conhecimentos técnicos na área'}
-${competencies ? `• Perfil: ${competencies}` : '• Profissional colaborativo e proativo'}
-• Experiência compatível com a posição
-
-${salaryInfo.minSalary && salaryInfo.maxSalary ? `💰 **Faixa salarial:** R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}` : ''}
-
-Venha fazer parte do nosso time! 🚀`
-
-    setTimeout(() => {
-      setJobDescription(description)
-      setIsGeneratingDescription(false)
-    }, 1200)
   }
 
   const addNewSkill = (name: string) => {
@@ -4188,1203 +3504,122 @@ Venha fazer parte do nosso time! 🚀`
     setNewCompetencyJustification('')
   }
 
-  const generateWSIQuestions = async (count: number = 7, category: 'technical' | 'behavioral' = 'technical') => {
-    setIsGeneratingWSI(true)
-    const newBatch = wsiGenerationBatch + 1
-    setWsiGenerationBatch(newBatch)
-    
-    try {
-      // Call backend API to generate WSI questions using LLM
-      const response = await liaApi.generateJobScreeningQuestions({
-        job_title: basicInfoFields.cargo || 'Vaga',
-        job_description: detectedCriteria.cargo ? `Vaga de ${detectedCriteria.cargo}` : undefined,
-        technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
-        behavioral_competencies: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
-        seniority_level: detectedCriteria.senioridadeIdiomas?.toLowerCase() || 'pleno',
-        work_model: basicInfoFields.modeloTrabalho?.toLowerCase(),
-        location: basicInfoFields.localidade,
-        count: count,
-        category: category
-      })
-      
-      // Convert API response to WSIQuestionCandidate format
-      const existingTexts = new Set(wsiCandidates.map(q => q.question.toLowerCase()))
-      
-      const newQuestions: WSIQuestionCandidate[] = response.questions
-        .filter(q => !existingTexts.has(q.question.toLowerCase()))
-        .map((q) => ({
-          id: q.id,
-          question: q.question,
-          type: q.type as 'open' | 'yes-no' | 'numeric' | 'multiple-choice',
-          required: q.required,
-          options: q.options,
-          expectedAnswer: q.expected_answer,
-          correctOptionIndex: q.correct_option_index,
-          selected: false,
-          batch: newBatch,
-          isWSI: true,
-          competency: q.competency,
-          framework: q.framework,
-          category: q.category
-        }))
-      
-      setWsiCandidates(prev => [...prev, ...newQuestions])
-      setWsiHasGenerated(true)
-      
-      // Add LIA feedback message
-      const selectedCount = wsiCandidates.filter(q => q.selected).length
-      const feedbackMessage: Message = {
-        id: `wsi-feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        role: 'assistant',
-        content: newBatch === 1 
-          ? `Gerei ${newQuestions.length} perguntas de triagem baseadas na **metodologia WSI** (Work Sample Interview) e no perfil da vaga.\n\nAs perguntas foram criadas com base em frameworks científicos:\n- **CBI** (Competency-Based Interviewing)\n- **Dreyfus Model** (Avaliação de Expertise)\n- **Bloom's Taxonomy** (Níveis de Conhecimento)\n\nSelecione **5 perguntas** que melhor se adequam ao processo seletivo. As respostas esperadas já foram definidas pela LIA com base no perfil ideal.`
-          : `Adicionei mais ${newQuestions.length} opções de perguntas WSI! Você tem ${selectedCount}/5 selecionadas.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, feedbackMessage])
-      
-    } catch (error) {
-      console.error('Error generating WSI questions:', error)
-      
-      // Fallback to static questions if API fails
-      const baseTs = Date.now()
-      const fallbackQuestions: WSIQuestionCandidate[] = [
-        { id: `wsi-fallback-${baseTs}-1-${Math.random().toString(36).slice(2, 8)}`, question: 'Qual sua pretensão salarial para regime CLT?', type: 'open', required: true, selected: false, batch: newBatch },
-        { id: `wsi-fallback-${baseTs}-2-${Math.random().toString(36).slice(2, 8)}`, question: `Você tem disponibilidade para trabalho ${basicInfoFields.modeloTrabalho || 'híbrido'}${basicInfoFields.localidade ? ` em ${basicInfoFields.localidade}` : ''}?`, type: 'yes-no', required: true, expectedAnswer: true, selected: false, batch: newBatch },
-        { id: `wsi-fallback-${baseTs}-3-${Math.random().toString(36).slice(2, 8)}`, question: 'Quantos anos de experiência você tem com a principal tecnologia da vaga?', type: 'numeric', required: true, expectedAnswer: 3, selected: false, batch: newBatch },
-        { id: `wsi-fallback-${baseTs}-4-${Math.random().toString(36).slice(2, 8)}`, question: 'Você tem experiência com metodologias ágeis (Scrum, Kanban)?', type: 'yes-no', required: true, expectedAnswer: true, selected: false, batch: newBatch },
-        { id: `wsi-fallback-${baseTs}-5-${Math.random().toString(36).slice(2, 8)}`, question: 'Qual seu nível de inglês?', type: 'multiple-choice', options: ['Básico', 'Intermediário', 'Avançado', 'Fluente'], required: true, correctOptionIndex: 2, selected: false, batch: newBatch },
-      ]
-      
-      const existingTexts = new Set(wsiCandidates.map(q => q.question.toLowerCase()))
-      const newQuestions = fallbackQuestions.filter(q => !existingTexts.has(q.question.toLowerCase())).slice(0, count)
-      
-      setWsiCandidates(prev => [...prev, ...newQuestions])
-      setWsiHasGenerated(true)
-      
-      const feedbackMessage: Message = {
-        id: `wsi-feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        role: 'assistant',
-        content: `Gerei ${newQuestions.length} perguntas de triagem padrão. Selecione **5 perguntas** para a triagem.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, feedbackMessage])
-    } finally {
-      setIsGeneratingWSI(false)
-    }
-  }
+  const {
+    generateWSIQuestions,
+    toggleWSIQuestionSelection,
+    updateWSIQuestionExpectedAnswer,
+    updateWSIQuestionCorrectOption,
+    deleteWSIQuestion,
+    addCustomQuestion,
+    initializeCalibrationCriteria,
+    generateCalibrationCandidates,
+    handleApproveCandidate,
+    handleRejectCandidate,
+    moveToNextCandidate,
+    generateMoreCalibrationCandidates,
+    addCalibrationCriterion,
+    removeCalibrationCriterion,
+    reorderCalibrationCriteria,
+    handleFastTrackVacancySelect,
+    handleFastTrackSearch,
+    handleFastTrackPublish,
+    parseFastTrackAdjustment,
+    buildCollectedData,
+    processOrchestratorResponse,
+    detectFastTrackIntent,
+  } = useWSIAndCalibrationHandlers({
+    basicInfoFields,
+    setBasicInfoFields,
+    detectedCriteria,
+    setDetectedCriteria,
+    technicalSkills,
+    setTechnicalSkills,
+    behavioralCompetencies,
+    setBehavioralCompetencies,
+    salaryInfo,
+    setSalaryInfo,
+    messages,
+    setMessages,
+    currentStage,
+    setCurrentStage,
+    wsiCandidates,
+    setWsiCandidates,
+    wsiGenerationBatch,
+    setWsiGenerationBatch,
+    isGeneratingWSI,
+    setIsGeneratingWSI,
+    wsiHasGenerated,
+    setWsiHasGenerated,
+    setWsiQuestions,
+    customQuestionText,
+    customQuestionType,
+    customQuestionRequired,
+    setShowCustomQuestionForm,
+    setCustomQuestionText,
+    setCustomQuestionType,
+    setCustomQuestionRequired,
+    calibrationCandidates,
+    setCalibrationCandidates,
+    currentCalibrationIndex,
+    setCurrentCalibrationIndex,
+    approvedCandidates,
+    setApprovedCandidates,
+    rejectedCandidates,
+    setRejectedCandidates,
+    calibrationComplete,
+    setCalibrationComplete,
+    isLoadingCalibration,
+    setIsLoadingCalibration,
+    showCalibrationModal,
+    setShowCalibrationModal,
+    calibrationSessionId,
+    setCalibrationSessionId,
+    calibrationComment,
+    setCalibrationComment,
+    publishedJobId,
+    setPublishedJobId,
+    calibrationCriteria,
+    setCalibrationCriteria,
+    postCalibrationComplete,
+    setPostCalibrationComplete,
+    hasAttemptedCalibrationGeneration,
+    setHasAttemptedCalibrationGeneration,
+    setSearchPhase,
+    setLocalCandidateCount,
+    setGlobalCandidateCount,
+    preferredCandidateCount,
+    awaitingCalibrationChoice,
+    setAwaitingCalibrationChoice,
+    fastTrackState,
+    setFastTrackState,
+    fastTrackSelectedVacancy,
+    setFastTrackSelectedVacancy,
+    fastTrackAdjustments,
+    setFastTrackAdjustments,
+    fastTrackSearchResults,
+    setFastTrackSearchResults,
+    isSearchingVacancies,
+    setIsSearchingVacancies,
+    wizardFastTrackSourceJobId,
+    setWizardFastTrackSourceJobId,
+    setWizardMode,
+    isLoading,
+    setIsLoading,
+    setJobConfig,
+    setEnrichedJDData,
+    setIsLoadingEnrichment,
+    setCompensationAnalysis,
+    setDisplayedText,
+    user,
+    conversationMemory,
+    highlightField,
+    typeText,
+    inputEvaluationStageCompletionShown,
+    awaitingStageAdvanceConfirmation,
+    setAwaitingStageAdvanceConfirmation,
+    onJobCreated,
+  })
 
-  const toggleWSIQuestionSelection = (questionId: string) => {
-    setWsiCandidates(prev => {
-      const currentlySelected = prev.filter(q => q.selected).length
-      const question = prev.find(q => q.id === questionId)
-      
-      if (!question) return prev
-      
-      // If already at max (5) and trying to select more, don't allow
-      if (!question.selected && currentlySelected >= 5) {
-        return prev
-      }
-      
-      const updated = prev.map(q => 
-        q.id === questionId ? { ...q, selected: !q.selected } : q
-      )
-      
-      // Sync selected questions to wsiQuestions
-      const selected = updated.filter(q => q.selected)
-      setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
-      
-      // If reached 5 questions, add confirmation message
-      const newCount = question.selected ? currentlySelected - 1 : currentlySelected + 1
-      if (newCount === 5) {
-        const confirmMessage: Message = {
-          id: `wsi-confirm-${Date.now()}`,
-          role: 'assistant',
-          content: `Perfeito! Você selecionou **5 perguntas** de triagem.\n\nRevise as respostas esperadas no painel e clique em "Confirmar Triagem" quando estiver pronto para a revisão final.`,
-          timestamp: new Date()
-        }
-        setMessages(msgs => [...msgs, confirmMessage])
-      }
-      
-      return updated
-    })
-  }
-
-  const updateWSIQuestionExpectedAnswer = (questionId: string, answer: string | number | boolean) => {
-    setWsiCandidates(prev => {
-      const updated = prev.map(q => 
-        q.id === questionId ? { ...q, expectedAnswer: answer } : q
-      )
-      // Sync to wsiQuestions
-      const selected = updated.filter(q => q.selected)
-      setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
-      return updated
-    })
-  }
-
-  const updateWSIQuestionCorrectOption = (questionId: string, optionIndex: number) => {
-    setWsiCandidates(prev => {
-      const updated = prev.map(q => 
-        q.id === questionId ? { ...q, correctOptionIndex: optionIndex } : q
-      )
-      // Sync to wsiQuestions
-      const selected = updated.filter(q => q.selected)
-      setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
-      return updated
-    })
-  }
-
-  const deleteWSIQuestion = (questionId: string) => {
-    setWsiCandidates(prev => {
-      const updated = prev.filter(q => q.id !== questionId)
-      const selected = updated.filter(q => q.selected)
-      setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
-      return updated
-    })
-  }
-
-  const addCustomQuestion = () => {
-    if (!customQuestionText.trim()) return
-    
-    const newQuestion: WSIQuestionCandidate = {
-      id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      question: customQuestionText.trim(),
-      type: customQuestionType,
-      required: customQuestionRequired,
-      selected: false,
-      batch: wsiGenerationBatch,
-      isWSI: false,
-      category: 'technical'
-    }
-    
-    setWsiCandidates(prev => [...prev, newQuestion])
-    setShowCustomQuestionForm(false)
-    setCustomQuestionText('')
-    setCustomQuestionType('open')
-    setCustomQuestionRequired(false)
-  }
-
-  // Auto-generate WSI questions when entering the stage
-  useEffect(() => {
-    if (currentStage === 'wsi-questions' && !wsiHasGenerated && !isGeneratingWSI) {
-      // Generate technical questions first
-      generateWSIQuestions(7, 'technical')
-      // Also generate behavioral/fit questions (3-5 based on selected competencies)
-      const enabledBehavioralCount = behavioralCompetencies.filter(c => c.enabled).length
-      const behavioralQuestionCount = Math.max(3, Math.min(5, enabledBehavioralCount))
-      setTimeout(() => {
-        generateWSIQuestions(behavioralQuestionCount, 'behavioral')
-      }, 1500) // Small delay to avoid race conditions
-    }
-  }, [currentStage, wsiHasGenerated, isGeneratingWSI])
-
-  // Initialize calibration criteria from technical skills and behavioral competencies
-  const initializeCalibrationCriteria = useCallback(() => {
-    const criteria: {id: string; text: string; source: 'technical' | 'behavioral'}[] = []
-    const baseTs = Date.now()
-    
-    // Add technical skills as criteria
-    technicalSkills.filter(s => s.required).forEach((skill, idx) => {
-      criteria.push({
-        id: `tech-${baseTs}-${idx}-${skill.name.replace(/\s+/g, '')}`,
-        text: `Deve ter experiência com ${skill.name} (${skill.level})`,
-        source: 'technical'
-      })
-    })
-    
-    // Add behavioral competencies as criteria
-    behavioralCompetencies.filter(c => c.enabled && c.weight >= 4).forEach((comp, idx) => {
-      criteria.push({
-        id: `behav-${baseTs}-${idx}-${comp.name.replace(/\s+/g, '')}`,
-        text: `${comp.name} - ${comp.justification}`,
-        source: 'behavioral'
-      })
-    })
-    
-    setCalibrationCriteria(criteria)
-  }, [technicalSkills, behavioralCompetencies])
-
-  // Generate calibration candidates from real API
-  const generateCalibrationCandidates = async () => {
-    setIsLoadingCalibration(true)
-    
-    try {
-      // Build job description from collected data
-      const jobDescription = `
-        Cargo: ${basicInfoFields.cargo || detectedCriteria.cargo || 'Vaga'}
-        Área: ${basicInfoFields.area || detectedCriteria.gestorArea || ''}
-        Localidade: ${basicInfoFields.localidade || detectedCriteria.localizacao || ''}
-        Modelo: ${basicInfoFields.modeloTrabalho || detectedCriteria.modeloTrabalho || ''}
-        
-        Habilidades técnicas: ${technicalSkills.filter(s => s.required).map(s => s.name).join(', ')}
-        
-        Competências comportamentais: ${behavioralCompetencies.filter(c => c.enabled).map(c => c.name).join(', ')}
-      `.trim()
-      
-      const response = await liaApi.startCalibrationSession({
-        job_vacancy_id: publishedJobId || 'temp-' + Date.now(),
-        job_description: jobDescription,
-        technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
-        behavioral_competencies: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
-        location: basicInfoFields.localidade || detectedCriteria.localizacao || undefined,
-        limit: 5
-      })
-      
-      setCalibrationSessionId(response.session_id)
-      setCalibrationCandidates(response.candidates as unknown as CalibrationCandidate[])
-      setIsLoadingCalibration(false)
-      setShowCalibrationModal(true)
-      
-      // Add LIA feedback message
-      const feedbackMessage: Message = {
-        id: `calibration-ready-${Date.now()}`,
-        role: 'assistant',
-        content: `Encontrei **${response.candidates.length} perfis** na base de talentos que correspondem aos critérios da vaga!\n\nVou apresentar cada um para você avaliar. Seu feedback me ajuda a calibrar a busca e ser mais assertiva nas próximas sugestões.\n\nClique em **Aprovar** ou **Reprovar** e adicione comentários se desejar. Após 3 aprovações, inicio a busca em escala.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, feedbackMessage])
-      
-    } catch (error) {
-      console.error('Error fetching calibration candidates:', error)
-      setIsLoadingCalibration(false)
-      
-      // Fallback message
-      const errorMessage: Message = {
-        id: `calibration-error-${Date.now()}`,
-        role: 'assistant',
-        content: `Não consegui buscar candidatos no momento. Vamos tentar novamente em instantes.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-    }
-  }
-
-  // Handle candidate approval
-  const handleApproveCandidate = () => {
-    const currentCandidate = calibrationCandidates[currentCalibrationIndex]
-    if (!currentCandidate) return
-    
-    const newApproved = [...approvedCandidates, currentCandidate.id]
-    setApprovedCandidates(newApproved)
-    
-    // Save feedback to backend
-    if (calibrationSessionId && publishedJobId) {
-      liaApi.submitCalibrationFeedback({
-        session_id: calibrationSessionId,
-        candidate_id: currentCandidate.id,
-        job_id: publishedJobId,
-        approved: true,
-        lia_score: currentCandidate.overallScore,
-        feedback_reason: calibrationComment || undefined
-      }).catch(err => console.error('Error saving calibration feedback:', err))
-    }
-    
-    // Save comment if any
-    if (calibrationComment) {
-      console.log(`Comment for ${currentCandidate.name}: ${calibrationComment}`)
-      setCalibrationComment('')
-    }
-    
-    // Check if we have 3 approved - only trigger if not already completed
-    if (newApproved.length >= 3 && !postCalibrationComplete) {
-      setCalibrationComplete(true)
-      setShowCalibrationModal(false)
-      setPostCalibrationComplete(true)
-      
-      // Add celebration message
-      const celebrationMessage: Message = {
-        id: `calibration-complete-${Date.now()}`,
-        role: 'assistant',
-        content: `Calibração concluída! Agora entendo melhor o perfil que você busca.\n\nEstou iniciando a busca em escala para popular o kanban da vaga. Vou te manter informado sobre os próximos passos.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, celebrationMessage])
-      
-      // Stay in search-calibration stage to show next steps (unified stage)
-      // setCurrentStage already set to 'search-calibration' after publish
-      
-      // Start real background search
-      setSearchPhase('local-searching')
-
-      const startActiveSearch = async () => {
-        try {
-          const jobDescription = `${basicInfoFields.cargo || detectedCriteria.cargo} - ${technicalSkills.filter(s => s.required).map(s => s.name).join(', ')}`
-          
-          const searchResponse = await liaApi.searchCandidatesByJobDescription(
-            jobDescription,
-            basicInfoFields.localidade || detectedCriteria.localizacao || undefined,
-            15
-          )
-          
-          setLocalCandidateCount(searchResponse.total_results)
-          setSearchPhase('local-complete')
-          
-          // Add candidates to pipeline if job was created
-          if (publishedJobId && searchResponse.candidates.length > 0) {
-            const candidateIds = searchResponse.candidates
-              .filter(c => c.id)
-              .map(c => c.id as string)
-            
-            if (candidateIds.length > 0) {
-              await liaApi.addCandidatesToPipeline({
-                candidate_ids: candidateIds,
-                job_vacancy_id: publishedJobId,
-                source: 'calibration_search'
-              })
-              
-              // Send notification
-              await liaApi.sendNotification({
-                user_id: user?.email || 'system',
-                title: 'Novos candidatos encontrados',
-                message: `${candidateIds.length} candidatos foram adicionados ao pipeline da vaga ${basicInfoFields.cargo || 'Nova Vaga'}`,
-                notification_type: 'candidates_added',
-                related_job_id: publishedJobId,
-                action_url: `/jobs/${publishedJobId}/kanban`
-              })
-            }
-          }
-        } catch (error) {
-          console.error('Error in active search:', error)
-          setSearchPhase('local-complete')
-          setLocalCandidateCount(0)
-        }
-      }
-
-      startActiveSearch()
-    } else if (newApproved.length < 3) {
-      // Move to next candidate
-      moveToNextCandidate()
-    }
-  }
-
-  // Handle candidate rejection
-  const handleRejectCandidate = () => {
-    const currentCandidate = calibrationCandidates[currentCalibrationIndex]
-    if (!currentCandidate) return
-    
-    const newRejected = [...rejectedCandidates, currentCandidate.id]
-    setRejectedCandidates(newRejected)
-    
-    // Save feedback to backend
-    if (calibrationSessionId && publishedJobId) {
-      liaApi.submitCalibrationFeedback({
-        session_id: calibrationSessionId,
-        candidate_id: currentCandidate.id,
-        job_id: publishedJobId,
-        approved: false,
-        lia_score: currentCandidate.overallScore,
-        feedback_reason: calibrationComment || undefined
-      }).catch(err => console.error('Error saving calibration feedback:', err))
-    }
-    
-    // Save comment if any
-    if (calibrationComment) {
-      console.log(`Rejection reason for ${currentCandidate.name}: ${calibrationComment}`)
-      setCalibrationComment('')
-    }
-    
-    // Add LIA feedback about adding more candidates
-    const needMore = 3 - approvedCandidates.length
-    const feedbackMessage: Message = {
-      id: `rejection-feedback-${Date.now()}`,
-      role: 'assistant',
-      content: `Entendido! Vou usar este feedback para refinar a busca.\n\nVocê ainda precisa aprovar mais **${needMore} perfil(s)** para calibração. Vou buscar mais opções que correspondam melhor aos seus critérios.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, feedbackMessage])
-    
-    // Move to next or generate more
-    if (currentCalibrationIndex < calibrationCandidates.length - 1) {
-      moveToNextCandidate()
-    } else {
-      // Need to generate more candidates
-      generateMoreCalibrationCandidates()
-    }
-  }
-
-  // Move to next candidate in calibration
-  const moveToNextCandidate = () => {
-    if (currentCalibrationIndex < calibrationCandidates.length - 1) {
-      setCurrentCalibrationIndex(prev => prev + 1)
-    }
-  }
-
-  // Generate more calibration candidates when needed
-  const generateMoreCalibrationCandidates = async () => {
-    setIsLoadingCalibration(true)
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Add one more candidate
-    const newCandidate: CalibrationCandidate = {
-      id: `calib-${Date.now()}`,
-      name: 'Ana Carolina Silva',
-      linkedinUrl: 'https://linkedin.com/in/ana-carolina-silva',
-      currentRole: 'Marketing Director',
-      currentCompany: 'Nubank',
-      location: 'São Paulo, Brasil',
-      education: 'Fundação Getúlio Vargas (FGV)',
-      highlights: [
-        { icon: 'rocket', label: 'Startup Unicórnio', value: 'Cresceu time de 5 para 30 pessoas' },
-        { icon: 'trophy', label: 'Premiada', value: 'Top 30 under 30 Forbes' }
-      ],
-      experiences: [
-        { id: 'exp-1', company: 'Nubank', role: 'Marketing Director', period: 'Mar 2020 - Presente', duration: '3 anos 9 meses', skills: ['Growth Marketing', 'Brand Building', 'Team Leadership'] }
-      ],
-      educationHistory: [
-        { id: 'edu-1', institution: 'Fundação Getúlio Vargas (FGV)', degree: 'MBA', field: 'Marketing', period: '2016 - 2018' }
-      ],
-      skillMap: [
-        { category: 'Growth', skills: ['Growth Hacking', 'Performance Marketing', 'User Acquisition'] }
-      ],
-      languages: ['Portuguese', 'English', 'Spanish'],
-      additionalSkills: ['Data-Driven Marketing', 'Product Marketing', 'Agile'],
-      matchCriteria: [
-        { id: 'match-1', criteria: 'Experiência como Marketing Manager em empresa de grande porte', isMatch: true, explanation: 'Experiência como Marketing Director em fintech unicórnio com 5000+ funcionários.', importance: 1 }
-      ],
-      overallScore: 90,
-      averageTenure: '3 anos',
-      currentTenure: '3 anos 9 meses',
-      totalExperience: '10 anos'
-    }
-    
-    setCalibrationCandidates(prev => [...prev, newCandidate])
-    setCurrentCalibrationIndex(prev => prev + 1)
-    setIsLoadingCalibration(false)
-    
-    const feedbackMessage: Message = {
-      id: `more-candidates-${Date.now()}`,
-      role: 'assistant',
-      content: `Encontrei mais 1 perfil que corresponde aos critérios! Avalie este candidato para continuar a calibração.`,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, feedbackMessage])
-  }
-
-  // Add/Remove/Reorder calibration criteria
-  const addCalibrationCriterion = (text: string) => {
-    setCalibrationCriteria(prev => [
-      ...prev,
-      { id: `custom-${Date.now()}`, text, source: 'behavioral' }
-    ])
-  }
-
-  const removeCalibrationCriterion = (id: string) => {
-    setCalibrationCriteria(prev => prev.filter(c => c.id !== id))
-  }
-
-  const reorderCalibrationCriteria = (fromIndex: number, toIndex: number) => {
-    setCalibrationCriteria(prev => {
-      const result = [...prev]
-      const [removed] = result.splice(fromIndex, 1)
-      result.splice(toIndex, 0, removed)
-      return result
-    })
-  }
-
-  // Auto-load calibration when entering the stage (only once per stage entry)
-  useEffect(() => {
-    if (currentStage === 'search-calibration' && calibrationCandidates.length === 0 && !isLoadingCalibration && !hasAttemptedCalibrationGeneration) {
-      setHasAttemptedCalibrationGeneration(true)
-      initializeCalibrationCriteria()
-      generateCalibrationCandidates()
-    }
-  }, [currentStage, calibrationCandidates.length, isLoadingCalibration, hasAttemptedCalibrationGeneration, initializeCalibrationCriteria])
-
-  // Fast Track: Handle vacancy selection
-  const handleFastTrackVacancySelect = async (vacancyId: string) => {
-    setIsLoading(true)
-    
-    try {
-      const vacancyDetails = await liaApi.getVacancyFullDetails(vacancyId)
-      
-      if (vacancyDetails) {
-        setFastTrackSelectedVacancy(vacancyDetails)
-        
-        // Add LIA message with full summary
-        const summaryMessage: Message = {
-          id: `lia-summary-${Date.now()}`,
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-          messageType: 'vacancy-summary',
-          vacancyFullDetails: vacancyDetails
-        }
-        setMessages(prev => [...prev, summaryMessage])
-      } else {
-        // Error loading vacancy
-        const errorMessage: Message = {
-          id: `lia-error-${Date.now()}`,
-          role: 'assistant',
-          content: 'Desculpe, não consegui carregar os detalhes dessa vaga. Tente selecionar outra ou digite "criar nova" para iniciar do zero.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, errorMessage])
-        setFastTrackState('selecting')
-      }
-    } catch (error) {
-      console.error('Failed to load vacancy details:', error)
-      const errorMessage: Message = {
-        id: `lia-error-${Date.now()}`,
-        role: 'assistant',
-        content: 'Ocorreu um erro ao carregar a vaga. Por favor, tente novamente.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-    }
-    
-    setIsLoading(false)
-  }
-
-  // Fast Track: Search previous vacancies
-  const handleFastTrackSearch = async (criteria: VacancySearchCriteria) => {
-    setIsSearchingVacancies(true)
-    setFastTrackState('searching')
-    
-    try {
-      const response = await liaApi.searchPreviousVacancies(criteria)
-      setFastTrackSearchResults(response.vacancies || [])
-      
-      // Add search results message
-      const searchResultsMessage: Message = {
-        id: `lia-search-${Date.now()}`,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date(),
-        messageType: 'vacancy-search',
-        vacancySearchResults: response.vacancies || []
-      }
-      setMessages(prev => [...prev, searchResultsMessage])
-      setFastTrackState('selecting')
-    } catch (error) {
-      console.error('Failed to search vacancies:', error)
-      const errorMessage: Message = {
-        id: `lia-error-${Date.now()}`,
-        role: 'assistant',
-        content: 'Não consegui encontrar vagas anteriores. Podemos criar uma nova vaga do zero. Me diga o cargo que precisa.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setWizardMode('create_from_scratch')
-    }
-    
-    setIsSearchingVacancies(false)
-  }
-
-  // Fast Track: Publish vacancy with adjustments
-  const handleFastTrackPublish = async () => {
-    if (!fastTrackSelectedVacancy) return
-    
-    setIsLoading(true)
-    setFastTrackState('publishing')
-    
-    try {
-      const result = await liaApi.publishFastTrackVacancy(fastTrackSelectedVacancy.id, fastTrackAdjustments)
-      
-      if (result.success) {
-        const modifiedFields = Object.keys(fastTrackAdjustments).filter(
-          key => fastTrackAdjustments[key as keyof VacancyAdjustments] !== undefined
-        )
-        const tenantId = user?.company || 'default'
-        const newJobId = result.vacancy_id
-        if (newJobId && newJobId !== fastTrackSelectedVacancy.id) {
-          liaApi.recordFastTrackUsage({
-            company_id: tenantId,
-            source_job_id: fastTrackSelectedVacancy.id,
-            new_job_id: newJobId,
-            modified_fields: modifiedFields,
-            was_published: true
-          }).catch(err => console.error('Non-blocking: Fast Track usage recording failed:', err))
-        } else {
-          console.warn('Fast Track usage not recorded: new_job_id not returned or same as source')
-        }
-        
-        const successMessage: Message = {
-          id: `lia-success-${Date.now()}`,
-          role: 'assistant',
-          content: `🎉 **Vaga publicada com sucesso!**\n\nA vaga "${fastTrackSelectedVacancy.title}" está ativa e já está recebendo candidatos.\n\nVocê pode acompanhar o pipeline de candidatos no Kanban ou me pedir para buscar candidatos compatíveis.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, successMessage])
-        setFastTrackState('completed')
-        onJobCreated?.()
-      } else {
-        const errorMessage: Message = {
-          id: `lia-error-${Date.now()}`,
-          role: 'assistant',
-          content: `Não foi possível publicar a vaga: ${result.message}. Por favor, tente novamente.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, errorMessage])
-        setFastTrackState('reviewing')
-      }
-    } catch (error) {
-      console.error('Failed to publish vacancy:', error)
-      const errorMessage: Message = {
-        id: `lia-error-${Date.now()}`,
-        role: 'assistant',
-        content: 'Ocorreu um erro ao publicar a vaga. Por favor, tente novamente.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setFastTrackState('reviewing')
-    }
-    
-    setIsLoading(false)
-  }
-
-  // Fast Track: Parse user adjustment request
-  const parseFastTrackAdjustment = (content: string): VacancyAdjustments | null => {
-    const adjustments: VacancyAdjustments = {}
-    const lowerContent = content.toLowerCase()
-    
-    // Parse salary adjustments
-    const salaryMatch = content.match(/sal[aá]rio\s*(?:para|de|:)?\s*(\d+(?:[.,]\d+)?)\s*(?:a|até|-|a)\s*(\d+(?:[.,]\d+)?)/i)
-    if (salaryMatch) {
-      adjustments.salary_min = parseFloat(salaryMatch[1].replace(',', '.')) * 1000
-      adjustments.salary_max = parseFloat(salaryMatch[2].replace(',', '.')) * 1000
-    }
-    
-    // Parse work model
-    if (lowerContent.includes('remoto')) {
-      adjustments.work_model = 'remote'
-    } else if (lowerContent.includes('híbrido') || lowerContent.includes('hibrido')) {
-      adjustments.work_model = 'hybrid'
-    } else if (lowerContent.includes('presencial')) {
-      adjustments.work_model = 'onsite'
-    }
-    
-    // Parse location
-    const locationMatch = content.match(/(?:local|localização|cidade)\s*(?:para|:)?\s*([A-Za-zÀ-ÿ\s]+)/i)
-    if (locationMatch) {
-      adjustments.location = locationMatch[1].trim()
-    }
-    
-    return Object.keys(adjustments).length > 0 ? adjustments : null
-  }
-
-  // Build collected data object for orchestrator
-  const buildCollectedData = useCallback(() => {
-    return {
-      title: basicInfoFields.cargo || detectedCriteria.cargo || null,
-      department: basicInfoFields.area || detectedCriteria.departamento || null,
-      seniority_level: detectedCriteria.senioridadeIdiomas || null,
-      work_model: basicInfoFields.modeloTrabalho || detectedCriteria.modeloTrabalho || null,
-      location: basicInfoFields.localidade || detectedCriteria.localizacao || null,
-      manager: basicInfoFields.gestor || detectedCriteria.gestorArea || null,
-      salary_min: salaryInfo.minSalary ? parseInt(salaryInfo.minSalary) : null,
-      salary_max: salaryInfo.maxSalary ? parseInt(salaryInfo.maxSalary) : null,
-      technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
-      behavioral_competencies: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
-      screening_questions: wsiCandidates.filter(q => q.selected).map(q => ({
-        question: q.question,
-        category: q.category,
-        expected_answer: q.expectedAnswer,
-        weight: 5,
-        type: q.type
-      }))
-    }
-  }, [basicInfoFields, detectedCriteria, salaryInfo, technicalSkills, behavioralCompetencies, wsiCandidates])
-
-  // Process orchestrator response and apply actions from smart-orchestrate endpoint
-  const processOrchestratorResponse = useCallback(async (
-    orchestratorResult: WizardOrchestratorResponse,
-    processingMessageId: string
-  ) => {
-    console.log('[SmartOrchestrate] Processing response:', {
-      success: orchestratorResult.success,
-      auto_transition: orchestratorResult.auto_transition,
-      next_stage: orchestratorResult.next_stage,
-      detected_criteria: orchestratorResult.detected_criteria
-    })
-    
-    // Use new response format from smart-orchestrate endpoint
-    const liaMessage = orchestratorResult.lia_message || orchestratorResult.response || ''
-    const detectedCriteriaFromBackend = orchestratorResult.detected_criteria || {}
-    const nextStage = orchestratorResult.next_stage
-    const autoTransition = orchestratorResult.auto_transition
-    const toolResults = orchestratorResult.tool_results || []
-    
-    // Update processing message
-    setMessages(msgs => msgs.map(m => 
-      m.id === processingMessageId 
-        ? { ...m, content: '✅ Resposta da LIA', processingState: 'completed' as const }
-        : m
-    ))
-    
-    // Apply detected_criteria to form fields
-    if (detectedCriteriaFromBackend && Object.keys(detectedCriteriaFromBackend).length > 0) {
-      console.log('[SmartOrchestrate] Applying detected criteria:', detectedCriteriaFromBackend)
-      
-      // Job title / cargo
-      if (detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo) {
-        const title = detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo
-        setBasicInfoFields(prev => ({ ...prev, cargo: title }))
-        setDetectedCriteria(prev => ({ ...prev, cargo: title }))
-        highlightField('cargo')
-      }
-      
-      // Department / area
-      if (detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.area) {
-        const dept = detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.area
-        setBasicInfoFields(prev => ({ ...prev, area: dept }))
-        setDetectedCriteria(prev => ({ ...prev, departamento: dept }))
-        highlightField('departamento')
-      }
-      
-      // Seniority
-      if (detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.seniority_level) {
-        const seniority = detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.seniority_level
-        setDetectedCriteria(prev => ({ ...prev, senioridadeIdiomas: seniority }))
-        highlightField('senioridade')
-      }
-      
-      // Work model
-      if (detectedCriteriaFromBackend.work_model || detectedCriteriaFromBackend.modelo_trabalho) {
-        const workModel = detectedCriteriaFromBackend.work_model || detectedCriteriaFromBackend.modelo_trabalho
-        setBasicInfoFields(prev => ({ ...prev, modeloTrabalho: workModel }))
-        setDetectedCriteria(prev => ({ ...prev, modeloTrabalho: workModel }))
-        highlightField('modeloTrabalho')
-      }
-      
-      // Location
-      if (detectedCriteriaFromBackend.location || detectedCriteriaFromBackend.localidade) {
-        const location = detectedCriteriaFromBackend.location || detectedCriteriaFromBackend.localidade
-        setBasicInfoFields(prev => ({ ...prev, localidade: location }))
-        setDetectedCriteria(prev => ({ ...prev, localizacao: location }))
-        highlightField('localizacao')
-      }
-      
-      // Manager / Gestor
-      if (detectedCriteriaFromBackend.manager || detectedCriteriaFromBackend.gestor) {
-        const manager = detectedCriteriaFromBackend.manager || detectedCriteriaFromBackend.gestor
-        setBasicInfoFields(prev => ({ ...prev, gestor: manager }))
-        setDetectedCriteria(prev => ({ ...prev, gestorArea: manager }))
-        highlightField('gestor')
-      }
-      
-      // Salary
-      if (detectedCriteriaFromBackend.salary_min || detectedCriteriaFromBackend.min_salary) {
-        const minSalary = detectedCriteriaFromBackend.salary_min || detectedCriteriaFromBackend.min_salary
-        setSalaryInfo(prev => ({ ...prev, minSalary: minSalary.toString() }))
-        highlightField('minSalary')
-      }
-      if (detectedCriteriaFromBackend.salary_max || detectedCriteriaFromBackend.max_salary) {
-        const maxSalary = detectedCriteriaFromBackend.salary_max || detectedCriteriaFromBackend.max_salary
-        setSalaryInfo(prev => ({ ...prev, maxSalary: maxSalary.toString() }))
-        highlightField('maxSalary')
-      }
-
-      if (currentStage === 'salary') {
-        const salaryDetectedFields: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
-        const detectedMin = detectedCriteriaFromBackend.salary_min || detectedCriteriaFromBackend.min_salary
-        const detectedMax = detectedCriteriaFromBackend.salary_max || detectedCriteriaFromBackend.max_salary
-        if (detectedMin) salaryDetectedFields.push({ label: "Salário Mínimo", value: `R$ ${detectedMin}`, confidence: "high" })
-        if (detectedMax) salaryDetectedFields.push({ label: "Salário Máximo", value: `R$ ${detectedMax}`, confidence: "high" })
-        if (detectedCriteriaFromBackend.bonus_min) salaryDetectedFields.push({ label: "Bônus Mínimo", value: `${detectedCriteriaFromBackend.bonus_min}%`, confidence: "medium" })
-        if (detectedCriteriaFromBackend.bonus_max) salaryDetectedFields.push({ label: "Bônus Máximo", value: `${detectedCriteriaFromBackend.bonus_max}%`, confidence: "medium" })
-
-        if (salaryDetectedFields.length > 0) {
-          const salaryDetectedMsg: Message = {
-            id: `salary-detected-${Date.now()}`,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-            messageType: 'detected-fields',
-            detectedFields: salaryDetectedFields
-          }
-          setMessages(prev => [...prev, salaryDetectedMsg])
-        }
-      }
-      
-      // Technical skills
-      if (detectedCriteriaFromBackend.technical_skills && Array.isArray(detectedCriteriaFromBackend.technical_skills)) {
-        const newSkills = detectedCriteriaFromBackend.technical_skills as string[]
-        newSkills.forEach((skill: string, index: number) => {
-          if (!technicalSkills.find(s => s.name.toLowerCase() === skill.toLowerCase())) {
-            setTechnicalSkills(prev => [
-              ...prev,
-              {
-                id: `smart-skill-${Date.now()}-${index}`,
-                name: skill,
-                level: 'Intermediário' as const,
-                required: true,
-                category: 'tool' as const,
-                weight: 3
-              }
-            ])
-          }
-        })
-        if (newSkills.length > 0) {
-          highlightField('skills')
-        }
-      }
-      
-      // Behavioral competencies
-      if (detectedCriteriaFromBackend.behavioral_competencies && Array.isArray(detectedCriteriaFromBackend.behavioral_competencies)) {
-        const newComps = detectedCriteriaFromBackend.behavioral_competencies as string[]
-        newComps.forEach((comp: string) => {
-          const existing = behavioralCompetencies.find(c => c.name.toLowerCase() === comp.toLowerCase())
-          if (existing && !existing.enabled) {
-            setBehavioralCompetencies(prev => prev.map(c => 
-              c.name.toLowerCase() === comp.toLowerCase() ? { ...c, enabled: true } : c
-            ))
-          }
-        })
-        if (newComps.length > 0) {
-          highlightField('competencias')
-        }
-      }
-
-      if (currentStage === 'competencies') {
-        const compDetectedFields: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
-        const detectedTechSkills = detectedCriteriaFromBackend.technical_skills || detectedCriteriaFromBackend.required_skills || detectedCriteriaFromBackend.competenciasTecnicas || []
-        const detectedBehavSkills = detectedCriteriaFromBackend.behavioral_competencies || detectedCriteriaFromBackend.competenciasComportamentais || []
-
-        if (Array.isArray(detectedTechSkills) && detectedTechSkills.length > 0) {
-          compDetectedFields.push({ label: "Skills Técnicas", value: detectedTechSkills.slice(0, 5).join(", "), confidence: "high" })
-        }
-        if (Array.isArray(detectedBehavSkills) && detectedBehavSkills.length > 0) {
-          compDetectedFields.push({ label: "Competências Comportamentais", value: detectedBehavSkills.slice(0, 3).join(", "), confidence: "medium" })
-        }
-
-        if (compDetectedFields.length > 0) {
-          const compDetectedMsg: Message = {
-            id: `comp-detected-${Date.now()}`,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-            messageType: 'detected-fields',
-            detectedFields: compDetectedFields
-          }
-          setMessages(prev => [...prev, compDetectedMsg])
-        }
-      }
-      
-      // Affirmative action
-      if (detectedCriteriaFromBackend.is_affirmative !== undefined) {
-        setDetectedCriteria(prev => ({ ...prev, isAffirmative: detectedCriteriaFromBackend.is_affirmative }))
-        setJobConfig(prev => ({ ...prev, isAffirmative: detectedCriteriaFromBackend.is_affirmative }))
-      }
-      
-      // Responsibilities / Responsabilidades
-      if (detectedCriteriaFromBackend.responsibilities && Array.isArray(detectedCriteriaFromBackend.responsibilities)) {
-        const newResponsibilities = detectedCriteriaFromBackend.responsibilities as string[]
-        if (newResponsibilities.length > 0) {
-          setDetectedCriteria(prev => ({
-            ...prev,
-            responsabilidades: [...new Set([...(prev.responsabilidades || []), ...newResponsibilities])]
-          }))
-          highlightField('responsabilidades')
-        }
-      }
-      
-      // Helper function for case-insensitive deduplication while preserving original casing
-      const deduplicateCaseInsensitive = (existing: string[], newItems: string[]): string[] => {
-        const seen = new Map<string, string>()
-        // Add existing items first
-        existing.forEach(item => {
-          const key = item.toLowerCase()
-          if (!seen.has(key)) seen.set(key, item)
-        })
-        // Add new items only if not already present (case-insensitive)
-        newItems.forEach(item => {
-          const key = item.toLowerCase()
-          if (!seen.has(key)) seen.set(key, item)
-        })
-        return Array.from(seen.values())
-      }
-      
-      // Required skills (also maps to technical skills)
-      if (detectedCriteriaFromBackend.required_skills && Array.isArray(detectedCriteriaFromBackend.required_skills)) {
-        const newSkills = detectedCriteriaFromBackend.required_skills as string[]
-        newSkills.forEach((skill: string, index: number) => {
-          if (!technicalSkills.find(s => s.name.toLowerCase() === skill.toLowerCase())) {
-            setTechnicalSkills(prev => [
-              ...prev,
-              {
-                id: `smart-skill-${Date.now()}-${index}`,
-                name: skill,
-                level: 'Intermediário' as const,
-                required: true,
-                category: 'tool' as const,
-                weight: 3
-              }
-            ])
-          }
-        })
-        // Also update detected criteria for panel display
-        if (newSkills.length > 0) {
-          setDetectedCriteria(prev => ({
-            ...prev,
-            competenciasTecnicas: deduplicateCaseInsensitive(prev.competenciasTecnicas || [], newSkills)
-          }))
-          highlightField('skills')
-        }
-      }
-      
-      // Soft skills (also maps to behavioral competencies display)
-      if (detectedCriteriaFromBackend.soft_skills && Array.isArray(detectedCriteriaFromBackend.soft_skills)) {
-        const newComps = detectedCriteriaFromBackend.soft_skills as string[]
-        if (newComps.length > 0) {
-          setDetectedCriteria(prev => ({
-            ...prev,
-            competenciasComportamentais: deduplicateCaseInsensitive(prev.competenciasComportamentais || [], newComps)
-          }))
-          highlightField('competencias')
-        }
-      }
-    }
-    
-    // Process tool_results if present (e.g., salary benchmark, skills suggestions)
-    if (toolResults.length > 0) {
-      console.log('[SmartOrchestrate] Processing tool results:', toolResults)
-      toolResults.forEach((toolResult: any) => {
-        if (toolResult.tool === 'salary_benchmark' && toolResult.result) {
-          setCompensationAnalysis(toolResult.result)
-        }
-        if (toolResult.tool === 'skills_suggestion' && toolResult.result?.skills) {
-          const suggestedSkills = toolResult.result.skills
-          suggestedSkills.forEach((skill: any, index: number) => {
-            if (!technicalSkills.find(s => s.name.toLowerCase() === skill.name?.toLowerCase())) {
-              setTechnicalSkills(prev => [
-                ...prev,
-                {
-                  id: `tool-skill-${Date.now()}-${index}`,
-                  name: skill.name,
-                  level: skill.level || 'Intermediário',
-                  required: skill.required ?? true,
-                  category: skill.category || 'tool',
-                  weight: skill.weight || 3
-                }
-              ])
-            }
-          })
-        }
-        // Process JD enrichment data
-        if (toolResult.tool === 'generate_enriched_jd' && toolResult.result) {
-          console.log('[SmartOrchestrate] Processing enriched JD data:', toolResult.result)
-          const enrichmentResult = toolResult.result
-          // Map backend response to EnrichedJDData format
-          const enrichedData: EnrichedJDData = {
-            sections: enrichmentResult.sections || [],
-            compensation: enrichmentResult.compensation,
-            wsiQualityScore: enrichmentResult.wsi_quality_score ?? enrichmentResult.wsiQualityScore ?? 0,
-            overallCompleteness: enrichmentResult.overall_completeness ?? enrichmentResult.overallCompleteness ?? 0,
-            totalSuggestions: enrichmentResult.total_suggestions ?? enrichmentResult.totalSuggestions ?? 0
-          }
-          setEnrichedJDData(enrichedData)
-          setIsLoadingEnrichment(false)
-        }
-      })
-    }
-    
-    // Handle action results from WizardActionExecutor
-    if (orchestratorResult.action_executed && orchestratorResult.action_type) {
-      console.log('[SmartOrchestrate] Action executed:', orchestratorResult.action_type, orchestratorResult.action_result)
-      
-      // Apply draft_updates to form fields if present
-      if (orchestratorResult.draft_updates && Object.keys(orchestratorResult.draft_updates).length > 0) {
-        const updates = orchestratorResult.draft_updates as Record<string, any>
-        if (updates.cargo || updates.job_title || updates.title) {
-          const title = updates.cargo || updates.job_title || updates.title
-          setBasicInfoFields(prev => ({ ...prev, cargo: title }))
-          highlightField('cargo')
-        }
-        if (updates.area || updates.department) {
-          const dept = updates.area || updates.department
-          setBasicInfoFields(prev => ({ ...prev, area: dept }))
-          highlightField('departamento')
-        }
-        if (updates.localidade || updates.location) {
-          const location = updates.localidade || updates.location
-          setBasicInfoFields(prev => ({ ...prev, localidade: location }))
-          highlightField('localizacao')
-        }
-        if (updates.modeloTrabalho || updates.work_model) {
-          const workModel = updates.modeloTrabalho || updates.work_model
-          setBasicInfoFields(prev => ({ ...prev, modeloTrabalho: workModel }))
-          highlightField('modeloTrabalho')
-        }
-        if (updates.gestor || updates.manager) {
-          const manager = updates.gestor || updates.manager
-          setBasicInfoFields(prev => ({ ...prev, gestor: manager }))
-          highlightField('gestor')
-        }
-      }
-      
-      // Add action result message to chat
-      const actionResultMsg: Message = {
-        id: `action-result-${Date.now()}`,
-        role: 'assistant',
-        content: liaMessage,
-        timestamp: new Date(),
-        messageType: 'action-result',
-        actionType: orchestratorResult.action_type,
-        actionResult: (orchestratorResult.action_result || {}) as Record<string, unknown>,
-        isTyping: true
-      }
-      
-      if (conversationMemory.conversationId) {
-        conversationMemory.addMessage('assistant', liaMessage).catch(() => {})
-      }
-      
-      setTimeout(() => {
-        setMessages(prev => [...prev, actionResultMsg])
-        typeText(liaMessage, actionResultMsg.id)
-      }, 200)
-      
-      return
-    }
-    
-    // Handle automatic stage transition
-    if (autoTransition && nextStage) {
-      console.log('[SmartOrchestrate] Auto-transition to stage:', nextStage)
-      const frontendStage = getFrontendStageFromBackend(nextStage)
-      if (frontendStage && frontendStage !== currentStage) {
-        console.log('[SmartOrchestrate] Mapped to frontend stage:', frontendStage)
-        setTimeout(() => {
-          setCurrentStage(frontendStage as WizardStage)
-        }, 1500)
-      }
-    }
-    
-    // Handle awaiting_confirmation from backend - show proactive message asking to advance
-    const awaitingConfirmation = orchestratorResult.awaiting_confirmation
-    const shouldShowProactiveConfirmation = awaitingConfirmation && 
-      currentStage === 'input-evaluation' && 
-      !awaitingStageAdvanceConfirmation && // Not already awaiting confirmation
-      Object.keys(detectedCriteriaFromBackend).length > 0 // Has detected criteria
-    
-    if (shouldShowProactiveConfirmation) {
-      console.log('[SmartOrchestrate] Backend awaiting confirmation for input-evaluation, showing proactive message')
-      
-      // Build summary of detected fields (support both snake_case and camelCase)
-      const detectedFields: string[] = []
-      const title = detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo
-      const seniority = detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.senioridade
-      const department = detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.departamento || detectedCriteriaFromBackend.area
-      const techSkills = detectedCriteriaFromBackend.technical_skills || detectedCriteriaFromBackend.competenciasTecnicas || detectedCriteriaFromBackend.required_skills || []
-      const salaryMin = detectedCriteriaFromBackend.salary_min || detectedCriteriaFromBackend.salarioMin
-      const salaryMax = detectedCriteriaFromBackend.salary_max || detectedCriteriaFromBackend.salarioMax
-      
-      if (title) detectedFields.push(`Cargo: **${title}**`)
-      if (seniority) detectedFields.push(`Senioridade: **${seniority}**`)
-      if (department) detectedFields.push(`Departamento: **${department}**`)
-      if (techSkills?.length > 0) detectedFields.push(`Skills Técnicas: **${techSkills.slice(0, 3).join(', ')}**`)
-      if (salaryMin && salaryMax) {
-        const minFormatted = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
-        const maxFormatted = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax
-        detectedFields.push(`Faixa Salarial: **R$ ${minFormatted} - R$ ${maxFormatted}**`)
-      }
-      
-      const summaryText = detectedFields.length > 0 
-        ? `\n\n📋 **Critérios detectados:**\n${detectedFields.map(f => `• ${f}`).join('\n')}`
-        : ''
-      
-      // Append proactive question to LIA's response
-      const enhancedMessage = `${liaMessage}${summaryText}\n\n✨ Quer que eu avance para a etapa de **Enriquecimento da Vaga**, onde vou analisar dados de mercado e sugerir melhorias para a descrição?`
-      
-      // Build structured detected fields for DetectedFieldsCard
-      const detectedFieldsStructured: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
-      if (title) detectedFieldsStructured.push({ label: "Cargo", value: String(title), confidence: "high" })
-      if (seniority) detectedFieldsStructured.push({ label: "Senioridade", value: String(seniority), confidence: "high" })
-      if (department) detectedFieldsStructured.push({ label: "Departamento", value: String(department), confidence: "medium" })
-      if (techSkills?.length > 0) detectedFieldsStructured.push({ label: "Skills Técnicas", value: techSkills.slice(0, 5).join(", "), confidence: "high" })
-      if (salaryMin && salaryMax) {
-        const minF = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
-        const maxF = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax
-        detectedFieldsStructured.push({ label: "Faixa Salarial", value: `R$ ${minF} - R$ ${maxF}`, confidence: "medium" })
-      }
-
-      // Set awaiting confirmation state
-      setAwaitingStageAdvanceConfirmation('jd-enrichment')
-      
-      // Show enhanced message with proactive question
-      const proactiveMsg: Message = {
-        id: `lia-orchestrator-${Date.now()}`,
-        role: 'assistant',
-        content: enhancedMessage,
-        timestamp: new Date(),
-        isTyping: true,
-        awaitingStageConfirmation: 'jd-enrichment',
-        detectedFieldsData: detectedFieldsStructured
-      }
-      
-      if (conversationMemory.conversationId) {
-        conversationMemory.addMessage('assistant', enhancedMessage).catch(() => {})
-      }
-      
-      setTimeout(() => {
-        setMessages(prev => [...prev, proactiveMsg])
-        typeText(enhancedMessage, proactiveMsg.id)
-      }, 200)
-      
-      return // Show enhanced message instead of normal response
-    }
-    
-    // Show orchestrator response
-    const assistantMessage: Message = {
-      id: `lia-orchestrator-${Date.now()}`,
-      role: 'assistant',
-      content: liaMessage,
-      timestamp: new Date(),
-      isTyping: true
-    }
-    
-    // Save assistant message to conversation memory
-    if (conversationMemory.conversationId) {
-      conversationMemory.addMessage('assistant', liaMessage).catch(() => {})
-    }
-    
-    setTimeout(() => {
-      setMessages(prev => [...prev, assistantMessage])
-      typeText(liaMessage, assistantMessage.id)
-    }, 200)
-  }, [typeText, conversationMemory.conversationId, highlightField, currentStage, technicalSkills, behavioralCompetencies, setJobConfig, inputEvaluationStageCompletionShown])
-
-  // Fast Track: Detect user intent from message
-  const detectFastTrackIntent = (content: string): 'fast_track' | 'from_scratch' | 'confirm' | 'adjust' | 'select' | 'criteria' | null => {
-    const lowerContent = content.toLowerCase()
-    
-    // Detect confirmation
-    if (lowerContent.includes('confirmar') || lowerContent.includes('publicar') || lowerContent === 'sim') {
-      return 'confirm'
-    }
-    
-    // Detect fast track intent
-    if (lowerContent.includes('aproveitar') || lowerContent.includes('anterior') || 
-        lowerContent.includes('reutilizar') || lowerContent.includes('copiar') ||
-        lowerContent.includes('usar vaga') || lowerContent.includes('vaga passada')) {
-      return 'fast_track'
-    }
-    
-    // Detect create from scratch
-    if (lowerContent.includes('do zero') || lowerContent.includes('criar nova') || 
-        lowerContent.includes('nova vaga') || lowerContent.includes('começar')) {
-      return 'from_scratch'
-    }
-    
-    // Detect selection by number
-    if (/^[1-9]$/.test(content.trim()) || /^(um|dois|três|quatro|cinco|seis|sete|oito|nove|dez)$/i.test(content.trim())) {
-      return 'select'
-    }
-    
-    // Detect adjustment request
-    if (lowerContent.includes('mudar') || lowerContent.includes('alterar') || 
-        lowerContent.includes('ajustar') || lowerContent.includes('salário para') ||
-        lowerContent.includes('modelo') || lowerContent.includes('local para')) {
-      return 'adjust'
-    }
-    
-    // Check if it contains search criteria (title, department, manager)
-    if (fastTrackState === 'collecting_criteria' || fastTrackState === 'initial') {
-      return 'criteria'
-    }
-    
-    return null
-  }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -5441,1675 +3676,123 @@ Venha fazer parte do nosso time! 🚀`
     setMessages(prev => [...prev, voiceMsg])
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // handleSendMessage — Extracted interceptor handlers (Sprint 4.6)
-  // Each returns boolean/Promise<boolean>: true = handled, false = continue.
-  // ═══════════════════════════════════════════════════════════════════════════
+  const { handleSendMessage, handleKeyDown, handleQuickSuggestion } = useSendMessageHandlers({
+    isOpen,
+    onClose,
+    isJobCreationMode,
+    inline,
+    onJobCreated,
+    onOrchestratedMessage,
+    onMessagesUpdate,
+    inputValue,
+    inputRef,
+    setInputValue,
+    messages,
+    setMessages,
+    isLoading,
+    setIsLoading,
+    isTypingEffect,
+    conversationId,
+    setConversationId,
+    user,
+    currentStage,
+    setCurrentStage,
+    wizardMode,
+    setWizardMode,
+    isInJobCreationMode,
+    awaitingStageAdvanceConfirmation,
+    setAwaitingStageAdvanceConfirmation,
+    awaitingDraftChoice,
+    setAwaitingDraftChoice,
+    awaitingCalibrationChoice,
+    setAwaitingCalibrationChoice,
+    activeToolConfirmationMessageId,
+    setActiveToolConfirmationMessageId,
+    awaitingWSIRegenerationConfirmation,
+    setAwaitingWSIRegenerationConfirmation,
+    awaitingSensitiveFieldsConfirmation,
+    setAwaitingSensitiveFieldsConfirmation,
+    pendingDraftData,
+    setPendingDraftData,
+    setHasAppliedRestoredDraft,
+    applyPendingDraft,
+    clearWizardDraft,
+    calibrationComplete,
+    setCalibrationComplete,
+    approvedCandidates,
+    rejectedCandidates,
+    setIsPanelOpen,
+    localCandidateCount,
+    setShowCalibrationModal,
+    fastTrack,
+    fastTrackState,
+    setFastTrackState,
+    fastTrackSearchResults,
+    setFastTrackSearchResults,
+    fastTrackSelectedVacancy,
+    setFastTrackSelectedVacancy,
+    fastTrackAdjustments,
+    setFastTrackAdjustments,
+    fastTrackSearchCriteria,
+    setFastTrackSearchCriteria,
+    isSearchingVacancies,
+    setIsSearchingVacancies,
+    setWizardFastTrackSourceJobId,
+    wizardFastTrackSourceJobId,
+    fastTrackSuggestionsShownTracked,
+    setAwaitingFastTrackSelection,
+    awaitingFastTrackSelection,
+    fastTrackAppliedData,
+    setFastTrackAppliedData,
+    setFastTrackOriginalCompetencies,
+    setWsiRegenerationPrompted,
+    setFastTrackMessageSent,
+    basicInfoFields,
+    setBasicInfoFields,
+    detectedCriteria,
+    setDetectedCriteria,
+    technicalSkills,
+    setTechnicalSkills,
+    behavioralCompetencies,
+    setBehavioralCompetencies,
+    salaryInfo,
+    setSalaryInfo,
+    wsiQuestions,
+    setWsiQuestions,
+    wsiCandidates,
+    setWsiCandidates,
+    setCompetencySuggestions,
+    generatedJobDescription,
+    setGeneratedJobDescription,
+    compensationAnalysis,
+    setCompensationAnalysis,
+    setIsLoadingEnrichment,
+    setJobConfig,
+    setInternalJobCreationMode,
+    setDynamicInitialMessage,
+    setDisplayedText,
+    buildCollectedData,
+    processOrchestratorResponse,
+    generateParecerData,
+    extractCriteriaFromText,
+    typeText,
+    generateLLMContext,
+    goToNextStage,
+    handleFastTrackVacancySelect,
+    handleFastTrackSearch,
+    handleFastTrackPublish,
+    parseFastTrackAdjustment,
+    detectFastTrackIntent,
+    generateCriteriaResponse,
+    callEvaluationStep,
+    trackFieldChange,
+    contextSwitching,
+    conversationMemory,
+    analytics,
+    toolCalling,
+    learning,
+  })
 
-  const _handleContextSwitch = (content: string): void => {
-    const detectedContext = contextSwitching.detectContextFromMessage(content)
-    if (!detectedContext || detectedContext === contextSwitching.currentContext) return
-    if (contextSwitching.isInWizardContext) {
-      contextSwitching.saveWizardSnapshot({
-        stage: currentStage,
-        basicInfoFields: basicInfoFields as unknown as Record<string, unknown>,
-        technicalSkills,
-        behavioralCompetencies,
-        salaryInfo: salaryInfo as unknown as Record<string, unknown>,
-        wsiQuestions,
-        detectedCriteria: detectedCriteria as unknown as Record<string, unknown>,
-        generatedJobDescription,
-        fastTrackSourceJobId: wizardFastTrackSourceJobId,
-      })
-    } else {
-      contextSwitching.saveGeneralSnapshot({
-        conversationId: conversationMemory.conversationId || conversationId,
-        lastMessageIndex: messages.length,
-      })
-    }
-    if (detectedContext === 'wizard') contextSwitching.switchToWizard()
-    else if (detectedContext === 'fast_track') contextSwitching.switchToFastTrack()
-    else if (detectedContext === 'general') contextSwitching.switchToGeneral()
-  }
-
-  // ── Interceptor 1: awaiting stage advance confirmation ────────────────────
-  const _handleStageAdvanceConfirmation = async (content: string): Promise<boolean> => {
-    if (!awaitingStageAdvanceConfirmation) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingStageAdvanceConfirmation:', awaitingStageAdvanceConfirmation)
-    const lowerMessage = content.toLowerCase().trim()
-    const originalMessage = content.trim()
-
-    const adjustmentPatterns = [
-      'ajust', 'alter', 'mud', 'troc', 'edit', 'corrig', 'revis',
-      'quero', 'preciso', 'falta', 'adiciona', 'remov', 'exclui',
-      'não', 'nao', 'errad', 'outr', 'diferent'
-    ]
-    const isAdjustmentRequest = adjustmentPatterns.some(p => lowerMessage.includes(p))
-
-    const shortConfirmPatterns = [
-      /^sim$/i, /^pode$/i, /^vamos$/i, /^ok$/i, /^beleza$/i, /^bora$/i,
-      /^perfeito$/i, /^show$/i, /^massa$/i, /^confirmo$/i, /^confirma$/i,
-      /^tá bom$/i, /^ta bom$/i, /^está bom$/i, /^ta certo$/i, /^tá certo$/i,
-      /^pode ser$/i, /^pode sim$/i, /^sim,? pode$/i, /^vamos lá$/i,
-      /^vamos sim$/i, /^avança$/i, /^avançar$/i, /^próxima$/i, /^proxima$/i,
-      /^seguir$/i, /^segue$/i, /^prosseguir$/i, /^continuar$/i,
-      /^sim,?\s*(pode|vamos|avança|ok|beleza)$/i,
-      /^(pode|vamos|ok),?\s*sim$/i
-    ]
-
-    const isShortMessage = originalMessage.length <= 30
-    const isStandaloneConfirmation = shortConfirmPatterns.some(p => p.test(lowerMessage))
-    const isClearConfirmation = (isShortMessage && isStandaloneConfirmation && !isAdjustmentRequest)
-
-    if (isClearConfirmation) {
-      console.log('[ProactiveConfirmation] Detected clear confirmation:', lowerMessage)
-
-      if (awaitingStageAdvanceConfirmation === 'calibration-complete') {
-        setCalibrationComplete(true)
-        const totalEvaluated = approvedCandidates.length + rejectedCandidates.length
-        const completeMsg: Message = {
-          id: `calibration-finished-${Date.now()}`,
-          role: 'assistant',
-          content: `🎯 **Calibração finalizada!**\n\nO modelo de busca foi ajustado com base nas suas ${totalEvaluated} avaliações. Agora as próximas buscas vão priorizar candidatos similares aos que você aprovou.`,
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, completeMsg])
-        setAwaitingStageAdvanceConfirmation(null)
-        return true
-      }
-
-      const nextStage = awaitingStageAdvanceConfirmation
-
-      if (nextStage === 'jd-enrichment') {
-        console.log('[ProactiveConfirmation] Transitioning to jd-enrichment, calling smart-orchestrate')
-        setAwaitingStageAdvanceConfirmation(null)
-        setIsLoadingEnrichment(true)
-        const loadingMsg: Message = {
-          id: `jd-enrichment-loading-${Date.now()}`,
-          role: 'assistant',
-          content: '🔍 **Analisando dados de mercado...**\n\nEstou consultando benchmarks salariais, catálogo de competências e histórico da empresa para preparar sugestões personalizadas.',
-          timestamp: new Date(),
-          isProcessing: true,
-          processingState: 'analyzing'
-        }
-        setMessages(prev => [...prev, loadingMsg])
-        setCurrentStage('jd-enrichment' as WizardStage)
-        const collectedData = buildCollectedData()
-        orchestrateWizardMessage({
-          message: content,
-          current_stage: 'input-evaluation',
-          collected_data: collectedData,
-          conversation_history: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
-          conversation_id: conversationMemory.conversationId || undefined,
-          company_id: user?.company || undefined,
-          user_id: user?.email || undefined
-        }).then(async result => {
-          setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
-          await processOrchestratorResponse(result, loadingMsg.id)
-          setIsLoadingEnrichment(false)
-          setTimeout(() => {
-            const parecerData = generateParecerData()
-            const parecerMsg: Message = {
-              id: `parecer-lia-${Date.now()}`,
-              role: 'assistant',
-              content: `Preparei uma análise completa da sua vaga. Revise o parecer abaixo e ajuste o que desejar antes de avançarmos para **Remuneração**.`,
-              timestamp: new Date(),
-              messageType: 'parecer-lia',
-              parecerData
-            }
-            setMessages(prev => [...prev, parecerMsg])
-            setAwaitingStageAdvanceConfirmation('salary')
-          }, 1000)
-        }).catch(error => {
-          console.error('[ProactiveConfirmation] Failed to get enriched JD:', error)
-          setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
-          setIsLoadingEnrichment(false)
-          const errorMsg: Message = {
-            id: `jd-enrichment-error-${Date.now()}`,
-            role: 'assistant',
-            content: '❌ Não consegui buscar as sugestões de mercado. Você pode continuar preenchendo manualmente ou tentar novamente.',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, errorMsg])
-        })
-        return true
-      }
-
-      const transitionMsg: Message = {
-        id: `stage-transition-${Date.now()}`,
-        role: 'assistant',
-        content: getStageTransitionMessage(nextStage, {}),
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, transitionMsg])
-      setCurrentStage(nextStage as WizardStage)
-      setAwaitingStageAdvanceConfirmation(null)
-      if (nextStage === 'salary') {
-        setTimeout(() => {
-          const parecerData = generateParecerData()
-          const parecerMsg: Message = {
-            id: `parecer-lia-${Date.now()}`,
-            role: 'assistant',
-            content: `Preparei uma análise completa da sua vaga antes de configurar a remuneração.`,
-            timestamp: new Date(),
-            messageType: 'parecer-lia',
-            parecerData
-          }
-          setMessages(prev => [...prev, parecerMsg])
-        }, 500)
-      }
-      return true
-    }
-
-    // Not a clear confirmation — clear state and fall through to backend
-    console.log('[ProactiveConfirmation] Not a clear confirmation, routing to backend:', lowerMessage)
-    setAwaitingStageAdvanceConfirmation(null)
-    return false
-  }
-
-  // ── Interceptor 2: awaiting draft choice ──────────────────────────────────
-  const _handleDraftChoice = async (content: string): Promise<boolean> => {
-    if (!awaitingDraftChoice) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingDraftChoice')
-    const lowerContent = content.toLowerCase().trim()
-
-    if (lowerContent.includes('continuar') || lowerContent.includes('retomar') ||
-        lowerContent.includes('prosseguir') || lowerContent.includes('sim')) {
-      applyPendingDraft()
-      const currentStageConfig = WIZARD_STAGES.find(s => s.id === pendingDraftData?.currentStage)
-      const stageMessage = currentStageConfig?.liaMessage || 'Continuando de onde você parou...'
-      const liaMessage: Message = {
-        id: `lia-continue-draft-${Date.now()}`,
-        role: 'assistant',
-        content: `Perfeito! Vou retomar de onde você parou. 📋\n\n${stageMessage}`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, liaMessage])
-      setIsPanelOpen(true)
-      return true
-    }
-
-    if (lowerContent.includes('zero') || lowerContent.includes('nova') ||
-        lowerContent.includes('novo') || lowerContent.includes('descartar') ||
-        lowerContent.includes('limpar') || lowerContent.includes('recomeçar')) {
-      clearWizardDraft()
-      setPendingDraftData(null)
-      setAwaitingDraftChoice(false)
-      setHasAppliedRestoredDraft(true)
-      setCurrentStage('input-evaluation')
-      setBasicInfoFields({ cargo: '', area: '', gestor: '', localidade: '', modeloTrabalho: '', tipoContrato: '' })
-      setSalaryInfo({ minSalary: '', maxSalary: '', minBonus: '', maxBonus: '', bonusCriteria: '', benefits: [] })
-      setTechnicalSkills([])
-      setBehavioralCompetencies([])
-      setWsiCandidates([])
-      setGeneratedJobDescription('')
-      const liaMessage: Message = {
-        id: `lia-fresh-start-${Date.now()}`,
-        role: 'assistant',
-        content: 'Perfeito! Vamos criar uma nova vaga do zero. 🆕\n\nMe conte sobre a posição que você precisa preencher. Pode descrever livremente - cargo, responsabilidades, requisitos, área, modelo de trabalho... Eu vou extrair as informações automaticamente.\n\n💡 **Dica:** Quanto mais detalhes você fornecer, mais precisa será a vaga gerada.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, liaMessage])
-      setIsPanelOpen(true)
-      setWizardMode('create_from_scratch')
-      return true
-    }
-
-    const clarifyMessage: Message = {
-      id: `lia-clarify-${Date.now()}`,
-      role: 'assistant',
-      content: 'Não entendi sua escolha. Por favor, digite **"continuar"** para retomar o rascunho, ou **"começar do zero"** para descartar e criar uma nova vaga.',
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, clarifyMessage])
-    return true
-  }
-
-  // ── Interceptor 3: awaiting calibration choice ────────────────────────────
-  const _handleCalibrationChoice = async (content: string): Promise<boolean> => {
-    if (!awaitingCalibrationChoice || currentStage !== 'search-calibration') return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingCalibrationChoice')
-    const lowerContent = content.toLowerCase().trim()
-
-    const calibratePatterns = [
-      'calibrar', 'calibração', 'calibracao',
-      'avaliar candidato', 'avaliar perfis',
-      'mostrar candidato', 'mostra candidato', 'ver candidato', 'ver perfis',
-      'quero calibrar', 'calibrar agora', 'mostrar perfis', 'avaliar agora'
-    ]
-    const skipPatterns = [
-      'kanban', 'kbn', 'pular', 'direto', 'ir para', 'skip',
-      'depois', 'mais tarde', 'funil', 'pipeline',
-      'sem calibração', 'sem calibracao', 'calibrar depois',
-      'ir pro kanban', 'manda pro funil', 'pode pular',
-      'prefiro kanban', 'quero ir pro kanban', 'vai pro kanban',
-      'aprendizado natural', 'aprender no kanban'
-    ]
-
-    const hasCalibrationIntent = calibratePatterns.some(p => lowerContent.includes(p))
-    let hasSkipIntent = skipPatterns.some(p => lowerContent.includes(p))
-
-    if ((lowerContent === 'não' || lowerContent === 'nao') && !hasCalibrationIntent) {
-      hasSkipIntent = true
-    }
-
-    const explicitRejectCalibration = lowerContent.includes('não') && lowerContent.includes('calibr')
-    const hasConflictingIntent = hasCalibrationIntent && hasSkipIntent
-
-    if (hasConflictingIntent) {
-      setAwaitingCalibrationChoice(true)
-      const conflictClarifyMessage: Message = {
-        id: `lia-clarify-conflict-${Date.now()}`,
-        role: 'assistant',
-        content: `Percebi que você mencionou calibração mas também parece querer deixar para depois. Para confirmar:\n\n• **"Calibrar agora"** - mostro 5 perfis para avaliar rapidamente\n• **"Ir pro kanban"** - adiciono candidatos e você avalia lá\n\nQual prefere?`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, conflictClarifyMessage])
-      return true
-    }
-
-    if (hasSkipIntent || explicitRejectCalibration) {
-      setAwaitingCalibrationChoice(false)
-      const skipMessage: Message = {
-        id: `lia-skip-calibration-${Date.now()}`,
-        role: 'assistant',
-        content: `Perfeito! Os candidatos já estão sendo adicionados ao Kanban da vaga. 🎯\n\n**Aprendizado Implícito Ativado:**\nQuando você mover candidatos no Kanban (aprovar → entrevista, reprovar → descartado), eu automaticamente aprendo suas preferências e ajusto as futuras sugestões.\n\n📊 **Candidatos encontrados:** ${localCandidateCount > 0 ? localCandidateCount : 'Buscando...'}\n\nClique no botão abaixo para ir ao Kanban da vaga.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, skipMessage])
-      setCalibrationComplete(true)
-      return true
-    }
-
-    if (hasCalibrationIntent && !hasSkipIntent) {
-      setAwaitingCalibrationChoice(false)
-      const calibrateMessage: Message = {
-        id: `lia-start-calibration-${Date.now()}`,
-        role: 'assistant',
-        content: `Ótimo! Vou te mostrar 5 perfis para você avaliar rapidamente. 🔍\n\nBasta indicar se cada candidato é **aderente** ou **não aderente** ao perfil da vaga.\n\nCarregando os primeiros perfis...`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, calibrateMessage])
-      setShowCalibrationModal(true)
-      return true
-    }
-
-    const ambiguousAffirmative = ['sim', 'ok', 'pode', 'vamos', 'bora', 'claro', 'beleza'].some(p => lowerContent === p || lowerContent.startsWith(p + ' '))
-    if (ambiguousAffirmative) {
-      const clarifyAmbiguousMessage: Message = {
-        id: `lia-clarify-ambiguous-${Date.now()}`,
-        role: 'assistant',
-        content: `Ótimo! Só para confirmar, você quer:\n          \n• **"Calibrar"** - eu mostro 5 perfis para você avaliar rapidamente\n• **"Ir pro kanban"** - eu adiciono os candidatos e você avalia lá\n\nQual prefere?`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, clarifyAmbiguousMessage])
-      return true
-    }
-
-    const clarifyCalibrationMessage: Message = {
-      id: `lia-clarify-calibration-${Date.now()}`,
-      role: 'assistant',
-      content: 'Não entendi sua preferência. Você quer **"calibrar"** (avaliar 5 perfis) ou **"ir pro kanban"** (aprendizado natural)?',
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, clarifyCalibrationMessage])
-    return true
-  }
-
-  // ── Interceptor 4: pending tool call confirmation ─────────────────────────
-  const _handlePendingToolConfirmation = async (content: string): Promise<boolean> => {
-    if (!toolCalling.hasPendingTool || !activeToolConfirmationMessageId) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by hasPendingTool')
-    const lowerContent = content.toLowerCase().trim()
-
-    const affirmativePatterns = ['sim', 'pode', 'ok', 'claro', 'confirmo', 'confirma', 'prossegue', 'prosseguir', 'fazer', 'execute', 'aceito', 'pode ser', 'beleza', 'manda', 'vai', 'bora']
-    const negativePatterns = ['não', 'nao', 'cancela', 'cancelar', 'deixa', 'para', 'espera', 'aguarda', 'negativo', 'desisto']
-
-    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-
-    if (isAffirmative && !isNegative) {
-      setIsLoading(true)
-      try {
-        const result = await toolCalling.confirmToolCall()
-        const feedbackMessage: Message = {
-          id: `tool-feedback-${Date.now()}`,
-          role: 'assistant',
-          content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
-          timestamp: new Date(),
-          messageType: 'tool-execution-feedback',
-          toolExecutionResult: result,
-        }
-        setMessages(prev => [...prev, feedbackMessage])
-        setActiveToolConfirmationMessageId(null)
-        if (result.success) {
-          const followUpMessage: Message = {
-            id: `tool-followup-${Date.now()}`,
-            role: 'assistant',
-            content: 'Posso ajudar com mais alguma coisa?',
-            timestamp: new Date(),
-          }
-          setTimeout(() => {
-            setMessages(prev => [...prev, followUpMessage])
-          }, 500)
-        }
-      } catch (error) {
-        console.error('[ToolCalling] Error executing tool:', error)
-        const errorMessage: Message = {
-          id: `tool-error-${Date.now()}`,
-          role: 'assistant',
-          content: 'Tive um problema ao executar a ação. Por favor, tente novamente.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, errorMessage])
-        setActiveToolConfirmationMessageId(null)
-      } finally {
-        setIsLoading(false)
-      }
-      return true
-    }
-
-    if (isNegative) {
-      toolCalling.cancelToolCall()
-      setActiveToolConfirmationMessageId(null)
-      const cancelMessage: Message = {
-        id: `tool-cancel-${Date.now()}`,
-        role: 'assistant',
-        content: 'Tudo bem, cancelei a ação. Se precisar de algo mais, é só me avisar!',
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, cancelMessage])
-      return true
-    }
-
-    // Unclear — let message flow through to orchestrator
-    return false
-  }
-
-  // ── Interceptor 5: awaiting WSI regeneration confirmation ─────────────────
-  const _handleWSIRegenConfirmation = async (content: string): Promise<boolean> => {
-    if (!isInJobCreationMode || !awaitingWSIRegenerationConfirmation) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingWSIRegenerationConfirmation')
-    const lowerContent = content.toLowerCase().trim()
-
-    const affirmativePatterns = ['sim', 'pode', 'atualiz', 'regen', 'ok', 'claro', 'por favor', 'quero']
-    const negativePatterns = ['não', 'nao', 'deixa', 'mantém', 'mantem', 'fica', 'assim mesmo']
-
-    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-
-    if (isAffirmative && !isNegative) {
-      setAwaitingWSIRegenerationConfirmation(false)
-      setIsLoading(true)
-      try {
-        const { regenerateWSIQuestions } = await import('@/services/lia-api')
-        const currentQuestions = wsiCandidates.map(q => ({
-          question: q.question,
-          type: q.type || 'open',
-          required: q.required !== false,
-          competency_validated: q.competency
-        }))
-        const result = await regenerateWSIQuestions({
-          company_id: user?.company || 'default',
-          job_title: basicInfoFields.cargo,
-          current_questions: currentQuestions as any,
-          technical_skills: technicalSkills.map(s => s.name),
-          behavioral_competencies: behavioralCompetencies.map(c => c.name),
-          seniority: undefined,
-          max_questions: 10
-        })
-        if (result.success && result.questions.length > 0) {
-          setWsiCandidates(result.questions.map((q: any, idx: number) => ({
-            id: `wsi-regen-${idx}-${Date.now()}`,
-            question: q.question,
-            type: q.type || 'open',
-            required: q.required !== false,
-            selected: true,
-            batch: 0,
-            isWSI: true,
-            competency: q.competency_validated,
-          })))
-          analytics.trackSuggestion('fast_track_wsi_regenerated', true)
-          const successMessage: Message = {
-            id: `wsi-regen-success-${Date.now()}`,
-            role: 'assistant',
-            content: `Pronto! Gerei **${result.questions.length} novas perguntas WSI** baseadas nas competências atualizadas. Você pode revisar e ajustar no painel ao lado.`,
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, successMessage])
-        } else if (!result.success) {
-          const warningMessage: Message = {
-            id: `wsi-regen-warning-${Date.now()}`,
-            role: 'assistant',
-            content: 'A regeneração não foi possível. Manterei as perguntas atuais - você pode editá-las manualmente no painel.',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, warningMessage])
-        }
-      } catch (error) {
-        console.error('WSI regeneration failed:', error)
-        const errorMessage: Message = {
-          id: `wsi-regen-error-${Date.now()}`,
-          role: 'assistant',
-          content: 'Tive um problema ao regenerar as perguntas. Você pode tentar novamente mais tarde ou editar manualmente.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, errorMessage])
-      } finally {
-        setIsLoading(false)
-      }
-      return true
-    }
-
-    if (isNegative) {
-      setAwaitingWSIRegenerationConfirmation(false)
-      const keepMessage: Message = {
-        id: `wsi-keep-${Date.now()}`,
-        role: 'assistant',
-        content: 'Tudo bem! Manterei as perguntas WSI atuais. Se mudar de ideia, é só me avisar.',
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, keepMessage])
-      return true
-    }
-
-    return false
-  }
-
-  // ── Interceptor 6: awaiting sensitive fields confirmation (Fast Track) ─────
-  const _handleSensitiveFieldsConfirmation = async (content: string): Promise<boolean> => {
-    if (!isInJobCreationMode || !awaitingSensitiveFieldsConfirmation) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingSensitiveFieldsConfirmation')
-    const lowerContent = content.toLowerCase().trim()
-
-    const gestorPatterns = [
-      /gestor(?:\s+(?:[eé]|vai ser|será))?\s+(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
-      /(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+(?:\s+[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+)*)\s+(?:[eé]\s+)?(?:o\s+)?gestor/i,
-      /gestor(?:a)?[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
-    ]
-    let extractedGestor = ''
-    for (const pattern of gestorPatterns) {
-      const match = content.match(pattern)
-      if (match && match[1]) {
-        extractedGestor = match[1].trim()
-        break
-      }
-    }
-    if (lowerContent.includes('mesmo') || lowerContent.includes('anterior') || lowerContent.includes('igual')) {
-      if (fastTrackAppliedData?.gestor) extractedGestor = fastTrackAppliedData.gestor
-    }
-
-    let extractedLocation = ''
-    const locationPatterns = [
-      /(?:localiza[çc][aã]o|cidade|local|onde)[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
-      /(?:em|para)\s+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
-    ]
-    if ((lowerContent.includes('sim') || lowerContent.includes('mesmo') || lowerContent.includes('continua')) && fastTrackAppliedData?.localidade) {
-      extractedLocation = fastTrackAppliedData.localidade
-    } else if (lowerContent.includes('remoto') || lowerContent.includes('home office')) {
-      extractedLocation = 'Remoto'
-    } else {
-      for (const pattern of locationPatterns) {
-        const match = content.match(pattern)
-        if (match && match[1]) {
-          extractedLocation = match[1].trim()
-          break
-        }
-      }
-    }
-    if (!extractedLocation && fastTrackAppliedData?.localidade) {
-      extractedLocation = fastTrackAppliedData.localidade
-    }
-
-    let isAffirmativeAction = false
-    let affirmativeCriteria = ''
-    const affirmativeNegativePatterns = [
-      /n[aã]o\s+[eé]\s+afirmativa/i,
-      /n[aã]o\s+afirmativa/i,
-      /n[aã]o,?\s*(?:n[aã]o\s+)?[eé]?\s*afirmativa/i,
-    ]
-    const affirmativePositivePatterns = [
-      /afirmativa\s+(?:para\s+)?(mulheres?|pcd|pessoas?\s+com\s+defici[êe]ncia|negr[oa]s?|lgbtq?\+?|50\+)/i,
-      /(?:sim|[eé])\s+afirmativa/i,
-      /vaga\s+afirmativa/i,
-    ]
-    const isNegativeAffirmative = affirmativeNegativePatterns.some(p => p.test(lowerContent))
-    if (!isNegativeAffirmative) {
-      for (const pattern of affirmativePositivePatterns) {
-        const match = content.match(pattern)
-        if (match) {
-          isAffirmativeAction = true
-          if (match[1]) affirmativeCriteria = match[1].trim()
-          break
-        }
-      }
-    }
-
-    if (extractedGestor) setBasicInfoFields(prev => ({ ...prev, gestor: extractedGestor }))
-    if (extractedLocation) setBasicInfoFields(prev => ({ ...prev, localidade: extractedLocation }))
-    if (isAffirmativeAction) {
-      setJobConfig(prev => ({ ...prev, isAffirmative: true }))
-      if (affirmativeCriteria) setDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaPrimary: affirmativeCriteria }))
-    } else if (isNegativeAffirmative) {
-      setJobConfig(prev => ({ ...prev, isAffirmative: false }))
-    }
-
-    setAwaitingSensitiveFieldsConfirmation(false)
-    setFastTrackAppliedData(null)
-
-    const confirmationParts: string[] = []
-    if (extractedGestor) confirmationParts.push(`gestor: **${extractedGestor}**`)
-    if (extractedLocation) confirmationParts.push(`localização: **${extractedLocation}**`)
-    if (isAffirmativeAction) {
-      confirmationParts.push(`vaga afirmativa: **Sim${affirmativeCriteria ? ` (${affirmativeCriteria})` : ''}**`)
-    } else {
-      confirmationParts.push(`vaga afirmativa: **Não**`)
-    }
-
-    const confirmMessage: Message = {
-      id: `fasttrack-confirm-${Date.now()}`,
-      role: 'assistant',
-      content: `Perfeito! Registrei ${confirmationParts.join(', ')}.\n\nAgora você pode revisar todos os detalhes no painel lateral e publicar quando estiver pronto!`,
-      timestamp: new Date(),
-    }
-    setMessages(prev => [...prev, confirmMessage])
-    setCurrentStage('review-publish')
-    setWizardMode('create_from_scratch')
-    return true
-  }
-
-  // ── Interceptor 7: Fast Track suggestions (hasSuggestions gate) ───────────
-  const _handleFastTrackSuggestions = async (content: string): Promise<boolean> => {
-    if (!isInJobCreationMode || !fastTrack.hasSuggestions) return false
-    console.log('[DEBUG handleSendMessage] INTERCEPTED by fastTrack.hasSuggestions')
-    const lowerContent = content.toLowerCase().trim()
-
-    const numberMatch = lowerContent.match(/\b([1-5])\b|primeira|segunda|terceira|quarta|quinta/)
-    const hasExplicitSelection = numberMatch !== null
-
-    const affirmativePatterns = [
-      'sim', 'usa', 'usar', 'ok', 'vamos', 'pode ser', 'pode', 'essa', 'essa mesmo',
-      'top', 'bora', 'beleza', 'perfeito', 'ótimo', 'legal', 'certo', 'fechou'
-    ]
-    const negativePatterns = [
-      'não', 'nao', 'zero', 'nova', 'novo', 'criar', 'comecar', 'começar',
-      'do zero', 'outra', 'diferente', 'prefiro não'
-    ]
-
-    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-
-    if ((isAffirmative || hasExplicitSelection) && !isNegative) {
-      if (awaitingFastTrackSelection && !numberMatch) {
-        const reaskMessage: Message = {
-          id: `fasttrack-reask-${Date.now()}`,
-          role: 'assistant',
-          content: 'Qual das vagas você quer usar? Diga o número (1, 2, 3...) ou "primeira", "segunda", etc.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, reaskMessage])
-        return true
-      }
-
-      if (fastTrack.suggestions.length > 1 && !numberMatch && !fastTrack.selectedJob) {
-        const clarifyMessage: Message = {
-          id: `fasttrack-clarify-${Date.now()}`,
-          role: 'assistant',
-          content: `Tenho ${fastTrack.suggestions.length} vagas similares. Qual você quer usar?\n\n${fastTrack.suggestions.slice(0, 5).map((s, i) => `${i + 1}. ${s.job_title}${s.department ? ` (${s.department})` : ''} - ${Math.round(s.similarity_score * 100)}% similar`).join('\n')}\n\nDiga o número ou "primeira", "segunda", etc.`,
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, clarifyMessage])
-        setAwaitingFastTrackSelection(true)
-        return true
-      }
-
-      let jobToApply: FastTrackSuggestion | null = null
-      if (numberMatch) {
-        const indexMap: Record<string, number> = {
-          '1': 0, 'primeira': 0, '2': 1, 'segunda': 1, '3': 2, 'terceira': 2,
-          '4': 3, 'quarta': 3, '5': 4, 'quinta': 4
-        }
-        const index = indexMap[numberMatch[0].toLowerCase()] ?? 0
-        if (index < fastTrack.suggestions.length) jobToApply = fastTrack.suggestions[index]
-      } else if (fastTrack.selectedJob) {
-        jobToApply = fastTrack.selectedJob
-      } else if (fastTrack.suggestions.length === 1) {
-        jobToApply = fastTrack.suggestions[0]
-      }
-
-      if (!jobToApply) return true
-
-      let fastTrackData = null
-      try {
-        fastTrackData = await fastTrack.applyFastTrack(jobToApply)
-      } catch (error) {
-        console.error('Fast Track apply failed:', error)
-        setAwaitingFastTrackSelection(false)
-        const errorMessage: Message = {
-          id: `fasttrack-error-${Date.now()}`,
-          role: 'assistant',
-          content: 'Ops! Tive um problema ao aplicar os dados. Quer tentar novamente ou criar do zero?',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, errorMessage])
-        return true
-      }
-
-      if (fastTrackData) {
-        setBasicInfoFields({
-          cargo: fastTrackData.basicInfo.cargo || '',
-          area: fastTrackData.basicInfo.area || '',
-          gestor: fastTrackData.basicInfo.gestor || '',
-          localidade: fastTrackData.basicInfo.localidade || '',
-          modeloTrabalho: fastTrackData.basicInfo.modeloTrabalho || '',
-          tipoContrato: fastTrackData.basicInfo.tipoContrato || '',
-        })
-        setTechnicalSkills(fastTrackData.technicalSkills)
-        setBehavioralCompetencies(fastTrackData.behavioralCompetencies)
-        setSalaryInfo({
-          minSalary: fastTrackData.salaryInfo.minSalary || '',
-          maxSalary: fastTrackData.salaryInfo.maxSalary || '',
-          minBonus: fastTrackData.salaryInfo.minBonus || '',
-          maxBonus: fastTrackData.salaryInfo.maxBonus || '',
-          bonusCriteria: fastTrackData.salaryInfo.bonusCriteria || '',
-          benefits: fastTrackData.salaryInfo.benefits || [],
-        })
-        if (fastTrackData.wsiQuestions.length > 0) {
-          setWsiCandidates(fastTrackData.wsiQuestions.map(q => ({
-            ...q, selected: true, batch: 0, isWSI: true,
-          })))
-        }
-        if (fastTrackData.generatedDescription) setGeneratedJobDescription(fastTrackData.generatedDescription)
-        setDetectedCriteria(prev => ({ ...prev, ...fastTrackData.detectedCriteria }))
-        setWizardFastTrackSourceJobId(fastTrackData.sourceJobId)
-        setFastTrackOriginalCompetencies({
-          technicalSkillNames: fastTrackData.technicalSkills.map(s => s.name.toLowerCase()),
-          behavioralCompetencyNames: fastTrackData.behavioralCompetencies.map(c => c.name.toLowerCase())
-        })
-        setWsiRegenerationPrompted(false)
-        setAwaitingFastTrackSelection(false)
-        setFastTrackAppliedData({
-          gestor: fastTrackData.basicInfo.gestor || '',
-          localidade: fastTrackData.basicInfo.localidade || '',
-          sourceJobTitle: jobToApply.job_title || ''
-        })
-        setAwaitingSensitiveFieldsConfirmation(true)
-        analytics.trackSuggestion('fast_track_accepted', true)
-
-        const localidadeInfo = fastTrackData.basicInfo.localidade
-          ? `A localização continua sendo **${fastTrackData.basicInfo.localidade}**?`
-          : 'Qual será a localidade da vaga?'
-        const sensitiveFieldsMessage: Message = {
-          id: `fasttrack-sensitive-${Date.now()}`,
-          role: 'assistant',
-          content: `Copiei todos os dados da vaga "${jobToApply.job_title}"! Só preciso confirmar alguns detalhes:\n\n1. **Quem é o gestor** responsável por esta vaga?\n2. ${localidadeInfo}\n3. **Essa vaga é afirmativa** para algum grupo (PcD, mulheres, pessoas negras, LGBTQ+, 50+)?`,
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, sensitiveFieldsMessage])
-        setIsPanelOpen(true)
-      } else {
-        setAwaitingFastTrackSelection(false)
-        const errorMessage: Message = {
-          id: `fasttrack-null-${Date.now()}`,
-          role: 'assistant',
-          content: 'Não consegui carregar os dados dessa vaga. Quer tentar outra ou criar do zero?',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, errorMessage])
-      }
-      return true
-    }
-
-    if (isNegative) {
-      fastTrack.clearSuggestions()
-      setFastTrackMessageSent(false)
-      setAwaitingFastTrackSelection(false)
-      analytics.trackSuggestion('fast_track_rejected', false)
-      const liaMessage: Message = {
-        id: `fasttrack-declined-${Date.now()}`,
-        role: 'assistant',
-        content: 'Tudo bem! Vamos criar uma nova vaga do zero. Me conta mais sobre a vaga que você precisa.',
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, liaMessage])
-      return true
-    }
-
-    return false
-  }
-
-  // ── Interceptor 8: Fast Track flow (pre_wizard / fast_track mode) ──────────
-  const _handleFastTrackFlow = async (content: string): Promise<boolean> => {
-    if (!isInJobCreationMode || (wizardMode !== 'pre_wizard' && wizardMode !== 'fast_track')) return false
-
-    const intent = detectFastTrackIntent(content)
-
-    if (wizardMode === 'pre_wizard') {
-      if (intent === 'fast_track') {
-        setWizardMode('fast_track')
-        setFastTrackState('collecting_criteria')
-        setIsPanelOpen(false)
-        const liaMessage: Message = {
-          id: `lia-fasttrack-${Date.now()}`,
-          role: 'assistant',
-          content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-        return true
-      }
-
-      if (intent === 'from_scratch') {
-        setWizardMode('create_from_scratch')
-        setIsPanelOpen(true)
-        if (fastTrackSuggestionsShownTracked) analytics.trackSuggestion('fast_track_rejected', false)
-        const liaMessage: Message = {
-          id: `lia-scratch-${Date.now()}`,
-          role: 'assistant',
-          content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-        return true
-      }
-
-      // No clear choice — use AI to respond conversationally
-      setIsLoading(true)
-      try {
-        const conversationalResponse = await getConversationalResponse({
-          message: content,
-          mode: 'job_creation',
-          context: 'pre_wizard'
-        })
-        if (conversationalResponse.suggested_action === 'from_scratch') {
-          setWizardMode('create_from_scratch')
-          setIsPanelOpen(true)
-          if (fastTrackSuggestionsShownTracked) analytics.trackSuggestion('fast_track_rejected', false)
-          const liaMessage: Message = {
-            id: `lia-scratch-ai-${Date.now()}`,
-            role: 'assistant',
-            content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          setIsLoading(false)
-          return true
-        }
-        if (conversationalResponse.suggested_action === 'fast_track') {
-          setWizardMode('fast_track')
-          setFastTrackState('collecting_criteria')
-          setIsPanelOpen(false)
-          const liaMessage: Message = {
-            id: `lia-fasttrack-ai-${Date.now()}`,
-            role: 'assistant',
-            content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          setIsLoading(false)
-          return true
-        }
-        const liaMessage: Message = {
-          id: `lia-conversational-${Date.now()}`,
-          role: 'assistant',
-          content: conversationalResponse.response,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-      } catch (error) {
-        console.error('Error getting conversational response:', error)
-        const liaMessage: Message = {
-          id: `lia-guidance-fallback-${Date.now()}`,
-          role: 'assistant',
-          content: 'Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-      } finally {
-        setIsLoading(false)
-      }
-      return true
-    }
-
-    // fast_track mode
-    if (intent === 'confirm' && fastTrackState === 'reviewing') {
-      await handleFastTrackPublish()
-      return true
-    }
-    if (intent === 'adjust' && (fastTrackState === 'reviewing' || fastTrackState === 'adjusting')) {
-      const adjustments = parseFastTrackAdjustment(content)
-      if (adjustments) {
-        setFastTrackAdjustments(prev => ({ ...prev, ...adjustments }))
-        setFastTrackState('adjusting')
-        if (fastTrackSelectedVacancy) {
-          const updatedVacancy = { ...fastTrackSelectedVacancy }
-          if (adjustments.salary_min) updatedVacancy.salary_range.min = adjustments.salary_min
-          if (adjustments.salary_max) updatedVacancy.salary_range.max = adjustments.salary_max
-          if (adjustments.work_model) updatedVacancy.work_model = adjustments.work_model
-          if (adjustments.location) updatedVacancy.location = adjustments.location
-          setFastTrackSelectedVacancy(updatedVacancy)
-          const liaMessage: Message = {
-            id: `lia-adjust-${Date.now()}`,
-            role: 'assistant',
-            content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${updatedVacancy.salary_range.min.toLocaleString('pt-BR')} - R$ ${updatedVacancy.salary_range.max.toLocaleString('pt-BR')}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          setFastTrackState('reviewing')
-        }
-      } else {
-        const liaMessage: Message = {
-          id: `lia-adjust-error-${Date.now()}`,
-          role: 'assistant',
-          content: 'Não consegui entender o ajuste solicitado. Por favor, seja mais específico.\n\n**Exemplos:**\n• "salário para 15 a 20k"\n• "modelo híbrido"\n• "local para São Paulo"',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-      }
-      return true
-    }
-    if (intent === 'select' && fastTrackState === 'selecting') {
-      const numMatch = content.match(/(\d+)/)
-      const numberWords: Record<string, number> = { 'um': 1, 'dois': 2, 'três': 3, 'quatro': 4, 'cinco': 5, 'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9, 'dez': 10 }
-      let index = -1
-      if (numMatch) {
-        index = parseInt(numMatch[1]) - 1
-      } else {
-        const word = content.toLowerCase().trim()
-        if (numberWords[word]) index = numberWords[word] - 1
-      }
-      if (index >= 0 && index < fastTrackSearchResults.length) {
-        const selectedVacancy = fastTrackSearchResults[index]
-        setFastTrackState('reviewing')
-        await handleFastTrackVacancySelect(selectedVacancy.id)
-      } else {
-        const liaMessage: Message = {
-          id: `lia-select-error-${Date.now()}`,
-          role: 'assistant',
-          content: `Número inválido. Por favor, escolha um número de 1 a ${fastTrackSearchResults.length}.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-      }
-      return true
-    }
-    if (intent === 'criteria' || fastTrackState === 'collecting_criteria') {
-      const criteria: VacancySearchCriteria = {}
-      const wantsToListAll = /(?:lista|listar|mostrar|ver|quais|todas|exibir|apresentar)\s*(?:as|as\s+vagas|vagas|anteriores|recentes|últimas|existentes)?/i.test(content)
-      const titleMatch = content.match(/(?:desenvolvedor|analista|gerente|coordenador|engenheiro|designer|product|ux|ui|frontend|backend|fullstack|devops|data|cientista|tech lead|architect)[^\s,.]*/gi)
-      if (titleMatch) criteria.title = titleMatch[0]
-      const managerMatch = content.match(/(?:do|da|equipe do|equipe da|gestor)\s+([A-Z][a-zà-ú]+(?:\s+[A-Z][a-zà-ú]+)?)/i)
-      if (managerMatch) criteria.manager = managerMatch[1]
-      const deptMatch = content.match(/(?:área|departamento|setor|time|equipe)\s+(?:de\s+)?([A-Za-zà-ú\s]+)/i)
-      if (deptMatch) criteria.department = deptMatch[1].trim()
-      setFastTrackSearchCriteria(criteria)
-
-      if (Object.keys(criteria).length > 0 || wantsToListAll) {
-        const liaMessage: Message = {
-          id: `lia-searching-${Date.now()}`,
-          role: 'assistant',
-          content: wantsToListAll && Object.keys(criteria).length === 0
-            ? '🔍 Buscando suas vagas mais recentes...'
-            : '🔍 Buscando vagas anteriores...',
-          timestamp: new Date(),
-          isProcessing: true,
-          processingState: 'searching'
-        }
-        setMessages(prev => [...prev, liaMessage])
-        await handleFastTrackSearch(criteria)
-        setMessages(prev => prev.filter(m => m.id !== liaMessage.id))
-      } else {
-        const liaMessage: Message = {
-          id: `lia-criteria-help-${Date.now()}`,
-          role: 'assistant',
-          content: 'Preciso de mais informações para buscar. Me diga:\n\n• **Cargo** - "Desenvolvedor Python", "Analista de Dados"\n• **Gestor** - "equipe do João", "área do Ricardo"\n• **Departamento** - "área de tecnologia", "time de produto"\n\nOu digite **"listar todas"** para ver as vagas mais recentes.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-      }
-      return true
-    }
-    if (intent === 'from_scratch') {
-      setWizardMode('create_from_scratch')
-      setIsPanelOpen(true)
-      const liaMessage: Message = {
-        id: `lia-switch-${Date.now()}`,
-        role: 'assistant',
-        content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, liaMessage])
-      return true
-    }
-
-    return false
-  }
-
-  // ── Interceptor 9: compensation message handling ───────────────────────────
-  const _handleCompensationMessage = async (content: string): Promise<boolean> => {
-    const lowerContent = content.toLowerCase().trim()
-    const hasCompensationMessage = messages.some(m => m.messageType === 'compensation')
-    if (!hasCompensationMessage) return false
-
-    const thinkingId = `thinking-interpret-${Date.now()}`
-    const thinkingMessage: Message = {
-      id: thinkingId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      processingState: 'thinking' as const
-    }
-    setMessages(prev => [...prev, thinkingMessage])
-
-    try {
-      const interpretation = await interpretMessage({
-        message: content,
-        current_stage: currentStage,
-        context: {
-          filled_fields: Object.keys(detectedCriteria).filter(k => (detectedCriteria as Record<string, any>)[k]),
-          has_compensation: true,
-          salary_min: salaryInfo.minSalary,
-          salary_max: salaryInfo.maxSalary
-        }
-      })
-
-      setMessages(prev => prev.filter(m => m.id !== thinkingId))
-      console.log('AI Interpretation:', interpretation)
-
-      const MIN_CONFIDENCE = 0.65
-      const isHighConfidence = interpretation.confidence >= MIN_CONFIDENCE
-
-      if (isHighConfidence && (interpretation.action === 'confirm' || interpretation.action === 'advance_stage' || interpretation.should_advance)) {
-        if (interpretation.extracted_entities && Object.keys(interpretation.extracted_entities).length > 0) {
-          if (interpretation.extracted_entities.salario_min) {
-            setSalaryInfo(prev => ({ ...prev, minSalary: interpretation.extracted_entities!.salario_min.toString() }))
-          }
-          if (interpretation.extracted_entities.salario_max) {
-            setSalaryInfo(prev => ({ ...prev, maxSalary: interpretation.extracted_entities!.salario_max.toString() }))
-          }
-        }
-        const minSal = parseInt(salaryInfo.minSalary) || 0
-        const maxSal = parseInt(salaryInfo.maxSalary) || 0
-        if (!(minSal > 0 && maxSal > 0)) {
-          const askSalaryMsg: Message = {
-            id: `ask-salary-${Date.now()}`,
-            role: 'assistant',
-            content: '💰 Antes de avançar, preciso confirmar a faixa salarial. Qual é o salário mínimo e máximo para esta vaga?',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, askSalaryMsg])
-          return true
-        }
-        if (minSal > maxSal) {
-          const warningMsg: Message = {
-            id: `salary-order-warning-${Date.now()}`,
-            role: 'assistant',
-            content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, warningMsg])
-          return true
-        }
-        setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-        setCompensationAnalysis(null)
-        const confirmMessage: Message = {
-          id: `confirm-compensation-${Date.now()}`,
-          role: 'assistant',
-          content: interpretation.lia_response || '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, confirmMessage])
-        setTimeout(() => { goToNextStage() }, 1500)
-        return true
-      }
-
-      if (isHighConfidence && (interpretation.action === 'update_field' || interpretation.action === 'provide_data')) {
-        if (interpretation.extracted_entities) {
-          const newMin = interpretation.extracted_entities.salario_min
-          const newMax = interpretation.extracted_entities.salario_max
-          if (newMin || newMax) {
-            const minVal = newMin || parseInt(salaryInfo.minSalary) || 0
-            const maxVal = newMax || parseInt(salaryInfo.maxSalary) || 0
-            if (minVal > 0 && maxVal > 0 && minVal > maxVal) {
-              const warningMessage: Message = {
-                id: `salary-warning-${Date.now()}`,
-                role: 'assistant',
-                content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, informe os valores corretos.',
-                timestamp: new Date()
-              }
-              setMessages(prev => [...prev, warningMessage])
-              return true
-            }
-            if (newMin) setSalaryInfo(prev => ({ ...prev, minSalary: newMin.toString() }))
-            if (newMax) setSalaryInfo(prev => ({ ...prev, maxSalary: newMax.toString() }))
-            setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-            setCompensationAnalysis(null)
-            const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value)
-            const updateMessage: Message = {
-              id: `update-salary-${Date.now()}`,
-              role: 'assistant',
-              content: `✅ **Valores atualizados!**\n\n• Mínimo: ${formatCurrency(minVal)}\n• Máximo: ${formatCurrency(maxVal)}\n\nVocê pode confirmar ou ajustar novamente.`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, updateMessage])
-            return true
-          }
-        }
-      }
-
-      if (interpretation.action === 'reject') {
-        const rejectMessage: Message = {
-          id: `reject-${Date.now()}`,
-          role: 'assistant',
-          content: interpretation.lia_response || 'Entendido. O que você gostaria de ajustar?',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, rejectMessage])
-        return true
-      }
-
-      if (interpretation.action === 'help') {
-        const helpMessage: Message = {
-          id: `help-${Date.now()}`,
-          role: 'assistant',
-          content: interpretation.lia_response || '💡 **Ajuda - Etapa de Remuneração**\n\nVocê pode:\n• **Confirmar** os valores atuais\n• **Aceitar sugestões** de mercado\n• **Ajustar** para novos valores (ex: "quero salário de 10 a 15 mil")\n• Pedir para **avançar** para próxima etapa',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, helpMessage])
-        return true
-      }
-
-      if (interpretation.clarification_needed && interpretation.clarification_question) {
-        const clarifyMessage: Message = {
-          id: `clarify-${Date.now()}`,
-          role: 'assistant',
-          content: interpretation.clarification_question,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, clarifyMessage])
-        return true
-      }
-
-      // action === 'ask_question' or low confidence — fall through to fallback patterns
-
-    } catch (error) {
-      console.error('AI interpretation failed, using fallback:', error)
-      setMessages(prev => prev.filter(m => m.id !== thinkingId))
-    }
-
-    // Fallback pattern matching
-    const isConfirmCommand = lowerContent === 'confirmar' || lowerContent.includes('confirmo') ||
-      lowerContent.includes('manter valores') || lowerContent.includes('manter atual') ||
-      lowerContent.includes('próximo') || lowerContent.includes('proximo') ||
-      lowerContent.includes('continuar') || lowerContent.includes('avançar') ||
-      lowerContent.includes('avancar') || lowerContent.includes('próximo passo') ||
-      lowerContent.includes('proximo passo') || lowerContent.includes('prosseguir') ||
-      lowerContent.includes('vamos para') || lowerContent.includes('pode avançar') ||
-      lowerContent.includes('ok') || lowerContent === 'sim' || lowerContent === 'ok'
-
-    if (isConfirmCommand) {
-      const minSal = parseInt(salaryInfo.minSalary) || 0
-      const maxSal = parseInt(salaryInfo.maxSalary) || 0
-      if (!(minSal > 0 && maxSal > 0)) {
-        const askSalaryMsg: Message = {
-          id: `ask-salary-fallback-${Date.now()}`,
-          role: 'assistant',
-          content: '💰 Antes de continuar, preciso da faixa salarial completa. Qual é o salário mínimo e máximo para esta vaga?',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, askSalaryMsg])
-        return true
-      }
-      if (minSal > maxSal) {
-        const warningMsg: Message = {
-          id: `salary-order-fallback-${Date.now()}`,
-          role: 'assistant',
-          content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, warningMsg])
-        return true
-      }
-      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-      setCompensationAnalysis(null)
-      const confirmMessage: Message = {
-        id: `confirm-compensation-fallback-${Date.now()}`,
-        role: 'assistant',
-        content: '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, confirmMessage])
-      setTimeout(() => { goToNextStage() }, 1500)
-      return true
-    }
-
-    if (lowerContent.includes('aceitar sugest') || lowerContent.includes('aplicar sugest')) {
-      const analysis = compensationAnalysis
-      if (analysis) {
-        if (analysis.salary.suggestion) {
-          setSalaryInfo(prev => ({
-            ...prev,
-            minSalary: analysis.salary.suggestion!.min.toString(),
-            maxSalary: analysis.salary.suggestion!.max.toString()
-          }))
-        }
-        if (analysis.bonus.suggestion) {
-          setSalaryInfo(prev => ({
-            ...prev,
-            minBonus: analysis.bonus.suggestion!.toString(),
-            maxBonus: analysis.bonus.suggestion!.toString()
-          }))
-        }
-        if (analysis.benefits.missingFromStandard && analysis.benefits.missingFromStandard.length > 0) {
-          const newBenefits = analysis.benefits.missingFromStandard.map(b => ({ id: b.id, name: b.name, value: b.value, enabled: true }))
-          setSalaryInfo(prev => ({
-            ...prev,
-            benefits: [...prev.benefits, ...newBenefits.filter(nb => !prev.benefits.some(pb => pb.id === nb.id))]
-          }))
-        }
-      }
-      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-      setCompensationAnalysis(null)
-      const confirmMessage: Message = {
-        id: `apply-suggestions-${Date.now()}`,
-        role: 'assistant',
-        content: '✅ **Sugestões aplicadas!**\n\nOs valores foram atualizados conforme as recomendações de mercado.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, confirmMessage])
-      setTimeout(() => { goToNextStage() }, 1500)
-      return true
-    }
-
-    const adjustMatch = lowerContent.match(/ajust(?:ar|e)?\s*(?:para)?\s*(?:r\$?\s*)?(\d+[\d.,]*)\s*(?:a|até|-|–|\/)\s*(?:r\$?\s*)?(\d+[\d.,]*)/i)
-    if (adjustMatch) {
-      const minValue = parseInt(adjustMatch[1].replace(/[.,]/g, ''))
-      const maxValue = parseInt(adjustMatch[2].replace(/[.,]/g, ''))
-      setSalaryInfo(prev => ({ ...prev, minSalary: minValue.toString(), maxSalary: maxValue.toString() }))
-      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-      setCompensationAnalysis(null)
-      const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value)
-      const confirmMessage: Message = {
-        id: `adjust-salary-fallback-${Date.now()}`,
-        role: 'assistant',
-        content: `✅ **Faixa salarial atualizada!**\n\n• Mínimo: ${formatCurrency(minValue)}\n• Máximo: ${formatCurrency(maxValue)}\n\nVocê pode confirmar ou ajustar novamente.`,
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, confirmMessage])
-      return true
-    }
-
-    return false
-  }
-
-  // ── Interceptor 10: local command handling (navigation & edit) ─────────────
-  const _handleLocalCommands = (content: string): boolean => {
-    if (!isInJobCreationMode || wizardMode !== 'create_from_scratch' || currentStage === 'input-evaluation') return false
-
-    const parsedCommand = parseCommand(content)
-
-    if (parsedCommand.type === 'navigate') {
-      const navCommand = parsedCommand as ParsedNavigationCommand
-      const targetStage = navCommand.target
-      const targetStageIndex = WIZARD_STAGES.findIndex(s => s.id === targetStage)
-      const currentStageIndex = WIZARD_STAGES.findIndex(s => s.id === currentStage)
-
-      if (targetStage === currentStage) {
-        const alreadyHereMessage: Message = {
-          id: `nav-already-here-${Date.now()}`,
-          role: 'assistant',
-          content: `Você já está na etapa de **${getStageLabel(targetStage)}**. Como posso ajudar?`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, alreadyHereMessage])
-        return true
-      }
-      if (targetStageIndex < currentStageIndex) {
-        setCurrentStage(targetStage)
-        const navSuccessMessage: Message = {
-          id: `nav-success-${Date.now()}`,
-          role: 'assistant',
-          content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\nVocê pode revisar e ajustar os campos conforme necessário.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, navSuccessMessage])
-        return true
-      }
-      const stageConfig = WIZARD_STAGES.find(s => s.id === currentStage)
-      if (stageConfig) {
-        setCurrentStage(targetStage)
-        const navForwardMessage: Message = {
-          id: `nav-forward-${Date.now()}`,
-          role: 'assistant',
-          content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\n💡 *Dica: Lembre-se de revisar as etapas anteriores antes de finalizar.*`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, navForwardMessage])
-        return true
-      }
-    }
-
-    if (parsedCommand.type === 'edit') {
-      const editCommand = parsedCommand as ParsedEditCommand
-
-      if (editCommand.field === 'salary' && editCommand.value) {
-        const salaryResult = parseSalaryValue(String(editCommand.value))
-        if (salaryResult.isValid) {
-          const { updated, changes } = applySalaryUpdate(salaryInfo, salaryResult)
-          if (updated.minSalary !== salaryInfo.minSalary) {
-            trackFieldChange({ field: 'minSalary', oldValue: salaryInfo.minSalary, newValue: updated.minSalary, source: 'chat' })
-          }
-          if (updated.maxSalary !== salaryInfo.maxSalary) {
-            trackFieldChange({ field: 'maxSalary', oldValue: salaryInfo.maxSalary, newValue: updated.maxSalary, source: 'chat' })
-          }
-          setSalaryInfo(updated)
-          setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-          setCompensationAnalysis(null)
-          const confirmMessage: Message = {
-            id: `edit-salary-${Date.now()}`,
-            role: 'assistant',
-            content: `✅ **Salário atualizado!**\n\n${changes.length > 0 ? changes.join('\n') : `Faixa salarial definida: ${salaryResult.formatted}`}\n\n*Você pode confirmar ou ajustar novamente.*`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, confirmMessage])
-          if (currentStage !== 'salary') setCurrentStage('salary')
-          return true
-        } else {
-          const errorMessage: Message = {
-            id: `edit-salary-error-${Date.now()}`,
-            role: 'assistant',
-            content: `❌ Não consegui entender o valor do salário. Por favor, use formatos como:\n• "15k" (para R$ 15.000)\n• "R$ 10.000 a R$ 15.000"\n• "10k a 15k"`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, errorMessage])
-          return true
-        }
-      }
-
-      if (editCommand.field === 'skill' && editCommand.value) {
-        const skillName = String(editCommand.value)
-        if (editCommand.action === 'add') {
-          const result = addSkillIfNotExists(technicalSkills, skillName)
-          if (result.added) {
-            trackFieldChange({ field: 'technicalSkill', oldValue: null, newValue: { name: skillName }, source: 'chat' })
-            setTechnicalSkills(result.skills)
-          }
-          const confirmMessage: Message = {
-            id: `edit-skill-add-${Date.now()}`,
-            role: 'assistant',
-            content: result.added
-              ? `✅ **Skill adicionada:** ${skillName}\n\n*A nova skill aparece no painel de competências.*`
-              : `ℹ️ ${result.message}`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, confirmMessage])
-          if (currentStage !== 'competencies') setCurrentStage('competencies')
-          return true
-        }
-        if (editCommand.action === 'remove') {
-          const result = removeSkillByName(technicalSkills, skillName)
-          if (result.removed) {
-            trackFieldChange({ field: 'technicalSkill', oldValue: { name: skillName }, newValue: null, source: 'chat' })
-            setTechnicalSkills(result.skills)
-          }
-          const confirmMessage: Message = {
-            id: `edit-skill-remove-${Date.now()}`,
-            role: 'assistant',
-            content: result.removed
-              ? `✅ **Skill removida:** ${skillName}`
-              : `ℹ️ ${result.message}`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, confirmMessage])
-          if (currentStage !== 'competencies') setCurrentStage('competencies')
-          return true
-        }
-      }
-    }
-
-    return false
-  }
-
-  // ── API dispatch: wizard (smart-orchestrate) ───────────────────────────────
-  const _handleWizardAPICall = async (content: string, processingMessageId: string): Promise<void> => {
-    console.log('[DEBUG handleSendMessage] SENDING TO BACKEND - smart-orchestrate')
-    setIsLoading(true)
-
-    try {
-      setTimeout(() => {
-        setMessages(msgs => msgs.map(m =>
-          m.id === processingMessageId
-            ? { ...m, content: '📊 Consultando LIA...', processingState: 'analyzing' as const }
-            : m
-        ))
-      }, 300)
-
-      const collectedData = buildCollectedData()
-      const conversationHistory = messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
-      const panelChangesContext = generateLLMContext()
-      const enhancedMessage = panelChangesContext ? `${content}\n\n${panelChangesContext}` : content
-
-      if (conversationMemory.conversationId) {
-        conversationMemory.addMessage('user', content).catch(() => {})
-      }
-
-      const orchestratorResult = await orchestrateWizardMessage({
-        message: enhancedMessage,
-        current_stage: currentStage,
-        collected_data: collectedData,
-        conversation_history: conversationHistory,
-        conversation_id: conversationMemory.conversationId || undefined,
-        company_id: user?.company || undefined,
-        user_id: user?.email || undefined
-      })
-
-      console.log('[SmartOrchestrate] Using smart-orchestrate response (confidence:', orchestratorResult.confidence, ')')
-      await processOrchestratorResponse(orchestratorResult, processingMessageId)
-      setIsLoading(false)
-
-      if (currentStage === 'input-evaluation' && orchestratorResult.confidence >= 0.7) {
-        const evaluationContext = {
-          job_title: basicInfoFields.cargo || detectedCriteria.cargo || undefined,
-          seniority: detectedCriteria.senioridadeIdiomas || undefined,
-          department: basicInfoFields.area || detectedCriteria.departamento || undefined,
-          location: basicInfoFields.localidade || detectedCriteria.localizacao || undefined,
-          work_model: basicInfoFields.modeloTrabalho || detectedCriteria.modeloTrabalho || undefined,
-          technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
-          behavioral_skills: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
-        }
-        callEvaluationStep(content, evaluationContext).then((evalResult) => {
-          if (evalResult?.compensation_analysis) setCompensationAnalysis(evalResult.compensation_analysis)
-          const evalResultAny = evalResult as any
-          if (evalResultAny?.technical_skills || evalResultAny?.behavioral_competencies) {
-            const technicalSuggestions: TechnicalSkillSuggestion[] = (evalResultAny.technical_skills || []).map((skill: any) => ({
-              name: skill.name || skill, level: skill.level || 'Intermediário', weight: skill.weight || 3,
-              weightJustification: skill.weight_justification || 'Baseado em análise de mercado',
-              source: skill.source || 'market_benchmark', required: skill.required ?? true, category: skill.category || 'tool'
-            }))
-            const behavioralSuggestions: BehavioralCompetencySuggestion[] = (evalResultAny.behavioral_competencies || []).map((comp: any) => ({
-              name: comp.name || comp, weight: comp.weight || 3, justification: comp.justification || '',
-              weightJustification: comp.weight_justification || 'Baseado em histórico da empresa', source: comp.source || 'company_history'
-            }))
-            if (technicalSuggestions.length > 0 || behavioralSuggestions.length > 0) {
-              setCompetencySuggestions({ technicalSkills: technicalSuggestions, behavioralCompetencies: behavioralSuggestions })
-              setTimeout(() => {
-                const competenciesMessage: Message = {
-                  id: `lia-competencies-${Date.now()}`,
-                  role: 'assistant',
-                  content: '',
-                  timestamp: new Date(),
-                  messageType: 'competencies',
-                  competenciesSuggestions: { technicalSkills: technicalSuggestions, behavioralCompetencies: behavioralSuggestions }
-                }
-                setMessages(prev => [...prev, competenciesMessage])
-              }, 1000)
-            }
-          }
-        }).catch((err) => { console.error('Error calling evaluation step:', err) })
-      }
-    } catch (error) {
-      console.error('Error in wizard step:', error)
-      const newCriteria = extractCriteriaFromText(content)
-      const fallbackText = generateCriteriaResponse(newCriteria)
-      const fallbackFieldsData: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
-      if (newCriteria.cargo) fallbackFieldsData.push({ label: "Cargo", value: newCriteria.cargo, confidence: "high" })
-      if (newCriteria.senioridadeIdiomas) fallbackFieldsData.push({ label: "Senioridade", value: newCriteria.senioridadeIdiomas, confidence: "medium" })
-      if (newCriteria.modeloTrabalho) fallbackFieldsData.push({ label: "Modelo", value: newCriteria.modeloTrabalho, confidence: "medium" })
-      if (newCriteria.localizacao) fallbackFieldsData.push({ label: "Localização", value: newCriteria.localizacao, confidence: "medium" })
-      if (newCriteria.competenciasTecnicas?.length > 0) fallbackFieldsData.push({ label: "Skills Técnicas", value: newCriteria.competenciasTecnicas.slice(0, 5).join(", "), confidence: "medium" })
-      if (newCriteria.tipoContrato) fallbackFieldsData.push({ label: "Contrato", value: newCriteria.tipoContrato, confidence: "low" })
-      setMessages(msgs => msgs.map(m =>
-        m.id === processingMessageId
-          ? { ...m, content: '✅ Mensagem processada', processingState: 'completed' as const }
-          : m
-      ))
-      const fallbackMessage: Message = {
-        id: `fallback-${Date.now()}`,
-        role: 'assistant',
-        content: fallbackText,
-        timestamp: new Date(),
-        isTyping: true,
-        detectedFieldsData: fallbackFieldsData.length > 0 ? fallbackFieldsData : undefined
-      }
-      setMessages(msgs => [...msgs, fallbackMessage])
-      setDisplayedText("")
-      setTimeout(() => { typeText(fallbackText, fallbackMessage.id) }, 300)
-      setIsLoading(false)
-    }
-  }
-
-  // ── API dispatch: general chat (orchestrator) ──────────────────────────────
-  const _handleGeneralAPICall = async (content: string, _processingMessageId: string): Promise<void> => {
-    setIsLoading(true)
-    try {
-      let responseText = "Entendi! Estou processando as informações..."
-
-      if (onOrchestratedMessage) {
-        const orchestratedResponse = await onOrchestratedMessage(content.trim())
-        responseText = orchestratedResponse.content
-        if (orchestratedResponse.ui_action === 'start_job_wizard') {
-          setInternalJobCreationMode(true)
-          setCurrentStage('input-evaluation')
-          if (orchestratedResponse.ui_action_params?.initial_message) {
-            setDynamicInitialMessage(INITIAL_JOB_CREATION_MESSAGE)
-          }
-        }
-      } else {
-        if (!conversationMemory.conversationId && user?.email) {
-          await conversationMemory.initConversation(user.email, 'general')
-        }
-        const conversationContext = await conversationMemory.getContext()
-        if (conversationMemory.conversationId) {
-          conversationMemory.addMessage('user', content.trim()).catch(() => {})
-        }
-        const orchestratorResponse = await orchestratorProcess({
-          user_id: user?.email || 'demo-user',
-          message: content.trim(),
-          conversation_id: conversationMemory.conversationId || conversationId || undefined,
-          context_type: 'general',
-          context_id: conversationMemory.conversationId || undefined,
-          conversation_context: conversationContext || undefined,
-        })
-
-        if (orchestratorResponse.success) {
-          if (orchestratorResponse.conversation_id && !conversationId) {
-            setConversationId(orchestratorResponse.conversation_id)
-          }
-          responseText = orchestratorResponse.message || orchestratorResponse.result?.message || responseText
-          if (conversationMemory.conversationId) {
-            conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch(() => {})
-          }
-          const suggestedToolCall = orchestratorResponse.suggested_tool_call || orchestratorResponse.result?.suggested_tool_call
-          if (suggestedToolCall) {
-            const toolCall: ToolCall = {
-              tool_name: suggestedToolCall.tool_name,
-              parameters: suggestedToolCall.parameters || {},
-              requires_confirmation: suggestedToolCall.requires_confirmation !== false,
-              confirmation_message: suggestedToolCall.confirmation_message || responseText,
-            }
-            if (toolCall.requires_confirmation) {
-              toolCalling.suggestToolCall(toolCall)
-              const confirmationMessageId = `tool-confirm-${Date.now()}`
-              setActiveToolConfirmationMessageId(confirmationMessageId)
-              const confirmationMessage: Message = {
-                id: confirmationMessageId,
-                role: 'assistant',
-                content: responseText,
-                timestamp: new Date(),
-                messageType: 'tool-confirmation',
-                toolCall: toolCall,
-              }
-              setMessages(prev => [...prev, confirmationMessage])
-              setIsLoading(false)
-              return
-            } else {
-              setIsLoading(true)
-              try {
-                const result = await toolCalling.executeToolDirectly(toolCall.tool_name, toolCall.parameters)
-                const feedbackMessage: Message = {
-                  id: `tool-feedback-${Date.now()}`,
-                  role: 'assistant',
-                  content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
-                  timestamp: new Date(),
-                  messageType: 'tool-execution-feedback',
-                  toolExecutionResult: result,
-                }
-                setMessages(prev => [...prev, feedbackMessage])
-                setIsLoading(false)
-                return
-              } catch (error) {
-                console.error('[ToolCalling] Error executing tool directly:', error)
-              }
-            }
-          }
-        } else {
-          const response = await liaApi.sendMessage({
-            content: content.trim(),
-            conversation_id: conversationId || undefined,
-            user_id: 'demo-user'
-          })
-          if (response.conversation?.id && !conversationId) setConversationId(response.conversation.id)
-          responseText = response.message?.content || responseText
-        }
-      }
-
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: responseText,
-        timestamp: new Date(),
-        isTyping: true
-      }
-      setMessages(prev => [...prev, assistantMessage])
-      setDisplayedText("")
-      setTimeout(() => { typeText(responseText, assistantMessage.id) }, 300)
-
-    } catch (error) {
-      console.error('Error sending message:', error)
-      extractCriteriaFromText(content)
-      const errorText = "Entendi as informações! Detectei alguns critérios da vaga. Continue adicionando mais detalhes ou avance para a próxima etapa."
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: errorText,
-        timestamp: new Date(),
-        isTyping: true
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setDisplayedText("")
-      setTimeout(() => { typeText(errorText, errorMessage.id) }, 300)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // handleSendMessage — thin dispatcher (Sprint 4.6)
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleSendMessage = async (content: string) => {
-    if (!content.trim() || isLoading || isTypingEffect) return
-
-    console.log('[DEBUG handleSendMessage] Message received:', content)
-    console.log('[DEBUG handleSendMessage] State:', {
-      awaitingDraftChoice,
-      awaitingCalibrationChoice,
-      hasPendingTool: toolCalling.hasPendingTool,
-      awaitingWSIRegenerationConfirmation,
-      awaitingSensitiveFieldsConfirmation,
-      fastTrackHasSuggestions: fastTrack?.hasSuggestions,
-      isInJobCreationMode,
-      currentStage
-    })
-
-    // 1. Context switch bookkeeping (no early return)
-    _handleContextSwitch(content)
-
-    // 2. Append user message
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: content.trim(),
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, userMessage])
-    setInputValue("")
-
-    // 3. Interceptors — first match wins
-    if (await _handleStageAdvanceConfirmation(content)) return
-    if (await _handleDraftChoice(content)) return
-    if (await _handleCalibrationChoice(content)) return
-    if (await _handlePendingToolConfirmation(content)) return
-    if (await _handleWSIRegenConfirmation(content)) return
-    if (await _handleSensitiveFieldsConfirmation(content)) return
-    if (await _handleFastTrackSuggestions(content)) return
-    if (await _handleFastTrackFlow(content)) return
-    if (await _handleCompensationMessage(content)) return
-    if (_handleLocalCommands(content)) return
-
-    // 4. Normal flow: processing message → API dispatch
-    const processingMessageId = `processing-${Date.now()}`
-    const processingMessage: Message = {
-      id: processingMessageId,
-      role: 'assistant',
-      content: '🧠 Analisando sua mensagem...',
-      timestamp: new Date(),
-      isProcessing: true,
-      processingState: 'thinking'
-    }
-    setMessages(prev => [...prev, processingMessage])
-
-    if (isInJobCreationMode) {
-      await _handleWizardAPICall(content, processingMessageId)
-      return
-    }
-
-    await _handleGeneralAPICall(content, processingMessageId)
-  }
-
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage(inputValue)
-    }
-  }
-
-  // ESC key handler for closing modal - Accessibility (WCAG 2.1)
-  const handleModalKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && isOpen) {
-      e.preventDefault()
-      onClose()
-    }
-  }, [isOpen, onClose])
-
-  // Add ESC key listener for modal
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleModalKeyDown)
-      return () => document.removeEventListener('keydown', handleModalKeyDown)
-    }
-  }, [isOpen, handleModalKeyDown])
-
-  // Auto-focus input when modal opens - Accessibility
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      // Small delay to ensure modal is rendered
-      const timer = setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen])
-
-  const handleQuickSuggestion = (suggestion: string) => {
-    if (suggestion === "Anexar JD") {
-      alert("Funcionalidade de anexar JD será implementada")
-    } else if (suggestion === "Usar anterior") {
-      alert("Funcionalidade de usar vaga anterior será implementada")
-    } else {
-      handleSendMessage(suggestion)
-    }
-  }
 
   const getCriteriaStatus = (value: string | string[] | null) => {
     if (Array.isArray(value)) {
@@ -7353,346 +4036,46 @@ Venha fazer parte do nosso time! 🚀`
             </div>
 
             {/* Input Area - Fixo na parte inferior, compacto (estilo Claude/ChatGPT) */}
-            <div className="px-4 py-4 flex-shrink-0 bg-white mt-auto">
-              <div className="flex justify-center">
-                <div className="w-full max-w-lg">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-[24px]">
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-                      <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
-                    </div>
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => {
-                        setInputValue(e.target.value)
-                        if (extractCriteriaDebounceRef.current) {
-                          clearTimeout(extractCriteriaDebounceRef.current)
-                        }
-                        extractCriteriaDebounceRef.current = setTimeout(() => {
-                          extractCriteriaFromText(e.target.value)
-                        }, 600)
-                      }}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Envie mensagem para a LIA..."
-                      data-testid="chat-input"
-                      aria-label="Digite sua mensagem para a LIA"
-                      aria-describedby="chat-input-hint"
-                      className="flex-1 py-1 bg-transparent text-base-ui text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none"
-                     
-                      disabled={isLoading || isTypingEffect}
-                    />
-                    <span id="chat-input-hint" className="sr-only">Pressione Enter para enviar a mensagem</span>
-
-                    <div className="flex items-center gap-1">
-                      <>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*,application/pdf,.doc,.docx"
-                          onChange={handleFileSelect}
-                          className="hidden"
-                        />
-                        <button
-                          className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full"
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          title="Anexar arquivo para análise"
-                          aria-label="Anexar arquivo para análise"
-                        >
-                          <Paperclip className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                      </>
-                      <VoiceChatButton
-                        sessionId={conversationId || undefined}
-                        onTranscription={(text) => {
-                          setInputValue(prev => prev ? `${prev} ${text}` : text)
-                        }}
-                        onResponse={handleVoiceResponse}
-                        onError={(error) => {
-                          const errorMsg: Message = {
-                            id: `voice-error-${Date.now()}`,
-                            role: 'assistant',
-                            content: `⚠️ ${error}`,
-                            timestamp: new Date()
-                          }
-                          setMessages(prev => [...prev, errorMsg])
-                        }}
-                        disabled={isLoading || isTypingEffect}
-                      />
-                      <button
-                        onClick={() => handleSendMessage(inputValue)}
-                        disabled={!inputValue.trim() || isLoading || isTypingEffect}
-                        aria-label="Enviar mensagem"
-                        aria-disabled={!inputValue.trim() || isLoading || isTypingEffect}
-                        className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ml-1",
-                          inputValue.trim() && !isLoading && !isTypingEffect
-                            ? "bg-chat-cyan text-white hover:opacity-90"
-                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        )}
-                        type="button"
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                        ) : (
-                          <Send className="w-4 h-4" aria-hidden="true" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Tabs como badges abaixo do input (IA Natural, Job Description, Templates) - Sempre visível */}
-                  {!hideModeButtons && (
-                    <div className="flex items-center justify-center gap-1.5 mt-1.5">
-                      <button
-                        onClick={() => setActiveInputTab('ia-natural')}
-                        className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
-                          activeInputTab === 'ia-natural' 
-                            ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
-                            : "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                        )}
-                       
-                      >
-                        <div className="flex items-center gap-1">
-                          <Brain className="w-2.5 h-2.5 text-chat-cyan" />
-                          <span>IA Natural</span>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setActiveInputTab('job-description')}
-                        className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
-                          activeInputTab === 'job-description' 
-                            ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
-                            : "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                        )}
-                       
-                      >
-                        <div className="flex items-center gap-1">
-                          <FileText className="w-2.5 h-2.5" />
-                          <span>Job Description</span>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setActiveInputTab('templates')}
-                        className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-medium transition-all",
-                          activeInputTab === 'templates' 
-                            ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
-                            : "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                        )}
-                       
-                      >
-                        <div className="flex items-center gap-1">
-                          <Target className="w-2.5 h-2.5" />
-                          <span>Templates</span>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Badges de sugestão abaixo das tabs (só quando IA Natural selecionado) */}
-                  {!hideModeButtons && activeInputTab === 'ia-natural' && (
-                    <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
-                      <span className="text-micro font-medium text-gray-500">Sugestões:</span>
-                      {suggestionTags.map((tag) => {
-                        const IconComponent = tag.icon
-                        return (
-                          <button
-                            key={tag.action}
-                            onClick={() => {
-                              if (tag.action === 'criar_vaga') {
-                                setInternalJobCreationMode(true)
-                                
-                                // Check for existing draft BEFORE showing any message
-                                const { hasDraft, stageName, draftData } = checkForExistingDraftSync()
-                                
-                                if (hasDraft && stageName && draftData) {
-                                  // Store draft data for restoration BEFORE showing message
-                                  setPendingDraftData(draftData)
-                                  setAwaitingDraftChoice(true)
-                                  
-                                  // Show only the draft choice message - let user decide
-                                  const draftChoiceMsg: Message = {
-                                    id: 'draft-choice-intro',
-                                    role: 'assistant',
-                                    content: DRAFT_DETECTED_MESSAGE(stageName),
-                                    timestamp: new Date(),
-                                    isTyping: true
-                                  }
-                                  setMessages([draftChoiceMsg])
-                                  setDisplayedText("")
-                                  setTimeout(() => {
-                                    typeText(DRAFT_DETECTED_MESSAGE(stageName), 'draft-choice-intro')
-                                  }, 300)
-                                } else {
-                                  // No draft - show welcome message
-                                  const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
-                                  setDynamicInitialMessage(dynamicGreeting)
-                                  const jobCreationMsg: Message = {
-                                    id: 'job-creation-intro',
-                                    role: 'assistant',
-                                    content: dynamicGreeting,
-                                    timestamp: new Date(),
-                                    isTyping: true
-                                  }
-                                  setMessages([jobCreationMsg])
-                                  setDisplayedText("")
-                                  setTimeout(() => {
-                                    typeText(dynamicGreeting, 'job-creation-intro')
-                                  }, 300)
-                                }
-                              } else {
-                                handleSendMessage(tag.label)
-                              }
-                            }}
-                            disabled={isTypingEffect || isLoading}
-                            className={cn(
-                              "inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full transition-all",
-                              isTypingEffect || isLoading
-                                ? "opacity-50 cursor-not-allowed"
-                                : "hover:bg-gray-200"
-                            )}
-                           
-                          >
-                            <IconComponent className="w-2.5 h-2.5 text-gray-500" />
-                            {tag.label}
-                          </button>
-                        )
-                      })}
-                      <LiaVacancyQueriesGuide
-                        onSelectQuery={(query) => {
-                          handleSendMessage(query)
-                        }}
-                        isOpen={showMoreIdeas}
-                        onOpenChange={setShowMoreIdeas}
-                      />
-                    </div>
-                  )}
-
-                  {/* Conteúdo da aba Job Description */}
-                  {activeInputTab === 'job-description' && (
-                    <div className="mt-3 p-3 rounded-md border border-gray-100 bg-white">
-                      <p className="text-xs text-gray-600 mb-2">
-                        Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
-                      </p>
-                      <textarea
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)."
-                        className="w-full px-3 py-2.5 text-xs rounded-md border border-gray-100 focus:border-gray-400 focus:outline-none resize-none transition-colors bg-gray-50"
-                        style={{ 
-                          
-                          minHeight: '80px'
-                        }}
-                        rows={4}
-                      />
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-1">
-                          <Paperclip className="w-3 h-3 text-gray-400" />
-                          <span className="text-micro text-gray-400">PDF, Word, TXT</span>
-                        </div>
-                        <Button
-                          size="sm"
-                          className={cn(
-                            "h-7 px-3 text-xs font-medium",
-                            inputValue.trim() ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-400"
-                          )}
-                          style={{
-                          }}
-                          onClick={() => {
-                            if (inputValue.trim()) {
-                              setInternalJobCreationMode(true)
-                              const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
-                              setDynamicInitialMessage(dynamicGreeting)
-                              handleSendMessage(inputValue)
-                              setActiveInputTab('ia-natural')
-                            }
-                          }}
-                          disabled={!inputValue.trim()}
-                        >
-                          <Brain className="w-3 h-3 mr-1 text-chat-cyan" />
-                          Criar Vaga a Partir do JD
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Conteúdo da aba Templates */}
-                  {activeInputTab === 'templates' && (
-                    <div className="mt-3 p-3 rounded-md border border-gray-100 bg-white space-y-3">
-                      {/* Seção 1: Criar a partir de Template */}
-                      <div>
-                        <h4 className="text-xs font-medium mb-1 text-gray-800">
-                          Criar Vaga a Partir de Template
-                        </h4>
-                        <p className="text-micro text-gray-500 mb-2">
-                          Selecione um modelo pronto e eu inicio a criação da vaga para você
-                        </p>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {[
-                            { icon: '🚀', title: 'Backend Sênior Node.js', tags: ['Backend', 'Node.js'] },
-                            { icon: '📊', title: 'Product Manager', tags: ['Product', 'Agile'] },
-                            { icon: '🎨', title: 'UX/UI Designer', tags: ['Design', 'Figma'] },
-                            { icon: '☁️', title: 'DevOps Engineer', tags: ['Cloud', 'CI/CD'] },
-                          ].map((template) => (
-                            <div 
-                              key={template.title}
-                              className="cursor-pointer transition-all rounded-md p-2 hover:border border-gray-100 bg-white hover:border-gray-900 dark:hover:border-gray-50"
-                              onClick={() => {
-                                setInternalJobCreationMode(true)
-                                const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
-                                setDynamicInitialMessage(dynamicGreeting)
-                                const templateMsg = `Criar vaga ${template.title}`
-                                handleSendMessage(templateMsg)
-                                setActiveInputTab('ia-natural')
-                              }}
-                            >
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-sm">{template.icon}</span>
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="text-xs font-medium truncate text-gray-800">
-                                    {template.title}
-                                  </h5>
-                                  <div className="flex gap-1 mt-0.5">
-                                    {template.tags.map(tag => (
-                                      <span key={tag} className="text-micro px-1 py-0.5 rounded-full bg-gray-100 text-gray-500">{tag}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Seção 2: Criar a partir de Vaga Existente */}
-                      <div className="pt-2 border-t border-gray-100">
-                        <h4 className="text-xs font-medium mb-1 text-gray-800">
-                          Criar a Partir de Vaga Existente
-                        </h4>
-                        <p className="text-micro text-gray-500 mb-2">
-                          Copie uma vaga já criada e faça ajustes
-                        </p>
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Buscar vaga por título ou ID..."
-                            className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-gray-100 focus:border-gray-400 focus:outline-none transition-colors bg-gray-50"
-                            style={{ 
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-            </div>
+            <ExpandedChatInput
+              inputValue={inputValue}
+              isLoading={isLoading}
+              isTypingEffect={isTypingEffect}
+              hideModeButtons={hideModeButtons}
+              activeInputTab={activeInputTab}
+              conversationId={conversationId}
+              showMoreIdeas={showMoreIdeas}
+              wizardGreeting={wizardGreeting}
+              inputRef={inputRef}
+              fileInputRef={fileInputRef}
+              extractCriteriaDebounceRef={extractCriteriaDebounceRef}
+              extractCriteriaFromText={extractCriteriaFromText}
+              checkForExistingDraftSync={checkForExistingDraftSync}
+              typeText={typeText}
+              onInputValueChange={setInputValue}
+              onKeyDown={handleKeyDown}
+              onSendMessage={handleSendMessage}
+              onFileSelect={handleFileSelect}
+              onVoiceTranscription={(text) => setInputValue(prev => prev ? `${prev} ${text}` : text)}
+              onVoiceResponse={handleVoiceResponse}
+              onVoiceError={(error) => {
+                const errorMsg: Message = {
+                  id: `voice-error-${Date.now()}`,
+                  role: 'assistant',
+                  content: `⚠️ ${error}`,
+                  timestamp: new Date()
+                }
+                setMessages(prev => [...prev, errorMsg])
+              }}
+              onSetActiveInputTab={setActiveInputTab}
+              onSetMessages={setMessages}
+              onSetInputValue={setInputValue}
+              onSetShowMoreIdeas={setShowMoreIdeas}
+              onSetDisplayedText={setDisplayedText}
+              onSetInternalJobCreationMode={setInternalJobCreationMode}
+              onSetPendingDraftData={setPendingDraftData as (data: any) => void}
+              onSetAwaitingDraftChoice={setAwaitingDraftChoice}
+              onSetDynamicInitialMessage={setDynamicInitialMessage}
+            />
           </div>
 
           {/* Botão para reabrir painel de etapas (quando fechado) */}
@@ -7714,429 +4097,200 @@ Venha fazer parte do nosso time! 🚀`
 
           {/* Right: Dynamic Panel (changes based on wizard stage) */}
           {isInJobCreationMode && isPanelOpen && (
-          <div 
-            ref={resizeRef}
-            className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-gray-50 border border-gray-200" 
-            style={{ 
-              width: `${panelWidth}%`
-            }}
-          >
-            {/* Resize Handle - cursor change only, no visual indicator */}
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-10"
-              onMouseDown={(e) => {
-                e.preventDefault()
-                setIsResizing(true)
-              }}
-            />
-            
-            {/* Panel Header with Stage Info */}
-            <WizardHeader
-              currentStageConfig={currentStageConfig}
+            <WizardRightPanel
+              panelWidth={panelWidth}
+              resizeRef={resizeRef}
+              currentStage={currentStage}
               currentStageIndex={currentStageIndex}
+              currentStageConfig={currentStageConfig}
+              stageTransition={stageTransition}
+              isFullscreen={isFullscreen}
               catalogStatus={wizardGreeting?.catalog_status}
               isAutoSaving={isAutoSaving}
               autoSaveLastSaved={autoSaveLastSaved}
               hasPendingChanges={hasPendingChanges}
               hasRestoredDraft={hasRestoredDraft}
-              isFullscreen={isFullscreen}
+              getLastSavedText={getLastSavedText}
+              wsiQualityGates={wsiQualityGates}
+              configLoaded={configLoaded}
+              hasConfigData={!!hasConfigData}
+              criteriaItems={criteriaItems}
+              isHighlighted={isHighlighted}
+              hasFastTrackSuggestions={fastTrack.hasSuggestions}
+              fastTrackIsLoading={fastTrack.isLoading}
+              fastTrackSuggestions={fastTrack.suggestions}
+              fastTrackSelectedJob={fastTrack.selectedJob}
+              fastTrackSuggestionsShownTracked={fastTrackSuggestionsShownTracked}
+              onFastTrackSelectJob={(job) => fastTrack.selectJob(job)}
+              onFastTrackDismiss={() => {
+                if (fastTrackSuggestionsShownTracked) {
+                  analytics.trackSuggestion('fast_track_rejected', false)
+                }
+                fastTrack.clearSuggestions()
+                setAwaitingFastTrackSelection(false)
+              }}
+              enrichedJDData={enrichedJDData}
+              isLoadingEnrichment={isLoadingEnrichment}
+              detectedCriteria={detectedCriteria}
+              onAcceptEnrichedSuggestion={(suggestionId) => {
+                setEnrichedJDData(prev => {
+                  if (!prev) return prev
+                  return {
+                    ...prev,
+                    sections: prev.sections.map(section => ({
+                      ...section,
+                      suggestions: section.suggestions.map(s =>
+                        s.id === suggestionId ? { ...s, accepted: true } : s
+                      ),
+                    })),
+                  }
+                })
+              }}
+              onRejectEnrichedSuggestion={(suggestionId) => {
+                setEnrichedJDData(prev => {
+                  if (!prev) return prev
+                  return {
+                    ...prev,
+                    sections: prev.sections.map(section => ({
+                      ...section,
+                      suggestions: section.suggestions.filter(s => s.id !== suggestionId),
+                    })),
+                  }
+                })
+              }}
+              onAcceptAllEnrichedSuggestions={() => {
+                setEnrichedJDData(prev => {
+                  if (!prev) return prev
+                  return {
+                    ...prev,
+                    sections: prev.sections.map(section => ({
+                      ...section,
+                      suggestions: section.suggestions.map(s => ({ ...s, accepted: true })),
+                    })),
+                  }
+                })
+              }}
+              technicalSkills={technicalSkills}
+              behavioralCompetencies={behavioralCompetencies}
+              highlightedFields={highlightedFields}
+              basicInfoFields={basicInfoFields}
+              companyConfig={companyConfig}
+              inferSkillWeight={inferSkillWeight}
+              competenciesPanelExpanded={competenciesPanelExpanded}
+              isFieldRequiredForWizard={isFieldRequiredForWizard}
+              onSetTechnicalSkills={(newSkills) => {
+                const prevNames = new Set(technicalSkills.map(s => s.name))
+                const newNames = new Set(newSkills.map(s => s.name))
+                newSkills.forEach(skill => {
+                  if (!prevNames.has(skill.name)) {
+                    trackFieldChange({ field: 'technicalSkill', oldValue: null, newValue: skill, source: 'panel' })
+                  }
+                })
+                technicalSkills.forEach(skill => {
+                  if (!newNames.has(skill.name)) {
+                    trackFieldChange({ field: 'technicalSkill', oldValue: skill, newValue: null, source: 'panel' })
+                  }
+                })
+                setTechnicalSkills(newSkills)
+              }}
+              onSetBehavioralCompetencies={(newComps) => {
+                const prevNames = new Set(behavioralCompetencies.filter(c => c.enabled).map(c => c.name))
+                const newNames = new Set(newComps.filter(c => c.enabled).map(c => c.name))
+                newComps.forEach(comp => {
+                  if (comp.enabled && !prevNames.has(comp.name)) {
+                    trackFieldChange({ field: 'behavioralCompetency', oldValue: null, newValue: comp, source: 'panel' })
+                  }
+                })
+                behavioralCompetencies.forEach(comp => {
+                  if (comp.enabled && !newNames.has(comp.name)) {
+                    trackFieldChange({ field: 'behavioralCompetency', oldValue: comp, newValue: null, source: 'panel' })
+                  }
+                })
+                setBehavioralCompetencies(newComps)
+              }}
+              onExpandEditCompetencies={() => setCompetenciesPanelExpanded(!competenciesPanelExpanded)}
+              onShowAddSkillModal={(category) => { if (category !== 'general') setNewSkillCategory(category); setShowAddSkillModal(true) }}
+              onShowAddCompetencyModal={() => setShowAddCompetencyModal(true)}
+              onEditCompetency={setEditingCompetency}
+              salaryInfo={salaryInfo}
+              salaryBenchmark={salaryBenchmark as any}
+              isLoadingBenchmark={isLoadingBenchmark}
+              salaryPanelExpanded={salaryPanelExpanded}
+              onSalaryChange={(info) => {
+                Object.entries(info).forEach(([key, value]) => {
+                  const oldValue = salaryInfo[key as keyof typeof salaryInfo]
+                  if (oldValue !== value) {
+                    trackFieldChange({ field: key, oldValue, newValue: value, source: 'panel' })
+                  }
+                })
+                setSalaryInfo(prev => ({ ...prev, ...info }))
+              }}
+              onExpandEditSalary={() => setSalaryPanelExpanded(!salaryPanelExpanded)}
+              onShowAddBenefitModal={() => setShowAddBenefitModal(true)}
+              wsiCandidates={wsiCandidates}
+              companyDefaultQuestions={companyDefaultQuestions as any}
+              isGeneratingWSI={isGeneratingWSI}
+              showCustomQuestionForm={showCustomQuestionForm}
+              customQuestionText={customQuestionText}
+              customQuestionType={customQuestionType}
+              customQuestionRequired={customQuestionRequired}
+              onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as any}
+              onToggleQuestionSelection={toggleWSIQuestionSelection}
+              onDeleteQuestion={deleteWSIQuestion}
+              onUpdateExpectedAnswer={updateWSIQuestionExpectedAnswer}
+              onUpdateCorrectOption={updateWSIQuestionCorrectOption}
+              onGenerateWSIQuestions={generateWSIQuestions}
+              onSetShowCustomQuestionForm={setShowCustomQuestionForm}
+              onSetCustomQuestionText={setCustomQuestionText}
+              onSetCustomQuestionType={setCustomQuestionType}
+              onSetCustomQuestionRequired={setCustomQuestionRequired}
+              onAddCustomQuestion={addCustomQuestion}
+              wsiQuestions={wsiQuestions}
+              jobDescription={jobDescription}
+              isGeneratingDescription={isGeneratingDescription}
+              publishingPlatforms={publishingPlatforms}
+              jobConfig={jobConfig}
+              publishedJobId={publishedJobId}
+              onGoToStage={setCurrentStage}
+              onSetCompetenciesTab={setCompetenciesTab}
+              onSetPublishingPlatforms={setPublishingPlatforms}
+              onSetJobConfig={setJobConfig}
+              onSetDetectedCriteria={setDetectedCriteria}
+              onUpdateLanguages={updateLanguages}
+              onGenerateJobDescription={generateJobDescription}
+              searchPhase={searchPhase}
+              calibrationCandidates={calibrationCandidates}
+              calibrationComplete={calibrationComplete}
+              isLoadingCalibration={isLoadingCalibration}
+              hasAttemptedCalibrationGeneration={hasAttemptedCalibrationGeneration}
+              approvedCandidates={approvedCandidates}
+              showCalibrationModal={showCalibrationModal}
+              localCandidateCount={localCandidateCount}
+              globalCandidateCount={globalCandidateCount}
+              globalSearchAuthorized={globalSearchAuthorized}
+              preferredCandidateCount={preferredCandidateCount}
+              onSetPreferredCandidateCount={setPreferredCandidateCount}
+              onSetGlobalSearchAuthorized={setGlobalSearchAuthorized}
+              onSetSearchPhase={setSearchPhase}
+              onSetHasAttemptedCalibrationGeneration={setHasAttemptedCalibrationGeneration}
+              onSetCalibrationComplete={setCalibrationComplete}
+              onSetShowCalibrationModal={setShowCalibrationModal}
+              onGenerateCalibrationCandidates={generateCalibrationCandidates}
+              onStartGlobalSearch={startGlobalSearch}
+              onJobCreated={onJobCreated}
+              onClose={onClose}
+              onResizeStart={() => setIsResizing(true)}
+              onPanelClose={() => setIsPanelOpen(false)}
               onFullscreenChange={(fullscreen) => {
                 setIsFullscreen(fullscreen)
                 onFullscreenChange?.(fullscreen)
               }}
-              onPanelClose={() => setIsPanelOpen(false)}
               onClearDraft={() => setShowClearDraftConfirm(true)}
-              getLastSavedText={getLastSavedText}
+              onGoToNextStage={goToNextStage}
+              onGoToPreviousStage={goToPreviousStage}
+              onPublishJob={handlePublishJob}
+              canAdvanceToNextStage={canAdvanceToNextStage}
             />
-
-            {/* WSI Quality Bar - visible in competencies and wsi-questions stages */}
-            {(currentStage === 'competencies' || currentStage === 'wsi-questions') && (
-              <div className="px-3 pb-2">
-                <WSIQualityBar
-                  score={wsiQualityGates.score}
-                  fields={wsiQualityGates.fields}
-                  summaryText={wsiQualityGates.summaryText}
-                  scoreColor={wsiQualityGates.scoreColor}
-                  canAdvance={wsiQualityGates.canAdvance}
-                />
-              </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto p-4 relative">
-              {/* Loading Overlay during stage transitions */}
-              {stageTransition === 'loading' && (
-                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full border-3 border-gray-300 dark:border-gray-600 border-t-gray-300 dark:border-t-gray-600 animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Brain className="w-5 h-5 text-chat-cyan" />
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-700">
-                      LIA está analisando...
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Preparando sugestões personalizadas
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {/* Stage 1: Input Evaluation - Proactive Analysis */}
-              {currentStage === 'input-evaluation' && (
-                <InputEvaluationStage
-                  configLoaded={configLoaded}
-                  hasConfigData={!!hasConfigData}
-                  criteriaItems={criteriaItems}
-                  isHighlighted={isHighlighted}
-                  hasFastTrackSuggestions={fastTrack.hasSuggestions}
-                  fastTrackIsLoading={fastTrack.isLoading}
-                  fastTrackSuggestions={fastTrack.suggestions}
-                  fastTrackSelectedJob={fastTrack.selectedJob}
-                  fastTrackSuggestionsShownTracked={fastTrackSuggestionsShownTracked}
-                  onFastTrackSelectJob={(job) => fastTrack.selectJob(job)}
-                  onFastTrackDismiss={() => {
-                    if (fastTrackSuggestionsShownTracked) {
-                      analytics.trackSuggestion('fast_track_rejected', false)
-                    }
-                    fastTrack.clearSuggestions()
-                    setAwaitingFastTrackSelection(false)
-                  }}
-                />
-              )}
-
-              {/* Stage: JD Enrichment - AI-powered suggestions */}
-              {currentStage === 'jd-enrichment' && (
-                <EnrichedJDStage
-                  enrichedData={enrichedJDData}
-                  onAcceptSuggestion={(suggestionId) => {
-                    // Handle accepting a suggestion
-                    console.log('[EnrichedJD] Accepted suggestion:', suggestionId)
-                    setEnrichedJDData(prev => {
-                      if (!prev) return prev
-                      return {
-                        ...prev,
-                        sections: prev.sections.map(section => ({
-                          ...section,
-                          suggestions: section.suggestions.map(s => 
-                            s.id === suggestionId ? { ...s, accepted: true } : s
-                          )
-                        }))
-                      }
-                    })
-                  }}
-                  onRejectSuggestion={(suggestionId) => {
-                    // Handle rejecting a suggestion
-                    console.log('[EnrichedJD] Rejected suggestion:', suggestionId)
-                    setEnrichedJDData(prev => {
-                      if (!prev) return prev
-                      return {
-                        ...prev,
-                        sections: prev.sections.map(section => ({
-                          ...section,
-                          suggestions: section.suggestions.filter(s => s.id !== suggestionId)
-                        }))
-                      }
-                    })
-                  }}
-                  onAcceptAll={() => {
-                    // Accept all suggestions
-                    console.log('[EnrichedJD] Accepted all suggestions')
-                    setEnrichedJDData(prev => {
-                      if (!prev) return prev
-                      return {
-                        ...prev,
-                        sections: prev.sections.map(section => ({
-                          ...section,
-                          suggestions: section.suggestions.map(s => ({ ...s, accepted: true }))
-                        }))
-                      }
-                    })
-                  }}
-                  isLoading={isLoadingEnrichment}
-                  detectedCriteria={{
-                    cargo: detectedCriteria.cargo,
-                    senioridade: detectedCriteria.senioridadeIdiomas,
-                    departamento: detectedCriteria.departamento,
-                    responsabilidades: detectedCriteria.responsabilidades,
-                    competenciasTecnicas: detectedCriteria.competenciasTecnicas,
-                    competenciasComportamentais: detectedCriteria.competenciasComportamentais
-                  }}
-                />
-              )}
-
-              {/* Stage 2: Competencies (Technical + Behavioral) - Unified Layout */}
-              {currentStage === 'competencies' && (
-                <CompetenciesStage
-                  technicalSkills={technicalSkills}
-                  behavioralCompetencies={behavioralCompetencies}
-                  highlightedFields={highlightedFields}
-                  onSetTechnicalSkills={(newSkills) => {
-                    // Track added/removed skills for chat sync
-                    const prevNames = new Set(technicalSkills.map(s => s.name))
-                    const newNames = new Set(newSkills.map(s => s.name))
-                    newSkills.forEach(skill => {
-                      if (!prevNames.has(skill.name)) {
-                        trackFieldChange({
-                          field: 'technicalSkill',
-                          oldValue: null,
-                          newValue: skill,
-                          source: 'panel',
-                        })
-                      }
-                    })
-                    technicalSkills.forEach(skill => {
-                      if (!newNames.has(skill.name)) {
-                        trackFieldChange({
-                          field: 'technicalSkill',
-                          oldValue: skill,
-                          newValue: null,
-                          source: 'panel',
-                        })
-                      }
-                    })
-                    setTechnicalSkills(newSkills)
-                  }}
-                  onSetBehavioralCompetencies={(newComps) => {
-                    // Track added/removed competencies for chat sync
-                    const prevNames = new Set(behavioralCompetencies.filter(c => c.enabled).map(c => c.name))
-                    const newNames = new Set(newComps.filter(c => c.enabled).map(c => c.name))
-                    newComps.forEach(comp => {
-                      if (comp.enabled && !prevNames.has(comp.name)) {
-                        trackFieldChange({
-                          field: 'behavioralCompetency',
-                          oldValue: null,
-                          newValue: comp,
-                          source: 'panel',
-                        })
-                      }
-                    })
-                    behavioralCompetencies.forEach(comp => {
-                      if (comp.enabled && !newNames.has(comp.name)) {
-                        trackFieldChange({
-                          field: 'behavioralCompetency',
-                          oldValue: comp,
-                          newValue: null,
-                          source: 'panel',
-                        })
-                      }
-                    })
-                    setBehavioralCompetencies(newComps)
-                  }}
-                  basicInfoFields={basicInfoFields}
-                  detectedCriteria={detectedCriteria}
-                  companyConfig={companyConfig}
-                  inferSkillWeight={inferSkillWeight}
-                  isCollapsed={!competenciesPanelExpanded}
-                  onExpandEdit={() => setCompetenciesPanelExpanded(!competenciesPanelExpanded)}
-                  isFieldRequired={isFieldRequiredForWizard('competencias')}
-                  onShowAddSkillModal={(category) => { setNewSkillCategory(category); setShowAddSkillModal(true) }}
-                  onShowAddCompetencyModal={() => setShowAddCompetencyModal(true)}
-                  onEditCompetency={setEditingCompetency}
-                />
-              )}
-
-              {/* Stage 5: Salary and Benefits */}
-              {currentStage === 'salary' && (
-                <SalaryStage
-                  salaryInfo={salaryInfo}
-                  highlightedFields={highlightedFields}
-                  onSalaryChange={(info) => {
-                    // Track field changes for chat sync
-                    Object.entries(info).forEach(([key, value]) => {
-                      const oldValue = salaryInfo[key as keyof typeof salaryInfo]
-                      if (oldValue !== value) {
-                        trackFieldChange({
-                          field: key,
-                          oldValue,
-                          newValue: value,
-                          source: 'panel',
-                        })
-                      }
-                    })
-                    setSalaryInfo(prev => ({ ...prev, ...info }))
-                  }}
-                  salaryBenchmark={salaryBenchmark as any}
-                  isLoadingBenchmark={isLoadingBenchmark}
-                  companyConfig={companyConfig as any}
-                  isCollapsed={!salaryPanelExpanded}
-                  onExpandEdit={() => setSalaryPanelExpanded(!salaryPanelExpanded)}
-                  isFieldRequired={isFieldRequiredForWizard('salario')}
-                  onShowAddBenefitModal={() => setShowAddBenefitModal(true)}
-                />
-              )}
-
-              {/* Stage 6: WSI Screening Questions */}
-              {currentStage === 'wsi-questions' && (
-                <WSIQuestionsStage
-                  wsiCandidates={wsiCandidates}
-                  highlightedFields={highlightedFields}
-                  companyDefaultQuestions={companyDefaultQuestions as any}
-                  onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as any}
-                  onToggleQuestionSelection={toggleWSIQuestionSelection}
-                  onDeleteQuestion={deleteWSIQuestion}
-                  onUpdateExpectedAnswer={updateWSIQuestionExpectedAnswer}
-                  onUpdateCorrectOption={updateWSIQuestionCorrectOption}
-                  isGeneratingWSI={isGeneratingWSI}
-                  onGenerateWSIQuestions={generateWSIQuestions}
-                  showCustomQuestionForm={showCustomQuestionForm}
-                  onSetShowCustomQuestionForm={setShowCustomQuestionForm}
-                  customQuestionText={customQuestionText}
-                  onSetCustomQuestionText={setCustomQuestionText}
-                  customQuestionType={customQuestionType}
-                  onSetCustomQuestionType={setCustomQuestionType}
-                  customQuestionRequired={customQuestionRequired}
-                  onSetCustomQuestionRequired={setCustomQuestionRequired}
-                  onAddCustomQuestion={addCustomQuestion}
-                />
-              )}
-
-              {/* Stage 6: Review and Publish (Unified) */}
-              {currentStage === 'review-publish' && (
-                <ReviewPublishStage
-                  basicInfoFields={basicInfoFields}
-                  technicalSkills={technicalSkills}
-                  behavioralCompetencies={behavioralCompetencies}
-                  salaryInfo={salaryInfo}
-                  wsiQuestions={wsiQuestions}
-                  jobDescription={jobDescription}
-                  isGeneratingDescription={isGeneratingDescription}
-                  companyConfig={companyConfig}
-                  publishingPlatforms={publishingPlatforms}
-                  jobConfig={jobConfig}
-                  detectedCriteria={detectedCriteria}
-                  publishedJobId={publishedJobId}
-                  onGoToStage={setCurrentStage}
-                  onSetCompetenciesTab={setCompetenciesTab}
-                  onSetPublishingPlatforms={setPublishingPlatforms}
-                  onSetJobConfig={setJobConfig}
-                  onSetDetectedCriteria={setDetectedCriteria}
-                  onUpdateLanguages={updateLanguages}
-                  onGenerateJobDescription={generateJobDescription}
-                />
-              )}
-
-              {/* Stage 7: Search and Calibration (Unified) */}
-              {currentStage === 'search-calibration' && (
-                <SearchCalibrationStage
-                  searchPhase={searchPhase}
-                  calibrationCandidates={calibrationCandidates}
-                  calibrationComplete={calibrationComplete}
-                  isLoadingCalibration={isLoadingCalibration}
-                  hasAttemptedCalibrationGeneration={hasAttemptedCalibrationGeneration}
-                  approvedCandidates={approvedCandidates}
-                  showCalibrationModal={showCalibrationModal}
-                  publishedJobId={publishedJobId}
-                  localCandidateCount={localCandidateCount}
-                  globalCandidateCount={globalCandidateCount}
-                  globalSearchAuthorized={globalSearchAuthorized}
-                  preferredCandidateCount={preferredCandidateCount}
-                  onSetPreferredCandidateCount={setPreferredCandidateCount}
-                  onSetGlobalSearchAuthorized={setGlobalSearchAuthorized}
-                  onSetSearchPhase={setSearchPhase}
-                  onSetHasAttemptedCalibrationGeneration={setHasAttemptedCalibrationGeneration}
-                  onSetCalibrationComplete={setCalibrationComplete}
-                  onSetShowCalibrationModal={setShowCalibrationModal}
-                  onGenerateCalibrationCandidates={generateCalibrationCandidates}
-                  onStartGlobalSearch={startGlobalSearch}
-                  onJobCreated={onJobCreated}
-                  onClose={onClose}
-                />
-              )}
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="px-4 py-3 bg-white rounded-b-xl">
-              {currentStage === 'search-calibration' ? (
-                <SearchCalibrationNavButtons
-                  calibrationCandidates={calibrationCandidates}
-                  calibrationComplete={calibrationComplete}
-                  isLoadingCalibration={isLoadingCalibration}
-                  hasAttemptedCalibrationGeneration={hasAttemptedCalibrationGeneration}
-                  approvedCandidates={approvedCandidates}
-                  onSetShowCalibrationModal={setShowCalibrationModal}
-                />
-              ) : currentStage === 'input-evaluation' ? (
-                <div className="text-center text-micro text-gray-500">
-                  Continue descrevendo a vaga para detectar mais critérios
-                </div>
-              ) : currentStage === 'jd-enrichment' ? (
-                <div className="text-center text-micro text-gray-500">
-                  Revise as sugestões no chat e responda o que deseja aceitar ou modificar
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  {currentStageIndex > 0 && (
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-9 rounded-md text-xs font-medium border-gray-200 text-gray-600 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
-                     
-                      onClick={goToPreviousStage}
-                      aria-label="Voltar para etapa anterior"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5 mr-1" />
-                      Voltar
-                    </Button>
-                  )}
-                  {/* Hide confirmation button for conversational stages - flow is via chat, not buttons */}
-                  {/* Note: jd-enrichment is already handled above with its own text message, so no need to check here */}
-                  {currentStage !== 'salary' && currentStage !== 'competencies' && (
-                  <Button
-                    className={cn(
-                      "flex-1 h-9 rounded-md text-xs font-semibold transition-all",
-                      currentStageIndex === 0 ? "w-full" : "",
-                      currentStage === 'review-publish'
-                        ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900"
-                        : canAdvanceToNextStage()
-                          ? "bg-gray-900 text-white"
-                          : "bg-gray-200 text-gray-400"
-                    )}
-                    style={{ 
-                    }}
-                    disabled={!canAdvanceToNextStage()}
-                    onClick={currentStage === 'review-publish' ? handlePublishJob : goToNextStage}
-                    aria-label={currentStage === 'review-publish' ? 'Publicar vaga' : 'Confirmar etapa atual'}
-                  >
-                    {(() => {
-                      const stage = currentStage as string
-                      if (stage === 'review-publish') {
-                        return (
-                          <>
-                            <Rocket className="w-3.5 h-3.5 mr-1.5" />
-                            Publicar Vaga
-                          </>
-                        )
-                      }
-                      if (stage === 'wsi-questions') {
-                        return (
-                          <>
-                            <Check className="w-3.5 h-3.5 mr-1" />
-                            Confirmar Triagem
-                          </>
-                        )
-                      }
-                      if (stage === 'input-evaluation') {
-                        return (
-                          <>
-                            <Check className="w-3.5 h-3.5 mr-1" />
-                            Confirmar Avaliação
-                          </>
-                        )
-                      }
-                      return (
-                        <>
-                          <Check className="w-3.5 h-3.5 mr-1" />
-                          Confirmar
-                        </>
-                      )
-                    })()}
-                  </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
           )}
         </div>
         </>

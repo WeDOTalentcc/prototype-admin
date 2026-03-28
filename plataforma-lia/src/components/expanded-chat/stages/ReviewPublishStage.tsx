@@ -16,11 +16,12 @@ import type {
   BasicInfoFields,
   TechnicalSkill,
   BehavioralCompetency,
-  SalaryInfo,
   WSIQuestion,
   DetectedCriteria,
 } from "../ExpandedChatContext"
+import type { SalaryInfo } from "./SalaryStage"
 import type { PublishingPlatform, JobConfig } from "../hooks/usePublishingState"
+import type { WizardStage } from "../config/wizard-config"
 
 type CompanyConfig = {
   workModel?: string
@@ -51,7 +52,7 @@ export interface ReviewPublishStageProps {
   detectedCriteria: DetectedCriteria
   publishedJobId: string | null
   // Actions
-  onGoToStage: (stage: string) => void
+  onGoToStage: (stage: WizardStage) => void
   onSetCompetenciesTab: (tab: 'technical' | 'behavioral') => void
   onSetPublishingPlatforms: (updater: (prev: PublishingPlatform[]) => PublishingPlatform[]) => void
   onSetJobConfig: (updater: (prev: JobConfig) => JobConfig) => void

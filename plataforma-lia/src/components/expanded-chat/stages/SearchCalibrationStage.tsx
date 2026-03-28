@@ -10,11 +10,12 @@ import { Brain, CheckCircle2, Users, Target, AlertTriangle, RefreshCw, ChevronRi
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useExpandedChatContext } from "../ExpandedChatContext"
+import type { CalibrationCandidate } from "../types"
 
 interface SearchCalibrationStageProps {
   // Calibration state
   searchPhase: 'idle' | 'local-searching' | 'local-complete' | 'global-searching' | 'global-complete'
-  calibrationCandidates: Array<{ id: string; name: string; [key: string]: unknown }>
+  calibrationCandidates: CalibrationCandidate[]
   calibrationComplete: boolean
   isLoadingCalibration: boolean
   hasAttemptedCalibrationGeneration: boolean
@@ -465,7 +466,7 @@ export function SearchCalibrationStage({
  * Separado para uso no footer do sidebar.
  */
 interface SearchCalibrationNavButtonsProps {
-  calibrationCandidates: Array<{ id: string; [key: string]: unknown }>
+  calibrationCandidates: CalibrationCandidate[]
   calibrationComplete: boolean
   isLoadingCalibration: boolean
   hasAttemptedCalibrationGeneration: boolean
