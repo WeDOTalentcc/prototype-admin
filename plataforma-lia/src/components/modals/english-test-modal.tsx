@@ -17,19 +17,22 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'var(--gray-400)'
+    bgColor: 'var(--gray-bg-10)',
+    borderColor: 'var(--gray-border)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'var(--status-warning)'
+    bgColor: 'var(--status-warning-bg)',
+    borderColor: 'var(--status-warning-border)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'var(--status-success)'
+    bgColor: 'var(--status-success-bg)',
+    borderColor: 'var(--status-success-bg-15)'
   }
 }
 
@@ -40,13 +43,13 @@ const SKILL_CONFIG = [
   { id: 'listening', label: 'Compreensão', icon: Headphones },
 ]
 
-const LEVEL_CONFIG: Record<string, { label: string; description: string; color: string }> = {
-  'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: 'var(--status-error)' },
-  'A2': { label: 'A2 - Básico', description: 'Nível básico', color: 'var(--status-warning)' },
-  'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: 'var(--status-warning)' },
-  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: 'var(--gray-600)' },
-  'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: 'var(--status-success)' },
-  'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: 'var(--status-success)' },
+const LEVEL_CONFIG: Record<string, { label: string; description: string; color: string; bgColor: string; borderColor: string }> = {
+  'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: 'var(--status-error)', bgColor: 'var(--status-error-bg)', borderColor: 'var(--status-error-border)' },
+  'A2': { label: 'A2 - Básico', description: 'Nível básico', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg)', borderColor: 'var(--status-warning-border)' },
+  'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg)', borderColor: 'var(--status-warning-border)' },
+  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)', borderColor: 'var(--gray-border)' },
+  'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: 'var(--status-success)', bgColor: 'var(--status-success-bg)', borderColor: 'var(--status-success-bg-15)' },
+  'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: 'var(--status-success)', bgColor: 'var(--status-success-bg)', borderColor: 'var(--status-success-bg-15)' },
 }
 
 export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModalProps) {
@@ -130,7 +133,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
         <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-gray-900">
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
-            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30`}}
+            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
           >
             <div className="flex items-center gap-2">
               <StatusIcon 
@@ -185,7 +188,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
                 <div 
                   className="p-3 rounded-md"
-                  style={{backgroundColor: `${levelInfo.color}10`, border: `1px solid ${levelInfo.color}30`}}
+                  style={{backgroundColor: levelInfo.bgColor, border: `1px solid ${levelInfo.borderColor}`}}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span 
@@ -243,7 +246,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                             <span 
                               className="text-micro px-1.5 py-0.5 rounded-full font-medium"
                               style={{color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
-                                backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)'}15`}}
+                                backgroundColor: LEVEL_CONFIG[skillLevel]?.bgColor ?? 'var(--gray-bg-10)'}}
                             >
                               {skillLevel}
                             </span>

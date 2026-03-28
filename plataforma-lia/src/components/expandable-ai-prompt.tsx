@@ -1249,20 +1249,20 @@ export function ExpandableAIPrompt({
   
   // Helper function for tag colors (ElevenLabs/WedoTalent pattern)
   const getTagColors = useCallback((key: string, filled: boolean) => {
-    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-400)', iconBg: 'var(--gray-400)' }
+    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-400)', iconBg: 'var(--gray-400)', iconBgLight: 'var(--gray-bg-10)' }
     switch (key) {
       case 'job_title':
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
       case 'location':
-        return { bg: 'var(--gray-50)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
+        return { bg: 'var(--gray-50)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)', iconBgLight: 'var(--wedo-purple-bg-10)' }
       case 'skills':
-        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green-light)' }
+        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green-light)', iconBgLight: 'var(--wedo-green-bg-10)' }
       case 'years_experience':
-        return { bg: 'var(--gray-50)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)' }
+        return { bg: 'var(--gray-50)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)', iconBgLight: 'var(--wedo-orange-bg-15)' }
       case 'industry':
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
       default:
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
     }
   }, [])
   
@@ -2912,7 +2912,7 @@ export function ExpandableAIPrompt({
                           >
                             <div 
                               className="flex items-center justify-center w-4 h-4 rounded-md"
-                              style={{backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent'}}
+                              style={{backgroundColor: tag.filled ? colors.iconBgLight : 'transparent'}}
                             >
                               <TagIcon className="w-3 h-3" style={{color: tag.filled ? colors.iconBg : colors.text}} />
                             </div>

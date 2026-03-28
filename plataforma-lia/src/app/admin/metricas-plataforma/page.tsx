@@ -47,6 +47,15 @@ interface MetricCardProps {
   accentColor?: string
 }
 
+const accentBgMap: Record<string, string> = {
+  'var(--gray-400)': 'var(--gray-bg-10)',
+  'var(--status-success)': 'var(--status-success-bg)',
+  'var(--status-error)': 'var(--status-error-bg)',
+  'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
+  'var(--wedo-purple)': 'var(--wedo-purple-bg-10)',
+  'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
+}
+
 function MetricCard({
   title,
   value,
@@ -57,6 +66,7 @@ function MetricCard({
   accentColor,
 }: MetricCardProps) {
   const isPositiveTrend = trend !== undefined && trend >= 0
+  const bgColor = accentColor ? (accentBgMap[accentColor] || 'var(--gray-bg-10)') : 'var(--gray-bg-10)'
 
   return (
     <Card className="relative overflow-hidden">
@@ -69,9 +79,7 @@ function MetricCard({
         </CardTitle>
         <div
           className="p-2 rounded-md"
-          style={{backgroundColor: accentColor
-              ? `${accentColor}15`
-              : "var(--gray-bg-10)"}}
+          style={{backgroundColor: bgColor}}
         >
           <Icon
             className="w-4 h-4"

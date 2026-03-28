@@ -536,6 +536,7 @@ export default function CandidatePortalPage() {
   }
 
   const primaryColor = portalData?.branding.primary_color || "var(--gray-950)"
+  const primaryBgColor = primaryColor.startsWith('#') ? `${primaryColor}20` : 'var(--gray-bg-12)'
 
   const renderField = (field: FieldConfig) => {
     const value = formValues[field.name] || ""
@@ -816,7 +817,7 @@ export default function CandidatePortalPage() {
             <CardHeader className="text-center">
               <div
                 className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{backgroundColor: `${primaryColor}20`}}
+                style={{backgroundColor: primaryBgColor}}
               >
                 <User className="w-8 h-8" style={{color: primaryColor}} />
               </div>
@@ -953,7 +954,7 @@ export default function CandidatePortalPage() {
             <CardContent className="pt-8 pb-8 text-center">
               <div
                 className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-                style={{backgroundColor: `${primaryColor}20`}}
+                style={{backgroundColor: primaryBgColor}}
               >
                 <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>

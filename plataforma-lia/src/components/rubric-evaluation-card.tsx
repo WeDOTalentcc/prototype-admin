@@ -345,8 +345,8 @@ export function RubricEvaluationCard({
           variant="ghost"
           size="sm"
           className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} hover:bg-opacity-20 border`}
-          style={{backgroundColor: `${ACCENT_COLOR}15`,
-            borderColor: `${ACCENT_COLOR}40`,
+          style={{backgroundColor: 'var(--gray-600-bg-10)',
+            borderColor: 'var(--gray-border)',
             color: ACCENT_COLOR}}
           onClick={(e) => {
             e.stopPropagation()

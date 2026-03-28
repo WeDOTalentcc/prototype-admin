@@ -85,6 +85,16 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
     }
   }
 
+  const getHealthTierBgColor = (tier: string) => {
+    switch (tier) {
+      case 'excellent': return 'var(--gray-600-bg-10)'
+      case 'good': return 'var(--wedo-green-bg-10)'
+      case 'watch': return 'var(--status-warning-bg)'
+      case 'critical': return 'var(--status-error-bg)'
+      default: return 'var(--gray-bg-10)'
+    }
+  }
+
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'positive': return 'var(--wedo-green-bright)'
@@ -279,7 +289,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     </div>
                     <Badge 
                       className="mt-3"
-                      style={{backgroundColor: `${getHealthTierColor(healthScore.tier)}20`,
+                      style={{backgroundColor: getHealthTierBgColor(healthScore.tier),
                         color: getHealthTierColor(healthScore.tier),
                         border: `1px solid ${getHealthTierColor(healthScore.tier)}`}}
                     >

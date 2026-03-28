@@ -37,6 +37,18 @@ interface CandidateActivitiesTabProps {
   onSetShowPreview: (show: boolean) => void
 }
 
+const colorToBg: Record<string, string> = {
+  'var(--gray-600)': 'var(--gray-600-bg-10)',
+  'var(--gray-400)': 'var(--gray-bg-10)',
+  'var(--status-success)': 'var(--status-success-bg)',
+  'var(--status-error)': 'var(--status-error-bg)',
+  'var(--status-warning)': 'var(--status-warning-bg)',
+  'var(--wedo-purple)': 'var(--wedo-purple-bg-10)',
+  'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
+  'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
+}
+const getBgColor = (color: string) => colorToBg[color] || 'var(--gray-bg-10)'
+
 export function CandidateActivitiesTab({
   candidate,
   jobId,
@@ -924,7 +936,7 @@ export function CandidateActivitiesTab({
               <div className="flex items-start gap-3">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{backgroundColor: `${activity.iconColor}20`}}
+                  style={{backgroundColor: getBgColor(activity.iconColor)}}
                 >
                   <ActivityIcon className="w-4 h-4" style={{color: activity.iconColor}} />
                 </div>
@@ -979,7 +991,7 @@ export function CandidateActivitiesTab({
           <div className="flex items-start gap-2">
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{backgroundColor: `${activity.iconColor}20`}}
+              style={{backgroundColor: getBgColor(activity.iconColor)}}
             >
               <ActivityIcon className="w-3.5 h-3.5" style={{color: activity.iconColor}} />
             </div>

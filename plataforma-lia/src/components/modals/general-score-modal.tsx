@@ -76,6 +76,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
     return 'var(--status-error)'
   }
 
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return 'var(--status-success-bg)'
+    if (score >= 60) return 'var(--gray-bg-10)'
+    if (score >= 40) return 'var(--status-warning-bg)'
+    return 'var(--status-error-bg)'
+  }
+
   const getScoreLabel = (score: number) => {
     if (score >= 90) return 'Excelente'
     if (score >= 80) return 'Muito Bom'
@@ -154,7 +161,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             <div className="text-right">
               <span 
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full"
-                style={{backgroundColor: `${getScoreColor(finalScore)}15`,
+                style={{backgroundColor: getScoreBgColor(finalScore),
                   color: getScoreColor(finalScore)}}
               >
                 <TrendingUp className="w-3 h-3" />

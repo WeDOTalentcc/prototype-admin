@@ -39,6 +39,7 @@ interface FrameworkCoverage {
   icon: React.ReactNode
   stats: FrameworkStats | null
   color: string
+  bgColor: string
 }
 
 interface GapItem {
@@ -84,21 +85,25 @@ export default function CoberturaPage() {
       key: 'ISO27001',
       name: 'ISO 27001:2022',
       icon: <ShieldCheck className="w-5 h-5" />,
-      stats: dashboard?.byFramework?.['ISO27001'] || null
+      stats: dashboard?.byFramework?.['ISO27001'] || null,
+      color: 'var(--wedo-cyan)',
+      bgColor: 'var(--wedo-cyan-bg-20)'
     },
     {
       key: 'SOC2',
       name: 'SOC 2 Type II',
       icon: <Shield className="w-5 h-5" />,
       stats: dashboard?.byFramework?.['SOC2'] || null,
-      color: 'var(--wedo-green-light)'
+      color: 'var(--wedo-green-light)',
+      bgColor: 'var(--wedo-green-bg-20)'
     },
     {
       key: 'SOX',
       name: 'SOX',
       icon: <Scale className="w-5 h-5" />,
       stats: dashboard?.byFramework?.['SOX'] || null,
-      color: 'var(--wedo-purple)'
+      color: 'var(--wedo-purple)',
+      bgColor: 'var(--wedo-purple-bg-10)'
     }
   ]
 
@@ -261,7 +266,7 @@ export default function CoberturaPage() {
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-8 h-8 rounded-md flex items-center justify-center"
-                        style={{backgroundColor: `${framework.color}20`}}
+                        style={{backgroundColor: framework.bgColor}}
                       >
                         <div style={{color: framework.color}}>
                           {framework.icon}

@@ -17,19 +17,22 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'var(--gray-400)'
+    bgColor: 'var(--gray-bg-10)',
+    borderColor: 'var(--gray-border)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'var(--status-warning)'
+    bgColor: 'var(--status-warning-bg)',
+    borderColor: 'var(--status-warning-border)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'var(--status-success)'
+    bgColor: 'var(--status-success-bg)',
+    borderColor: 'var(--status-success-bg-15)'
   }
 }
 
@@ -120,7 +123,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
         <div className="flex-1 overflow-y-auto px-4 py-4" style={{backgroundColor: 'var(--gray-50)'}}>
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
-            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30`}}
+            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
           >
             <div className="flex items-center gap-2">
               <StatusIcon 

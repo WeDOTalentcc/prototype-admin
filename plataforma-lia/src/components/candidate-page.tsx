@@ -95,7 +95,21 @@ export function CandidatePage({
   const [analysisToDelete, setAnalysisToDelete] = useState<any>(null)
   const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
 
-  // Mock completo de atividades do candidato (mesmo do preview)
+  const colorToBg: Record<string, string> = {
+    'var(--gray-200)': 'var(--gray-200-bg-20)',
+    'var(--gray-300)': 'var(--gray-300-bg-20)',
+    'var(--gray-400)': 'var(--gray-bg-10)',
+    'var(--gray-600)': 'var(--gray-600-bg-10)',
+    'var(--status-success)': 'var(--status-success-bg)',
+    'var(--status-error)': 'var(--status-error-bg)',
+    'var(--status-warning)': 'var(--status-warning-bg)',
+    'var(--wedo-green-light)': 'var(--wedo-green-light-bg-20)',
+    'var(--wedo-purple)': 'var(--wedo-purple-bg-10)',
+    'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
+    'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
+  }
+  const getBgColor = (color: string) => colorToBg[color] || 'var(--gray-bg-10)'
+
   const activities = [
     {
       id: 'lia-eval-1',
@@ -269,7 +283,7 @@ export function CandidatePage({
       timeframe: '2-3 dias',
       recommendation: 'Follow-up recomendado em 48h',
       icon: '📧',
-      color: 'var(--wedo-green-pastel)' // Verde WeDo - sucesso/qualidade
+      color: 'var(--wedo-green-light)' // Verde WeDo - sucesso/qualidade
     },
     {
       id: 'negotiation',
@@ -1520,7 +1534,7 @@ export function CandidatePage({
                               </h5>
                               <Badge
                                 className="text-xs px-1 py-0 h-4 mt-1"
-                                style={{backgroundColor: `${prediction.color}20`,
+                                style={{backgroundColor: getBgColor(prediction.color),
                                   color: prediction.color}}
                               >
                                 {prediction.probability}%
@@ -1568,7 +1582,7 @@ export function CandidatePage({
                                   <div className="flex items-start gap-3">
                                     <div
                                       className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                                      style={{backgroundColor: `${activity.iconColor}20`}}
+                                      style={{backgroundColor: getBgColor(activity.iconColor)}}
                                     >
                                       <activity.icon className="w-4 h-4" style={{color: activity.iconColor}} />
                                     </div>
@@ -1668,7 +1682,7 @@ export function CandidatePage({
                             <div className="flex items-start gap-3">
                               <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                                style={{backgroundColor: `${activity.iconColor}20`}}
+                                style={{backgroundColor: getBgColor(activity.iconColor)}}
                               >
                                 <activity.icon className="w-4 h-4" style={{color: activity.iconColor}} />
                               </div>

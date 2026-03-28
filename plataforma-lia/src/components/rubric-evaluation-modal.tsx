@@ -525,6 +525,7 @@ export function RubricEvaluationModal({
                     <div className="space-y-1.5 pl-5">
                       {mockParecer.riscos_mitigacoes.map((rm, idx) => {
                         const nivelColor = rm.nivel === 'alto' ? 'var(--status-error)' : rm.nivel === 'medio' ? 'var(--status-warning)' : 'var(--gray-400)'
+                        const nivelBgColor = rm.nivel === 'alto' ? 'var(--status-error-bg-15)' : rm.nivel === 'medio' ? 'var(--status-warning-bg-15)' : 'var(--gray-bg-15)'
                         return (
                           <div 
                             key={idx} 
@@ -543,7 +544,7 @@ export function RubricEvaluationModal({
                               <div className="flex flex-col items-end gap-1">
                                 <span 
                                   className="text-micro font-medium px-1.5 py-0.5 rounded-full"
-                                  style={{backgroundColor: `${nivelColor}15`, color: nivelColor}}
+                                  style={{backgroundColor: nivelBgColor, color: nivelColor}}
                                 >
                                   Risco {rm.nivel === 'alto' ? 'Alto' : rm.nivel === 'medio' ? 'Médio' : 'Baixo'}
                                 </span>
@@ -769,15 +770,15 @@ export function RubricEvaluationModal({
                     <div className="text-micro font-medium mb-1.5 text-gray-500">Legenda de Níveis</div>
                     <div className="grid grid-cols-4 gap-1">
                       {[
-                        { code: 'E+', label: 'Excede' },
-                        { code: 'A', label: 'Atende' },
-                        { code: 'P', label: 'Parcial', color: 'var(--status-warning)' },
-                        { code: 'X', label: 'Ausente', color: 'var(--status-error)' },
+                        { code: 'E+', label: 'Excede', color: undefined, bgColor: undefined },
+                        { code: 'A', label: 'Atende', color: undefined, bgColor: undefined },
+                        { code: 'P', label: 'Parcial', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg-15)' },
+                        { code: 'X', label: 'Ausente', color: 'var(--status-error)', bgColor: 'var(--status-error-bg-15)' },
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center gap-1 p-1.5 rounded-md bg-gray-50">
                           <span 
                             className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded-md"
-                            style={{backgroundColor: `${item.color}15`, color: item.color}}
+                            style={{backgroundColor: item.bgColor, color: item.color}}
                           >
                             {item.code}
                           </span>

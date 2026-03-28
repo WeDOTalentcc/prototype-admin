@@ -2134,20 +2134,20 @@ export function SmartSearchInput({
               <div className="flex flex-wrap items-center gap-1.5">
                 {tags.map((tag) => {
                   const getTagColors = (key: string, filled: boolean) => {
-                    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-800)', iconBg: 'var(--gray-400)' }
+                    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-800)', iconBg: 'var(--gray-400)', iconBgLight: 'var(--gray-bg-10)' }
                     switch (key) {
                       case 'job_title':
-                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
                       case 'location':
-                        return { bg: 'var(--gray-100)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
+                        return { bg: 'var(--gray-100)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)', iconBgLight: 'var(--wedo-purple-bg-10)' }
                       case 'skills':
-                        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green)' }
+                        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green)', iconBgLight: 'var(--wedo-green-bg-10)' }
                       case 'years_experience':
-                        return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)' }
+                        return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)', iconBgLight: 'var(--wedo-orange-bg-15)' }
                       case 'industry':
-                        return { bg: 'var(--gray-100)', text: 'var(--gray-700)', iconBg: 'var(--gray-600)' }
+                        return { bg: 'var(--gray-100)', text: 'var(--gray-700)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
                       default:
-                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
                     }
                   }
                   const colors = getTagColors(tag.key, tag.filled)
@@ -2162,7 +2162,7 @@ export function SmartSearchInput({
                     >
                       <div 
                         className="flex items-center justify-center w-4 h-4 rounded-md"
-                        style={{backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent'}}
+                        style={{backgroundColor: tag.filled ? colors.iconBgLight : 'transparent'}}
                       >
                         <tag.icon className="w-3 h-3" style={{color: tag.filled ? colors.iconBg : colors.text}} />
                       </div>

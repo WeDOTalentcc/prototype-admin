@@ -122,13 +122,13 @@ const commands: Command[] = [
 ]
 
 const categories = [
-  { value: 'all', label: 'Todos', icon: Brain, color: 'var(--wedo-cyan)' },
-  { value: 'candidates', label: 'Candidatos', icon: Users, color: 'var(--gray-500)' },
-  { value: 'jobs', label: 'Vagas', icon: Target, color: 'var(--gray-400)' },
-  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: 'var(--gray-600)' },
-  { value: 'automations', label: 'Automações', icon: Zap, color: 'var(--wedo-orange)' },
-  { value: 'reports', label: 'Relatórios', icon: Calendar, color: 'var(--gray-600)' },
-  { value: 'communication', label: 'Comunicação', icon: Mail, color: 'var(--gray-400)' }
+  { value: 'all', label: 'Todos', icon: Brain, color: 'var(--wedo-cyan)', bgColor: 'var(--wedo-cyan-bg-15)' },
+  { value: 'candidates', label: 'Candidatos', icon: Users, color: 'var(--gray-500)', bgColor: 'var(--gray-bg-15)' },
+  { value: 'jobs', label: 'Vagas', icon: Target, color: 'var(--gray-400)', bgColor: 'var(--gray-bg-10)' },
+  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)' },
+  { value: 'automations', label: 'Automações', icon: Zap, color: 'var(--wedo-orange)', bgColor: 'var(--wedo-orange-bg-15)' },
+  { value: 'reports', label: 'Relatórios', icon: Calendar, color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)' },
+  { value: 'communication', label: 'Comunicação', icon: Mail, color: 'var(--gray-400)', bgColor: 'var(--gray-bg-10)' }
 ]
 
 export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
@@ -342,7 +342,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                       <Badge 
                         variant="secondary" 
                         className="text-xs px-1.5 py-0 h-5 font-open-sans"
-                        style={{backgroundColor: `${categoryInfo.color}15`, color: categoryInfo.color}}
+                        style={{backgroundColor: categoryInfo.bgColor, color: categoryInfo.color}}
                       >
                         {categoryInfo.label}
                       </Badge>
