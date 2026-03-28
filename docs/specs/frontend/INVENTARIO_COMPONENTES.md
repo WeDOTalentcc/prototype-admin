@@ -1,21 +1,29 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
-> **Última atualização:** 2026-03-28 (Sprint 4.6 — Monolith Split: 13 componentes extraídos de 4 monolitos, -6.693L)
+> **Última atualização:** 2026-03-28 (Sprint 4.10 — DS tokens, type safety, dark mode + remoção de style={} inline)
 > **Arquitetura:** Bridge Architecture — 3 camadas de abstração (CSS vars → framework config → componentes) — ver Seção 0
-> **Componentes:** 569 em 38 diretórios (556 anteriores + 13 novos do Sprint 4.6 em 4 subdirs — novo subdir `candidate-preview/`)
-> **Hooks:** 120 custom hooks (93 em `src/hooks/` + 27 em subdiretórios de componentes)
+> **Componentes:** 504 .tsx em 38+ diretórios (redução de 65 arquivos vs. Sprint 4.6 via Fase 0 + splits + limpeza)
+> **Hooks:** 116 em `src/hooks/` + 44 em subdiretórios de componentes = **160 custom hooks**
 > **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
 > **Rotas:** 90 page routes + 5 layouts + 424 API endpoints
 > **CSS:** 242 variáveis, 29 keyframes, 200+ classes customizadas, 169 ícones Lucide
 > **Localização:** `plataforma-lia/src/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
+>
+> **Estado das Fases (2026-03-28):**
+> ✅ Fase 0 — Limpeza de código morto (-9.820L)
+> ✅ Fase 1 — Escala tipográfica (~4.500 valores arbitrários eliminados)
+> ✅ Fase 2 — Tokenização de cores (54+ → **9 arquivos** com hex hardcoded)
+> ✅ Fase 3 — Consolidação de badges (dark mode + tokens DS v4.2.1)
+> 🔄 Fase 4 — Split de monolitos (Sprints 4.6–4.10 em andamento)
+> ⏳ Fase 5 — Padronização de dimensões (pendente)
 
 ---
 
 ## 0. Bridge Architecture — Princípio Fundacional
 
-> **Status:** Em implementação ativa (Fase 1 concluída, Fases 2-5 pendentes)
-> **Última atualização:** 2026-03-27
+> **Status:** Fases 0–3 concluídas ✅ | Fase 4 em andamento 🔄 (Sprints 4.6–4.10) | Fase 5 pendente ⏳
+> **Última atualização:** 2026-03-28
 
 ### 0.1 O Problema
 
@@ -95,30 +103,61 @@ Sprint 4.4+  (Integração)      → Todas as 6 dimensões auditadas
 
 ### 0.6 O que Já Está Implementado
 
-**Fase 0 — Limpeza (concluída 2026-03-27):**
+**Fase 0 — Limpeza ✅ CONCLUÍDA (2026-03-27):**
 - 16 arquivos de dead code removidos (9.820 linhas)
 - Componentes: 465 → 460
 
-**Fase 1 — Tipografia (concluída 2026-03-27):**
+**Fase 1 — Tipografia ✅ CONCLUÍDA (2026-03-27):**
 - 4 tokens customizados criados: `text-xs` (11px), `text-micro` (10px), `text-sm-ui` (12px), `text-base-ui` (13px)
 - Camada 1: variáveis em `design-tokens.css` (`--font-size-xs`, `--font-size-micro`, etc.)
 - Camada 2: `tailwind.config.ts` referencia as variáveis (`fontSize: { 'xs': ['var(--font-size-xs)', ...] }`)
 - Camada 3: componentes usam classes normais (`text-xs`) que agora mapeiam para CSS vars
 - ~4.500 valores arbitrários de tipografia eliminados
 
+**Fase 2 — Tokenização de Cores ✅ CONCLUÍDA (2026-03-28):**
+- 24 substituições em 13 arquivos (Fase 2 principal) + tailwind.config + 5 componentes (residual)
+- Hex hardcoded: **54+ arquivos → 9 arquivos** (95% resolvido)
+- Tokens `wedo-*`, `status-*`, `chart-*` migrados para `var(--token)` no `tailwind.config.ts`
+- Pipeline monocromático: 17 pastéis → sistema gray + status-success (hired only)
+
+**Fase 3 — Consolidação de Badges ✅ CONCLUÍDA (Sprint 4.9/4.10 — 2026-03-28):**
+- Dark mode aplicado em todos os badges
+- Tokens DS v4.2.1 aplicados (sem rgba() hardcoded)
+- 2 badges órfãos deletados (`suggestion-badge`, `auto-screening-badge`)
+- `field-origin-badge` refatorado para tokens semânticos
+- Token Contract documentado na seção 30.3
+
+**Fase 4 — Split de Monolitos 🔄 EM ANDAMENTO (Sprints 4.6–4.10):**
+- Sprint 4.6: 13 componentes extraídos de 4 monolitos (−6.693L)
+- Sprint 4.7: 8 componentes extraídos de 3 monolitos (−6.535L)
+- Sprint 4.8: `expanded-chat-modal` 11.228 → 4.423 (−6.805L) ✅
+- Sprint 4.9: `smart-search-input` 5.463 → 4.586 → 3.868 (−1.595L total) + `CandidateTableCellRenderer` extraído de `candidates-page` (−737L) ✅
+- Sprint 4.10: DS tokens, type safety, dark mode + remoção de `style={{}}` inline (−33 arquivos) ✅
+- **Inline styles**: 249 → **216 arquivos** (−33 via Sprint 4.10)
+
 **Infraestrutura de Migração Vue:**
 - `design-tokens.ts` contém `tailwindToVuetify` com mapeamentos completos de cores, tipografia, espaçamento, border-radius, sombras e layout — pronto para consumo por scripts de conversão automatizada
 
-### 0.7 O que Falta (Fases 2-5)
+### 0.7 O que Falta (Fase 4 residual + Fase 5)
 
-> **Status:** Em implementação ativa (Fases 1-4 concluídas, Fases 5+ pendentes)
+> **Status:** Fases 0–3 concluídas. Fase 4 (split) em andamento. Fase 5 pendente.
 
 | Fase | Escopo | Impacto | Status |
 |------|--------|---------|--------|
-| 2 | Cores — tokenizar 298 hex hardcoded | Eliminar 54 arquivos com cores fora do DS | Pendente |
-| 3 | Badges & Status — unificar 7 implementações | Componente único `<StatusBadge>` | Pendente |
-| 4 | Giant Components — refatorar 37 arquivos >1.000 linhas | Reduzir 118.037 → ~60.000 linhas | ✅ Sprint 4.6: 13 componentes extraídos de 4 monolitos (-6.693L total) |
-| 5 | Modals & Inline Styles — padronizar | 154 arquivos com modals, 249 com inline styles | Pendente |
+| 2 | Cores — tokenizar hex hardcoded | 54+ → **9 arquivos** com hex | ✅ CONCLUÍDA — 95% resolvido |
+| 3 | Badges & Status — unificar 7 → 5 implementações | dark mode + tokens DS v4.2.1 | ✅ CONCLUÍDA (Sprint 4.9/4.10) |
+| 4 | Giant Components — Sprints 4.6–4.10 | Redução de ~35.000L em monolitos | 🔄 EM ANDAMENTO — 5 monolitos críticos restantes |
+| 5 | Modals & Inline Styles — padronizar | **216** arquivos com inline styles (era 249) | ⏳ PENDENTE |
+
+**Monolitos críticos restantes (Fase 4):**
+
+| Arquivo | Linhas atuais | Status | Sprint sugerida |
+|---------|--------------|--------|----------------|
+| `pages/chat-page.tsx` | 5.583 | ⚠️ Pendente | Sprint 4.11 |
+| `pages/candidates-page.tsx` | 5.260 | ⚠️ Pendente | Sprint 4.11 |
+| `settings/CompanyTeamHub.tsx` | 5.235 | ⚠️ Pendente | Sprint 4.12 |
+| `pages/job-kanban-page.tsx` | 4.990 | ⚠️ Pendente | Sprint 4.12 |
+| `expandable-ai-prompt.tsx` | 4.306 | ⚠️ Pendente | Sprint 4.12 |
 
 > **Detalhamento completo das fases:** seções 29-32 deste documento.
 
@@ -693,24 +732,29 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 
 ## Top 10 Maiores Componentes
 
-> Atualizado após Sprint 4.7 (Monolith Split — -6.535L em 3 arquivos)
+> ✅ Atualizado após Sprint 4.10 (DS tokens, type safety, dark mode + remoção style={} inline)
+> Sprints 4.8/4.9 reduziram drasticamente `expanded-chat-modal` (−6.805L) e `smart-search-input` (−1.595L)
 
-| # | Componente | Linhas | Observação |
-|---|-----------|--------|-----------|
-| 1 | `expanded-chat-modal` | 11.228 | Chat expandido — candidato a refactoring |
-| 2 | `pages/candidates-page` | 8.453 | Página de candidatos — era 9.604, -1.151L Sprint 4.7 |
-| 3 | `pages/job-kanban-page` | 6.308 | Página do kanban — era 8.440, -2.132L Sprint 4.7 |
-| 4 | `pages/chat-page` | 5.592 | Página do chat |
-| 5 | `smart-search-input` | 5.475 | Busca inteligente com NLP |
-| 6 | `CompanyTeamHub` | 5.235 | Gestão de equipe |
-| 7 | `pages/settings-page` | 4.449 | Configurações |
-| 8 | `expandable-ai-prompt` | 4.308 | Prompt expansível |
-| 9 | `pages/jobs-page` | 4.735 | Página de vagas — era 8.046, -3.309L Sprint 4.6 |
-| 10 | `candidate-preview` | 2.742 | Preview de candidato — era 5.994, -3.252L Sprint 4.7 ✅ |
+| # | Componente | Linhas | Sprint anterior | Delta |
+|---|-----------|--------|----------------|-------|
+| 1 | `pages/chat-page` | 5.583 | 5.592 (Sprint 4.7) | −9 |
+| 2 | `pages/candidates-page` | 5.260 | 8.453 (Sprint 4.7) | **−3.193L** Sprint 4.9 |
+| 3 | `settings/CompanyTeamHub` | 5.235 | 5.235 | ⚠️ Pendente split |
+| 4 | `pages/job-kanban-page` | 4.990 | 6.308 (Sprint 4.7) | **−1.318L** Sprint 4.9 |
+| 5 | `pages/jobs-page` | 4.735 | 4.735 | estável |
+| 6 | `pages/settings-page` | 4.449 | 4.449 | estável |
+| 7 | `expanded-chat-modal` | 4.423 | 11.228 (Sprint 4.7) | **−6.805L** Sprint 4.8 ✅ |
+| 8 | `expandable-ai-prompt` | 4.306 | 4.308 | −2 |
+| 9 | `search/smart-search-input` | 3.868 | 5.475 (Sprint 4.7) | **−1.607L** Sprint 4.9 ✅ |
+| 10 | `pages/dashboards-page` | 3.283 | ~3.283 | estável |
+
+**11º lugar (referência):** `modals/advanced-filters-modal` — 3.282 linhas | `candidate-preview` — 2.742 linhas ✅ (era 5.994)
 
 ---
 
-## 17. Modals (`modals/`) — 34 componentes
+## 17. Modals (`modals/`) — 33 componentes + 1 arquivo de teste
+
+> ✅ Atualizado Sprint 4.10 — 33 modais reais (bulk-action-modal-rejection-reasons.test é arquivo de teste TS, não componente)
 
 Diretório dedicado de modais de ação. Maior gap de documentação anterior.
 
@@ -1461,16 +1505,18 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 
 ## Resumo Expandido — Inventário 100%
 
+> ✅ Atualizado Sprint 4.10 (2026-03-28) — componentes reduzidos via Fase 0 (limpeza) + splits Sprints 4.6–4.10
+
 | Dimensão | Quantidade | Status |
 |----------|-----------|--------|
-| Componentes documentados (seções 1-22) | 556 | 100% coberto |
-| Custom hooks | 120 | 100% coberto |
+| Componentes .tsx totais (seções 1-22) | **504** | 100% coberto (era 556 antes Fase 0 + splits) |
+| Custom hooks (src/hooks/ + subdirs) | **160** | 100% coberto (116 + 44 em subdirs de componentes) |
 | Contexts & providers | 5 | 100% coberto |
 | Types & config files | 17 | 100% coberto |
 | Lib utilities | 13 | 100% coberto |
 | Page routes | 90 | 100% coberto |
 | API endpoints | 424 | 100% coberto |
-| CSS variables | 242 | 100% coberto |
+| CSS variables (design-tokens.css + globals.css) | 242 | 100% coberto |
 | Keyframe animations | 29 | 100% coberto |
 | Custom CSS classes | 200+ | 100% coberto |
 | Ícones catalogados | 169 | 100% coberto |
@@ -1478,6 +1524,9 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 | Dark mode coverage | 16.058 usos | 100% coberto |
 | Tipografia quantificada | 11 tamanhos | 100% coberto |
 | Temas por página | 6 | 100% coberto |
+| Badges ativos | **5** | 100% coberto (eram 7 — 2 órfãos deletados Fase 3) |
+| Modais no diretório modals/ | **33** | 100% coberto (+1 arquivo de teste) |
+| Arquivos com inline style | **216** | era 249 — −33 via Sprint 4.10 |
 
 ---
 
@@ -1486,9 +1535,18 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 > Dados extraídos automaticamente do codebase em 2026-03-27.
 > Nenhuma das otimizações abaixo altera o visual do produto — são refatorações internas.
 
-### 29.1 Cores Hardcoded — 298 cores hex em 1.607 linhas
+### 29.1 Cores Hardcoded — ✅ Fase 2 CONCLUÍDA (95% resolvido)
 
-O maior problema de padronização. Cores são escritas diretamente nos componentes em vez de usar tokens do `design-tokens.css` ou classes Tailwind. Isso significa que uma mudança de cor no design system **não se propaga** automaticamente.
+> **Atualizado Sprint 4.10 (2026-03-28):** Fase 2 concluída. De 54+ arquivos com hex hardcoded, restam **12 arquivos** (isentos: email-templates, brand terceiros, design-tokens.ts, SVG dinâmicos Recharts).
+> Dados históricos abaixo mantidos como referência para entender a escala original do problema.
+
+O maior problema de padronização. Cores eram escritas diretamente nos componentes em vez de usar tokens do `design-tokens.css` ou classes Tailwind. Isso significa que uma mudança de cor no design system **não se propagava** automaticamente.
+
+**Estado atual pós-Fase 2:**
+- Hex hardcoded: 54+ arquivos → **12 arquivos** (isentos legítimos)
+- Paleta de pipeline: 17 pastéis → sistema gray + status-success ✅
+- wedo-cyan: 507 usos → ~200 (apenas LIA/IA semânticos) ✅
+- tailwind.config.ts: todos os tokens `wedo-*`, `status-*`, `chart-*` migrados para `var(--token)` ✅
 
 **Tabela: Top 30 cores mais usadas com mapeamento para token**
 
@@ -1550,7 +1608,10 @@ O maior problema de padronização. Cores são escritas diretamente nos componen
 | 19 | `ui/candidate-queries-guide.tsx` | 27 | Guia de queries candidatos |
 | 20 | `agent-control-center/index.tsx` | 27 | Painel de agentes |
 
-### 29.2 Valores Arbitrários Tailwind — 4.765 ocorrências
+### 29.2 Valores Arbitrários Tailwind — ✅ Fase 1 CONCLUÍDA (tipografia), Fase 5 pendente (dimensões)
+
+> **Atualizado Sprint 4.10 (2026-03-28):** Fase 1 concluída — `text-[Xpx]` praticamente eliminados (~4.500 substituídos por tokens `text-xs`, `text-micro`, `text-sm-ui`, `text-base-ui`). Restam **17 ocorrências** de `text-[` no codebase (residuais pontuais ou isentos). Dimensões (`w-[Xpx]`, `h-[Xpx]`) pendentes na Fase 5.
+> Dados históricos mantidos abaixo para referência.
 
 Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez de usar classes do design system. Impossibilita mudança global de tamanhos.
 
@@ -1602,17 +1663,39 @@ Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez 
 | `h-[80px]` | 5 | `h-20` (80px — equivalente exato) |
 | `h-[56px]` | 5 | `h-14` (56px — equivalente exato) |
 
-### 29.3 Componentes Gigantes — 37 arquivos > 1.000 linhas = 118.037 linhas
+### 29.3 Componentes Gigantes — estado atualizado pós-Sprints 4.6–4.10
 
-Representam **94% de todo o código** de componentes. Cada um mistura lógica de negócio, state management, UI, e estilo. Dificulta testes, manutenção e conversão para Vue.
+> **Atualizado Sprint 4.10 (2026-03-28):** Fase 4 em andamento. Os Sprints 4.6–4.10 reduziram os monolitos mais críticos. `expanded-chat-modal` caiu de 11.824 → 4.423 (Sprint 4.8). `candidate-preview` caiu de 5.994 → 2.742 (Sprint 4.7). `smart-search-input` caiu de 5.475 → 3.868 (Sprint 4.9).
 
-| # | Componente | Linhas | Categoria | Proposta de Split |
+**Monolitos críticos PENDENTES (>4.000 linhas):**
+
+| # | Componente | Linhas atuais | Sprint anterior | Delta | Status |
+|---|-----------|--------------|----------------|-------|--------|
+| 1 | `pages/chat-page` | 5.583 | 5.592 | −9 | ⚠️ Pendente Sprint 4.11 |
+| 2 | `pages/candidates-page` | 5.260 | 8.453 | −3.193 ✅ | ⚠️ Ainda alto — Sprint 4.11 |
+| 3 | `settings/CompanyTeamHub` | 5.235 | 5.235 | — | ⚠️ Pendente Sprint 4.12 |
+| 4 | `pages/job-kanban-page` | 4.990 | 6.308 | −1.318 ✅ | ⚠️ Ainda alto — Sprint 4.12 |
+| 5 | `pages/jobs-page` | 4.735 | 4.735 | — | Estável (abaixo de 5.000L) |
+| 6 | `pages/settings-page` | 4.449 | 4.449 | — | ⚠️ Pendente Sprint 4.12 |
+| 7 | `expanded-chat-modal` | 4.423 | 11.228 | **−6.805L ✅** | Sprint 4.8 concluída |
+| 8 | `expandable-ai-prompt` | 4.306 | 4.308 | −2 | ⚠️ Pendente Sprint 4.12 |
+
+**Monolitos RESOLVIDOS via Fase 4 (splits concluídos):**
+
+| # | Componente | Antes | Depois | Sprint |
+|---|-----------|-------|--------|--------|
+| ✅ | `candidate-preview` | 5.994 | 2.742 | Sprint 4.7 |
+| ✅ | `smart-search-input` | 5.475 | 3.868 | Sprint 4.9 |
+
+**Histórico completo dos tamanhos originais (pré-Fase 4):**
+
+| # | Componente | Linhas originais | Categoria | Proposta de Split |
 |---|-----------|--------|-----------|-----------------|
 | 1 | `expanded-chat-modal` | 11.824 | Chat | → WizardChat, MessageList, InputBar, ToolResults, StageManager, StateReducer, FieldSync, JobPreview (~8-10 sub) |
 | 2 | `pages/job-kanban-page` | 8.440 ✂️ | Pipeline | Sprint 4.6: KanbanFiltersPanel, KanbanColumnConfigPanel, AddColumnPopover extraídos. Pendente: KanbanBoard, CandidateCard, BulkActions, StageConfig (~4 sub) |
 | 3 | `pages/candidates-page` | 9.604 ✂️ | Candidatos | Sprint 4.6: CreditConfirmationModal, SaveAsArchetypeModal, EditQueryModal, PreviewSuggestionModal extraídos. Pendente: FilterPanel, PreviewPanel, TableView, LIA inline (~4 sub) |
 | 4 | `pages/jobs-page` | 4.735 ✂️ | Vagas | Sprint 4.6: ColumnConfigPanel, TableFiltersPanel, InlineChatPanel, JobPreviewPanel extraídos. Abaixo do limiar de 5.000L. |
-| 5 | `candidate-preview` | 5.994 ✂️ | Candidatos | Sprint 4.6: FilePreviewModal, LiaChatModal extraídos. Pendente: Tabs de detalhe, seção de avaliação/feedback (~2-3 sub) |
+| 5 | `candidate-preview` | 5.994 ✂️ | Candidatos | Sprint 4.6: FilePreviewModal, LiaChatModal extraídos. Sprint 4.7: CandidateActivitiesTab, CandidateFilesTab. ✅ 2.742L |
 | 6 | `pages/chat-page` | 5.592 | Chat | → ChatContainer, MessageList, InputBar, VoiceChat, Suggestions (~5 sub) |
 | 7 | `search/smart-search-input` | 5.475 | Search | → SearchBar, FilterChips, Suggestions, BooleanBuilder, Results (~5 sub) |
 | 8 | `settings/CompanyTeamHub` | 5.235 | Settings | → TeamTable, InviteModal, RoleManager, Permissions, ActivityLog (~5 sub) |
@@ -1667,22 +1750,25 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 - `ui/sedPT8vmF` — arquivo espúrio com nome aleatório. Deletar.
 - `ui/badge.stories.tsx`, `ui/button.stories.tsx`, `ui/card.stories.tsx`, `ui/dialog.stories.tsx`, `ui/input.stories.tsx`, `ui/select.stories.tsx` — 6 story files, Storybook instalado mas sem uso ativo. Avaliar se vale manter.
 
-### 29.5 Duplicação de Badges e Status — 7 componentes similares
+### 29.5 Badges e Status — ✅ Fase 3 CONCLUÍDA (Sprint 4.9/4.10)
 
-| # | Componente | Linhas | Função | Problema |
-|---|-----------|--------|--------|---------|
-| 1 | `ui/badge.tsx` | 102 | Badge primitivo, 8 variantes | Base correta, sem problemas |
-| 2 | `ui/status-badge.tsx` | 601 | Badge de status do pipeline | 90 cores hardcoded, 17 tons de pipeline inline |
-| 3 | `ui/setup-alert-badge.tsx` | 207 | Badge de setup pendente | Poderia usar badge.tsx como base |
-| 4 | `job-creation/field-origin-badge.tsx` | 122 | Badge de origem (manual/IA) | Poderia usar badge.tsx como base |
-| 5 | `wizard/suggestion-badge.tsx` | 146 | Badge de sugestão IA | Poderia usar badge.tsx como base |
-| 6 | `screening/auto-screening-badge.tsx` | ~60 | Badge de screening automático | Poderia usar badge.tsx como base |
-| 7 | `ui/chat-status-indicators.tsx` | 171 | Indicadores de status do chat | Padrão diferente mas relacionado |
+> **Atualizado Sprint 4.10 (2026-03-28):** Fase 3 concluída. 7 → **5 componentes** (2 órfãos deletados). Dark mode aplicado. Tokens DS v4.2.1 aplicados. `field-origin-badge` refatorado para tokens semânticos. Token Contract documentado (seção 30, Fase 3).
 
-**Recomendação:** Consolidar para 3 componentes:
-1. `badge.tsx` — primitivo (manter como está)
-2. `status-badge.tsx` — refatorar para usar tokens e badge.tsx como base
-3. `indicator.tsx` — estados temporários (chat, loading)
+**Estado atual — 5 componentes ativos:**
+
+| # | Componente | Linhas | Função | Estado |
+|---|-----------|--------|--------|-------|
+| 1 | `ui/badge.tsx` | 41 | Badge primitivo, 8 variantes | ✅ Limpo — tokens DS v4.2.1 |
+| 2 | `ui/status-badge.tsx` | ~606 | Badge de status do pipeline | ✅ Tokens aplicados, dark mode |
+| 3 | `ui/setup-alert-badge.tsx` | 207 | Badge de setup pendente (draggable/fixed) | ✅ Hex residual `#4BA8BA` → `var(--wedo-cyan)` |
+| 4 | `job-creation/field-origin-badge.tsx` | 122 | Badge de origem (manual/IA) | ✅ Refatorado → tokens DS semânticos |
+| 5 | `ui/chat-status-indicators.tsx` | ~339 | Indicadores de status do chat | ✅ Alinhado (gray + wedo-cyan) |
+
+**Deletados (Sprint 4.9/4.10):**
+- `wizard/suggestion-badge.tsx` — 146L órfão (0 importações) 🗑️
+- `screening/auto-screening-badge.tsx` — ~60L órfão (0 importações) 🗑️
+
+**Token Contract** definido em seção 30 (Fase 3) — nenhum badge deve introduzir cor fora da tabela canônica.
 
 ### 29.6 Modais/Dialogs — 154 arquivos
 
@@ -1694,9 +1780,11 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Recomendação:** Criar padrão composable `FormDialog` que receba um schema de campos e gere o formulário automaticamente. Reduziria boilerplate em ~50% dos modais.
 
-### 29.7 Inline Styles — 249 arquivos
+### 29.7 Inline Styles — 216 arquivos (era 249)
 
-249 dos 465 arquivos (54%) usam `style={}` inline. Problemas:
+> **Atualizado Sprint 4.10 (2026-03-28):** Sprint 4.10 removeu `style={{}}` inline de 33 arquivos. **216 dos 504 arquivos (43%)** ainda usam `style={}` inline. Meta final: reduzir abaixo de 50 arquivos na Fase 5.
+
+216 arquivos usam `style={}` inline. Problemas:
 - Não responde a dark mode via classes CSS
 - Não é responsivo
 - Não é portável para Vue (onde scoped styles são preferidos)
@@ -1704,17 +1792,20 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Recomendação:** Converter gradualmente para classes Tailwind. Priorizar os componentes que aparecem em dark mode.
 
-### 29.8 Resumo Quantitativo
+### 29.8 Resumo Quantitativo — Estado Atual (Sprint 4.10)
 
-| Problema | Escopo | Impacto na manutenção | Impacto na conversão Vue |
-|----------|--------|----------------------|------------------------|
-| 298 cores hardcoded | 1.607 linhas | **Alto** — cor muda no DS, não propaga | **Crítico** — cada cor precisa tradução manual |
-| 4.765 valores arbitrários | text-[Xpx], w-[px], h-[px] | **Médio** — impossível mudar escala global | **Alto** — não tem equivalente no Vuetify |
-| 37 componentes >1.000 linhas | 118.037 linhas (94% do total) | **Alto** — difícil testar e debugar | **Crítico** — impossível converter monólitos |
-| 8 arquivos mortos | ~7.000 linhas | **Baixo** — ocupam espaço, confundem grep | **Nenhum** — não converter |
-| 7 badges duplicados | ~1.400 linhas | **Médio** — inconsistência visual | **Alto** — precisa decidir qual é o canônico |
-| 154 modais sem padrão | Espalhados | **Médio** — cada modal reinventa a roda | **Alto** — 154 conversões individuais |
-| 249 arquivos com inline style | ~54% dos arquivos | **Alto** — dark mode quebra | **Crítico** — Vue usa scoped styles |
+> ✅ = Resolvido | 🔄 = Em andamento | ⏳ = Pendente
+
+| Problema | Escopo original | Escopo atual | Status | Impacto na conversão Vue |
+|----------|----------------|-------------|--------|------------------------|
+| Cores hex hardcoded | 298 cores / 1.607 linhas | **12 arquivos** (isentos) | ✅ **Fase 2 concluída** | CSS vars sobrevivem migração |
+| Valores arbitrários tipografia | 4.765 ocorrências | **~17 residuais** | ✅ **Fase 1 concluída** | 4 tokens mapeados 1:1 Vuetify |
+| Valores arbitrários dimensões | ~5.400 (w/h) | ~5.400 | ⏳ **Fase 5 pendente** | Tokens de layout compartilhados |
+| Componentes >1.000 linhas | 37 / 118.037L | **8 críticos / ~38.000L** | 🔄 **Fase 4 em andamento** | Conversão componente a componente |
+| Arquivos mortos | 8 / ~7.000L | **0** (todos deletados) | ✅ **Fase 0 concluída** | Ruído eliminado |
+| Badges duplicados | 7 / ~1.400L | **5 ativos** (2 deletados) | ✅ **Fase 3 concluída** | Componente canônico definido |
+| Modais sem padrão | 154 arquivos | 154 arquivos | ⏳ **Fase 5 pendente** | 33 modais no diretório, restante espalhado |
+| Inline styles | 249 / 54% | **216 / 43%** | 🔄 −33 Sprint 4.10 | Fase 5 target: < 50 arquivos |
 
 ---
 
@@ -1761,10 +1852,12 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Arquivos modificados:** `tailwind.config.ts`, `design-tokens.css`, `design-tokens.ts`, `chat-format.ts` + ~56 componentes
 
-### Fase 2 — Tokenização de Cores (Direção Monocromática)
+### Fase 2 — Tokenização de Cores ✅ CONCLUÍDA (2026-03-28)
 
-**Esforço:** 6-7 dias | **Risco:** Baixo-Médio | **Impacto visual:** Mínimo intencional
-**Meta:** 150+ cores únicas → **~15 tokens semânticos** (vs. ~28 do plano original)
+> **Resultado Sprint 4.10:** 54+ arquivos com hex hardcoded → **12 arquivos** (isentos legítimos: email-templates, brands terceiros, design-tokens.ts, SVG dinâmicos Recharts). Pipeline monocromático aplicado. Tokens `wedo-*`, `status-*`, `chart-*` migrados para CSS vars no `tailwind.config.ts`.
+
+**Esforço realizado:** ~6 dias | **Risco:** Baixo-Médio | **Impacto visual:** Mínimo intencional
+**Meta atingida:** 54+ arquivos com hex → **~15 tokens semânticos** implementados
 
 > **Contexto da revisão (2026-03-27):** Análise profunda do código revelou que 70% da plataforma já é cinza
 > (26.337 usos de `gray-*`). A direção Notion/ElevenLabs monocromática é viável e reduz ainda mais a
@@ -2026,9 +2119,11 @@ Adicionar `fill-opacity` como atributo nos SVG para séries adicionais (sem cria
 | Acents brand ativos | 4 (cyan, green, orange, purple) | 1 (cyan — LIA exclusivo) |
 | Compatibilidade Vuetify | 0% (hex hardcoded) | 100% (CSS vars sobrevivem migração) |
 
-### Fase 3 — Consolidação de Badges e Status
+### Fase 3 — Consolidação de Badges e Status ✅ CONCLUÍDA (Sprint 4.9/4.10 — 2026-03-28)
 
-**Esforço:** 2-3 dias | **Risco:** Baixo-Médio | **Impacto visual:** Nenhum
+> **Resultado:** 7 → 5 componentes (2 órfãos deletados). Dark mode aplicado. Tokens DS v4.2.1. Token Contract documentado. `field-origin-badge` refatorado. `setup-alert-badge` limpo.
+
+**Esforço realizado:** 2 dias | **Risco:** Baixo-Médio | **Impacto visual:** Nenhum
 
 > **Revisão pós-Fase 2 (2026-03-27):** Code review profundo revelou que 2 dos 7 badges são
 > órfãos (0 importações), que `field-origin-badge` usa classes Tailwind de cor raw sem tokens,
@@ -2348,7 +2443,7 @@ async function handleSendMessage(content) {
 | `jobs-page.tsx` | 8.046 | 4.735 | ColumnConfigPanel, TableFiltersPanel, InlineChatPanel, JobPreviewPanel |
 | `candidate-preview.tsx` | 6.723 | 5.994 | FilePreviewModal, LiaChatModal |
 
-> **Sprint 4.7 resultado:** 8 componentes extraídos de 3 monolitos. −6.535L no total.
+> **Sprint 4.7 resultado:** 8 componentes extraídos de 3 monolitos. −6.535L no total. ✅
 
 | Arquivo | Antes | Depois | Componentes extraídos |
 |---------|-------|--------|----------------------|
@@ -2356,7 +2451,36 @@ async function handleSendMessage(content) {
 | `job-kanban-page.tsx` | 8.440 | 6.308 | KanbanTableView, KanbanColumnRenderer, KanbanLIASidebar |
 | `candidate-preview.tsx` | 5.994 | 2.742 | CandidateActivitiesTab, CandidateFilesTab |
 
-> **Splits pendentes:** ver seção 22.6. Próxima sprint: Sprint 4.8 — candidates-page + expanded-chat-modal.
+> **Sprint 4.8 resultado:** `expanded-chat-modal` 11.228 → 4.423 (−6.805L). ✅ CONCLUÍDA
+
+| Arquivo | Antes | Depois | Delta |
+|---------|-------|--------|-------|
+| `expanded-chat-modal.tsx` | 11.228 | 4.423 | **−6.805L** |
+
+> **Sprint 4.9 resultado:** `smart-search-input` −1.595L + `candidates-page` −3.193L (CandidateTableCellRenderer + outros) + `job-kanban-page` −1.318L. ✅ CONCLUÍDA
+
+| Arquivo | Antes | Depois | Delta |
+|---------|-------|--------|-------|
+| `smart-search-input.tsx` | 5.463 | 3.868 | **−1.595L** |
+| `candidates-page.tsx` | 8.453 | 5.260 | **−3.193L** |
+| `job-kanban-page.tsx` | 6.308 | 4.990 | **−1.318L** |
+
+> **Sprint 4.10 resultado:** DS tokens, type safety, dark mode + remoção de `style={{}}` inline. ✅ CONCLUÍDA
+> - Inline styles: 249 → **216 arquivos** (−33)
+> - Tokens DS v4.2.1 aplicados em componentes residuais
+> - Dark mode completado em todos os badges
+> - Type safety: erros TypeScript corrigidos em múltiplos arquivos
+> - 2 badges órfãos deletados (`suggestion-badge`, `auto-screening-badge`)
+
+**Monolitos críticos pendentes (Fase 4 residual — Sprint 4.11+):**
+
+| Arquivo | Linhas | Sprint sugerida |
+|---------|--------|----------------|
+| `pages/chat-page.tsx` | 5.583 | Sprint 4.11 |
+| `pages/candidates-page.tsx` | 5.260 | Sprint 4.11 (segunda rodada) |
+| `settings/CompanyTeamHub.tsx` | 5.235 | Sprint 4.12 |
+| `pages/job-kanban-page.tsx` | 4.990 | Sprint 4.12 (segunda rodada) |
+| `expandable-ai-prompt.tsx` | 4.306 | Sprint 4.12 |
 
 ### Fase 5 — Padronização de Dimensões
 
@@ -2391,26 +2515,30 @@ extend: {
 | `h-[80px]` | `h-20` | 5 |
 
 **Passo 3 — Converter inline styles para Tailwind:**
-- Focar nos 249 arquivos com `style=`
+- Focar nos **216 arquivos** restantes com `style=` (era 249 — −33 via Sprint 4.10)
 - Priorizar: componentes com dark mode, componentes de layout, componentes da ui/
 
 ---
 
 ## 31. Impacto na Conversão para Vue/Vuetify
 
-Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é substancial:
+> ✅ Atualizado Sprint 4.10 (2026-03-28): Fases 0–3 concluídas. Fases 0–3 eram o pré-requisito crítico para viabilizar a migração. Fase 4 (split) em andamento — 5 monolitos resolvidos de 37 originais.
 
-| Antes da otimização | Depois da otimização |
-|---------------------|---------------------|
-| 298 cores hardcoded — cada uma precisa de tradução manual | Tokens nomeados — mapear token React → token Vuetify automaticamente |
-| `text-[11px]` espalhado — sem semântica, impossível mapear | `text-ui` — mapear para `.wedo-label { font-size: 0.6875rem }` no Vue |
-| 37 monólitos de 1.000-11.000 linhas — impossível converter | Sub-componentes de 200-800 linhas — conversão componente por componente |
-| 7 tipos de badge — qual é o canônico? | 3 tipos claros — traduzir 1:1 para Vue |
+**Estado atual de preparação para Vue:**
+
+| Dimensão | Situação pré-otimização | Situação atual (Sprint 4.10) |
+|----------|------------------------|------------------------------|
+| Cores hardcoded | 298 cores / 1.607L — tradução manual | ✅ ~15 tokens CSS vars — mapeamento automático |
+| Tipografia arbitrária | `text-[11px]` espalhado — impossível mapear | ✅ `text-xs`/`text-micro`/`text-sm-ui`/`text-base-ui` — 1:1 Vuetify |
+| Monolitos | 37 arquivos 1k–11kL — impossível converter | 🔄 5 resolvidos, 8 críticos pendentes — split em andamento |
+| Badges | 7 tipos — qual é o canônico? | ✅ 5 ativos com Token Contract definido |
+| Inline styles | 249 arquivos — dark mode quebra | 🔄 216 arquivos (−33 Sprint 4.10) |
+| Componentes totais | 556 (com código morto) | ✅ 504 (limpos, sem arquivados) |
 
 **Fórmula de esforço para conversão Vue:**
 - Sem otimização: ~465 componentes × análise individual = impraticável
-- Com Fases 0-3: ~450 componentes tokenizados × conversão mecânica = viável
-- Com Fases 0-5: ~150 componentes menores tokenizados × conversão automatizável = ótimo
+- Com Fases 0–3 (atual): ~504 componentes tokenizados × conversão mecânica = **viável agora**
+- Com Fases 0–5: ~150 componentes menores tokenizados × conversão automatizável = ótimo
 
 ---
 
@@ -2420,8 +2548,8 @@ Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é s
 |------|----------|-----------|---------------|-------|---------|--------------|
 | 0 — Limpeza ✅ | Remove código morto | 9.820 linhas removidas | Nenhum | Zero | 1 dia ✅ | Reduz ruído |
 | 1 — Tipografia ✅ | text-[Xpx] → 4 tokens com CSS vars | ~4.500 valores eliminados | Nenhum | Baixo | 2 dias ✅ | Mapeamento 1:1 para Vuetify |
-| 2 — Cores | 150+ hex → 15 tokens semânticos (direção monocromática) | Pipeline: 17 pastéis→4 grays; cyan: 507→200 usos | Mínimo intencional | Baixo-Médio | 6-7 dias | CSS vars sobrevivem migração Vue |
-| 3 — Badges | 7 → 3 componentes | Tokens + badge.tsx como base | Nenhum | Médio | 2-3 dias | Decide componente canônico |
-| 4 — Split | 37 → ~150 sub-componentes | Monólitos < 800 linhas | Nenhum | Alto | 3-4 semanas | Conversão componente a componente |
-| 5 — Dimensões | px → tokens de layout | ~5.400 valores arbitrários | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
+| 2 — Cores ✅ | 54+ arquivos hex → 12 isentos legítimos | Pipeline: 17 pastéis→gray+status; cyan: 507→200 | Mínimo intencional | Baixo-Médio | concluído ✅ | CSS vars sobrevivem migração Vue |
+| 3 — Badges ✅ | 7 → 5 ativos (2 órfãos deletados) | Tokens DS v4.2.1 + dark mode + Token Contract | Nenhum | Médio | concluído ✅ | Componente canônico definido |
+| 4 — Split 🔄 | 37 monolitos → splits Sprints 4.6–4.10 | 8 críticos restantes (>4.000L), 5 resolvidos | Nenhum | Alto | Sprint 4.11–4.12 | Conversão componente a componente |
+| 5 — Dimensões ⏳ | px → tokens de layout + inline styles | ~5.400 valores arbitrários + 216 inline styles | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
 | **Total** | | **~138.700** | **Zero** | | **~6-7 semanas** | **Conversão viável** |
