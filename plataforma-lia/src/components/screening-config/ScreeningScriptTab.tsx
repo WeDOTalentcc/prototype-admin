@@ -509,17 +509,17 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
           <span className="text-micro text-gray-500">Canais:</span>
           <div className="flex items-center gap-2">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <MessageSquare className="w-3 h-3" />
               <span className="text-micro font-medium">WhatsApp</span>
               {(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <Globe className="w-3 h-3" />
               <span className="text-micro font-medium">Chat Web</span>
               {(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <Phone className="w-3 h-3" />
               <span className="text-micro font-medium">Telefone</span>
               {(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -575,19 +575,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <p className="text-micro text-gray-500 mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro text-gray-500">Score Mínimo</span>
             <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro text-gray-500">Calendário</span>
             <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro text-gray-500">Horários</span>
             <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
           </div>
-          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro text-gray-500">Duração</span>
             <span className="text-micro font-medium text-gray-800 dark:text-gray-200">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
           </div>

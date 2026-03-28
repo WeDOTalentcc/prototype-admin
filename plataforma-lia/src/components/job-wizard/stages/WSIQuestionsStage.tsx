@@ -134,7 +134,7 @@ export function WSIQuestionsStage() {
             onClick={() => toggleQuestionSelection(question.id)}
             disabled={!question.selected && selectedCount >= 5}
             className={cn(
-              "w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+              "w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
               question.selected
                 ? "bg-gray-900 dark:bg-gray-50 text-white"
                 : selectedCount >= 5
@@ -177,7 +177,7 @@ export function WSIQuestionsStage() {
               <button
                 onClick={() => toggleWSIFlag(question.id)}
                 className={cn(
-                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-micro font-medium transition-all",
+                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-medium transition-all",
                   question.isWSI
                     ? "bg-status-success/10 text-status-success"
                     : "bg-gray-100 text-gray-500 hover:bg-status-success/10"
@@ -262,7 +262,7 @@ export function WSIQuestionsStage() {
             </button>
           </div>
           {/* Business Rule Note: These questions are ADDITIONAL to the 5-question limit */}
-          <div className="mb-2 p-2 bg-wedo-cyan/10 rounded border border-wedo-cyan/30">
+          <div className="mb-2 p-2 bg-wedo-cyan/10 rounded-md border border-wedo-cyan/30">
             <p className="text-micro text-wedo-cyan-dark">
               💡 <strong>Nota:</strong> Estas perguntas são <strong>adicionais</strong> às 5 perguntas WSI. Elas não contam no limite.
             </p>
@@ -274,7 +274,7 @@ export function WSIQuestionsStage() {
                   <button
                     onClick={() => toggleCompanyQuestion(q.id)}
                     className={cn(
-                      "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                       q.enabled 
                         ? "bg-gray-900 dark:bg-gray-50 text-white" 
                         : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"

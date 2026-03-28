@@ -285,7 +285,7 @@ export function ColumnConfigurationModal({
                     onClick={() => handleToggleColumn(column.id)}
                     className="flex items-center gap-2 flex-1 text-left"
                   >
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                    <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center ${
                       column.visible
                         ? 'bg-gray-900 dark:bg-gray-50 border-gray-900 dark:border-gray-50'
                         : 'border-gray-300 dark:border-gray-600'

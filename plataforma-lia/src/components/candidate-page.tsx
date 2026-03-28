@@ -1373,7 +1373,7 @@ export function CandidatePage({
                       <select
                         value={periodFilter}
                         onChange={(e) => setPeriodFilter(e.target.value)}
-                        className="text-xs px-2 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-gray-400/20"
+                        className="text-xs px-2 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400/20"
                       >
                         <option value="7days">Últimos 7 dias</option>
                         <option value="30days">Últimos 30 dias</option>
@@ -1385,7 +1385,7 @@ export function CandidatePage({
                       <div className="flex items-center bg-white dark:bg-gray-700 rounded-md p-0.5 border border-gray-200 dark:border-gray-600">
                         <button
                           onClick={() => setViewMode('timeline')}
-                          className={`p-1.5 rounded transition-colors ${
+                          className={`p-1.5 rounded-md transition-colors ${
                             viewMode === 'timeline'
                               ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
                               : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
@@ -1396,7 +1396,7 @@ export function CandidatePage({
                         </button>
                         <button
                           onClick={() => setViewMode('list')}
-                          className={`p-1.5 rounded transition-colors ${
+                          className={`p-1.5 rounded-md transition-colors ${
                             viewMode === 'list'
                               ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
                               : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
@@ -1423,7 +1423,7 @@ export function CandidatePage({
                   <div className="flex gap-1 flex-wrap">
                     <button
                       onClick={() => setActivityFilter('all')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'all'
                           ? 'bg-gray-600 text-white'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
@@ -1433,7 +1433,7 @@ export function CandidatePage({
                     </button>
                     <button
                       onClick={() => setActivityFilter('emails')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'emails'
                           ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -1443,7 +1443,7 @@ export function CandidatePage({
                     </button>
                     <button
                       onClick={() => setActivityFilter('interviews')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'interviews'
                           ? 'bg-wedo-purple text-white'
                           : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple/10'
@@ -1453,7 +1453,7 @@ export function CandidatePage({
                     </button>
                     <button
                       onClick={() => setActivityFilter('tests')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'tests'
                           ? 'bg-wedo-purple text-white'
                           : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple'
@@ -1463,7 +1463,7 @@ export function CandidatePage({
                     </button>
                     <button
                       onClick={() => setActivityFilter('lia')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'lia'
                           ? 'bg-status-error text-white'
                           : 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error hover:bg-status-error/20'
@@ -1473,7 +1473,7 @@ export function CandidatePage({
                     </button>
                     <button
                       onClick={() => setActivityFilter('offers')}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
                         activityFilter === 'offers'
                           ? 'bg-status-success text-white'
                           : 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success hover:bg-status-success/20'
@@ -1614,11 +1614,11 @@ export function CandidatePage({
                                     {activity.type === 'lia-evaluation' && (
                                       <div className="mt-2 space-y-2">
                                         <div className="grid grid-cols-2 gap-2">
-                                          <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                                          <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                                             <span className="text-xs text-gray-800 dark:text-gray-200">Score Técnico</span>
                                             <p className="text-sm font-semibold">{activity.details.technicalScore}%</p>
                                           </div>
-                                          <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                                          <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                                             <span className="text-xs text-gray-800 dark:text-gray-200">Fit Cultural</span>
                                             <p className="text-sm font-semibold">{activity.details.culturalFit}%</p>
                                           </div>
@@ -1628,7 +1628,7 @@ export function CandidatePage({
 
                                     {activity.type === 'whatsapp-screening' && activity.details.conversation && (
                                       <div className="mt-2 space-y-2">
-                                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded max-h-48 overflow-y-auto">
+                                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md max-h-48 overflow-y-auto">
                                           <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Conversa via {activity.platform}</p>
                                           <div className="space-y-2">
                                             {activity.details.conversation.map((msg: any, i: number) => (
@@ -1923,7 +1923,7 @@ export function CandidatePage({
                         <img
                           src={candidate.avatar_url || candidate.avatar}
                           alt="Preview"
-                          className="w-full h-24 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                          className="w-full h-24 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => {
                             setSelectedFile({
                               name: 'foto_perfil.jpg',
@@ -2015,13 +2015,13 @@ export function CandidatePage({
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                                 <div className="flex-1">
-                                  <div className="w-32 h-4 bg-gray-200 rounded mb-1"></div>
-                                  <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                                  <div className="w-32 h-4 bg-gray-200 rounded-md mb-1"></div>
+                                  <div className="w-24 h-3 bg-gray-200 rounded-md"></div>
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <div className="w-full h-3 bg-gray-200 rounded"></div>
-                                <div className="w-3/4 h-3 bg-gray-200 rounded"></div>
+                                <div className="w-full h-3 bg-gray-200 rounded-md"></div>
+                                <div className="w-3/4 h-3 bg-gray-200 rounded-md"></div>
                               </div>
                             </CardContent>
                           </Card>
@@ -2154,7 +2154,7 @@ export function CandidatePage({
                                           e.stopPropagation()
                                           handleCopyOpinion(opinion, opinion.opinion_type || 'general')
                                         }}
-                                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                       >
                                         {copiedItemId === `opinion-${opinion.id}` ? (
                                           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -2267,13 +2267,13 @@ export function CandidatePage({
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                                 <div className="flex-1">
-                                  <div className="w-32 h-4 bg-gray-200 rounded mb-1"></div>
-                                  <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                                  <div className="w-32 h-4 bg-gray-200 rounded-md mb-1"></div>
+                                  <div className="w-24 h-3 bg-gray-200 rounded-md"></div>
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <div className="w-full h-3 bg-gray-200 rounded"></div>
-                                <div className="w-3/4 h-3 bg-gray-200 rounded"></div>
+                                <div className="w-full h-3 bg-gray-200 rounded-md"></div>
+                                <div className="w-3/4 h-3 bg-gray-200 rounded-md"></div>
                               </div>
                             </CardContent>
                           </Card>
@@ -2346,7 +2346,7 @@ export function CandidatePage({
                                           e.stopPropagation()
                                           handleCopyAnalysis(analysis)
                                         }}
-                                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                       >
                                         {copiedItemId === `analysis-${analysis.id}` ? (
                                           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -2376,7 +2376,7 @@ export function CandidatePage({
                                             e.stopPropagation()
                                             setAnalysisToDelete(analysis)
                                           }}
-                                          className="p-1.5 hover:bg-status-error/10 rounded transition-colors group"
+                                          className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors group"
                                         >
                                           <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-status-error" />
                                         </button>

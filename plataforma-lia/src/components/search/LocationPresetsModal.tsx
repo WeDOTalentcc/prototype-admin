@@ -255,7 +255,7 @@ export function LocationPresetsModal({
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Location Presets</h2>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-md transition-colors"
           >
             <X className="w-4 h-4 text-gray-500" />
           </button>

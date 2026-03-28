@@ -169,7 +169,7 @@ function BlockSection({
           <div
             key={question.id}
             className={cn(
-              "flex items-center justify-between py-1.5 px-2 rounded text-xs",
+              "flex items-center justify-between py-1.5 px-2 rounded-md text-xs",
               question.skipped ? "bg-gray-50 text-gray-400" : "bg-gray-50"
             )}
           >
@@ -305,11 +305,11 @@ export function ScoreCardWSI({
           </div>
 
           <div className="space-y-3">
-            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded border border-gray-200">
+            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded-md border border-gray-200">
               WSI = (Téc × 50%) + (Comp × 20%) + (Gap × 15%) + (Ctx × 15%)
             </div>
 
-            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded border border-gray-200">
+            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded-md border border-gray-200">
               WSI = ({wsiScore.technicalScore.toFixed(2)} × 0.50) + (
               {wsiScore.behavioralScore.toFixed(2)} × 0.20) + (
               {wsiScore.gapAnalysisScore.toFixed(2)} × 0.15) + (

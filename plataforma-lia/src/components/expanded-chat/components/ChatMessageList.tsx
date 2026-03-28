@@ -398,14 +398,14 @@ export function ChatMessageList({
                 <div className="flex items-center gap-2 mt-1.5">
                   <button
                     onClick={() => onProactiveAccept(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs font-medium rounded bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
+                    className="px-3 py-1 text-xs font-medium rounded-md bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     {message.proactiveData.actionLabel}
                   </button>
                   <button
                     onClick={() => onProactiveReject(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="px-3 py-1 text-xs rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     Ignorar

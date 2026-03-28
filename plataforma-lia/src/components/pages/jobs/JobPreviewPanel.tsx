@@ -103,7 +103,7 @@ export function JobPreviewPanel({
                           <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                             {previewJob.title}
                           </h3>
-                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'color-mix(in srgb, var(--gray-500) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--gray-500) 30%, transparent)'}}>
+                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'rgba(107, 114, 128, 0.15)', border: '1px solid rgba(107, 114, 128, 0.3)'}}>
                             {previewJob.jobId}
                           </Badge>
                           {previewJob.isAffirmative && (
@@ -425,21 +425,21 @@ export function JobPreviewPanel({
                           Comparativo com Mercado
                         </h4>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Salário</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Candidatos</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Atratividade</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               #—
@@ -710,7 +710,7 @@ export function JobPreviewPanel({
                         </h4>
 
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                             <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Total no Funil</p>
                             <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
                               {previewJob.funnel.total}
@@ -718,7 +718,7 @@ export function JobPreviewPanel({
                             <p className="text-micro text-gray-500 mt-1">candidatos</p>
                           </div>
 
-                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                             <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Em Triagem</p>
                             <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
                               {previewJob.funnel.screening}
@@ -726,7 +726,7 @@ export function JobPreviewPanel({
                             <p className="text-micro text-gray-500 mt-1">candidatos</p>
                           </div>
 
-                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                             <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Em Entrevista</p>
                             <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
                               {previewJob.funnel.interview}
@@ -820,20 +820,20 @@ export function JobPreviewPanel({
                         <div className="space-y-4">
                           {/* Skeleton for Performance Card */}
                           <div className="p-3 bg-white border border-gray-100 rounded-md">
-                            <div className="h-4 bg-gray-200 rounded w-32 mb-3"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-32 mb-3"></div>
                             <div className="grid grid-cols-4 gap-2">
                               {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="text-center">
-                                  <div className="h-6 bg-gray-200 rounded mb-1"></div>
-                                  <div className="h-3 bg-gray-100 rounded w-12 mx-auto"></div>
+                                  <div className="h-6 bg-gray-200 rounded-md mb-1"></div>
+                                  <div className="h-3 bg-gray-100 rounded-md w-12 mx-auto"></div>
                                 </div>
                               ))}
                             </div>
                             <div className="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-gray-100">
                               {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="text-center">
-                                  <div className="h-6 bg-gray-200 rounded mb-1"></div>
-                                  <div className="h-3 bg-gray-100 rounded w-12 mx-auto"></div>
+                                  <div className="h-6 bg-gray-200 rounded-md mb-1"></div>
+                                  <div className="h-3 bg-gray-100 rounded-md w-12 mx-auto"></div>
                                 </div>
                               ))}
                             </div>
@@ -841,22 +841,22 @@ export function JobPreviewPanel({
 
                           {/* Skeleton for Skills Card */}
                           <div className="p-3 bg-white border border-gray-100 rounded-md">
-                            <div className="h-4 bg-gray-200 rounded w-32 mb-3"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-32 mb-3"></div>
                             <div className="flex flex-wrap gap-1.5">
                               {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="h-6 bg-gray-200 rounded px-2 w-24"></div>
+                                <div key={i} className="h-6 bg-gray-200 rounded-md px-2 w-24"></div>
                               ))}
                             </div>
                           </div>
 
                           {/* Skeleton for Questions Card */}
                           <div className="p-3 bg-white border border-gray-100 rounded-md">
-                            <div className="h-4 bg-gray-200 rounded w-40 mb-3"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-40 mb-3"></div>
                             <div className="space-y-3">
                               {[1, 2, 3].map((i) => (
-                                <div key={i} className="p-2 bg-gray-50 rounded border border-gray-100">
-                                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                  <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                                <div key={i} className="p-2 bg-gray-50 rounded-md border border-gray-100">
+                                  <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-2"></div>
+                                  <div className="h-3 bg-gray-100 rounded-md w-1/2"></div>
                                 </div>
                               ))}
                             </div>
@@ -1432,7 +1432,7 @@ export function JobPreviewPanel({
                         <p className="text-micro text-gray-500 mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
                             <span className="text-micro text-gray-500">Score Mínimo</span>
                             <span className="text-micro font-medium text-gray-700">{(() => {
                               const preset = screeningConfig?.scheduling?.min_score_for_auto_preset
@@ -1443,15 +1443,15 @@ export function JobPreviewPanel({
                               }
                             })()}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
                             <span className="text-micro text-gray-500">Calendário</span>
                             <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
                             <span className="text-micro text-gray-500">Horários</span>
                             <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
                           </div>
-                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                          <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
                             <span className="text-micro text-gray-500">Duração</span>
                             <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
                           </div>
@@ -1478,17 +1478,17 @@ export function JobPreviewPanel({
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-gray-100">
                           <span className="text-micro text-gray-500">Canais:</span>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <MessageSquare className="w-3 h-3" />
                               <span className="text-micro font-medium">WhatsApp</span>
                               {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <Globe className="w-3 h-3" />
                               <span className="text-micro font-medium">Chat Web</span>
                               {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <Phone className="w-3 h-3" />
                               <span className="text-micro font-medium">Ligação</span>
                               {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -1747,21 +1747,21 @@ export function JobPreviewPanel({
                           Comparativo com Mercado
                         </h4>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Salário</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Candidatos</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-gray-200`}>Atratividade</p>
                             <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
                               #—

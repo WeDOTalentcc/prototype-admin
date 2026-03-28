@@ -126,27 +126,27 @@ export function useKeyboardShortcuts({
         <div class="space-y-3 text-sm">
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Ativar IA Copilot</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Ctrl+K</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+K</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Busca por Voz</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Ctrl+;</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+;</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Biblioteca LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Ctrl+Shift+L</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+Shift+L</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Chat com LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Ctrl+Shift+C</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+Shift+C</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Fechar Modal</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Esc</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Esc</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">Esta Ajuda</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">F1</kbd>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">F1</kbd>
           </div>
         </div>
 

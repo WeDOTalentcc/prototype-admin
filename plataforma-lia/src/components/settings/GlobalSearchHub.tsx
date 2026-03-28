@@ -825,17 +825,17 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Resumo de Custos</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+                  <div className="p-2 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
                     <div className="text-micro text-gray-500 dark:text-gray-400">Custo Mínimo</div>
                     <div className="text-sm font-bold text-status-success">1 crédito</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
-                  <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+                  <div className="p-2 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
                     <div className="text-micro text-gray-500 dark:text-gray-400">Custo Típico</div>
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-50">3-5 créditos</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
-                  <div className="p-2 bg-white dark:bg-gray-900 rounded border border-status-warning/30 dark:border-status-warning/30">
+                  <div className="p-2 bg-white dark:bg-gray-900 rounded-md border border-status-warning/30 dark:border-status-warning/30">
                     <div className="text-micro text-gray-500 dark:text-gray-400">Custo Máximo</div>
                     <div className="text-sm font-bold text-status-warning">19 créditos</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>

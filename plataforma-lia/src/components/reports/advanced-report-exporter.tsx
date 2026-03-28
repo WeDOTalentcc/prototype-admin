@@ -354,7 +354,7 @@ export function AdvancedReportExporter({
                                 : exportConfig.departments.filter(d => d !== dept)
                               setExportConfig(prev => ({ ...prev, departments: newDepts }))
                             }}
-                            className="rounded"
+                            className="rounded-md"
                           />
                           {dept}
                         </label>
@@ -379,7 +379,7 @@ export function AdvancedReportExporter({
                                 : exportConfig.metrics.filter(m => m !== metric)
                               setExportConfig(prev => ({ ...prev, metrics: newMetrics }))
                             }}
-                            className="rounded"
+                            className="rounded-md"
                           />
                           {metric}
                         </label>
@@ -401,7 +401,7 @@ export function AdvancedReportExporter({
                             ...prev,
                             includeCharts: e.target.checked
                           }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                         Incluir gráficos
                       </label>
@@ -413,7 +413,7 @@ export function AdvancedReportExporter({
                             ...prev,
                             includeRawData: e.target.checked
                           }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                         Incluir dados brutos
                       </label>
@@ -425,7 +425,7 @@ export function AdvancedReportExporter({
                             ...prev,
                             includeSummary: e.target.checked
                           }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                         Incluir resumo executivo
                       </label>
@@ -437,7 +437,7 @@ export function AdvancedReportExporter({
                             ...prev,
                             branding: e.target.checked
                           }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                         Branding corporativo
                       </label>
@@ -449,7 +449,7 @@ export function AdvancedReportExporter({
                             ...prev,
                             watermark: e.target.checked
                           }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                         Marca d'água
                       </label>

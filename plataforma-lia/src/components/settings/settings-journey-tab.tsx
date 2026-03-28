@@ -387,7 +387,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center ${
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${
                       wizardData.etapasProcesso.includes(etapa)
                         ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 border-gray-900 dark:border-gray-50'
                         : 'border-gray-300'
@@ -444,7 +444,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         wizardData.automacoesDesejadas.includes(automacao.id)
                           ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 border-gray-900 dark:border-gray-50'
                           : 'border-gray-300'
@@ -551,7 +551,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                       wizardData.canaisPublicacao.includes(canal.id)
                         ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 border-gray-900 dark:border-gray-50'
                         : 'border-gray-300'

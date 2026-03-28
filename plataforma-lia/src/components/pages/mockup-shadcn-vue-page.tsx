@@ -208,7 +208,7 @@ function DashboardVersaoAtual() {
                 />
                 <RechartsTooltip 
                   contentStyle={{
-                    backgroundColor: 'color-mix(in srgb, white 95%, transparent)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     border: '1px solid var(--gray-200)',
                     borderRadius: '8px',
                     fontSize: '12px'
@@ -366,7 +366,7 @@ function DashboardVersaoOtimizada() {
                   {
                     label: 'Candidatos',
                     data: chartData.map(d => d.candidatos),
-                    backgroundColor: 'color-mix(in srgb, var(--gray-200) 30%, transparent)',
+                    backgroundColor: 'rgba(229, 231, 235, 0.3)',
                     borderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -376,7 +376,7 @@ function DashboardVersaoOtimizada() {
                     label: 'Contratações',
                     data: chartData.map(d => d.contratacoes),
                     borderColor: 'var(--status-success)',
-                    backgroundColor: 'color-mix(in srgb, var(--status-success) 10%, transparent)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
                     borderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -397,7 +397,7 @@ function DashboardVersaoOtimizada() {
                     },
                   },
                   tooltip: {
-                    backgroundColor: 'color-mix(in srgb, white 95%, transparent)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     titleColor: 'var(--gray-950)',
                     bodyColor: 'var(--gray-950)',
                     borderWidth: 1,
@@ -410,7 +410,7 @@ function DashboardVersaoOtimizada() {
                   x: {
                     grid: {
                       display: true,
-                      color: 'color-mix(in srgb, black 5%, transparent)',
+                      color: 'rgba(0, 0, 0, 0.05)',
                     },
                     ticks: {
                       font: { size: 11 },
@@ -419,7 +419,7 @@ function DashboardVersaoOtimizada() {
                   y: {
                     grid: {
                       display: true,
-                      color: 'color-mix(in srgb, black 5%, transparent)',
+                      color: 'rgba(0, 0, 0, 0.05)',
                     },
                     ticks: {
                       font: { size: 11 },
@@ -538,7 +538,7 @@ function KPICardOptimized({
         }
         
         .kpi-card-optimized:hover {
-          box-shadow: 0 10px 25px -5px color-mix(in srgb, black 10%, transparent), 0 8px 10px -6px color-mix(in srgb, black 10%, transparent);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
           transform: translateY(-4px);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }

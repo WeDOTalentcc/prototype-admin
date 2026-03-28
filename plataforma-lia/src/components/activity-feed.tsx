@@ -296,7 +296,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
           <div className="flex items-start gap-2">
             {/* Icon with colored background (mockup style) */}
             <div 
-              className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0" 
+              className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" 
               style={{backgroundColor: getActivityIconBackground(activity.activity_type)}}
             >
               {getActivityIconComponent(activity.activity_type)}

@@ -1029,7 +1029,7 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
       className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
     >
       <div
-        className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
         style={{backgroundColor: checked ? "var(--gray-950)" : "transparent",
           border: checked ? "none" : "2px solid var(--gray-300)"}}
       >

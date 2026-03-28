@@ -60,7 +60,7 @@ export default function LGPDPage() {
       case 'warning':
         return 'rgba(245, 158, 11, 0.05)'
       case 'error':
-        return 'rgba(239, 68, 68, 0.05)'
+        return 'var(--status-error-bg)'
       default:
         return 'rgba(229, 231, 235, 0.2)'
     }

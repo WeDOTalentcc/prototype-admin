@@ -475,7 +475,7 @@ export default function ClientFaturamentoPage({
                   style={method.is_default ? { borderColor: 'var(--gray-950)' } : undefined}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       {method.type === 'credit_card' ? (
                         <CreditCard className="w-4 h-4 text-gray-600" />
                       ) : method.type === 'pix' ? (

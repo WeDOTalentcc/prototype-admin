@@ -100,7 +100,7 @@ export function CreditConfirmationModal({
                     />
                   </div>
                   {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
-                    <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
+                    <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded-md">
                       Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
                     </p>
                   )}

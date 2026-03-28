@@ -89,11 +89,11 @@ const integrationStatus = [
 const getSystemStatusConfig = (status: SystemStatus) => {
   switch (status) {
     case 'ok':
-      return { label: 'Operacional', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2, iconColor: 'text-status-success', bgColor: 'rgba(16, 185, 129, 0.1)' }
+      return { label: 'Operacional', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2, iconColor: 'text-status-success', bgColor: 'var(--status-success-bg)' }
     case 'degraded':
-      return { label: 'Degradado', color: 'bg-status-warning/15 text-status-warning', icon: AlertCircle, iconColor: 'text-status-warning', bgColor: 'rgba(251, 191, 36, 0.1)' }
+      return { label: 'Degradado', color: 'bg-status-warning/15 text-status-warning', icon: AlertCircle, iconColor: 'text-status-warning', bgColor: 'var(--status-warning-bg)' }
     case 'critical':
-      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error', icon: AlertCircle, iconColor: 'text-status-error', bgColor: 'rgba(239, 68, 68, 0.1)' }
+      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error', icon: AlertCircle, iconColor: 'text-status-error', bgColor: 'var(--status-error-bg)' }
   }
 }
 
@@ -220,7 +220,7 @@ export default function MonitoramentoPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(251, 146, 60, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
                   <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
@@ -472,7 +472,7 @@ export default function MonitoramentoPage() {
               <div className="flex items-start justify-between mb-4">
                 <div 
                   className="w-10 h-10 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: 'rgba(139, 92, 246, 0.1)'}}
+                  style={{backgroundColor: 'rgba(152, 96, 209, 0.1)'}}
                 >
                   <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>

@@ -2044,7 +2044,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               id="notification"
               checked={sendNotification}
               onChange={(e) => setSendNotification(e.target.checked)}
-              className="rounded border-gray-200"
+              className="rounded-md border-gray-200"
             />
             <label htmlFor="notification" className="text-sm text-gray-600">
               Enviar notificação para os candidatos sobre esta alteração

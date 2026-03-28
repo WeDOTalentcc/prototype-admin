@@ -449,15 +449,15 @@ export const tailwindToVuetify = {
   },
   
   components: {
-    Card: '<v-card variant="outlined" rounded="xl">',
-    CardInteractive: '<v-card variant="outlined" hover rounded="xl">',
+    Card: '<v-card variant="outlined" rounded-md="xl">',
+    CardInteractive: '<v-card variant="outlined" hover rounded-md="xl">',
     Button: '<v-btn color="grey-darken-4" variant="flat">',
     ButtonSecondary: '<v-btn color="grey-lighten-4" variant="flat">',
     ButtonOutline: '<v-btn variant="outlined">',
     ButtonGhost: '<v-btn variant="text">',
     Input: '<v-text-field variant="outlined" density="compact">',
     Badge: '<v-chip size="small" variant="tonal">',
-    Modal: '<v-dialog> com <v-card rounded="xl"> interno',
+    Modal: '<v-dialog> com <v-card rounded-md="xl"> interno',
     Tabs: '<v-tabs density="compact">',
     Tab: '<v-tab>',
     Tooltip: '<v-tooltip location="top">',
@@ -466,7 +466,7 @@ export const tailwindToVuetify = {
   notes: {
     primaryColor: 'Em Vuetify, configure grey-darken-4 (#111827) como cor primária para botões',
     typography: 'Configure Open Sans como fonte padrão no theme do Vuetify',
-    borderRadius: 'Use rounded="md" (8px) para botões/inputs/cards/modais, rounded="pill" para badges/tabs conforme DS v4.1',
+    borderRadius: 'Use rounded-md="md" (8px) para botões/inputs/cards/modais, rounded-md="pill" para badges/tabs conforme DS v4.1',
     elevation: 'Sem sombras — usar bordas (border border-gray-200) para separação visual',
   },
 } as const

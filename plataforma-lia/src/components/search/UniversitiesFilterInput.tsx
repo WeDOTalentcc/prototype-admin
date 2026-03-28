@@ -392,7 +392,7 @@ export function UniversitiesFilterInput({
                 <span>{university}</span>
                 <button
                   onClick={() => removeUniversity(university)}
-                  className="hover:bg-gray-200 rounded p-0.5 transition-colors ml-1"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
                   title="Remove"
                 >
                   <X className="w-3 h-3" />

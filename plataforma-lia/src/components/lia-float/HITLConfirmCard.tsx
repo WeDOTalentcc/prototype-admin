@@ -78,7 +78,7 @@ export function HITLConfirmCard({
           type="checkbox"
           checked={autoConfirm}
           onChange={(e) => setAutoConfirm(e.target.checked)}
-          className="w-3.5 h-3.5 rounded accent-gray-900 cursor-pointer"
+          className="w-3.5 h-3.5 rounded-md accent-gray-900 cursor-pointer"
           aria-label="Confirmar automaticamente esta ação no futuro"
         />
         <span

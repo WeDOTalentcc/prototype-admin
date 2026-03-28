@@ -492,7 +492,7 @@ export function AlertSettingsModal({
                                   : editingRule.departments.filter(d => d !== dept)
                                 setEditingRule(prev => prev ? { ...prev, departments: newDepts } : null)
                               }}
-                              className="rounded"
+                              className="rounded-md"
                             />
                             <span className="text-sm">
                               {dept === 'all' ? 'Todos os Departamentos' : dept}

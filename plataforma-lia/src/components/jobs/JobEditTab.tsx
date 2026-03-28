@@ -1494,7 +1494,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                       type="button"
                                       onClick={() => moveStage(index, 'up')}
                                       disabled={index === 0}
-                                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                                      className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 disabled:opacity-30"
                                     >
                                       <ChevronUp className="w-3.5 h-3.5" />
                                     </button>
@@ -1502,7 +1502,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                       type="button"
                                       onClick={() => moveStage(index, 'down')}
                                       disabled={index === stages.length - 1}
-                                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                                      className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 disabled:opacity-30"
                                     >
                                       <ChevronDown className="w-3.5 h-3.5" />
                                     </button>
@@ -1515,7 +1515,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                   <button
                                     type="button"
                                     onClick={() => removeStage(index)}
-                                    className="p-1 rounded hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-gray-400 hover:text-status-error"
+                                    className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-gray-400 hover:text-status-error"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>

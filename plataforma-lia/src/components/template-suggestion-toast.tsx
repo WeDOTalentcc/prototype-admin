@@ -149,7 +149,7 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Comando */}
-          <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs font-mono text-gray-800 dark:text-gray-200 line-clamp-2">
+          <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-xs font-mono text-gray-800 dark:text-gray-200 line-clamp-2">
             "{suggestion.command}"
           </div>
 

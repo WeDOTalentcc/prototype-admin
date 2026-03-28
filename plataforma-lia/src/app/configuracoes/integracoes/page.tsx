@@ -94,9 +94,9 @@ export default function IntegracoesPage() {
         </CardHeader>
         <CardContent className="px-4 pb-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">
-            Configure as variáveis <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_CLIENT_ID</code>,{" "}
-            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_CLIENT_SECRET</code> e{" "}
-            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-micro">AZURE_TENANT_ID</code> para habilitar.
+            Configure as variáveis <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded-md text-micro">AZURE_CLIENT_ID</code>,{" "}
+            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded-md text-micro">AZURE_CLIENT_SECRET</code> e{" "}
+            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded-md text-micro">AZURE_TENANT_ID</code> para habilitar.
           </p>
         </CardContent>
       </Card>

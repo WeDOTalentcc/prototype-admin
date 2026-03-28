@@ -72,9 +72,9 @@ export function Loading({
   if (variant === 'skeleton') {
     return (
       <div className={cn('space-y-3', className)}>
-        <div className="loading-skeleton h-4 rounded"></div>
-        <div className="loading-skeleton h-4 rounded w-3/4"></div>
-        <div className="loading-skeleton h-4 rounded w-1/2"></div>
+        <div className="loading-skeleton h-4 rounded-md"></div>
+        <div className="loading-skeleton h-4 rounded-md w-3/4"></div>
+        <div className="loading-skeleton h-4 rounded-md w-1/2"></div>
       </div>
     );
   }
@@ -103,11 +103,11 @@ export function Loading({
 export function LoadingCard({ className }: { className?: string }) {
   return (
     <div className={cn('wedo-card p-4 space-y-3', className)}>
-      <div className="loading-skeleton h-4 rounded w-3/4"></div>
-      <div className="loading-skeleton h-3 rounded w-1/2"></div>
+      <div className="loading-skeleton h-4 rounded-md w-3/4"></div>
+      <div className="loading-skeleton h-3 rounded-md w-1/2"></div>
       <div className="space-y-2">
-        <div className="loading-skeleton h-2 rounded"></div>
-        <div className="loading-skeleton h-2 rounded w-5/6"></div>
+        <div className="loading-skeleton h-2 rounded-md"></div>
+        <div className="loading-skeleton h-2 rounded-md w-5/6"></div>
       </div>
     </div>
   );
@@ -120,8 +120,8 @@ export function LoadingList({ items = 3, className }: { items?: number; classNam
         <div key={i} className="flex items-center space-x-3 p-3 wedo-card">
           <div className="loading-skeleton w-10 h-10 rounded-full"></div>
           <div className="flex-1 space-y-2">
-            <div className="loading-skeleton h-3 rounded w-1/2"></div>
-            <div className="loading-skeleton h-2 rounded w-3/4"></div>
+            <div className="loading-skeleton h-3 rounded-md w-1/2"></div>
+            <div className="loading-skeleton h-2 rounded-md w-3/4"></div>
           </div>
         </div>
       ))}

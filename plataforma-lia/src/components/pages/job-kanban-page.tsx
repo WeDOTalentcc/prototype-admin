@@ -2972,7 +2972,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         }
 
         .drop-zone-active {
-          background-color: color-mix(in srgb, 'var(--wedo-cyan)' 5%, transparent);
+          background-color: rgba(96, 190, 209, 0.05);
           border-color: 'var(--wedo-cyan)';
         }
       `}</style>
@@ -2995,7 +2995,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     {currentJob.title}
                   </h1>
                   {currentJob.jobId && (
-                    <span className="text-micro font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <span className="text-micro font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded-md whitespace-nowrap">
                       {currentJob.jobId}
                     </span>
                   )}
@@ -3450,7 +3450,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           color: 'var(--gray-950)'}}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'var(--gray-800)'
-                          e.currentTarget.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--gray-800) 12%, transparent)'
+                          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(31, 41, 55, 0.12)'
                           setShowExpandedLIA(true)
                         }}
                         onBlur={(e) => {
@@ -3505,7 +3505,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
                       aria-label="Limpar busca"
                     >
                       <X className="w-3 h-3 text-gray-800 dark:text-gray-200" aria-hidden="true" />

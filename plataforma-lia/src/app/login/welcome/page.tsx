@@ -338,7 +338,7 @@ export default function WelcomePage() {
                   
                   <label className="flex items-center gap-2 cursor-pointer group mt-2">
                     <div 
-                      className={`w-4 h-4 rounded border-2 transition-all duration-200 flex items-center justify-center ${
+                      className={`w-4 h-4 rounded-md border-2 transition-all duration-200 flex items-center justify-center ${
                         dontShowAgain 
                           ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 border-gray-900 dark:border-gray-50' 
                           : 'border-gray-400 hover:border-gray-500'

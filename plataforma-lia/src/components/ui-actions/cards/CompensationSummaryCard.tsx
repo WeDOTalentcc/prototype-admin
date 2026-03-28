@@ -147,7 +147,7 @@ export function CompensationSummaryCard({
                 {data.benefits.slice(0, compact ? 4 : 8).map((benefit, index) => (
                   <div 
                     key={index}
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded"
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-md"
                     style={{backgroundColor: 'var(--lia-bg-tertiary)',
                       color: 'var(--lia-text-secondary)'}}
                   >

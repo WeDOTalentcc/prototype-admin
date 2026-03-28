@@ -178,7 +178,7 @@ export function EmptyFieldNotificationMessage({
                             </Badge>
                           </div>
                           
-                          <div className="p-2 bg-background rounded border">
+                          <div className="p-2 bg-background rounded-md border">
                             <p className="font-mono text-sm">{suggestion.formatted_value}</p>
                           </div>
                           

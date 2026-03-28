@@ -55,7 +55,7 @@ export function ScreeningNotificationCard({
     >
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20">
+          <div className="p-1.5 rounded-md bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
@@ -112,7 +112,7 @@ export function ScreeningNotificationCard({
                 {wsiBlocks.map((block, index) => (
                   <div
                     key={index}
-                    className="p-2 rounded bg-gray-50 dark:bg-gray-700/50"
+                    className="p-2 rounded-md bg-gray-50 dark:bg-gray-700/50"
                   >
                     <p className="text-micro text-gray-600 dark:text-gray-400">
                       {block.name}

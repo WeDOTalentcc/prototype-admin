@@ -167,7 +167,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={expanded ? "Ocultar detalhes do parecer LIA" : "Ver análise completa do parecer LIA"}
-        className="mt-3 flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded"
+        className="mt-3 flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-md"
       >
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         {expanded ? "Ocultar detalhes" : "Ver análise completa"}
@@ -180,7 +180,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
               const config = sectionStatusConfig[section.status]
               const Icon = config.icon
               return (
-                <div key={idx} className={cn("rounded p-3 border", config.bg, config.border, config.extraBorder)}>
+                <div key={idx} className={cn("rounded-md p-3 border", config.bg, config.border, config.extraBorder)}>
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Icon className={cn("w-3.5 h-3.5", config.iconColor)} />
                     <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
@@ -206,7 +206,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                             <button
                               onClick={() => onAcceptSuggestion(sug)}
                               aria-label={`Aplicar sugestão: ${sug.slice(0, 50)}`}
-                              className="text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:underline flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded"
+                              className="text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:underline flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
                             >
                               Aplicar
                             </button>
@@ -221,7 +221,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           </div>
 
           {data.marketComparisons && data.marketComparisons.length > 0 && (
-            <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
+            <div className="rounded-md bg-white/60 dark:bg-gray-800/40 p-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
@@ -252,7 +252,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           )}
 
           {data.timeToFillEstimate && (
-            <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
+            <div className="rounded-md bg-white/60 dark:bg-gray-800/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Clock className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
@@ -277,7 +277,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
             </div>
           )}
 
-          <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
+          <div className="rounded-md bg-white/60 dark:bg-gray-800/40 p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">

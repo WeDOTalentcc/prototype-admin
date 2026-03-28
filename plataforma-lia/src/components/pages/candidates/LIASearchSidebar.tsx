@@ -551,7 +551,7 @@ export function LIASearchSidebar({
                         setIsCreatingArchetype(false)
                         setArchetypeCreationStep('initial')
                       }}
-                      className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded"
+                      className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded-md"
                       aria-label="Cancelar criação de arquétipo"
                     >
                       <X className="w-3 h-3 text-gray-600 dark:text-gray-400" aria-hidden="true" />
@@ -948,7 +948,7 @@ export function LIASearchSidebar({
                 ) : (
                   <>
                     <span
-                      className="flex items-center justify-center w-5 h-5 rounded bg-gray-900"
+                      className="flex items-center justify-center w-5 h-5 rounded-md bg-gray-900"
                     >
                       <Brain className="w-3 h-3 text-white" />
                     </span>

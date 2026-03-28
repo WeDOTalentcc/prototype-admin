@@ -2416,35 +2416,35 @@ function BigFiveAnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Muito Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.84</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Estabilidade</span>
               <div className="flex items-center gap-2">
  <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.71</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.67</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.63</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Extroversão</span>
               <div className="flex items-center gap-2">
  <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 text-xs tracking-tight">Moderada</Badge>
@@ -2569,23 +2569,23 @@ function DiversidadeInclusaoDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Brancos</span>
               <span className="text-sm font-inter font-bold">58%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pardos</span>
               <span className="text-sm font-inter font-bold">24%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pretos</span>
               <span className="text-sm font-inter font-bold">14%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amarelos</span>
               <span className="text-sm font-inter font-bold">3%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Indígenas</span>
               <span className="text-sm font-inter font-bold">1%</span>
             </div>
@@ -2746,35 +2746,35 @@ function NPSDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Aplicação Inicial</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Excelente</Badge>
               <span className="text-sm font-inter font-bold">9.2</span>
             </div>
           </div>
-          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Comunicação</span>
             <div className="flex items-center gap-2">
  <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.8</span>
             </div>
           </div>
-          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Entrevistas</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.6</span>
             </div>
           </div>
-          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Tempo de Resposta</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Bom</Badge>
               <span className="text-sm font-inter font-bold">7.9</span>
             </div>
           </div>
-          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Feedback Pós-Entrevista</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-xs tracking-tight">Regular</Badge>

@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 p-1.5 rounded hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                        className="block w-full text-left text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 p-1.5 rounded-md hover:bg-white dark:hover:bg-gray-800 transition-colors"
                       >
                         "{example}"
                       </button>

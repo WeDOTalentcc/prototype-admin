@@ -228,7 +228,7 @@ export function RubricEvaluationCard({
             return (
               <div 
                 key={idx} 
-                className={`flex items-start gap-2 p-1.5 rounded ${getRubricBgColor(level)} transition-colors`}
+                className={`flex items-start gap-2 p-1.5 rounded-md ${getRubricBgColor(level)} transition-colors`}
               >
                 <div className="mt-0.5 flex-shrink-0">
                   {getRubricIcon(level)}
@@ -242,7 +242,7 @@ export function RubricEvaluationCard({
                       {reqName}
                     </span>
                     {req.priority && (
-                      <span className={`${textStyles.caption} text-gray-500 bg-white/50 px-1.5 py-0.5 rounded`}>
+                      <span className={`${textStyles.caption} text-gray-500 bg-white/50 px-1.5 py-0.5 rounded-md`}>
                         {getPriorityLabel(req.priority)}
                       </span>
                     )}

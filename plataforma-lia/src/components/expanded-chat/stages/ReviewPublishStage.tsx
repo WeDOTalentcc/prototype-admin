@@ -326,7 +326,7 @@ export function ReviewPublishStage({
               {publishingPlatforms.filter(p => p.type === 'ats').map(platform => (
                 <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-white rounded flex items-center justify-center border border-gray-200">
+                    <div className="w-6 h-6 bg-white rounded-md flex items-center justify-center border border-gray-200">
                       <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     </div>
                     <span className="text-xs text-gray-800">{platform.name}</span>
@@ -336,7 +336,7 @@ export function ReviewPublishStage({
                       prev.map(p => p.id === platform.id ? { ...p, enabled: !p.enabled } : p)
                     )}
                     className={cn(
-                      "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                       platform.enabled
                         ? "bg-gray-900 dark:bg-gray-50 text-white"
                         : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
@@ -359,7 +359,7 @@ export function ReviewPublishStage({
                 <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className={cn(
-                      "w-6 h-6 rounded flex items-center justify-center border border-gray-200",
+                      "w-6 h-6 rounded-md flex items-center justify-center border border-gray-200",
                       "bg-gray-800"
                     )}>
                       {platform.id === 'linkedin' ? (
@@ -375,7 +375,7 @@ export function ReviewPublishStage({
                       prev.map(p => p.id === platform.id ? { ...p, enabled: !p.enabled } : p)
                     )}
                     className={cn(
-                      "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                       platform.enabled
                         ? "bg-gray-900 dark:bg-gray-50 text-white"
                         : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
@@ -397,7 +397,7 @@ export function ReviewPublishStage({
               {publishingPlatforms.filter(p => p.type === 'website').map(platform => (
                 <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center border border-gray-300 dark:border-gray-600">
+                    <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center border border-gray-300 dark:border-gray-600">
                       <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     </div>
                     <span className="text-xs text-gray-800">{platform.name}</span>
@@ -407,7 +407,7 @@ export function ReviewPublishStage({
                       prev.map(p => p.id === platform.id ? { ...p, enabled: !p.enabled } : p)
                     )}
                     className={cn(
-                      "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                       platform.enabled
                         ? "bg-gray-900 dark:bg-gray-50 text-white"
                         : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
@@ -436,7 +436,7 @@ export function ReviewPublishStage({
                         key={level}
                         onClick={() => onSetJobConfig(prev => ({ ...prev, urgencyLevel: level }))}
                         className={cn(
-                          "w-6 h-6 rounded text-xs font-medium transition-all",
+                          "w-6 h-6 rounded-md text-xs font-medium transition-all",
                           jobConfig.urgencyLevel === level
                             ? level <= 2 ? "bg-wedo-green text-white"
                               : level === 3 ? "bg-status-warning text-white"
@@ -476,7 +476,7 @@ export function ReviewPublishStage({
                           isConfidential: opt.value === 'confidential'
                         }))}
                         className={cn(
-                          "px-2 py-1 rounded text-micro font-medium transition-all",
+                          "px-2 py-1 rounded-md text-micro font-medium transition-all",
                           jobConfig.visibility === opt.value
                             ? "bg-gray-900 dark:bg-gray-50 text-white"
                             : "bg-gray-50 text-gray-500 hover:bg-gray-200"
@@ -530,7 +530,7 @@ export function ReviewPublishStage({
                       <select
                         value={detectedCriteria.affirmativeCriteriaPrimary || ''}
                         onChange={(e) => onSetDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaPrimary: e.target.value || null }))}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white text-gray-800"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white text-gray-800"
                       >
                         <option value="">Selecione...</option>
                         <option value="gender">Gênero (Mulheres)</option>
@@ -551,7 +551,7 @@ export function ReviewPublishStage({
                       <select
                         value={detectedCriteria.affirmativeCriteriaSecondary || ''}
                         onChange={(e) => onSetDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaSecondary: e.target.value || null }))}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white text-gray-800"
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white text-gray-800"
                       >
                         <option value="">Nenhum</option>
                         <option value="gender">Gênero (Mulheres)</option>
@@ -588,7 +588,7 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadlineScreening}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadlineScreening: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-800"
+                  className="px-2 py-1 text-xs border border-gray-200 rounded-md bg-gray-50 text-gray-800"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -597,7 +597,7 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadlineShortlist}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadlineShortlist: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-800"
+                  className="px-2 py-1 text-xs border border-gray-200 rounded-md bg-gray-50 text-gray-800"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -606,7 +606,7 @@ export function ReviewPublishStage({
                   type="date"
                   value={jobConfig.deadline}
                   onChange={(e) => onSetJobConfig(prev => ({ ...prev, deadline: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-800"
+                  className="px-2 py-1 text-xs border border-gray-200 rounded-md bg-gray-50 text-gray-800"
                 />
               </div>
             </div>
@@ -621,7 +621,7 @@ export function ReviewPublishStage({
             {jobConfig.languages.length > 0 ? (
               <div className="space-y-1">
                 {jobConfig.languages.map((lang, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
                     <select
                       value={lang.name}
                       onChange={(e) => {
@@ -629,7 +629,7 @@ export function ReviewPublishStage({
                         newLanguages[idx] = { ...newLanguages[idx], name: e.target.value }
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="flex-1 px-2 py-0.5 text-xs border border-gray-200 rounded bg-white text-gray-800"
+                      className="flex-1 px-2 py-0.5 text-xs border border-gray-200 rounded-md bg-white text-gray-800"
                     >
                       <option value="Inglês">Inglês</option>
                       <option value="Espanhol">Espanhol</option>
@@ -661,7 +661,7 @@ export function ReviewPublishStage({
                         const newLanguages = jobConfig.languages.filter((_, i) => i !== idx)
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-status-error hover:bg-status-error/10 rounded transition-colors"
+                      className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>

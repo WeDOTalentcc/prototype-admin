@@ -174,7 +174,7 @@ export function CandidateSummaryCard({
                 {data.highlights.slice(0, 2).map((highlight, index) => (
                   <div 
                     key={index} 
-                    className="flex items-start gap-2 text-xs px-2 py-1 rounded"
+                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-md"
                     style={{backgroundColor: 'var(--lia-bg-tertiary)',
                       color: 'var(--lia-text-secondary)'}}
                   >
@@ -190,7 +190,7 @@ export function CandidateSummaryCard({
                 {data.concerns.slice(0, 1).map((concern, index) => (
                   <div 
                     key={index} 
-                    className="flex items-start gap-2 text-xs px-2 py-1 rounded"
+                    className="flex items-start gap-2 text-xs px-2 py-1 rounded-md"
                     style={{backgroundColor: 'var(--lia-bg-tertiary)',
                       color: 'var(--lia-text-secondary)'}}
                   >

@@ -583,7 +583,7 @@ export function CandidateSearchResultsView({
                   const container = e.target.parentElement
                   if (container) {
                     container.style.borderColor = 'var(--gray-200)'
-                    container.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)'
+                    container.style.boxShadow = '0 0 0 2px rgba(96, 190, 209, 0.12)'
                   }
                   // Expandir LIA sidebar ao focar
                   if (!isLIAThinking) {
@@ -1190,7 +1190,7 @@ export function CandidateSearchResultsView({
                               >
                                 {/* Custom Checkbox - Monocromático */}
                                 <div
-                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
                                   style={{backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
                                     border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                                 >

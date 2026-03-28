@@ -203,7 +203,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                           type="checkbox"
                           checked={active}
                           onChange={() => toggleField(catalog)}
-                          className="h-3.5 w-3.5 rounded border-gray-300 text-gray-900 cursor-pointer"
+                          className="h-3.5 w-3.5 rounded-md border-gray-300 text-gray-900 cursor-pointer"
                           aria-label={`Ativar campo ${catalog.displayName}`}
                         />
                       ) : (
@@ -221,7 +221,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                               type="checkbox"
                               checked={field?.required ?? false}
                               onChange={() => toggleRequired(catalog.id)}
-                              className="h-3 w-3 rounded border-gray-300 text-gray-900 cursor-pointer"
+                              className="h-3 w-3 rounded-md border-gray-300 text-gray-900 cursor-pointer"
                             />
                             <span className="text-micro text-gray-500">Obrigatório</span>
                           </label>
@@ -230,7 +230,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                               type="checkbox"
                               checked={field?.auto_collect ?? false}
                               onChange={() => toggleAutoCollect(catalog.id)}
-                              className="h-3 w-3 rounded border-gray-300 text-gray-900 cursor-pointer"
+                              className="h-3 w-3 rounded-md border-gray-300 text-gray-900 cursor-pointer"
                             />
                             <span className="text-micro text-gray-500">LIA coleta</span>
                           </label>
@@ -350,7 +350,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
                   disabled={togglingId === `default-${ss.id}`}
                   aria-label={ss.is_default ? `Remover ${ss.display_name} como padrão` : `Definir ${ss.display_name} como padrão`}
                   title={ss.is_default ? 'Remover como padrão' : 'Definir como padrão'}
-                  className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                   data-testid={`sub-status-default-toggle-${ss.id}`}
                   type="button"
                 >

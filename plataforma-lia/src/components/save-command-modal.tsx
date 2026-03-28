@@ -197,7 +197,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               <MessageCircle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
  <span className="text-sm font-medium text-gray-600">Comando Original:</span>
             </div>
- <div className="text-sm text-gray-600 font-mono bg-white rounded p-2">
+ <div className="text-sm text-gray-600 font-mono bg-white rounded-md p-2">
               "{originalCommand}"
             </div>
           </div>
@@ -285,7 +285,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded px-3 py-2">
+                  <div className="flex-1 text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
                     "{example}"
                   </div>
                   {examples.length > 1 && (

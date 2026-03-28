@@ -887,7 +887,7 @@ export function CandidatePreview({
                     e.stopPropagation()
                     handleCopyOpinion(opinion, type)
                   }}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                 >
                   {copiedItemId === `opinion-${opinion.id}` ? (
                     <Check className="w-3.5 h-3.5 text-status-success" />
@@ -1349,7 +1349,7 @@ export function CandidatePreview({
                     href={candidate.linkedin || candidate.linkedin_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
                   >
                     <Linkedin className="w-3.5 h-3.5" style={{color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)'}} />
@@ -1364,7 +1364,7 @@ export function CandidatePreview({
                     href={candidate.github || candidate.github_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.github || candidate.github_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.github || candidate.github_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1381,7 +1381,7 @@ export function CandidatePreview({
                     href={candidate.stackoverflow || candidate.stackoverflow_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.stackoverflow || candidate.stackoverflow_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1398,7 +1398,7 @@ export function CandidatePreview({
                     href={candidate.twitter || candidate.twitter_url || candidate.x_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.twitter || candidate.twitter_url || candidate.x_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1415,7 +1415,7 @@ export function CandidatePreview({
                     href={candidate.behance || candidate.behance_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.behance || candidate.behance_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1432,7 +1432,7 @@ export function CandidatePreview({
                     href={candidate.portfolio || candidate.portfolio_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.portfolio || candidate.portfolio_url) && e.preventDefault()}
                   >
                     <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400'}`} />
@@ -1485,7 +1485,7 @@ export function CandidatePreview({
                 <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <div className="p-0.5 rounded bg-gray-100 dark:bg-gray-800">
+                      <div className="p-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
                         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                       </div>
                       <CardTitle className={`${textStyles.label} text-gray-600 dark:text-gray-400`}>Parecer LIA</CardTitle>
@@ -1570,12 +1570,12 @@ export function CandidatePreview({
             {jobId && isLoadingOpinions && !opinionsData && (
               <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-3 animate-pulse">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                  <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="w-32 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="w-32 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                  <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                 </div>
               </div>
             )}
@@ -2387,13 +2387,13 @@ export function CandidatePreview({
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                           <div className="flex-1">
-                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
+                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                         </div>
                       </div>
                     ))}
@@ -2449,13 +2449,13 @@ export function CandidatePreview({
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                           <div className="flex-1">
-                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
+                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                         </div>
                       </div>
                     ))}
@@ -2529,7 +2529,7 @@ export function CandidatePreview({
                                       e.stopPropagation()
                                       handleCopyAnalysis(analysis)
                                     }}
-                                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                    className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                   >
                                     {copiedItemId === `analysis-${analysis.id}` ? (
                                       <Check className="w-3.5 h-3.5 text-status-success" />
@@ -2559,7 +2559,7 @@ export function CandidatePreview({
                                         e.stopPropagation()
                                         setAnalysisToDelete(analysis)
                                       }}
-                                      className="p-1.5 hover:bg-status-error/10 rounded transition-colors group"
+                                      className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors group"
                                     >
                                       <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-status-error" />
                                     </button>

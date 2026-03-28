@@ -127,7 +127,7 @@ export function MessageFeedback({
                   onMouseLeave={() => setHoveredStar(0)}
                   aria-label={`Avaliar ${star} estrela${star > 1 ? 's' : ''}`}
                   className={cn(
-                    "p-1 rounded transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+                    "p-1 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
                     (hoveredStar >= star || rating >= star)
                       ? "text-status-warning"
                       : "text-gray-300 dark:text-gray-600"

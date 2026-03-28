@@ -176,7 +176,7 @@ export function CandidateCard({
       onMouseEnter={(e) => {
         if (!isDragging) {
           e.currentTarget.style.transform = 'translateY(-1px)'
-          e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, black 10%, transparent)'
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
         }
       }}
       onMouseLeave={(e) => {
@@ -205,7 +205,7 @@ export function CandidateCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-opacity bg-white/80 dark:bg-gray-900/80"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity bg-white/80 dark:bg-gray-900/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
@@ -274,7 +274,7 @@ export function CandidateCard({
           </DropdownMenu>
 
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors bg-white/80 dark:bg-gray-900/80"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors bg-white/80 dark:bg-gray-900/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
@@ -286,7 +286,7 @@ export function CandidateCard({
           <input
             type="checkbox"
             checked={isSelected}
-            className="w-3 h-3 rounded cursor-pointer flex-shrink-0 border border-gray-200"
+            className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-200"
             onClick={handleCheckboxClick}
             onChange={() => {}}
           />

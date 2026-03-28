@@ -178,13 +178,13 @@ export function WebhooksSection({
                       {availableEvents.map(event => (
                         <label
                           key={event.name}
-                          className="flex items-center gap-2 text-xs cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+                          className="flex items-center gap-2 text-xs cursor-pointer p-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
                           <input
                             type="checkbox"
                             checked={editingWebhook.events.includes(event.name)}
                             onChange={() => handleToggleWebhookEvent(event.name)}
-                            className="rounded"
+                            className="rounded-md"
                           />
                           <span className="text-gray-800 dark:text-gray-100" >{event.name}</span>
                         </label>
@@ -230,7 +230,7 @@ export function WebhooksSection({
                   {editingWebhook.headers && Object.keys(editingWebhook.headers).length > 0 && (
                     <div className="space-y-1 mb-2">
                       {Object.entries(editingWebhook.headers).map(([key, value]) => (
-                        <div key={key} className="flex items-center gap-2 text-xs p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <div key={key} className="flex items-center gap-2 text-xs p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                           <code className="flex-1">{key}: {value}</code>
                           <Button size="sm" variant="ghost" onClick={() => handleRemoveWebhookHeader(key)}>
                             <X className="w-3 h-3" />
@@ -384,7 +384,7 @@ export function WebhooksSection({
                       </div>
                     </div>
                     {showWebhookSecret === webhook.id && webhook.secret && (
-                      <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded flex items-center justify-between">
+                      <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md flex items-center justify-between">
                         <code className="text-xs">{webhook.secret}</code>
                         <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(webhook.secret); toast.success('Secret copiado!') }}>
                           <Copy className="w-3 h-3" />
@@ -469,7 +469,7 @@ export function WebhooksSection({
                               <summary className="text-xs cursor-pointer text-gray-500 dark:text-gray-400" >
                                 Ver resposta
                               </summary>
-                              <pre className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs overflow-x-auto">
+                              <pre className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded-md text-xs overflow-x-auto">
                                 {log.response_body}
                               </pre>
                             </details>

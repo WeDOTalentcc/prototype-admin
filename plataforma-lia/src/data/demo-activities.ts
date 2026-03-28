@@ -53,7 +53,7 @@ export const getDemoActivities = (): Activity[] => {
       id: 'act-1',
       type: 'email-sent',
       icon: Mail,
-      iconColor: '#3B82F6',
+      iconColor: 'var(--wedo-blue)',
       title: 'Email de convite para entrevista enviado',
       author: 'Maria Santos',
       date: 'Hoje, 10:30',

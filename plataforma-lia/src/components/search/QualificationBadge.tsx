@@ -30,7 +30,7 @@ const levelConfig = {
     label: "Alta",
     icon: Crown,
     className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-purple border border-wedo-purple/20",
-    bgStyle: { background: "color-mix(in srgb, var(--wedo-purple) 10%, transparent)" },
+    bgStyle: { background: "rgba(152, 96, 209, 0.1)" },
     darkClassName: "dark:text-wedo-purple dark:border-wedo-purple/30 dark:bg-wedo-purple/20",
     tooltipText: "Vaga de alta qualificação (executiva/especialista). Busca com maior precisão.",
   },
@@ -38,7 +38,7 @@ const levelConfig = {
     label: "Média",
     icon: Briefcase,
     className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-orange border border-wedo-orange/20",
-    bgStyle: { background: "color-mix(in srgb, var(--wedo-orange) 10%, transparent)" },
+    bgStyle: { background: "rgba(209, 153, 96, 0.1)" },
     darkClassName: "dark:text-wedo-orange dark:border-wedo-orange/30 dark:bg-wedo-orange/20",
     tooltipText: "Vaga de qualificação média (pleno/sênior). Busca com precisão balanceada.",
   },
@@ -154,7 +154,7 @@ export function QualificationBadge({
               </DropdownMenu>
             </span>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded p-2">
+          <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded-md p-2">
             {tooltipContent}
           </TooltipContent>
         </Tooltip>
@@ -166,7 +166,7 @@ export function QualificationBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{badge}</TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded p-2">
+        <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded-md p-2">
           {tooltipContent}
         </TooltipContent>
       </Tooltip>

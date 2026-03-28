@@ -240,7 +240,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <code className="text-micro font-mono px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-gray-300">
                     {`{{${variable.key}}}`}
                   </code>
                   <span className="text-xs font-medium text-gray-900 truncate">

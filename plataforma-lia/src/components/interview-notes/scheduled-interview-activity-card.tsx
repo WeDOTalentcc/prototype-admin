@@ -166,7 +166,7 @@ export function ScheduledInterviewActivityCard({
         </div>
 
         {/* Date, Time, and Platform Info */}
-        <div className="space-y-1.5 bg-gray-50 dark:bg-gray-900/30 rounded p-2.5">
+        <div className="space-y-1.5 bg-gray-50 dark:bg-gray-900/30 rounded-md p-2.5">
           {/* Date and Time */}
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />

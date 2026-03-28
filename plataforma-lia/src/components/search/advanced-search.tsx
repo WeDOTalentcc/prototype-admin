@@ -143,7 +143,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                       updateFilter('query', suggestion)
                       setSearchFocused(false)
                     }}
-                    className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                     style={{animation: `fadeInRight 0.2s ease-out ${index * 0.05}s backwards`}}
                   >
                     {suggestion}
@@ -268,7 +268,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                     key={tag}
                     onClick={() => toggleArrayFilter('tags', tag)}
                     className={cn(
-                      "px-2 py-1 rounded text-xs font-medium transition-all",
+                      "px-2 py-1 rounded-md text-xs font-medium transition-all",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.tags.includes(tag)
                         ? "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"

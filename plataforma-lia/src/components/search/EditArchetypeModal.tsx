@@ -284,7 +284,7 @@ export function EditArchetypeModal({
                 <button
                   type="button"
                   onClick={() => onIsIndustryDropdownOpenChange(!isIndustryDropdownOpen)}
-                  className="w-full rounded px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                  className="w-full rounded-md px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                 >
                   <span style={{color: editArchetypeIndustry ? "var(--gray-950)" : "var(--gray-400)"}}>
                     {editArchetypeIndustry
@@ -301,7 +301,7 @@ export function EditArchetypeModal({
                         value={industrySearchQuery}
                         onChange={(e) => onIndustrySearchQueryChange(e.target.value)}
                         placeholder="Buscar setor..."
-                        className="w-full rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                        className="w-full rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                         autoFocus
                       />
                     </div>
@@ -526,7 +526,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     placeholder="Digite e pressione Enter..."
-                    className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                   />
                   <button
                     type="button"
@@ -621,7 +621,7 @@ export function EditArchetypeModal({
                         onAiSuggestedSkillsChange([])
                         onSelectedAiSkillsChange([])
                       }}
-                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                     >
                       <X className="w-3 h-3 text-gray-700" />
                     </button>
@@ -662,7 +662,7 @@ export function EditArchetypeModal({
                         onAiSuggestedSkillsChange(aiSuggestedSkills.filter((s) => !selectedAiSkills.includes(s)))
                         onSelectedAiSkillsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors bg-gray-900"
                       style={{color: "white"}}
                     >
                       Adicionar {selectedAiSkills.length} Selecionado
@@ -739,7 +739,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     placeholder="Digite e pressione Enter..."
-                    className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                   />
                   <button
                     type="button"
@@ -833,7 +833,7 @@ export function EditArchetypeModal({
                         onAiSuggestedTagsChange([])
                         onSelectedAiTagsChange([])
                       }}
-                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                     >
                       <X className="w-3 h-3 text-gray-700" />
                     </button>
@@ -874,7 +874,7 @@ export function EditArchetypeModal({
                         onAiSuggestedTagsChange(aiSuggestedTags.filter((t) => !selectedAiTags.includes(t)))
                         onSelectedAiTagsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors bg-gray-900"
                       style={{color: "white"}}
                     >
                       Adicionar {selectedAiTags.length} Selecionado

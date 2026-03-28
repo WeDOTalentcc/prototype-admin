@@ -503,13 +503,13 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
           <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100 dark:bg-gray-800 p-1 rounded-md">
             <TabsTrigger
               value="entrevistas"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
             >
               Entrevistas ({todayInterviews.length})
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
             >
               Histórico ({pastInterviews.length})
             </TabsTrigger>

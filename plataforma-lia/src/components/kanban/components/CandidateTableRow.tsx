@@ -72,7 +72,7 @@ export function CandidateTableRow({
           onClick={() => onToggleSelect && onToggleSelect(candidate.id)}
           className="cursor-pointer"
         >
-          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
             isSelected
               ? 'bg-gray-900 border-gray-900 dark:bg-gray-200 dark:border-gray-200'
               : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-500'

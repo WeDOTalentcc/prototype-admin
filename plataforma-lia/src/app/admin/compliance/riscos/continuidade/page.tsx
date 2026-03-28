@@ -185,7 +185,7 @@ export default function ContinuidadePage() {
           </div>
         </div>
 
-        <Card className="mb-6" style={{borderLeft: '4px solid #ef4444'}}>
+        <Card className="mb-6" style={{borderLeft: '4px solid var(--status-error)'}}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-error mt-0.5" />
@@ -221,7 +221,7 @@ export default function ContinuidadePage() {
                     <Badge variant="outline" className="text-xs">RTO</Badge>
                   </div>
                   <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Time Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Tempo máximo aceitável de indisponibilidade do sistema
                   </p>
@@ -230,7 +230,7 @@ export default function ContinuidadePage() {
             </CardContent>
           </Card>
 
-          <Card style={{borderLeft: '4px solid #10b981'}}>
+          <Card style={{borderLeft: '4px solid var(--status-success)'}}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
@@ -242,7 +242,7 @@ export default function ContinuidadePage() {
                     <Badge variant="outline" className="text-xs">RPO</Badge>
                   </div>
                   <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Point Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Perda máxima de dados aceitável em caso de falha
                   </p>
@@ -272,7 +272,7 @@ export default function ContinuidadePage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(234, 179, 8, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
@@ -400,7 +400,7 @@ export default function ContinuidadePage() {
                         <Badge variant="outline" className="font-mono text-micro">{test.rpoAchieved}</Badge>
                       </div>
                     </div>
-                    <p className="text-xs p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                    <p className="text-xs p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                       {test.notes}
                     </p>
                   </div>

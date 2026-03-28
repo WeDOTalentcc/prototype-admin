@@ -624,7 +624,7 @@ export function UniversalTransitionModal({
                     >
                       <div
                         className={cn(
-                          "flex items-start gap-2 p-2 rounded border cursor-pointer transition-colors",
+                          "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'lia_auto'
                             ? "border-gray-900 bg-white dark:border-gray-400 dark:bg-gray-800"
                             : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
@@ -648,7 +648,7 @@ export function UniversalTransitionModal({
 
                       <div
                         className={cn(
-                          "flex items-start gap-2 p-2 rounded border cursor-pointer transition-colors",
+                          "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'manual'
                             ? "border-gray-900 bg-white dark:border-gray-400 dark:bg-gray-800"
                             : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
@@ -664,7 +664,7 @@ export function UniversalTransitionModal({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="mt-1.5 h-6 text-micro gap-1 rounded"
+                              className="mt-1.5 h-6 text-micro gap-1 rounded-md"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleOpenManualModal()
@@ -679,7 +679,7 @@ export function UniversalTransitionModal({
 
                       <div
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors",
+                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'just_move'
                             ? "border-gray-900 bg-white dark:border-gray-400 dark:bg-gray-800"
                             : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
@@ -708,7 +708,7 @@ export function UniversalTransitionModal({
                     >
                       <div
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors",
+                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'lia_auto'
                             ? "border-gray-900 bg-white dark:border-gray-400 dark:bg-gray-800"
                             : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
@@ -723,7 +723,7 @@ export function UniversalTransitionModal({
                       </div>
                       <div
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors",
+                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'just_move'
                             ? "border-gray-900 bg-white dark:border-gray-400 dark:bg-gray-800"
                             : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"

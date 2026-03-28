@@ -306,7 +306,7 @@ export function SkillsFilterInput({
               >
                 <button
                   onClick={() => togglePin(skill.name)}
-                  className="hover:bg-gray-600 rounded p-0.5 transition-colors"
+                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors"
                   title="Desmarcar como obrigatória"
                 >
                   <Pin className="w-3 h-3 fill-current" />
@@ -314,7 +314,7 @@ export function SkillsFilterInput({
                 <span>{skill.name}</span>
                 <button
                   onClick={() => removeSkill(skill.name)}
-                  className="hover:bg-gray-600 rounded p-0.5 transition-colors"
+                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />
@@ -328,7 +328,7 @@ export function SkillsFilterInput({
               >
                 <button
                   onClick={() => togglePin(skill.name)}
-                  className="hover:bg-gray-200 rounded p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
                   title="Marcar como obrigatória"
                 >
                   <Pin className="w-3 h-3" />
@@ -336,7 +336,7 @@ export function SkillsFilterInput({
                 <span>{skill.name}</span>
                 <button
                   onClick={() => removeSkill(skill.name)}
-                  className="hover:bg-gray-200 rounded p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />

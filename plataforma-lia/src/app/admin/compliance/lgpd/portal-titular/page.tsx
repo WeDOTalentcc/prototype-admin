@@ -382,7 +382,7 @@ export default function PortalTitularPage() {
         </div>
 
         {stats && stats.overdueRequests > 0 && (
-          <Card className="mb-6" style={{borderColor: 'rgba(239, 68, 68, 0.5)', backgroundColor: 'rgba(239, 68, 68, 0.08)'}}>
+          <Card className="mb-6" style={{borderColor: 'rgba(220, 38, 38, 0.5)', backgroundColor: 'var(--status-error-bg)'}}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-status-error" />

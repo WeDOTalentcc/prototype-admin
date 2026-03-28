@@ -348,7 +348,7 @@ function EditableCell({
         onKeyDown={handleKeyDown}
         autoFocus
         min={0}
-        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-['Open_Sans',sans-serif]"
+        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded-md text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-['Open_Sans',sans-serif]"
       />
     )
   }
@@ -1550,7 +1550,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     type="checkbox"
                     checked={applyAllMonths}
                     onChange={(e) => setApplyAllMonths(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 accent-gray-900"
+                    className="w-4 h-4 rounded-md border-gray-300 accent-gray-900"
                   />
                   <span className={textStyles.bodySmall}>
                     Aplicar mesmo valor a todos os meses
@@ -1562,7 +1562,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     type="checkbox"
                     checked={applyAllUsers}
                     onChange={(e) => setApplyAllUsers(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 accent-gray-900"
+                    className="w-4 h-4 rounded-md border-gray-300 accent-gray-900"
                   />
                   <span className={textStyles.bodySmall}>
                     Aplicar a todos os usuários
@@ -1727,7 +1727,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 >
                   <div className="flex items-start justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                      <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-colors ${
                         isAppliedToAll 
                           ? 'bg-status-success border-status-success/30'
                           : isSelected 
@@ -1765,7 +1765,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 rounded px-1.5 py-1 mb-2 border-l-2 border-gray-400 ml-6">
+                  <div className="bg-gray-50 rounded-md px-1.5 py-1 mb-2 border-l-2 border-gray-400 ml-6">
                     <div className="flex items-start gap-1">
                       <BarChart3 className="w-2.5 h-2.5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                       <p className={textStyles.caption}>

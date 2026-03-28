@@ -541,7 +541,7 @@ export default function ClientTestesPage({
                             <Clock className="w-3 h-3" />
                             {test.duration} min
                           </span>
-                          <span className={`px-1.5 py-0.5 rounded ${difficulty.color}`}>
+                          <span className={`px-1.5 py-0.5 rounded-md ${difficulty.color}`}>
                             {difficulty.label}
                           </span>
                           {test.passingScore > 0 && (

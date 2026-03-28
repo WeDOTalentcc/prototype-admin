@@ -518,7 +518,7 @@ export function AdvancedInteractiveChart({
               type="checkbox"
               checked={chartConfig.showGrid}
               onChange={(e) => setChartConfig(prev => ({ ...prev, showGrid: e.target.checked }))}
-              className="rounded"
+              className="rounded-md"
             />
             Grade
           </label>
@@ -527,7 +527,7 @@ export function AdvancedInteractiveChart({
               type="checkbox"
               checked={chartConfig.showLegend}
               onChange={(e) => setChartConfig(prev => ({ ...prev, showLegend: e.target.checked }))}
-              className="rounded"
+              className="rounded-md"
             />
             Legenda
           </label>
@@ -536,7 +536,7 @@ export function AdvancedInteractiveChart({
               type="checkbox"
               checked={chartConfig.showTooltip}
               onChange={(e) => setChartConfig(prev => ({ ...prev, showTooltip: e.target.checked }))}
-              className="rounded"
+              className="rounded-md"
             />
             Tooltip
           </label>

@@ -319,9 +319,9 @@ export function EmailTemplatesManager() {
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="pt-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-                <div className="h-3 bg-gray-200 rounded w-full mb-2" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-3" />
+                <div className="h-3 bg-gray-200 rounded-md w-full mb-2" />
+                <div className="h-3 bg-gray-200 rounded-md w-1/2" />
               </CardContent>
             </Card>
           ))}

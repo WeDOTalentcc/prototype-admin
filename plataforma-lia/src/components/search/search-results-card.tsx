@@ -483,7 +483,7 @@ export function SearchResultsCard({
         )}
 
         {selectedIds.size > 0 && (
-          <div className="mt-3 p-2 bg-gray-50 rounded text-center">
+          <div className="mt-3 p-2 bg-gray-50 rounded-md text-center">
             <p className="text-sm text-gray-600">
               Dica: Diga "adicione os selecionados à vaga X" ou "compare os candidatos selecionados"
             </p>

@@ -46,9 +46,9 @@ const risksByCategory = [
   { category: 'Segurança', count: risks.filter(r => r.category === 'Segurança').length, color: 'var(--status-error)' },
   { category: 'Operacional', count: risks.filter(r => r.category === 'Operacional').length, color: 'var(--status-warning)' },
   { category: 'Compliance', count: risks.filter(r => r.category === 'Compliance').length, color: 'var(--status-warning)' },
-  { category: 'Privacidade', count: risks.filter(r => r.category === 'Privacidade').length, color: '#8b5cf6' },
+  { category: 'Privacidade', count: risks.filter(r => r.category === 'Privacidade').length, color: 'var(--wedo-purple)' },
   { category: 'Legal', count: risks.filter(r => r.category === 'Legal').length },
-  { category: 'Financeiro', count: risks.filter(r => r.category === 'Financeiro').length, color: '#06b6d4' },
+  { category: 'Financeiro', count: risks.filter(r => r.category === 'Financeiro').length, color: 'var(--wedo-cyan)' },
 ]
 
 const riskMatrix = [
@@ -111,10 +111,10 @@ const subpages = [
 ]
 
 const getScoreColor = (score: number) => {
-  if (score >= 12) return { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)', label: 'Crítico' }
-  if (score >= 8) return { bg: 'rgba(249, 115, 22, 0.1)', text: 'var(--status-warning)', label: 'Alto' }
-  if (score >= 4) return { bg: 'rgba(234, 179, 8, 0.1)', text: 'var(--status-warning)', label: 'Médio' }
-  return { bg: 'rgba(34, 197, 94, 0.1)', text: 'var(--status-success)', label: 'Baixo' }
+  if (score >= 12) return { bg: 'var(--status-error-bg)', text: 'var(--status-error)', label: 'Crítico' }
+  if (score >= 8) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Alto' }
+  if (score >= 4) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Médio' }
+  return { bg: 'var(--status-success-bg)', text: 'var(--status-success)', label: 'Baixo' }
 }
 
 
@@ -206,7 +206,7 @@ export default function RiscosPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(234, 179, 8, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function RiscosPage() {
                           return (
                             <td key={colIndex} className="p-1">
                               <div 
-                                className="w-8 h-8 rounded flex items-center justify-center mx-auto text-xs font-bold"
+                                className="w-8 h-8 rounded-md flex items-center justify-center mx-auto text-xs font-bold"
                                 style={{backgroundColor: cellColor.bg, color: cellColor.text}}
                               >
                                 {value}
@@ -329,19 +329,19 @@ export default function RiscosPage() {
               </div>
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500" >
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-success)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-success)'}} />
                   <span>Baixo (1-4)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span>Médio (5-9)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span>Alto (10-14)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-error)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-error)'}} />
                   <span>Crítico (15+)</span>
                 </div>
               </div>

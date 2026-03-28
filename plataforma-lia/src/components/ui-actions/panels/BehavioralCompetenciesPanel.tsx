@@ -201,7 +201,7 @@ function CompetencyCard({
                   e.stopPropagation()
                   onLevelChange(level)
                 }}
-                className="flex-1 h-8 rounded text-xs font-medium transition-all"
+                className="flex-1 h-8 rounded-md text-xs font-medium transition-all"
                 style={
                   level === competency.level
                     ? { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)', boxShadow: 'var(--lia-)' }
@@ -246,7 +246,7 @@ function CompetencyCard({
                 {competency.questions.map((question, index) => (
                   <li
                     key={index}
-                    className="text-xs p-2 rounded border italic dark:text-gray-300 dark:border-gray-700 dark:bg-gray-800"
+                    className="text-xs p-2 rounded-md border italic dark:text-gray-300 dark:border-gray-700 dark:bg-gray-800"
                     style={{backgroundColor: 'var(--lia-bg-primary)',
                       borderColor: 'var(--lia-border-subtle)'}}
                   >

@@ -247,7 +247,7 @@ export function WSIScorecard({
               {results.results.slice(1, 4).map((result, idx) => (
                 <div 
                   key={result.result_id}
-                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
+                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md cursor-pointer hover:bg-muted transition-colors"
                   onClick={() => onViewDetails?.(result.result_id)}
                 >
                   <div className="flex items-center gap-2">

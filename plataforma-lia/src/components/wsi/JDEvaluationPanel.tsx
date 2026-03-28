@@ -965,7 +965,7 @@ export function JDEvaluationPanel({
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
-                            className="w-full h-40 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-900/20 focus:border-gray-400 bg-gray-50 dark:bg-gray-800"
+                            className="w-full h-40 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-md p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-900/20 focus:border-gray-400 bg-gray-50 dark:bg-gray-800"
                             placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
                             
                           />
@@ -978,7 +978,7 @@ export function JDEvaluationPanel({
                         <div className="bg-white rounded-md border border-gray-200 dark:border-gray-700 dark:bg-gray-900 p-3">
                           <div className="space-y-0.5">
                             {editResponsibilities.map((item, idx) => (
-                              <div key={idx} className="group flex items-start gap-2 py-1 px-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
+                              <div key={idx} className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <span className="text-xs text-gray-400 mt-0.5 shrink-0">•</span>
                                 <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 leading-relaxed" >{item}</span>
                                 <button
@@ -996,7 +996,7 @@ export function JDEvaluationPanel({
                                 value={newItem}
                                 onChange={(e) => setNewItem(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditResponsibilities(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
+                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar responsabilidade..."
                                 autoFocus
                                 
@@ -1056,7 +1056,7 @@ export function JDEvaluationPanel({
                                 value={newItem}
                                 onChange={(e) => setNewItem(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditTechSkills(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
+                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar competência técnica..."
                                 autoFocus
                                 
@@ -1116,7 +1116,7 @@ export function JDEvaluationPanel({
                                 value={newItem}
                                 onChange={(e) => setNewItem(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditBehavCompetencies(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
+                                className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar competência comportamental..."
                                 autoFocus
                                 

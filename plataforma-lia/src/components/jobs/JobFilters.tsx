@@ -376,7 +376,7 @@ export function JobFiltersPanel({
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded bg-gray-50 dark:bg-gray-800">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md bg-gray-50 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -385,7 +385,7 @@ export function JobFiltersPanel({
                 />
                 <span className="text-gray-700 dark:text-gray-200">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded bg-gray-50 dark:bg-gray-800">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md bg-gray-50 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   className="w-3 h-3"

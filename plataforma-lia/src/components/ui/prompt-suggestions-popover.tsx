@@ -265,7 +265,7 @@ export function PromptSuggestionsPopover({
             <button
               onClick={() => setActiveCategory(null)}
               className={cn(
-                "px-2 py-0.5 rounded text-xs font-medium transition-all",
+                "px-2 py-0.5 rounded-md text-xs font-medium transition-all",
                 !activeCategory 
                   ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900" 
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -278,7 +278,7 @@ export function PromptSuggestionsPopover({
                 key={key}
                 onClick={() => setActiveCategory(activeCategory === key ? null : key)}
                 className={cn(
-                  "px-2 py-0.5 rounded text-xs font-medium transition-all",
+                  "px-2 py-0.5 rounded-md text-xs font-medium transition-all",
                   activeCategory === key 
                     ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900" 
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"

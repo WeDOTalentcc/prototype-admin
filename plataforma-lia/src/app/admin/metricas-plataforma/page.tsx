@@ -133,11 +133,11 @@ function LoadingSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="pb-2">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-24" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md w-32 mb-2" />
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-20" />
             </CardContent>
           </Card>
         ))}
@@ -146,12 +146,12 @@ function LoadingSkeleton() {
         {Array.from({ length: 2 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader>
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40" />
+              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-md w-40" />
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, j) => (
-                  <div key={j} className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div key={j} className="h-12 bg-gray-200 dark:bg-gray-700 rounded-md" />
                 ))}
               </div>
             </CardContent>
@@ -272,7 +272,7 @@ export default function MetricasPlataformaPage() {
                   value={metrics.clients.activeClients}
                   icon={Building}
                   subtitle="pagantes atualmente"
-                  accentColor="#D19960"
+                  accentColor="var(--wedo-orange)"
                 />
                 <MetricCard
                   title="Clientes em Trial"

@@ -592,7 +592,7 @@ export function IntegrationsPage() {
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="text-xs border rounded px-2 py-1"
+                      className="text-xs border rounded-md px-2 py-1"
                     >
                       <option value="all">Todos</option>
                       <option value="success">Sucesso</option>
@@ -604,7 +604,7 @@ export function IntegrationsPage() {
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {filteredEvents.map((event) => (
-                      <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded p-3">
+                      <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             {event.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -624,13 +624,13 @@ export function IntegrationsPage() {
                         </p>
 
                         {event.error && (
-                          <p className="text-xs text-status-error bg-status-error/10 dark:bg-status-error/20 p-2 rounded">
+                          <p className="text-xs text-status-error bg-status-error/10 dark:bg-status-error/20 p-2 rounded-md">
                             {event.error}
                           </p>
                         )}
 
                         {event.response && (
-                          <p className="text-xs text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
+                          <p className="text-xs text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded-md">
                             ✓ Enviado com sucesso
                           </p>
                         )}
@@ -652,7 +652,7 @@ export function IntegrationsPage() {
               <CardContent>
                 <div className="space-y-2">
                   {availableEvents.map((event) => (
-                    <div key={event.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <div key={event.id} className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
                       <event.icon className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5" />
                       <div>
                         <h5 className="text-sm font-medium text-gray-950 dark:text-gray-50">
@@ -726,7 +726,7 @@ export function IntegrationsPage() {
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {availableEvents.map((event) => (
-                        <label key={event.id} className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <label key={event.id} className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                           <input
                             type="checkbox"
                             checked={newIntegration.events.includes(event.id)}
@@ -743,7 +743,7 @@ export function IntegrationsPage() {
                                 })
                               }
                             }}
-                            className="rounded border-gray-300"
+                            className="rounded-md border-gray-300"
                           />
                           <event.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                           <span className="text-sm text-gray-800 dark:text-gray-200">{event.label}</span>

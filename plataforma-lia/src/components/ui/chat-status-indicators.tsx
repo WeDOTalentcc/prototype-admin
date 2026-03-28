@@ -249,7 +249,7 @@ export const CompletionMessage = ({
             <button
               key={star}
               onClick={() => handleRating(star)}
-              className={`p-1 rounded transition-colors ${
+              className={`p-1 rounded-md transition-colors ${
                 star <= rating ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
               }`}
             >

@@ -853,7 +853,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   <h4 className="font-medium mb-2">Todas as Ações Sugeridas:</h4>
                   <ul className="space-y-2">
                     {selectedAlert.suggestedActions.map((action, index) => (
-                      <li key={index} className="text-sm text-gray-600 flex items-start gap-2 p-2 bg-gray-50 rounded">
+                      <li key={index} className="text-sm text-gray-600 flex items-start gap-2 p-2 bg-gray-50 rounded-md">
                         <span className="text-gray-600 dark:text-gray-400 mt-1">•</span>
                         {action}
                       </li>

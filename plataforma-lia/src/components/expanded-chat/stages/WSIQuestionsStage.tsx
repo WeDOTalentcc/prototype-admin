@@ -96,7 +96,7 @@ export function WSIQuestionsStage({
     >
       <button
         onClick={() => onDeleteQuestion(q.id)}
-        className="absolute top-2 right-2 text-gray-400 hover:text-status-error transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+        className="absolute top-2 right-2 text-gray-400 hover:text-status-error transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
         title="Remover pergunta"
         aria-label="Remover pergunta de triagem"
       >
@@ -107,7 +107,7 @@ export function WSIQuestionsStage({
           onClick={() => onToggleQuestionSelection(q.id)}
           disabled={!q.selected && selectedCount >= 5}
           className={cn(
-            "mt-0.5 w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+            "mt-0.5 w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
             q.selected
               ? "bg-gray-900 dark:bg-gray-50 text-white"
               : "border border-gray-200",
@@ -246,7 +246,7 @@ export function WSIQuestionsStage({
             </div>
             <button
               onClick={() => onSetCompanyDefaultQuestions(companyDefaultQuestions.map(q => ({ ...q, enabled: false })))}
-              className="text-micro text-gray-600 dark:text-gray-400 hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+              className="text-micro text-gray-600 dark:text-gray-400 hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
             >
               Desabilitar todas
             </button>
@@ -260,7 +260,7 @@ export function WSIQuestionsStage({
                       companyDefaultQuestions.map(cq => cq.id === q.id ? { ...cq, enabled: !cq.enabled } : cq)
                     )}
                     className={cn(
-                      "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                       q.enabled
                         ? "bg-gray-900 dark:bg-gray-50 text-white"
                         : "border border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
@@ -373,7 +373,7 @@ export function WSIQuestionsStage({
                 onSetCustomQuestionType('open')
                 onSetCustomQuestionRequired(false)
               }}
-              className="text-gray-400 hover:text-gray-500 focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+              className="text-gray-400 hover:text-gray-500 focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
               aria-label="Fechar formulário de pergunta customizada"
             >
               <X className="w-4 h-4" />
@@ -404,7 +404,7 @@ export function WSIQuestionsStage({
               <button
                 onClick={() => onSetCustomQuestionRequired(!customQuestionRequired)}
                 className={cn(
-                  "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all",
+                  "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
                   customQuestionRequired
                     ? "bg-gray-900 dark:bg-gray-50 text-white"
                     : "border border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"

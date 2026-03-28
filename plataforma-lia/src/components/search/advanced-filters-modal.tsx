@@ -1223,7 +1223,7 @@ export function AdvancedFiltersModal({
                     <span className="text-xs">{title}</span>
                     <button
                       onClick={() => removeFromArray("job", "titles", title)}
-                      className="ml-1 hover:bg-gray-300 rounded p-0.5"
+                      className="ml-1 hover:bg-gray-300 rounded-md p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1265,7 +1265,7 @@ export function AdvancedFiltersModal({
                 {selectedAiTitles.length > 0 && (
                   <button
                     onClick={handleAddSelectedAiTitles}
-                    className="px-2 py-1 rounded text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                    className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
                   >
                     <Check className="w-3 h-3" />
                     Adicionar {selectedAiTitles.length} selecionado{selectedAiTitles.length > 1 ? 's' : ''}
@@ -1280,7 +1280,7 @@ export function AdvancedFiltersModal({
                       key={title}
                       onClick={() => toggleAiTitleSelection(title)}
                       className={cn(
-                        "px-2 py-1 rounded text-xs border transition-colors flex items-center gap-1",
+                        "px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
                         isSelected
                           ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
                           : "border-wedo-purple/30 bg-white text-wedo-purple hover:bg-wedo-purple/10"
@@ -1501,7 +1501,7 @@ export function AdvancedFiltersModal({
                     <span className="text-xs">{title}</span>
                     <button
                       onClick={() => removeFromArray("job", "pastTitles", title)}
-                      className="ml-1 hover:bg-gray-300 rounded p-0.5"
+                      className="ml-1 hover:bg-gray-300 rounded-md p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1541,7 +1541,7 @@ export function AdvancedFiltersModal({
                 {selectedAiPastTitles.length > 0 && (
                   <button
                     onClick={handleAddSelectedAiPastTitles}
-                    className="px-2 py-1 rounded text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                    className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
                   >
                     <Check className="w-3 h-3" />
                     Adicionar {selectedAiPastTitles.length} selecionado{selectedAiPastTitles.length > 1 ? 's' : ''}
@@ -1556,7 +1556,7 @@ export function AdvancedFiltersModal({
                       key={title}
                       onClick={() => toggleAiPastTitleSelection(title)}
                       className={cn(
-                        "px-2 py-1 rounded text-xs border transition-colors flex items-center gap-1",
+                        "px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
                         isSelected
                           ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
                           : "border-wedo-purple/30 bg-white text-wedo-purple hover:bg-wedo-purple/10"
@@ -1603,7 +1603,7 @@ export function AdvancedFiltersModal({
                       }
                     }}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs border transition-all",
+                      "px-2.5 py-1 rounded-md text-xs border transition-all",
                       isSelected 
                         ? "border-gray-400 bg-gray-100 text-gray-800 dark:text-gray-200 font-medium" 
                         : "border-gray-200 hover:border-gray-300 text-gray-600"
@@ -1698,7 +1698,7 @@ export function AdvancedFiltersModal({
                     <span className="text-xs">{role}</span>
                     <button
                       onClick={() => removeFromArray("job", "roles", role)}
-                      className="ml-1 hover:bg-wedo-purple/20 rounded p-0.5"
+                      className="ml-1 hover:bg-wedo-purple/20 rounded-md p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1722,7 +1722,7 @@ export function AdvancedFiltersModal({
                       }
                     }}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs border transition-all",
+                      "px-2.5 py-1 rounded-md text-xs border transition-all",
                       isSelected 
                         ? "border-gray-400 bg-gray-100 text-gray-800 dark:text-gray-200 font-medium" 
                         : "border-gray-200 hover:border-gray-300 text-gray-600"
@@ -1868,7 +1868,7 @@ export function AdvancedFiltersModal({
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {selectedPreset.titles.map(title => (
-                      <span key={title} className="px-3 py-1.5 bg-gray-100 rounded text-xs text-gray-800 dark:text-gray-200">
+                      <span key={title} className="px-3 py-1.5 bg-gray-100 rounded-md text-xs text-gray-800 dark:text-gray-200">
                         {title}
                       </span>
                     ))}
@@ -1990,7 +1990,7 @@ export function AdvancedFiltersModal({
                 {item}
                 <button
                   onClick={() => onRemove(item)}
-                  className="ml-1 hover:bg-gray-300 rounded p-0.5"
+                  className="ml-1 hover:bg-gray-300 rounded-md p-0.5"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -2339,7 +2339,7 @@ export function AdvancedFiltersModal({
                   </div>
 
                   {creditEstimate.warnings.length > 0 && (
-                    <div className="mt-3 p-2 bg-status-warning/10 rounded border border-status-warning/30">
+                    <div className="mt-3 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
                       {creditEstimate.warnings.map((warning, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
                           <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />

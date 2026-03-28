@@ -52,7 +52,7 @@ export function parseChatMarkdown(text: string): string {
     return `%%CODEBLOCK_${codeBlocks.length - 1}%%`
   })
 
-  processed = processed.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-xs font-mono text-gray-800 dark:text-gray-200">$1</code>')
+  processed = processed.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-xs font-mono text-gray-800 dark:text-gray-200">$1</code>')
   processed = processed.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
   processed = processed.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
 

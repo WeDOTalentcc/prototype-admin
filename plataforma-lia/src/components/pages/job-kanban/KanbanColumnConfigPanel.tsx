@@ -148,7 +148,7 @@ export function KanbanColumnConfigPanel({
                       className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all border ${col.visible ? 'bg-gray-900/5 border-gray-900/20' : 'bg-gray-50 border-gray-200'}`}
                     >
                       <div
-                        className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
                         style={{backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
                           border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                       >

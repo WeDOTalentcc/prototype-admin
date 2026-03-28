@@ -152,21 +152,21 @@ export function LiaChatModal({
           <div className="flex gap-1">
             <button
               onClick={handleContact}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
             >
               <MessageSquare className="w-3 h-3 text-gray-800 dark:text-gray-200" />
               Contatar
             </button>
             <button
               onClick={handleSchedule}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
             >
               <CalendarIcon className="w-3 h-3 text-gray-800 dark:text-gray-200" />
               Agendar
             </button>
             <button
               onClick={handleAddTo}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
             >
               <UserPlus className="w-3 h-3 text-gray-800 dark:text-gray-200" />
               Adicionar

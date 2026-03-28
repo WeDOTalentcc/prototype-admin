@@ -232,7 +232,7 @@ export function ArchetypesList({
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => onEditArchetype(arch, e)}
-                      className="p-1 rounded hover:bg-gray-100 transition-colors"
+                      className="p-1 rounded-md hover:bg-gray-100 transition-colors"
                       title="Editar arquétipo"
                     >
                       <Pencil className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
@@ -240,7 +240,7 @@ export function ArchetypesList({
                     <button
                       onClick={(e) => onDeleteArchetype(arch, e)}
                       disabled={isDeletingArchetype === arch.id}
-                      className="p-1 rounded hover:bg-status-error/10 transition-colors"
+                      className="p-1 rounded-md hover:bg-status-error/10 transition-colors"
                       title="Excluir arquétipo"
                     >
                       {isDeletingArchetype === arch.id ? (

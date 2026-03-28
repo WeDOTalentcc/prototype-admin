@@ -376,19 +376,19 @@ export default function DashboardSegurancaPage() {
               </div>
               <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700" >
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-error)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-error)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-success)'}} />
+                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-success)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Baixo</span>
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function DashboardSegurancaPage() {
                   <div key={idx}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded" style={{backgroundColor: item.color}} />
+                        <div className="w-3 h-3 rounded-md" style={{backgroundColor: item.color}} />
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                           {item.severity}
                         </span>

@@ -192,7 +192,7 @@ export function BigFiveDashboardPage() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'color-mix(in srgb, black 5%, transparent)'
+          color: 'rgba(0, 0, 0, 0.05)'
         }
       },
       x: {
@@ -211,7 +211,7 @@ export function BigFiveDashboardPage() {
         label: 'Performance',
         data: hiringOutcomes.map(d => d.performance),
         borderColor: 'var(--wedo-green-pastel)',
-        backgroundColor: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A)  10%, transparent)',
+        backgroundColor: 'rgba(123, 194, 154, 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -220,7 +220,7 @@ export function BigFiveDashboardPage() {
         label: 'Fit Cultural %',
         data: hiringOutcomes.map(d => d.fit),
         borderColor: 'var(--gray-400)',
-        backgroundColor: 'color-mix(in srgb, var(--wedo-blue) 10%, transparent)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -229,7 +229,7 @@ export function BigFiveDashboardPage() {
         label: 'Turnover %',
         data: hiringOutcomes.map(d => d.turnover),
         borderColor: 'var(--status-error)',
-        backgroundColor: 'color-mix(in srgb, var(--status-error) 10%, transparent)',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true
@@ -253,7 +253,7 @@ export function BigFiveDashboardPage() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'color-mix(in srgb, black 5%, transparent)'
+          color: 'rgba(0, 0, 0, 0.05)'
         }
       },
       x: {
@@ -293,35 +293,35 @@ export function BigFiveDashboardPage() {
         label: 'Abertura',
         data: departmentData.map(d => d.openness),
         borderColor: 'var(--gray-400)',
-        backgroundColor: 'color-mix(in srgb, var(--wedo-blue) 20%, transparent)',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
         borderWidth: 2
       },
       {
         label: 'Conscienciosidade',
         data: departmentData.map(d => d.conscientiousness),
         borderColor: 'var(--wedo-green-pastel)',
-        backgroundColor: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A)  20%, transparent)',
+        backgroundColor: 'rgba(123, 194, 154, 0.2)',
         borderWidth: 2
       },
       {
         label: 'Extroversão',
         data: departmentData.map(d => d.extraversion),
         borderColor: 'var(--status-warning)',
-        backgroundColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)',
+        backgroundColor: 'rgba(217, 119, 6, 0.2)',
         borderWidth: 2
       },
       {
         label: 'Amabilidade',
         data: departmentData.map(d => d.agreeableness),
         borderColor: 'var(--wedo-cyan-light)',
-        backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)',
+        backgroundColor: 'rgba(96, 190, 209, 0.15)',
         borderWidth: 2
       },
       {
         label: 'Estabilidade',
         data: departmentData.map(d => d.neuroticism),
         borderColor: 'var(--status-error)',
-        backgroundColor: 'color-mix(in srgb, var(--status-error) 20%, transparent)',
+        backgroundColor: 'rgba(220, 38, 38, 0.2)',
         borderWidth: 2
       }
     ]
@@ -347,7 +347,7 @@ export function BigFiveDashboardPage() {
           stepSize: 20
         },
         grid: {
-          color: 'color-mix(in srgb, black 10%, transparent)'
+          color: 'rgba(0, 0, 0, 0.1)'
         }
       }
     }
@@ -387,7 +387,7 @@ export function BigFiveDashboardPage() {
         <select
           value={selectedDepartment}
           onChange={(e) => setSelectedDepartment(e.target.value)}
-          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
         >
           <option value="Todos">Todos os Departamentos</option>
           {departmentData.map(dept => (
@@ -397,7 +397,7 @@ export function BigFiveDashboardPage() {
         <select
           value={selectedTimeRange}
           onChange={(e) => setSelectedTimeRange(e.target.value)}
-          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
         >
           <option value="3 meses">Últimos 3 meses</option>
           <option value="6 meses">Últimos 6 meses</option>

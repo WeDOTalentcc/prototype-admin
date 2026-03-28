@@ -172,7 +172,7 @@ export function LanguagesPanel({
                               return (
                                 <SelectItem key={level} value={level}>
                                   <span 
-                                    className="inline-block px-1.5 py-0.5 rounded text-xs"
+                                    className="inline-block px-1.5 py-0.5 rounded-md text-xs"
                                     style={{backgroundColor: styles.bg, 
                                       color: styles.text,
                                       opacity: styles.opacity}}

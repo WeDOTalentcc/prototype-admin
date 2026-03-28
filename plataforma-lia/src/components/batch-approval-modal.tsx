@@ -575,7 +575,7 @@ export function BatchApprovalModal({
                           type="checkbox"
                           checked={batchAction.notifyTeam}
                           onChange={(e) => setBatchAction({...batchAction, notifyTeam: e.target.checked})}
-                          className="rounded border-gray-300"
+                          className="rounded-md border-gray-300"
                         />
                         <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Notificar equipe</span>
@@ -586,7 +586,7 @@ export function BatchApprovalModal({
                           type="checkbox"
                           checked={batchAction.sendEmail}
                           onChange={(e) => setBatchAction({...batchAction, sendEmail: e.target.checked})}
-                          className="rounded border-gray-300"
+                          className="rounded-md border-gray-300"
                         />
                         <Mail className="w-4 h-4 text-status-success" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Enviar email aos candidatos</span>
@@ -597,7 +597,7 @@ export function BatchApprovalModal({
                           type="checkbox"
                           checked={batchAction.scheduleInterview}
                           onChange={(e) => setBatchAction({...batchAction, scheduleInterview: e.target.checked})}
-                          className="rounded border-gray-300"
+                          className="rounded-md border-gray-300"
                         />
                         <Calendar className="w-4 h-4 text-wedo-purple" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Agendar entrevistas automaticamente</span>
@@ -608,7 +608,7 @@ export function BatchApprovalModal({
                           type="checkbox"
                           checked={batchAction.addToTalentPool}
                           onChange={(e) => setBatchAction({...batchAction, addToTalentPool: e.target.checked})}
-                          className="rounded border-gray-300"
+                          className="rounded-md border-gray-300"
                         />
                         <Star className="w-4 h-4 text-wedo-orange" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Adicionar ao banco de talentos</span>

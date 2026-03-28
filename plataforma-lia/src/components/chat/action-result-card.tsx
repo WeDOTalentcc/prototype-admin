@@ -83,7 +83,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
   return (
     <div className={`rounded-md border ${borderBg} p-3 my-2 ${className}`}>
       <div className="flex items-center gap-2 mb-2">
-        <div className={`p-1 rounded ${badgeColor}`}>
+        <div className={`p-1 rounded-md ${badgeColor}`}>
           <Icon className={`w-4 h-4 ${iconColor}`} />
         </div>
         <span className="text-sm font-medium text-zinc-200">{config.label}</span>
@@ -102,11 +102,11 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           <div className="flex items-center gap-2">
             {result.from_stage && (
               <>
-                <span className="px-1.5 py-0.5 rounded bg-zinc-700/50 text-zinc-300">{result.from_stage}</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-zinc-700/50 text-zinc-300">{result.from_stage}</span>
                 <ArrowRight className="w-3 h-3 text-zinc-500" />
               </>
             )}
-            <span className={`px-1.5 py-0.5 rounded ${badgeColor}`}>{result.to_stage}</span>
+            <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>{result.to_stage}</span>
           </div>
         )}
 
@@ -138,7 +138,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         {actionType === "duplicate_job" && result.new_job_id && (
           <div className="flex items-center gap-2">
             <span className="text-zinc-500">Nova vaga ID:</span>
-            <span className={`px-1.5 py-0.5 rounded ${badgeColor}`}>#{String(result.new_job_id)}</span>
+            <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>#{String(result.new_job_id)}</span>
           </div>
         )}
 

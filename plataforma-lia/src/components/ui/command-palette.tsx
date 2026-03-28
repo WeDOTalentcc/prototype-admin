@@ -116,7 +116,7 @@ export function CommandPalette({
             className="border-0 focus-visible:ring-0 text-base bg-transparent text-gray-800"
             autoFocus
           />
-          <kbd className="ml-2 px-2 py-1 text-xs rounded bg-white text-gray-400 border border-gray-300">
+          <kbd className="ml-2 px-2 py-1 text-xs rounded-md bg-white text-gray-400 border border-gray-300">
             ESC
           </kbd>
         </div>
@@ -153,7 +153,7 @@ export function CommandPalette({
                       )}
                     </div>
                     {cmd.shortcut && (
-                      <kbd className="px-2 py-1 text-xs rounded flex-shrink-0 bg-white text-gray-400 border border-gray-300">
+                      <kbd className="px-2 py-1 text-xs rounded-md flex-shrink-0 bg-white text-gray-400 border border-gray-300">
                         {cmd.shortcut}
                       </kbd>
                     )}

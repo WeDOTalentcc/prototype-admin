@@ -283,7 +283,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={step}
-                            className="flex-1 p-2 rounded bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="flex-1 p-2 rounded-md bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                           <Button variant="ghost" size="sm">
                             <Trash2 className="w-3 h-3" />
@@ -368,7 +368,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.approved.timing}
-                            className="w-full p-2 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                         </div>
                         <div>
@@ -376,14 +376,14 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.approved.subject}
-                            className="w-full p-2 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                         </div>
                         <div>
                           <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.approved.message}
-                            className="w-full p-3 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                             rows={8}
                           />
                         </div>
@@ -406,7 +406,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.timing}
-                            className="w-full p-2 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                         </div>
                         <div>
@@ -414,14 +414,14 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.subject}
-                            className="w-full p-2 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                         </div>
                         <div>
                           <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.rejected.message}
-                            className="w-full p-3 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                             rows={8}
                           />
                         </div>
@@ -449,7 +449,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={guideline}
-                            className="flex-1 p-2 rounded text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="flex-1 p-2 rounded-md text-sm bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                           />
                           <Button variant="ghost" size="sm">
                             <Trash2 className="w-3 h-3" />
@@ -470,12 +470,12 @@ Equipe de Recrutamento`
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-3 gap-2 text-xs">
-                      <code className="p-2 bg-gray-100 rounded">{"{NOME}"}</code>
-                      <code className="p-2 bg-gray-100 rounded">{"{VAGA}"}</code>
-                      <code className="p-2 bg-gray-100 rounded">{"{EMPRESA}"}</code>
-                      <code className="p-2 bg-gray-100 rounded">{"{PONTOS_FORTES}"}</code>
-                      <code className="p-2 bg-gray-100 rounded">{"{AREAS_DESENVOLVIMENTO}"}</code>
-                      <code className="p-2 bg-gray-100 rounded">{"{PROXIMA_ETAPA}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{NOME}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{VAGA}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{EMPRESA}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{PONTOS_FORTES}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{AREAS_DESENVOLVIMENTO}"}</code>
+                      <code className="p-2 bg-gray-100 rounded-md">{"{PROXIMA_ETAPA}"}</code>
                     </div>
                   </CardContent>
                 </Card>

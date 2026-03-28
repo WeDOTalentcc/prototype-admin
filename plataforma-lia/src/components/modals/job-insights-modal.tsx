@@ -645,14 +645,14 @@ export function JobInsightsModal({
         <style>
           body { font-family: 'Open Sans', Arial, sans-serif; padding: 40px; color: #1a1a1a; }
           h1 { font-size: 24px; margin-bottom: 8px; }
-          h2 { font-size: 18px; color: #374151; margin-top: 24px; }
+          h2 { font-size: 18px; color: var(--gray-800); margin-top: 24px; }
           .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
           .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0; }
-          .metric-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+          .metric-card { border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; }
           .metric-label { font-size: 12px; color: #6b7280; }
           .metric-value { font-size: 20px; font-weight: 600; }
-          .section { margin: 24px 0; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; }
-          .job-item { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+          .section { margin: 24px 0; padding: 16px; border: 1px solid var(--gray-200); border-radius: 8px; }
+          .job-item { padding: 12px; border-bottom: 1px solid var(--gray-200); }
           .job-item:last-child { border-bottom: none; }
           @media print { body { padding: 20px; } }
         </style>
@@ -692,7 +692,7 @@ export function JobInsightsModal({
           `).join('')}
         </div>
         
-        <p style="font-size: 11px; color: #9ca3af; margin-top: 32px;">
+        <p style="font-size: 11px; color: var(--gray-400); margin-top: 32px;">
           Gerado pela Plataforma LIA - WeDO Talent
         </p>
       </body>

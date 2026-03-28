@@ -440,7 +440,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                       type="checkbox"
                       checked={formData.isManager || false}
                       onChange={(e) => setFormData(prev => ({ ...prev, isManager: e.target.checked }))}
-                      className="w-3.5 h-3.5 rounded border-gray-300"
+                      className="w-3.5 h-3.5 rounded-md border-gray-300"
                     />
                     <span className={textStyles.label}>É Gestor</span>
                   </label>
@@ -477,7 +477,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                           setFormData(prev => ({ ...prev, permissions: permissions.filter(p => p !== permission.id) }))
                         }
                       }}
-                      className="w-3.5 h-3.5 rounded border-gray-300"
+                      className="w-3.5 h-3.5 rounded-md border-gray-300"
                     />
                     <span className={textStyles.label}>{permission.label}</span>
                   </label>

@@ -110,7 +110,7 @@ function CompanyDefaultQuestions({
                     checked={enabled}
                     disabled={!isEditing}
                     onChange={e => onToggle(q.id, e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-gray-300 accent-gray-900 cursor-pointer disabled:cursor-default"
+                    className="w-3.5 h-3.5 rounded-md border-gray-300 accent-gray-900 cursor-pointer disabled:cursor-default"
                   />
                   <span className="font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 flex-1">
                     {q.question}
@@ -1023,7 +1023,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </div>
                       )}
                       {screeningConfig?.settings?.auto_approval_paused && (
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded text-status-warning dark:text-status-warning">
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded-md text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
                           <span className="text-micro font-medium" >Triagem pausada — limite atingido, aguardando revisão humana</span>
                         </div>
@@ -1276,7 +1276,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </div>
                       )}
                       {screeningConfig?.settings?.auto_approval_paused && (
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded text-status-warning dark:text-status-warning">
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded-md text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
                           <span className="text-micro font-medium" >Triagem pausada — limite atingido</span>
                           <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" >
@@ -1689,7 +1689,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           {wsiGenerationStep >= 4 && (
-                            <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-gray-100 rounded-md transition-colors">
                               <X className="w-3.5 h-3.5 text-gray-400" />
                             </button>
                           )}
@@ -2127,7 +2127,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                 )}
                                               </div>
                                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className={`p-1.5 rounded transition-colors ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
+                                                <button className={`p-1.5 rounded-md transition-colors ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
                                                   setDeactivatedQuestions(prev => {
                                                     const next = new Set(prev)
                                                     if (next.has(item.id)) { next.delete(item.id); toast.success('Pergunta reativada') } else { next.add(item.id); toast.success('Pergunta arquivada') }

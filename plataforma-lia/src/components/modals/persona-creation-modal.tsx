@@ -397,7 +397,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                           type="checkbox"
                           checked={personaData.autoSourcing}
                           onChange={(e) => setPersonaData(prev => ({ ...prev, autoSourcing: e.target.checked }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                       </div>
 
@@ -410,7 +410,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                           type="checkbox"
                           checked={personaData.smartAlerts}
                           onChange={(e) => setPersonaData(prev => ({ ...prev, smartAlerts: e.target.checked }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                       </div>
 
@@ -423,7 +423,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                           type="checkbox"
                           checked={personaData.liaAnalysis}
                           onChange={(e) => setPersonaData(prev => ({ ...prev, liaAnalysis: e.target.checked }))}
-                          className="rounded"
+                          className="rounded-md"
                         />
                       </div>
                     </div>

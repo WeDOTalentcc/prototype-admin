@@ -142,10 +142,10 @@ const risks = [
 ]
 
 const getScoreColor = (score: number) => {
-  if (score >= 15) return { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)', label: 'Crítico' }
-  if (score >= 10) return { bg: 'rgba(249, 115, 22, 0.1)', text: 'var(--status-warning)', label: 'Alto' }
-  if (score >= 5) return { bg: 'rgba(234, 179, 8, 0.1)', text: 'var(--status-warning)', label: 'Médio' }
-  return { bg: 'rgba(34, 197, 94, 0.1)', text: 'var(--status-success)', label: 'Baixo' }
+  if (score >= 15) return { bg: 'var(--status-error-bg)', text: 'var(--status-error)', label: 'Crítico' }
+  if (score >= 10) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Alto' }
+  if (score >= 5) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Médio' }
+  return { bg: 'var(--status-success-bg)', text: 'var(--status-success)', label: 'Baixo' }
 }
 
 const getStatusConfig = (status: string) => {
@@ -256,7 +256,7 @@ export default function RiskRegisterPage() {
           </Button>
         </div>
 
-        <Card className="mb-6" style={{borderLeft: '4px solid #ef4444'}}>
+        <Card className="mb-6" style={{borderLeft: '4px solid var(--status-error)'}}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-error mt-0.5" />
@@ -306,7 +306,7 @@ export default function RiskRegisterPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(234, 179, 8, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
@@ -430,14 +430,14 @@ export default function RiskRegisterPage() {
                         </TableCell>
                         <TableCell className="text-center">
                           <span 
-                            className="text-sm font-bold px-2 py-1 rounded"
+                            className="text-sm font-bold px-2 py-1 rounded-md"
                             style={{backgroundColor: scoreConfig.bg, color: scoreConfig.text}}
                           >
                             {risk.score}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${treatmentConfig.bg} ${treatmentConfig.color}`}>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${treatmentConfig.bg} ${treatmentConfig.color}`}>
                             <TreatmentIcon className="w-3 h-3" />
                             {treatmentConfig.label}
                           </div>

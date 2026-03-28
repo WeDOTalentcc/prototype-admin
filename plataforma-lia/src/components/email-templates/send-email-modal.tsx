@@ -238,10 +238,10 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                         Para:
                       </p>
                       <div className="flex items-center gap-0.5">
-                        <button className="p-0.5 hover:bg-gray-50 rounded">
+                        <button className="p-0.5 hover:bg-gray-50 rounded-md">
                           <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
                         </button>
-                        <button className="p-0.5 hover:bg-gray-50 rounded">
+                        <button className="p-0.5 hover:bg-gray-50 rounded-md">
                           <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
                         </button>
                       </div>

@@ -103,21 +103,21 @@ export function LoginPage() {
       {/* Cloud blobs - estático, sem animação */}
       <div className="absolute inset-0 pointer-events-none z-0">
         {/* Nuvem grande - topo direito */}
-        <div style={{position: 'absolute', width: '720px', height: '460px', top: '-90px', right: '-120px', background: 'color-mix(in srgb, white 88%, transparent)', borderRadius: '50%', filter: 'blur(72px)'}} />
+        <div style={{position: 'absolute', width: '720px', height: '460px', top: '-90px', right: '-120px', background: 'rgba(255, 255, 255, 0.88)', borderRadius: '50%', filter: 'blur(72px)'}} />
         {/* Nuvem grande - centro direito */}
-        <div style={{position: 'absolute', width: '560px', height: '490px', top: '28%', right: '6%', background: 'color-mix(in srgb, white 82%, transparent)', borderRadius: '50%', filter: 'blur(82px)'}} />
+        <div style={{position: 'absolute', width: '560px', height: '490px', top: '28%', right: '6%', background: 'rgba(255, 255, 255, 0.82)', borderRadius: '50%', filter: 'blur(82px)'}} />
         {/* Nuvem extra - detalhe topo direito */}
-        <div style={{position: 'absolute', width: '320px', height: '260px', top: '8%', right: '28%', background: 'color-mix(in srgb, white 70%, transparent)', borderRadius: '50%', filter: 'blur(55px)'}} />
+        <div style={{position: 'absolute', width: '320px', height: '260px', top: '8%', right: '28%', background: 'rgba(255, 255, 255, 0.7)', borderRadius: '50%', filter: 'blur(55px)'}} />
         {/* Nuvem grande - baixo direito */}
-        <div style={{position: 'absolute', width: '780px', height: '390px', bottom: '-90px', right: '3%', background: 'color-mix(in srgb, white 78%, transparent)', borderRadius: '50%', filter: 'blur(90px)'}} />
+        <div style={{position: 'absolute', width: '780px', height: '390px', bottom: '-90px', right: '3%', background: 'rgba(255, 255, 255, 0.78)', borderRadius: '50%', filter: 'blur(90px)'}} />
         {/* Nuvem centro esquerdo */}
-        <div style={{position: 'absolute', width: '500px', height: '330px', top: '42%', left: '-90px', background: 'color-mix(in srgb, white 68%, transparent)', borderRadius: '50%', filter: 'blur(76px)'}} />
+        <div style={{position: 'absolute', width: '500px', height: '330px', top: '42%', left: '-90px', background: 'rgba(255, 255, 255, 0.68)', borderRadius: '50%', filter: 'blur(76px)'}} />
         {/* Nuvem sutil - topo esquerdo */}
-        <div style={{position: 'absolute', width: '360px', height: '260px', top: '4%', left: '12%', background: 'color-mix(in srgb, white 58%, transparent)', borderRadius: '50%', filter: 'blur(64px)'}} />
+        <div style={{position: 'absolute', width: '360px', height: '260px', top: '4%', left: '12%', background: 'rgba(255, 255, 255, 0.58)', borderRadius: '50%', filter: 'blur(64px)'}} />
         {/* Nuvem baixo esquerdo */}
-        <div style={{position: 'absolute', width: '520px', height: '310px', bottom: '4%', left: '3%', background: 'color-mix(in srgb, white 64%, transparent)', borderRadius: '50%', filter: 'blur(80px)'}} />
+        <div style={{position: 'absolute', width: '520px', height: '310px', bottom: '4%', left: '3%', background: 'rgba(255, 255, 255, 0.64)', borderRadius: '50%', filter: 'blur(80px)'}} />
         {/* Nuvem central pequena */}
-        <div style={{position: 'absolute', width: '280px', height: '200px', top: '55%', left: '35%', background: 'color-mix(in srgb, white 52%, transparent)', borderRadius: '50%', filter: 'blur(60px)'}} />
+        <div style={{position: 'absolute', width: '280px', height: '200px', top: '55%', left: '35%', background: 'rgba(255, 255, 255, 0.52)', borderRadius: '50%', filter: 'blur(60px)'}} />
       </div>
 
       {/* Left Side - Content */}
@@ -287,7 +287,7 @@ export function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-gray-950 dark:text-gray-50 border-gray-300 rounded focus:ring-gray-900"
+                    className="w-4 h-4 text-gray-950 dark:text-gray-50 border-gray-300 rounded-md focus:ring-gray-900"
                   />
                   <span className="ml-2 text-sm text-gray-800 dark:text-gray-200">Lembrar de mim</span>
                 </label>
@@ -560,7 +560,7 @@ export function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-gray-950 dark:text-gray-50 border-gray-300 rounded"
+                  className="w-4 h-4 text-gray-950 dark:text-gray-50 border-gray-300 rounded-md"
                 />
                 <span className="ml-2 text-sm text-gray-600">Lembrar de mim</span>
               </label>

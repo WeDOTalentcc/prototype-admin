@@ -191,7 +191,7 @@ export default function DPOPage() {
                       id="isPrimary"
                       checked={newDpo.isPrimary}
                       onChange={(e) => setNewDpo({ ...newDpo, isPrimary: e.target.checked })}
-                      className="rounded border-gray-300"
+                      className="rounded-md border-gray-300"
                     />
                     <Label htmlFor="isPrimary" className="text-sm font-normal cursor-pointer">
                       Definir como DPO Principal

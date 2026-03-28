@@ -200,7 +200,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
               <div className="flex items-center justify-between mb-4">
                 <button 
                   onClick={prevMonth}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-gray-100 rounded-md"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -209,7 +209,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                 </span>
                 <button 
                   onClick={nextMonth}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-gray-100 rounded-md"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -238,7 +238,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                       key={formatDateISO(date)}
                       onClick={() => handleDateClick(date)}
                       className={`
-                        h-8 text-xs font-['Open_Sans'] rounded transition-colors
+                        h-8 text-xs font-['Open_Sans'] rounded-md transition-colors
                         ${isSelected 
                           ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 font-medium' 
                           : isInRange 
@@ -281,7 +281,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-['Open_Sans'] transition-colors"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-['Open_Sans'] transition-colors"
                   >
                     {preset.label}
                   </button>

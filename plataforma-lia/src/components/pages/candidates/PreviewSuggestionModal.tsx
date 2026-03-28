@@ -109,7 +109,7 @@ export function PreviewSuggestionModal({
                 <Badge
                   key={index}
                   className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
-                  style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--wedo-cyan) 30%, transparent)'}}
+                  style={{backgroundColor: 'rgba(96, 190, 209, 0.15)', border: '1px solid rgba(96, 190, 209, 0.3)'}}
                 >
                   {tag}
                   <button

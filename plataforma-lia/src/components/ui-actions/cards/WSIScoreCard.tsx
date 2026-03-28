@@ -223,7 +223,7 @@ export function WSIScoreCard({
               {data.strengths.slice(0, 2).map((strength, index) => (
                 <div 
                   key={index}
-                  className="flex items-start gap-2 text-xs px-2 py-1 rounded"
+                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-md"
                   style={{backgroundColor: 'var(--lia-bg-tertiary)',
                     color: 'var(--lia-text-secondary)'}}
                 >
@@ -244,7 +244,7 @@ export function WSIScoreCard({
               {data.development_areas.slice(0, 2).map((area, index) => (
                 <div 
                   key={index}
-                  className="flex items-start gap-2 text-xs px-2 py-1 rounded"
+                  className="flex items-start gap-2 text-xs px-2 py-1 rounded-md"
                   style={{backgroundColor: 'var(--lia-bg-tertiary)',
                     color: 'var(--lia-text-secondary)'}}
                 >

@@ -1122,25 +1122,25 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
             {/* Cards de Status de Tarefas - LINHA HORIZONTAL ULTRA COMPACTA */}
             <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
                 <Briefcase className="w-3 h-3 text-gray-950 dark:text-gray-50" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.total}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Total</span>
               </div>
               <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
                 <CheckCircle2 className="w-3 h-3 text-gray-950 dark:text-gray-50 font-semibold" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.completed}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Concluídas</span>
               </div>
               <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
                 <Clock className="w-3 h-3 text-gray-950 dark:text-gray-50" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.pending}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Pendentes</span>
               </div>
               <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.iaTasks}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>IA</span>
@@ -1242,7 +1242,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
                                           {getTaskTypeIcon(task.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -1391,7 +1391,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
                                           {getTaskTypeIcon(task.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -1583,7 +1583,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <div className="flex items-start gap-2 flex-1">
                             {/* Ícone de severidade */}
                             <div 
-                              className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+                              className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
                               style={getAlertSeverityStyle(alert.severity)}
                             >
                               {alert.severity === 'high' && <AlertTriangle className="w-3.5 h-3.5" />}
@@ -2127,7 +2127,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <div className="flex items-center gap-1.5">
                           {/* Pendências LIA */}
                           {job.liaPendencies.length > 0 && (
-                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-1 flex-1">
+                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-1.5 py-1 flex-1">
                               <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
                               <span className="text-xs text-gray-950 dark:text-gray-200 truncate font-medium">
                                 {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}

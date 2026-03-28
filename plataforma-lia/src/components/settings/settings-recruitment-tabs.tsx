@@ -648,7 +648,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                           <button
                             onClick={() => toggleStageActive(stage.name)}
                             className={cn(
-                              "flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors",
+                              "flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
                               stage.isActive
                                 ? "text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
                                 : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
@@ -752,7 +752,7 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
                       type="number"
                       value={item.peso}
                       onChange={() => onSettingsChange(true)}
-                      className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center"
+                      className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-center"
                     />
                     <span className="text-sm text-gray-800">%</span>
                   </div>

@@ -2727,37 +2727,37 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
         <thead>
           <tr className="">
             <th className="py-3 px-3 text-center w-12">
-              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
+              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '80px'}}>
-              <div className="w-8 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-8 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '200px'}}>
-              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-center" style={{width: '100px'}}>
-              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
+              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '180px'}}>
-              <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '100px'}}>
-              <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '60px'}}>
-              <div className="w-10 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-10 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '120px'}}>
-              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-left" style={{width: '100px'}}>
-              <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
             </th>
             <th className="py-3 px-3 text-center" style={{width: '100px'}}>
-              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
+              <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
             </th>
             <th className="py-3 px-3 text-center" style={{width: '80px'}}>
-              <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
+              <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
             </th>
           </tr>
         </thead>
@@ -2765,49 +2765,49 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
           {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
             <tr key={row} className="">
               <td className="py-3 px-3 text-center">
-                <div className="w-4 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                <div className="w-4 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
               </td>
               <td className="py-3 px-3">
-                <div className="w-16 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="w-16 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
               </td>
               <td className="py-3 px-3">
                 <div className="space-y-1">
-                  <div className="w-40 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="w-24 h-3 bg-gray-50 dark:bg-gray-800/50 rounded animate-pulse" />
+                  <div className="w-40 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-24 h-3 bg-gray-50 dark:bg-gray-800/50 rounded-md animate-pulse" />
                 </div>
               </td>
               <td className="py-3 px-3 text-center">
-                <div className="w-8 h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                <div className="w-8 h-6 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
               </td>
               <td className="py-3 px-3">
                 <div className="flex gap-1">
-                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
                 </div>
               </td>
               <td className="py-3 px-3">
                 <div className="w-16 h-5 bg-gray-100 dark:bg-gray-800 rounded-full animate-pulse" />
               </td>
               <td className="py-3 px-3">
-                <div className="w-8 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="w-8 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
               </td>
               <td className="py-3 px-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full animate-pulse" />
-                  <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
                 </div>
               </td>
               <td className="py-3 px-3">
-                <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
               </td>
               <td className="py-3 px-3 text-center">
-                <div className="w-16 h-5 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                <div className="w-16 h-5 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
               </td>
               <td className="py-3 px-3 text-center">
-                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mx-auto" />
+                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
               </td>
             </tr>
           ))}
@@ -2854,7 +2854,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                           deselectAllJobs()
                         }
                       }}
-                      className="w-4 h-4 rounded"
+                      className="w-4 h-4 rounded-md"
                     />
                   </th>
                 )
@@ -2951,7 +2951,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   toggleJobSelection(job.id)
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-4 h-4 rounded"
+                                className="w-4 h-4 rounded-md"
                               />
                             </td>
                           )
@@ -3098,7 +3098,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'}}>
@@ -3120,7 +3120,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{backgroundColor: 'var(--gray-300)',
                                         width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'}}>
@@ -3139,7 +3139,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'}}>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
@@ -3157,7 +3157,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'}}>
@@ -3433,14 +3433,14 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                <div className="h-4 w-64 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mt-2" />
+                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+                <div className="h-4 w-64 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse mt-2" />
               </div>
-              <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
             </div>
             <div className="space-y-2 mt-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
               ))}
             </div>
           </div>
@@ -3524,7 +3524,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                       }`}
                     >
                       {isLoadingJobs ? (
-                        <span className="inline-block w-4 h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
+                        <span className="inline-block w-4 h-3 bg-gray-300 dark:bg-gray-600 rounded-md animate-pulse" />
                       ) : (
                         filter.count
                       )}
@@ -3705,7 +3705,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-800)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--gray-800) 12%, transparent)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(31, 41, 55, 0.12)"
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
@@ -3938,7 +3938,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                         variant="ghost"
                         size="sm"
                         onClick={toggleTableExpansion}
-                        className="h-7 w-7 p-0 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="h-7 w-7 p-0 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
                         title="Contrair tabela"
                       >
                         <ChevronLeft className="w-4 h-4 text-gray-800" />

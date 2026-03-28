@@ -932,7 +932,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_min', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded-md text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
                                 />
                               </td>
                               <td className="p-1 text-center">
@@ -943,7 +943,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_max', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded-md text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
                                 />
                               </td>
                               {monthKeys.map((monthKey, idx) => (
@@ -954,7 +954,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                     value={pos.monthlyPlanned[monthKey] || 0}
                                     onChange={(e) => updatePositionMonth(dept.id, pos.id, monthKey, parseInt(e.target.value) || 0)}
                                     disabled={!isEditingWorkforce}
-                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
+                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-gray-200 dark:border-gray-600 rounded-md text-center bg-white dark:bg-gray-700 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:text-gray-200`}
                                   />
                                 </td>
                               ))}

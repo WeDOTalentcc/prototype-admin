@@ -52,7 +52,7 @@ const quickActions: QuickAction[] = [
   {
     href: "/admin/metricas-plataforma",
     icon: TrendingUp,
-    iconColor: "#16a34a",
+    iconColor: "var(--status-success)",
     title: "Ver Métricas Detalhadas",
     subtitle: "Consumo, custos, analytics",
   },
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
     },
     {
       icon: Globe,
-      iconColor: "#2563eb",
+      iconColor: "var(--wedo-blue)",
       title: "Buscas Globais (Base Global)",
       subtitle: "3.500 buscas (850 créditos)",
       value: "R$ 420",
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
     },
     {
       icon: Database,
-      iconColor: "#9333ea",
+      iconColor: "var(--wedo-purple)",
       title: "Armazenamento PostgreSQL",
       subtitle: "4.2 GB / 10 GB",
       badge: "42% usado",

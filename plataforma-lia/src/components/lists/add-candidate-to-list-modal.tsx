@@ -341,7 +341,7 @@ export function AddCandidateToListModal({
                           : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <div className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                      <div className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
                         isSelected 
                           ? 'bg-gray-800' 
                           : 'bg-gray-200 dark:bg-gray-600'
@@ -439,7 +439,7 @@ export function AddCandidateToListModal({
                     <button
                       onClick={handleLinkedInImport}
                       disabled={importingLinkedin}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
                       {importingLinkedin ? (
                         <Loader2 className="w-4 h-4 animate-spin text-gray-500" />

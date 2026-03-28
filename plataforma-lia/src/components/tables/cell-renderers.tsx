@@ -348,7 +348,7 @@ export function SelectionCheckbox({
       }}
       className="cursor-pointer"
     >
-      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
         isSelected
           ? 'bg-gray-900 border-gray-900 dark:bg-gray-200 dark:border-gray-200'
           : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-500'
@@ -389,10 +389,10 @@ export function NoteCell({
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
   if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)', textStyle: 'var(--gray-600)' }
-  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'color-mix(in srgb, var(--status-error) 15%, transparent)', textStyle: 'var(--status-error)' }
-  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'color-mix(in srgb, var(--gray-500) 15%, transparent)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: 'var(--gray-600)' }
+  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgba(220, 38, 38, 0.15)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgba(217, 119, 6, 0.15)', textStyle: 'var(--status-warning)' }
+  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {

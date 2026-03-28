@@ -322,7 +322,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     </h3>
                     <button
                       onClick={() => toggleFavorite(command.id)}
-                      className="shrink-0 p-1 -m-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
@@ -356,7 +356,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => copyCommand(command.id, command.command)}
-                        className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
                         <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-gray-800'}`} />

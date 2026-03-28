@@ -3784,7 +3784,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 💰 Compensation
               </button>
@@ -3792,7 +3792,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 onClick={() => uiActions.openPanel("technical_requirements", {
                   requirements: []
                 }, "Requisitos Técnicos")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 💻 Tech Requirements
               </button>
@@ -3800,7 +3800,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 onClick={() => uiActions.openPanel("behavioral_competencies", {
                   competencies: []
                 }, "Competências Comportamentais")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 🧠 Competencies
               </button>
@@ -3810,7 +3810,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   candidate_name: "João Silva",
                   interviewers: []
                 }, "Agendar Entrevista")}
-                className="px-3 py-1.5 text-xs bg-wedo-orange hover:bg-wedo-orange/10 text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-orange hover:bg-wedo-orange/10 text-white rounded-md transition-colors"
               >
                 📅 Interview
               </button>
@@ -3838,7 +3838,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   ],
                   feedback: { approved: [], rejected: [], maybe: [] }
                 }, "Calibração de Busca")}
-                className="px-3 py-1.5 text-xs bg-wedo-magenta hover:bg-wedo-magenta text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-magenta hover:bg-wedo-magenta text-white rounded-md transition-colors"
               >
                 🎯 Calibration
               </button>
@@ -3846,7 +3846,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 onClick={() => uiActions.openPanel("wsi_questions", {
                   questions: []
                 }, "Perguntas WSI")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 📝 WSI Questions
               </button>
@@ -3876,7 +3876,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   }
                   setMessages(prev => [...prev, testMessage])
                 }}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 👤 Candidate Card
               </button>
@@ -3899,7 +3899,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   }
                   setMessages(prev => [...prev, testMessage])
                 }}
-                className="px-3 py-1.5 text-xs bg-wedo-purple hover:bg-wedo-purple text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-purple hover:bg-wedo-purple text-white rounded-md transition-colors"
               >
                 📊 WSI Score Card
               </button>
@@ -3923,7 +3923,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   }
                   setMessages(prev => [...prev, testMessage])
                 }}
-                className="px-3 py-1.5 text-xs bg-status-warning hover:bg-status-warning text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-status-warning hover:bg-status-warning text-white rounded-md transition-colors"
               >
                 📅 Interview Card
               </button>

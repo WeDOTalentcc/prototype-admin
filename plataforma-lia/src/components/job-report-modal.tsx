@@ -272,28 +272,28 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   Resumo Executivo
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+                  <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
                     <Users className="w-4 h-4 text-gray-600 dark:text-gray-400 mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-gray-900 dark:text-gray-50">{reportData.funnelMetrics.totalCandidates}</p>
                     <p className="text-micro text-gray-600">Total Candidatos</p>
                   </div>
-                  <div className="text-center p-2 bg-status-success/10 rounded border border-status-success/30">
+                  <div className="text-center p-2 bg-status-success/10 rounded-md border border-status-success/30">
                     <Target className="w-4 h-4 text-status-success mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-status-success">{reportData.funnelMetrics.hired}</p>
                     <p className="text-micro text-gray-600">Contratados</p>
                   </div>
-                  <div className="text-center p-2 bg-wedo-purple/10 rounded border border-wedo-purple/30">
+                  <div className="text-center p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
                     <p className="text-micro text-gray-600">Dias p/ Contratar</p>
                   </div>
-                  <div className="text-center p-2 bg-wedo-orange/10 rounded border border-wedo-orange/30">
+                  <div className="text-center p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-orange">R${reportData.funnelMetrics.costPerHire.toLocaleString('pt-BR')}</p>
                     <p className="text-micro text-gray-600">Custo/Contratação</p>
                   </div>
                 </div>
-                <div className="p-2 bg-status-warning/10 rounded border border-status-warning/30 flex items-start gap-2">
+                <div className="p-2 bg-status-warning/10 rounded-md border border-status-warning/30 flex items-start gap-2">
                   <AlertCircle className="w-3 h-3 text-status-warning mt-0.5 flex-shrink-0" />
                   <p className="text-micro text-gray-800 dark:text-gray-200">
                     <span className="font-medium">Status:</span> Processo em fase de {job.stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
@@ -312,7 +312,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <Filter className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                     Análise do Funil
                   </h3>
-                  <div className="space-y-1.5 p-2 bg-gray-50 rounded border border-gray-100">
+                  <div className="space-y-1.5 p-2 bg-gray-50 rounded-md border border-gray-100">
                     {[
                       { stage: "Candidatos", value: reportData.funnelMetrics.totalCandidates, percentage: 100, color: "bg-gray-700 dark:bg-gray-300" },
                       { stage: "Triagem", value: reportData.funnelMetrics.screening, percentage: 57, color: "bg-status-warning" },
@@ -331,11 +331,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex-1 p-1.5 bg-status-success/10 rounded border border-status-success/30 text-center">
+                    <div className="flex-1 p-1.5 bg-status-success/10 rounded-md border border-status-success/30 text-center">
                       <p className="text-micro text-gray-600">Conversão</p>
                       <p className="text-sm font-bold text-status-success">{reportData.funnelMetrics.conversionRate}%</p>
                     </div>
-                    <div className="flex-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 text-center">
+                    <div className="flex-1 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600 text-center">
                       <p className="text-micro text-gray-600">Qualidade</p>
                       <div className="flex items-center justify-center gap-0.5 mt-0.5">
                         {[1,2,3,4].map((star) => (
@@ -355,7 +355,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                     Performance por Canal
                   </h3>
-                  <div className="overflow-hidden rounded border border-gray-100">
+                  <div className="overflow-hidden rounded-md border border-gray-100">
                     <table className="w-full text-micro">
                       <thead className="bg-gray-50">
                         <tr>
@@ -412,7 +412,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </h3>
                   <div className="space-y-1">
                     {reportData.topCandidates.map((candidate, index) => (
-                      <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-gray-50 rounded border border-gray-100">
+                      <div key={candidate.name} className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md border border-gray-100">
                         <div className="flex items-center gap-1.5">
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold text-white
                             ${index === 0 ? 'bg-status-warning' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-wedo-orange/10' : 'bg-gray-500'}`}>
@@ -474,22 +474,22 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   Análise de Custos
                 </h3>
                 <div className="grid grid-cols-6 gap-2">
-                  <div className="col-span-2 p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+                  <div className="col-span-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
                     <p className="text-micro text-gray-600">Orçamento Total</p>
                     <p className="text-sm font-bold text-gray-900 dark:text-gray-50">R$ {reportData.budget.total.toLocaleString('pt-BR')}</p>
                   </div>
-                  <div className="col-span-2 p-2 bg-wedo-orange/10 rounded border border-wedo-orange/30">
+                  <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                     <p className="text-micro text-gray-600">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-wedo-orange">R$ {reportData.budget.spent.toLocaleString('pt-BR')}</p>
                   </div>
-                  <div className="col-span-2 p-2 bg-status-success/10 rounded border border-status-success/30">
+                  <div className="col-span-2 p-2 bg-status-success/10 rounded-md border border-status-success/30">
                     <p className="text-micro text-gray-600">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-status-success">R$ {reportData.budget.remaining.toLocaleString('pt-BR')}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {reportData.budget.breakdown.map((item) => (
-                    <div key={item.category} className="p-1.5 bg-gray-50 rounded border border-gray-100 text-center">
+                    <div key={item.category} className="p-1.5 bg-gray-50 rounded-md border border-gray-100 text-center">
                       <p className="text-micro text-gray-600 truncate">{item.category}</p>
                       <p className="text-micro font-semibold text-gray-800">R$ {item.amount.toLocaleString('pt-BR')}</p>
                       <p className="text-micro text-gray-500">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
@@ -524,7 +524,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     </div>
                   ))}
                 </div>
-                <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 flex items-start gap-2">
+                <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600 flex items-start gap-2">
                   <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
                   <div>
                     <h4 className="text-micro font-semibold text-gray-950 dark:text-gray-50">Ação Prioritária</h4>

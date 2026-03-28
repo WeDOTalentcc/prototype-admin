@@ -131,13 +131,13 @@ const getClaimStatusBadge = (status: string) => {
 const getAlertSeverityStyle = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return { bg: 'rgba(239, 68, 68, 0.1)', border: 'var(--status-error)', icon: 'text-status-error' }
+      return { bg: 'var(--status-error-bg)', border: 'var(--status-error)', icon: 'text-status-error' }
     case 'high':
-      return { bg: 'rgba(234, 179, 8, 0.1)', border: 'var(--status-warning)', icon: 'text-status-warning' }
+      return { bg: 'var(--status-warning-bg)', border: 'var(--status-warning)', icon: 'text-status-warning' }
     case 'medium':
       return { bg: 'rgba(229, 231, 235, 0.3)', border: 'var(--gray-200)', icon: 'text-gray-600 dark:text-gray-400' }
     default:
-      return { bg: 'rgba(156, 163, 175, 0.1)', border: '#9ca3af', icon: 'text-gray-500' }
+      return { bg: 'rgba(107, 114, 128, 0.1)', border: 'var(--gray-400)', icon: 'text-gray-500' }
   }
 }
 
@@ -439,7 +439,7 @@ export default function SeguroCiberneticoPage() {
         {isExpiringSoon && !isExpired && activePolicy && (
           <div 
             className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
-            style={{backgroundColor: 'rgba(234, 179, 8, 0.1)', borderLeftColor: 'var(--status-warning)'}}
+            style={{backgroundColor: 'var(--status-warning-bg)', borderLeftColor: 'var(--status-warning)'}}
           >
             <AlertTriangle className="w-5 h-5 text-status-warning" />
             <div>

@@ -192,7 +192,7 @@ export function PromptSuggestionsPanel({
                 key={index}
                 onClick={() => onHistoryCommand(command)}
                 disabled={isProcessing}
-                className={`w-full text-left text-xs p-2 rounded hover:bg-white transition-colors ${
+                className={`w-full text-left text-xs p-2 rounded-md hover:bg-white transition-colors ${
                   isProcessing ? 'opacity-50' : 'text-gray-600 hover:text-gray-800'
                 }`}
               >

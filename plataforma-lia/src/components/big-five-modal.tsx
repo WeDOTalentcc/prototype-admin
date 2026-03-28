@@ -406,15 +406,15 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <div className="w-full h-1 bg-wedo-magenta rounded mb-1"></div>
+                    <div className="w-full h-1 bg-wedo-magenta rounded-md mb-1"></div>
                     <span className="text-micro text-gray-600">0-39 Baixo</span>
                   </div>
                   <div>
-                    <div className="w-full h-1 bg-status-warning rounded mb-1"></div>
+                    <div className="w-full h-1 bg-status-warning rounded-md mb-1"></div>
                     <span className="text-micro text-gray-600">40-69 Moderado</span>
                   </div>
                   <div>
-                    <div className="w-full h-1 bg-status-success rounded mb-1"></div>
+                    <div className="w-full h-1 bg-status-success rounded-md mb-1"></div>
                     <span className="text-micro text-gray-600">70-100 Alto</span>
                   </div>
                 </div>

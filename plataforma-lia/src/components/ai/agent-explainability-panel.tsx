@@ -229,14 +229,14 @@ export function AgentExplainabilityPanel({
 
                     <div
                       className={cn(
-                        "mb-3 flex-1 rounded bg-gray-900 p-3",
+                        "mb-3 flex-1 rounded-md bg-gray-900 p-3",
                         isLast && "mb-0"
                       )}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <div
                           className={cn(
-                            "flex items-center gap-1 rounded px-1.5 py-0.5",
+                            "flex items-center gap-1 rounded-md px-1.5 py-0.5",
                             phase.bgColor
                           )}
                         >
@@ -283,7 +283,7 @@ export function AgentExplainabilityPanel({
           )}
 
           {!loading && !error && summary && (
-            <div className="mt-4 grid grid-cols-2 gap-2 rounded bg-gray-900 p-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-gray-900 p-3 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-1">
                 <BarChart3 className="h-4 w-4 text-wedo-cyan" />
                 <span className="text-micro text-zinc-500 font-[Inter]">

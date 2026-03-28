@@ -302,7 +302,7 @@ const RecentItemRow = React.memo(({
           e.stopPropagation()
           onRemove(item.id, item.type)
         }}
-        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
         title="Remover dos recentes"
       >
         <X className="w-3 h-3 text-gray-400 dark:text-gray-500" />
@@ -593,7 +593,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador visual de atalho */}
       {isCollapsed && !isTemporaryExpanded && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-950 text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-950 text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
           Ctrl+B
         </div>
       )}

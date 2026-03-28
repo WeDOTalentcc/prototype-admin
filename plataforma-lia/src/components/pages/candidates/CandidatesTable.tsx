@@ -48,28 +48,28 @@ function SkeletonRow() {
   return (
     <tr className="border-b border-gray-200 dark:border-gray-700 animate-pulse">
       <td className="w-12 p-4">
-        <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded-md" />
       </td>
       <td className="p-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full" />
           <div className="space-y-2">
-            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
-            <div className="h-3 w-40 bg-gray-100 dark:bg-gray-800 rounded" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-md" />
+            <div className="h-3 w-40 bg-gray-100 dark:bg-gray-800 rounded-md" />
           </div>
         </div>
       </td>
       <td className="p-4">
         <div className="space-y-2">
-          <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 rounded" />
+          <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded-md" />
+          <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 rounded-md" />
         </div>
       </td>
       <td className="p-4">
-        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded-md" />
       </td>
       <td className="p-4 text-center">
-        <div className="h-6 w-8 bg-gray-200 dark:bg-gray-700 rounded mx-auto" />
+        <div className="h-6 w-8 bg-gray-200 dark:bg-gray-700 rounded-md mx-auto" />
       </td>
       <td className="p-4">
         <div className="flex gap-1">
@@ -79,12 +79,12 @@ function SkeletonRow() {
         </div>
       </td>
       <td className="p-4">
-        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded-md" />
       </td>
       <td className="p-4">
         <div className="flex justify-end gap-1">
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-md" />
+          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-md" />
         </div>
       </td>
     </tr>
@@ -131,7 +131,7 @@ export function CandidatesTable({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded" /></th>
+              <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded-md" /></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Candidato</span></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Cargo Atual</span></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Localização</span></th>

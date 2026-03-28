@@ -1129,7 +1129,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
             <div className="grid grid-cols-2 gap-2">
               {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(module => (
                 <label key={module} className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded border-gray-300" />
+                  <input type="checkbox" defaultChecked className="rounded-md border-gray-300" />
                   <span className="text-sm text-gray-800 dark:text-gray-200">{module}</span>
                 </label>
               ))}
@@ -1310,7 +1310,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-1">
                         {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md">
                             Obrigatório
                           </span>
                         )}
@@ -1360,13 +1360,13 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-2">
                         {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md">
                             Obrigatório
                           </span>
                         )}
                         {mapping && (
                           <div className="flex items-center gap-1">
-                            <span className={`text-xs px-2 py-1 rounded ${getConfidenceColor(mapping.confidence)}`}>
+                            <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>
                               {mapping.confidence}%
                             </span>
                             <Button
@@ -1414,14 +1414,14 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
           <div className="space-y-2">
             {mappings.map(mapping => (
-              <div key={mapping.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+              <div key={mapping.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
                 <span className="text-sm">
                   <span className="font-medium">{mapping.sourceFieldName}</span>
                   <ArrowRight className="w-4 h-4 inline mx-2" />
                   <span className="font-medium">{mapping.targetFieldName}</span>
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${getConfidenceColor(mapping.confidence)}`}>
+                  <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>
                     {mapping.confidence}%
                   </span>
                   <Button

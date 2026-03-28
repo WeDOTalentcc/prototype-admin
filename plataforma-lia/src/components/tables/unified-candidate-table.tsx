@@ -340,7 +340,7 @@ export function UnifiedCandidateTable({
                 <th className="px-3 py-2.5 w-[50px]">
                   <div
                     onClick={handleSelectAll}
-                    className="cursor-pointer w-5 h-5 rounded border-2 flex items-center justify-center transition-all border-gray-300 dark:border-gray-600 hover:border-gray-500"
+                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all border-gray-300 dark:border-gray-600 hover:border-gray-500"
                   >
                     {paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id)) && (
                       <div className="w-2.5 h-2.5 bg-gray-900 dark:bg-gray-200 rounded-sm" />

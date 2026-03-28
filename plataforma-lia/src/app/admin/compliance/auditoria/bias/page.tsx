@@ -330,7 +330,7 @@ export default function BiasAuditPage() {
                               {Object.entries(dim.groups).map(([label, stats]) => (
                                 <span
                                   key={label}
-                                  className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                                  className="text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                                   title={`${stats.approved}/${stats.count} aprovados`}
                                 >
                                   {label}: {(stats.rate * 100).toFixed(0)}%

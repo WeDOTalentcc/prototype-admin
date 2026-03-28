@@ -362,7 +362,7 @@ export function TemplatesSection({
                   {selectedTemplate.subject && (
                     <div>
                       <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Assunto</label>
-                      <p className="text-sm mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-100" >
+                      <p className="text-sm mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded-md text-gray-800 dark:text-gray-100" >
                         {selectedTemplate.subject}
                       </p>
                     </div>
@@ -380,7 +380,7 @@ export function TemplatesSection({
                         {showHtmlView ? 'Ver Texto' : 'Ver HTML'}
                       </Button>
                     </div>
-                    <pre className="text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded whitespace-pre-wrap max-h-96 overflow-y-auto text-gray-800 dark:text-gray-100" style={{fontFamily: 'inherit'}}>
+                    <pre className="text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-md whitespace-pre-wrap max-h-96 overflow-y-auto text-gray-800 dark:text-gray-100" style={{fontFamily: 'inherit'}}>
                       {showHtmlView ? selectedTemplate.body : stripHtmlToText(selectedTemplate.body)}
                     </pre>
                   </div>

@@ -386,7 +386,7 @@ export function LocationFilterInput({
                   <span>{location.value.split(',')[0]}</span>
                   <button
                     onClick={() => removeLocation(location.value)}
-                    className="hover:bg-gray-200 rounded p-0.5 transition-colors ml-0.5"
+                    className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-0.5"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />

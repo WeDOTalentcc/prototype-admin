@@ -131,7 +131,7 @@ export function CandidateActivitiesTab({
               )}
             </div>
             {activity.details.opened && (
-              <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded">
+              <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded-md">
                 <CheckCircle className="w-3 h-3" />
                 <span>Email aberto em {activity.details.openedAt}</span>
               </div>
@@ -150,7 +150,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'interview-scheduled' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-wedo-purple" />
                 {activity.details.interviewType}
@@ -159,16 +159,16 @@ export function CandidateActivitiesTab({
                 )}
               </h5>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Data e Hora</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.dateTime}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Duração</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
                 </div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
+              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-3">
                 <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
                 <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
                 {activity.details.meetLink && (
@@ -183,7 +183,7 @@ export function CandidateActivitiesTab({
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
                   <div className="space-y-1">
                     {activity.details.interviewers.map((int: any, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded">
+                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md">
                         <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
                           {typeof int === 'string' ? int.charAt(0) : int.name?.charAt(0)}
                         </div>
@@ -200,25 +200,25 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'lia-evaluation' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 Avaliação Automática da LIA
               </h5>
               <div className="grid grid-cols-4 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
                   <p className={textStyles.bodySmall}>Técnico</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
                   <p className={textStyles.bodySmall}>Fit Cultural</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
                   <p className={textStyles.bodySmall}>Experiência</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
                   <p className={textStyles.bodySmall}>Soft Skills</p>
                 </div>
@@ -235,7 +235,7 @@ export function CandidateActivitiesTab({
                   </div>
                 </div>
               )}
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                 <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
               </div>
@@ -245,26 +245,26 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'job-application' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                 <FileText className="w-3 h-3 text-status-success" />
                 Candidatura Recebida
                 <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
               </h5>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>ID da Aplicação</p>
                   <p className="text-xs font-mono font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationId}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Método</p>
                   <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Recebido em</p>
                   <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Dispositivo</p>
                   <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.device}</p>
                 </div>
@@ -285,7 +285,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'voice-screening' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                 <Mic className="w-3 h-3 text-status-error" />
                 Triagem por Voz
@@ -294,21 +294,21 @@ export function CandidateActivitiesTab({
                 </Badge>
               </h5>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
                   <p className={textStyles.bodySmall}>Duração</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
                   <p className={textStyles.bodySmall}>Completude</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
                   <p className={textStyles.bodySmall}>Confiança</p>
                 </div>
               </div>
               {activity.details.highlights && (
-                <div className="bg-status-success/10 border border-status-success/30 p-2 rounded mb-3">
+                <div className="bg-status-success/10 border border-status-success/30 p-2 rounded-md mb-3">
                   <p className="text-xs font-semibold text-status-success mb-1">✨ Destaques</p>
                   <ul className="space-y-0.5">
                     {activity.details.highlights.map((h: string, i: number) => (
@@ -319,7 +319,7 @@ export function CandidateActivitiesTab({
                   </ul>
                 </div>
               )}
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded mb-3">
+              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-3">
                 <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Impressão Geral</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.overallImpression}</p>
               </div>
@@ -436,11 +436,11 @@ export function CandidateActivitiesTab({
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Data de Início</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Contrato</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
                 </div>
@@ -622,7 +622,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'technical-test' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded">
+            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Teste Técnico</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -648,7 +648,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'english-test' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded">
+            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Teste de Inglês</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -674,7 +674,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'data-collection' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded">
+            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Coleta de Dados</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -706,12 +706,12 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'onboarding' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md">
               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
                 <UserCheck className="w-3 h-3 text-gray-800 dark:text-gray-200" />
                 Processo de Onboarding
               </h5>
-              <div className="bg-status-success/10 p-2 rounded mb-3">
+              <div className="bg-status-success/10 p-2 rounded-md mb-3">
                 <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Checklist de Integração</p>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
@@ -737,34 +737,34 @@ export function CandidateActivitiesTab({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Data de Início</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
                   <p className={textStyles.bodySmall}>Segunda-feira</p>
                 </div>
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Gestor Responsável</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.onboardingManager}</p>
                   <p className={textStyles.bodySmall}>People & Culture</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                   <FileText className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                   <p className={textStyles.bodySmall}>Documentos</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.documentsStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                   <Building className="w-4 h-4 mx-auto text-gray-600 dark:text-gray-400 mb-1" />
                   <p className={textStyles.bodySmall}>Equipamentos</p>
                   <p className="text-xs font-semibold text-gray-900 dark:text-gray-50">{activity.details.equipmentStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                   <Shield className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                   <p className={textStyles.bodySmall}>Acessos</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.accessesStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
                   <Users className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
                   <p className={textStyles.bodySmall}>Buddy</p>
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">A definir</p>
@@ -777,7 +777,7 @@ export function CandidateActivitiesTab({
         {activity.type === 'interview-note' && (
           <div className="mt-2 space-y-2">
             {activity.details.technicalQuestions && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded">
+              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                 <p className={`${textStyles.bodySmall} mb-1`}>Questões Técnicas</p>
                 <div className="space-y-1">
                   {activity.details.technicalQuestions.map((q: any, i: number) => (
@@ -790,7 +790,7 @@ export function CandidateActivitiesTab({
               </div>
             )}
             {activity.details.overallScore && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded">
+              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                 <div className="flex items-center justify-between">
                   <span className={textStyles.bodySmall}>Score Geral</span>
                   <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{activity.details.overallScore}/10</span>
@@ -803,7 +803,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'lia-screening' && activity.details.conversation && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-800 p-2 rounded max-h-48 overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 p-2 rounded-md max-h-48 overflow-y-auto">
               <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
               <div className="space-y-2">
                 {activity.details.conversation.map((msg: any, i: number) => (
@@ -817,7 +817,7 @@ export function CandidateActivitiesTab({
               </div>
             </div>
             {activity.details.keyPoints && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded">
+              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                 <p className={`${textStyles.bodySmall} mb-1`}>Pontos-Chave</p>
                 <div className="space-y-0.5">
                   <div className="flex justify-between text-xs">
@@ -840,7 +840,7 @@ export function CandidateActivitiesTab({
 
         {(activity.type === 'email-sent' || activity.type === 'email-received') && activity.details.subject && !activity.details.from?.includes('@') && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded">
+            <div className="bg-white dark:bg-gray-900 p-3 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
                   <Mail className="w-3 h-3 text-gray-800 dark:text-gray-200" />
@@ -852,7 +852,7 @@ export function CandidateActivitiesTab({
                   </Badge>
                 )}
               </div>
-              <div className="bg-white dark:bg-gray-800 p-2 rounded mb-2 text-xs space-y-1">
+              <div className="bg-white dark:bg-gray-800 p-2 rounded-md mb-2 text-xs space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-800 dark:text-gray-200 font-medium">De:</span>
                   <span className="text-gray-800 dark:text-gray-200">
@@ -1038,7 +1038,7 @@ export function CandidateActivitiesTab({
             <select
               value={periodFilter}
               onChange={(e) => setPeriodFilter((e.target as HTMLSelectElement).value as typeof periodFilter)}
-              className="text-xs px-2 py-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="text-xs px-2 py-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
               <option value="7days">Últimos 7 dias</option>
               <option value="30days">Últimos 30 dias</option>
@@ -1048,14 +1048,14 @@ export function CandidateActivitiesTab({
             <div className="flex items-center bg-white rounded-md p-0.5 border border-gray-100 dark:border-gray-700">
               <button
                 onClick={() => setActivityView('timeline')}
-                className={`p-1 rounded transition-colors ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
+                className={`p-1 rounded-md transition-colors ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
                 title="Visualização Timeline"
               >
                 <GitBranch className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setActivityView('list')}
-                className={`p-1 rounded transition-colors ${activityView === 'list' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
+                className={`p-1 rounded-md transition-colors ${activityView === 'list' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
                 title="Visualização Lista"
               >
                 <List className="w-3.5 h-3.5" />
@@ -1099,7 +1099,7 @@ export function CandidateActivitiesTab({
           <button
             onClick={() => setActivityFilter('lia')}
             className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
-            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)',
+            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'rgba(96, 190, 209, 0.15)',
               color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
           >
             🤖 LIA

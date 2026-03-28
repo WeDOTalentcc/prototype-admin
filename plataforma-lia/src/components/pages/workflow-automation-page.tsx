@@ -507,7 +507,7 @@ export function WorkflowAutomationPage() {
                 {nodeType.items.map(item => (
                   <div
                     key={item.id}
-                    className={`p-2 border rounded cursor-pointer hover:bg-gray-50 ${nodeType.color}`}
+                    className={`p-2 border rounded-md cursor-pointer hover:bg-gray-50 ${nodeType.color}`}
                     draggable
                   >
                     <p className="text-xs font-medium">{item.name}</p>

@@ -82,7 +82,7 @@ function InlineFieldEditor({
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <X className="w-3 h-3 text-gray-400" />
         </button>
@@ -99,7 +99,7 @@ function InlineFieldEditor({
           onKeyDown={handleKeyDown}
           autoFocus
           disabled={isSaving}
-          className="text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
           style={{fontFamily: '"Inter", sans-serif'}}
         >
           <option value="">Selecionar...</option>
@@ -110,13 +110,13 @@ function InlineFieldEditor({
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <Check className="w-3 h-3 text-status-success" />
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <X className="w-3 h-3 text-gray-400" />
         </button>
@@ -136,7 +136,7 @@ function InlineFieldEditor({
         min={config?.min}
         max={config?.max}
         placeholder={config?.placeholder || ''}
-        className="w-24 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
+        className="w-24 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
         style={{fontFamily: '"Inter", sans-serif'}}
       />
       {config?.suffix && (
@@ -145,7 +145,7 @@ function InlineFieldEditor({
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
       >
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
@@ -155,7 +155,7 @@ function InlineFieldEditor({
       </button>
       <button
         onClick={onCancel}
-        className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
       >
         <X className="w-3 h-3 text-gray-400" />
       </button>
@@ -354,7 +354,7 @@ export function HiringPoliciesHub() {
                         return (
                           <div
                             key={field}
-                            className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded transition-all duration-300 ${
+                            className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md transition-all duration-300 ${
                               isUpdated ? 'bg-status-success/10 dark:bg-status-success/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                             }`}
                           >
@@ -381,7 +381,7 @@ export function HiringPoliciesHub() {
                                     e.stopPropagation()
                                     startEditing(block.key, field)
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity"
                                   aria-label={`Editar ${FIELD_LABELS[field] || field}`}
                                 >
                                   <Pencil className="w-3 h-3 text-gray-400" />

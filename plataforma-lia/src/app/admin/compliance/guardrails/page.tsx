@@ -292,7 +292,7 @@ export default function GuardrailsPage() {
                         </Badge>
                       )}
                       {g.tool && (
-                        <span className="text-xs font-mono text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-mono text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
                           tool: {g.tool}
                         </span>
                       )}

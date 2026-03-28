@@ -420,7 +420,7 @@ export function LiaSuperPrompt() {
                                         {suggestion.description}
                                       </p>
                                       {suggestion.actionType === "redirect" && (
-                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">
                                           Abre em nova tela
                                         </span>
                                       )}

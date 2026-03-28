@@ -268,7 +268,7 @@ export function CVPreview({
                   type="checkbox"
                   checked={overrideDuplicate}
                   onChange={(e) => setOverrideDuplicate(e.target.checked)}
-                  className="rounded border-status-warning/30"
+                  className="rounded-md border-status-warning/30"
                 />
                 <span className="text-xs text-status-warning">
                   Criar mesmo assim (ignorar duplicado)

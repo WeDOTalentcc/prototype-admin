@@ -403,7 +403,7 @@ export function LIAActivityFeed() {
                       )}
 
                       {/* Status indicator */}
-                      <div className={`inline-block px-2 py-1 rounded text-xs mt-2 ${
+                      <div className={`inline-block px-2 py-1 rounded-md text-xs mt-2 ${
                         activity.status === 'success' ? 'bg-status-success/15 text-status-success' :
                         activity.status === 'error' ? 'bg-status-error/15 text-status-error' :
                         activity.status === 'pending' ? 'bg-status-warning/15 text-status-warning' :

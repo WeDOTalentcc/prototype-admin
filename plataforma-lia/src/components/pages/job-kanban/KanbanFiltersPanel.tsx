@@ -116,7 +116,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={statusFilter.includes(value)}
                     onChange={() => toggleItem(statusFilter, value, onStatusFilterChange)}
-                    className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
                   />
                   <span className="text-xs text-gray-600">{label}</span>
                 </label>
@@ -134,7 +134,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={originFilter.includes(value)}
                     onChange={() => toggleItem(originFilter, value, onOriginFilterChange)}
-                    className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
                   />
                   <span className="text-xs text-gray-600">{label}</span>
                 </label>
@@ -152,7 +152,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={workModelFilter.includes(value)}
                     onChange={() => toggleItem(workModelFilter, value, onWorkModelFilterChange)}
-                    className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
                   />
                   <span className="text-xs text-gray-600">{label}</span>
                 </label>

@@ -451,7 +451,7 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Objetivo:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-gray-50 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-gray-50 p-2 rounded-md">
                       {screeningData.overview.objective}
                     </p>
                   </div>
@@ -582,19 +582,19 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-gray-600">Empresa:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
                       Líder em inovação tecnológica, focada em soluções impactantes
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600">Vaga:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
                       {jobData?.title} - Projetos desafiadores e de grande impacto
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600">Time:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
                       Equipe multidisciplinar, colaborativa e de excelência
                     </p>
                   </div>
@@ -676,7 +676,7 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Avaliação", time: "10 min após", desc: "Análise e decisão" },
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
                   ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
                       <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold">
                         {index + 1}
                       </div>
@@ -799,7 +799,7 @@ Boa sorte com as triagens! 🚀`,
                           <button
                             key={index}
                             onClick={() => handleOptionSelect(option)}
-                            className="block w-full text-left p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-sm transition-colors"
+                            className="block w-full text-left p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors"
                           >
                             {option}
                           </button>
@@ -883,15 +883,15 @@ Boa sorte com as triagens! 🚀`,
             </div>
             <div className="p-4">
               <div className="space-y-4 text-sm">
-                <div className="p-3 border rounded">
+                <div className="p-3 border rounded-md">
                   <div className="font-medium">Template Padrão</div>
                   <div className="text-xs text-gray-600 mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
                 </div>
-                <div className="p-3 border rounded">
+                <div className="p-3 border rounded-md">
                   <div className="font-medium">Abordagem</div>
                   <div className="text-xs text-gray-600 mt-1">Tom: Profissional, mas acolhedor</div>
                 </div>
-                <div className="p-3 border rounded">
+                <div className="p-3 border rounded-md">
                   <div className="font-medium">Feedback</div>
                   <div className="text-xs text-gray-600 mt-1">Aprovados: 24h • Reprovados: 48h</div>
                 </div>

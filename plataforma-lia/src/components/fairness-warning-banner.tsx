@@ -39,7 +39,7 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
         <button
           onClick={onDismiss}
           aria-label="Dispensar aviso de viés"
-          className="shrink-0 rounded p-0.5 text-status-warning hover:bg-status-warning/15 hover:text-status-warning focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
+          className="shrink-0 rounded-md p-0.5 text-status-warning hover:bg-status-warning/15 hover:text-status-warning focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
         >
           <X className="h-3.5 w-3.5" />
         </button>

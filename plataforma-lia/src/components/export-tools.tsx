@@ -234,7 +234,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                           ...prev,
                           [option.key]: e.target.checked
                         }))}
-                        className="w-3 h-3 rounded border-gray-300"
+                        className="w-3 h-3 rounded-md border-gray-300"
                       />
                       <span className="text-xs text-gray-600 dark:text-gray-400">
                         {option.label}

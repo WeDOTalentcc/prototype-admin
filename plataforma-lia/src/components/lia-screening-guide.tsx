@@ -384,7 +384,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <div className="space-y-2">
                     {job?.requirements?.map((requirement: string, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                        <input type="checkbox" className="rounded" />
+                        <input type="checkbox" className="rounded-md" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">{requirement}</span>
                       </div>
                     )) || (
@@ -437,7 +437,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <CardContent>
                         <div className="space-y-3">
                           {approachStrategy.structure.map((step, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                               <div className="w-6 h-6 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                                 {index + 1}
                               </div>
@@ -543,7 +543,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
- <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-600">
+ <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md text-xs text-gray-600">
                             <strong>Objetivo:</strong> {section.purpose}
                           </div>
                           <div className="space-y-2">
@@ -556,7 +556,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                                   <p className="text-sm text-gray-800 dark:text-gray-200">{question}</p>
                                   <textarea
                                     placeholder="Anotações da resposta..."
-                                    className="w-full mt-2 p-2 border border-gray-200 dark:border-gray-600 rounded text-xs bg-gray-50 dark:bg-gray-800"
+                                    className="w-full mt-2 p-2 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-gray-50 dark:bg-gray-800"
                                     rows={2}
                                   />
                                 </div>
@@ -583,7 +583,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
                           Recomendação Geral
                         </label>
-                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm">
+                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
                           <option value="">Selecione...</option>
                           <option value="aprovado">✅ Aprovado - Prosseguir</option>
                           <option value="condicional">⚠️ Aprovado com ressalvas</option>
@@ -594,7 +594,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
                           Nível de Confiança
                         </label>
-                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm">
+                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
                           <option value="">Selecione...</option>
                           <option value="alta">🔥 Alta confiança</option>
                           <option value="media">🎯 Média confiança</option>
@@ -608,7 +608,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </label>
                       <textarea
                         placeholder="Resumo da conversa, pontos de atenção, recomendações para próximas etapas..."
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
                         rows={4}
                       />
                     </div>
@@ -739,7 +739,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {jobPresentation.benefits.map((benefit: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                           <CheckCircle className="w-4 h-4 text-status-success" />
                           <span className="text-sm text-gray-800 dark:text-gray-200">{benefit}</span>
                         </div>
@@ -855,13 +855,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     <div className="space-y-3">
                       <div>
                         <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Assunto:</label>
-                        <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded text-sm text-status-success dark:text-status-success">
+                        <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success">
                           {feedbackStrategy.approvedTemplate.subject}
                         </div>
                       </div>
                       <div>
                         <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Mensagem:</label>
-                        <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded text-sm text-status-success dark:text-status-success whitespace-pre-line">
+                        <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success whitespace-pre-line">
                           {feedbackStrategy.approvedTemplate.message}
                         </div>
                       </div>
@@ -893,13 +893,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     <div className="space-y-3">
                       <div>
                         <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Assunto:</label>
-                        <div className="p-2 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded text-sm text-wedo-orange dark:text-wedo-orange">
+                        <div className="p-2 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md text-sm text-wedo-orange dark:text-wedo-orange">
                           {feedbackStrategy.rejectedTemplate.subject}
                         </div>
                       </div>
                       <div>
                         <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Mensagem:</label>
-                        <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded text-sm text-wedo-orange dark:text-wedo-orange whitespace-pre-line">
+                        <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md text-sm text-wedo-orange dark:text-wedo-orange whitespace-pre-line">
                           {feedbackStrategy.rejectedTemplate.message}
                         </div>
                       </div>
@@ -943,7 +943,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         </label>
                         <textarea
                           placeholder="Ex: Excelente comunicação, conhecimento técnico sólido em React..."
-                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
                           rows={3}
                         />
                       </div>
@@ -953,7 +953,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         </label>
                         <textarea
                           placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..."
-                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
                           rows={3}
                         />
                       </div>
@@ -1090,7 +1090,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         "Atualizar pipeline de candidatos"
                       ].map((item, index) => (
                         <div key={index} className="flex items-center gap-3">
-                          <input type="checkbox" className="rounded border-gray-300" />
+                          <input type="checkbox" className="rounded-md border-gray-300" />
                           <span className="text-sm text-gray-800 dark:text-gray-200">{item}</span>
                         </div>
                       ))}

@@ -343,8 +343,8 @@ export default function IncidentesPage() {
 
         <div 
           className="rounded-md border p-4 mb-6 flex items-center gap-3"
-          style={{backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            borderColor: 'rgba(239, 68, 68, 0.3)'}}
+          style={{backgroundColor: 'var(--status-error-bg)',
+            borderColor: 'rgba(220, 38, 38, 0.3)'}}
         >
           <AlertCircle className="w-5 h-5 text-status-error" />
           <div className="flex-1">
@@ -376,7 +376,7 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(251, 146, 60, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
                   <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
@@ -399,7 +399,7 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: criticalIncidents === 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: criticalIncidents === 0 ? 'var(--status-success-bg)' : 'var(--status-error-bg)'}}>
                   <Shield className={`w-5 h-5 ${criticalIncidents === 0 ? 'text-status-success' : 'text-status-error'}`} />
                 </div>
               </div>

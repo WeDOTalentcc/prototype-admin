@@ -454,7 +454,7 @@ export function IndicatorsPage() {
                                 setSelectedDepartments(selectedDepartments.filter(d => d !== dept))
                               }
                             }}
-                            className="rounded"
+                            className="rounded-md"
                           />
                           {dept}
                         </label>

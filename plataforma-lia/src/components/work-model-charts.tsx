@@ -262,15 +262,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         {/* Legenda */}
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-status-success rounded"></div>
+            <div className="w-3 h-3 bg-status-success rounded-md"></div>
             <span className="text-xs text-gray-600">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-700 dark:bg-gray-300 rounded"></div>
+            <div className="w-3 h-3 bg-gray-700 dark:bg-gray-300 rounded-md"></div>
             <span className="text-xs text-gray-600">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-500 rounded"></div>
+            <div className="w-3 h-3 bg-gray-500 rounded-md"></div>
             <span className="text-xs text-gray-600">Presencial</span>
           </div>
         </div>
@@ -319,15 +319,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         {/* Legenda do heatmap */}
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-status-success rounded"></div>
+            <div className="w-4 h-4 bg-status-success rounded-md"></div>
             <span className="text-xs text-gray-600">Baixa densidade (&lt;60)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-status-warning rounded"></div>
+            <div className="w-4 h-4 bg-status-warning rounded-md"></div>
             <span className="text-xs text-gray-600">Média densidade (60-100)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-status-error rounded"></div>
+            <div className="w-4 h-4 bg-status-error rounded-md"></div>
             <span className="text-xs text-gray-600">Alta densidade (&gt;200)</span>
           </div>
         </div>

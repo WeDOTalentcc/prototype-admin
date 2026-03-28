@@ -99,7 +99,7 @@ export function ColumnConfigPanel({
               </h4>
               <div className="space-y-1">
                 {savedColumnViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
                     <button
                       onClick={() => applyColumnView(view.id)}
                       className="text-xs text-gray-800 hover:text-gray-900"
@@ -131,7 +131,7 @@ export function ColumnConfigPanel({
                   </h4>
                   <div className="space-y-1">
                     {categoryColumns.map(col => (
-                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer">
+                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md cursor-pointer">
                         <input
                           type="checkbox"
                           className="w-3 h-3 accent-gray-900"

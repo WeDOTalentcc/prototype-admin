@@ -303,7 +303,7 @@ export function FastTrackReviewPanel({
               {jobData.basicInfo.tipoContrato || '-'}
             </div>
             {jobData.generatedDescription && (
-              <div className="mt-2 p-2 bg-neutral-800 rounded text-xs text-neutral-400 max-h-24 overflow-y-auto">
+              <div className="mt-2 p-2 bg-neutral-800 rounded-md text-xs text-neutral-400 max-h-24 overflow-y-auto">
                 {jobData.generatedDescription.slice(0, 200)}...
               </div>
             )}

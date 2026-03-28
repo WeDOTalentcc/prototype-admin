@@ -33,7 +33,7 @@ const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; labe
 }
 
 const getClassificationColor = (classification: string) =>
-  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)', text: 'var(--gray-600)', label: classification }
+  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'rgba(96, 190, 209, 0.12)', text: 'var(--gray-600)', label: classification }
 
 const getClassificationLabel = (classification: string) =>
   WSI_CLASSIFICATION_COLORS[classification]?.label ?? classification
@@ -310,18 +310,18 @@ export function TriagemDetailsModal({
                       <strong>${resp.competency}</strong>
                       <span style="font-weight:bold;color:${resp.scores.final_score >= 4 ? '#166534' : resp.scores.final_score >= 3 ? '#854D0E' : '#991B1B'}">${resp.scores.final_score.toFixed(1)}/5.0</span>
                     </div>
-                    <p style="color:#6B7280;font-size:12px;margin-bottom:4px;"><strong>Pergunta:</strong> ${resp.question.text}</p>
+                    <p style="color:var(--gray-500);font-size:12px;margin-bottom:4px;"><strong>Pergunta:</strong> ${resp.question.text}</p>
                     <p style="font-size:12px;margin-bottom:4px;"><strong>Resposta:</strong> ${resp.response_text}</p>
-                    <p style="font-size:11px;color:#6B7280;font-style:italic;">${resp.justification || ''}</p>
+                    <p style="font-size:11px;color:var(--gray-500);font-style:italic;">${resp.justification || ''}</p>
                   </div>
                 `).join('')
                 printWindow.document.write(`
                   <html><head><title>Triagem WSI - ${candidate.name}</title>
-                  <style>body{font-family:'Open Sans',sans-serif;padding:32px;color:#111827;max-width:800px;margin:0 auto;}
-                  h1{font-size:20px;margin-bottom:4px;}h2{font-size:16px;margin-top:24px;margin-bottom:12px;color:#374151;}
+                  <style>body{font-family:'Open Sans',sans-serif;padding:32px;color:var(--gray-950);max-width:800px;margin:0 auto;}
+                  h1{font-size:20px;margin-bottom:4px;}h2{font-size:16px;margin-top:24px;margin-bottom:12px;color:var(--gray-800);}
                   .scores{display:flex;gap:24px;margin:16px 0;}.score-box{text-align:center;padding:12px 20px;border:1px solid #F3F4F6;border-radius:8px;}
-                  .score-box .value{font-size:24px;font-weight:bold;}.score-box .label{font-size:11px;color:#6B7280;}
-                  .meta{font-size:12px;color:#6B7280;margin-bottom:16px;}
+                  .score-box .value{font-size:24px;font-weight:bold;}.score-box .label{font-size:11px;color:var(--gray-500);}
+                  .meta{font-size:12px;color:var(--gray-500);margin-bottom:16px;}
                   @media print{body{padding:16px;}}</style></head><body>
                   <h1>Triagem WSI - ${candidate.name}</h1>
                   <p class="meta">${candidate.role || candidate.current_title || ''} ${candidate.location ? '• ' + candidate.location : ''}</p>

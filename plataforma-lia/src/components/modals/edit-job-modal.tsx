@@ -1912,7 +1912,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       }`}
                     >
                       <div className="mt-0.5">
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                           selectedDefaultQuestions.has(q.id)
                             ? 'bg-status-warning border-status-warning/30'
                             : 'border-gray-300'

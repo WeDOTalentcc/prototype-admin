@@ -402,7 +402,7 @@ export function KanbanColumnRenderer({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="p-1 hover:bg-gray-100 rounded transition-opacity bg-white/80"
+                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity bg-white/80"
                       onClick={(e) => e.stopPropagation()}
                       title="Mais opções"
                       aria-label="Mais opções do candidato"
@@ -503,7 +503,7 @@ export function KanbanColumnRenderer({
 
                 {/* Botão de Preview */}
                 <button
-                  className="p-1 hover:bg-gray-100 rounded transition-colors bg-white/80"
+                  className="p-1 hover:bg-gray-100 rounded-md transition-colors bg-white/80"
                   onClick={(e) => {
                     e.stopPropagation()
                     onOpenPreview(candidate)
@@ -521,7 +521,7 @@ export function KanbanColumnRenderer({
                 <input
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
-                  className="w-3 h-3 rounded cursor-pointer flex-shrink-0 border border-gray-200"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-200"
                   aria-label={`Selecionar candidato ${candidate.name}`}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -539,7 +539,7 @@ export function KanbanColumnRenderer({
                 {/* D9 — Checkbox para comparação de candidatos */}
                 <input
                   type="checkbox"
-                  className="w-3 h-3 rounded cursor-pointer flex-shrink-0 border border-gray-300 accent-gray-900"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-300 accent-gray-900"
                   checked={selectedForCompare.has(candidate.id)}
                   onChange={(e) => {
                     setSelectedForCompare((prev: Set<string>) => {

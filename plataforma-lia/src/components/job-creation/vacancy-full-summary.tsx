@@ -191,27 +191,27 @@ export function VacancyFullSummary({
             <div>
               <SectionHeader icon={Tag} title="🏷️ Informações Básicas" isLocked={isFieldLocked('basic_info')} />
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
                   <Building2 className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Área:</span>
                   <span className="font-medium">{vacancy.department}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Local:</span>
                   <span className="font-medium">{vacancy.location}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
                   <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Modelo:</span>
                   <span className="font-medium">{WORK_MODEL_LABELS[vacancy.work_model.toLowerCase()] || vacancy.work_model}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
                   <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Contrato:</span>
                   <span className="font-medium">{EMPLOYMENT_TYPE_LABELS[vacancy.employment_type.toLowerCase()] || vacancy.employment_type}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded bg-gray-50 dark:bg-gray-900 col-span-2">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900 col-span-2">
                   <User className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Gestor:</span>
                   <span className="font-medium">{vacancy.manager}</span>
@@ -223,7 +223,7 @@ export function VacancyFullSummary({
             <div>
               <SectionHeader icon={DollarSign} title="💵 Remuneração" isLocked={isFieldLocked('compensation')} />
               <div className="space-y-2">
-                <div className="flex items-center gap-2 p-2 rounded bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
+                <div className="flex items-center gap-2 p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
                   <DollarSign className="h-4 w-4 text-status-success dark:text-status-success" />
                   <div className="flex-1">
                     <p className="text-micro text-muted-foreground">Faixa Salarial</p>
@@ -233,7 +233,7 @@ export function VacancyFullSummary({
                   </div>
                 </div>
                 {(vacancy.salary_range.bonus_min || vacancy.salary_range.bonus_max) && (
-                  <div className="flex items-center gap-2 p-2 rounded bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
+                  <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                     <DollarSign className="h-4 w-4 text-wedo-cyan-dark dark:text-wedo-cyan-dark" />
                     <div className="flex-1">
                       <p className="text-micro text-muted-foreground">Bônus</p>
@@ -263,7 +263,7 @@ export function VacancyFullSummary({
                 {vacancy.technical_skills.map((skill, idx) => {
                   const levelConfig = LEVEL_CONFIG[skill.level] || LEVEL_CONFIG['Intermediário']
                   return (
-                    <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                    <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2 min-w-0">
                         <Wrench className="h-3 w-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
@@ -289,7 +289,7 @@ export function VacancyFullSummary({
               <SectionHeader icon={Brain} title="🧠 Competências Comportamentais" isLocked={true} iconColor="text-wedo-purple" />
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.behavioral_competencies.map((comp, idx) => (
-                  <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2 min-w-0">
                       <Brain className="h-3 w-3 text-wedo-purple flex-shrink-0" />
                       <span className="text-xs font-medium truncate">{comp.name}</span>
@@ -304,7 +304,7 @@ export function VacancyFullSummary({
               <SectionHeader icon={MessageSquare} title="📱 Perguntas de Triagem WSI" isLocked={true} iconColor="text-wedo-orange" />
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.screening_questions.map((q, idx) => (
-                  <div key={idx} className="p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div key={idx} className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-800 dark:text-white">{idx + 1}. {q.question}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className="text-micro h-3.5 px-1">
@@ -318,7 +318,7 @@ export function VacancyFullSummary({
 
             <div>
               <SectionHeader icon={FileText} title="📝 Job Description" isLocked={isFieldLocked('job_description')} iconColor="text-gray-500" />
-              <div className="p-2 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 max-h-[100px] overflow-y-auto">
+              <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 max-h-[100px] overflow-y-auto">
                 <p className="text-xs text-muted-foreground whitespace-pre-wrap">
                   {vacancy.job_description}
                 </p>
@@ -332,7 +332,7 @@ export function VacancyFullSummary({
                 <span className="font-semibold">📌 O que você pode fazer:</span>
               </p>
               <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 rounded">'confirmar'</span></li>
+                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 rounded-md">'confirmar'</span></li>
                 <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
               <p className="text-micro text-muted-foreground mt-2 italic">

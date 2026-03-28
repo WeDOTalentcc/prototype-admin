@@ -334,7 +334,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 )}
               >
                 <div className={cn(
-                  "w-4 h-4 rounded flex items-center justify-center",
+                  "w-4 h-4 rounded-md flex items-center justify-center",
                   platform.enabled ? "bg-gray-900 dark:bg-gray-50 text-white" : "border border-gray-200"
                 )}>
                   {platform.enabled && <CheckCircle2 className="w-2.5 h-2.5" />}

@@ -278,7 +278,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                     key={formatDateISO(date)}
                     onClick={() => handleDateClick(date)}
                     className={`
-                      h-8 text-xs rounded transition-colors
+                      h-8 text-xs rounded-md transition-colors
                       ${isSelected
                         ? "bg-gray-900 dark:bg-gray-50 text-white font-medium"
                         : isInRange

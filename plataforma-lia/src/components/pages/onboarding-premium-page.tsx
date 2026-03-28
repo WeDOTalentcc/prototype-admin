@@ -837,14 +837,14 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-2 bg-status-warning/10 rounded">
+                      <div className="flex items-center gap-3 p-2 bg-status-warning/10 rounded-md">
                         <Clock className="w-4 h-4 text-status-warning" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Solicitar comprovante de residência</p>
                           <p className="text-xs text-gray-600">Vence hoje</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                      <div className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
                         <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Agendar exame admissional</p>

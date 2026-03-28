@@ -391,7 +391,7 @@ export function SalaryStage({
                             aria-label={benefit.enabled ? `Remover benefício: ${benefit.name}` : `Adicionar benefício: ${benefit.name}`}
                           >
                             <div className={cn(
-                              "w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0",
+                              "w-3.5 h-3.5 rounded-md flex items-center justify-center flex-shrink-0",
                               benefit.enabled ? "bg-gray-900 dark:bg-gray-50" : "border border-gray-200"
                             )}>
                               {benefit.enabled && <Check className="w-2.5 h-2.5 text-white" />}
@@ -405,7 +405,7 @@ export function SalaryStage({
                                   <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                                 )}
                                 {benefit.is_mandatory && (
-                                  <span className="text-micro px-1 py-0 rounded bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>
+                                  <span className="text-micro px-1 py-0 rounded-md bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>
                                 )}
                               </div>
                               {valueDisplay && (

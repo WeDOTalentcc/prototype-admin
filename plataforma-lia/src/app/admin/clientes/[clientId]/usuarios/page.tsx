@@ -87,7 +87,7 @@ function TableSkeleton() {
             <Skeleton className="h-3 w-20" />
             <Skeleton className="h-3 w-24" />
           </div>
-          <Skeleton className="w-8 h-8 rounded" />
+          <Skeleton className="w-8 h-8 rounded-md" />
         </div>
       ))}
     </div>

@@ -474,7 +474,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="space-y-2">
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                   <Users className="w-3 h-3 text-gray-600" />
                 </div>
                 <div className="flex-1">

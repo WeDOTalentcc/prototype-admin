@@ -890,15 +890,15 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="space-y-3">
-            <div className="h-5 w-32 rounded animate-pulse bg-gray-200 dark:bg-gray-700"></div>
+            <div className="h-5 w-32 rounded-md animate-pulse bg-gray-200 dark:bg-gray-700"></div>
             {[1, 2, 3].map((i) => (
               <Card key={i} className="rounded-md animate-pulse backdrop-blur-sm">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-md bg-gray-200 dark:bg-gray-700"></div>
                     <div className="flex-1">
-                      <div className="h-4 w-32 rounded mb-2 bg-gray-200 dark:bg-gray-700"></div>
-                      <div className="h-3 w-24 rounded bg-gray-200 dark:bg-gray-700"></div>
+                      <div className="h-4 w-32 rounded-md mb-2 bg-gray-200 dark:bg-gray-700"></div>
+                      <div className="h-3 w-24 rounded-md bg-gray-200 dark:bg-gray-700"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -908,7 +908,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           <Card className="border-dashed border-2 border-gray-200 dark:border-gray-700 rounded-md h-64 flex items-center justify-center animate-pulse backdrop-blur-sm">
             <CardContent className="text-center">
               <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-gray-200 dark:bg-gray-700"></div>
-              <div className="h-4 w-40 rounded mx-auto bg-gray-200 dark:bg-gray-700"></div>
+              <div className="h-4 w-40 rounded-md mx-auto bg-gray-200 dark:bg-gray-700"></div>
             </CardContent>
           </Card>
         </div>
@@ -1511,7 +1511,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={respectHolidays}
                   onChange={(e) => setRespectHolidays(e.target.checked)}
                   disabled={!isEditingSchedule}
-                  className="rounded accent-gray-700" 
+                  className="rounded-md accent-gray-700" 
                 />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
@@ -1521,7 +1521,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={respectWeekends}
                   onChange={(e) => setRespectWeekends(e.target.checked)}
                   disabled={!isEditingSchedule}
-                  className="rounded accent-gray-700" 
+                  className="rounded-md accent-gray-700" 
                 />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
@@ -1531,7 +1531,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={maxMessagesPerDay > 0}
                   onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)}
                   disabled={!isEditingSchedule}
-                  className="rounded accent-gray-700" 
+                  className="rounded-md accent-gray-700" 
                 />
               </label>
             </div>
@@ -1612,7 +1612,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <div className="flex items-start gap-2">
                   <div 
                     className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{backgroundColor: alert.enabled ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined,
+                    style={{backgroundColor: alert.enabled ? 'rgba(75, 85, 99, 0.1)' : undefined,
                       color: alert.enabled ? 'var(--gray-600)' : undefined}}
                   >
                     <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--gray-600)' : undefined}} />
@@ -1667,7 +1667,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'twice_daily' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
+                backgroundColor: briefingFrequency === 'twice_daily' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <RefreshCw className="w-3.5 h-3.5" style={{color: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : undefined}} />
@@ -1682,7 +1682,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'daily' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
+                backgroundColor: briefingFrequency === 'daily' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
@@ -1697,7 +1697,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'weekly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'weekly' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
+                backgroundColor: briefingFrequency === 'weekly' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />
@@ -1712,7 +1712,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'monthly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'monthly' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
+                backgroundColor: briefingFrequency === 'monthly' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />

@@ -980,8 +980,8 @@ export default function ObservabilidadePage({
     return (
       <div className="space-y-6">
         <div>
-          <div className="h-7 w-64 bg-gray-200 rounded animate-pulse" />
-          <div className="h-5 w-96 bg-gray-100 rounded animate-pulse mt-2" />
+          <div className="h-7 w-64 bg-gray-200 rounded-md animate-pulse" />
+          <div className="h-5 w-96 bg-gray-100 rounded-md animate-pulse mt-2" />
         </div>
         <div className="h-12 w-full bg-gray-100 rounded-md animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -188,7 +188,7 @@ export default function FornecedoresPage() {
           </Button>
         </div>
 
-        <Card className="mb-6" style={{borderLeft: '4px solid #f59e0b'}}>
+        <Card className="mb-6" style={{borderLeft: '4px solid var(--status-warning)'}}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />

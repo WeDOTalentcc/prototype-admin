@@ -787,7 +787,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.positive.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-success/10 p-2 rounded">
+                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-success/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}
@@ -801,7 +801,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.negative.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-error/10 p-2 rounded">
+                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-error/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}

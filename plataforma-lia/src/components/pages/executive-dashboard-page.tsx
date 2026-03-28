@@ -325,7 +325,7 @@ export function ExecutiveDashboardPage() {
                       ].map((stage, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <div className="w-20 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">{stage.stage}</div>
-                          <div className="flex-1 relative h-7 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
+                          <div className="flex-1 relative h-7 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${stage.color} flex items-center px-2`}
                               style={{width: `${Math.max(stage.pct, 8)}%`}}
@@ -411,15 +411,15 @@ export function ExecutiveDashboardPage() {
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
                             <div className="font-bold text-gray-950 dark:text-gray-50">{job.candidates}</div>
                             <div className="text-gray-600">candidatos</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
                             <div className="font-bold text-gray-950 dark:text-gray-50">{job.hires}</div>
                             <div className="text-gray-600">contratados</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
                             <div className="font-bold text-gray-950 dark:text-gray-50">{job.avgTime}d</div>
                             <div className="text-gray-600">tempo</div>
                           </div>

@@ -287,7 +287,7 @@ export function CompetenciesStage({
               onClick={() => onSetTechnicalSkills(
                 technicalSkills.map(s => s.id === skill.id ? { ...s, weight: w, isWeightInferred: false } : s)
               )}
-              className="transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+              className="transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
               aria-label={`Definir peso ${w}`}
             >
               <Star
@@ -304,7 +304,7 @@ export function CompetenciesStage({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
+                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
@@ -616,7 +616,7 @@ export function CompetenciesStage({
                         behavioralCompetencies.map(c => c.id === comp.id ? { ...c, enabled: !c.enabled } : c)
                       )}
                       className={cn(
-                        "w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all",
+                        "w-4 h-4 rounded-md flex-shrink-0 flex items-center justify-center transition-all",
                         comp.enabled
                           ? "bg-gray-900 dark:bg-gray-50 text-white"
                           : "border border-gray-200"
@@ -634,7 +634,7 @@ export function CompetenciesStage({
                           onClick={() => onSetBehavioralCompetencies(
                             behavioralCompetencies.map(c => c.id === comp.id ? { ...c, weight: w, isWeightInferred: false } : c)
                           )}
-                          className="transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded"
+                          className="transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
                           aria-label={`Definir peso ${w}`}
                         >
                           <Star
@@ -651,7 +651,7 @@ export function CompetenciesStage({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
+                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
                                 <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                               </button>
                             </TooltipTrigger>

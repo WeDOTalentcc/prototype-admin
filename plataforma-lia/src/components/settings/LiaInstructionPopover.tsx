@@ -117,7 +117,7 @@ export function LiaInstructionPopover({
                   <button
                     key={idx}
                     onClick={() => setInstruction(example)}
-                    className="block w-full text-left text-xs text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 rounded hover:bg-white transition-colors"
+                    className="block w-full text-left text-xs text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 rounded-md hover:bg-white transition-colors"
                   >
                     "{example}"
                   </button>

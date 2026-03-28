@@ -432,8 +432,8 @@ export function AdminTemplateHub() {
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-md bg-wedo-cyan/20"></div>
                     <div className="flex-1">
-                      <div className="h-4 w-32 rounded mb-2 bg-wedo-cyan/20"></div>
-                      <div className="h-3 w-24 rounded bg-wedo-cyan/15"></div>
+                      <div className="h-4 w-32 rounded-md mb-2 bg-wedo-cyan/20"></div>
+                      <div className="h-3 w-24 rounded-md bg-wedo-cyan/15"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -443,7 +443,7 @@ export function AdminTemplateHub() {
           <Card className="border-dashed border-2 border-gray-200 rounded-md h-64 flex items-center justify-center animate-pulse">
             <CardContent className="text-center">
               <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-wedo-cyan/20"></div>
-              <div className="h-4 w-40 rounded mx-auto bg-wedo-cyan/20"></div>
+              <div className="h-4 w-40 rounded-md mx-auto bg-wedo-cyan/20"></div>
             </CardContent>
           </Card>
         </div>
@@ -498,7 +498,7 @@ export function AdminTemplateHub() {
                                   ? 'border-gray-900 dark:border-gray-50' 
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                               }`}
-                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 20%, transparent)' } : {}}
+                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px rgba(96, 190, 209, 0.2)' } : {}}
                               onClick={() => setSelectedTemplate(template)}
                             >
                               <CardContent className="p-2.5">

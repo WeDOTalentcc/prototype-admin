@@ -292,7 +292,7 @@ export function WSITextScreeningModal({
                 return (
                   <div
                     key={`cell-${b}-${d}`}
-                    className={`h-6 rounded transition-all ${
+                    className={`h-6 rounded-md transition-all ${
                       isCurrent 
                         ? 'bg-gray-800 ring-2 ring-gray-400' 
                         : isActive 
@@ -365,7 +365,7 @@ export function WSITextScreeningModal({
         </h4>
         <div className="space-y-2">
           {result.archetype_indicators.slice(0, 3).map((arch, idx) => (
-            <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+            <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
               <div>
                 <div className="text-sm font-medium">{arch.archetype}</div>
                 <div className="text-xs text-gray-600">{arch.description}</div>

@@ -539,7 +539,7 @@ export default function AuditLogsPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <div className={`p-1 rounded ${categoryConfig.color}`}>
+                              <div className={`p-1 rounded-md ${categoryConfig.color}`}>
                                 <CategoryIcon className="w-3 h-3" />
                               </div>
                               <span className="text-sm font-medium text-gray-950 dark:text-gray-50">

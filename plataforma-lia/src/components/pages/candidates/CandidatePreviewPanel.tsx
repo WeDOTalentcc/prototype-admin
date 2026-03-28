@@ -192,10 +192,10 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <div>
                 <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Histórico de Interações</h4>
                 <div className="space-y-2">
-                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
                     📧 Email enviado há 2 dias
                   </div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-status-success/10 dark:bg-status-success/20 rounded">
+                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                     📞 Ligação agendada para amanhã às 14h
                   </div>
                 </div>
@@ -238,18 +238,18 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="font-semibold text-gray-950 dark:text-gray-50">{formatScorePercent(candidate.score)}</div>
               <div className="text-gray-800">Score LIA</div>
             </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="font-semibold text-gray-950 dark:text-gray-50 flex items-center justify-center gap-1">
                 <Star className="w-3 h-3 text-status-warning" />
                 4.8
               </div>
               <div className="text-gray-800">Avaliação</div>
             </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
               <Badge className={`text-xs ${
                 candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
                 candidate.status === 'prospect' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' :

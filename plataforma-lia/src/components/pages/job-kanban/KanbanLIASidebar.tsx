@@ -160,7 +160,7 @@ export function KanbanLIASidebar({
               </span>
               <button
                 onClick={() => setSelectedCandidates(new Set())}
-                className="ml-auto p-1 rounded hover:bg-gray-200"
+                className="ml-auto p-1 rounded-md hover:bg-gray-200"
               >
                 <X className="w-3 h-3 text-gray-500" />
               </button>
@@ -287,7 +287,7 @@ export function KanbanLIASidebar({
                               (msg as any).metadata.ui_action,
                               (msg as any).metadata.ui_action_params || {}
                             )}
-                            className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded transition-colors"
+                            className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition-colors"
                             
                           >
                             Abrir manualmente

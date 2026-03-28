@@ -194,7 +194,7 @@ export function AddColumnPopover({
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Adicionar Coluna ao Pipeline</h3>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
             <X className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </button>
         </div>
@@ -206,7 +206,7 @@ export function AddColumnPopover({
             value={columnName}
             onChange={(e) => { setColumnName(e.target.value); setInferredBehavior(null) }}
             placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all"
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all"
           />
           {columnName.length >= 3 && !inferredBehavior && (
             <button
@@ -217,7 +217,7 @@ export function AddColumnPopover({
             </button>
           )}
           {inferredBehavior && (
-            <div className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
                 {inferredBehavior.suggested_behavior}
               </span>
@@ -231,7 +231,7 @@ export function AddColumnPopover({
         <button
           disabled={columnName.length < 2 || isAddingColumn}
           onClick={handleAddCustom}
-          className="w-full py-2.5 rounded text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)'}}
         >
           {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}

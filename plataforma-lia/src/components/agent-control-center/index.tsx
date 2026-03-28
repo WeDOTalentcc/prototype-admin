@@ -359,7 +359,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'today' ? '' : 'text-gray-500 dark:text-gray-400'}`}
                   onClick={() => setFilterPeriod('today')}
-                  style={{backgroundColor: filterPeriod === 'today' ? 'color-mix(in srgb, var(--gray-200) 30%, transparent)' : 'transparent'}}
+                  style={{backgroundColor: filterPeriod === 'today' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'}}
                 >
                   Hoje
                 </Button>
@@ -368,7 +368,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'week' ? '' : 'text-gray-500 dark:text-gray-400'}`}
                   onClick={() => setFilterPeriod('week')}
-                  style={{backgroundColor: filterPeriod === 'week' ? 'color-mix(in srgb, var(--gray-200) 30%, transparent)' : 'transparent'}}
+                  style={{backgroundColor: filterPeriod === 'week' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'}}
                 >
                   Semana
                 </Button>
@@ -386,7 +386,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     key={agent.id}
                     onClick={() => toggleAgentFilter(agent.id)}
                     className={`px-2 py-1 rounded-full text-xs transition-all ${selectedAgentFilter.includes(agent.id) ? '' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}
-                    style={{backgroundColor: selectedAgentFilter.includes(agent.id) ? 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)' : undefined,
+                    style={{backgroundColor: selectedAgentFilter.includes(agent.id) ? 'rgba(96, 190, 209, 0.15)' : undefined,
                       border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'transparent'}`}}
                   >
                     {agent.icon} {agent.name.split(' ')[0]}
@@ -402,7 +402,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     onClick={() => toggleStatusFilter(status)}
                     className={`px-2 py-1 rounded-full text-xs transition-all flex items-center gap-1 ${!selectedStatusFilter.includes(status) ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' : ''}`}
                     style={{backgroundColor: selectedStatusFilter.includes(status) ?
-                        (status === 'success' ? 'color-mix(in srgb, var(--wedo-green, #5DA47A)  15%, transparent)' : status === 'error' ? 'color-mix(in srgb, var(--status-error) 15%, transparent)' : 'color-mix(in srgb, var(--status-warning) 15%, transparent)') :
+                        (status === 'success' ? 'rgba(93, 164, 122, 0.15)' : status === 'error' ? 'rgba(220, 38, 38, 0.15)' : 'rgba(217, 119, 6, 0.15)') :
                         undefined,
                       color: selectedStatusFilter.includes(status) ?
                         (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') :

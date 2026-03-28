@@ -59,15 +59,15 @@ export const CONTEXT_COLORS: Record<string, {
 }> = {
   candidates: {
     border: "var(--wedo-green-light)",
-    bg: "color-mix(in srgb, var(--wedo-green-light, #7BC29A) 10%, transparent)",
+    bg: "rgba(123, 194, 154, 0.1)",
     headerText: "var(--status-success)",
-    headerBg: "color-mix(in srgb, var(--wedo-green-light, #7BC29A) 15%, transparent)"
+    headerBg: "rgba(123, 194, 154, 0.15)"
   },
   jobs: {
     border: "var(--gray-400)",
-    bg: "color-mix(in srgb, var(--gray-500) 5%, transparent)",
+    bg: "rgba(107, 114, 128, 0.05)",
     headerText: "var(--gray-600)",
-    headerBg: "color-mix(in srgb, var(--gray-500) 10%, transparent)"
+    headerBg: "rgba(107, 114, 128, 0.1)"
   }
 }
 

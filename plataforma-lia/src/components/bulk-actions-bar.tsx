@@ -395,7 +395,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
                   key={status.value}
                   onClick={() => handleUpdateStatus(status.value)}
                 >
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${status.color} mr-2`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${status.color} mr-2`}>
                     {status.label}
                   </span>
                 </DropdownMenuItem>
@@ -676,7 +676,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
                       <span>{operationResult.failed} erro(s)</span>
                     </div>
                     {operationResult.errors && operationResult.errors.length > 0 && (
-                      <div className="mt-2 p-2 bg-status-error/10 rounded border border-status-error/30 max-h-32 overflow-y-auto">
+                      <div className="mt-2 p-2 bg-status-error/10 rounded-md border border-status-error/30 max-h-32 overflow-y-auto">
                         {operationResult.errors.slice(0, 5).map((err, idx) => (
                           <p key={idx} className="text-xs text-status-error">
                             ID {err.id}: {err.error}

@@ -839,18 +839,18 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 
 #### 10.0.3 Design System v4.2.1 — Conformidade Real
 
-| Token/Padrão | Contagem | Status | DS v4.2.1 Esperado |
-|---|---|---|---|
-| `rounded` (bare, 4px) | **819** | Migrar → `rounded-md` | `rounded-md` (6px) como padrão |
-| `rounded-md` (6px) | 3.775 | OK ✅ | Padrão |
-| `rounded-full` | 1.694 | OK (avatars, badges) | Uso correto |
-| `rounded-lg` | 74 | OK (cards, modais) | Uso correto |
-| `style={{` (inline) | **1.439** em **238 arquivos** | Migrar → Tailwind | Zero inline (exceto dinâmico) |
-| `w-[]`/`h-[]` (arbitrary) | **499** | Avaliar caso a caso | Preferir tokens |
-| `text-[]` (arbitrary) | 21 | Baixo, OK | Usar scale: xs/sm/base/lg |
-| `rgba()` (fora tokens) | **102** | Migrar → CSS vars | Usar tokens `--lia-*` |
-| `color-mix()` | **114** | Artefato subagente | Não é padrão DS |
-| Hex hardcoded | **60** | Migrar → tokens | Usar `--lia-*` ou `text-*` |
+| Token/Padrão | Antes | Depois | Status | DS v4.2.1 Esperado |
+|---|---|---|---|---|
+| `rounded` (bare, 4px) | **818** | **0** | ✅ MIGRADO Sprint 1A | `rounded-md` (6px) como padrão |
+| `rounded-md` (6px) | 3.775 | **4.593** | ✅ (+818 migrados) | Padrão |
+| `rounded-full` | 1.694 | 1.694 | OK ✅ | Uso correto (avatars, badges) |
+| `rounded-lg` | 74 | 74 | OK ✅ | Uso correto (cards, modais) |
+| `color-mix()` | **124** | **0** | ✅ ELIMINADO Sprint 1A | Não é padrão DS → rgba() |
+| `rgba()` (fora tokens) | **102** | ~126 (incl. ex-color-mix) | ✅ 39 migrados p/ `var(--status-*-bg)` | Usar tokens `--lia-*` |
+| Hex hardcoded | **~278** | ~252 | ✅ 26 migrados p/ `var(--*)` | Isenções: brands, email, charts |
+| `style={{` (inline) | **1.439** em **238 arquivos** | — | ⏳ Task D | Zero inline (exceto dinâmico) |
+| `w-[]`/`h-[]` (arbitrary) | **499** | — | ⏳ Avaliar | Preferir tokens |
+| `text-[]` (arbitrary) | 21 | — | Baixo, OK | Usar scale: xs/sm/base/lg |
 
 #### 10.0.4 Tipografia — Ratio Invertido!
 

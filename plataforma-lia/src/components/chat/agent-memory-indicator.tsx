@@ -252,7 +252,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
               >
                 <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

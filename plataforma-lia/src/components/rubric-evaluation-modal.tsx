@@ -126,21 +126,21 @@ export function RubricEvaluationModal({
   }
 
   const getScoreBadge = (scoreValue: number) => {
-    if (scoreValue >= 85) return { label: 'Excelente', bg: 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)' }
-    if (scoreValue >= 70) return { label: 'Bom', bg: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)' }
-    if (scoreValue >= 50) return { label: 'Moderado', bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)' }
-    if (scoreValue >= 30) return { label: 'Fraco', bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)' }
-    return { label: 'Inadequado', bg: 'color-mix(in srgb, var(--status-error) 15%, transparent)', color: 'var(--status-error)' }
+    if (scoreValue >= 85) return { label: 'Excelente', bg: 'rgba(96, 190, 209, 0.12)' }
+    if (scoreValue >= 70) return { label: 'Bom', bg: 'rgba(96, 190, 209, 0.08)' }
+    if (scoreValue >= 50) return { label: 'Moderado', bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)' }
+    if (scoreValue >= 30) return { label: 'Fraco', bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)' }
+    return { label: 'Inadequado', bg: 'rgba(220, 38, 38, 0.15)', color: 'var(--status-error)' }
   }
 
   const getDecisionBadge = (decisao?: string) => {
     switch (decisao?.toUpperCase()) {
       case 'APROVAR_TRIAGEM':
-        return { label: 'Aprovar para Triagem', bg: 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)', icon: CheckCircle }
+        return { label: 'Aprovar para Triagem', bg: 'rgba(96, 190, 209, 0.12)', icon: CheckCircle }
       case 'MANTER_ESPERA':
-        return { label: 'Manter em Espera', bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)', icon: Clock }
+        return { label: 'Manter em Espera', bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)', icon: Clock }
       case 'NAO_PROSSEGUIR':
-        return { label: 'Não Prosseguir', bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)', icon: XCircle }
+        return { label: 'Não Prosseguir', bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)', icon: XCircle }
       default:
         return null
     }
@@ -168,13 +168,13 @@ export function RubricEvaluationModal({
   const getRubricStyle = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return { bg: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)', border: 'var(--gray-50)' }
+        return { bg: 'rgba(96, 190, 209, 0.08)', border: 'var(--gray-50)' }
       case 'meets':
-        return { bg: 'color-mix(in srgb, var(--wedo-cyan) 4%, transparent)', border: 'var(--gray-50)' }
+        return { bg: 'rgba(96, 190, 209, 0.04)', border: 'var(--gray-50)' }
       case 'partial':
-        return { bg: 'color-mix(in srgb, var(--status-warning) 8%, transparent)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
+        return { bg: 'rgba(217, 119, 6, 0.08)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
       case 'missing':
-        return { bg: 'color-mix(in srgb, var(--status-error) 8%, transparent)', border: 'var(--gray-50)', color: 'var(--status-error)' }
+        return { bg: 'rgba(220, 38, 38, 0.08)', border: 'var(--gray-50)', color: 'var(--status-error)' }
       default:
         return { bg: 'var(--gray-50)', border: 'var(--gray-50)' }
     }
@@ -211,9 +211,9 @@ export function RubricEvaluationModal({
   const getPriorityStyle = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'essential':
-        return { bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)' }
+        return { bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)' }
       case 'important':
-        return { bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)' }
+        return { bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)' }
       case 'nice-to-have':
         return { bg: 'var(--gray-50)' }
       default:
@@ -388,7 +388,7 @@ export function RubricEvaluationModal({
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{backgroundColor: activeSection === tab.id ? 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)' : 'transparent',
+                style={{backgroundColor: activeSection === tab.id ? 'rgba(96, 190, 209, 0.12)' : 'transparent',
                   color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)'}}
               >
                 <TabIcon className="w-3.5 h-3.5" />
@@ -566,7 +566,7 @@ export function RubricEvaluationModal({
                 {mockParecer.recomendacao_final && (
                   <div>
                     <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500">
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)'}}>4</span>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)'}}>4</span>
                       Recomendação Final
                     </div>
                     <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)'}}>
@@ -774,9 +774,9 @@ export function RubricEvaluationModal({
                         { code: 'P', label: 'Parcial', color: 'var(--status-warning)' },
                         { code: 'X', label: 'Ausente', color: 'var(--status-error)' },
                       ].map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-1 p-1.5 rounded bg-gray-50">
+                        <div key={idx} className="flex items-center gap-1 p-1.5 rounded-md bg-gray-50">
                           <span 
-                            className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded"
+                            className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded-md"
                             style={{backgroundColor: `${item.color}15`, color: item.color}}
                           >
                             {item.code}

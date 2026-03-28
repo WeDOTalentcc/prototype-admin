@@ -110,10 +110,10 @@ export function CompanyBenefitsSummaryCard({
                   <Star className="w-2.5 h-2.5 text-status-warning fill-current" />
                 )}
                 {benefit.is_mandatory && (
-                  <span className="text-micro px-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
+                  <span className="text-micro px-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
                 )}
                 {benefit.is_discount && (
-                  <span className="text-micro px-0.5 rounded bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>
+                  <span className="text-micro px-0.5 rounded-md bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>
                 )}
               </Badge>
             )

@@ -470,7 +470,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             href={candidate.linkedin_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Ver perfil no LinkedIn"
           >
             <Linkedin className="w-4 h-4 text-gray-600" />
@@ -544,7 +544,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   e.stopPropagation()
                   onToggleExpandedRow(candidate.id)
                 }}
-                className="flex-shrink-0 p-0.5 rounded hover:bg-gray-100 transition-colors"
+                className="flex-shrink-0 p-0.5 rounded-md hover:bg-gray-100 transition-colors"
                 title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
               >
                 <ChevronsLeftRight
@@ -877,7 +877,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 e.stopPropagation()
                 navigator.clipboard.writeText(candidate.outreach_message!)
               }}
-              className="p-0.5 hover:bg-gray-100 rounded"
+              className="p-0.5 hover:bg-gray-100 rounded-md"
               title="Copiar mensagem"
             >
               <Copy className="w-3 h-3 text-gray-500" />

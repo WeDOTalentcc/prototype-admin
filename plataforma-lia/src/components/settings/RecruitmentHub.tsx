@@ -418,7 +418,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="space-y-6">
           <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse">
             <CardHeader className="pb-4">
-              <div className="h-5 w-48 rounded bg-gray-400" style={{opacity: 0.3}}></div>
+              <div className="h-5 w-48 rounded-md bg-gray-400" style={{opacity: 0.3}}></div>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
@@ -667,7 +667,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                   checked={isSelected}
                                   disabled={isAdded}
                                   onChange={() => toggleBankQuestion(q.id)}
-                                  className="mt-0.5 rounded border-gray-300"
+                                  className="mt-0.5 rounded-md border-gray-300"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <p className={textStyles.bodySmall}>
@@ -744,7 +744,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                         type="checkbox"
                         checked={newQuestion.required}
                         onChange={(e) => setNewQuestion(prev => ({ ...prev, required: e.target.checked }))}
-                        className="rounded"
+                        className="rounded-md"
                       />
                       Obrigatória
                     </label>
@@ -753,7 +753,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                         type="checkbox"
                         checked={newQuestion.is_eliminatory}
                         onChange={(e) => setNewQuestion(prev => ({ ...prev, is_eliminatory: e.target.checked }))}
-                        className="rounded border-status-error/30"
+                        className="rounded-md border-status-error/30"
                       />
                       Eliminatória
                     </label>

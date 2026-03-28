@@ -487,9 +487,9 @@ export default function CandidateProfilePage() {
       'cv': { bg: '#10B98120', text: 'var(--status-success)' },
       'photo': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
       'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
-      'video': { bg: '#EF444420', text: 'var(--status-error)' },
-      'certificate': { bg: '#F59E0B20', text: 'var(--status-warning)' },
-      'document': { bg: '#6B728020', text: 'var(--gray-400)' },
+      'video': { bg: 'var(--status-error)20', text: 'var(--status-error)' },
+      'certificate': { bg: 'var(--status-warning)20', text: 'var(--status-warning)' },
+      'document': { bg: 'var(--gray-500)20', text: 'var(--gray-400)' },
       'screening': { bg: '#F9731620', text: 'var(--status-warning)' },
       'interview': { bg: '#8B5CF620', text: 'var(--wedo-purple)' },
       'transcript': { bg: '#8B5CF620', text: 'var(--wedo-purple)' },
@@ -672,7 +672,7 @@ export default function CandidateProfilePage() {
                     <h1 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
                       {candidate.name}
                     </h1>
-                    <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                    <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">
                       {getShortId(candidate.id)}
                     </span>
                     
@@ -1681,7 +1681,7 @@ export default function CandidateProfilePage() {
                           <div className="flex items-center bg-white dark:bg-gray-800 rounded-md p-0.5 border border-gray-200 dark:border-gray-600">
                             <button
                               onClick={() => setActivityView('timeline')}
-                              className={`p-1.5 rounded transition-colors ${
+                              className={`p-1.5 rounded-md transition-colors ${
                                 activityView === 'timeline' ? 'bg-gray-200 text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-700'
                               }`}
                               title="Visualização Timeline"
@@ -1690,7 +1690,7 @@ export default function CandidateProfilePage() {
                             </button>
                             <button
                               onClick={() => setActivityView('list')}
-                              className={`p-1.5 rounded transition-colors ${
+                              className={`p-1.5 rounded-md transition-colors ${
                                 activityView === 'list' ? 'bg-gray-200 text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-700'
                               }`}
                               title="Visualização Lista"
@@ -2207,13 +2207,13 @@ export default function CandidateProfilePage() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                             <div className="flex-1">
-                              <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                              <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                              <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
+                              <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                            <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                           </div>
                         </div>
                       ))}
@@ -2414,13 +2414,13 @@ export default function CandidateProfilePage() {
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                                 <div className="flex-1">
-                                  <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                                  <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                  <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
+                                  <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                                <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                                <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                               </div>
                             </div>
                           ))}

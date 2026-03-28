@@ -252,7 +252,7 @@ export function SearchModeArchetypes({
 
                         <div className="space-y-1">
                           <span className="text-micro font-medium text-gray-400">Query de Busca</span>
-                          <p className="text-xs p-2 rounded">
+                          <p className="text-xs p-2 rounded-md">
                             {arch.query || "Sem query definida"}
                           </p>
                         </div>
@@ -600,10 +600,10 @@ export function SearchModeArchetypes({
                                 className="px-1.5 py-0.5 rounded-full text-micro font-medium"
                                 style={{backgroundColor:
                                     job.status === "Publicada"
-                                      ? "color-mix(in srgb, var(--status-success) 15%, transparent)"
+                                      ? "rgba(22, 163, 74, 0.15)"
                                       : job.status === "Encerrada"
-                                      ? "color-mix(in srgb, var(--gray-400) 20%, transparent)"
-                                      : "color-mix(in srgb, var(--status-warning) 15%, transparent)",
+                                      ? "rgba(156, 163, 175, 0.2)"
+                                      : "rgba(217, 119, 6, 0.15)",
                                   color:
                                     job.status === "Publicada"
                                       ? "var(--status-success)"

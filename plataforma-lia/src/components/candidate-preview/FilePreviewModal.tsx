@@ -73,7 +73,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
             {/* Controles específicos por tipo */}
             {previewType === 'pdf' && (
               <>
-                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded px-2 py-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md px-2 py-1">
                   <Button size="sm" variant="ghost" className="p-0.5 h-5 w-5" onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}>
                     <ChevronLeft className="w-3 h-3" />
                   </Button>
@@ -287,7 +287,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   </h4>
 
                   {/* Indicador do tipo de vídeo */}
-                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
+                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
                     <div className="flex items-center gap-2">
                       <Badge className="text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--gray-700)', color: 'var(--white)'}}>
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
@@ -318,7 +318,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                     {/* Highlights identificados pela LIA - only show if data available */}
                     {selectedFile.highlights && selectedFile.highlights.length > 0 && (
-                      <div className="mt-4 p-2 bg-white dark:bg-gray-800 rounded">
+                      <div className="mt-4 p-2 bg-white dark:bg-gray-800 rounded-md">
                         <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                           🎯 Highlights da LIA
                         </p>
@@ -475,7 +475,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   </h4>
 
                   {/* Indicador do tipo de áudio */}
-                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
+                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
                     <div className="flex items-center gap-2">
                       <Badge className="text-xs px-1.5 py-0.5 bg-gray-700 dark:bg-gray-600 text-white border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
@@ -523,7 +523,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                     </div>
 
                     {/* Highlights identificados pela LIA */}
-                    <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
                       <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                         🎯 Highlights da LIA
                       </p>

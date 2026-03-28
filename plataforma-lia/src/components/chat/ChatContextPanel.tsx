@@ -1132,7 +1132,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div className="flex gap-2 text-xs text-gray-500 dark:text-gray-400">
                               <span>Preferências:</span>
                               {candidate.preferred_times.map((time: string, i: number) => (
-                                <span key={i} className="px-2 py-1 rounded bg-white dark:bg-gray-950">{time}</span>
+                                <span key={i} className="px-2 py-1 rounded-md bg-white dark:bg-gray-950">{time}</span>
                               ))}
                             </div>
                           </div>
@@ -1152,7 +1152,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                 <button
                                   key={i}
                                   disabled={!slot.available}
-                                  className={`p-2 rounded text-xs transition-all ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
+                                  className={`p-2 rounded-md text-xs transition-all ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
                                   style={{backgroundColor: slot.available ? 'var(--green-50, #f0fdf4)' : 'var(--gray-100)',
                                     color: 'inherit',
                                     border: `1px solid ${slot.available ? 'var(--gray-200)' : 'var(--gray-100)'}`}}
@@ -1326,13 +1326,13 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Status dos Campos</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {contextData.data.collected_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-status-success/10 dark:bg-status-success/20">
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-status-success/10 dark:bg-status-success/20">
                             <CheckCircle className="w-4 h-4 text-status-success" />
                             <span className="text-sm">{field}</span>
                           </div>
                         ))}
                         {contextData.data.pending_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-gray-100 dark:bg-gray-800">
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-gray-800">
                             <Clock className="w-4 h-4 text-gray-600" />
                             <span className="text-sm text-gray-600">{field}</span>
                           </div>

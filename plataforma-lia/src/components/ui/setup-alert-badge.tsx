@@ -160,7 +160,7 @@ export function SetupAlertBadge() {
     >
       <div
         onMouseDown={handleMouseDown}
-        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         title="Arraste para mover"
       >
         <GripVertical className="w-3 h-3 text-gray-400" />

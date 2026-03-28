@@ -387,7 +387,7 @@ export function TableFiltersPanel({
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md bg-gray-50">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -396,7 +396,7 @@ export function TableFiltersPanel({
                 />
                 <span className="text-gray-700">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md bg-gray-50">
                 <input
                   type="checkbox"
                   className="w-3 h-3"

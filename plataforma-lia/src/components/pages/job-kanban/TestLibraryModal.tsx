@@ -102,7 +102,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-gray-600 dark:text-gray-400">Nível</label>
-                  <select className="w-full mt-1 p-2 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-900">
+                  <select className="w-full mt-1 p-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900">
                     <option>Todos</option>
                     <option>Júnior</option>
                     <option>Pleno</option>
@@ -111,7 +111,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 </div>
                 <div>
                   <label className="text-xs text-gray-600 dark:text-gray-400">Duração</label>
-                  <select className="w-full mt-1 p-2 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-900">
+                  <select className="w-full mt-1 p-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900">
                     <option>Qualquer</option>
                     <option>5-10 min</option>
                     <option>10-20 min</option>
@@ -178,7 +178,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded">
+                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded-md">
                           <Target className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                         </div>
                         <div>
@@ -187,7 +187,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded">
+                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded-md">
                           <Gauge className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                         </div>
                         <div>
@@ -196,7 +196,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded">
+                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded-md">
                           <UserCheck className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                         </div>
                         <div>
@@ -205,7 +205,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded">
+                        <div className="p-1.5 bg-gray-200 dark:bg-gray-800/30 rounded-md">
                           <Timer className="w-3.5 h-3.5 text-gray-950 dark:text-gray-50" />
                         </div>
                         <div>

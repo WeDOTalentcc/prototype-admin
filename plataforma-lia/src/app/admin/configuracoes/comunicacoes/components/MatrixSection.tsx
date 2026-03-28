@@ -221,7 +221,7 @@ export function MatrixSection({
                                       key={channel}
                                       onClick={() => handleToggleMatrixChannel(entry, channel)}
                                       disabled={isUpdating}
-                                      className={`px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${isActive ? config.activeColor : config.color} ${isUpdating ? 'opacity-50' : 'hover:opacity-80'}`}
+                                      className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${isActive ? config.activeColor : config.color} ${isUpdating ? 'opacity-50' : 'hover:opacity-80'}`}
                                     >
                                       {config.label}
                                     </button>

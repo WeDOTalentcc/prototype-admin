@@ -98,7 +98,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {/* Contato Realizado */}
         {candidate.contactStatus !== 'não contatado' && (
           <div
- className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center"
+ className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center"
             title="Contato realizado pela LIA"
           >
  <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
@@ -110,7 +110,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           <>
             <div className="w-3 h-px bg-gray-300 dark:bg-gray-600"></div>
             <div
-              className={`w-6 h-6 rounded flex items-center justify-center ${
+              className={`w-6 h-6 rounded-md flex items-center justify-center ${
                 candidate.triageComplete || candidate.liaStatus === 'triagem_completa'
                   ? 'bg-status-success/15 dark:bg-status-success/30'
                   : 'bg-status-warning/15'
@@ -135,7 +135,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           <>
             <div className="w-3 h-px bg-gray-300 dark:bg-gray-600"></div>
             <div
-              className="w-6 h-6 rounded bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center"
+              className="w-6 h-6 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center"
               title="Entrevista agendada"
             >
               <Calendar className="w-3 h-3 text-wedo-purple dark:text-wedo-purple" />

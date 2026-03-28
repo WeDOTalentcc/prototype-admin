@@ -135,7 +135,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
           <button
             key={idx}
             onClick={() => onAccept(s)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded text-micro text-status-warning hover:bg-status-warning/15 transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded-md text-micro text-status-warning hover:bg-status-warning/15 transition-colors"
             
           >
             <Sparkles className="w-2.5 h-2.5" />
@@ -426,7 +426,7 @@ export function TransitionChatPanel({
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-300"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-xs text-gray-700 dark:text-gray-300"
                     
                   >
                     <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span> {String(value)}

@@ -393,7 +393,7 @@ export function RealTimeDashboardPage() {
                   </div>
 
                   {ats.errorRate > 0 && (
-                    <div className="mt-3 p-2 bg-status-error/10 rounded text-xs">
+                    <div className="mt-3 p-2 bg-status-error/10 rounded-md text-xs">
                       <span className="text-status-error">Taxa de erro: {ats.errorRate}%</span>
                     </div>
                   )}

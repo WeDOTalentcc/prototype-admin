@@ -262,7 +262,7 @@ const EditCriteriaPopup: React.FC<{
               />
               <button
                 onClick={() => handleRemove(criterion.id)}
-                className="p-1 rounded hover:bg-status-error/10 transition-colors"
+                className="p-1 rounded-md hover:bg-status-error/10 transition-colors"
               >
                 <XIcon className="w-4 h-4 text-status-error" />
               </button>
@@ -477,7 +477,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
                 <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 mb-2">
                   {currentCandidate.companyLogo ? (
-                    <img src={currentCandidate.companyLogo} alt="" className="w-5 h-5 rounded" />
+                    <img src={currentCandidate.companyLogo} alt="" className="w-5 h-5 rounded-md" />
                   ) : (
                     <Briefcase className="w-4 h-4 text-gray-600" />
                   )}
@@ -758,7 +758,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     border: '2px solid var(--status-success)'}}
                 >
                   Approve
-                  <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded">A</span>
+                  <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded-md">A</span>
                 </Button>
 
                 <Button
@@ -774,7 +774,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     border: '2px solid var(--status-error)'}}
                 >
                   Reject
-                  <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded">R</span>
+                  <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded-md">R</span>
                 </Button>
 
                 <p className="text-xs text-gray-600 text-center mt-4 leading-relaxed">

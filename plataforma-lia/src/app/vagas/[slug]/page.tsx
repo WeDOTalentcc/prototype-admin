@@ -753,7 +753,7 @@ export default function PublicVacancyPage() {
                         type="checkbox"
                         checked={form.lgpdConsent}
                         onChange={(e) => setForm(prev => ({ ...prev, lgpdConsent: e.target.checked }))}
-                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                        className="mt-0.5 h-4 w-4 rounded-md border-neutral-300 text-neutral-900 focus:ring-neutral-900"
                       />
                       <span className={`text-xs leading-relaxed ${formErrors.lgpdConsent ? "text-status-error" : "text-neutral-500"}`}>
                         Autorizo a coleta e tratamento dos meus dados pessoais para fins deste processo seletivo, 

@@ -114,7 +114,7 @@ export function ScoreBreakdownBadgeLazy({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1 cursor-pointer select-none rounded hover:opacity-80 transition-opacity",
+            "inline-flex items-center gap-1 cursor-pointer select-none rounded-md hover:opacity-80 transition-opacity",
             sizeClasses[size],
             getScoreColor(score),
             className

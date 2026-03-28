@@ -525,9 +525,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
               <div className="mt-2 space-y-2">
                 {/* Mini Preview do PDF */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do documento</p>
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded h-32 flex items-center justify-center">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-md h-32 flex items-center justify-center">
                     <div className="text-center">
                       <FileText className="w-8 h-8 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
                       <p className={textStyles.bodySmall}>PDF • 5 páginas</p>
@@ -547,7 +547,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <p className={textStyles.bodySmall}>
                     ✓ CV bem estruturado • Match 92% com a vaga • Experiência relevante
@@ -611,7 +611,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <img
                       src={candidate.avatar_url || candidate.avatar}
                       alt="Preview"
-                      className="w-12 h-12 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-12 h-12 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => {
                         setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: candidate.avatar_url || candidate.avatar })
                         setPreviewType('image')
@@ -693,9 +693,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
               <div className="mt-2 space-y-2">
                 {/* Preview do vídeo com thumbnail */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do vídeo de triagem</p>
-                  <div className="relative bg-gray-900 rounded h-24 flex items-center justify-center group cursor-pointer"
+                  <div className="relative bg-gray-900 rounded-md h-24 flex items-center justify-center group cursor-pointer"
                        onClick={() => {
                          setSelectedFile({
                            name: 'Apresentacao_Pessoal.mp4',
@@ -706,7 +706,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                          setPreviewType('video')
                          setShowPreview(true)
                        }}>
-                    <div className="absolute inset-0 bg-black/50 rounded flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                    <div className="absolute inset-0 bg-black/50 rounded-md flex items-center justify-center group-hover:bg-black/40 transition-colors">
                       <Play className="w-8 h-8 text-white" />
                     </div>
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
@@ -719,7 +719,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 </div>
 
                 {/* Análise de IA do vídeo */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded">
+                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <div className="grid grid-cols-2 gap-1 text-xs">
                     <div className="flex justify-between">

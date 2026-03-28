@@ -95,15 +95,15 @@ const CONTEXT_COLORS: Record<string, {
 }> = {
   candidates: {
     border: 'var(--wedo-green-light)',
-    bg: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A) 10%, transparent)',
+    bg: 'rgba(123, 194, 154, 0.1)',
     headerText: 'var(--status-success)',
-    headerBg: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A) 15%, transparent)'
+    headerBg: 'rgba(123, 194, 154, 0.15)'
   },
   jobs: {
     border: 'var(--gray-400)',
-    bg: 'color-mix(in srgb, var(--gray-500) 5%, transparent)',
+    bg: 'rgba(107, 114, 128, 0.05)',
     headerText: 'var(--gray-600)',
-    headerBg: 'color-mix(in srgb, var(--gray-500) 10%, transparent)'
+    headerBg: 'rgba(107, 114, 128, 0.1)'
   }
 }
 
@@ -2824,7 +2824,7 @@ export function ExpandableAIPrompt({
                               <span className="text-xs text-gray-400">{suggestion.category}</span>
                             </button>
                           ))}
-                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid color-mix(in srgb, black 5%, transparent)'}}>
+                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid rgba(0, 0, 0, 0.05)'}}>
                             <span>Use ↑↓ para navegar, Tab para selecionar</span>
                             <span>Esc para fechar</span>
                           </div>
@@ -2843,7 +2843,7 @@ export function ExpandableAIPrompt({
                     {/* Prompt Enhancement Card */}
                     {promptEnhancement && !showAutocomplete && (
                       <div 
-                        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'color-mix(in srgb, var(--wedo-cyan) 30%, transparent)' }}
+                        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'rgba(96, 190, 209, 0.3)' }}
                       >
                         <div className="flex items-start gap-2">
                           <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
@@ -2884,8 +2884,8 @@ export function ExpandableAIPrompt({
                       <div className="flex items-center gap-1.5 mt-2 mb-1">
                         <div 
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-                          style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)', 
-                            border: '1px solid color-mix(in srgb, var(--wedo-cyan) 20%, transparent)'}}
+                          style={{backgroundColor: 'rgba(96, 190, 209, 0.08)', 
+                            border: '1px solid rgba(96, 190, 209, 0.2)'}}
                         >
                           <Home className="w-3 h-3" />
                           <span>Base Local</span>
@@ -2911,7 +2911,7 @@ export function ExpandableAIPrompt({
                             title={tag.value}
                           >
                             <div 
-                              className="flex items-center justify-center w-4 h-4 rounded"
+                              className="flex items-center justify-center w-4 h-4 rounded-md"
                               style={{backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent'}}
                             >
                               <TagIcon className="w-3 h-3" style={{color: tag.filled ? colors.iconBg : colors.text}} />
@@ -2963,7 +2963,7 @@ export function ExpandableAIPrompt({
                                     {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                                   </span>
                                 </div>
-                                <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'color-mix(in srgb, var(--status-success) 10%, transparent)' : 'color-mix(in srgb, var(--status-error) 10%, transparent)',
+                                <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)',
                                   color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                                   {autocompleteEnabled ? 'ON' : 'OFF'}
                                 </span>
@@ -3005,7 +3005,7 @@ export function ExpandableAIPrompt({
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => setShowSaveArchetypeModal(true)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid color-mix(in srgb, var(--wedo-cyan) 30%, transparent)' }}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid rgba(96, 190, 209, 0.3)' }}
                               >
                                 <Target className="w-3 h-3" />
                                 <span className="font-medium">Salvar Arquétipo</span>
@@ -3056,7 +3056,7 @@ export function ExpandableAIPrompt({
                           {searchAnalysis.next_recommended_action && (
                             <div 
                               className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-                              style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)'}}
+                              style={{backgroundColor: 'rgba(96, 190, 209, 0.08)'}}
                             >
                               <TrendingUp className="w-3 h-3" />
                               <span>{searchAnalysis.next_recommended_action}</span>
@@ -3072,8 +3072,8 @@ export function ExpandableAIPrompt({
                                 key={index}
                                 className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-gray-400"
                                 style={{backgroundColor: alert.severity === 'warning'
-                                    ? 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
-                                    : 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)'}}
+                                    ? 'rgba(217, 119, 6, 0.08)'
+                                    : 'rgba(96, 190, 209, 0.08)'}}
                               >
                                 {alert.severity === 'warning' ? (
                                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
@@ -3517,7 +3517,7 @@ export function ExpandableAIPrompt({
                       ))}
                     </div>
                     {/* Dica contextual */}
-                    <div className="p-2.5 rounded-md" style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 6%, transparent)'}}>
+                    <div className="p-2.5 rounded-md" style={{backgroundColor: 'rgba(96, 190, 209, 0.06)'}}>
                       <div className="flex items-start gap-2">
                         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
                         <p className="text-xs text-gray-800 dark:text-gray-200">
@@ -3778,7 +3778,7 @@ export function ExpandableAIPrompt({
                               <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={(e) => openEditArchetype(arch, e)}
-                                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                                  className="p-1 rounded-md hover:bg-gray-100 transition-colors"
                                   title="Editar arquétipo"
                                 >
                                   <Pencil className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
@@ -3786,7 +3786,7 @@ export function ExpandableAIPrompt({
                                 <button
                                   onClick={(e) => openDeleteArchetypeDialog(arch, e)}
                                   disabled={isDeletingArchetype === arch.id}
-                                  className="p-1 rounded hover:bg-status-error/10 transition-colors"
+                                  className="p-1 rounded-md hover:bg-status-error/10 transition-colors"
                                   title="Excluir arquétipo"
                                 >
                                   {isDeletingArchetype === arch.id ? (
@@ -3871,7 +3871,7 @@ export function ExpandableAIPrompt({
                         key={index}
                         onClick={() => handleHistoryCommand(command)}
                         disabled={isProcessing}
-                        className={`w-full text-left text-xs p-2 rounded hover:bg-white transition-colors ${
+                        className={`w-full text-left text-xs p-2 rounded-md hover:bg-white transition-colors ${
                           isProcessing ? 'opacity-50' : 'text-gray-600 hover:text-gray-800'
                         }`}
                       >
@@ -3918,7 +3918,7 @@ export function ExpandableAIPrompt({
             <div className="px-4 pb-4">
               {/* Voice Listening Indicator */}
               {isListening && (
-                <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 p-2 rounded mb-3">
+                <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 p-2 rounded-md mb-3">
                   <div className="w-2 h-2 bg-status-error rounded-full animate-pulse"></div>
                   <span>🎙️ Ouvindo... Fale seu comando</span>
                 </div>
@@ -4201,7 +4201,7 @@ export function ExpandableAIPrompt({
                 : 'Acessa 800M+ perfis profissionais.'}
             </p>
             
-            <div className="bg-white rounded p-2 space-y-1 border border-gray-100">
+            <div className="bg-white rounded-md p-2 space-y-1 border border-gray-100">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-micro">
                   <span className="text-gray-600">Local:</span>

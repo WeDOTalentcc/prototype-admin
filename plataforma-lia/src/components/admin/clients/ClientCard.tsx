@@ -63,7 +63,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
         
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
               <Users className="w-3 h-3 text-gray-400" />
             </div>
             <div>
@@ -74,7 +74,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
               <Calendar className="w-3 h-3 text-gray-400" />
             </div>
             <div>

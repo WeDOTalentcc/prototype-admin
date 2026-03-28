@@ -41,30 +41,30 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   pending: {
     icon: <ClipboardList className="w-3 h-3" />,
     label: 'Aguardando',
-    bgColor: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)',
+    bgColor: 'rgba(96, 190, 209, 0.15)',
   },
   complete: {
     icon: <Check className="w-3 h-3" />,
     label: 'Completo',
     color: 'var(--status-success)',
-    bgColor: 'color-mix(in srgb, var(--status-success) 15%, transparent)',
+    bgColor: 'rgba(22, 163, 74, 0.15)',
   },
   partial: {
     icon: <AlertTriangle className="w-3 h-3" />,
     label: 'Parcial',
     color: 'var(--wedo-orange)',
-    bgColor: 'color-mix(in srgb, var(--wedo-orange) 15%, transparent)',
+    bgColor: 'rgba(209, 153, 96, 0.15)',
   },
   expired: {
     icon: <Clock className="w-3 h-3" />,
     label: 'Expirado',
     color: 'var(--status-error)',
-    bgColor: 'color-mix(in srgb, var(--status-error) 15%, transparent)',
+    bgColor: 'rgba(220, 38, 38, 0.15)',
   },
   cancelled: {
     icon: <XCircle className="w-3 h-3" />,
     label: 'Cancelado',
-    bgColor: 'color-mix(in srgb, var(--gray-500) 15%, transparent)',
+    bgColor: 'rgba(107, 114, 128, 0.15)',
   },
 }
 

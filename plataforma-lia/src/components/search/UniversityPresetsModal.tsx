@@ -579,7 +579,7 @@ export function UniversityPresetsModal({
                               e.stopPropagation()
                               handleDeleteCustomPreset(preset.id)
                             }}
-                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-status-error/10 rounded transition-all"
+                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-status-error/10 rounded-md transition-all"
                             title="Excluir preset"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-status-error" />

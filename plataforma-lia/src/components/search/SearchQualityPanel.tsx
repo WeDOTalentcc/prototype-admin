@@ -64,8 +64,8 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
               style={{backgroundColor:
                   alert.severity === 'warning'
-                    ? 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
-                    : 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)',
+                    ? 'rgba(217, 119, 6, 0.08)'
+                    : 'rgba(96, 190, 209, 0.08)',
                 color: 'var(--gray-500)'}}
             >
               {alert.severity === 'warning' ? (

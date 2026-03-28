@@ -44,7 +44,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
         {fields.map((field, index) => (
           <div
             key={index}
-            className="flex items-center justify-between py-1.5 px-2 rounded bg-white/60 dark:bg-gray-800/40"
+            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-white/60 dark:bg-gray-800/40"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <CheckCircle2 className={cn("w-3.5 h-3.5 flex-shrink-0", confidenceColor(field.confidence))} />
@@ -59,7 +59,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
               <button
                 onClick={() => onEdit(field.label)}
                 aria-label={`Editar campo ${field.label}`}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded"
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
               >
                 <Edit2 className="w-3 h-3" />
               </button>

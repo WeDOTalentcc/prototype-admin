@@ -405,7 +405,7 @@ export function CompanyFilterInput({
                         }
                       }}
                       className={cn(
-                        "w-full text-left px-2 py-1.5 rounded text-sm transition-colors",
+                        "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors",
                         fundingStages?.includes(stage)
                           ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
                           : "hover:bg-gray-50 text-gray-800 dark:text-gray-200"
@@ -526,7 +526,7 @@ export function CompanyFilterInput({
                 )}
                 <button
                   onClick={() => removeCompany(company.name)}
-                  className="hover:bg-gray-200 rounded p-0.5 transition-colors ml-1"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
                   title="Remove"
                 >
                   <X className="w-3 h-3" />

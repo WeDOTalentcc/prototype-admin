@@ -892,7 +892,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       <div className="space-y-1.5 pl-4">
                         <div className="flex items-center gap-3">
                           <span className="text-micro text-gray-600 w-[70px]">Candidatos</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} transition-all duration-300`}
                               style={{width: "100%"}}
@@ -905,7 +905,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         
                         <div className="flex items-center gap-3">
                           <span className="text-micro text-gray-600 w-[70px]">Em Triagem</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-70 transition-all duration-300`}
                               style={{width: `${Math.max(screeningPct, 0)}%`}}
@@ -918,7 +918,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         
                         <div className="flex items-center gap-3">
                           <span className="text-micro text-gray-600 w-[70px]">Aprovados</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-50 transition-all duration-300`}
                               style={{width: `${Math.max(approvedPct, 0)}%`}}

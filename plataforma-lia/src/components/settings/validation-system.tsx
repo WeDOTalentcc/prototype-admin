@@ -504,7 +504,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
                     )}
 
                     {showSuggestions && result.suggestions && result.suggestions.length > 0 && (
-                      <div className="bg-white bg-opacity-50 rounded p-2 mt-2">
+                      <div className="bg-white bg-opacity-50 rounded-md p-2 mt-2">
                         <div className="flex items-center gap-1 mb-1">
                           <Lightbulb className="w-3 h-3" />
                           <span className="text-xs font-medium">Sugestões:</span>

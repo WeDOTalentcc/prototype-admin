@@ -293,7 +293,7 @@ export function ExpertiseAreasInput({
                 <span>{expertise}</span>
                 <button
                   onClick={() => removeExpertise(expertise)}
-                  className="hover:bg-gray-200 rounded p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />
