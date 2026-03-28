@@ -822,24 +822,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
     setDataRequestModalCandidate(null)
   }, [dataRequestModalCandidate, toast])
 
-  const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
-    selectedCandidates,
-    setSelectedCandidates,
-    allTableCandidates,
-    toast,
-    setBulkActionType,
-    setShowBulkActionModal,
-    setDataRequestModalCandidate,
-    setShowDataRequestModal,
-    setUnifiedModalType,
-    setUnifiedModalCandidate,
-    setUnifiedModalOpen,
-    setWsiInviteCandidate,
-    setShowWSIInviteModal,
-    setShowShareGestorModal,
-    setCandidatesData,
-  })
-
   // Marcar como cliente para evitar problemas de hidratação SSR
   useEffect(() => {
     setIsClient(true)
@@ -1261,6 +1243,24 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   // Estados para bulk action modal
   const [showBulkActionModal, setShowBulkActionModal] = useState(false)
   const [bulkActionType, setBulkActionType] = useState<BulkActionType>('move_stage')
+
+  const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
+    selectedCandidates,
+    setSelectedCandidates,
+    allTableCandidates,
+    toast,
+    setBulkActionType,
+    setShowBulkActionModal,
+    setDataRequestModalCandidate,
+    setShowDataRequestModal,
+    setUnifiedModalType,
+    setUnifiedModalCandidate,
+    setUnifiedModalOpen,
+    setWsiInviteCandidate,
+    setShowWSIInviteModal,
+    setShowShareGestorModal,
+    setCandidatesData,
+  })
 
   // Preview Maximize State
   const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
