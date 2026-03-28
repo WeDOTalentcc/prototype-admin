@@ -67,7 +67,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div>
                   <p className="text-sm opacity-90">Nota Média Histórica</p>
                   <div className="flex items-baseline gap-3">
-                    <p className="text-3xl font-bold">7.4</p>
+                    <p className="text-base-ui font-semibold">7.4</p>
                     <span className="text-lg opacity-80">/10</span>
                     <div className="flex items-center gap-2 ml-3">
                       <Badge className="bg-white/20 text-white border-white/30">
@@ -105,7 +105,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <BarChart3 className="w-4 h-4 text-gray-800 dark:text-gray-200" />
                 <span className="text-xs text-gray-800 dark:text-gray-200">Total de Aplicações</span>
               </div>
-              <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">2,547</p>
+              <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">2,547</p>
               <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">↑ 12% este mês</p>
             </div>
 
@@ -114,7 +114,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <Target className="w-4 h-4 text-gray-800 dark:text-gray-200" />
                 <span className="text-xs text-gray-800 dark:text-gray-200">Taxa de Sucesso</span>
               </div>
-              <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">78%</p>
+              <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">78%</p>
               <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Nota ≥ 7.0</p>
             </div>
 
@@ -123,7 +123,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <UserCheck className="w-4 h-4 text-gray-950 dark:text-gray-50" />
                 <span className="text-xs text-gray-800 dark:text-gray-200">Taxa de Conclusão</span>
               </div>
-              <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">92%</p>
+              <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">92%</p>
               <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Candidatos finalizam</p>
             </div>
 
@@ -132,7 +132,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <Timer className="w-4 h-4 text-gray-800 dark:text-gray-200" />
                 <span className="text-xs text-gray-800 dark:text-gray-200">Tempo Médio</span>
               </div>
-              <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">13min</p>
+              <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">13min</p>
               <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">De 15min esperados</p>
             </div>
 
@@ -141,7 +141,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <Gauge className="w-4 h-4 text-status-error" />
                 <span className="text-xs text-gray-800 dark:text-gray-200">Dificuldade Percebida</span>
               </div>
-              <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">6.8/10</p>
+              <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">6.8/10</p>
               <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Médio-Alto</p>
             </div>
           </div>

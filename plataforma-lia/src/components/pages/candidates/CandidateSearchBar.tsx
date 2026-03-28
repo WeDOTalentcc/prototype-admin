@@ -78,7 +78,7 @@ export function CandidateSearchBar({
         {/* Título */}
         <div className="mb-4 flex flex-col items-center justify-center">
           <h2
-            className={`text-2xl font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2.5 ${
+            className={`text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2.5 ${
               isSearchActive ? 'animate-pulse' : ''
             }`}
           >

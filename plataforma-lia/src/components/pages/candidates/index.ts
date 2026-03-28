@@ -1,4 +1,7 @@
 export { CandidatesHeader } from "./CandidatesHeader"
+export { CandidateSearchResultsView } from "./CandidateSearchResultsView"
+export type { CandidateSearchResultsViewProps } from "./CandidateSearchResultsView"
+export { LIASearchSidebar } from "./LIASearchSidebar"
 export { CandidatesTable } from "./CandidatesTable"
 export { CandidateTabs } from "./CandidateTabs"
 export { CandidateSearchBar } from "./CandidateSearchBar"

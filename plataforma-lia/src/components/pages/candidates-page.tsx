@@ -1,16 +1,4 @@
-/**
- * CandidatesPage — Sprint E god object extraction (phase 1 complete)
- *
- * This file has 12375 lines and is being broken down incrementally.
- * Extracted hooks (ready for import in phase 2):
- *   @see hooks/use-candidate-filters.ts   — TableFilters state + getDefaultTableFilters
- *   @see hooks/use-candidate-selection.ts — multi-select + bulk action state
- *
- * Sprint F3 (done): useCandidatesListMapped wired; manual initial useEffect removed.
- *   candidatesListHook syncs candidates + isLoading; search handlers still override via setCandidates.
- * Sprint F5 (done): CandidateTabs + CandidateSearchBar extracted + used in JSX.
- * TODO phase 3 remaining: Extract CandidateTableSection component.
- */
+// CandidatesPage — extracted hooks: useCandidatesCVHandlers, useCandidatesSearch, useCandidatesLIAHandlers, useCandidatesActions
 "use client"
 
 import { cn } from "@/lib/utils"
@@ -54,17 +42,16 @@ import { LiaSearchQueriesGuide } from "@/components/ui/lia-search-queries-guide"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ActionResultCard } from "@/components/chat/action-result-card"
 
-// Quick Actions Modals
 import { ContactModal, ScheduleModal } from "@/components/quick-actions-modals"
 import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
 import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
 import { ContactFilterConfirmModal } from "@/components/pages/candidates/ContactFilterConfirmModal"
 import { DeleteArchetypeModal } from "@/components/pages/candidates/DeleteArchetypeModal"
+import { LIASearchSidebar } from "@/components/pages/candidates/LIASearchSidebar"
 import { QuickViewModal } from "@/components/quick-view-modal"
 import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { CandidateComparison } from "@/components/candidate-comparison"
 
-// Imports das abas do talent funnel
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
 import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
 import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
@@ -77,40 +64,26 @@ import { AddListToVacanciesModal } from "@/components/modals/add-list-to-vacanci
 import { UnsavedPearchWarningModal } from "@/components/modals/unsaved-pearch-warning-modal"
 import { useTalentFunnel, type SearchHistoryItem, type SavedSearch } from "@/hooks/use-talent-funnel"
 
-// Smart Search AI-First
 import { type ParsedEntities, type SearchMode, type SearchMetadata } from "@/components/search/smart-search-input"
 
-// Advanced Filters Modal
 import { type SearchFilters } from "@/components/search/advanced-filters-modal"
 import { FilterAutocomplete } from "@/components/search/filter-autocomplete"
 
-// WSI Components
 import { WSITextScreeningModal, WSIVoiceScreeningStatus, WSIScorecard } from "@/components/wsi"
 import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
-// Email Templates
 import { SendEmailModal } from "@/components/email-templates"
-// CV Parser
 import { CVPreview, type ParsedCVResponse } from "@/components/cv"
-// Calibration
 import { LIAFeedbackWidget } from "@/components/calibration"
-// Proactive Insights
 import { ProactiveInsightCard, type SearchAnalytics } from "@/components/proactive-insight-card"
-// Unified Table
 import { UnifiedCandidateTable } from "@/components/tables"
 import type { TableColumn, TableSortConfig } from "@/components/tables/types"
-// Search Loading Animation
 import { SearchLoadingAnimation } from "@/components/ui/search-loading-animation"
 import { CalibrationCard, type CalibrationCandidate } from "@/components/calibration-card"
-// Candidate Review Modal
 import { CandidateReviewModal, type ReviewCandidate, type Criterion } from "@/components/pages/candidate-review-modal"
-// Bulk Actions
-// BulkActionsBar removido - ações agora aparecem no chat da LIA
 import { JobVacancy, EmailTemplate } from "@/services/lia-api"
 
-// Credit Confirmation Dialog for Global Search
 import { CreditConfirmationDialog } from "@/components/search/credit-confirmation-dialog"
 
-// Reveal Credits Modal
 import { RevealCreditsModal } from "@/components/reveal-credits-modal"
 import {
   DropdownMenu,
@@ -119,7 +92,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Pearch AI Search Integration
 import {
   searchCandidates as searchCandidatesHybrid,
   searchLocalCandidates,
@@ -130,19 +102,14 @@ import {
   type CreditEstimate
 } from "@/lib/api/candidate-search"
 
-// Source Detection Utility
 import { getSourceDetails, isGlobalSource, isLocalSource } from "@/lib/utils/source-detection"
-// Toast notifications
 import { useToast } from "@/hooks/use-toast"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
-// Global Search Settings
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
-// Hide Viewed Candidates Hook
 import { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
 import { useCandidateFilters, type TableFilters, getDefaultTableFilters } from "@/hooks/use-candidate-filters"
 import { useCandidateSelection } from "@/hooks/use-candidate-selection"
 import { useBulkCandidateDataRequests } from "@/hooks/use-candidate-data-requests"
-// Sprint G4: useCandidatesListMapped wraps useCandidatesList + transform CandidateLocal→Candidate
 import { useCandidatesListMapped } from "@/hooks/use-candidates-list-mapped"
 import {
   AlertDialog,
@@ -164,14 +131,22 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
-// Design Tokens
 import { textStyles, cardStyles, badgeStyles, formatScore, formatScorePercent } from "@/lib/design-tokens"
 import { CandidateTabs } from "@/components/pages/candidates/CandidateTabs"
 import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearchBar"
 import { SearchResultsHeader } from "@/components/pages/candidates/SearchResultsHeader"
 import { CandidatesFilterPanel } from "@/components/pages/candidates/CandidatesFilterPanel"
+import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
 import type { Candidate } from "@/components/pages/candidates/types"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
+import { CreditConfirmationModal } from "@/components/pages/candidates/CreditConfirmationModal"
+import { SaveAsArchetypeModal } from "@/components/pages/candidates/SaveAsArchetypeModal"
+import { EditQueryModal } from "@/components/pages/candidates/EditQueryModal"
+import { PreviewSuggestionModal } from "@/components/pages/candidates/PreviewSuggestionModal"
+import { useCandidatesCVHandlers } from "@/components/pages/candidates/hooks/useCandidatesCVHandlers"
+import { useCandidatesSearch } from "@/components/pages/candidates/hooks/useCandidatesSearch"
+import { useCandidatesLIAHandlers } from "@/components/pages/candidates/hooks/useCandidatesLIAHandlers"
+import { useCandidatesActions } from "@/components/pages/candidates/hooks/useCandidatesActions"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
@@ -427,7 +402,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     userEmail: user?.email
   })
   
-  // Sprint E — extracted hooks
   const {
     tableFilters, setTableFilters,
     showTableFiltersPanel, setShowTableFiltersPanel,
@@ -445,7 +419,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   // Only show global/hybrid options after settings are loaded AND global search is enabled
   const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
 
-  // Estados simples usando useState
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -485,7 +458,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         }
       }
     } catch {
-      // ignore
     }
   }, [candidates])
 
@@ -529,15 +501,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const [showEditQueryModal, setShowEditQueryModal] = useState(false)
   const [editQueryValue, setEditQueryValue] = useState("")
   
-  // Toast notifications
   const { toast } = useToast()
   
-  // Persistência de navegação
   const { saveTalentFunnelState } = useNavigationPersistence()
   
-  // Salvar estado quando aba ou busca mudam
   useEffect(() => {
-    // Só salva se a aba for uma das 3 principais
     if (activeTab === 'search' || activeTab === 'favorites' || activeTab === 'lists') {
       saveTalentFunnelState(activeTab, lastSearchQuery)
     }
@@ -566,7 +534,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const [showGlobalExpansionConfirm, setShowGlobalExpansionConfirm] = useState(false) // Modal de confirmação de créditos para expansão global
   const [hasSearched, setHasSearched] = useState(false) // Flag para saber se já executou uma busca
   const [isExpandingToGlobal, setIsExpandingToGlobal] = useState(false) // Loading state para expansão global
-  
   
   // ========== VIEWED CANDIDATES STATE ==========
   const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
@@ -604,7 +571,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
     loadCandidateLists()
   }, [])
-  
   
   // Load viewed candidates on mount
   useEffect(() => {
@@ -672,122 +638,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }
   
-  // CV Dropzone handlers
-  const handleCVDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDroppingCV(false)
-    
-    const files = e.dataTransfer.files
-    if (files.length === 0) return
-    
-    const file = files[0]
-    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
-    
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt)$/i)) {
-      toast({
-        title: "Formato inválido",
-        description: "Por favor, envie um arquivo PDF, DOC, DOCX ou TXT",
-        variant: "destructive"
-      })
-      return
-    }
-    
-    setCvUploadLoading(true)
-    
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      
-      const response = await fetch('/api/backend-proxy/search/candidates/from-cv?limit=20&search_pearch=false', {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (!response.ok) {
-        throw new Error('Erro ao processar CV')
-      }
-      
-      const data = await response.json()
-      
-      // Add LIA message with results (only show local results - user can opt-in to global)
-      const liaMessage: ChatMessage = {
-        id: `lia-cv-${Date.now()}`,
-        type: 'lia',
-        content: `📄 Analisei o CV **${file.name}** e encontrei:\n\n` +
-          `**Perfil extraído:**\n` +
-          `• Título: ${data.extracted_title || 'Não identificado'}\n` +
-          `• Skills: ${data.extracted_skills?.slice(0, 5).join(', ') || 'Não identificadas'}\n\n` +
-          `**Busca na base local:**\n` +
-          `• Query gerada: "${data.query_generated}"\n` +
-          `• ${data.local_count || data.total_count} candidato${(data.local_count || data.total_count) > 1 ? 's' : ''} encontrado${(data.local_count || data.total_count) > 1 ? 's' : ''}`,
-        timestamp: new Date()
-      }
-      setChatMessages(prev => [...prev, liaMessage])
-      
-      // Update candidates with results if available
-      if (data.candidates && data.candidates.length > 0) {
-        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
-          id: c.id || `cv-${Date.now()}-${Math.random()}`,
-          candidateId: c.id || '',
-          name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
-          email: '',
-          phone: '',
-          current_title: c.current_title || c.headline,
-          current_company: c.current_company,
-          linkedin_url: c.linkedin_url,
-          technical_skills: c.skills || [],
-          location_city: c.location?.split(',')[0]?.trim(),
-          avatar_url: c.picture_url,
-          years_of_experience: c.total_experience_years,
-          status: 'new',
-          source: c.source || 'local',
-          position: c.current_title || 'Não especificado',
-          location: c.location || 'Não especificado',
-          workModel: 'remoto' as 'remoto' | 'híbrido' | 'presencial',
-          score: c.score || 75,
-          skills: c.skills || [],
-          experience: c.total_experience_years || 0,
-          education: 'Não informado',
-          contractType: 'CLT' as 'CLT' | 'PJ' | 'Freelancer',
-          linkedin: c.linkedin_url || '',
-          monthlySalary: 0,
-          avatar: c.picture_url
-        }))
-        
-        setCandidates(mappedCandidates)
-        setHasSearchResults(true)
-        setSearchResultsCount(mappedCandidates.length)
-        setShowSearchResults(true)
-        setDisplayedResultsCount(10)
-        
-        toast({
-          title: "CV analisado",
-          description: `Encontrados ${mappedCandidates.length} candidatos similares`,
-        })
-      }
-    } catch (error) {
-      console.error('CV upload error:', error)
-      toast({
-        title: "Erro ao processar CV",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: "destructive"
-      })
-    } finally {
-      setCvUploadLoading(false)
-    }
-  }
-  
-  const handleCVDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDroppingCV(true)
-  }
-  
-  const handleCVDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDroppingCV(false)
-  }
-  
-  // Hook centralizado para gerenciar favoritos, histórico e buscas salvas
   const talentFunnel = useTalentFunnel()
   
   // Estados derivados do hook para compatibilidade com componentes existentes
@@ -795,7 +645,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const pinnedCandidates = talentFunnel.getPinnedIds()
   const favoriteNotes = talentFunnel.getFavoriteNotes()
   
-
   // Estados para paginação tradicional (como Gestão de Vagas)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
@@ -808,7 +657,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   // ✨ Estado para visualização de lista
   const [viewingList, setViewingList] = useState<{ id: string; name: string; color?: string } | null>(null)
 
-  // Estados existentes...
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
@@ -940,31 +788,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   // Estados para o novo sistema de pesquisa avançada da LIA - 6 abas
   type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
   const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('ia-natural')
-  const [jobDescriptionText, setJobDescriptionText] = useState("")
   const [liaWidth, setLiaWidth] = useState(400) // Largura padrão 400px - ElevenLabs pattern
   const [isResizingLIA, setIsResizingLIA] = useState(false)
   const [isLiaSuperChat, setIsLiaSuperChat] = useState(false) // Modo superchat expandido
-  const [superChatWidth, setSuperChatWidth] = useState(600) // Largura do superchat
-  
-  // Estados adicionais para as novas abas
-  const [similarProfileUrl, setSimilarProfileUrl] = useState("")
-  const [booleanSearchValue, setBooleanSearchValue] = useState("")
-  const [filterLocation, setFilterLocation] = useState("")
-  const [filterExperience, setFilterExperience] = useState("any")
-  const [filterSeniority, setFilterSeniority] = useState("any")
-  const [filterWorkModel, setFilterWorkModel] = useState("any")
-  
-  // Estados para busca Similar e Job Description
-  const [isSearchingSimilar, setIsSearchingSimilar] = useState(false)
-  const [isSearchingJD, setIsSearchingJD] = useState(false)
-  const [extractedJDCriteria, setExtractedJDCriteria] = useState<{
-    job_title?: string
-    seniority?: string
-    skills: string[]
-    experience_years?: number
-    location?: string
-    languages: string[]
-  } | null>(null)
   
   // Estado para modal de filtros avançados removido - agora usa painel lateral
   
@@ -1017,8 +843,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const [archetypeJobDescription, setArchetypeJobDescription] = useState("")
   const [archetypeLibraryTab, setArchetypeLibraryTab] = useState<'meus' | 'sugestoes' | 'templates'>('meus')
   const [showSaveAsArchetypeModal, setShowSaveAsArchetypeModal] = useState(false)
-  const [archetypeNameInput, setArchetypeNameInput] = useState("")
-  const [archetypeEmojiInput, setArchetypeEmojiInput] = useState("🎯")
   const [lastSuccessfulQuery, setLastSuccessfulQuery] = useState("") // Armazena a última query bem-sucedida para o modal de arquétipo
   
   // Estado para preview de sugestão IA
@@ -1034,10 +858,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }
   const [previewSuggestion, setPreviewSuggestion] = useState<AISuggestion | null>(null)
-  const [previewTags, setPreviewTags] = useState<string[]>([])
-  const [newPreviewTag, setNewPreviewTag] = useState("")
-  const [isSavingPreviewArchetype, setIsSavingPreviewArchetype] = useState(false)
-  
+
   // Estado para preview de arquétipo do usuário (Meus Arquétipos)
   const [previewingUserArchetype, setPreviewingUserArchetype] = useState<Archetype | null>(null)
   
@@ -1128,7 +949,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
-  const chatScrollRef = useRef<HTMLDivElement>(null)
+
+  // CV Dropzone handlers — extracted to useCandidatesCVHandlers
+  const cvHandlers = useCandidatesCVHandlers({
+    setCandidates, setIsDroppingCV, setCvUploadLoading,
+    setHasSearchResults, setSearchResultsCount, setShowSearchResults,
+    setDisplayedResultsCount, setChatMessages, toast,
+  })
+  const handleCVDrop = cvHandlers.handleCVDrop
+  const handleCVDragOver = cvHandlers.handleCVDragOver
+  const handleCVDragLeave = cvHandlers.handleCVDragLeave
   
   // Abrir o painel LIA automaticamente ao carregar a página
   useEffect(() => {
@@ -1191,7 +1021,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       setIsLoadingArchetypes(false)
     }
   }
-  
   
   // Function to execute search by archetype
   const executeArchetypeSearch = async (archetype: BackendArchetype) => {
@@ -2215,644 +2044,58 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }
 
-  // Handler para confirmar busca com Pearch (após modal de créditos)
-  const handleConfirmPearchSearch = async () => {
-    setShowCreditConfirmation(false)
-    
-    if (pendingSearchRequest) {
-      await executeSearch(
-        pendingSearchRequest.query,
-        pendingSearchRequest.entities,
-        pendingSearchRequest.mode,
-        pendingSearchRequest.metadata,
-        true // usePearch = true
-      )
-      setPendingSearchRequest(null)
-    }
-  }
-  
-  // Handler para mudança de fonte de busca com confirmação de créditos
-  const handleSourceChange = (newSource: 'local' | 'hybrid' | 'global') => {
-    if (newSource === 'local') {
-      // Local é gratuito - muda direto
-      setSearchSource('local')
-    } else {
-      // Híbrido ou Global consome créditos - mostrar modal de confirmação
-      setPendingSourceChange(newSource)
-      setShowSourceChangeModal(true)
-    }
-  }
-  
-  // Confirmar mudança de fonte após aceitar modal
-  const confirmSourceChange = () => {
-    if (pendingSourceChange) {
-      const newSource = pendingSourceChange
-      
-      // Use flushSync to ensure state is committed before executing search
-      flushSync(() => {
-        setSearchSource(newSource)
-        setPendingSourceChange(null)
-        setShowSourceChangeModal(false)
-      })
-      
-      // Now execute search with updated state
-      if (lastSearchQuery && hasSearched) {
-        // Use the new source to determine Pearch usage, but also respect previous search context
-        const shouldUsePearch = newSource === 'global' || newSource === 'hybrid' || lastSearchUsedPearch
-        executeSearch(
-          lastSearchQuery,
-          lastSearchEntities,
-          lastSearchMode as SearchMode,
-          lastSearchMetadata,
-          shouldUsePearch
-        )
-      }
-      
-      toast({
-        title: newSource === 'hybrid' ? 'Busca Híbrida ativada' : 'Busca Global ativada',
-        description: 'Atualizando resultados com a nova configuração...',
-      })
-    } else {
-      setShowSourceChangeModal(false)
-    }
-  }
-  
-  // Handler para mudança de filtro de contato com confirmação de créditos
-  const handleContactFilterChange = (filterType: 'email' | 'phone') => {
-    const isCurrentlyActive = filterType === 'email' 
-      ? pearchSearchOptions.requireEmails 
-      : pearchSearchOptions.requirePhoneNumbers
-    
-    if (isCurrentlyActive) {
-      // Desativar filtro - não precisa confirmação
-      if (filterType === 'email') {
-        setPearchSearchOptions(prev => ({ ...prev, requireEmails: false }))
-      } else {
-        setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: false }))
-      }
-    } else {
-      // Ativar filtro - mostrar modal de confirmação (consome créditos extras)
-      setPendingContactFilter(filterType)
-      setShowContactFilterModal(true)
-    }
-  }
-  
-  // Confirmar ativação de filtro de contato após aceitar modal
-  const confirmContactFilterChange = () => {
-    const filterType = pendingContactFilter
-    
-    // Use flushSync to ensure state is committed before executing search
-    flushSync(() => {
-      if (filterType === 'email') {
-        setPearchSearchOptions(prev => ({ ...prev, requireEmails: true }))
-      } else if (filterType === 'phone') {
-        setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: true }))
-      }
-      setPendingContactFilter(null)
-      setShowContactFilterModal(false)
-    })
-    
-    // Now execute search with updated state - respect previous Pearch usage
-    if (lastSearchQuery && hasSearched) {
-      const shouldUsePearch = searchSource === 'global' || searchSource === 'hybrid' || lastSearchUsedPearch
-      executeSearch(
-        lastSearchQuery,
-        lastSearchEntities,
-        lastSearchMode as SearchMode,
-        lastSearchMetadata,
-        shouldUsePearch
-      )
-    }
-    
-    toast({
-      title: filterType === 'email' ? 'Filtro de Email ativado' : 'Filtro de Telefone ativado',
-      description: 'Atualizando resultados com o novo filtro...',
-    })
-  }
-
-  const handleSearchFeedbackChange = (candidateId: string, feedback: 'like' | 'dislike' | null) => {
-    setSearchFeedbacks(prev => {
-      const updated = { ...prev }
-      if (feedback === null) {
-        delete updated[candidateId]
-      } else {
-        updated[candidateId] = feedback
-      }
-      return updated
-    })
-  }
-
-  const handleLoadMore = async () => {
-    setIsLoadingMore(true)
-    await new Promise(resolve => setTimeout(resolve, 300))
-    setDisplayedResultsCount(prev => prev + 10)
-    setIsLoadingMore(false)
-  }
-
-  // Handler para expandir busca para global (Pearch AI)
-  const handleExpandToGlobal = async () => {
-    setShowGlobalExpansionConfirm(false)
-    setIsExpandingToGlobal(true)
-    
-    try {
-      // Reusar a última query bem-sucedida
-      const queryToUse = lastSuccessfulQuery || lastSearchQuery
-      
-      if (!queryToUse) {
-        toast({
-          title: "Nenhuma busca ativa",
-          description: "Execute uma busca local primeiro para poder expandir para busca global.",
-          variant: "destructive"
-        })
-        return
-      }
-      
-      // Construir SearchSpec a partir das entities salvas
-      const searchSpec = lastSearchEntities ? {
-        location: lastSearchEntities.location,
-        job_title: lastSearchEntities.job_title,
-        seniority: lastSearchEntities.seniority,
-        years_experience: lastSearchEntities.years_experience,
-        skills: lastSearchEntities.skills || [],
-        industry: lastSearchEntities.industry,
-        company: lastSearchEntities.company
-      } : undefined
-      
-      // Executar busca global (Pearch AI)
-      const searchResponse = await searchCandidatesHybrid({
-        query: queryToUse,
-        thread_id: searchThreadId,
-        search_spec: searchSpec,
-        search_local: true, // Manter local para híbrido
-        search_pearch: true, // Adicionar busca global
-        pearch_type: pearchSearchOptions.searchType,
-        local_limit: 20,
-        pearch_limit: pearchSearchOptions.limit,
-        show_emails: pearchSearchOptions.showEmails,
-        show_phone_numbers: pearchSearchOptions.showPhoneNumbers,
-        high_freshness: pearchSearchOptions.highFreshness,
-        require_emails: pearchSearchOptions.requireEmails,
-        require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
-      })
-      
-      // Atualizar thread_id
-      if (searchResponse.thread_id) {
-        setSearchThreadId(searchResponse.thread_id)
-      }
-      
-      // Atualizar saldo de créditos
-      if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
-        setCreditsRemaining(searchResponse.credits_remaining)
-      }
-      
-      // Mapear candidatos do Pearch para formato interno
-      if (searchResponse.candidates && searchResponse.candidates.length > 0) {
-        const mappedCandidates = searchResponse.candidates.map((c) => {
-          const candidateSource = c.source || 'pearch'
-          return {
-            id: c.id || `pearch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            candidateId: c.id?.substring(0, 8).toUpperCase() || 'PEARCH',
-            name: c.name || 'Nome não disponível',
-            email: c.email || '',
-            phone: c.phone || '',
-            mobile_phone: c.phone,
-            current_title: c.headline || c.current_title || '',
-            current_company: c.current_company || '',
-            current_salary: undefined,
-            desired_salary_min: undefined,
-            desired_salary_max: undefined,
-            location: c.location || '',
-            location_city: c.location?.split(',')[0]?.trim(),
-            location_state: c.location?.split(',')[1]?.trim(),
-            linkedin_url: c.linkedin_url,
-            avatar_url: c.avatar_url || c.picture_url,
-            technical_skills: c.skills || [],
-            skills: c.skills || [],
-            seniority_level: c.seniority_level,
-            years_of_experience: c.years_experience || c.total_experience_years,
-            experience: c.years_experience || c.total_experience_years || 0,
-            position: c.headline || c.current_title || '',
-            monthlySalary: 0,
-            workModel: 'remoto' as const,
-            score: c.match_score ? Math.round(c.match_score * 25) : 75,
-            contractType: 'CLT' as const,
-            linkedin: c.linkedin_url || '',
-            avatar: c.avatar_url || c.picture_url,
-            // Mapeamento de experiências profissionais da Pearch
-            experiences: c.experiences || [],
-            workHistory: (c.experiences || []).map((exp: any) => ({
-              company: exp.company_info?.name || exp.company || '',
-              title: exp.company_roles?.[0]?.title || exp.title || '',
-              startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
-              endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
-              duration: exp.duration || '',
-              location: exp.company_info?.location || exp.location || '',
-              description: exp.company_roles?.[0]?.description || exp.description || ''
-            })),
-            // Mapeamento de formação acadêmica da Pearch
-            education: (c.education || []).map((edu: any) => ({
-              school: edu.school || '',
-              degree: edu.degree || '',
-              field_of_study: edu.field_of_study || '',
-              fieldOfStudy: edu.field_of_study || '',
-              startDate: edu.start_date || '',
-              endDate: edu.end_date || ''
-            })),
-            liaAnalysis: {
-              score: c.match_score ? Math.round(c.match_score * 25) : 75,
-              strengths: c.match_reasoning ? [c.match_reasoning] : [],
-              concerns: [],
-              recommendation: c.match_reasoning || ''
-            },
-            source: candidateSource,
-            pearch_profile_id: c.pearch_profile_id,
-            has_email: c.has_email ?? true,
-            has_phone: c.has_phone ?? true,
-            is_opentowork: c.is_opentowork,
-            is_decision_maker: c.is_decision_maker,
-            is_top_universities: c.is_top_universities,
-            is_startup: c.is_startup || c.company_info?.is_startup,
-            expertise: c.expertise,
-            outreach_message: c.outreach_message
-          }
-        })
-        
-        // Separar candidatos locais e globais
-        const localCandidates = mappedCandidates.filter(c => !isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
-        const globalCandidates = mappedCandidates.filter(c => isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
-        
-        // Atualizar estados
-        setCandidates(mappedCandidates)
-        setCurrentSearchSource('hybrid')
-        setSearchResultsCount(searchResponse.total_count || mappedCandidates.length)
-        setLocalResultsCount(searchResponse.local_count || localCandidates.length)
-        setPearchResultsCount(searchResponse.pearch_count || globalCandidates.length)
-        setCreditsUsedInSearch(searchResponse.credits_used || 0)
-        
-        // Atualizar searchResults para exibição no painel LIA
-        setSearchResults(prev => ({
-          ...prev,
-          local: localCandidates,
-          global: globalCandidates,
-          localCount: searchResponse.local_count || localCandidates.length,
-          globalCount: searchResponse.pearch_count || globalCandidates.length,
-          showGlobalResults: true
-        }))
-        
-        // Notificar usuário
-        toast({
-          title: "Busca expandida com sucesso!",
-          description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.`
-        })
-        
-        // Adicionar mensagem no chat
-        const liaMessage: ChatMessage = {
-          id: `lia-expand-global-${Date.now()}`,
-          type: 'lia',
-          content: `🌐 **Busca expandida para base global**\n\nEncontrei mais **${globalCandidates.length} candidatos** na Busca Global!\n\nAgora você tem acesso a um pool ampliado de talentos para sua vaga.`,
-          timestamp: new Date()
-        }
-        setChatMessages(prev => [...prev, liaMessage])
-        
-        // 🎯 Chamar análise proativa após expansão para busca global
-        if (mappedCandidates.length > 0) {
-          try {
-            const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                query: queryToUse,
-                candidates: mappedCandidates.slice(0, 50).map(c => ({
-                  id: c.id,
-                  name: c.name,
-                  current_title: c.current_title || c.position,
-                  current_company: c.current_company,
-                  location: c.location || c.location_city,
-                  skills: c.skills || c.technical_skills,
-                  years_experience: c.experience || c.years_of_experience,
-                  lia_score: c.liaAnalysis?.score || c.score,
-                  seniority_level: c.seniority_level,
-                  work_model: c.workModel || 'remoto',
-                  email: c.email,
-                  phone: c.phone || c.mobile_phone,
-                  linkedin_url: c.linkedin_url,
-                  source: c.source
-                })),
-                local_count: localCandidates.length,
-                global_count: globalCandidates.length
-              })
-            })
-            
-            if (analyzeResponse.ok) {
-              const analyticsData: SearchAnalytics = await analyzeResponse.json()
-              
-              // Inserir card de insights proativos no chat
-              const insightMessage: ChatMessage = {
-                id: `proactive-insight-global-${Date.now()}`,
-                type: 'proactive_insight',
-                content: '',
-                timestamp: new Date(),
-                analytics: analyticsData
-              }
-              setChatMessages(prev => [...prev, insightMessage])
-            }
-          } catch (analyzeError) {
-            console.warn('Erro ao analisar resultados da busca global:', analyzeError)
-          }
-        }
-      }
-      
-      setShowExpandGlobalOption(false)
-      
-    } catch (error) {
-      console.error('Erro ao expandir busca para global:', error)
-      toast({
-        title: "Erro ao expandir busca",
-        description: "Não foi possível expandir para busca global. Tente novamente.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsExpandingToGlobal(false)
-    }
-  }
+  const [selectedTemplate, setSelectedTemplate] = useState("")
+  // Search handlers — extracted to useCandidatesSearch
+  const searchHandlers = useCandidatesSearch({
+    candidates, setCandidates,
+    searchResults, setSearchResults,
+    searchTerm,
+    lastSearchQuery, lastSearchEntities, lastSearchMode, lastSearchMetadata, lastSearchUsedPearch,
+    searchSource, setSearchSource, currentSearchSource, setCurrentSearchSource,
+    openCreditModals, setOpenCreditModals,
+    pearchSearchOptions, setPearchSearchOptions,
+    creditsRemaining, setCreditsRemaining,
+    creditsUsedInSearch, setCreditsUsedInSearch,
+    pearchResultsCount, setPearchResultsCount,
+    localResultsCount, setLocalResultsCount,
+    searchResultsCount, setSearchResultsCount,
+    showSearchResults, setShowSearchResults,
+    hasSearchResults, setHasSearchResults,
+    showGlobalExpansionConfirm, setShowGlobalExpansionConfirm,
+    isExpandingToGlobal, setIsExpandingToGlobal,
+    displayedResultsCount, setDisplayedResultsCount,
+    isLoadingMore, setIsLoadingMore,
+    searchFeedbacks, setSearchFeedbacks,
+    hasSearched, lastSuccessfulQuery,
+    setSearchThreadId, searchThreadId,
+    showExpandGlobalOption, setShowExpandGlobalOption,
+    setChatMessages,
+    showSourceChangeModal, setShowSourceChangeModal,
+    pendingSourceChange, setPendingSourceChange,
+    showContactFilterModal, setShowContactFilterModal,
+    pendingContactFilter, setPendingContactFilter,
+    showCreditConfirmation, setShowCreditConfirmation,
+    pendingSearchRequest, setPendingSearchRequest,
+    activeSearchFilters, setActiveSearchFilters,
+    setSelectedTemplate,
+    executeSearch,
+    toast, user,
+  })
+  const handleConfirmPearchSearch = searchHandlers.handleConfirmPearchSearch
+  const handleSourceChange = searchHandlers.handleSourceChange
+  const confirmSourceChange = searchHandlers.confirmSourceChange
+  const handleContactFilterChange = searchHandlers.handleContactFilterChange
+  const confirmContactFilterChange = searchHandlers.confirmContactFilterChange
+  const handleSearchFeedbackChange = searchHandlers.handleSearchFeedbackChange
+  const handleLoadMore = searchHandlers.handleLoadMore
+  const handleExpandToGlobal = searchHandlers.handleExpandToGlobal
+  const handleApplyAdvancedFilters = searchHandlers.handleApplyAdvancedFilters
+  const buildQueryFromFilters = searchHandlers.buildQueryFromFilters
+  const handleTemplateSelection = searchHandlers.handleTemplateSelection
 
   // Estados para LIA micro-interação
   const [isLIAThinking, setIsLIAThinking] = useState(false)
 
-  // 🎯 Handler para quick actions do ProactiveInsightCard
-  const handleQuickAction = async (actionId: string, actionType: string) => {
-    const liaMessage: ChatMessage = {
-      id: `lia-action-${Date.now()}`,
-      type: 'lia',
-      content: '',
-      timestamp: new Date()
-    }
-    
-    switch (actionType) {
-      case 'screening':
-        liaMessage.content = '🎯 **Iniciando triagem em lote**\n\nPreparando triagem WSI para os candidatos selecionados...'
-        setChatMessages(prev => [...prev, liaMessage])
-        toast({
-          title: "Triagem WSI",
-          description: "Funcionalidade de triagem em lote será implementada em breve."
-        })
-        break
-        
-      case 'assign':
-        liaMessage.content = '📋 **Atribuir candidatos a vaga**\n\nSelecione os candidatos e escolha a vaga para atribuição.'
-        setChatMessages(prev => [...prev, liaMessage])
-        if (candidates.length > 0) {
-          setSelectedCandidatesForBatch(new Set(candidates.slice(0, 10).map(c => c.id)))
-        }
-        break
-        
-      case 'favorite':
-        const candidateIds = candidates.slice(0, 10).map(c => c.id)
-        candidateIds.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-        liaMessage.content = `⭐ **${candidateIds.length} candidatos adicionados aos favoritos**\n\nVocê pode acessá-los na aba "Favoritos".`
-        setChatMessages(prev => [...prev, liaMessage])
-        toast({
-          title: "Favoritos atualizados",
-          description: `${candidateIds.length} candidatos adicionados aos favoritos`,
-        })
-        break
-        
-      case 'whatsapp':
-        liaMessage.content = '📱 **Contato via WhatsApp**\n\nPreparando mensagens personalizadas para contato...'
-        setChatMessages(prev => [...prev, liaMessage])
-        break
-        
-      case 'schedule':
-        liaMessage.content = '📅 **Agendamento de entrevistas**\n\nAbrindo modal de agendamento em lote...'
-        setChatMessages(prev => [...prev, liaMessage])
-        setShowScheduleModal(true)
-        break
-        
-      case 'refine':
-        liaMessage.content = '🔍 **Refinar busca**\n\nDigite novos critérios para refinar sua busca.'
-        setChatMessages(prev => [...prev, liaMessage])
-        setLiaPromptValue('')
-        break
-        
-      case 'export':
-        liaMessage.content = '📊 **Exportando candidatos**\n\nPreparando arquivo para download...'
-        setChatMessages(prev => [...prev, liaMessage])
-        try {
-          const exportData = candidates.map(c => ({
-            nome: c.name,
-            cargo: c.current_title || c.position,
-            empresa: c.current_company,
-            email: c.email,
-            telefone: c.phone || c.mobile_phone,
-            linkedin: c.linkedin_url,
-            cidade: c.location_city || c.location,
-            score: c.liaAnalysis?.score || c.score
-          }))
-          const csvContent = [
-            Object.keys(exportData[0]).join(','),
-            ...exportData.map(row => Object.values(row).map(v => `"${v || ''}"`).join(','))
-          ].join('\n')
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `candidatos_${new Date().toISOString().split('T')[0]}.csv`
-          link.click()
-          
-          const successMessage: ChatMessage = {
-            id: `lia-export-success-${Date.now()}`,
-            type: 'lia',
-            content: `✅ **Exportação concluída!**\n\n${exportData.length} candidatos exportados para CSV.`,
-            timestamp: new Date()
-          }
-          setChatMessages(prev => [...prev, successMessage])
-        } catch (error) {
-          console.error('Erro ao exportar:', error)
-        }
-        break
-        
-      default:
-        liaMessage.content = `Ação "${actionId}" será implementada em breve.`
-        setChatMessages(prev => [...prev, liaMessage])
-    }
-  }
-
-  // 🎯 Handler para mensagens orquestradas do chat de talentos
-  const handleOrchestratedTalentMessage = async (message: string): Promise<OrchestratedTalentChatResponse> => {
-    const selectedIds = Array.from(selectedCandidatesForBatch)
-    
-    const candidatesForContext = candidates.slice(0, 50).map(c => ({
-      id: c.id,
-      name: c.name,
-      current_title: c.current_title || c.position,
-      current_company: c.current_company,
-      location: c.location_city || c.location,
-      skills: c.skills || [],
-      experience_years: c.experience_years,
-      lia_score: c.liaAnalysis?.score || c.score,
-      wsi_score: c.wsi_score,
-      source: c.source,
-      // Campos adicionais para análises completas
-      work_model: c.work_model_preference || c.workModel,
-      is_remote: c.is_remote,
-      willing_to_relocate: c.willing_to_relocate,
-      salary_expectation_clt: c.salary_expectation_clt || c.desired_salary_min,
-      salary_expectation_pj: c.salary_expectation_pj,
-      languages: c.languages,
-      seniority_level: c.seniority_level,
-      gender: c.gender,
-      status: c.status,
-      is_active: c.is_active,
-      technical_skills: c.technical_skills,
-      soft_skills: c.soft_skills,
-    }))
-    
-    const searchContextData = {
-      query: searchResults.query || liaPromptValue,
-      mode: activeSearchTab,
-      total_results: searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0),
-      local_results: searchResults.localCount,
-      global_results: searchResults.globalCount,
-      active_filters: activeSearchFilters
-    }
-    
-    try {
-      const response = await callOrchestratedTalentChat({
-        message,
-        candidates: candidatesForContext,
-        selected_candidate_ids: selectedIds.length > 0 ? selectedIds : undefined,
-        search_context: searchContextData,
-        target_job: undefined,
-        conversation_id: talentConversationId,
-        company_id: user?.company || 'default',
-      })
-      if (response.conversation_id) {
-        setTalentConversationId(response.conversation_id)
-      }
-      
-      if (response.ui_action) {
-        handleTalentUIAction(response.ui_action, response.ui_action_params)
-      }
-      
-      if (response.action_executed && response.action_result) {
-        toast({
-          title: "Ação executada",
-          description: response.action_type ? `${response.action_type} concluída com sucesso` : "Ação concluída com sucesso"
-        })
-      }
-      
-      return response
-    } catch (error) {
-      console.error('Orchestrated talent chat error:', error)
-      return {
-        success: false,
-        content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.',
-        agent_used: 'Fallback',
-        agents_consulted: [],
-        intent_detected: 'error',
-        confidence: 0,
-        suggested_prompts: [],
-        actions: [],
-        ui_action: null
-      }
-    }
-  }
-  
-  // 🎯 Handler para UI actions retornadas pelo orquestrador
-  const handleTalentUIAction = (action: string, params?: Record<string, unknown>) => {
-    switch (action) {
-      case 'start_job_wizard':
-        toast({
-          title: "Criar Nova Vaga",
-          description: "Abrindo wizard de criação de vaga..."
-        })
-        break
-      case 'switch_search_mode':
-        if (params?.mode && typeof params.mode === 'string') {
-          setActiveSearchTab(params.mode as SearchTab)
-        }
-        break
-      case 'open_communication_modal':
-        if (selectedCandidatesForBatch.size > 0) {
-          const firstId = Array.from(selectedCandidatesForBatch)[0]
-          const candidate = candidates.find(c => c.id === firstId)
-          if (candidate) {
-            setUnifiedModalCandidate(candidate)
-            setUnifiedModalType('email')
-            setUnifiedModalOpen(true)
-          }
-        }
-        break
-      case 'open_schedule_modal':
-        setShowScheduleModal(true)
-        break
-      case 'open_screening_modal':
-        if (selectedCandidatesForBatch.size > 0) {
-          const firstId = Array.from(selectedCandidatesForBatch)[0]
-          const candidate = candidates.find(c => c.id === firstId)
-          if (candidate) {
-            setUnifiedModalCandidate(candidate)
-            setUnifiedModalType('triagem')
-            setUnifiedModalOpen(true)
-          }
-        }
-        break
-      case 'trigger_export':
-        handleQuickAction('export', 'export')
-        break
-      case 'open_add_to_list_modal':
-        if (selectedCandidatesForBatch.size > 0) {
-          setShowAddToListModal(true)
-        }
-        break
-    }
-  }
-
-  // 🎯 Handlers para CalibrationCard
-  const handleCalibrationLike = async (candidateId: string) => {
-    try {
-      await fetch('/api/backend-proxy/search/calibration/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidate_id: candidateId,
-          feedback: 'like',
-          context: { source: 'chat_calibration' }
-        })
-      })
-      
-      toast({
-        title: "Feedback registrado",
-        description: "Candidato marcado como interessante",
-      })
-    } catch (error) {
-      console.error('Erro ao enviar feedback:', error)
-    }
-  }
-
-  const handleCalibrationDislike = async (candidateId: string, reason?: string) => {
-    try {
-      await fetch('/api/backend-proxy/search/calibration/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidate_id: candidateId,
-          feedback: 'dislike',
-          reason,
-          context: { source: 'chat_calibration' }
-        })
-      })
-      
-      toast({
-        title: "Feedback registrado",
-        description: "Preferência salva para calibração",
-      })
-    } catch (error) {
-      console.error('Erro ao enviar feedback:', error)
-    }
-  }
-
-  // Estados para configuração de colunas
   const [showColumnConfig, setShowColumnConfig] = useState(false)
   const [tableColumns, setTableColumns] = useState([
     // ============================================
@@ -3048,7 +2291,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false) // Modal de filtros na busca inicial
   // showTableFiltersPanel, tableFilters, newSoftSkillFilter, newCertificationFilter → useCandidateFilters()
   const [booleanSearch, setBooleanSearch] = useState("")
-  const [selectedTemplate, setSelectedTemplate] = useState("")
   const [showSearchHistory, setShowSearchHistory] = useState(false)
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [savedSearches, setSavedSearches] = useState<any[]>([])
@@ -4808,394 +4050,36 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setSelectedCandidatesForBatch(new Set())
   }
 
-  // Salvar candidatos Pearch selecionados na base local
-  const handleSaveToLocalBase = async () => {
-    const selectedPearchCandidates = candidates.filter(
-      c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
-    )
-    
-    if (selectedPearchCandidates.length === 0) {
-      toast({
-        title: "Nenhum candidato Pearch selecionado",
-        description: "Selecione candidatos de busca global para salvar na base.",
-        variant: "destructive"
-      })
-      return
-    }
-    
-    setIsSavingToBase(true)
-    
-    try {
-      const importPayload = {
-        candidates: selectedPearchCandidates.map(c => ({
-          pearch_id: c.id,
-          name: c.name,
-          first_name: c.name?.split(' ')[0] || null,
-          last_name: c.name?.split(' ').slice(1).join(' ') || null,
-          middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
-          linkedin_url: c.linkedin_url || null,
-          avatar_url: c.avatar_url || null,
-          current_title: c.current_title || null,
-          current_company: c.current_company || null,
-          headline: c.headline || null,
-          summary: c.summary || null,
-          location: c.location || null,
-          years_of_experience: c.years_of_experience || null,
-          skills: c.skills || [],
-          expertise: c.expertise || [],
-          languages: c.languages || [],
-          education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
-            company_name: exp.company || exp.company_name || 'Empresa não informada',
-            company_linkedin_url: exp.company_linkedin_url || null,
-            company_domain: exp.company_domain || null,
-            title: exp.title || null,
-            start_date: exp.start_date || null,
-            end_date: exp.end_date || null,
-            duration_years: exp.duration_years || null,
-            is_current: exp.current || false,
-            description: exp.description || null,
-            location: exp.location || null,
-            industries: exp.industries || [],
-            company_size: exp.company_size || null,
-            company_size_range: exp.company_size_range || null,
-            technologies: exp.technologies || [],
-            is_startup: exp.is_startup || null,
-            company_founded_year: null,
-            company_annual_revenue: null,
-            company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            company_keywords: exp.company_keywords || exp.company_info?.keywords || []
-          })),
-          is_open_to_work: c.is_open_to_work || null,
-          is_decision_maker: c.is_decision_maker || null,
-          is_top_universities: c.is_top_universities || null,
-          is_hiring: c.is_hiring || null,
-          best_personal_email: c.best_personal_email || null,
-          best_business_email: c.best_business_email || null,
-          personal_emails: c.personal_emails || [],
-          business_emails: c.business_emails || [],
-          phone_types: c.phone_types || null,
-          estimated_age: c.estimated_age || null,
-          linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          insights: c.pearch_insights || c.insights || null,
-          outreach_message: c.outreach_message || null
-        })),
-        source_search_query: lastSearchQuery || undefined
-      }
-      
-      const response = await fetch('/api/backend-proxy/search/candidates/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(importPayload)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Falha ao importar candidatos')
-      }
-      
-      const result = await response.json()
-      
-      toast({
-        title: "Candidatos salvos na base!",
-        description: result.message,
-      })
-      
-      // Limpar seleção após salvar
-      deselectAllCandidates()
-      
-    } catch (error) {
-      console.error('Error saving candidates to local base:', error)
-      toast({
-        title: "Erro ao salvar candidatos",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSavingToBase(false)
-    }
-  }
+  // Actions handlers — extracted to useCandidatesActions
+  const candidatesActions = useCandidatesActions({
+    candidates, setCandidates,
+    activeTab, setActiveTab,
+    viewingList, setViewingList,
+    candidateListsForModal,
+    selectedCandidatesForBatch, setSelectedCandidatesForBatch,
+    isSavingToBase, setIsSavingToBase,
+    isAddingToList, setIsAddingToList,
+    showAddToListModal, setShowAddToListModal,
+    addToListCandidateIds, setAddToListCandidateIds,
+    addToListCandidateNames, setAddToListCandidateNames,
+    showUnsavedWarningModal, setShowUnsavedWarningModal,
+    pendingTabChange, setPendingTabChange,
+    hasUnsavedPearchCandidates, unsavedPearchCandidates,
+    showSearchResults, setShowSearchResults,
+    lastSearchQuery,
+    deselectAllCandidates,
+    toast, user,
+  })
+  const handleSaveToLocalBase = candidatesActions.handleSaveToLocalBase
+  const handleAddToList = candidatesActions.handleAddToList
+  const handleTabChangeWithWarning = candidatesActions.handleTabChangeWithWarning
+  const handleSaveAllAndExit = candidatesActions.handleSaveAllAndExit
+  const handleExitWithoutSaving = candidatesActions.handleExitWithoutSaving
 
-  // Handler para adicionar candidatos à lista (importando Pearch candidates primeiro)
-  const handleAddToList = async () => {
-    const selectedIds = Array.from(selectedCandidatesForBatch)
-    const selectedCandidates = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-    const selectedNames = selectedCandidates.map(c => c.name)
-    
-    // Separar candidatos locais e Pearch
-    const localCandidates = selectedCandidates.filter(c => c.source !== 'pearch')
-    const pearchCandidates = selectedCandidates.filter(c => c.source === 'pearch')
-    
-    // Se não há candidatos Pearch, abrir modal diretamente
-    if (pearchCandidates.length === 0) {
-      setAddToListCandidateIds(selectedIds)
-      setAddToListCandidateNames(selectedNames)
-      setShowAddToListModal(true)
-      return
-    }
-    
-    // Importar candidatos Pearch primeiro
-    setIsAddingToList(true)
-    
-    try {
-      const importPayload = {
-        candidates: pearchCandidates.map(c => ({
-          pearch_id: c.pearch_profile_id || c.id,
-          name: c.name,
-          first_name: c.name?.split(' ')[0] || null,
-          last_name: c.name?.split(' ').slice(1).join(' ') || null,
-          middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
-          linkedin_url: c.linkedin_url || null,
-          avatar_url: c.avatar_url || null,
-          current_title: c.current_title || null,
-          current_company: c.current_company || null,
-          headline: c.headline || null,
-          summary: c.summary || null,
-          location: c.location || null,
-          years_of_experience: c.years_of_experience || null,
-          skills: c.skills || [],
-          expertise: c.expertise || [],
-          languages: c.languages || [],
-          education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
-            company_name: exp.company || exp.company_name || 'Empresa não informada',
-            company_linkedin_url: exp.company_linkedin_url || null,
-            company_domain: exp.company_domain || null,
-            title: exp.title || null,
-            start_date: exp.start_date || null,
-            end_date: exp.end_date || null,
-            duration_years: exp.duration_years || null,
-            is_current: exp.current || false,
-            description: exp.description || null,
-            location: exp.location || null,
-            industries: exp.industries || [],
-            company_size: exp.company_size || null,
-            company_size_range: exp.company_size_range || null,
-            technologies: exp.technologies || [],
-            is_startup: exp.is_startup || null,
-            company_founded_year: null,
-            company_annual_revenue: null,
-            company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            company_keywords: exp.company_keywords || exp.company_info?.keywords || []
-          })),
-          is_open_to_work: c.is_open_to_work || null,
-          is_decision_maker: c.is_decision_maker || null,
-          is_top_universities: c.is_top_universities || null,
-          is_hiring: c.is_hiring || null,
-          best_personal_email: c.best_personal_email || null,
-          best_business_email: c.best_business_email || null,
-          personal_emails: c.personal_emails || [],
-          business_emails: c.business_emails || [],
-          phone_types: c.phone_types || null,
-          estimated_age: c.estimated_age || null,
-          linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          insights: c.pearch_insights || c.insights || null,
-          outreach_message: c.outreach_message || null
-        })),
-        source_search_query: lastSearchQuery || undefined
-      }
-      
-      const response = await fetch('/api/backend-proxy/search/candidates/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(importPayload)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Falha ao importar candidatos Pearch')
-      }
-      
-      const result = await response.json()
-      
-      // Criar mapeamento de pearch_id → local_id
-      const idMapping = new Map<string, string>()
-      if (result.mapping && Array.isArray(result.mapping)) {
-        result.mapping.forEach((m: { pearch_id: string; local_id: string }) => {
-          idMapping.set(m.pearch_id, m.local_id)
-        })
-      }
-      
-      // Substituir IDs Pearch pelos IDs locais
-      const localIds: string[] = []
-      
-      // Adicionar IDs dos candidatos locais
-      localCandidates.forEach(c => {
-        localIds.push(c.id)
-      })
-      
-      // Adicionar IDs mapeados dos candidatos Pearch
-      pearchCandidates.forEach(c => {
-        const pearchId = c.pearch_profile_id || c.id
-        const localId = idMapping.get(pearchId)
-        if (localId) {
-          localIds.push(localId)
-        } else {
-          // Fallback: usar ID original se não encontrar mapeamento
-          console.warn(`No mapping found for Pearch candidate: ${pearchId}`)
-          localIds.push(c.id)
-        }
-      })
-      
-      // Abrir modal com IDs locais
-      setAddToListCandidateIds(localIds)
-      setAddToListCandidateNames(selectedNames)
-      setShowAddToListModal(true)
-      
-      // Mostrar toast informativo
-      if (result.imported_count > 0 || result.updated_count > 0) {
-        toast({
-          title: "Candidatos importados",
-          description: `${result.imported_count || 0} novo(s), ${result.updated_count || 0} atualizado(s)`,
-        })
-      }
-      
-    } catch (error) {
-      console.error('Error importing Pearch candidates:', error)
-      toast({
-        title: "Erro ao importar candidatos",
-        description: "Não foi possível salvar candidatos Pearch na base. Tente novamente.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsAddingToList(false)
-    }
-  }
-  
   // Contar candidatos Pearch selecionados
   const selectedPearchCount = candidates.filter(
     c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
   ).length
-
-  // Handler para mudança de aba com verificação de candidatos não salvos
-  const handleTabChangeWithWarning = (newTab: string) => {
-    // Se está na aba de busca com resultados Pearch e quer mudar para outra aba
-    if (activeTab === 'search' && hasUnsavedPearchCandidates && newTab !== 'search') {
-      setPendingTabChange(newTab)
-      setShowUnsavedWarningModal(true)
-    } else {
-      setActiveTab(newTab as any)
-    }
-  }
-
-  // Handler para salvar todos os candidatos Pearch e sair
-  const handleSaveAllAndExit = async () => {
-    setIsSavingToBase(true)
-    
-    try {
-      const importPayload = {
-        candidates: unsavedPearchCandidates.map(c => ({
-          pearch_id: c.pearch_profile_id || c.id,
-          name: c.name,
-          first_name: c.name?.split(' ')[0] || null,
-          last_name: c.name?.split(' ').slice(1).join(' ') || null,
-          middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
-          linkedin_url: c.linkedin_url || null,
-          avatar_url: c.avatar_url || null,
-          current_title: c.current_title || null,
-          current_company: c.current_company || null,
-          headline: c.headline || null,
-          summary: c.summary || null,
-          location: c.location || null,
-          years_of_experience: c.years_of_experience || null,
-          skills: c.skills || [],
-          expertise: c.expertise || [],
-          languages: c.languages || [],
-          education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
-            company_name: exp.company || exp.company_name || 'Empresa não informada',
-            company_linkedin_url: exp.company_linkedin_url || null,
-            company_domain: exp.company_domain || null,
-            title: exp.title || null,
-            start_date: exp.start_date || null,
-            end_date: exp.end_date || null,
-            duration_years: exp.duration_years || null,
-            is_current: exp.current || false,
-            description: exp.description || null,
-            location: exp.location || null,
-            industries: exp.industries || [],
-            company_size: exp.company_size || null,
-            company_size_range: exp.company_size_range || null,
-            technologies: exp.technologies || [],
-            is_startup: exp.is_startup || null,
-            company_founded_year: null,
-            company_annual_revenue: null,
-            company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            company_keywords: exp.company_keywords || exp.company_info?.keywords || []
-          })),
-          is_open_to_work: c.is_open_to_work || null,
-          is_decision_maker: c.is_decision_maker || null,
-          is_top_universities: c.is_top_universities || null,
-          is_hiring: c.is_hiring || null,
-          best_personal_email: c.best_personal_email || null,
-          best_business_email: c.best_business_email || null,
-          personal_emails: c.personal_emails || [],
-          business_emails: c.business_emails || [],
-          phone_types: c.phone_types || null,
-          estimated_age: c.estimated_age || null,
-          linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          insights: c.pearch_insights || c.insights || null,
-          outreach_message: c.outreach_message || null
-        })),
-        source_search_query: lastSearchQuery || undefined
-      }
-      
-      const response = await fetch('/api/backend-proxy/search/candidates/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(importPayload)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Falha ao importar candidatos')
-      }
-      
-      const result = await response.json()
-      
-      toast({
-        title: "Candidatos salvos!",
-        description: result.message,
-      })
-      
-      // Limpar resultados de busca e mudar para a aba pendente
-      setCandidates([])
-      setShowSearchResults(false)
-      setShowUnsavedWarningModal(false)
-      if (pendingTabChange) {
-        setActiveTab(pendingTabChange as any)
-        setPendingTabChange(null)
-      }
-      
-    } catch (error: any) {
-      console.error('Error saving candidates:', error)
-      const errorMessage = error?.message || 'Erro desconhecido ao salvar candidatos'
-      toast({
-        title: "Erro ao salvar",
-        description: errorMessage,
-        variant: "destructive"
-      })
-    } finally {
-      setIsSavingToBase(false)
-    }
-  }
-
-  // Handler para sair sem salvar
-  const handleExitWithoutSaving = () => {
-    setCandidates([])
-    setShowSearchResults(false)
-    setShowUnsavedWarningModal(false)
-    if (pendingTabChange) {
-      setActiveTab(pendingTabChange as any)
-      setPendingTabChange(null)
-    }
-  }
 
   const handleToggleFavorite = (candidateId: string, note?: string) => {
     talentFunnel.toggleFavoriteCandidate(candidateId, note)
@@ -5413,132 +4297,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     })
   }
 
-  // Handler para aplicar filtros avançados (agora usado pelo painel lateral)
-  const handleApplyAdvancedFilters = (filters: SearchFilters) => {
-    setActiveSearchFilters(filters)
-    
-    // Aplicar filtros na busca
-    const query = buildQueryFromFilters(filters)
-    if (query) {
-      executeSearch(query, {}, 'natural', undefined, false)
-    }
-  }
-
-  // Função auxiliar para construir query a partir de filtros
-  const buildQueryFromFilters = (filters: SearchFilters): string => {
-    const parts: string[] = []
-    
-    if (filters.skills?.skills && filters.skills.skills.length > 0) {
-      parts.push(`skills: ${filters.skills.skills.join(', ')}`)
-    }
-    if (filters.locations?.locations && filters.locations.locations.length > 0) {
-      parts.push(`localização: ${filters.locations.locations.join(', ')}`)
-    }
-    if (filters.general?.minExperience || filters.general?.maxExperience) {
-      const min = filters.general.minExperience || 0
-      const max = filters.general.maxExperience || 10
-      parts.push(`experiência: ${min}-${max} anos`)
-    }
-    if (filters.job?.levels && filters.job.levels.length > 0) {
-      parts.push(`senioridade: ${filters.job.levels.join(', ')}`)
-    }
-    if (filters.job?.titles && filters.job.titles.length > 0) {
-      parts.push(`cargo: ${filters.job.titles.join(', ')}`)
-    }
-    if (filters.languages?.languages && filters.languages.languages.length > 0) {
-      parts.push(`idiomas: ${filters.languages.languages.join(', ')}`)
-    }
-    if (filters.company?.industries && filters.company.industries.length > 0) {
-      parts.push(`indústrias: ${filters.company.industries.join(', ')}`)
-    }
-    if (filters.education?.degrees && filters.education.degrees.length > 0) {
-      parts.push(`formação: ${filters.education.degrees.join(', ')}`)
-    }
-    
-    return parts.join(', ')
-  }
-
-  // Funções para filtros de coluna
-  const getColumnStats = (column: string) => {
-    const stats: {[key: string]: number} = {}
-
-    candidates.forEach(candidate => {
-      let value: string
-
-      switch (column) {
-        case 'position':
-          value = candidate.position
-          break
-        case 'company':
-          value = candidate.workHistory?.[0]?.company || ''
-          break
-        case 'location':
-          value = candidate.location
-          break
-        case 'scoreRange':
-          const score = candidate.liaAnalysis?.score || candidate.score
-          if (score >= 90) value = '90-100%'
-          else if (score >= 80) value = '80-89%'
-          else if (score >= 70) value = '70-79%'
-          else value = '60-69%'
-          break
-        default:
-          value = 'N/A'
-      }
-
-      stats[value] = (stats[value] || 0) + 1
-    })
-
-    return Object.entries(stats)
-      .sort(([,a], [,b]) => b - a) // Ordenar por quantidade (desc)
-      .map(([value, count]) => ({ value, count }))
-  }
-
-  const toggleColumnFilter = (column: string, value: string) => {
-    setColumnFilters(prev => ({
-      ...prev,
-      [column]: prev[column].includes(value)
-        ? prev[column].filter((v: string) => v !== value)
-        : [...prev[column], value]
-    }))
-  }
-
-  const getActiveColumnFiltersCount = () => {
-    let count = 0
-
-    // Contar filtros regulares (arrays)
-    Object.entries(columnFilters).forEach(([key, value]) => {
-      if (key !== 'bigFive' && Array.isArray(value)) {
-        count += value.length
-      }
-    })
-
-    // Contar filtros de Big Five (valores não vazios)
-    if (columnFilters.bigFive) {
-      count += Object.values(columnFilters.bigFive).filter(v => v !== '').length
-    }
-
-    return count
-  }
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => {
-      const newExpanded = new Set(prev)
-      if (newExpanded.has(sectionId)) {
-        newExpanded.delete(sectionId)
-      } else {
-        newExpanded.add(sectionId)
-      }
-      return newExpanded
-    })
-  }
-
-  // Handlers para templates e busca
-  const handleTemplateSelection = (template: string) => {
-    setSelectedTemplate(template)
-    // Implementar lógica de aplicação do template
-  }
-
   const saveSearch = () => {
     if (searchTerm || booleanSearch) {
       const searchQuery = `${searchTerm} ${booleanSearch}`.trim()
@@ -5574,602 +4332,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setSavedSearches(prev => prev.filter((_, i) => i !== index))
   }
 
-  // Detecta se o texto é uma pergunta genérica (não uma busca de candidatos)
-  const isConversationalMessage = (text: string): boolean => {
-    const normalizedText = text.toLowerCase().trim()
-
-    const greetings = [
-      /^(oi|olá|ola|hey|hi|hello|e aí|eai|fala|bom dia|boa tarde|boa noite|tudo bem|tudo certo|beleza)[\s!.,?]*$/,
-      /^(oi|olá|ola|hey|hi|hello|e aí|eai|fala|bom dia|boa tarde|boa noite)\s+(lia|tudo|como)/,
-      /^(obrigad[oa]|valeu|thanks|vlw|brigad[oa])[\s!.,?]*$/,
-      /^(tchau|até mais|ate mais|bye|flw|falou)[\s!.,?]*$/,
-    ]
-
-    return greetings.some(pattern => pattern.test(normalizedText))
-  }
-
-  const isGenericQuestion = (text: string): boolean => {
-    const normalizedText = text.toLowerCase().trim()
-    
-    const questionPatterns = [
-      /^(o que|que tipo|qual|quais|como|por que|quando|onde|quem|quanto|quantos)\s/,
-      /^(me explica|explique|pode explicar|poderia explicar)/,
-      /^(me ajuda|ajuda|help|pode ajudar|poderia ajudar)/,
-      /^(o que você|voce pode|você consegue|vc pode)/,
-      /\?$/,
-    ]
-    
-    const searchKeywords = [
-      'desenvolvedor', 'developer', 'programador', 'engenheiro', 'analista',
-      'gerente', 'manager', 'coordenador', 'diretor', 'especialista',
-      'junior', 'pleno', 'sênior', 'senior', 'trainee', 'estagiário',
-      'python', 'java', 'javascript', 'react', 'node', 'angular', 'vue',
-      'backend', 'frontend', 'fullstack', 'devops', 'data', 'machine learning',
-      'são paulo', 'rio de janeiro', 'belo horizonte', 'remoto', 'híbrido',
-      'anos de experiência', 'experiência em', 'conhecimento em',
-      'product manager', 'product owner', 'scrum master', 'ux', 'ui',
-      'designer', 'marketing', 'vendas', 'sales', 'rh', 'recursos humanos',
-      'b2b', 'saas', 'fintech', 'startup'
-    ]
-    
-    const hasSearchKeywords = searchKeywords.some(keyword => 
-      normalizedText.includes(keyword.toLowerCase())
-    )
-    
-    const isQuestion = questionPatterns.some(pattern => pattern.test(normalizedText))
-    
-    return isQuestion && !hasSearchKeywords
-  }
-
-  // Handler para mensagens no chat da LIA (perguntas ou buscas)
-  // Loading State Ownership:
-  // - Comandos de análise: handleAICommand gerencia isLIAThinking
-  // - Perguntas genéricas: orquestrador gerencia isLIAThinking (try/finally aqui)
-  // - Buscas: executeSearch gerencia setIsLoading (indicador visual diferente)
+  // handleLIAChatMessage, handleAICommand — delegates to liaHandlers (wired after openUnifiedModal)
+  const liaHandlersRef = React.useRef<ReturnType<typeof useCandidatesLIAHandlers> | null>(null)
   const handleLIAChatMessage = async (message: string) => {
-    const trimmedMessage = message.trim()
-    const normalizedMessage = trimmedMessage.toLowerCase()
-    
-    // Comandos de análise redirecionados para handleAICommand (gerencia seu próprio loading)
-    const analysisCommands = [
-      'analisar potencial', 'potencial de crescimento', 'analise potencial',
-      'definir tipo', 'tipo de perfil',
-      'resumo executivo', 'resumir busca', 'resumir resultado',
-      'pontos a desenvolver', 'pontos a serem desenvolvidos',
-      'vagas ideais', 'tipos de vagas',
-      'top 5', 'top5', 'melhores candidatos',
-      'comparar', 'comparação'
-    ]
-    
-    // Verificar se é um comando de análise - se for, usar handleAICommand
-    const isAnalysisCommand = analysisCommands.some(cmd => normalizedMessage.includes(cmd))
-    
-    if (isAnalysisCommand) {
-      handleAICommand(trimmedMessage)
-      setLiaPromptValue('')
-      return
-    }
-    
-    // Adicionar mensagem do usuário ao chat
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      type: 'user',
-      content: trimmedMessage,
-      timestamp: new Date()
-    }
-    setChatMessages(prev => [...prev, userMessage])
-    setLiaPromptValue('')
-    
-    // Se é saudação/conversacional ou pergunta genérica, usar o orquestrador (não buscar candidatos)
-    if (isConversationalMessage(trimmedMessage) || isGenericQuestion(trimmedMessage)) {
-      setIsLIAThinking(true)
-      
-      try {
-        const response = await handleOrchestratedTalentMessage(trimmedMessage)
-        
-        if (response.success) {
-          const agentInfo = response.agents_consulted?.length > 1 
-            ? `_Agentes: ${response.agents_consulted.join(', ')}_\n\n`
-            : ''
-          
-          const liaResponse: ChatMessage = {
-            id: `lia-response-${Date.now()}`,
-            type: 'lia',
-            content: agentInfo + response.content,
-            timestamp: new Date(),
-            metadata: {
-              action_executed: response.action_executed,
-              action_result: response.action_result as Record<string, unknown> | undefined,
-              action_type: response.action_type,
-              needs_confirmation: response.needs_confirmation,
-              needs_params: response.needs_params,
-              pending_action_id: response.pending_action_id,
-              conversation_id: response.conversation_id
-            }
-          }
-          setChatMessages(prev => [...prev, liaResponse])
-          
-          if (response.suggested_prompts && response.suggested_prompts.length > 0) {
-            const suggestionsMessage: ChatMessage = {
-              id: `lia-suggestions-${Date.now()}`,
-              type: 'lia',
-              content: `💡 **Sugestões:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
-              timestamp: new Date()
-            }
-            setTimeout(() => {
-              setChatMessages(prev => [...prev, suggestionsMessage])
-            }, 500)
-          }
-        } else {
-          throw new Error('Orchestrator returned unsuccessful response')
-        }
-      } catch (error) {
-        console.error('Orchestrator error, using fallback:', error)
-        
-        const fallbackContent = isConversationalMessage(trimmedMessage)
-          ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
-          : `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`
-
-        const fallbackResponse: ChatMessage = {
-          id: `lia-response-${Date.now()}`,
-          type: 'lia',
-          content: fallbackContent,
-          timestamp: new Date()
-        }
-        setChatMessages(prev => [...prev, fallbackResponse])
-      } finally {
-        setIsLIAThinking(false)
-      }
-      return
-    }
-    
-    // Se é uma busca de candidatos, executar normalmente (executeSearch já gerencia seu próprio loading)
-    executeSearch(trimmedMessage)
+    if (liaHandlersRef.current) return liaHandlersRef.current.handleLIAChatMessage(message)
   }
-
-  // Handlers para modais
-  const handleQuickView = (candidate: Candidate) => {
-    setSidePreviewCandidate(candidate)
-    setShowSidePreview(true)
-  }
-
   const handleAICommand = async (command: string) => {
-    console.log('AI Command:', command)
-    const trimmedCommand = command.trim().toLowerCase()
-
-    // Adicionar mensagem do usuário ao chat
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      type: 'user',
-      content: command,
-      timestamp: new Date()
-    }
-    setChatMessages(prev => [...prev, userMessage])
-
-    // Ativar estado de "pensando"
-    setIsLIAThinking(true)
-
-    try {
-      // Determinar tipo de comando e processar
-      let liaResponse: ChatMessage
-
-      // Comandos de resumo de busca
-      if (trimmedCommand.includes('resumir') && (trimmedCommand.includes('busca') || trimmedCommand.includes('resultado'))) {
-        const totalCandidates = candidates.length
-        
-        if (totalCandidates === 0) {
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `📊 **Resumo da Busca**\n\nNenhum candidato encontrado ainda.\n\n💡 *Faça uma busca digitando o perfil desejado acima, como "Desenvolvedor Python Sênior".*`,
-            timestamp: new Date()
-          }
-        } else {
-          const localCount = candidates.filter(c => c.source === 'local' || !c.source).length
-          const avgScore = Math.round(candidates.reduce((acc, c) => acc + (c.score || 0), 0) / totalCandidates)
-          const topSkills = candidates.flatMap(c => c.skills || c.technical_skills || []).reduce((acc, skill) => {
-            if (skill && typeof skill === 'string') {
-              acc[skill] = (acc[skill] || 0) + 1
-            }
-            return acc
-          }, {} as Record<string, number>)
-          const sortedSkills = Object.entries(topSkills).sort((a, b) => b[1] - a[1]).slice(0, 5)
-          const locations = [...new Set(candidates.map(c => c.location || c.location_city).filter(Boolean))]
-          
-          const skillsText = sortedSkills.length > 0 
-            ? sortedSkills.map(([skill, count]) => `• ${skill} (${count})`).join('\n')
-            : '• Nenhuma skill identificada nos perfis'
-          const locationsText = locations.length > 0 
-            ? `${locations.slice(0, 3).join(', ')}${locations.length > 3 ? ` e mais ${locations.length - 3}` : ''}`
-            : 'Não especificadas'
-
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `📊 **Resumo da Busca**\n\nEncontrei **${totalCandidates} candidato${totalCandidates !== 1 ? 's' : ''}** (${localCount} da base local).\n\n**Score médio de compatibilidade:** ${formatScorePercent(avgScore)}\n\n**Top skills mais comuns:**\n${skillsText}\n\n**Localizações:** ${locationsText}\n\n💡 *Posso analisar candidatos específicos ou comparar os selecionados.*`,
-            timestamp: new Date()
-          }
-        }
-      }
-      // Comando Top 5 candidatos
-      else if (trimmedCommand.includes('top 5') || trimmedCommand.includes('top5') || trimmedCommand.includes('melhores candidatos')) {
-        if (candidates.length === 0) {
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `🏆 **Top Candidatos**\n\nNenhum candidato disponível ainda.\n\n💡 *Faça uma busca para encontrar candidatos.*`,
-            timestamp: new Date()
-          }
-        } else {
-          const topCandidates = [...candidates].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 5)
-          const topCount = topCandidates.length
-          const topList = topCandidates.map((c, i) => {
-            const candidateSkills = c.skills || c.technical_skills || []
-            const skillsPreview = candidateSkills.length > 0 
-              ? ` | Skills: ${candidateSkills.slice(0, 3).join(', ')}${candidateSkills.length > 3 ? '...' : ''}`
-              : ''
-            return `${i + 1}. **${c.name}** - ${c.position || c.current_title || 'N/A'} @ ${c.current_company || 'N/A'} (Score: ${formatScorePercent(c.score || 0)})${skillsPreview}`
-          }).join('\n')
-
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `🏆 **Top ${topCount} Candidatos**\n\n${topList}\n\n💡 *Selecione candidatos para análise mais detalhada ou comparação.*`,
-            timestamp: new Date()
-          }
-        }
-      }
-      // Comando Comparar selecionados
-      else if (trimmedCommand.includes('comparar') && (trimmedCommand.includes('selecionado') || selectedCandidatesForBatch.size >= 2)) {
-        if (selectedCandidatesForBatch.size < 2) {
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `⚠️ **Selecione pelo menos 2 candidatos** para fazer a comparação.\n\nClique na checkbox ao lado de cada candidato na tabela.`,
-            timestamp: new Date()
-          }
-        } else {
-          const selectedCandidates = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-          if (selectedCandidates.length === 0) {
-            liaResponse = {
-              id: `lia-${Date.now()}`,
-              type: 'lia',
-              content: `⚠️ **Candidatos não encontrados**\n\nOs candidatos selecionados não foram localizados. Tente fazer uma nova busca.`,
-              timestamp: new Date()
-            }
-          } else {
-            const comparison = selectedCandidates.map(c => {
-              const candidateSkills = c.skills || c.technical_skills || []
-              const skillsText = candidateSkills.length > 0 
-                ? candidateSkills.slice(0, 5).join(', ')
-                : 'Não informadas'
-              const expYears = c.experience ?? c.years_of_experience
-              const experienceText = typeof expYears === 'number'
-                ? `${expYears} ${expYears === 1 ? 'ano' : 'anos'}`
-                : 'Não informado'
-              return `**${c.name}**\n• Cargo: ${c.position || c.current_title || 'Não informado'}\n• Empresa: ${c.current_company || 'Não informada'}\n• Experiência: ${experienceText}\n• Score: ${formatScorePercent(c.score || 0)}\n• Skills: ${skillsText}`
-            }).join('\n\n')
-
-            liaResponse = {
-              id: `lia-${Date.now()}`,
-              type: 'lia',
-              content: `⚖️ **Comparação de ${selectedCandidates.length} Candidatos**\n\n${comparison}\n\n💡 *Clique no score CV de cada candidato na tabela para ver a análise detalhada.*`,
-              timestamp: new Date()
-            }
-          }
-        }
-      }
-      // Comandos de análise de candidato específico
-      else if (
-        trimmedCommand.includes('analisar potencial') ||
-        trimmedCommand.includes('potencial de crescimento') ||
-        trimmedCommand.includes('definir tipo') ||
-        trimmedCommand.includes('tipo de perfil') ||
-        trimmedCommand.includes('resumo executivo') ||
-        trimmedCommand.includes('pontos a desenvolver') ||
-        trimmedCommand.includes('vagas ideais')
-      ) {
-        if (selectedCandidatesForBatch.size === 0) {
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `⚠️ **Nenhum candidato selecionado**\n\nSelecione um ou mais candidatos na tabela para que eu possa analisar.\n\n💡 Clique na checkbox ao lado do nome do candidato.`,
-            timestamp: new Date()
-          }
-        } else {
-          const selectedCandidates = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-          
-          if (selectedCandidates.length === 0) {
-            liaResponse = {
-              id: `lia-${Date.now()}`,
-              type: 'lia',
-              content: `⚠️ **Candidatos não encontrados**\n\nOs candidatos selecionados não foram localizados. Tente fazer uma nova busca.`,
-              timestamp: new Date()
-            }
-          } else {
-            // Chamar API de análise
-            try {
-              const candidatesForApi = selectedCandidates.map(c => ({
-                id: c.id,
-                name: c.name,
-                position: c.position || c.current_title || 'Profissional',
-                location: c.location || c.location_city || 'Não especificada',
-                company: c.current_company || 'Não especificada',
-                skills: c.skills || c.technical_skills || [],
-                experience_years: c.experience || c.years_of_experience || 0,
-                seniority_level: c.seniority_level || 'pleno',
-                cv_text: c.resume_text || c.self_introduction || ''
-              }))
-
-              // Determinar job_title com fallbacks - garantir que nunca é vazio
-              let jobTitleForApi = 'Análise de perfil profissional'
-              const queryText = searchResults?.query?.trim()
-              const firstPosition = selectedCandidates[0]?.position?.trim() || selectedCandidates[0]?.current_title?.trim()
-              if (queryText && queryText.length > 0) {
-                jobTitleForApi = queryText
-              } else if (firstPosition && firstPosition.length > 0) {
-                jobTitleForApi = firstPosition
-              }
-
-              const response = await fetch('/api/lia/api/v1/analysis/candidates', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  candidates: candidatesForApi,
-                  analysis_type: 'general',
-                  job_title: jobTitleForApi
-                })
-              })
-
-              if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Erro desconhecido')
-                console.error('API Error:', response.status, errorText)
-                
-                // Mostrar erro específico ao usuário antes do fallback
-                let userErrorMessage = ''
-                if (response.status === 422) {
-                  userErrorMessage = 'Dados do candidato inválidos ou incompletos.'
-                } else if (response.status === 401 || response.status === 403) {
-                  userErrorMessage = 'Não autorizado. Verifique suas credenciais.'
-                } else if (response.status >= 500) {
-                  userErrorMessage = 'Serviço de análise temporariamente indisponível.'
-                } else {
-                  userErrorMessage = `Erro ${response.status}: ${errorText.substring(0, 80)}`
-                }
-                
-                throw new Error(userErrorMessage)
-              }
-              
-              const data = await response.json()
-              const results = data.results || []
-              
-              if (results.length === 0) {
-                liaResponse = {
-                  id: `lia-${Date.now()}`,
-                  type: 'lia',
-                  content: `🧠 **Análise LIA**\n\nNenhum resultado de análise gerado para os candidatos selecionados.\n\n**Possíveis causas:**\n• Perfis com informações insuficientes\n• Erro temporário no serviço de análise\n\n💡 *Tente selecionar candidatos com perfis mais completos.*`,
-                  timestamp: new Date()
-                }
-              } else {
-                let analysisContent = `🧠 **Análise LIA**\n\n`
-                
-                for (const result of results) {
-                  analysisContent += `**${result.candidate_name || 'Candidato'}**\n`
-                  analysisContent += `• **Arquétipo:** ${result.archetype || 'Executor Confiável'}\n`
-                  analysisContent += `• **Score LIA:** ${formatScorePercent(result.lia_score || 0)}\n`
-                  analysisContent += `• **Fit de Personalidade:** ${formatScorePercent(result.fit_score || 0)}\n`
-                  
-                  if (result.strengths?.length > 0) {
-                    analysisContent += `• **Pontos fortes:** ${result.strengths.slice(0, 3).join(', ')}\n`
-                  }
-                  if (result.gaps?.length > 0) {
-                    analysisContent += `• **Pontos a desenvolver:** ${result.gaps.slice(0, 2).join(', ')}\n`
-                  }
-                  if (result.recommendation) {
-                    analysisContent += `• **Recomendação:** ${result.recommendation}\n`
-                  }
-                  if (result.potential_roles?.length > 0) {
-                    analysisContent += `• **Vagas ideais:** ${result.potential_roles.slice(0, 3).join(', ')}\n`
-                  }
-                  analysisContent += `\n`
-                }
-                
-                liaResponse = {
-                  id: `lia-${Date.now()}`,
-                  type: 'lia',
-                  content: analysisContent,
-                  timestamp: new Date()
-                }
-              }
-            } catch (apiError) {
-              console.error('API Error:', apiError)
-              // Extrair mensagem de erro legível
-              const errorMessage = apiError instanceof Error ? apiError.message : 'Erro desconhecido'
-              
-              // Fallback com análise local simplificada
-              const selectedCandidate = selectedCandidates[0]
-              const candidateSkills = selectedCandidate.skills || selectedCandidate.technical_skills || []
-              const skillsText = candidateSkills.length > 0 
-                ? candidateSkills.slice(0, 5).join(', ')
-                : 'Não informadas'
-              const expYears = selectedCandidate.experience ?? selectedCandidate.years_of_experience
-              const experienceText = typeof expYears === 'number'
-                ? `${expYears} ${expYears === 1 ? 'ano' : 'anos'}`
-                : 'Não informada'
-              
-              liaResponse = {
-                id: `lia-${Date.now()}`,
-                type: 'lia',
-                content: `🧠 **Análise de ${selectedCandidate.name}** (modo offline)\n\n**⚠️ Motivo:** ${errorMessage}\n\n**Perfil:** ${selectedCandidate.position || selectedCandidate.current_title || 'Profissional'}\n**Empresa:** ${selectedCandidate.current_company || 'Não informada'}\n**Experiência:** ${experienceText}\n**Skills:** ${skillsText}\n\n**Arquétipo sugerido:** Executor Confiável\n**Potencial:** Alto para funções técnicas\n\n💡 *Esta é uma análise simplificada. Tente novamente mais tarde para análise completa com IA.*`,
-                timestamp: new Date()
-              }
-            }
-          }
-        }
-      }
-      // Análises de busca - perguntas sobre os resultados
-      else if (trimmedCommand.includes('quantos candidatos') || trimmedCommand.includes('quantos encontrei')) {
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: candidates.length === 0 
-            ? `📊 **Nenhum candidato encontrado** ainda.\n\n💡 *Faça uma busca para ver resultados.*`
-            : `📊 **Total de candidatos:** ${candidates.length}\n\n• Base local: ${candidates.filter(c => c.source === 'local' || !c.source).length}\n• Base global: ${candidates.filter(c => c.source === 'global' || c.source === 'pearch').length}\n\n💡 *Selecione candidatos para análise detalhada.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('score') && (trimmedCommand.includes('médio') || trimmedCommand.includes('media') || trimmedCommand.includes('lia'))) {
-        const avgScore = candidates.length > 0 ? Math.round(candidates.reduce((acc, c) => acc + (c.score || c.lia_score || 0), 0) / candidates.length) : 0
-        const highScoreCount = candidates.filter(c => (c.score || c.lia_score || 0) >= 70).length
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: candidates.length === 0 
-            ? `📊 **Nenhum candidato** para calcular score médio.\n\n💡 *Faça uma busca primeiro.*`
-            : `📊 **Score LIA médio:** ${formatScorePercent(avgScore)}\n\n• Candidatos com score ≥70%: **${highScoreCount}** (${Math.round(highScoreCount/candidates.length*100)}%)\n• Score máximo: ${formatScorePercent(Math.max(...candidates.map(c => c.score || c.lia_score || 0)))}\n• Score mínimo: ${formatScorePercent(Math.min(...candidates.map(c => c.score || c.lia_score || 0)))}\n\n💡 *Os candidatos de maior score geralmente têm melhor fit com a vaga.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('skills') && (trimmedCommand.includes('comuns') || trimmedCommand.includes('mais'))) {
-        const allSkills = candidates.flatMap(c => c.skills || c.technical_skills || [])
-        const skillCounts = allSkills.reduce((acc, skill) => {
-          if (skill && typeof skill === 'string') acc[skill] = (acc[skill] || 0) + 1
-          return acc
-        }, {} as Record<string, number>)
-        const topSkills = Object.entries(skillCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: topSkills.length === 0 
-            ? `📊 **Nenhuma skill identificada** nos perfis.\n\n💡 *Os candidatos podem não ter skills cadastradas.*`
-            : `📊 **Top Skills mais comuns:**\n\n${topSkills.map(([skill, count], i) => `${i+1}. **${skill}** - ${count} candidato${count > 1 ? 's' : ''}`).join('\n')}\n\n💡 *Use essas skills como filtro para refinar sua busca.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('experiência') && trimmedCommand.includes('média')) {
-        const withExp = candidates.filter(c => typeof (c.experience ?? c.years_of_experience) === 'number')
-        const avgExp = withExp.length > 0 ? (withExp.reduce((acc, c) => acc + (c.experience ?? c.years_of_experience ?? 0), 0) / withExp.length).toFixed(1) : 0
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: withExp.length === 0 
-            ? `📊 **Experiência não informada** nos perfis.\n\n💡 *Os candidatos podem não ter anos de experiência cadastrados.*`
-            : `📊 **Experiência média:** ${avgExp} anos\n\n• Candidatos com experiência informada: ${withExp.length}/${candidates.length}\n• Mais experiente: ${Math.max(...withExp.map(c => c.experience ?? c.years_of_experience ?? 0))} anos\n• Menos experiente: ${Math.min(...withExp.map(c => c.experience ?? c.years_of_experience ?? 0))} anos\n\n💡 *Filtrar por experiência pode refinar seus resultados.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('onde estão') || trimmedCommand.includes('localizados') || trimmedCommand.includes('localização')) {
-        const locations = candidates.map(c => c.location || c.location_city || c.location_state).filter(Boolean)
-        const locationCounts = locations.reduce((acc, loc) => {
-          acc[loc as string] = (acc[loc as string] || 0) + 1
-          return acc
-        }, {} as Record<string, number>)
-        const topLocations = Object.entries(locationCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: topLocations.length === 0 
-            ? `📍 **Localização não informada** nos perfis.\n\n💡 *Os candidatos podem não ter localização cadastrada.*`
-            : `📍 **Distribuição por localização:**\n\n${topLocations.map(([loc, count]) => `• **${loc}**: ${count} candidato${count > 1 ? 's' : ''}`).join('\n')}\n\n💡 *${candidates.filter(c => c.is_remote).length} candidatos aceitam trabalho remoto.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('nota') && trimmedCommand.includes('acima')) {
-        const threshold = 70
-        const aboveCount = candidates.filter(c => (c.score || c.lia_score || 0) >= threshold).length
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: `📊 **Candidatos com nota LIA ≥${threshold}%:** ${aboveCount}\n\n• Total de candidatos: ${candidates.length}\n• Porcentagem qualificados: ${candidates.length > 0 ? Math.round(aboveCount/candidates.length*100) : 0}%\n\n💡 *Candidatos acima de 70% geralmente são bons matches.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('pontos fortes') && trimmedCommand.includes('comum')) {
-        if (selectedCandidatesForBatch.size === 0) {
-          liaResponse = { id: `lia-${Date.now()}`, type: 'lia', content: `⚠️ **Selecione candidatos** para analisar pontos fortes em comum.`, timestamp: new Date() }
-        } else {
-          const selected = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-          const allSkills = selected.flatMap(c => c.skills || c.technical_skills || [])
-          const skillCounts = allSkills.reduce((acc, s) => { if (s) acc[s] = (acc[s] || 0) + 1; return acc }, {} as Record<string, number>)
-          const commonSkills = Object.entries(skillCounts).filter(([_, count]) => count >= Math.ceil(selected.length * 0.5)).map(([skill]) => skill)
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: commonSkills.length === 0 
-              ? `📊 **Nenhuma skill em comum** encontrada entre os ${selected.length} candidatos selecionados.`
-              : `📊 **Pontos fortes em comum** (${selected.length} candidatos):\n\n${commonSkills.slice(0, 8).map(s => `• **${s}**`).join('\n')}\n\n💡 *Essas são as skills compartilhadas pela maioria.*`,
-            timestamp: new Date()
-          }
-        }
-      }
-      else if (trimmedCommand.includes('gaps') || trimmedCommand.includes('competência')) {
-        if (selectedCandidatesForBatch.size === 0) {
-          liaResponse = { id: `lia-${Date.now()}`, type: 'lia', content: `⚠️ **Selecione candidatos** para identificar gaps de competência.`, timestamp: new Date() }
-        } else {
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `🔍 **Análise de Gaps**\n\nPara identificar gaps precisos, preciso conhecer os requisitos da vaga.\n\n💡 **Sugestão:** Selecione uma vaga no seletor acima para comparar candidatos com os requisitos específicos.`,
-            timestamp: new Date()
-          }
-        }
-      }
-      else if (trimmedCommand.includes('prioridade') || trimmedCommand.includes('organize')) {
-        const sorted = [...candidates].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10)
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: sorted.length === 0 
-            ? `📊 **Nenhum candidato** para organizar.\n\n💡 *Faça uma busca primeiro.*`
-            : `📊 **Candidatos por prioridade:**\n\n${sorted.map((c, i) => `${i+1}. **${c.name}** - Score: ${formatScorePercent(c.score || 0)} | ${c.position || c.current_title || 'N/A'}`).join('\n')}\n\n💡 *Ordenados por score de compatibilidade.*`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('melhorar') && trimmedCommand.includes('busca')) {
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: `💡 **Dicas para melhorar sua busca:**\n\n• Adicione **skills específicas** (ex: "Python, AWS")\n• Defina **nível de senioridade** (júnior, pleno, sênior)\n• Especifique **localização** (cidade ou "remoto")\n• Use **palavras-chave** do cargo desejado\n• Tente **termos alternativos** para a mesma função\n\n**Exemplo:** "Desenvolvedor Backend Python sênior São Paulo remoto"`,
-          timestamp: new Date()
-        }
-      }
-      else if (trimmedCommand.includes('resuma') && trimmedCommand.includes('perfil') && trimmedCommand.includes('selecionado')) {
-        if (selectedCandidatesForBatch.size === 0) {
-          liaResponse = { id: `lia-${Date.now()}`, type: 'lia', content: `⚠️ **Selecione candidatos** para resumir seus perfis.`, timestamp: new Date() }
-        } else {
-          const selected = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-          const summary = selected.map(c => `**${c.name}**\n${c.position || c.current_title || 'Profissional'} @ ${c.current_company || 'N/A'}`).join('\n\n')
-          liaResponse = {
-            id: `lia-${Date.now()}`,
-            type: 'lia',
-            content: `📋 **Resumo dos perfis selecionados:**\n\n${summary}\n\n💡 *Para análise detalhada, use "Analisar potencial de crescimento".*`,
-            timestamp: new Date()
-          }
-        }
-      }
-      // Comando não reconhecido - resposta amigável com orientação
-      else {
-        liaResponse = {
-          id: `lia-${Date.now()}`,
-          type: 'lia',
-          content: `🤔 Entendi sua solicitação, mas **ainda não consigo responder a esse tipo de pergunta**.\n\nEstou em constante evolução e **em breve serei capaz** de atender você em diversas situações e demandas do seu dia a dia como recrutador!\n\n**Por enquanto, posso ajudar você com:**\n\n📊 **Análises de busca:**\n• Resumir esta busca\n• Top 5 candidatos\n• Skills mais comuns\n• Score médio dos candidatos\n\n👥 **Análise de candidatos selecionados:**\n• Analisar potencial de crescimento\n• Comparar candidatos\n• Pontos fortes em comum\n• Definir tipo de perfil\n\n💡 *Clique em "Mais ideias" para ver todas as opções disponíveis!*`,
-          timestamp: new Date()
-        }
-      }
-
-      setChatMessages(prev => [...prev, liaResponse])
-    } catch (error) {
-      console.error('handleAICommand error:', error)
-      const errorMessage: ChatMessage = {
-        id: `lia-error-${Date.now()}`,
-        type: 'lia',
-        content: `❌ Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.`,
-        timestamp: new Date()
-      }
-      setChatMessages(prev => [...prev, errorMessage])
-    } finally {
-      setIsLIAThinking(false)
-    }
+    if (liaHandlersRef.current) return liaHandlersRef.current.handleAICommand(command)
   }
 
   // AI-First Quick Action Handlers
@@ -6315,6 +4484,47 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setUnifiedModalType(type)
     setUnifiedModalOpen(true)
   }
+
+  // Wire LIA handlers hook now that all dependencies are available
+  const liaHandlers = useCandidatesLIAHandlers({
+    candidates, setCandidates,
+    chatMessages, setChatMessages,
+    liaPromptValue, setLiaPromptValue,
+    liaWidth, setLiaWidth,
+    activeSearchTab, setActiveSearchTab,
+    talentConversationId, setTalentConversationId,
+    liaIsParsingEntities, setLiaIsParsingEntities,
+    liaSuggestions, setLiaSuggestions,
+    showLiaSuggestions, setShowLiaSuggestions,
+    showLiaAssistant, setShowLiaAssistant,
+    selectedCandidatesForBatch, setSelectedCandidatesForBatch,
+    searchResults, lastSearchQuery,
+    activeSearchFilters,
+    liaPromptEntities, setLiaPromptEntities,
+    setShowExpandedLIA, userCollapsedLIA, setUserCollapsedLIA,
+    selectedCandidateForLIA, setSelectedCandidateForLIA,
+    showLIAPromptForCandidate, setShowLIAPromptForCandidate,
+    selectedCandidate, setSelectedCandidate,
+    showQuickViewModal, setShowQuickViewModal,
+    showComparisonModal, setShowComparisonModal,
+    setShowScheduleModal,
+    setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen,
+    setShowAddToListModal,
+    isLIAThinking, setIsLIAThinking,
+    handleStartWSITextScreening, handleOpenWSIModal,
+    openUnifiedModal, handleCandidateClick,
+    executeSearch,
+    talentFunnel,
+    toast, user, router,
+  })
+  // Bind late ref so stubs work
+  liaHandlersRef.current = liaHandlers
+  // Export quick action helpers from the hook for JSX consumption
+  const handleQuickAction = liaHandlers.handleQuickAction
+  const handleOrchestratedTalentMessage = liaHandlers.handleOrchestratedTalentMessage
+  const handleTalentUIAction = liaHandlers.handleTalentUIAction
+  const handleCalibrationLike = liaHandlers.handleCalibrationLike
+  const handleCalibrationDislike = liaHandlers.handleCalibrationDislike
 
   // Handlers for specific unified modal types
   const handleSendEmail = (candidate: Candidate) => openUnifiedModal(candidate, 'email')
@@ -6595,7 +4805,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     }
   }, [])
 
-
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
@@ -6729,2003 +4938,183 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
         {/* ========== TAB BUSCA - RESULTADOS INLINE ========== */}
         {activeTab === 'search' && showSearchResults && (
-          <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
-            {/* Header com query da busca e opções de edição — extraído para SearchResultsHeader (Sprint G3) */}
-            <SearchResultsHeader
-              lastSearchQuery={lastSearchQuery}
-              lastSearchEntities={lastSearchEntities}
-              onBack={() => setShowSearchResults(false)}
-              onOpenEditQueryModal={(value) => {
-                setEditQueryValue(value)
-                setShowEditQueryModal(true)
-              }}
-              onOpenAdvancedSearch={() => setShowAdvancedSearch(true)}
-            />
+          <CandidateSearchResultsView
+            lastSearchQuery={lastSearchQuery}
+            lastSearchEntities={lastSearchEntities}
+            onBack={() => setShowSearchResults(false)}
+            onOpenEditQueryModal={(value) => {
+              setEditQueryValue(value)
+              setShowEditQueryModal(true)
+            }}
+            onOpenAdvancedSearch={() => setShowAdvancedSearch(true)}
+            selectedCandidatesForBatch={selectedCandidatesForBatch}
+            selectedPearchCount={selectedPearchCount}
+            deselectAllCandidates={deselectAllCandidates}
+            onAddToVacancy={() => setShowAddToVacancyModal(true)}
+            onAddToList={handleAddToList}
+            isAddingToList={isAddingToList}
+            candidates={candidates}
+            onShareSearch={() => {
+              const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
+              const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
+              setShareSearchCandidates(selectedList.map(c => ({
+                id: c.id,
+                name: c.name,
+                email: c.email,
+                avatar_url: c.avatar,
+                current_title: c.position,
+                linkedin_url: c.linkedin
+              })))
+              setShareSearchTitle(searchTitle)
+              setShowShareSearchModal(true)
+            }}
+            onBulkEmail={handleBulkEmail}
+            onBulkWSIScreening={handleBulkWSIScreening}
+            onToggleFavoriteBatch={() => {
+              selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
+              toast({
+                title: "Favoritos atualizados",
+                description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos`
+              })
+            }}
+            onHideBatch={() => {
+              selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
+              toast({
+                title: "Candidatos ocultos",
+                description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
+              })
+              deselectAllCandidates()
+            }}
+            onSaveToLocalBase={handleSaveToLocalBase}
+            isSavingToBase={isSavingToBase}
+            showCrossTabBanner={showCrossTabBanner}
+            crossTabFilter={crossTabFilter}
+            clearCrossTabFilter={clearCrossTabFilter}
+            viewingList={viewingList}
+            setViewingList={setViewingList}
 
-            {/* Contextual Actions Banner - Ações para candidatos selecionados */}
-            <ContextualActionsBanner
-              selectedCount={selectedCandidatesForBatch.size}
-              pearchCount={selectedPearchCount}
-              onDeselectAll={deselectAllCandidates}
-              onAddToVacancy={() => setShowAddToVacancyModal(true)}
-              onAddToList={handleAddToList}
-              isAddingToList={isAddingToList}
-              onShareSearch={() => {
-                const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-                const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
-                setShareSearchCandidates(selectedList.map(c => ({
-                  id: c.id,
-                  name: c.name,
-                  email: c.email,
-                  avatar_url: c.avatar,
-                  current_title: c.position,
-                  linkedin_url: c.linkedin
-                })))
-                setShareSearchTitle(searchTitle)
-                setShowShareSearchModal(true)
-              }}
-              onSendMessage={handleBulkEmail}
-              onWSIScreening={handleBulkWSIScreening}
-              onToggleFavorite={() => {
-                selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-                toast({
-                  title: "Favoritos atualizados",
-                  description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos`
-                })
-              }}
-              onHide={() => {
-                selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
-                toast({
-                  title: "Candidatos ocultos",
-                  description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
-                })
-                deselectAllCandidates()
-              }}
-              onSaveToLocalBase={handleSaveToLocalBase}
-              isSavingToBase={isSavingToBase}
-            />
-
-            {/* ✨ Banner Cross-Tab Filter */}
-            {showCrossTabBanner && crossTabFilter && (
-              <Card className="bg-gray-50 dark:bg-gray-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
-                      {crossTabFilter.type === 'company' ? (
-                        <Building className="w-5 h-5 text-white dark:text-gray-900" />
-                      ) : (
-                        <Target className="w-5 h-5 text-white dark:text-gray-900" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
-                        🎯 Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
-                      </h3>
-                      <p className="text-sm text-gray-800 dark:text-gray-400 mb-3">
-                        {crossTabFilter.type === 'company' && crossTabFilter.company && (
-                          `Mostrando candidatos da empresa "${crossTabFilter.company}" mapeada`
-                        )}
-                        {crossTabFilter.type === 'company' && crossTabFilter.companies && (
-                          `Mostrando candidatos das empresas: ${crossTabFilter.companies.join(', ')}`
-                        )}
-                        {crossTabFilter.filter === 'discontented_talents' && (
-                          `Talentos com indicações de descontentamento detectadas pela LIA`
-                        )}
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={clearCrossTabFilter}
-                        >
-                          <X className="w-3 h-3 mr-1" />
-                          Limpar Filtro
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* ✨ Banner Visualizando Lista */}
-            {viewingList && (
-              <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{ borderLeftColor: viewingList.color || 'var(--gray-600)' }}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-md flex items-center justify-center"
-                      style={{ backgroundColor: viewingList.color || 'var(--gray-600)' }}
-                    >
-                      <List className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
-                        📋 Visualizando Lista: {viewingList.name}
-                      </h3>
-                      <p className="text-sm text-gray-800 dark:text-gray-400">
-                        {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setViewingList(null)
-                          setShowSearchResults(false)
-                          setSearchTerm('')
-                          setLastSearchQuery('')
-                        }}
-                      >
-                        <X className="w-3 h-3 mr-1" />
-                        Fechar Lista
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveTab('lists')}
-                      >
-                        <ArrowLeft className="w-3 h-3 mr-1" />
-                        Voltar às Listas
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-
-            {/* Toolbar Compacto - Prompt LIA + Controles */}
-            {/* Esconde o prompt compacto quando o expandido estiver aberto */}
-            {!showExpandedLIA && (
-              <div className="flex items-center justify-between gap-4 mb-1 mt-1">
-                {/* Prompt LIA - Compacto (max 300px) - Design Specs v3.1 */}
-                <div className="flex-1 max-w-[300px]">
-                  <div 
-                    className={`relative flex items-center h-10 rounded-md bg-white transition-all ${
-                      isLIAThinking ? 'cursor-wait' : ''
-                    } border border-gray-200`} style={{ paddingLeft: '16px', paddingRight: '80px' }}
-                  >
-                    <input
-                      type="text"
-                      placeholder={isLIAThinking ? "LIA está pensando..." : "Ex: Analisar candidatos com..."}
-                      value={liaPromptValue}
-                      onChange={(e) => setLiaPromptValue(e.target.value)}
-                      disabled={isLIAThinking}
-                      className="flex-1 h-full text-base-ui bg-transparent focus:outline-none text-gray-950 placeholder:text-gray-600"
-                     
-                      onFocus={(e) => {
-                        // Focus state: borda cyan + shadow
-                        const container = e.target.parentElement
-                        if (container) {
-                          container.style.borderColor = 'var(--gray-200)'
-                          container.style.boxShadow = '0 0 0 2px rgba(96, 190, 209, 0.12)'
-                        }
-                        // Expandir LIA sidebar ao focar
-                        if (!isLIAThinking) {
-                          setShowExpandedLIA(true)
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const container = e.target.parentElement
-                        if (container) {
-                          container.style.borderColor = 'var(--gray-200)'
-                          container.style.boxShadow = 'none'
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && liaPromptValue.trim() && !isLIAThinking) {
-                          handleAICommand(liaPromptValue)
-                          setLiaPromptValue('')
-                        }
-                      }}
-                    />
-                    {/* Botões: Maximize + Send */}
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <button
-                        className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-                        onClick={() => setShowExpandedLIA(true)}
-                        title="Expandir"
-                        aria-label="Expandir chat da LIA"
-                      >
-                        <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
-                      </button>
-                      <button
-                        className={`p-1.5 rounded-full transition-colors ${
-                          isLIAThinking ? 'cursor-wait opacity-50' : 'hover:bg-gray-100'
-                        }`}
-                        onClick={() => {
-                          if (liaPromptValue.trim() && !isLIAThinking) {
-                            handleAICommand(liaPromptValue)
-                            setLiaPromptValue('')
-                          }
-                        }}
-                        disabled={isLIAThinking}
-                        title="Enviar"
-                        aria-label="Enviar mensagem para a LIA"
-                      >
-                        {isLIAThinking ? (
-                          <div className="w-4 h-4 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-                        ) : (
-                          <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Indicador de Thinking - Aparece quando LIA está processando */}
-                  {isLIAThinking && (
-                    <div className="mt-2 flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', border: '1px solid rgba(96, 190, 209, 0.2)' }}>
-                      <Brain className="w-3 h-3 animate-pulse text-wedo-cyan" />
-                      <span className="font-medium text-gray-800">LIA está pensando</span>
-                      <div className="flex gap-0.5">
-                        <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                      </div>
-                    </div>
-                  )}
-              </div>
-
-              {/* Controles e Info - Sempre visíveis à direita */}
-              <div className="flex items-center gap-3">
-                {/* Badge de seleção */}
-                {selectedCandidatesForBatch.size > 0 && (
-                  <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 text-xs font-medium">
-                    🎯 {selectedCandidatesForBatch.size}
-                  </Badge>
-                )}
-
-                {/* Sort indicator - mostra ordenação ativa (configuração dentro dos filtros) */}
-                {searchSortBy !== 'relevance' && (
-                  <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 text-xs font-medium gap-1">
-                    <ArrowUpDown className="w-3 h-3" />
-                    {searchSortBy === 'score_desc' ? 'Maior Score' :
-                     searchSortBy === 'score_asc' ? 'Menor Score' :
-                     searchSortBy === 'name_asc' ? 'Nome A-Z' :
-                     searchSortBy === 'name_desc' ? 'Nome Z-A' :
-                     searchSortBy === 'experience_desc' ? 'Maior Experiência' : 'Relevância'}
-                  </Badge>
-                )}
-
-                {/* Botão Selecionar Todos - Padronizado conforme design */}
-                {selectedCandidatesForBatch.size === 0 && sortedCandidates.length > 0 && (
-                  <button
-                    onClick={selectAllCandidates}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
-                   
-                  >
-                    <CheckCircle className="w-4 h-4 text-gray-500" />
-                    Selecionar Todos
-                  </button>
-                )}
-
-                {/* Botões de controle - Filtros da Tabela (tableFilters) - Padronizado */}
-                <button
-                  onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
-                    showTableFiltersPanel 
-                      ? 'bg-gray-900 text-white hover:bg-gray-800' 
-                      : 'text-gray-800 bg-white border border-gray-200 hover:bg-gray-50'
-                  }`}
-                 
-                >
-                  <Target className="w-4 h-4" />
-                  Filtros
-                  {getActiveTableFiltersCount() > 0 && (
-                    <span className={`text-xs font-medium ${showTableFiltersPanel ? 'text-gray-300' : 'text-gray-500'}`}>
-                      {getActiveTableFiltersCount()}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  onClick={handleToggleColumnConfig}
-                  title="Configurar colunas da tabela"
-                  className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
-                    showColumnConfig 
-                      ? 'bg-gray-900 text-white hover:bg-gray-800' 
-                      : 'text-gray-800 bg-white border border-gray-200 hover:bg-gray-50'
-                  }`}
-                 
-                >
-                  <ChevronsLeftRight className="w-4 h-4" />
-                  Colunas
-                  <span className={`text-xs font-medium ${showColumnConfig ? 'text-gray-300' : 'text-gray-500'}`}>
-                    {tableColumns.filter(col => col.visible && col.id !== 'acoes').length}
-                  </span>
-                </button>
-              </div>
-            </div>
-            )}
-
-            {/* Badge de Filtros Ativos - Simplificado */}
-            {(quickFilters.size > 0 || searchTerm || getActiveAdvancedFiltersCount() > 0) && (
-              <div className="mb-1.5 flex items-center gap-2">
-                <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0">
-                  filtros ativos
-                </Badge>
-                {selectedCandidatesForBatch.size > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={deselectAllCandidates}
-                    className="h-6 px-2 text-xs text-gray-800 hover:text-gray-900"
-                  >
-                    <X className="w-3 h-3 mr-1" />
-                    Limpar seleção
-                  </Button>
-                )}
-              </div>
-            )}
-
-
-            {/* Results Layout with Sidebars - Layout flex responsivo */}
-            {/* ORDEM: LIA à esquerda, Filtros à direita, Tabela ao centro */}
-            <div className="flex gap-4 overflow-hidden transition-all duration-300 flex-1 min-h-0 w-full">
-              {/* LIA Sidebar Expandida - Sistema de Pesquisa Avançada */}
-              {showExpandedLIA && (
-                <div 
-                  className={`transition-all duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
-                  style={{ 
-                    width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
-                    maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`
-                  }}
-                >
-                  <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: 'var(--gray-50)' }}>
-                    {/* Header do Prompt Expandido - Design Specs v3.1 */}
-                    <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: 'var(--gray-50)' }}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div 
-                            className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: 'var(--gray-50)' }}
-                          >
-                            <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
-                              Olá! Sou a Lia.
-                            </h3>
-                            <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
-                              Posso criar vagas, buscar candidatos, analisar métricas e muito mais!
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {/* Botão Expandir/Retrair Superchat */}
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    if (isLiaSuperChat) {
-                                      setIsLiaSuperChat(false)
-                                    } else {
-                                      setIsLiaSuperChat(true)
-                                      setSuperChatWidth(Math.max(superChatWidth, 600))
-                                    }
-                                  }}
-                                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
-                                >
-                                  {isLiaSuperChat ? (
-                                    <PanelLeftClose className="w-4 h-4 text-gray-700" />
-                                  ) : (
-                                    <Maximize2 className="w-4 h-4 text-gray-500" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs">{isLiaSuperChat ? 'Retrair chat' : 'Expandir para Superchat'}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          {/* Botão Fechar */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setShowExpandedLIA(false)
-                              setUserCollapsedLIA(true)
-                              setIsLiaSuperChat(false)
-                            }}
-                            className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
-                          >
-                            <X className="w-4 h-4 text-gray-500" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ações movidas para banner acima da tabela */}
-
-                    {/* Conteúdo das Abas */}
-                    <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{ backgroundColor: 'var(--gray-50)' }}>
-                      
-                      {/* ABA 1: IA NATURAL - Chat Format */}
-                      {activeSearchTab === 'ia-natural' && (
-                        <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
-                          {/* Área de Chat - Histórico de Mensagens */}
-                          <div 
-                            ref={chatScrollRef}
-                            className="flex-1 overflow-y-auto space-y-3 mb-4"
-                            style={{ maxHeight: 'calc(100% - 80px)' }}
-                          >
-                            {/* Resultado da Busca (como resposta da LIA) - PRIMEIRO cronologicamente */}
-                            {searchResults.query && (
-                              <div className="space-y-3">
-                                {/* Mensagem do usuário */}
-                                <div className="flex justify-end">
-                                  <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white">
-                                    <p className="text-xs">{searchResults.query}</p>
-                                  </div>
-                                </div>
-                                
-                                {/* Resposta da LIA */}
-                                <div className="flex items-start gap-2">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
-                                    <LIAIcon size="xs" />
-                                  </div>
-                                  <div className="flex-1 space-y-3">
-                                    {/* Resumo dos resultados */}
-                                    <div className="p-3 rounded-md bg-white dark:bg-gray-800">
-                                      <p className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">
-                                        Encontrei <span className="text-gray-600 dark:text-gray-400">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
-                                      </p>
-                                      <div className="flex items-center gap-3 text-xs mb-2">
-                                        {searchResults.localCount > 0 && (
-                                          <div className="flex items-center gap-1 text-status-success">
-                                            <Home className="w-3 h-3" />
-                                            <span className="font-medium">{searchResults.localCount} base local</span>
-                                          </div>
-                                        )}
-                                        {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
-                                          <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                            <Globe className="w-3 h-3" />
-                                            <span className="font-medium">{searchResults.globalCount} busca global</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center justify-between mt-2">
-                                        <p className="text-xs text-gray-800 dark:text-gray-400 flex items-center gap-1">
-                                          <TrendingUp className="w-3 h-3" />
-                                          Ordenados por aderência ao perfil
-                                        </p>
-                                        <button
-                                          onClick={() => {
-                                            setShowSaveAsArchetypeModal(true)
-                                            setArchetypeNameInput('')
-                                            setArchetypeEmojiInput('🎯')
-                                          }}
-                                          className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 transition-all"
-                                         
-                                        >
-                                          <Bookmark className="w-3 h-3" />
-                                          Salvar Arquétipo
-                                        </button>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Candidatos locais na tabela */}
-                                    {searchResults.localCount > 0 && (
-                                      <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                                        <div className="flex items-center gap-2">
-                                          <Home className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                          <p className="text-xs text-gray-800 dark:text-gray-300">
-                                            <span className="font-semibold">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Botão para expandir busca para global - OPT-IN: só mostra após busca local */}
-                                    {currentSearchSource === 'local' && !searchResults.showGlobalResults && !searchResults.globalDismissed && searchResults.query && (
- <div className="p-3 rounded-md border border-gray-900 dark:border-gray-200 bg-gray-50 dark:bg-gray-800">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                            <div>
-                                              <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
-                                                Expandir para Busca Global?
-                                              </p>
-                                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                Acesse +800M de perfis (1 crédito/candidato)
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Button
-                                              size="sm"
-                                              variant="ghost"
-                                              className="!text-xs !px-2.5 !py-1.5 text-gray-800 hover:text-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                             
-                                              onClick={() => {
-                                                setSearchResults(prev => ({ ...prev, globalDismissed: true }))
-                                              }}
-                                            >
-                                              <X className="w-3 h-3 mr-1" />
-                                              Manter local
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              className="!text-xs !px-3 !py-1.5 bg-gray-900" style={{ color: 'var(--gray-50)' }}
-                                              onClick={() => setShowGlobalExpansionConfirm(true)}
-                                            >
-                                              <Globe className="w-3 h-3 mr-1" />
-                                              Expandir Busca
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Mensagem quando usuário descartou busca global */}
-                                    {currentSearchSource === 'local' && searchResults.globalDismissed && !searchResults.showGlobalResults && searchResults.query && (
-                                      <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <Globe className="w-3.5 h-3.5 text-gray-800" />
-                                            <p className="text-xs text-gray-800 dark:text-gray-500">
-                                              Busca global disponível
-                                            </p>
-                                          </div>
-                                          <button
-                                            onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
-                                            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:underline"
-                                           
-                                          >
-                                            Expandir busca
-                                          </button>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Confirmação de candidatos globais adicionados */}
-                                    {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
- <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200">
-                                        <div className="flex items-center gap-2">
-                                          <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
- <p className="text-xs text-wedo-cyan-dark dark:text-gray-300">
-                                            <span className="font-semibold">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Loading - LIA Buscando */}
-                            {searchResults.isLoading && (
-                              <div className="space-y-3">
-                                {/* Mensagem do usuário (query atual) */}
-                                {searchResults.query && (
-                                  <div className="flex justify-end">
-                                    <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white">
-                                      <p className="text-xs">{searchResults.query}</p>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* LIA Pensando */}
-                                <div className="flex items-start gap-2">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}>
-                                    <LIAIcon size="xs" />
-                                  </div>
-                                  <div className="flex-1 space-y-2">
-                                    {/* Card de status */}
-                                    <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                                      <div className="flex items-center gap-3 mb-3">
-                                        <div className="relative">
-                                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                            <Search className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-pulse" />
-                                          </div>
-                                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-gray-50 rounded-full animate-ping" />
-                                        </div>
-                                        <div>
-                                          <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
-                                            LIA está buscando...
-                                          </p>
-                                          <p className="text-xs text-gray-800 dark:text-gray-500">
-                                            Analisando perfis compatíveis
-                                          </p>
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Progress steps */}
-                                      <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
-                                          <div className="w-4 h-4 rounded-full bg-status-success flex items-center justify-center">
-                                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                          </div>
-                                          <span>Interpretando critérios</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
-                                          <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin">
-                                            <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
-                                          </div>
-                                          <span>Buscando na base de candidatos</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-800">
-                                          <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700" />
-                                          <span>Rankeando por compatibilidade</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Typing indicator */}
-                                    <div className="flex items-center gap-1.5 px-3 py-2">
-                                      <div className="flex gap-1">
-                                        <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                        <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                        <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Mensagens do Chat - DEPOIS dos resultados da busca (ordem cronológica) */}
-                            {chatMessages.map((msg) => (
-                              <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                {msg.type === 'user' ? (
-                                  /* User Message - Alinhado à direita, balão cinza claro com avatar */
-                                  <div className="flex items-start gap-2 max-w-[70%]">
-                                    <img 
-                                      src="https://randomuser.me/api/portraits/men/32.jpg" 
-                                      alt="Você"
-                                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                                    />
-                                    <div 
-                                      className="px-2.5 py-2 rounded-2xl bg-gray-100"
-                                     
-                                    >
-                                      <div className="flex items-center gap-1.5 mb-0.5">
-                                        <span className="text-micro font-bold text-gray-800">Você</span>
-                                        <span className="text-micro text-gray-500">agora</span>
-                                      </div>
-                                      <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
-                                    </div>
-                                  </div>
-                                ) : msg.type === 'proactive_insight' && msg.analytics ? (
-                                  <div className="w-full">
-                                    <ProactiveInsightCard
-                                      analytics={msg.analytics}
-                                      onAction={handleQuickAction}
-                                      isExpanded={false}
-                                    />
-                                  </div>
-                                ) : msg.type === 'calibration' && msg.candidates ? (
-                                  <div className="w-full space-y-3">
-                                    <div className="flex items-start gap-2">
-                                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
-                                        <LIAIcon size="xs" />
-                                      </div>
-                                      <p className="text-xs text-gray-800 dark:text-gray-500">
-                                        Vou mostrar alguns candidatos para entender melhor o perfil que você busca:
-                                      </p>
-                                    </div>
-                                    <div className="space-y-2 pl-8">
-                                      {msg.candidates.map(candidate => (
-                                        <CalibrationCard
-                                          key={candidate.id}
-                                          candidate={candidate}
-                                          onLike={handleCalibrationLike}
-                                          onDislike={handleCalibrationDislike}
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="max-w-[90%]">
-                                    <div className="flex items-start gap-2">
-                                      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                                        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                                      </div>
-                                      <div className="flex-1">
-                                        <span className="text-micro font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>LIA</span>
-                                        <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap mt-0.5">
-                                          {msg.content.split(/(\*\*[^*]+\*\*)/).map((part, i) => 
-                                            part.startsWith('**') && part.endsWith('**') 
-                                              ? <strong key={i}>{part.slice(2, -2)}</strong>
-                                              : part
-                                          )}
-                                        </p>
-                                        {msg.metadata?.action_executed && msg.metadata?.action_result && (
-                                          <ActionResultCard
-                                            actionType={msg.metadata.action_type || 'analyze_profile'}
-                                            result={msg.metadata.action_result}
-                                          />
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Input de Chat - Fixo na parte inferior - Layout Inline Padronizado */}
-                          <div className="mt-auto p-3 bg-white rounded-md">
-                            {/* Banner de criação de arquétipo */}
-                            {isCreatingArchetype && (
-                              <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                    Criando novo arquétipo...
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    setIsCreatingArchetype(false)
-                                    setArchetypeCreationStep('initial')
-                                  }}
-                                  className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded"
-                                  aria-label="Cancelar criação de arquétipo"
-                                >
-                                  <X className="w-3 h-3 text-gray-600 dark:text-gray-400" aria-hidden="true" />
-                                </button>
-                              </div>
-                            )}
-                            {/* Input Inline Padronizado - Design Specs v3.1 */}
-                            <div className="flex items-center gap-2 p-2 rounded-md bg-white border border-gray-100">
-                              <div 
-                                className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
-                              >
-                                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                              </div>
-                              <input
-                                type="text"
-                                placeholder={isCreatingArchetype
-                                  ? "Cole a descrição da vaga ou descreva o perfil ideal..."
-                                  : "Envie mensagem para a LIA..."
-                                }
-                                aria-label={isCreatingArchetype ? "Descrição do perfil ideal para arquétipo" : "Mensagem para a LIA"}
-                                value={liaPromptValue}
-                                onChange={(e) => setLiaPromptValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && liaPromptValue.trim()) {
-                                    if (isCreatingArchetype) {
-                                      const userMessage: ChatMessage = {
-                                        id: `user-${Date.now()}`,
-                                        type: 'user',
-                                        content: liaPromptValue.trim(),
-                                        timestamp: new Date()
-                                      }
-                                      setChatMessages(prev => [...prev, userMessage])
-                                      
-                                      setTimeout(() => {
-                                        const extractedName = liaPromptValue.length > 50 
-                                          ? liaPromptValue.substring(0, 50).split(' ').slice(0, 5).join(' ')
-                                          : liaPromptValue.trim()
-                                        
-                                        const liaResponse: ChatMessage = {
-                                          id: `lia-extraction-${Date.now()}`,
-                                          type: 'lia',
-                                          content: `✅ Analisei sua descrição e identifiquei os critérios principais.\n\n**Arquétipo sugerido:** ${extractedName}\n\nClique em "Salvar Arquétipo" abaixo para confirmar, ou continue descrevendo para refinar.`,
-                                          timestamp: new Date()
-                                        }
-                                        setChatMessages(prev => [...prev, liaResponse])
-                                        
-                                        setNewArchetypeData({
-                                          name: extractedName,
-                                          description: liaPromptValue.trim(),
-                                          query: liaPromptValue.trim(),
-                                          emoji: '🎯'
-                                        })
-                                        setArchetypeCreationStep('review')
-                                        setShowSaveAsArchetypeModal(true)
-                                        setArchetypeNameInput(extractedName)
-                                      }, 1000)
-                                      
-                                      setLiaPromptValue('')
-                                    } else {
-                                      handleLIAChatMessage(liaPromptValue.trim())
-                                    }
-                                  }
-                                }}
-                                className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50"
-                               
-                              />
-                              <AudioRecordButton
-                                onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
-                                className="p-1.5"
-                                iconClassName="w-4 h-4"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (liaPromptValue.trim()) {
-                                    if (isCreatingArchetype) {
-                                      const userMessage: ChatMessage = {
-                                        id: `user-${Date.now()}`,
-                                        type: 'user',
-                                        content: liaPromptValue.trim(),
-                                        timestamp: new Date()
-                                      }
-                                      setChatMessages(prev => [...prev, userMessage])
-                                      
-                                      setTimeout(() => {
-                                        const extractedName = liaPromptValue.length > 50 
-                                          ? liaPromptValue.substring(0, 50).split(' ').slice(0, 5).join(' ')
-                                          : liaPromptValue.trim()
-                                        
-                                        const liaResponse: ChatMessage = {
-                                          id: `lia-extraction-${Date.now()}`,
-                                          type: 'lia',
-                                          content: `✅ Analisei sua descrição e identifiquei os critérios principais.\n\n**Arquétipo sugerido:** ${extractedName}\n\nClique em "Salvar Arquétipo" abaixo para confirmar, ou continue descrevendo para refinar.`,
-                                          timestamp: new Date()
-                                        }
-                                        setChatMessages(prev => [...prev, liaResponse])
-                                        
-                                        setNewArchetypeData({
-                                          name: extractedName,
-                                          description: liaPromptValue.trim(),
-                                          query: liaPromptValue.trim(),
-                                          emoji: '🎯'
-                                        })
-                                        setArchetypeCreationStep('review')
-                                        setShowSaveAsArchetypeModal(true)
-                                        setArchetypeNameInput(extractedName)
-                                      }, 1000)
-                                      
-                                      setLiaPromptValue('')
-                                    } else {
-                                      handleLIAChatMessage(liaPromptValue.trim())
-                                    }
-                                  }
-                                }}
-                                disabled={!liaPromptValue.trim() || searchResults.isLoading}
-                                className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900"
-                              >
-                                <Send className="w-3.5 h-3.5 text-white" />
-                              </button>
-                            </div>
-                            
-                            {/* Sugestões - abaixo do input conforme design specs */}
-                            <div className="flex items-center gap-1.5 mt-1.5">
-                              <span className="text-micro font-medium text-gray-500">Sugestões:</span>
-                              <button
-                                onClick={() => handleAICommand('Top 5 candidatos')}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
-                               
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
-                              >
-                                <Star className="w-2.5 h-2.5 text-gray-500" />
-                                Top 5
-                              </button>
-                              <button
-                                onClick={() => handleAICommand('Resumir esta busca')}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
-                               
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
-                              >
-                                <FileText className="w-2.5 h-2.5 text-gray-500" />
-                                Resumir busca
-                              </button>
-                              <LiaSearchQueriesGuide
-                                onSelectQuery={(query) => handleAICommand(query)}
-                                selectedCount={selectedCandidatesForBatch.size}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Abas removidas: JOB DESCRIPTION, SIMILAR, BOOLEAN - funcionalidades movidas para página principal */}
-                      {activeSearchTab === 'job-description' && (
-                        <div className="space-y-4">
-                          {/* Descrição */}
-                          <p className="text-xs text-gray-500">
-                            Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
-                          </p>
-
-                          {/* Textarea Grande */}
-                          <div className="relative">
-                            <textarea
-                              placeholder="Cole aqui a descrição da vaga completa..."
-                              value={jobDescriptionText}
-                              onChange={(e) => setJobDescriptionText(e.target.value)}
-                              className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-all resize-none bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 border border-gray-100"
-                              onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
-                              onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
-                            />
-                            {/* Botões de Anexo e Áudio */}
-                            <div className="absolute bottom-3 right-3 flex gap-2">
-                              <button
-                                type="button"
-                                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                title="Anexar documento"
-                                onClick={() => {
-                                  // TODO: Implementar upload de arquivo
-                                  console.log('Anexar documento')
-                                }}
-                              >
-                                <Paperclip className="w-4 h-4 text-gray-800" />
-                              </button>
-                              <button
-                                type="button"
-                                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-                                title="Gravar áudio"
-                                onClick={() => {
-                                  // TODO: Implementar gravação de áudio
-                                  console.log('Gravar áudio')
-                                }}
-                              >
-                                <Mic className="w-4 h-4 text-gray-800" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Critérios Extraídos */}
-                          {extractedJDCriteria && (
-                            <div className="p-3 rounded-md border" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)', borderColor: 'rgba(96, 190, 209, 0.3)' }}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Brain className="w-4 h-4 text-wedo-cyan" />
-                                <span className="text-xs font-medium text-gray-950 dark:text-gray-50">
-                                  Critérios Extraídos
-                                </span>
-                              </div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {extractedJDCriteria.job_title && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    {extractedJDCriteria.job_title}
-                                  </span>
-                                )}
-                                {extractedJDCriteria.seniority && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    {extractedJDCriteria.seniority}
-                                  </span>
-                                )}
-                                {extractedJDCriteria.skills.map((skill, idx) => (
-                                  <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    {skill}
-                                  </span>
-                                ))}
-                                {extractedJDCriteria.experience_years && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    {extractedJDCriteria.experience_years}+ anos
-                                  </span>
-                                )}
-                                {extractedJDCriteria.location && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    {extractedJDCriteria.location}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Botão Extrair e Buscar */}
-                          <Button
-                            className="w-full h-11 !text-sm font-semibold gap-2"
-                            style={{
-                              backgroundColor: isSearchingJD ? 'var(--gray-400)' : 'var(--gray-950)',
-                              color: 'var(--gray-50)',
-                            }}
-                            onClick={async () => {
-                              if (jobDescriptionText.trim() && !isSearchingJD) {
-                                setIsSearchingJD(true)
-                                setExtractedJDCriteria(null)
-                                
-                                const userMessage: ChatMessage = {
-                                  id: `user-jd-${Date.now()}`,
-                                  type: 'user',
-                                  content: `Buscar candidatos pela descrição da vaga:\n\n"${jobDescriptionText.substring(0, 200)}${jobDescriptionText.length > 200 ? '...' : ''}"`,
-                                  timestamp: new Date()
-                                }
-                                setChatMessages(prev => [...prev, userMessage])
-                                
-                                try {
-                                  const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      job_description: jobDescriptionText.trim(),
-                                      limit: 20,
-                                      search_pearch: searchSource !== 'local',
-                                      pearch_type: pearchSearchOptions.searchType
-                                    })
-                                  })
-                                  
-                                  if (!response.ok) throw new Error('Erro na busca')
-                                  
-                                  const data = await response.json()
-                                  
-                                  if (data.extracted_criteria) {
-                                    setExtractedJDCriteria({
-                                      job_title: data.extracted_criteria.job_title,
-                                      seniority: data.extracted_criteria.seniority,
-                                      skills: data.extracted_criteria.skills || [],
-                                      experience_years: data.extracted_criteria.experience_years,
-                                      location: data.extracted_criteria.location,
-                                      languages: data.extracted_criteria.languages || []
-                                    })
-                                  }
-                                  
-                                  if (data.candidates && data.candidates.length > 0) {
-                                    const mappedCandidates = data.candidates.map((c: any) => ({
-                                      id: c.id || `jd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                      candidateId: c.id?.substring(0, 8).toUpperCase() || 'JD',
-                                      name: c.name || 'Nome não disponível',
-                                      email: c.email || '',
-                                      phone: c.phone || '',
-                                      current_title: c.headline || c.current_title || '',
-                                      current_company: c.current_company || '',
-                                      location: c.location || '',
-                                      linkedin_url: c.linkedin_url,
-                                      avatar_url: c.avatar_url || c.picture_url,
-                                      avatar: c.avatar_url,
-                                      technical_skills: c.skills || [],
-                                      skills: c.skills || [],
-                                      seniority_level: c.seniority_level,
-                                      years_of_experience: c.years_experience || c.total_experience_years,
-                                      experience: c.years_experience || c.total_experience_years || 0,
-                                      score: c.match_score ? Math.round(c.match_score * 25) : 75,
-                                      source: c.source || 'pearch',
-                                      has_email: c.has_email ?? true,
-                                      has_phone: c.has_phone ?? true,
-                                      is_opentowork: c.is_opentowork,
-                                      is_decision_maker: c.is_decision_maker,
-                                      is_top_universities: c.is_top_universities,
-                                      is_startup: c.is_startup || c.company_info?.is_startup,
-                                      expertise: c.expertise,
-                                      outreach_message: c.outreach_message,
-                                      experiences: c.experiences || [],
-                                      workHistory: (c.experiences || []).map((exp: any) => ({
-                                        company: exp.company_info?.name || exp.company || '',
-                                        title: exp.company_roles?.[0]?.title || exp.title || '',
-                                        startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
-                                        endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
-                                        duration: exp.duration || '',
-                                        location: exp.company_info?.location || exp.location || '',
-                                        description: exp.company_roles?.[0]?.description || exp.description || ''
-                                      })),
-                                      education: (c.education || []).map((edu: any) => ({
-                                        school: edu.school || '',
-                                        degree: edu.degree || '',
-                                        field_of_study: edu.field_of_study || '',
-                                        fieldOfStudy: edu.field_of_study || '',
-                                        startDate: edu.start_date || '',
-                                        endDate: edu.end_date || ''
-                                      }))
-                                    }))
-                                    
-                                    const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
-                                    const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
-                                    
-                                    // Respeitar searchSource selecionado pelo usuário
-                                    const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
-                                    const candidatesForTable = shouldAutoShowGlobal ? mappedCandidates : localCandidates
-                                    
-                                    setCandidates(candidatesForTable)
-                                    setHasSearchResults(true)
-                                    setSearchResultsCount(data.total_count || mappedCandidates.length)
-                                    setLocalResultsCount(data.local_count || localCandidates.length)
-                                    setPearchResultsCount(data.pearch_count || globalCandidates.length)
-                                    setShowSearchResults(true)
-                                    setDisplayedResultsCount(10)
-                                    
-                                    setSearchResults(prev => ({
-                                      local: localCandidates,
-                                      global: globalCandidates,
-                                      localCount: data.local_count || localCandidates.length,
-                                      globalCount: data.pearch_count || globalCandidates.length,
-                                      query: data.query_generated || jobDescriptionText.substring(0, 50),
-                                      isLoading: false,
-                                      showGlobalResults: shouldAutoShowGlobal,
-                                      globalDismissed: prev.globalDismissed
-                                    }))
-                                    
-                                    const localCount = data.local_count || localCandidates.length
-                                    const liaMessage: ChatMessage = {
-                                      id: `lia-jd-result-${Date.now()}`,
-                                      type: 'lia',
-                                      content: `**Busca por Job Description concluída!**\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.`,
-                                      timestamp: new Date(),
-                                      searchResults: {
-                                        localCount: localCount,
-                                        globalCount: 0,
-                                        query: data.query_generated || ''
-                                      }
-                                    }
-                                    setChatMessages(prev => [...prev, liaMessage])
-                                  } else {
-                                    const liaMessage: ChatMessage = {
-                                      id: `lia-jd-noresult-${Date.now()}`,
-                                      type: 'lia',
-                                      content: `Não encontrei candidatos com os critérios extraídos da descrição da vaga.\n\nTente ajustar a descrição ou usar a busca por IA Natural com termos mais específicos.`,
-                                      timestamp: new Date()
-                                    }
-                                    setChatMessages(prev => [...prev, liaMessage])
-                                  }
-                                } catch (error) {
-                                  console.error('Erro na busca por JD:', error)
-                                  const liaMessage: ChatMessage = {
-                                    id: `lia-jd-error-${Date.now()}`,
-                                    type: 'lia',
-                                    content: `Erro ao buscar candidatos pela descrição da vaga. Por favor, tente novamente.`,
-                                    timestamp: new Date()
-                                  }
-                                  setChatMessages(prev => [...prev, liaMessage])
-                                } finally {
-                                  setIsSearchingJD(false)
-                                }
-                              }
-                            }}
-                            disabled={!jobDescriptionText.trim() || jobDescriptionText.length < 50 || isSearchingJD}
-                          >
-                            {isSearchingJD ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Analisando...
-                              </>
-                            ) : (
-                              <>
-                                <span 
-                                  className="flex items-center justify-center w-5 h-5 rounded bg-gray-900"
-                                >
-                                  <Brain className="w-3 h-3 text-white" />
-                                </span>
-                                Extrair e Buscar
-                              </>
-                            )}
-                          </Button>
-                          
-                          {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (
-                            <p className="text-xs text-status-warning">
-                              A descrição precisa ter pelo menos 50 caracteres para análise adequada.
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {/* ABA 4: SIMILAR */}
-                      {activeSearchTab === 'similar' && (
-                        <div className="space-y-4">
-                          <p className="text-xs text-gray-500">
-                            Encontre candidatos similares a um perfil específico
-                          </p>
-                          
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={similarProfileUrl}
-                              onChange={(e) => setSimilarProfileUrl(e.target.value)}
-                              placeholder="Cole o link do LinkedIn ou nome do candidato..."
-                              className="w-full p-3 text-xs rounded-md border focus:outline-none transition-all bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 border border-gray-100"
-                            />
-                          </div>
-                          
-                          <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
-                            <div className="flex items-start gap-2">
-                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-xs text-gray-800 dark:text-gray-500">
-                                <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que você considera ideal para encontrar perfis similares.
-                              </p>
-                            </div>
-                          </div>
-
-                          <Button
-                            className={`w-full h-11 !text-sm font-semibold text-white font-open-sans ${isSearchingSimilar ? 'bg-gray-400' : 'bg-wedo-cyan-dark'}`}
-                            onClick={async () => {
-                              if (similarProfileUrl.trim() && !isSearchingSimilar) {
-                                setIsSearchingSimilar(true)
-                                
-                                const isLinkedInUrl = similarProfileUrl.includes('linkedin.com/in/')
-                                
-                                const userMessage: ChatMessage = {
-                                  id: `user-similar-${Date.now()}`,
-                                  type: 'user',
-                                  content: isLinkedInUrl 
-                                    ? `Buscar candidatos similares ao perfil: ${similarProfileUrl}` 
-                                    : `Buscar candidatos similares: ${similarProfileUrl}`,
-                                  timestamp: new Date()
-                                }
-                                setChatMessages(prev => [...prev, userMessage])
-                                
-                                try {
-                                  const requestBody: { linkedin_url?: string; candidate_id?: string; limit: number; search_pearch: boolean; pearch_type: string } = {
-                                    limit: 20,
-                                    search_pearch: searchSource !== 'local',
-                                    pearch_type: pearchSearchOptions.searchType
-                                  }
-                                  
-                                  if (isLinkedInUrl) {
-                                    requestBody.linkedin_url = similarProfileUrl.trim()
-                                  } else {
-                                    requestBody.candidate_id = similarProfileUrl.trim()
-                                  }
-                                  
-                                  const response = await fetch('/api/backend-proxy/search/candidates/similar', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(requestBody)
-                                  })
-                                  
-                                  if (!response.ok) {
-                                    const errorData = await response.json().catch(() => ({}))
-                                    throw new Error(errorData.detail || 'Erro na busca')
-                                  }
-                                  
-                                  const data = await response.json()
-                                  
-                                  if (data.candidates && data.candidates.length > 0) {
-                                    const mappedCandidates = data.candidates.map((c: any) => ({
-                                      id: c.id || `similar-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                      candidateId: c.id?.substring(0, 8).toUpperCase() || 'SIM',
-                                      name: c.name || 'Nome não disponível',
-                                      email: c.email || '',
-                                      phone: c.phone || '',
-                                      current_title: c.headline || c.current_title || '',
-                                      current_company: c.current_company || '',
-                                      location: c.location || '',
-                                      linkedin_url: c.linkedin_url,
-                                      avatar_url: c.avatar_url || c.picture_url,
-                                      avatar: c.avatar_url,
-                                      technical_skills: c.skills || [],
-                                      skills: c.skills || [],
-                                      seniority_level: c.seniority_level,
-                                      years_of_experience: c.years_experience || c.total_experience_years,
-                                      experience: c.years_experience || c.total_experience_years || 0,
-                                      score: c.match_score ? Math.round(c.match_score * 25) : 75,
-                                      source: c.source || 'pearch',
-                                      has_email: c.has_email ?? true,
-                                      has_phone: c.has_phone ?? true,
-                                      is_opentowork: c.is_opentowork,
-                                      is_decision_maker: c.is_decision_maker,
-                                      is_top_universities: c.is_top_universities,
-                                      is_startup: c.is_startup || c.company_info?.is_startup,
-                                      expertise: c.expertise,
-                                      outreach_message: c.outreach_message,
-                                      experiences: c.experiences || [],
-                                      workHistory: (c.experiences || []).map((exp: any) => ({
-                                        company: exp.company_info?.name || exp.company || '',
-                                        title: exp.company_roles?.[0]?.title || exp.title || '',
-                                        startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
-                                        endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
-                                        duration: exp.duration || '',
-                                        location: exp.company_info?.location || exp.location || '',
-                                        description: exp.company_roles?.[0]?.description || exp.description || ''
-                                      })),
-                                      education: (c.education || []).map((edu: any) => ({
-                                        school: edu.school || '',
-                                        degree: edu.degree || '',
-                                        field_of_study: edu.field_of_study || '',
-                                        fieldOfStudy: edu.field_of_study || '',
-                                        startDate: edu.start_date || '',
-                                        endDate: edu.end_date || ''
-                                      }))
-                                    }))
-                                    
-                                    const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
-                                    const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
-                                    
-                                    // Respeitar searchSource selecionado pelo usuário
-                                    const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
-                                    const candidatesForTable = shouldAutoShowGlobal ? mappedCandidates : localCandidates
-                                    
-                                    setCandidates(candidatesForTable)
-                                    setHasSearchResults(true)
-                                    setSearchResultsCount(data.total_count || mappedCandidates.length)
-                                    setLocalResultsCount(data.local_count || localCandidates.length)
-                                    setPearchResultsCount(data.pearch_count || globalCandidates.length)
-                                    setShowSearchResults(true)
-                                    setDisplayedResultsCount(10)
-                                    
-                                    setSearchResults(prev => ({
-                                      local: localCandidates,
-                                      global: globalCandidates,
-                                      localCount: data.local_count || localCandidates.length,
-                                      globalCount: data.pearch_count || globalCandidates.length,
-                                      query: data.query_generated || 'Similar Search',
-                                      isLoading: false,
-                                      showGlobalResults: shouldAutoShowGlobal,
-                                      globalDismissed: prev.globalDismissed
-                                    }))
-                                    
-                                    const refProfileInfo = data.reference_profile 
-                                      ? `\n\n**Perfil de referência:** ${data.reference_profile.name || data.reference_profile.linkedin_url || 'ID: ' + data.reference_profile.id}`
-                                      : ''
-                                    
-                                    const localCount = data.local_count || localCandidates.length
-                                    const liaMessage: ChatMessage = {
-                                      id: `lia-similar-result-${Date.now()}`,
-                                      type: 'lia',
-                                      content: `**Busca de perfis similares concluída!**${refProfileInfo}\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''} similar${localCount > 1 ? 'es' : ''}** na sua base local.`,
-                                      timestamp: new Date(),
-                                      searchResults: {
-                                        localCount: localCount,
-                                        globalCount: 0,
-                                        query: data.query_generated || ''
-                                      }
-                                    }
-                                    setChatMessages(prev => [...prev, liaMessage])
-                                  } else {
-                                    const liaMessage: ChatMessage = {
-                                      id: `lia-similar-noresult-${Date.now()}`,
-                                      type: 'lia',
-                                      content: `Não encontrei candidatos similares ao perfil informado.\n\nVerifique se o link do LinkedIn está correto ou tente com outro perfil de referência.`,
-                                      timestamp: new Date()
-                                    }
-                                    setChatMessages(prev => [...prev, liaMessage])
-                                  }
-                                } catch (error: any) {
-                                  console.error('Erro na busca similar:', error)
-                                  const liaMessage: ChatMessage = {
-                                    id: `lia-similar-error-${Date.now()}`,
-                                    type: 'lia',
-                                    content: `Erro ao buscar candidatos similares: ${error.message || 'Por favor, tente novamente.'}`,
-                                    timestamp: new Date()
-                                  }
-                                  setChatMessages(prev => [...prev, liaMessage])
-                                } finally {
-                                  setIsSearchingSimilar(false)
-                                }
-                              }
-                            }}
-                            disabled={!similarProfileUrl.trim() || isSearchingSimilar}
-                          >
-                            {isSearchingSimilar ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Buscando...
-                              </>
-                            ) : (
-                              <>
-                                <Users className="w-4 h-4 mr-2" />
-                                Encontrar Similares
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* ABA 5: BOOLEAN */}
-                      {activeSearchTab === 'boolean' && (
-                        <div className="space-y-4">
-                          <p className="text-xs text-gray-500">
-                            Use operadores booleanos para buscas avançadas
-                          </p>
-                          
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {['AND', 'OR', 'NOT', '"..."', '(...)'].map((op) => (
-                              <button
-                                key={op}
-                                onClick={() => setBooleanSearchValue(prev => prev + ' ' + op)}
-                                className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono transition-colors"
-                              >
-                                {op}
-                              </button>
-                            ))}
-                          </div>
-                          
-                          <textarea
-                            value={booleanSearchValue}
-                            onChange={(e) => setBooleanSearchValue(e.target.value)}
-                            placeholder='Ex: ("Node.js" OR "Python") AND "sênior" NOT "júnior"'
-                            className="w-full h-32 p-3 text-xs rounded-md border focus:outline-none transition-all resize-none bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 font-mono border border-gray-100" style={{ fontFamily: 'monospace' }}
-                          />
-                          
-                          <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
-                            <div className="flex items-start gap-2">
-                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-xs text-gray-800 dark:text-gray-500">
-                                <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições.
-                              </p>
-                            </div>
-                          </div>
-
-                          <Button
-                            className="w-full h-11 !text-sm font-semibold bg-wedo-cyan-dark text-white font-open-sans"
-                            onClick={() => {
-                              if (booleanSearchValue.trim()) {
-                                console.log('Buscar boolean:', booleanSearchValue)
-                              }
-                            }}
-                            disabled={!booleanSearchValue.trim()}
-                          >
-                            <Code className="w-4 h-4 mr-2" />
-                            Buscar com Boolean
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* ABA 6: FILTROS - Padronizado com Modal */}
-                      {activeSearchTab === 'filtros' && (
-                        <div className="space-y-4">
-                          {/* Dica contextual */}
-                          <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
-                            <div className="flex items-start gap-2">
-                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                              <p className="text-xs text-gray-800 dark:text-gray-500">
-                                <strong>Dica:</strong> Use os filtros avançados para refinar sua busca por localização, experiência, skills, idiomas e muito mais.
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Resumo dos filtros ativos */}
-                          {Object.values(activeSearchFilters).some(category => 
-                            Object.values(category as Record<string, any>).some(v => v === true || (typeof v === 'string' && v.length > 0))
-                          ) && (
-                            <div className="p-3 rounded-md border" style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Check className="w-4 h-4 text-status-success" />
-                                  <span className="text-xs font-medium text-status-success">
-                                    Filtros ativos
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={() => setActiveSearchFilters({
-                                    ppiOptions: {},
-                                    general: {},
-                                    locations: {},
-                                    job: {},
-                                    company: {},
-                                    skills: {},
-                                    education: {},
-                                    languages: {}
-                                  })}
-                                  className="text-xs text-gray-800 hover:text-status-error transition-colors"
-                                 
-                                >
-                                  Limpar todos
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Botão para abrir painel lateral de filtros da tabela */}
-                          <Button
-                            className="w-full h-12 !text-sm font-semibold"
-                            style={{
-                              backgroundColor: showTableFiltersPanel ? 'var(--gray-800)' : 'var(--gray-600)',
-                              color: 'var(--gray-50)',
-                            }}
-                            onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
-                          >
-                            <Filter className="w-4 h-4 mr-2" />
-                            {showTableFiltersPanel ? 'Fechar Filtros' : 'Abrir Filtros Avançados'}
-                          </Button>
-
-                          {/* Info sobre filtros laterais */}
-                          {!showTableFiltersPanel && (
-                            <p className="text-xs text-gray-800 text-center mt-2">
-                              Os filtros aparecerão ao lado da tabela de candidatos
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                    </div>
-                  </Card>
-
-                  {/* Resize Handle - Sempre visível */}
-                  <div
-                    className={`absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 cursor-ew-resize hover:scale-125 transition-all z-10 flex items-center justify-center ${isLiaSuperChat ? 'h-full' : 'h-12'}`}
-                    title="Arraste para ajustar a largura"
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      setIsResizingLIA(true)
-                      const startX = e.clientX
-                      const startWidth = isLiaSuperChat ? superChatWidth : liaWidth
-
-                      const handleMouseMove = (e: MouseEvent) => {
-                        const deltaX = e.clientX - startX
-                        if (isLiaSuperChat) {
-                          // Em modo superchat, permite largura maior (até 80% da tela)
-                          const maxWidth = Math.floor(window.innerWidth * 0.8)
-                          const newWidth = Math.max(500, Math.min(maxWidth, startWidth + deltaX))
-                          setSuperChatWidth(newWidth)
-                        } else {
-                          const newWidth = Math.max(400, Math.min(800, startWidth + deltaX))
-                          setLiaWidth(newWidth)
-                        }
-                      }
-
-                      const handleMouseUp = () => {
-                        setIsResizingLIA(false)
-                        document.removeEventListener('mousemove', handleMouseMove)
-                        document.removeEventListener('mouseup', handleMouseUp)
-                      }
-
-                      document.addEventListener('mousemove', handleMouseMove)
-                      document.addEventListener('mouseup', handleMouseUp)
-                    }}
-                  >
- <div className={`w-1 rounded-full transition-colors ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-gray-600 hover:dark:hover:bg-gray-800'}`} />
-                  </div>
-                </div>
-              )}
-
-              {/* Filtros da Tabela de Resultados - Coluna inline entre LIA e tabela */}
-              {/* SEPARADO dos filtros de busca (activeSearchFilters) - usa tableFilters para filtrar resultados localmente */}
-              {showTableFiltersPanel && (
-                <CandidatesFilterPanel
-                  tableFilters={tableFilters}
-                  setTableFilters={setTableFilters}
-                  searchSortBy={searchSortBy}
-                  onSortChange={setSearchSortBy}
-                  newSoftSkillFilter={newSoftSkillFilter}
-                  setNewSoftSkillFilter={setNewSoftSkillFilter}
-                  newCertificationFilter={newCertificationFilter}
-                  setNewCertificationFilter={setNewCertificationFilter}
-                  activeFiltersCount={getActiveTableFiltersCount()}
-                  onToggleFilter={toggleTableFilter}
-                  onClearAll={clearAllTableFilters}
-                  onClose={() => setShowTableFiltersPanel(false)}
-                />
-              )}
-
-
-              {/* Main Content Area - Candidatos Table with Superchat collapse support */}
-              <div className={`bg-white dark:bg-gray-800 rounded-md transition-all duration-300 ${
-                isLiaSuperChat 
-                  ? 'w-14 flex-shrink-0' 
-                  : 'flex-1 min-w-0 h-full'
-              }`}>
-                {isLiaSuperChat ? (
-                  /* Versão Contraída - Apenas ícone para expandir */
-                  <div className="h-full flex flex-col items-center py-4 gap-3">
-                    {/* Botão para expandir tabela */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsLiaSuperChat(false)}
-                      className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Expandir tabela de candidatos"
-                    >
-                      <ChevronRight className="w-5 h-5 text-gray-800 dark:text-gray-400" />
-                    </Button>
-                    
-                    {/* Ícone da tabela */}
-                    <div className="flex flex-col items-center gap-2 text-gray-800">
-                      <Users className="w-5 h-5" />
-                      <span className="text-xs font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-                        Candidatos ({sortedCandidates.length})
-                      </span>
-                    </div>
-                    
-                    {/* Indicador de candidatos selecionados */}
-                    {selectedCandidatesForBatch.size > 0 && (
-                      <Badge className="bg-gray-900 dark:bg-gray-50 text-white text-xs px-1.5 py-0.5">
-                        {selectedCandidatesForBatch.size}
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  /* Versão Expandida - Tabela completa */
-                  <div className="h-full flex flex-col overflow-hidden">
-                {/* Table Container - Scrollável */}
-                <div 
-                  ref={tableContainerRef}
-                  className="flex-1 relative overflow-auto"
-                >
-                  {/* Loading Overlay */}
-                  {isLoading && (
-                    <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-gray-900">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"></div>
-                        <p className="text-gray-800 text-sm">Carregando candidatos...</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Unified Candidate Table */}
-                  {!isLoading && sortedCandidates.length > 0 && (
-                    <UnifiedCandidateTable
-                      candidates={visibleCandidates as any}
-                      columns={visibleTableColumns.map((col) => ({
-                        id: col.id,
-                        label: col.label,
-                        visible: col.visible,
-                        sortable: true,
-                        width: columnWidths[col.id] || 120,
-                        minWidth: 80,
-                        align: col.id === 'name' ? 'left' as const : 'center' as const,
-                        order: col.order,
-                        isGlobalSearch: col.isGlobalSearch
-                      }))}
-                      selectedIds={selectedCandidatesForBatch}
-                      pinnedIds={pinnedCandidates}
-                      favoriteIds={favorites}
-                      sortConfig={sortBy ? { field: sortBy, direction: sortOrder } : undefined}
-                      isLoading={false}
-                      emptyMessage="Nenhum candidato encontrado"
-                      showCheckboxes={true}
-                      showPagination={false}
-                      enableColumnResize={true}
-                      enableColumnReorder={true}
-                      onColumnResize={(columnId, newWidth) => {
-                        setColumnWidths(prev => ({
-                          ...prev,
-                          [columnId]: newWidth
-                        }))
-                      }}
-                      onColumnReorder={(reorderedColumns) => {
-                        setTableColumns(prev => prev.map(col => {
-                          const reordered = reorderedColumns.find(r => r.id === col.id)
-                          return reordered ? { ...col, order: reordered.order } : col
-                        }))
-                      }}
-                      onCandidateClick={(candidate) => handleCandidateClick(candidate as any)}
-                      onSelectionChange={(ids) => setSelectedCandidatesForBatch(ids)}
-                      onSortChange={(config) => {
-                        setSortBy(config.field)
-                        setSortOrder(config.direction)
-                      }}
-                      onTogglePin={(candidateId) => handleTogglePin(candidateId)}
-                      onToggleFavorite={(candidateId) => handleToggleFavorite(candidateId)}
-                      renderCustomCell={(candidate, columnId) => renderCellValue(candidate as any, columnId)}
-                    />
-                  )}
-                  {/* Paginação (como Gestão de Vagas) - oculta quando usando Load More em resultados de busca */}
-                  {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
-                    <div className="bg-white dark:bg-gray-900 rounded-md p-3 mt-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-800 dark:text-gray-400">
-                          Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1}
-                            className="h-8"
-                          >
-                            Primeira
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="h-8"
-                          >
-                            Anterior
-                          </Button>
-
-                          {/* Page numbers */}
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: getPaginatedCandidates().totalPages }, (_, i) => i + 1)
-                              .filter(page => {
-                                return page === 1 ||
-                                       page === getPaginatedCandidates().totalPages ||
-                                       (page >= currentPage - 1 && page <= currentPage + 1)
-                              })
-                              .map((page, index, array) => (
-                                <React.Fragment key={page}>
-                                  {index > 0 && page - array[index - 1] > 1 && (
-                                    <span className="px-2 text-gray-800">...</span>
-                                  )}
-                                  <Button
-                                    variant={currentPage === page ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setCurrentPage(page)}
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    {page}
-                                  </Button>
-                                </React.Fragment>
-                              ))
-                            }
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(getPaginatedCandidates().totalPages, prev + 1))}
-                            disabled={currentPage === getPaginatedCandidates().totalPages}
-                            className="h-8"
-                          >
-                            Próxima
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(getPaginatedCandidates().totalPages)}
-                            disabled={currentPage === getPaginatedCandidates().totalPages}
-                            className="h-8"
-                          >
-                            Última
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Empty State */}
-                  {!isLoading && sortedCandidates.length === 0 && (
-                    <div className="bg-white dark:bg-gray-900 rounded-md p-8 text-center">
-                      <Users className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
-                        Nenhum candidato encontrado
-                      </h3>
-                      <p className="text-gray-800 dark:text-gray-400 mb-4">
-                        Tente ajustar os filtros ou termos de busca
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={clearAllFilters}
-                      >
-                        Limpar filtros
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                {/* Load More - Fase 1 Funil de Talentos (FORA do scroll container, sempre visível) */}
-                {showSearchResults && displayedResultsCount < sortedCandidates.length && (
-                  <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-3 px-4">
-                    <div className="flex flex-col items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        className="w-full max-w-md h-10 gap-2 text-sm font-medium"
-                        onClick={handleLoadMore}
-                        disabled={isLoadingMore}
-                      >
-                        {isLoadingMore ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                        {isLoadingMore ? 'Carregando...' : 'Carregar mais 10 candidatos'}
-                      </Button>
-                      <span className="text-xs text-gray-500">
-                        {Math.min(displayedResultsCount, sortedCandidates.length)} de {sortedCandidates.length} candidatos
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {showSearchResults && displayedResultsCount >= sortedCandidates.length && sortedCandidates.length > 10 && (
-                  <p className="flex-shrink-0 text-center text-sm text-gray-500 py-3">
-                    Todos os {sortedCandidates.length} candidatos carregados
-                  </p>
-                )}
-              </div>
-              )}
-            </div>
-
-              {/* Column Configuration Sidebar - Right - WeDOTalent Light Design */}
-              {showColumnConfig && (
-                <div className="flex-shrink-0 w-80 transition-all duration-300">
-                  <div className="bg-white rounded-md h-[calc(100vh-6rem)] overflow-hidden">
-                    {/* Header */}
-                    <div className="p-4 flex items-center justify-between border-b border-gray-100">
-                      <div>
-                        <h3 
-                          className="text-sm font-semibold text-gray-950 dark:text-gray-50"
-                         
-                        >
-                          Configurar Colunas
-                        </h3>
-                        <p 
-                          className="text-xs mt-0.5 text-gray-800"
-                         
-                        >
-                          {tableColumns.filter(c => c.visible && c.id !== 'acoes').length} de {tableColumns.filter(c => c.id !== 'acoes').length} colunas ativas
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setShowColumnConfig(false)}
-                        className="h-8 w-8 rounded-md flex items-center justify-center transition-all text-gray-800 hover:text-gray-950 hover:bg-gray-100"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    {/* Search and Actions */}
-                    <div className="p-3 space-y-3 border-b border-gray-100">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-800" />
-                        <input
-                          type="text"
-                          placeholder="Buscar coluna..."
-                          value={columnSearchTerm}
-                          onChange={(e) => setColumnSearchTerm(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-950 dark:text-gray-50"
-                         
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
-                          onClick={() => {
-                            setTableColumns(prev => prev.map((col, idx) => ({
-                              ...col,
-                              visible: col.id === 'acoes' || idx < 7,
-                              order: col.id === 'acoes' ? 0.5 : idx
-                            })))
-                          }}
-                        >
-                          Restaurar Padrão
-                        </button>
-                        <button
-                          className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
-                          onClick={() => {
-                            setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
-                          }}
-                        >
-                          Todas
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Column List */}
-                    <div className="overflow-y-auto h-[calc(100%-160px)] p-3">
-                      {(() => {
-                        const categoryLabels: Record<string, string> = {
-                          basico: 'Identificação Básica',
-                          contato: 'Contato',
-                          pessoal: 'Informações Pessoais',
-                          profissional: 'Perfil Profissional',
-                          competencias: 'Competências',
-                          localizacao: 'Localização',
-                          endereco: 'Endereço Completo',
-                          preferencias: 'Preferências de Trabalho',
-                          salario: 'Salário e Expectativas',
-                          documentos: 'Currículo e Documentos',
-                          origem: 'Origem e Integração',
-                          busca_global: 'Busca Global',
-                          ia: 'Insights LIA / IA',
-                          status: 'Status e Workflow',
-                          comunicacao: 'Comunicação',
-                          cadastro: 'Status de Cadastro',
-                          adicional: 'Informações Adicionais',
-                          datas: 'Datas e Timestamps'
-                        }
-                        
-                        const filteredColumns = tableColumns.filter(col => 
-                          col.id !== 'acoes' && col.id !== 'feedback' && (
-                          col.label.toLowerCase().includes(columnSearchTerm.toLowerCase()) ||
-                          col.id.toLowerCase().includes(columnSearchTerm.toLowerCase()))
-                        )
-                        
-                        const groupedColumns = filteredColumns.reduce((acc, col) => {
-                          const category = col.category || 'adicional'
-                          if (!acc[category]) acc[category] = []
-                          acc[category].push(col)
-                          return acc
-                        }, {} as Record<string, typeof tableColumns>)
-                        
-                        const categoryOrder = ['basico', 'contato', 'pessoal', 'profissional', 'competencias', 'localizacao', 'endereco', 'preferencias', 'salario', 'documentos', 'origem', 'busca_global', 'ia', 'status', 'comunicacao', 'cadastro', 'adicional', 'datas']
-                        
-                        return categoryOrder.map(category => {
-                          const columns = groupedColumns[category]
-                          if (!columns || columns.length === 0) return null
-                          
-                          const visibleCount = columns.filter(c => c.visible).length
-                          
-                          return (
-                            <div key={category} className="mb-5">
-                              <div className="flex items-center justify-between mb-2 px-1">
-                                <h4 
-                                  className="text-xs font-semibold uppercase tracking-wider text-gray-800"
-                                 
-                                >
-                                  {categoryLabels[category] || category}
-                                </h4>
-                                <span 
-                                  className="text-xs px-2 py-0.5 rounded-full"
-                                  style={{ 
-                                    backgroundColor: visibleCount > 0 ? 'var(--gray-100)' : 'var(--gray-100)',
-                                    color: visibleCount > 0 ? 'var(--gray-600)' : 'var(--gray-400)',
-                                  }}
-                                >
-                                  {visibleCount}/{columns.length}
-                                </span>
-                              </div>
-                              <div className="space-y-1">
-                                {columns.map((col) => (
-                                  <div
-                                    key={col.id}
-                                    onClick={() => {
-                                      setTableColumns(prev => prev.map(c => 
-                                        c.id === col.id ? { ...c, visible: !c.visible } : c
-                                      ))
-                                    }}
-                                    className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all hover:bg-gray-100"
-                                    style={{ 
-                                      backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
-                                      border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'
-                                    }}
-                                  >
-                                    {/* Custom Checkbox - Monocromático */}
-                                    <div 
-                                      className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-                                      style={{ 
-                                        backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
-                                        border: col.visible ? 'none' : '2px solid var(--gray-300)'
-                                      }}
-                                    >
-                                      {col.visible && (
-                                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                                      )}
-                                    </div>
-                                    <span 
-                                      className="text-xs flex-1 flex items-center gap-1.5"
-                                      style={{ 
-                                        color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
-                                        fontWeight: col.visible ? 500 : 400
-                                      }}
-                                    >
-                                      {col.isGlobalSearch && (
-                                        <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                                      )}
-                                      {col.label}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        })
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Candidate Preview - Painel lateral direito */}
-              {showCandidatePreview && previewCandidate && (
-                <div className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
-                  {/* Resize Handle */}
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors z-10 group"
-                    onMouseDown={handlePreviewResize}
-                    title="Arraste para redimensionar"
-                  >
-                    <div className="absolute inset-0 -left-1 -right-1"></div>
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
-                  </div>
-                  <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
-                    <CandidatePreview
-                      candidate={previewCandidate}
-                      isOpen={showCandidatePreview}
-                      onClose={handleCloseCandidatePreview}
-                      isMaximized={isPreviewMaximized}
-                      onToggleMaximize={handleTogglePreviewMaximize}
-                      candidates={sortedCandidates}
-                      currentIndex={sortedCandidates.findIndex(c => c.id === previewCandidate.id)}
-                      onNavigateCandidate={(index) => {
-                        if (sortedCandidates[index]) {
-                          setPreviewCandidate(sortedCandidates[index])
-                        }
-                      }}
-                      onOpenFullPage={handleCandidatePageOpen}
-                      onScheduleInterview={(candidate) => {
-                        setSelectedCandidateForAction(candidate)
-                        setShowScheduleModal(true)
-                      }}
-                      onAddToVacancy={(candidate) => {
-                        setSelectedCandidatesForBatch(new Set([candidate.id]))
-                        setShowAddToVacancyModal(true)
-                      }}
-                      onToggleFavorite={(candidateId) => handleToggleFavorite(candidateId)}
-                      onWSIScreening={(candidate) => handleStartWSITextScreening(candidate)}
-                      isFavorite={favorites.has(previewCandidate.id)}
-                      onSendEmail={(candidate) => handleSendEmail(candidate)}
-                      onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate)}
-                      onSendTriagem={(candidate) => handleSendTriagem(candidate)}
-                      onSendAgendamento={(candidate) => handleSendAgendamento(candidate)}
-                      onSendFeedback={(candidate) => handleSendFeedback(candidate)}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            setShowSearchResults={setShowSearchResults}
+            setSearchTerm={setSearchTerm}
+            setLastSearchQuery={setLastSearchQuery}
+            setActiveTab={setActiveTab}
+            showExpandedLIA={showExpandedLIA}
+            isLIAThinking={isLIAThinking}
+            liaPromptValue={liaPromptValue}
+            setLiaPromptValue={setLiaPromptValue}
+            setShowExpandedLIA={setShowExpandedLIA}
+            onAICommand={handleAICommand}
+            searchSortBy={searchSortBy}
+            setSearchSortBy={setSearchSortBy}
+            sortedCandidates={sortedCandidates}
+            selectAllCandidates={selectAllCandidates}
+            showTableFiltersPanel={showTableFiltersPanel}
+            setShowTableFiltersPanel={setShowTableFiltersPanel}
+            getActiveTableFiltersCount={getActiveTableFiltersCount}
+            showColumnConfig={showColumnConfig}
+            onToggleColumnConfig={handleToggleColumnConfig}
+            tableColumns={tableColumns}
+            quickFilters={quickFilters}
+            searchTerm={searchTerm}
+            getActiveAdvancedFiltersCount={getActiveAdvancedFiltersCount}
+            isLiaSuperChat={isLiaSuperChat}
+            setIsLiaSuperChat={setIsLiaSuperChat}
+            liaWidth={liaWidth}
+            setLiaWidth={setLiaWidth}
+            isResizingLIA={isResizingLIA}
+            setIsResizingLIA={setIsResizingLIA}
+            activeSearchTab={activeSearchTab}
+            setActiveSearchTab={setActiveSearchTab}
+            chatMessages={chatMessages}
+            setChatMessages={setChatMessages}
+            searchResults={searchResults}
+            setSearchResults={setSearchResults}
+            currentSearchSource={currentSearchSource}
+            searchSource={searchSource}
+            pearchSearchOptions={pearchSearchOptions}
+            activeSearchFilters={activeSearchFilters}
+            setActiveSearchFilters={setActiveSearchFilters}
+            isCreatingArchetype={isCreatingArchetype}
+            setIsCreatingArchetype={setIsCreatingArchetype}
+            archetypeCreationStep={archetypeCreationStep}
+            setArchetypeCreationStep={setArchetypeCreationStep}
+            setNewArchetypeData={setNewArchetypeData}
+            setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
+            setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
+            setCandidates={setCandidates}
+            setHasSearchResults={setHasSearchResults}
+            setSearchResultsCount={setSearchResultsCount}
+            setLocalResultsCount={setLocalResultsCount}
+            setPearchResultsCount={setPearchResultsCount}
+            setDisplayedResultsCount={setDisplayedResultsCount}
+            onLIAChatMessage={handleLIAChatMessage}
+            onQuickAction={handleQuickAction}
+            onCalibrationLike={handleCalibrationLike}
+            onCalibrationDislike={handleCalibrationDislike}
+            setUserCollapsedLIA={setUserCollapsedLIA}
+            tableFilters={tableFilters}
+            setTableFilters={setTableFilters}
+            newSoftSkillFilter={newSoftSkillFilter}
+            setNewSoftSkillFilter={setNewSoftSkillFilter}
+            newCertificationFilter={newCertificationFilter}
+            setNewCertificationFilter={setNewCertificationFilter}
+            toggleTableFilter={toggleTableFilter}
+            clearAllTableFilters={clearAllTableFilters}
+            isLoading={isLoading}
+            visibleCandidates={visibleCandidates}
+            visibleTableColumns={visibleTableColumns}
+            columnWidths={columnWidths}
+            setColumnWidths={setColumnWidths}
+            setTableColumns={setTableColumns}
+            pinnedCandidates={pinnedCandidates}
+            favorites={favorites}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            setSortBy={setSortBy}
+            setSortOrder={setSortOrder}
+            setSelectedCandidatesForBatch={setSelectedCandidatesForBatch}
+            onCandidateClick={handleCandidateClick}
+            onTogglePin={handleTogglePin}
+            onToggleFavorite={handleToggleFavorite}
+            renderCellValue={renderCellValue}
+            tableContainerRef={tableContainerRef}
+            showSearchResults={showSearchResults}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            getPaginatedCandidates={getPaginatedCandidates}
+            clearAllFilters={clearAllFilters}
+            displayedResultsCount={displayedResultsCount}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={handleLoadMore}
+            columnSearchTerm={columnSearchTerm}
+            setColumnSearchTerm={setColumnSearchTerm}
+            setShowColumnConfig={setShowColumnConfig}
+            showCandidatePreview={showCandidatePreview}
+            previewCandidate={previewCandidate}
+            previewWidth={previewWidth}
+            onPreviewResize={handlePreviewResize}
+            isPreviewMaximized={isPreviewMaximized}
+            onCloseCandidatePreview={handleCloseCandidatePreview}
+            onTogglePreviewMaximize={handleTogglePreviewMaximize}
+            onCandidatePageOpen={handleCandidatePageOpen}
+            setSelectedCandidateForAction={setSelectedCandidateForAction}
+            setShowScheduleModal={setShowScheduleModal}
+            onStartWSITextScreening={handleStartWSITextScreening}
+            onSendEmail={handleSendEmail}
+            onSendWhatsApp={handleSendWhatsApp}
+            onSendTriagem={handleSendTriagem}
+            onSendAgendamento={handleSendAgendamento}
+            onSendFeedback={handleSendFeedback}
+            setPreviewCandidate={setPreviewCandidate}
+            setShareSearchCandidates={setShareSearchCandidates}
+            setShareSearchTitle={setShareSearchTitle}
+            setShowShareSearchModal={setShowShareSearchModal}
+            toast={toast}
+            talentFunnel={talentFunnel}
+            setEditQueryValue={setEditQueryValue}
+            setShowEditQueryModal={setShowEditQueryModal}
+            setShowAddToVacancyModal={setShowAddToVacancyModal}
+          />
         )}
 
         {/* Aba Favoritos */}
@@ -9368,112 +5757,18 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       {/* Bulk Actions Bar removido - ações agora aparecem no chat da LIA */}
 
       {/* Modal de Confirmação de Créditos Base Global */}
-      <AlertDialog open={showCreditConfirmation} onOpenChange={setShowCreditConfirmation}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
-                <Zap className="w-4 h-4 text-gray-700" />
-              </div>
-              Confirmar Busca na Base Global
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p className="text-sm text-gray-800 dark:text-gray-500">
-                Esta busca utilizará créditos da sua conta.
-              </p>
-              
-              {creditEstimate && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-800">Tipo de busca:</span>
-                    <span className="font-medium capitalize">{pearchSearchOptions.searchType}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-800">Limite de resultados:</span>
-                    <span className="font-medium">{pearchSearchOptions.limit}</span>
-                  </div>
-                  
-                  {/* Filtros de Otimização de Créditos */}
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Filtros de Contato</span>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                        <span className="text-sm text-gray-800">Apenas com Email</span>
-                        <span className="text-xs text-gray-500">(+1 cr)</span>
-                      </div>
-                      <Switch
-                        checked={pearchSearchOptions.requireEmails}
-                        onCheckedChange={(checked) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: checked }))}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-status-success" />
-                        <span className="text-sm text-gray-800">Apenas com Telefone</span>
-                        <span className="text-xs text-gray-500">(+1 cr)</span>
-                      </div>
-                      <Switch
-                        checked={pearchSearchOptions.requirePhoneNumbers}
-                        onCheckedChange={(checked) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: checked }))}
-                      />
-                    </div>
-                    {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
-                      <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
-                        Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-800">Custo base:</span>
-                    <span className="font-medium">{creditEstimate.breakdown.base} créditos</span>
-                  </div>
-                  {creditEstimate.breakdown.emails > 0 && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-800">E-mails (+):</span>
-                      <span className="font-medium">{creditEstimate.breakdown.emails} créditos</span>
-                    </div>
-                  )}
-                  {creditEstimate.breakdown.phone_numbers > 0 && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-800">Telefones (+):</span>
-                      <span className="font-medium">{creditEstimate.breakdown.phone_numbers} créditos</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Total estimado:</span>
-                      <span className="font-bold text-lg text-gray-700">
-                        {creditEstimate.total_estimated} créditos
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>O custo final pode variar dependendo dos resultados encontrados.</span>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setShowCreditConfirmation(false)
-              setPendingSearchRequest(null)
-            }}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmPearchSearch}
-              className="text-white bg-gray-900"
-            >
-              Confirmar Busca
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <CreditConfirmationModal
+        open={showCreditConfirmation}
+        onOpenChange={setShowCreditConfirmation}
+        creditEstimate={creditEstimate}
+        pearchSearchOptions={pearchSearchOptions}
+        onSearchOptionsChange={setPearchSearchOptions}
+        onCancel={() => {
+          setShowCreditConfirmation(false)
+          setPendingSearchRequest(null)
+        }}
+        onConfirm={handleConfirmPearchSearch}
+      />
 
       {/* Modal de Confirmação para Expansão Global */}
       <GlobalExpansionConfirmModal
@@ -9508,133 +5803,30 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       {/* Modal de Filtros Avançados removido - agora usa painel lateral */}
 
       {/* Modal Salvar como Arquétipo */}
-      <AlertDialog 
-        open={showSaveAsArchetypeModal} 
-        onOpenChange={(open) => {
-          setShowSaveAsArchetypeModal(open)
-          // Se fechando, resetar modo de criação
-          if (!open && isCreatingArchetype) {
+      <SaveAsArchetypeModal
+        open={showSaveAsArchetypeModal}
+        onOpenChange={setShowSaveAsArchetypeModal}
+        currentQuery={lastSuccessfulQuery || searchResults.query || ''}
+        isCreatingArchetype={isCreatingArchetype}
+        newArchetypeData={newArchetypeData}
+        onClose={() => {
+          if (isCreatingArchetype) {
             setIsCreatingArchetype(false)
             setArchetypeCreationStep('initial')
             setNewArchetypeData({})
           }
         }}
-      >
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-base">
-              <Bookmark className="w-5 h-5 text-gray-700" />
-              Salvar como Arquétipo
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-4 pt-2">
-                <p className="text-xs text-gray-800 dark:text-gray-500">
-                  Transforme esta busca em um arquétipo reutilizável para encontrar candidatos similares rapidamente.
-                </p>
-                
-                {/* Query atual */}
-                <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <p className="text-xs font-medium text-gray-800 mb-1">
-                    {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
-                  </p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-3">
-                    {isCreatingArchetype && newArchetypeData.query 
-                      ? newArchetypeData.query 
-                      : (lastSuccessfulQuery || searchResults.query || 'Nenhuma busca realizada')}
-                  </p>
-                </div>
-                
-                {/* Seletor de Emoji */}
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block">Ícone</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {['🎯', '🚀', '⚛️', '🛠️', '📱', '☁️', '👨‍💼', '💼', '🔧', '📊', '🧠', '🔐'].map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => setArchetypeEmojiInput(emoji)}
-                        className={`w-10 h-10 rounded-md text-xl flex items-center justify-center transition-all ${
-                          archetypeEmojiInput === emoji 
-                            ? 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-50' 
-                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Nome do Arquétipo */}
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block">Nome do Arquétipo</label>
-                  <Input
-                    value={archetypeNameInput}
-                    onChange={(e) => setArchetypeNameInput(e.target.value)}
-                    placeholder="Ex: DevOps Sênior Cloud"
-                    className="text-sm"
-                   
-                  />
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4">
-            <AlertDialogCancel onClick={() => {
-              setShowSaveAsArchetypeModal(false)
-              // Resetar modo de criação ao cancelar
-              if (isCreatingArchetype) {
-                setIsCreatingArchetype(false)
-                setArchetypeCreationStep('initial')
-                setNewArchetypeData({})
-              }
-            }}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => {
-                const queryToSave = isCreatingArchetype && newArchetypeData.query 
-                  ? newArchetypeData.query 
-                  : (lastSuccessfulQuery || searchResults.query)
-                
-                if (archetypeNameInput.trim() && queryToSave) {
-                  const newArchetype: Archetype = {
-                    id: `archetype-${Date.now()}`,
-                    name: archetypeNameInput.trim(),
-                    description: queryToSave,
-                    emoji: archetypeEmojiInput,
-                    query: queryToSave,
-                    filters: {},
-                    createdAt: new Date(),
-                    isDefault: false
-                  }
-                  setUserArchetypes(prev => [...prev, newArchetype])
-                  setShowSaveAsArchetypeModal(false)
-                  setArchetypeNameInput('')
-                  
-                  // Resetar modo de criação
-                  setIsCreatingArchetype(false)
-                  setArchetypeCreationStep('initial')
-                  setNewArchetypeData({})
-                  
-                  // Feedback via chat
-                  const liaMessage: ChatMessage = {
-                    id: `lia-archetype-saved-${Date.now()}`,
-                    type: 'lia',
-                    content: `✅ Arquétipo "${archetypeNameInput.trim()}" salvo com sucesso! Você pode encontrá-lo na aba Arquétipos.`,
-                    timestamp: new Date()
-                  }
-                  setChatMessages(prev => [...prev, liaMessage])
-                }
-              }}
-              disabled={!archetypeNameInput.trim()}
-              className="text-white bg-gray-900"
-            >
-              <Bookmark className="w-4 h-4 mr-1" />
-              Salvar Arquétipo
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onSave={(archetype, message) => {
+          setUserArchetypes(prev => [...prev, archetype])
+          setShowSaveAsArchetypeModal(false)
+          setChatMessages(prev => [...prev, message])
+          if (isCreatingArchetype) {
+            setIsCreatingArchetype(false)
+            setArchetypeCreationStep('initial')
+            setNewArchetypeData({})
+          }
+        }}
+      />
 
       {/* Advanced Filters Modal */}
       <AdvancedFiltersModal
@@ -9743,339 +5935,55 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       />
 
       {/* Modal de Edição de Query - Centralizado na tela */}
-      {showEditQueryModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', backdropFilter: 'blur(1px)' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowEditQueryModal(false)
-          }}
-        >
-          <div 
-            className="bg-white rounded-md border border-gray-100 w-full max-w-[900px] max-h-[90vh] overflow-hidden flex flex-col mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex-shrink-0 p-6 pb-4">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <Search className="w-4 h-4 text-gray-700" />
-                Editar sua busca
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Refine sua busca com linguagem natural. A LIA irá analisar e sugerir melhorias.
-              </p>
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 px-6 pb-4 overflow-auto">
-              <SmartSearchInput
-                value={editQueryValue}
-                onChange={setEditQueryValue}
-                onSubmit={async (query, entities, mode, metadata) => {
-                  if (query.trim()) {
-                    setShowEditQueryModal(false)
-                    const trimmedQuery = query.trim()
-                    setSearchTerm(trimmedQuery)
-                    setLastSearchQuery(trimmedQuery)
-                    setLastSearchMode(mode || 'natural')
-                    setLastSearchEntities(entities)
-                    setLastSearchMetadata(metadata)
-                    await executeSearch(trimmedQuery, entities, mode || 'natural', metadata, false)
-                  }
-                }}
-                onCancel={() => setShowEditQueryModal(false)}
-                onOpenFilters={() => {
-                  setShowEditQueryModal(false)
-                  setShowAdvancedSearch(true)
-                }}
-                placeholder="Ex: desenvolvedor python com 5 anos de experiência em machine learning"
-                activeFiltersCount={getActiveSearchFiltersCount()}
-                searchSource={searchSource}
-                onSearchSourceChange={setSearchSource}
-                requireEmails={pearchSearchOptions.requireEmails}
-                onRequireEmailsChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: value }))}
-                requirePhoneNumbers={pearchSearchOptions.requirePhoneNumbers}
-                onRequirePhoneNumbersChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: value }))}
-              />
-            </div>
-            
-            {/* Footer */}
-            <div className="flex-shrink-0 border-t border-gray-100 p-6 pt-4 flex justify-end gap-3">
-              <button
-                onClick={() => setShowEditQueryModal(false)}
-                className="px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
-               
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={async () => {
-                  if (editQueryValue.trim()) {
-                    const newQuery = editQueryValue.trim()
-                    setShowEditQueryModal(false)
-                    setSearchTerm(newQuery)
-                    setLastSearchQuery(newQuery)
-                    setLastSearchMode('ai-natural')
-                    setLastSearchEntities(null)
-                    await executeSearch(newQuery, null, 'ai-natural', undefined, false)
-                  }
-                }}
-                className="px-4 py-2 text-sm text-white rounded-md transition-colors bg-gray-900 hover:bg-gray-800"
-               
-              >
-                Salvar e Buscar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de Edição de Busca */}
+      <EditQueryModal
+        isOpen={showEditQueryModal}
+        onClose={() => setShowEditQueryModal(false)}
+        initialValue={editQueryValue}
+        activeFiltersCount={getActiveSearchFiltersCount()}
+        searchSource={searchSource}
+        onSearchSourceChange={setSearchSource}
+        pearchSearchOptions={pearchSearchOptions}
+        onPearchOptionsChange={setPearchSearchOptions}
+        onOpenFilters={() => setShowAdvancedSearch(true)}
+        onSubmitNatural={async (query, entities, mode, metadata) => {
+          setSearchTerm(query)
+          setLastSearchQuery(query)
+          setLastSearchMode(mode || 'natural')
+          setLastSearchEntities(entities)
+          setLastSearchMetadata(metadata)
+          await executeSearch(query, entities, mode || 'natural', metadata, false)
+        }}
+        onSubmitAI={async (query) => {
+          setSearchTerm(query)
+          setLastSearchQuery(query)
+          setLastSearchMode('ai-natural')
+          setLastSearchEntities(null)
+          await executeSearch(query, null, 'ai-natural', undefined, false)
+        }}
+      />
 
       {/* Modal de Preview de Sugestão IA */}
-      <Dialog open={!!previewSuggestion} onOpenChange={(open) => {
-        if (!open) {
+      <PreviewSuggestionModal
+        previewSuggestion={previewSuggestion}
+        previewingUserArchetype={previewingUserArchetype}
+        onClose={() => {
           setPreviewSuggestion(null)
           setPreviewingUserArchetype(null)
-        }
-      }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base text-gray-950 dark:text-gray-50">
-              <Brain className="w-5 h-5 text-wedo-cyan" />
-              {previewSuggestion?.name}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-gray-500">
-              {previewSuggestion?.description}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-2">
-            <div>
-              <label className="text-xs font-medium mb-2 block">
-                Critérios de busca
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {previewTags.map((tag, index) => (
-                  <Badge 
-                    key={index}
-                    className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
-                    style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', border: '1px solid rgba(96, 190, 209, 0.3)' }}
-                  >
-                    {tag}
-                    <button
-                      onClick={() => setPreviewTags(prev => prev.filter((_, i) => i !== index))}
-                      className="ml-0.5 hover:bg-gray-100 rounded-full p-0.5 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-xs font-medium mb-2 block">
-                Adicionar critério
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={newPreviewTag}
-                  onChange={(e) => setNewPreviewTag(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newPreviewTag.trim()) {
-                      e.preventDefault()
-                      setPreviewTags(prev => [...prev, newPreviewTag.trim()])
-                      setNewPreviewTag("")
-                    }
-                  }}
-                  placeholder="Digite e pressione Enter..."
-                  className="text-sm"
-                 
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    if (newPreviewTag.trim()) {
-                      setPreviewTags(prev => [...prev, newPreviewTag.trim()])
-                      setNewPreviewTag("")
-                    }
-                  }}
-                  className="bg-gray-900"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setPreviewSuggestion(null)
-                setPreviewingUserArchetype(null)
-              }}
-              className="w-full sm:w-auto order-3 sm:order-1"
-             
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (!previewSuggestion) return
-                if (previewTags.length === 0) {
-                  toast({
-                    title: "Nenhum critério",
-                    description: "Adicione pelo menos um critério de busca para salvar o arquétipo.",
-                    variant: "destructive"
-                  })
-                  return
-                }
-                setIsSavingPreviewArchetype(true)
-                try {
-                  const editedFilters = buildFiltersFromTags(previewTags)
-                  const queryFromTags = previewTags.join(' ')
-                  
-                  if (previewingUserArchetype) {
-                    const response = await fetch(`/api/backend-proxy/search/archetypes/${previewingUserArchetype.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        name: previewSuggestion.name,
-                        description: previewSuggestion.description,
-                        query: queryFromTags,
-                        criteria: {
-                          keywords: editedFilters.keywords,
-                          skills: editedFilters.skills,
-                          locations: editedFilters.locations,
-                          seniority: editedFilters.seniority
-                        },
-                      }),
-                    })
-                    
-                    if (!response.ok && response.status !== 404) {
-                      throw new Error(`Failed to update archetype: ${response.status}`)
-                    }
-                    
-                    setUserArchetypes(prev => prev.map(a => 
-                      a.id === previewingUserArchetype.id 
-                        ? {
-                            ...a,
-                            name: previewSuggestion.name,
-                            description: previewSuggestion.description,
-                            query: queryFromTags,
-                            filters: editedFilters,
-                            tags: previewTags
-                          }
-                        : a
-                    ))
-                    toast({
-                      title: "Arquétipo atualizado",
-                      description: `"${previewSuggestion.name}" foi atualizado com sucesso.`,
-                    })
-                  } else {
-                    const response = await fetch('/api/backend-proxy/search/archetypes/', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        name: previewSuggestion.name,
-                        description: previewSuggestion.description,
-                        query: queryFromTags,
-                        criteria: {
-                          keywords: editedFilters.keywords,
-                          skills: editedFilters.skills,
-                          locations: editedFilters.locations,
-                          seniority: editedFilters.seniority
-                        },
-                        emoji: '✨',
-                      }),
-                    })
-                    
-                    if (!response.ok) {
-                      throw new Error(`Failed to save archetype: ${response.status}`)
-                    }
-                    
-                    const savedArchetype = await response.json()
-                    
-                    const newArchetype: Archetype = {
-                      id: savedArchetype.id || `arch-${Date.now()}`,
-                      name: previewSuggestion.name,
-                      description: previewSuggestion.description,
-                      emoji: '✨',
-                      query: queryFromTags,
-                      filters: editedFilters,
-                      tags: previewTags,
-                      createdAt: new Date()
-                    }
-                    setUserArchetypes(prev => [...prev, newArchetype])
-                    toast({
-                      title: "Arquétipo salvo",
-                      description: `"${previewSuggestion.name}" foi adicionado aos seus arquétipos.`,
-                    })
-                  }
-                  setPreviewSuggestion(null)
-                  setPreviewingUserArchetype(null)
-                } catch (error) {
-                  console.error('Error saving archetype:', error)
-                  toast({
-                    title: "Erro ao salvar",
-                    description: "Não foi possível salvar o arquétipo. Tente novamente.",
-                    variant: "destructive"
-                  })
-                } finally {
-                  setIsSavingPreviewArchetype(false)
-                }
-              }}
-              disabled={isSavingPreviewArchetype || previewTags.length === 0}
-              className="w-full sm:w-auto order-2"
-             
-            >
-              {isSavingPreviewArchetype ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {previewingUserArchetype ? 'Atualizando...' : 'Salvando...'}
-                </>
-              ) : previewingUserArchetype ? (
-                <>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Atualizar Arquétipo
-                </>
-              ) : (
-                <>
-                  <Bookmark className="w-4 h-4 mr-2" />
-                  Salvar como Meu Arquétipo
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!previewSuggestion) return
-                if (previewTags.length === 0) {
-                  toast({
-                    title: "Nenhum critério",
-                    description: "Adicione pelo menos um critério de busca para executar.",
-                    variant: "destructive"
-                  })
-                  return
-                }
-                const editedFilters = buildFiltersFromTags(previewTags)
-                const queryFromTags = previewTags.join(' ')
-                setLiaPromptValue(queryFromTags)
-                setActiveSearchTab('ia-natural')
-                setPreviewSuggestion(null)
-                setPreviewingUserArchetype(null)
-                await executeSearch(queryFromTags, editedFilters, 'natural', { mode: 'natural' as any }, false)
-              }}
-              disabled={previewTags.length === 0}
-              className="w-full sm:w-auto order-1 sm:order-3 bg-gray-900"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Usar Busca
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }}
+        buildFiltersFromTags={buildFiltersFromTags}
+        onUpdateArchetype={(id, updates) => {
+          setUserArchetypes(prev => prev.map(a =>
+            a.id === id ? { ...a, ...updates } : a
+          ))
+        }}
+        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as any])}
+        onExecuteSearch={async (query, filters, mode, metadata, usePearch) => {
+          await executeSearch(query, filters as any, mode as any, metadata as any, usePearch)
+        }}
+        onSetLiaPromptValue={setLiaPromptValue}
+        onSetActiveSearchTab={setActiveSearchTab}
+      />
 
       {/* Modal de Confirmação de Exclusão de Arquétipo */}
       <DeleteArchetypeModal
@@ -10083,7 +5991,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         onClose={() => setArchetypeToDelete(null)}
         onDeleted={(id) => setUserArchetypes(prev => prev.filter(a => a.id !== id))}
       />
-
 
     </div>
   )

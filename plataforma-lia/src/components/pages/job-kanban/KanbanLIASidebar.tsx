@@ -1,0 +1,394 @@
+"use client"
+
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { CandidateQueriesGuide } from "@/components/ui/candidate-queries-guide"
+import { LIASuggestionsPanel } from "@/components/pages/job-kanban/LIASuggestionsPanel"
+import { ActionResultCard } from "@/components/chat/action-result-card"
+import {
+  Brain,
+  RotateCcw,
+  Maximize2,
+  X,
+  Users,
+  Lightbulb,
+  ChevronUp,
+  ChevronDown,
+  Clock,
+  TrendingUp,
+  AlertTriangle,
+  Loader2,
+  Send,
+  Star,
+} from "lucide-react"
+
+interface LIAMessage {
+  id: string
+  type: "user" | "assistant"
+  content: string
+  metadata?: Record<string, any>
+}
+
+interface LIASuggestion {
+  type: string
+  message: string
+  suggested_action: string
+  candidate_id: string
+}
+
+interface KanbanLIASidebarProps {
+  liaMessages: LIAMessage[]
+  liaPromptValue: string
+  isLiaLoading: boolean
+  liaExpandedWidth: number
+  computedSuggestions: LIASuggestion[]
+  showLiaSuggestionsPanel: boolean
+  selectedCandidates: Set<string>
+  isResizingLIA: boolean
+  candidatesData: Record<string, any[]>
+  chatScrollRef: React.RefObject<HTMLDivElement>
+  setLiaMessages: (messages: LIAMessage[] | ((prev: LIAMessage[]) => LIAMessage[])) => void
+  setLiaPromptValue: (value: string | ((prev: string) => string)) => void
+  setLiaExpandedWidth: (width: number | ((prev: number) => number)) => void
+  setShowExpandedLIA: (value: boolean) => void
+  setUserCollapsedLIA: (value: boolean) => void
+  setShowLiaSuggestionsPanel: (value: boolean | ((prev: boolean) => boolean)) => void
+  setSelectedCandidates: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void
+  setIsResizingLIA: (value: boolean) => void
+  setSelectedCandidate: (candidate: any) => void
+  setShowCandidatePage: (value: boolean) => void
+  openSuperChat: () => void
+  handleAICommand: (command: string) => void
+  handleLiaUiAction: (action: string, params: Record<string, any>) => void
+}
+
+export function KanbanLIASidebar({
+  liaMessages,
+  liaPromptValue,
+  isLiaLoading,
+  liaExpandedWidth,
+  computedSuggestions,
+  showLiaSuggestionsPanel,
+  selectedCandidates,
+  isResizingLIA,
+  candidatesData,
+  chatScrollRef,
+  setLiaMessages,
+  setLiaPromptValue,
+  setLiaExpandedWidth,
+  setShowExpandedLIA,
+  setUserCollapsedLIA,
+  setShowLiaSuggestionsPanel,
+  setSelectedCandidates,
+  setIsResizingLIA,
+  setSelectedCandidate,
+  setShowCandidatePage,
+  openSuperChat,
+  handleAICommand,
+  handleLiaUiAction,
+}: KanbanLIASidebarProps) {
+  return (
+    <div
+      className="flex-shrink-0 transition-all duration-300 pl-4 py-4 pr-0 relative"
+      style={{ width: `${liaExpandedWidth}px` }}
+    >
+      <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-gray-300 bg-gray-50 dark:bg-gray-900 max-h-[calc(100vh-16rem)]">
+        {/* Mensagem de Apresentação da LIA */}
+        <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-gray-900">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-gray-900"
+              >
+                <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
+                  Olá! Sou a Lia.
+                </h3>
+                <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
+                  Como posso te ajudar hoje?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              {liaMessages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLiaMessages([])}
+                  title="Nova conversa"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-gray-400" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openSuperChat()}
+                title="Expandir chat"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+              >
+                <Maximize2 className="w-4 h-4 text-gray-500" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowExpandedLIA(false)
+                  setUserCollapsedLIA(true)
+                }}
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Indicador de candidatos selecionados - Estilo padronizado */}
+        {selectedCandidates.size > 0 && (
+          <div className="flex-shrink-0 px-4 py-2">
+            <div className="px-3 py-2 bg-gray-100 rounded-md border border-gray-200 flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+              <span className="text-xs text-gray-700 font-medium">
+                {selectedCandidates.size} candidato{selectedCandidates.size > 1 ? 's' : ''} selecionado{selectedCandidates.size > 1 ? 's' : ''}
+              </span>
+              <button
+                onClick={() => setSelectedCandidates(new Set())}
+                className="ml-auto p-1 rounded hover:bg-gray-200"
+              >
+                <X className="w-3 h-3 text-gray-500" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Sugestões Proativas da LIA */}
+        {computedSuggestions.length > 0 && (
+          <div className="flex-shrink-0 px-4 py-2">
+            <button
+              onClick={() => setShowLiaSuggestionsPanel(prev => !prev)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
+                <span className="text-xs font-semibold text-gray-700">Sugestões da LIA</span>
+                <Badge className="bg-wedo-cyan text-white border-0 text-micro px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
+                  {computedSuggestions.length}
+                </Badge>
+              </div>
+              {showLiaSuggestionsPanel ? (
+                <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+              )}
+            </button>
+            {showLiaSuggestionsPanel && (
+              <div className="space-y-1.5 mt-2 max-h-[200px] overflow-y-auto">
+                {computedSuggestions.map((suggestion, idx) => {
+                  const borderColor = suggestion.type === 'stale_candidate' ? 'border-l-amber-400' : suggestion.type === 'high_score' ? 'border-l-emerald-400' : 'border-l-red-400'
+                  const IconComponent = suggestion.type === 'stale_candidate' ? Clock : suggestion.type === 'high_score' ? TrendingUp : AlertTriangle
+                  const iconColor = suggestion.type === 'stale_candidate' ? 'text-status-warning' : suggestion.type === 'high_score' ? 'text-status-success' : 'text-status-error'
+                  return (
+                    <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-white rounded-r-lg px-2.5 py-2 border border-gray-100`}>
+                      <div className="flex items-start gap-2">
+                        <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-700 leading-tight">{suggestion.message}</p>
+                          <p className="text-micro text-gray-500 mt-0.5">{suggestion.suggested_action}</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const candidate = Object.values(candidatesData).flat().find((c: any) => c.id === suggestion.candidate_id)
+                            if (candidate) {
+                              setSelectedCandidate(candidate)
+                              setShowCandidatePage(true)
+                            }
+                          }}
+                          className="text-wedo-cyan"
+                        >
+                          Ver
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Área de Mensagens do Chat - Só aparece quando há mensagens */}
+        {liaMessages.length > 0 ? (
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+            {liaMessages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.type === 'user' ? (
+                  <div className="flex items-start gap-2 max-w-[90%]">
+                    <img
+                      src="https://randomuser.me/api/portraits/men/32.jpg"
+                      alt="Você"
+                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    />
+                    <div
+                      className="px-2.5 py-2 rounded-md bg-gray-100"
+                    >
+                      <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="max-w-[90%] group"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
+                        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                      </div>
+                      <div className="pt-0.5 flex-1">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <span className="text-micro font-bold text-gray-800" >LIA</span>
+                        </div>
+                        <div className="text-xs text-gray-800 space-y-1 leading-relaxed">
+                          {msg.content.split('\n').map((line, i) => {
+                            if (line.startsWith('•')) {
+                              return <p key={i} className="pl-2">{line}</p>
+                            }
+                            if (line.match(/^\d+\./)) {
+                              return <p key={i} className="pl-2">{line}</p>
+                            }
+                            if (line.includes('**')) {
+                              const parts = line.split(/\*\*(.*?)\*\*/g)
+                              return (
+                                <p key={i}>
+                                  {parts.map((part, j) =>
+                                    j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                                  )}
+                                </p>
+                              )
+                            }
+                            return line ? <p key={i}>{line}</p> : null
+                          })}
+                        </div>
+                        {(msg as any).metadata?.action_executed && (msg as any).metadata?.action_result && (
+                          <ActionResultCard
+                            actionType={(msg as any).metadata.action_type || 'move_candidate'}
+                            result={(msg as any).metadata.action_result}
+                          />
+                        )}
+                        {(msg as any).metadata?.is_fallback && (
+                          <button
+                            onClick={() => handleLiaUiAction(
+                              (msg as any).metadata.ui_action,
+                              (msg as any).metadata.ui_action_params || {}
+                            )}
+                            className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded transition-colors"
+                            
+                          >
+                            Abrir manualmente
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {isLiaLoading && (
+              <div className="flex justify-start">
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800">
+                  <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
+                    <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <span className="text-micro text-gray-500">Pensando...</span>
+                </div>
+              </div>
+            )}
+
+            <div ref={chatScrollRef} />
+          </div>
+        ) : (
+          /* Espaço flexível vazio quando não há mensagens - empurra conteúdo para baixo */
+          <div className="flex-1" />
+        )}
+
+        {/* Input Area - Fixo na parte inferior */}
+        <div className="flex-shrink-0 px-4 pb-4 pt-2">
+          {/* Campo de Input */}
+          <div className="flex items-center gap-2 p-2 rounded-md border bg-white border-gray-100">
+            <input
+              type="text"
+              placeholder="Envie mensagem para a LIA..."
+              value={liaPromptValue}
+              onChange={(e) => setLiaPromptValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && liaPromptValue.trim() && !isLiaLoading) {
+                  handleAICommand(liaPromptValue);
+                  setLiaPromptValue('');
+                }
+              }}
+              disabled={isLiaLoading}
+              className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
+            />
+            <AudioRecordButton
+              onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
+              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (liaPromptValue.trim() && !isLiaLoading) {
+                  handleAICommand(liaPromptValue);
+                  setLiaPromptValue('');
+                }
+              }}
+              disabled={!liaPromptValue.trim() || isLiaLoading}
+              className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200"
+            >
+              <Send className="w-3.5 h-3.5 text-white dark:text-gray-900" />
+            </button>
+          </div>
+
+          {/* Sugestões de Análises - Abaixo do input */}
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="text-micro font-medium text-gray-500">Sugestões:</span>
+            <button
+              onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
+            >
+              <Star className="w-2.5 h-2.5 text-gray-500" />
+              Rankear
+            </button>
+            <button
+              onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
+            >
+              <Users className="w-2.5 h-2.5 text-gray-500" />
+              Comparar
+            </button>
+            <CandidateQueriesGuide
+              onSelectQuery={(query) => setLiaPromptValue(query)}
+              className="!px-2 !py-0.5 !text-micro !bg-gray-100 !border-0 hover:!bg-gray-200"
+            />
+          </div>
+        </div>
+      </Card>
+      {/* Barra de redimensionamento */}
+      <div
+        className="absolute right-0 top-0 w-2 h-full cursor-ew-resize group flex items-center justify-center z-10"
+        onMouseDown={(e) => {
+          e.preventDefault()
+          setIsResizingLIA(true)
+        }}
+      >
+        <div className="w-0.5 h-12 bg-gray-300 dark:bg-gray-700 group-hover:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+      </div>
+    </div>
+  )
+}

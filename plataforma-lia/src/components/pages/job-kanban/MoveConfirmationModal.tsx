@@ -171,7 +171,7 @@ export function MoveConfirmationModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Ex: Entrevista marcada para próxima terça..."
-              className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-50 placeholder:text-gray-500 dark:placeholder:text-gray-500 min-h-[80px]"
+              className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-50 placeholder:text-gray-500 dark:placeholder:text-gray-500 min-h-20"
             />
           </div>
         </div>

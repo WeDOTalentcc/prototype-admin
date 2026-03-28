@@ -1,3 +1,6 @@
+export { KanbanTableView } from "./KanbanTableView"
+export { KanbanLIASidebar } from "./KanbanLIASidebar"
+export { KanbanColumnRenderer } from "./KanbanColumnRenderer"
 export { KanbanColumn } from "./KanbanColumn"
 export { KanbanCard } from "./KanbanCard"
 export { MoveConfirmationModal } from "./MoveConfirmationModal"
