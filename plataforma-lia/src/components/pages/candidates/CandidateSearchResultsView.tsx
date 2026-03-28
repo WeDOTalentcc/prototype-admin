@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -410,6 +410,7 @@ export function CandidateSearchResultsView({
   setShowEditQueryModal,
   setShowAddToVacancyModal,
 }: CandidateSearchResultsViewProps) {
+  const chatScrollRef = useRef<HTMLDivElement>(null)
   return (
     <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
       {/* Header com query da busca e opções de edição — extraído para SearchResultsHeader (Sprint G3) */}
@@ -789,6 +790,7 @@ export function CandidateSearchResultsView({
             onAICommand={onAICommand}
             onQuickAction={onQuickAction}
             onCalibrationLike={onCalibrationLike}
+            chatScrollRef={chatScrollRef}
             onCalibrationDislike={onCalibrationDislike}
             onClose={() => {
               setShowExpandedLIA(false)

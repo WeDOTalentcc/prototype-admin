@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -94,6 +94,7 @@ interface LIASearchSidebarProps {
   onCalibrationLike: (candidateId: string) => void
   onCalibrationDislike: (candidateId: string, reason?: string) => void
   onClose: () => void
+  chatScrollRef: React.RefObject<HTMLDivElement>
 }
 
 export function LIASearchSidebar({
@@ -139,6 +140,7 @@ export function LIASearchSidebar({
   onCalibrationLike,
   onCalibrationDislike,
   onClose,
+  chatScrollRef,
 }: LIASearchSidebarProps) {
   const [superChatWidth, setSuperChatWidth] = useState(600)
   const [jobDescriptionText, setJobDescriptionText] = useState("")
@@ -154,8 +156,6 @@ export function LIASearchSidebar({
     location?: string
     languages: string[]
   } | null>(null)
-  const chatScrollRef = useRef<HTMLDivElement>(null)
-
   return (
     <div
       className={`transition-all duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
