@@ -3705,7 +3705,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-800)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(31, 41, 55, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--gray-600-bg-12)"
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {

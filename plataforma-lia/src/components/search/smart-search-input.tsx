@@ -1738,7 +1738,7 @@ export function SmartSearchInput({
                 (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20",
                 (activeFiltersCount > 0 || filledCount > 0) ? "text-gray-950" : "text-gray-600"
               )}
-              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "rgba(229, 231, 235, 0.3)" : "transparent"}}
+              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "var(--gray-bg-30)" : "transparent"}}
             >
               <Filter className="w-3.5 h-3.5" />
               Filtros
@@ -1805,7 +1805,7 @@ export function SmartSearchInput({
                   className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border relative text-gray-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-white")}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2105,7 +2105,7 @@ export function SmartSearchInput({
               {/* Fallback Suggestion Card - shown BELOW the textarea container when enhanced query doesn't start with user text */}
               {ghostTextInfo.showFallbackCard && ghostTextInfo.fullEnhancement && !showAutocomplete && (
                 <div 
-                  className="rounded-md border px-3 py-2 flex items-center gap-2 bg-gray-200/20" style={{ borderColor: 'rgba(96, 190, 209, 0.3)' }}
+                  className="rounded-md border px-3 py-2 flex items-center gap-2 bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
                 >
                   <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-gray-700" />
                   <div className="flex-1 min-w-0">
@@ -2209,7 +2209,7 @@ export function SmartSearchInput({
                               {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                             </span>
                           </div>
-                          <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                          <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'var(--status-success-bg)' : 'var(--status-error-bg)',
                             color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                             {autocompleteEnabled ? 'ON' : 'OFF'}
                           </span>
@@ -2294,8 +2294,7 @@ export function SmartSearchInput({
                     </div>
                     {searchAnalysis.next_recommended_action && (
                       <div 
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-                        style={{backgroundColor: "rgba(96, 190, 209, 0.08)"}}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-wedo-cyan/[0.08]"
                       >
                         <TrendingUp className="w-3 h-3" />
                         <span>{searchAnalysis.next_recommended_action}</span>
@@ -2311,8 +2310,8 @@ export function SmartSearchInput({
                           key={index}
                           className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
                           style={{backgroundColor: alert.severity === "warning" 
-                              ? "rgba(217, 119, 6, 0.08)" 
-                              : "rgba(96, 190, 209, 0.08)",
+                              ? "var(--status-warning-bg-08)" 
+                              : "var(--wedo-cyan-bg-08)",
                             color: 'var(--gray-500)'}}
                         >
                           {alert.severity === "warning" ? (
@@ -2406,7 +2405,7 @@ export function SmartSearchInput({
                     className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
-                      e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                      e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2580,7 +2579,7 @@ export function SmartSearchInput({
                       className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                        e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                       }}
                       onBlur={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2767,7 +2766,7 @@ export function SmartSearchInput({
                     className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
-                      e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                      e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2972,8 +2971,7 @@ export function SmartSearchInput({
                 
                 {selectedVacancy ? (
                   <div 
-                    className="flex items-center justify-between p-2.5 rounded-md border"
-                    style={{backgroundColor: 'rgba(96, 190, 209, 0.08)'}}
+                    className="flex items-center justify-between p-2.5 rounded-md border bg-wedo-cyan/[0.08]"
                   >
                     <div className="flex items-center gap-2">
                       <div 
@@ -3012,7 +3010,7 @@ export function SmartSearchInput({
                       className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all bg-gray-50 text-gray-950"
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                        e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                       }}
                       onBlur={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -3126,7 +3124,7 @@ export function SmartSearchInput({
                     color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -3361,7 +3359,7 @@ export function SmartSearchInput({
                     color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = booleanError ? "var(--status-error)" : "var(--gray-200)"
@@ -3687,7 +3685,7 @@ export function SmartSearchInput({
             <div className="flex items-center gap-2.5">
               <div 
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{backgroundColor: pendingSourceChange === 'hybrid' ? 'rgba(96, 190, 209, 0.15)' : 'rgba(217, 119, 6, 0.15)'}}
+                style={{backgroundColor: pendingSourceChange === 'hybrid' ? 'var(--wedo-cyan-bg-15)' : 'var(--status-warning-bg-15)'}}
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />

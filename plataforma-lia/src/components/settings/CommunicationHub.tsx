@@ -1612,7 +1612,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <div className="flex items-start gap-2">
                   <div 
                     className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{backgroundColor: alert.enabled ? 'rgba(75, 85, 99, 0.1)' : undefined,
+                    style={{backgroundColor: alert.enabled ? 'var(--gray-600-bg-10)' : undefined,
                       color: alert.enabled ? 'var(--gray-600)' : undefined}}
                   >
                     <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--gray-600)' : undefined}} />
@@ -1667,7 +1667,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'twice_daily' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
+                backgroundColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600-bg-10)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <RefreshCw className="w-3.5 h-3.5" style={{color: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : undefined}} />
@@ -1682,7 +1682,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'daily' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
+                backgroundColor: briefingFrequency === 'daily' ? 'var(--gray-600-bg-10)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
@@ -1697,7 +1697,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'weekly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'weekly' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
+                backgroundColor: briefingFrequency === 'weekly' ? 'var(--gray-600-bg-10)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />
@@ -1712,7 +1712,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{borderColor: briefingFrequency === 'monthly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'monthly' ? 'rgba(75, 85, 99, 0.1)' : undefined}}
+                backgroundColor: briefingFrequency === 'monthly' ? 'var(--gray-600-bg-10)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />

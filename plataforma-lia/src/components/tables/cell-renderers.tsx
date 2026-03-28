@@ -389,10 +389,10 @@ export function NoteCell({
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
   if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: 'var(--gray-600)' }
-  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgba(220, 38, 38, 0.15)', textStyle: 'var(--status-error)' }
-  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgba(217, 119, 6, 0.15)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'var(--wedo-cyan-bg-15)', textStyle: 'var(--gray-600)' }
+  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'var(--status-error-bg-15)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'var(--status-warning-bg-15)', textStyle: 'var(--status-warning)' }
+  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-bg-15)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {

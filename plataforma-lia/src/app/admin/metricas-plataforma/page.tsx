@@ -71,7 +71,7 @@ function MetricCard({
           className="p-2 rounded-md"
           style={{backgroundColor: accentColor
               ? `${accentColor}15`
-              : "rgba(107, 114, 128, 0.1)"}}
+              : "var(--gray-bg-10)"}}
         >
           <Icon
             className="w-4 h-4"

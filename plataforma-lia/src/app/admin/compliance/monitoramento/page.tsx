@@ -465,14 +465,12 @@ export default function MonitoramentoPage() {
             )
           })}
           <Card 
-            className="h-full border-dashed border-2 border-gray-200 dark:border-gray-700"
-            style={{backgroundColor: 'rgba(96, 190, 209, 0.02)'}}
+            className="h-full border-dashed border-2 border-gray-200 dark:border-gray-700 bg-wedo-cyan/[0.02]"
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div 
-                  className="w-10 h-10 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: 'rgba(152, 96, 209, 0.1)'}}
+                  className="w-10 h-10 rounded-md flex items-center justify-center bg-wedo-purple/10"
                 >
                   <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>

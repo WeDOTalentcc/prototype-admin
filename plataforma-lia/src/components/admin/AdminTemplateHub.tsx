@@ -498,7 +498,7 @@ export function AdminTemplateHub() {
                                   ? 'border-gray-900 dark:border-gray-50' 
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                               }`}
-                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px rgba(96, 190, 209, 0.2)' } : {}}
+                              style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px var(--wedo-cyan-bg-20)' } : {}}
                               onClick={() => setSelectedTemplate(template)}
                             >
                               <CardContent className="p-2.5">

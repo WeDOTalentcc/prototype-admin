@@ -319,7 +319,7 @@ export default function ComplianceDashboardPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: biasAlertCount > 0 ? 'rgba(245, 158, 11, 0.1)' : 'var(--status-success-bg)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: biasAlertCount > 0 ? 'var(--status-warning-bg-amber)' : 'var(--status-success-bg)'}}>
                   <Scale className={`w-5 h-5 ${biasAlertCount > 0 ? 'text-status-warning' : 'text-status-success'}`} />
                 </div>
               </div>

@@ -484,15 +484,15 @@ export default function CandidateProfilePage() {
 
   const getCategoryColor = (fileType: string) => {
     const colors: Record<string, { bg: string, text: string }> = {
-      'cv': { bg: 'rgba(16, 185, 129, 0.12)', text: 'var(--status-success)' },
+      'cv': { bg: 'var(--status-success-bg)', text: 'var(--status-success)' },
       'photo': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
       'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
-      'video': { bg: 'rgba(220, 38, 38, 0.12)', text: 'var(--status-error)' },
-      'certificate': { bg: 'rgba(217, 119, 6, 0.12)', text: 'var(--status-warning)' },
-      'document': { bg: 'rgba(107, 114, 128, 0.12)', text: 'var(--gray-400)' },
-      'screening': { bg: 'rgba(249, 115, 22, 0.12)', text: 'var(--status-warning)' },
-      'interview': { bg: 'rgba(139, 92, 246, 0.12)', text: 'var(--wedo-purple)' },
-      'transcript': { bg: 'rgba(139, 92, 246, 0.12)', text: 'var(--wedo-purple)' },
+      'video': { bg: 'var(--status-error-bg-12)', text: 'var(--status-error)' },
+      'certificate': { bg: 'var(--status-warning-bg-12)', text: 'var(--status-warning)' },
+      'document': { bg: 'var(--gray-bg-12)', text: 'var(--gray-400)' },
+      'screening': { bg: 'var(--status-warning-bg-12)', text: 'var(--status-warning)' },
+      'interview': { bg: 'var(--wedo-purple-bg-10)', text: 'var(--wedo-purple)' },
+      'transcript': { bg: 'var(--wedo-purple-bg-10)', text: 'var(--wedo-purple)' },
     }
     return colors[fileType] || colors['document']
   }

@@ -367,6 +367,73 @@
   --status-error-bg:   rgba(220, 38, 38, 0.10);   /* bg para badges/cards de erro */
   --status-warning-bg: rgba(217, 119, 6, 0.10);   /* bg para badges/cards de atenção */
 
+  --status-success-bg-15: rgba(22, 163, 74, 0.15);
+  --status-error-bg-12: rgba(220, 38, 38, 0.12);
+  --status-error-bg-15: rgba(220, 38, 38, 0.15);
+  --status-warning-bg-08: rgba(217, 119, 6, 0.08);
+  --status-warning-bg-12: rgba(217, 119, 6, 0.12);
+  --status-warning-bg-15: rgba(217, 119, 6, 0.15);
+  --status-error-border: rgba(220, 38, 38, 0.3);
+  --status-error-border-strong: rgba(220, 38, 38, 0.5);
+  --status-warning-border: rgba(217, 119, 6, 0.3);
+  --status-warning-border-light: rgba(217, 119, 6, 0.2);
+  --status-warning-bg-05: rgba(245, 158, 11, 0.05);
+  --status-warning-bg-amber: rgba(245, 158, 11, 0.1);
+
+  --wedo-cyan-bg-02: rgba(96, 190, 209, 0.02);
+  --wedo-cyan-bg-05: rgba(96, 190, 209, 0.05);
+  --wedo-cyan-bg-08: rgba(96, 190, 209, 0.08);
+  --wedo-cyan-bg-10: rgba(96, 190, 209, 0.10);
+  --wedo-cyan-bg-12: rgba(96, 190, 209, 0.12);
+  --wedo-cyan-bg-15: rgba(96, 190, 209, 0.15);
+  --wedo-cyan-bg-20: rgba(96, 190, 209, 0.20);
+  --wedo-cyan-border: rgba(96, 190, 209, 0.3);
+  --wedo-cyan-shadow: 0 0 0 2px rgba(96, 190, 209, 0.12);
+
+  --wedo-purple-bg-10: rgba(152, 96, 209, 0.1);
+  --wedo-green-bg-10: rgba(123, 194, 154, 0.10);
+  --wedo-green-bg-15: rgba(123, 194, 154, 0.15);
+  --wedo-orange-bg-15: rgba(209, 153, 96, 0.15);
+
+  --gray-bg-05: rgba(107, 114, 128, 0.05);
+  --gray-bg-10: rgba(107, 114, 128, 0.10);
+  --gray-bg-15: rgba(107, 114, 128, 0.15);
+  --gray-bg-30: rgba(229, 231, 235, 0.3);
+  --gray-bg-20: rgba(229, 231, 235, 0.2);
+  --gray-600-bg-10: rgba(75, 85, 99, 0.1);
+  --gray-600-bg-12: rgba(31, 41, 55, 0.12);
+
+  --overlay-05: rgba(0, 0, 0, 0.05);
+  --overlay-10: rgba(0, 0, 0, 0.10);
+  --overlay-white-95: rgba(255, 255, 255, 0.95);
+  --overlay-white-80: rgba(255, 255, 255, 0.8);
+  --overlay-white-50: rgba(255, 255, 255, 0.5);
+  --overlay-white-88: rgba(255, 255, 255, 0.88);
+  --overlay-white-82: rgba(255, 255, 255, 0.82);
+  --overlay-white-78: rgba(255, 255, 255, 0.78);
+  --overlay-white-70: rgba(255, 255, 255, 0.70);
+  --overlay-white-68: rgba(255, 255, 255, 0.68);
+  --overlay-white-64: rgba(255, 255, 255, 0.64);
+  --overlay-white-58: rgba(255, 255, 255, 0.58);
+  --overlay-white-52: rgba(255, 255, 255, 0.52);
+  --overlay-04: rgba(0, 0, 0, 0.04);
+
+  --wedo-cyan-bg-04: rgba(96, 190, 209, 0.04);
+  --wedo-cyan-bg-06: rgba(96, 190, 209, 0.06);
+  --status-error-bg-08: rgba(220, 38, 38, 0.08);
+  --status-error-bg-20: rgba(220, 38, 38, 0.20);
+  --gray-bg-12: rgba(107, 114, 128, 0.12);
+  --gray-border: rgba(107, 114, 128, 0.3);
+  --gray-light-bg-20: rgba(156, 163, 175, 0.2);
+  --wedo-green-bg-20: rgba(123, 194, 154, 0.20);
+  --wedo-blue-bg-10: rgba(59, 130, 246, 0.1);
+  --wedo-blue-bg-20: rgba(59, 130, 246, 0.2);
+  --wedo-orange-bg-10: rgba(209, 153, 96, 0.1);
+  --wedo-green-active-15: rgba(93, 164, 122, 0.15);
+  --status-success-shadow: 0 1px 3px rgba(22, 163, 74, 0.12);
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --status-warning-bg-amber-03: rgba(245, 158, 11, 0.3);
+
   /* ========================================
      CHART — 4 tons monocromáticos para visualização
      Opacidade decrescente = hierarquia de séries.

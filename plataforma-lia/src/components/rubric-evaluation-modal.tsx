@@ -126,21 +126,21 @@ export function RubricEvaluationModal({
   }
 
   const getScoreBadge = (scoreValue: number) => {
-    if (scoreValue >= 85) return { label: 'Excelente', bg: 'rgba(96, 190, 209, 0.12)' }
-    if (scoreValue >= 70) return { label: 'Bom', bg: 'rgba(96, 190, 209, 0.08)' }
-    if (scoreValue >= 50) return { label: 'Moderado', bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)' }
-    if (scoreValue >= 30) return { label: 'Fraco', bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)' }
-    return { label: 'Inadequado', bg: 'rgba(220, 38, 38, 0.15)', color: 'var(--status-error)' }
+    if (scoreValue >= 85) return { label: 'Excelente', bg: 'var(--wedo-cyan-bg-12)' }
+    if (scoreValue >= 70) return { label: 'Bom', bg: 'var(--wedo-cyan-bg-08)' }
+    if (scoreValue >= 50) return { label: 'Moderado', bg: 'var(--status-warning-bg-12)', color: 'var(--status-warning)' }
+    if (scoreValue >= 30) return { label: 'Fraco', bg: 'var(--status-error-bg-12)', color: 'var(--status-error)' }
+    return { label: 'Inadequado', bg: 'var(--status-error-bg-15)', color: 'var(--status-error)' }
   }
 
   const getDecisionBadge = (decisao?: string) => {
     switch (decisao?.toUpperCase()) {
       case 'APROVAR_TRIAGEM':
-        return { label: 'Aprovar para Triagem', bg: 'rgba(96, 190, 209, 0.12)', icon: CheckCircle }
+        return { label: 'Aprovar para Triagem', bg: 'var(--wedo-cyan-bg-12)', icon: CheckCircle }
       case 'MANTER_ESPERA':
-        return { label: 'Manter em Espera', bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)', icon: Clock }
+        return { label: 'Manter em Espera', bg: 'var(--status-warning-bg-12)', color: 'var(--status-warning)', icon: Clock }
       case 'NAO_PROSSEGUIR':
-        return { label: 'Não Prosseguir', bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)', icon: XCircle }
+        return { label: 'Não Prosseguir', bg: 'var(--status-error-bg-12)', color: 'var(--status-error)', icon: XCircle }
       default:
         return null
     }
@@ -168,13 +168,13 @@ export function RubricEvaluationModal({
   const getRubricStyle = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return { bg: 'rgba(96, 190, 209, 0.08)', border: 'var(--gray-50)' }
+        return { bg: 'var(--wedo-cyan-bg-08)', border: 'var(--gray-50)' }
       case 'meets':
-        return { bg: 'rgba(96, 190, 209, 0.04)', border: 'var(--gray-50)' }
+        return { bg: 'var(--wedo-cyan-bg-04)', border: 'var(--gray-50)' }
       case 'partial':
-        return { bg: 'rgba(217, 119, 6, 0.08)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
+        return { bg: 'var(--status-warning-bg-08)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
       case 'missing':
-        return { bg: 'rgba(220, 38, 38, 0.08)', border: 'var(--gray-50)', color: 'var(--status-error)' }
+        return { bg: 'var(--status-error-bg-08)', border: 'var(--gray-50)', color: 'var(--status-error)' }
       default:
         return { bg: 'var(--gray-50)', border: 'var(--gray-50)' }
     }
@@ -211,9 +211,9 @@ export function RubricEvaluationModal({
   const getPriorityStyle = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'essential':
-        return { bg: 'rgba(220, 38, 38, 0.12)', color: 'var(--status-error)' }
+        return { bg: 'var(--status-error-bg-12)', color: 'var(--status-error)' }
       case 'important':
-        return { bg: 'rgba(217, 119, 6, 0.12)', color: 'var(--status-warning)' }
+        return { bg: 'var(--status-warning-bg-12)', color: 'var(--status-warning)' }
       case 'nice-to-have':
         return { bg: 'var(--gray-50)' }
       default:
@@ -388,7 +388,7 @@ export function RubricEvaluationModal({
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{backgroundColor: activeSection === tab.id ? 'rgba(96, 190, 209, 0.12)' : 'transparent',
+                style={{backgroundColor: activeSection === tab.id ? 'var(--wedo-cyan-bg-12)' : 'transparent',
                   color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)'}}
               >
                 <TabIcon className="w-3.5 h-3.5" />
@@ -566,7 +566,7 @@ export function RubricEvaluationModal({
                 {mockParecer.recomendacao_final && (
                   <div>
                     <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500">
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)'}}>4</span>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--wedo-cyan-bg-12)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)'}}>4</span>
                       Recomendação Final
                     </div>
                     <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)'}}>

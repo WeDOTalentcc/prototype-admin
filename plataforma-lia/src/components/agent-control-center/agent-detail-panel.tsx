@@ -203,7 +203,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-gray-500 dark:text-gray-400' : ''}`}
                   style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
-                    backgroundColor: activeTab === tab.id ? 'rgba(229, 231, 235, 0.2)' : 'transparent',
+                    backgroundColor: activeTab === tab.id ? 'var(--gray-bg-20)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
                 >
                   <tab.icon className="w-3.5 h-3.5" />

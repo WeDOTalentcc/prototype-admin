@@ -169,9 +169,9 @@ const getTypeConfig = (type: AlertType) => {
     case 'security':
       return { label: 'Segurança', icon: Shield, color: 'bg-status-error/15 text-status-error', iconBg: 'var(--status-error-bg)', iconColor: 'text-status-error' }
     case 'performance':
- return { label: 'Performance', icon: Activity, color: 'bg-gray-100 dark:bg-gray-800 text-gray-600', iconBg: 'rgba(229, 231, 235, 0.3)', iconColor: 'dark:text-gray-400' }
+ return { label: 'Performance', icon: Activity, color: 'bg-gray-100 dark:bg-gray-800 text-gray-600', iconBg: 'var(--gray-bg-30)', iconColor: 'dark:text-gray-400' }
     case 'compliance':
-      return { label: 'Compliance', icon: FileText, color: 'bg-wedo-purple/15 text-wedo-purple', iconBg: 'rgba(152, 96, 209, 0.1)', iconColor: 'text-wedo-purple' }
+      return { label: 'Compliance', icon: FileText, color: 'bg-wedo-purple/15 text-wedo-purple', iconBg: 'var(--wedo-purple-bg-10)', iconColor: 'text-wedo-purple' }
     case 'integration':
       return { label: 'Integração', icon: Globe, color: 'bg-status-warning/15 text-status-warning', iconBg: 'var(--status-warning-bg)', iconColor: 'text-status-warning' }
   }
@@ -495,7 +495,7 @@ export default function AlertasPage() {
                         <div className="flex items-center gap-3">
                           <div 
                             className="w-8 h-8 rounded-md flex items-center justify-center"
-                            style={{backgroundColor: channel.enabled ? 'var(--status-success-bg)' : 'rgba(107, 114, 128, 0.1)'}}
+                            style={{backgroundColor: channel.enabled ? 'var(--status-success-bg)' : 'var(--gray-bg-10)'}}
                           >
                             <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'text-gray-400'}`} />
                           </div>

@@ -95,15 +95,15 @@ const CONTEXT_COLORS: Record<string, {
 }> = {
   candidates: {
     border: 'var(--wedo-green-light)',
-    bg: 'rgba(123, 194, 154, 0.1)',
+    bg: 'var(--wedo-green-bg-10)',
     headerText: 'var(--status-success)',
-    headerBg: 'rgba(123, 194, 154, 0.15)'
+    headerBg: 'var(--wedo-green-bg-15)'
   },
   jobs: {
     border: 'var(--gray-400)',
-    bg: 'rgba(107, 114, 128, 0.05)',
+    bg: 'var(--gray-bg-05)',
     headerText: 'var(--gray-600)',
-    headerBg: 'rgba(107, 114, 128, 0.1)'
+    headerBg: 'var(--gray-bg-10)'
   }
 }
 
@@ -2824,7 +2824,7 @@ export function ExpandableAIPrompt({
                               <span className="text-xs text-gray-400">{suggestion.category}</span>
                             </button>
                           ))}
-                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid rgba(0, 0, 0, 0.05)'}}>
+                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid var(--overlay-05)'}}>
                             <span>Use ↑↓ para navegar, Tab para selecionar</span>
                             <span>Esc para fechar</span>
                           </div>
@@ -2843,7 +2843,7 @@ export function ExpandableAIPrompt({
                     {/* Prompt Enhancement Card */}
                     {promptEnhancement && !showAutocomplete && (
                       <div 
-                        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'rgba(96, 190, 209, 0.3)' }}
+                        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
                       >
                         <div className="flex items-start gap-2">
                           <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
@@ -2884,8 +2884,8 @@ export function ExpandableAIPrompt({
                       <div className="flex items-center gap-1.5 mt-2 mb-1">
                         <div 
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-                          style={{backgroundColor: 'rgba(96, 190, 209, 0.08)', 
-                            border: '1px solid rgba(96, 190, 209, 0.2)'}}
+                          style={{backgroundColor: 'var(--wedo-cyan-bg-08)', 
+                            border: '1px solid var(--wedo-cyan-bg-20)'}}
                         >
                           <Home className="w-3 h-3" />
                           <span>Base Local</span>
@@ -2963,7 +2963,7 @@ export function ExpandableAIPrompt({
                                     {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                                   </span>
                                 </div>
-                                <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                                <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'var(--status-success-bg)' : 'var(--status-error-bg)',
                                   color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                                   {autocompleteEnabled ? 'ON' : 'OFF'}
                                 </span>
@@ -3005,7 +3005,7 @@ export function ExpandableAIPrompt({
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => setShowSaveArchetypeModal(true)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid rgba(96, 190, 209, 0.3)' }}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
                               >
                                 <Target className="w-3 h-3" />
                                 <span className="font-medium">Salvar Arquétipo</span>
@@ -3055,8 +3055,7 @@ export function ExpandableAIPrompt({
                           </div>
                           {searchAnalysis.next_recommended_action && (
                             <div 
-                              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-                              style={{backgroundColor: 'rgba(96, 190, 209, 0.08)'}}
+                              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-wedo-cyan/[0.08]"
                             >
                               <TrendingUp className="w-3 h-3" />
                               <span>{searchAnalysis.next_recommended_action}</span>
@@ -3072,8 +3071,8 @@ export function ExpandableAIPrompt({
                                 key={index}
                                 className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-gray-400"
                                 style={{backgroundColor: alert.severity === 'warning'
-                                    ? 'rgba(217, 119, 6, 0.08)'
-                                    : 'rgba(96, 190, 209, 0.08)'}}
+                                    ? 'var(--status-warning-bg-08)'
+                                    : 'var(--wedo-cyan-bg-08)'}}
                               >
                                 {alert.severity === 'warning' ? (
                                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
@@ -3517,7 +3516,7 @@ export function ExpandableAIPrompt({
                       ))}
                     </div>
                     {/* Dica contextual */}
-                    <div className="p-2.5 rounded-md" style={{backgroundColor: 'rgba(96, 190, 209, 0.06)'}}>
+                    <div className="p-2.5 rounded-md" style={{backgroundColor: 'var(--wedo-cyan-bg-06)'}}>
                       <div className="flex items-start gap-2">
                         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
                         <p className="text-xs text-gray-800 dark:text-gray-200">

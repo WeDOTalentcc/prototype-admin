@@ -135,9 +135,9 @@ const getAlertSeverityStyle = (severity: string) => {
     case 'high':
       return { bg: 'var(--status-warning-bg)', border: 'var(--status-warning)', icon: 'text-status-warning' }
     case 'medium':
-      return { bg: 'rgba(229, 231, 235, 0.3)', border: 'var(--gray-200)', icon: 'text-gray-600 dark:text-gray-400' }
+      return { bg: 'var(--gray-bg-30)', border: 'var(--gray-200)', icon: 'text-gray-600 dark:text-gray-400' }
     default:
-      return { bg: 'rgba(107, 114, 128, 0.1)', border: 'var(--gray-400)', icon: 'text-gray-500' }
+      return { bg: 'var(--gray-bg-10)', border: 'var(--gray-400)', icon: 'text-gray-500' }
   }
 }
 

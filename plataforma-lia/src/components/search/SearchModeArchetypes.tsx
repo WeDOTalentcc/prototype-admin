@@ -600,10 +600,10 @@ export function SearchModeArchetypes({
                                 className="px-1.5 py-0.5 rounded-full text-micro font-medium"
                                 style={{backgroundColor:
                                     job.status === "Publicada"
-                                      ? "rgba(22, 163, 74, 0.15)"
+                                      ? "var(--status-success-bg-15)"
                                       : job.status === "Encerrada"
-                                      ? "rgba(156, 163, 175, 0.2)"
-                                      : "rgba(217, 119, 6, 0.15)",
+                                      ? "var(--gray-light-bg-20)"
+                                      : "var(--status-warning-bg-15)",
                                   color:
                                     job.status === "Publicada"
                                       ? "var(--status-success)"

@@ -134,7 +134,7 @@ export function AutomationsSection({
                     <div className="flex items-center gap-2 mb-2">
                       <div 
                         className="w-8 h-8 rounded-md flex items-center justify-center"
-                        style={{backgroundColor: automation.isActive ? 'var(--status-warning-bg)' : 'rgba(107, 114, 128, 0.1)'}}
+                        style={{backgroundColor: automation.isActive ? 'var(--status-warning-bg)' : 'var(--gray-bg-10)'}}
                       >
                         <IconComponent
                           className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'text-gray-400 dark:text-gray-500'}`}

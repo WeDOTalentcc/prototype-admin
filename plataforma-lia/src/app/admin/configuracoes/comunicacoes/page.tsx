@@ -701,7 +701,7 @@ export default function AdminComunicacoesPage() {
       </div>
 
       {successMessage && (
-        <div className="mb-4 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30" style={{ borderColor: 'rgba(96, 190, 209, 0.3)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
+        <div className="mb-4 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30" style={{ borderColor: 'var(--wedo-cyan-border)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
           <CheckCircle className="w-4 h-4 text-gray-700" />
           <span className="text-sm">{successMessage}</span>
         </div>

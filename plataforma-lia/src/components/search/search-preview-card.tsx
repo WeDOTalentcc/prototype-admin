@@ -102,7 +102,7 @@ export function SearchPreviewCard({
                   ) : (
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{backgroundColor: hasLocalResults ? "rgba(22, 163, 74, 0.1)" : "rgba(220, 38, 38, 0.1)",
+                      style={{backgroundColor: hasLocalResults ? "var(--status-success-bg)" : "var(--status-error-bg)",
                         color: hasLocalResults ? "var(--status-success)" : "var(--status-error)"}}
                     >
                       {data.localCount} encontrados

@@ -382,7 +382,7 @@ export default function PortalTitularPage() {
         </div>
 
         {stats && stats.overdueRequests > 0 && (
-          <Card className="mb-6" style={{borderColor: 'rgba(220, 38, 38, 0.5)', backgroundColor: 'var(--status-error-bg)'}}>
+          <Card className="mb-6" style={{borderColor: 'var(--status-error-border-strong)', backgroundColor: 'var(--status-error-bg)'}}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-status-error" />
@@ -742,7 +742,7 @@ export default function PortalTitularPage() {
               </CardContent>
             </Card>
 
-            <Card style={{borderColor: 'rgba(96, 190, 209, 0.3)', backgroundColor: 'rgba(96, 190, 209, 0.02)'}}>
+            <Card style={{borderColor: 'var(--wedo-cyan-border)', backgroundColor: 'var(--wedo-cyan-bg-02)'}}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />

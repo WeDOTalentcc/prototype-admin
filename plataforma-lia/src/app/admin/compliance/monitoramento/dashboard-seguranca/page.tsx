@@ -284,7 +284,7 @@ export default function DashboardSegurancaPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{borderColor: 'rgba(96, 190, 209, 0.3)'}}>
+        <Card className="mb-6" style={{borderColor: 'var(--wedo-cyan-border)'}}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">

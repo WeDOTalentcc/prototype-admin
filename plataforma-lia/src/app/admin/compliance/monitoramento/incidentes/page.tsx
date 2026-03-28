@@ -344,7 +344,7 @@ export default function IncidentesPage() {
         <div 
           className="rounded-md border p-4 mb-6 flex items-center gap-3"
           style={{backgroundColor: 'var(--status-error-bg)',
-            borderColor: 'rgba(220, 38, 38, 0.3)'}}
+            borderColor: 'var(--status-error-border)'}}
         >
           <AlertCircle className="w-5 h-5 text-status-error" />
           <div className="flex-1">

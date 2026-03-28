@@ -846,8 +846,9 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 | `rounded-full` | 1.694 | 1.694 | OK ✅ | Uso correto (avatars, badges) |
 | `rounded-lg` | 74 | 74 | OK ✅ | Uso correto (cards, modais) |
 | `color-mix()` | **124** | **0** | ✅ ELIMINADO Sprint 1A | Não é padrão DS → rgba() |
-| `rgba()` (fora tokens) | **102** | ~126 (incl. ex-color-mix) | ✅ 39 migrados p/ `var(--status-*-bg)` | Usar tokens `--lia-*` |
-| Hex hardcoded | **~278** | ~252 | ✅ 26 migrados p/ `var(--*)` | Isenções: brands, email, charts |
+| `rgba()` (fora tokens) | **~141** | **0** | ✅ ELIMINADO Sprint 1A | 154 conversões → `var(--*)` tokens + Tailwind opacity classes |
+| Hex hardcoded | **~278** | **103** (isentos) | ✅ Sprint 1A | Restantes: brands, data-viz, CSS-var fallbacks, email — todos isentos |
+| Opacity tokens | 0 | **~50 novos** | ✅ Sprint 1A | `--wedo-cyan-bg-*`, `--status-*-bg-*`, `--gray-bg-*`, `--overlay-*` em design-tokens.css |
 | `style={{` (inline) | **1.439** em **238 arquivos** | — | ⏳ Task D | Zero inline (exceto dinâmico) |
 | `w-[]`/`h-[]` (arbitrary) | **499** | — | ⏳ Avaliar | Preferir tokens |
 | `text-[]` (arbitrary) | 21 | — | Baixo, OK | Usar scale: xs/sm/base/lg |

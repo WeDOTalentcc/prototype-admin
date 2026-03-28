@@ -1099,7 +1099,7 @@ export function CandidateActivitiesTab({
           <button
             onClick={() => setActivityFilter('lia')}
             className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
-            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'rgba(96, 190, 209, 0.15)',
+            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'var(--wedo-cyan-bg-15)',
               color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
           >
             🤖 LIA

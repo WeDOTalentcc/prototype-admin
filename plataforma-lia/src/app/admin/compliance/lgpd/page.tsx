@@ -58,11 +58,11 @@ export default function LGPDPage() {
   const getAlertBg = (type: string) => {
     switch (type) {
       case 'warning':
-        return 'rgba(245, 158, 11, 0.05)'
+        return 'var(--status-warning-bg-05)'
       case 'error':
         return 'var(--status-error-bg)'
       default:
-        return 'rgba(229, 231, 235, 0.2)'
+        return 'var(--gray-bg-20)'
     }
   }
 

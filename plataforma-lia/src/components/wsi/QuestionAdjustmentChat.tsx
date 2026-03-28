@@ -231,7 +231,7 @@ export function QuestionAdjustmentChat({
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
           className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{focusRingColor: "rgba(96, 190, 209, 0.3)"}}
+          style={{focusRingColor: "var(--wedo-cyan-border)"}}
         />
         <Button
           variant="ghost"

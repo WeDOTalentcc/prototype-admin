@@ -103,7 +103,7 @@ export function JobPreviewPanel({
                           <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                             {previewJob.title}
                           </h3>
-                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'rgba(107, 114, 128, 0.15)', border: '1px solid rgba(107, 114, 128, 0.3)'}}>
+                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'var(--gray-bg-15)', border: '1px solid var(--gray-border)'}}>
                             {previewJob.jobId}
                           </Badge>
                           {previewJob.isAffirmative && (

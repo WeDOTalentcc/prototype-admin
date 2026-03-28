@@ -583,7 +583,7 @@ export function CandidateSearchResultsView({
                   const container = e.target.parentElement
                   if (container) {
                     container.style.borderColor = 'var(--gray-200)'
-                    container.style.boxShadow = '0 0 0 2px rgba(96, 190, 209, 0.12)'
+                    container.style.boxShadow = '0 0 0 2px var(--wedo-cyan-bg-12)'
                   }
                   // Expandir LIA sidebar ao focar
                   if (!isLIAThinking) {

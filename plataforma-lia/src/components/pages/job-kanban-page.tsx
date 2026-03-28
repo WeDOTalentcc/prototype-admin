@@ -2972,7 +2972,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         }
 
         .drop-zone-active {
-          background-color: rgba(96, 190, 209, 0.05);
+          background-color: var(--wedo-cyan-bg-05);
           border-color: 'var(--wedo-cyan)';
         }
       `}</style>
@@ -3450,7 +3450,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           color: 'var(--gray-950)'}}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'var(--gray-800)'
-                          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(31, 41, 55, 0.12)'
+                          e.currentTarget.style.boxShadow = '0 0 0 2px var(--gray-600-bg-12)'
                           setShowExpandedLIA(true)
                         }}
                         onBlur={(e) => {

@@ -33,7 +33,7 @@ const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; labe
 }
 
 const getClassificationColor = (classification: string) =>
-  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'rgba(96, 190, 209, 0.12)', text: 'var(--gray-600)', label: classification }
+  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'var(--wedo-cyan-bg-12)', text: 'var(--gray-600)', label: classification }
 
 const getClassificationLabel = (classification: string) =>
   WSI_CLASSIFICATION_COLORS[classification]?.label ?? classification

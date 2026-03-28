@@ -115,7 +115,7 @@ export default function RecursosPage() {
                 <div className="flex items-start gap-4">
                   <div 
                     className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
-                    style={{backgroundColor: resource.requestRequired ? 'var(--status-warning-bg)' : 'rgba(229, 231, 235, 0.3)'}}
+                    style={{backgroundColor: resource.requestRequired ? 'var(--status-warning-bg)' : 'var(--gray-bg-30)'}}
                   >
                     <IconComponent 
                       className="w-5 h-5" 
@@ -166,7 +166,7 @@ export default function RecursosPage() {
         <div 
           className="mt-6 p-4 rounded-md border"
           style={{backgroundColor: 'var(--status-warning-bg)',
-            borderColor: 'rgba(217, 119, 6, 0.2)'}}
+            borderColor: 'var(--status-warning-border-light)'}}
         >
           <div className="flex items-start gap-3">
             <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{color: 'var(--status-warning)'}} />
