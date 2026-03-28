@@ -36,7 +36,7 @@ export function GlobalExpansionConfirmModal({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">
               <Globe className="w-4 h-4 text-gray-700" />
             </div>
             Expandir para Busca Global

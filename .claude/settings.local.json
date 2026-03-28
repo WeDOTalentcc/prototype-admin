@@ -1108,7 +1108,13 @@
       "Bash(sed -n '873,876p' /home/runner/workspace/plataforma-lia/src/components/pages/job-kanban-page.tsx)",
       "Bash(sed -n '1076,1082p' /home/runner/workspace/plataforma-lia/src/components/pages/job-kanban-page.tsx)",
       "Bash(find /home/runner/workspace -type f \\\\\\(-name *sprint* -o -name *roadmap* -o -name *inventory* -o -name *inventario* -o -name *checklist* \\\\\\))",
-      "Bash(head -20 grep -rn \"var\\(--gray-\\\\|--gray-\" /home/runner/workspace/plataforma-lia/src/styles/design-tokens.css)"
+      "Bash(head -20 grep -rn \"var\\(--gray-\\\\|--gray-\" /home/runner/workspace/plataforma-lia/src/styles/design-tokens.css)",
+      "Bash(__NEW_LINE_4879e23fe64420fa__ cp:*)",
+      "Bash(WT=/home/runner/workspace/.claude/worktrees/agent-ac1fad57)",
+      "Bash(DEST=/home/runner/workspace)",
+      "Bash(__NEW_LINE_4c80b4a6f982f48b__ cp:*)",
+      "Bash(cp \"$WT/plataforma-lia/src/components/expanded-chat/hooks/useSendMessageHandlers.ts\" \"$DEST/plataforma-lia/src/components/expanded-chat/hooks/useSendMessageHandlers.ts\")",
+      "Bash(cp \"$WT/plataforma-lia/src/components/pages/candidates/hooks/useCandidatesLIAHandlers.ts\" \"$DEST/plataforma-lia/src/components/pages/candidates/hooks/useCandidatesLIAHandlers.ts\")"
     ]
   }
 }

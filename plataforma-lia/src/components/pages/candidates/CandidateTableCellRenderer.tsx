@@ -143,8 +143,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           <div className="relative group flex items-center justify-center cursor-help">
             {isLocal ? (
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                style={{ backgroundColor: "rgba(180, 160, 140, 0.2)" }}
+                className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-stone-400/20"
               >
                 <Home className="w-3.5 h-3.5" style={{ color: "var(--gray-500)" }} />
               </div>

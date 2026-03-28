@@ -86,24 +86,19 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
   }
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div 
+      <div
         className="w-full max-w-2xl overflow-hidden flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md"
-        style={{ 
-          boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)'
-        }}
       >
         <div 
           className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 rounded-t-xl"
         >
           <div className="flex items-center gap-2">
-            <div 
-              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
+            <div
+              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
               <Gauge className="w-4 h-4 text-gray-700" />
             </div>
@@ -230,9 +225,8 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             </div>
           </div>
 
-          <div 
-            className="p-3 rounded-md"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}
+          <div
+            className="p-3 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/20"
           >
             <p 
               className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"

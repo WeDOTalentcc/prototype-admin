@@ -78,21 +78,19 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
   }
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div 
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '10px', boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.12)' }}
+      <div
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-gray-100 bg-gray-50 rounded-md"
       >
         <div 
           className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100"
         >
           <div className="flex items-center gap-2">
-            <div 
-              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
+            <div
+              className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
               <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>

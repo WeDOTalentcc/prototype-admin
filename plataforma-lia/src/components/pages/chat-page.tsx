@@ -5124,9 +5124,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
                 {/* Recording Indicator - Active Recording */}
                 {isRecording && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse" 
-                    style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
-                  >
+                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse bg-red-500/10 border border-red-500/30">
                     <div className="w-3 h-3 bg-status-error rounded-full animate-ping" />
                     <span className="text-sm font-medium text-status-error">
                       Gravando... {recordingTime}s
@@ -5135,8 +5133,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       size="sm"
                       variant="outline"
                       onClick={stopRecording}
-                      className="ml-auto text-xs h-7"
-                      style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: 'var(--status-error)' }}
+                      className="ml-auto text-xs h-7 border-red-500/50 text-status-error"
                     >
                       <X className="w-3 h-3 mr-1" />
                       Cancelar

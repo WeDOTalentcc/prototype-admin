@@ -32,7 +32,7 @@ export function ContactFilterConfirmModal({
       <AlertDialogContent className="max-w-md border border-gray-100">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(93, 164, 122, 0.15)' }}>
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-status-success/15">
               {pendingContactFilter === 'email' ? (
                 <Mail className="w-4 h-4 text-wedo-green" />
               ) : (

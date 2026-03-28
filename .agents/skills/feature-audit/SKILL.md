@@ -223,7 +223,14 @@ Verifica se as mudanças são VISÍVEIS, ACESSÍVEIS e CONFORMES ao Design Syste
     - Focus ring visível (ring-2 ring-offset-2 ring-gray-400)
     - Para verificações completas de acessibilidade e DEI, usar skill **dei-fairness**
 
-15. **Ambas as visões (Kanban + Tabela)**: Se a feature afeta candidatos, verificar que funciona tanto no card (CandidateCard.tsx) quanto na linha da tabela (CandidateTableRow.tsx / renderCustomCell em job-kanban-page.tsx)
+15. **Qualidade Estética** (ver skill `frontend-design`):
+    - A interface tem ponto de vista estético claro? Não é genérico "AI slop"?
+    - Evita anti-patterns: gradiente roxo genérico, Inter/Arial em tudo, layouts previsíveis sem hierarquia
+    - Para telas novas: verificar que PASSO 0 de `design-standardize` foi aplicado (intenção estética)
+    - Para telas de entrada/branding: verificar que usa composição atmosférica e tipografia de impacto
+    - Para interface interna: verificar que micro-interações, empty states e transições são cuidadosos
+
+16. **Ambas as visões (Kanban + Tabela)**: Se a feature afeta candidatos, verificar que funciona tanto no card (CandidateCard.tsx) quanto na linha da tabela (CandidateTableRow.tsx / renderCustomCell em job-kanban-page.tsx)
 
 **Como executar:**
 ```bash

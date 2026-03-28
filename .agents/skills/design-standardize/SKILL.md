@@ -47,6 +47,8 @@ O que o usuário deve **sentir** ao ver esta tela? Escolha um:
 - `foco` — sem distração, clareza total para decidir (ex: modal de transição de candidato)
 - `descoberta` — explorar o que a IA revelou (ex: perfil do candidato com WSI)
 
+Para telas de branding/entrada, considerar também o **tom estético** (ver `frontend-design` para o espectro completo: refinado/luxo, editorial, orgânico, soft/pastel, industrial, brutalmente minimal).
+
 ### Pergunta 3 — Memorabilidade dentro do DS
 O que torna este componente **inesquecível** dentro dos limites do DS? Responda dentro das possibilidades permitidas:
 

@@ -554,7 +554,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
                         <AvatarImage src={interview.candidateAvatar || getAvatarUrl(interview.id, interview.candidateName)} />
-                        <AvatarFallback className="text-micro font-medium text-gray-600" style={{ backgroundColor: 'rgba(96,190,209,0.15)' }}>
+                        <AvatarFallback className="text-micro font-medium text-gray-600 bg-wedo-cyan/15">
                           {getInitials(interview.candidateName)}
                         </AvatarFallback>
                       </Avatar>
@@ -637,7 +637,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
                         <AvatarImage src={interview.candidateAvatar || getAvatarUrl(interview.id, interview.candidateName)} />
-                        <AvatarFallback className="text-micro font-medium text-gray-600" style={{ backgroundColor: 'rgba(96,190,209,0.15)' }}>
+                        <AvatarFallback className="text-micro font-medium text-gray-600 bg-wedo-cyan/15">
                           {getInitials(interview.candidateName)}
                         </AvatarFallback>
                       </Avatar>
@@ -726,7 +726,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                           <div className="flex gap-3">
                             <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
                               <AvatarImage src={interview.candidateAvatar || getAvatarUrl(interview.id, interview.candidateName)} />
-                              <AvatarFallback className="text-micro font-medium text-gray-600" style={{ backgroundColor: 'rgba(96,190,209,0.15)' }}>
+                              <AvatarFallback className="text-micro font-medium text-gray-600 bg-wedo-cyan/15">
                                 {getInitials(interview.candidateName)}
                               </AvatarFallback>
                             </Avatar>
@@ -818,7 +818,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
                         <AvatarImage src={getAvatarUrl(interview.id, interview.candidateName)} />
-                        <AvatarFallback className="text-micro font-medium text-gray-600" style={{ backgroundColor: 'rgba(96,190,209,0.15)' }}>
+                        <AvatarFallback className="text-micro font-medium text-gray-600 bg-wedo-cyan/15">
                           {getInitials(interview.candidateName)}
                         </AvatarFallback>
                       </Avatar>

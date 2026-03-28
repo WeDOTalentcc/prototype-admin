@@ -24,7 +24,7 @@ export function SourceChangeConfirmModal({
       <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100" style={{ borderRadius: '10px' }}>
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: pendingSourceChange === 'hybrid' ? 'rgba(96, 190, 209, 0.15)' : 'rgba(217, 119, 6, 0.15)' }}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-amber-600/15'}`}>
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-4 h-4 text-gray-700" />
               ) : (
