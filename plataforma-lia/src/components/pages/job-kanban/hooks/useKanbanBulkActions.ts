@@ -6,23 +6,24 @@ import { liaApi } from "@/services/lia-api"
 import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
 import { type BulkActionResult, type BulkActionExecuteData } from "@/components/modals/bulk-action-modal"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
+import { type KanbanCandidate } from "@/components/kanban"
 
 export interface KanbanBulkActionsContext {
   selectedCandidates: Set<string>
   setSelectedCandidates: (value: Set<string>) => void
-  allTableCandidates: any[]
+  allTableCandidates: KanbanCandidate[]
   toast: ReturnType<typeof useToast>["toast"]
   setBulkActionType: (type: BulkActionType) => void
   setShowBulkActionModal: (open: boolean) => void
-  setDataRequestModalCandidate: (candidate: any) => void
+  setDataRequestModalCandidate: (candidate: KanbanCandidate) => void
   setShowDataRequestModal: (open: boolean) => void
   setUnifiedModalType: (type: CommunicationType) => void
-  setUnifiedModalCandidate: (candidate: any | null) => void
+  setUnifiedModalCandidate: (candidate: KanbanCandidate | null) => void
   setUnifiedModalOpen: (open: boolean) => void
-  setWsiInviteCandidate: (candidate: any) => void
+  setWsiInviteCandidate: (candidate: KanbanCandidate) => void
   setShowWSIInviteModal: (open: boolean) => void
   setShowShareGestorModal: (open: boolean) => void
-  setCandidatesData: (updater: (prev: Record<string, any[]>) => Record<string, any[]>) => void
+  setCandidatesData: (updater: (prev: Record<string, KanbanCandidate[]>) => Record<string, KanbanCandidate[]>) => void
 }
 
 export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
@@ -109,21 +110,21 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           new_status: data.targetStage
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: any) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
           setCandidatesData(prev => {
             const newData = { ...prev }
-            const movedCandidates: any[] = []
+            const movedCandidates: KanbanCandidate[] = []
 
             for (const candidateId of successfulIds) {
               for (const [stageId, candidates] of Object.entries(newData)) {
-                const candidateIndex = candidates.findIndex((c: any) => c.id === candidateId)
+                const candidateIndex = candidates.findIndex((c: KanbanCandidate) => c.id === candidateId)
                 if (candidateIndex !== -1) {
-                  const candidate = { ...candidates[candidateIndex], stage: data.targetStage }
+                  const candidate: KanbanCandidate = { ...candidates[candidateIndex], stage: data.targetStage }
                   movedCandidates.push(candidate)
-                  newData[stageId] = candidates.filter((_: any, i: number) => i !== candidateIndex)
+                  newData[stageId] = candidates.filter((_: KanbanCandidate, i: number) => i !== candidateIndex)
                   break
                 }
               }
@@ -154,21 +155,21 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           new_status: 'rejected'
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: any) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
           setCandidatesData(prev => {
             const newData = { ...prev }
-            const movedCandidates: any[] = []
+            const movedCandidates: KanbanCandidate[] = []
 
             for (const candidateId of successfulIds) {
               for (const [stageId, candidates] of Object.entries(newData)) {
-                const candidateIndex = candidates.findIndex((c: any) => c.id === candidateId)
+                const candidateIndex = candidates.findIndex((c: KanbanCandidate) => c.id === candidateId)
                 if (candidateIndex !== -1) {
-                  const candidate = { ...candidates[candidateIndex], stage: 'rejected', rejectionReason: data.rejectionReason }
+                  const candidate: KanbanCandidate = { ...candidates[candidateIndex], stage: 'rejected' }
                   movedCandidates.push(candidate)
-                  newData[stageId] = candidates.filter((_: any, i: number) => i !== candidateIndex)
+                  newData[stageId] = candidates.filter((_: KanbanCandidate, i: number) => i !== candidateIndex)
                   break
                 }
               }
@@ -200,7 +201,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           template_id: templateId
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: any) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {

@@ -324,6 +324,7 @@
     --wedo-gray-700: 48 15% 94%;
     --wedo-gray-800: var(--neutral-warm);
     --wedo-gray-900: 0 0% 100%;
+    --eleven-text-secondary: #9CA3AF; /* gray-400 — texto secundário sobre fundo escuro */
   }
 }
 

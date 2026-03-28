@@ -1,24 +1,31 @@
 "use client"
 
-import { type KanbanCandidate } from "@/components/kanban"
+import type React from "react"
+import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
 import { SUB_STATUSES, type SubStatus } from "@/lib/recruitment-stages"
+import { type KanbanJob } from "@/components/pages/job-kanban/types"
+import { type SubStatusOption } from "@/components/settings/recruitment-journey.types"
+
+interface DraggedCandidate extends KanbanCandidate {
+  fromColumn: string
+}
 
 export interface KanbanDragDropContext {
-  draggedCandidate: any | null
-  setDraggedCandidate: (candidate: any | null) => void
+  draggedCandidate: DraggedCandidate | null
+  setDraggedCandidate: (candidate: DraggedCandidate | null) => void
   dragOverColumn: string | null
   setDragOverColumn: (column: string | null) => void
-  dynamicStages: any[]
+  dynamicStages: DynamicStage[]
   openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   // confirmMove state
-  pendingMove: { candidate: any; fromColumn: string; toColumn: string } | null
-  setPendingMove: (move: { candidate: any; fromColumn: string; toColumn: string } | null) => void
+  pendingMove: { candidate: KanbanCandidate; fromColumn: string; toColumn: string } | null
+  setPendingMove: (move: { candidate: KanbanCandidate; fromColumn: string; toColumn: string } | null) => void
   statusModalOpen: boolean
   setStatusModalOpen: (open: boolean) => void
   selectedSubStatus: string
   setSelectedSubStatus: (status: string) => void
-  setCandidatesData: (updater: (prev: Record<string, any[]>) => Record<string, any[]>) => void
-  job: any
+  setCandidatesData: (updater: (prev: Record<string, KanbanCandidate[]>) => Record<string, KanbanCandidate[]>) => void
+  job: KanbanJob | null
 }
 
 export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
@@ -37,19 +44,19 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
     job,
   } = ctx
 
-  const handleDragStart = (e: DragEvent, candidate: any, fromColumn: string) => {
+  const handleDragStart = (e: React.DragEvent<Element>, candidate: KanbanCandidate, fromColumn: string) => {
     setDraggedCandidate({ ...candidate, fromColumn })
-    e.dataTransfer!.effectAllowed = 'move'
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
   }
 
-  const handleDragEnd = (_e: DragEvent) => {
+  const handleDragEnd = (_e: React.DragEvent<Element>) => {
     setDraggedCandidate(null)
     setDragOverColumn(null)
   }
 
-  const handleDragOver = (e: DragEvent, column: string) => {
+  const handleDragOver = (e: React.DragEvent<Element>, column: string) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
     setDragOverColumn(column)
   }
 
@@ -78,7 +85,7 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
   const getAvailableSubStatuses = (toColumn: string): SubStatus[] => {
     const stage = dynamicStages.find(s => s.id === toColumn)
     if (stage?.subStatuses?.length) {
-      return stage.subStatuses.map((ss: any) => ({
+      return stage.subStatuses.map((ss: SubStatusOption) => ({
         name: ss.name,
         displayName: ss.display_name,
         isDefault: ss.is_default,
@@ -97,7 +104,7 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
 
   const stagesRequiringConfirmation = ['hired', 'rejected', 'offer_declined']
 
-  const handleDrop = async (e: DragEvent, toColumn: string) => {
+  const handleDrop = async (e: React.DragEvent<Element>, toColumn: string) => {
     e.preventDefault()
 
     if (!draggedCandidate) return
@@ -142,12 +149,11 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
 
       const fromKey = fromColumn as keyof typeof newData
       if (newData[fromKey]) {
-        ;(newData[fromKey] as any[]) = (newData[fromKey] as any[]).filter((c: any) => c.id !== candidateId)
+        newData[fromKey] = newData[fromKey].filter((c: KanbanCandidate) => c.id !== candidateId)
       }
 
       const toKey = toColumn as keyof typeof newData
       const candidateToMove = { ...candidate }
-      delete candidateToMove.fromColumn
 
       candidateToMove.stage = toColumn
       candidateToMove.sub_status = selectedSubStatus

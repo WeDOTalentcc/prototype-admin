@@ -400,8 +400,7 @@ export function EditArchetypeModal({
                   {editArchetypeLanguages.map((lang, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: "rgba(96, 190, 209, 0.15)" }}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15"
                     >
                       {lang}
                       <button
@@ -474,8 +473,7 @@ export function EditArchetypeModal({
                 {editArchetypeSkills.map((skill, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                    style={{ backgroundColor: "rgba(96, 190, 209, 0.15)" }}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15"
                   >
                     {skill}
                     <button
@@ -614,13 +612,7 @@ export function EditArchetypeModal({
                 )}
               </div>
               {aiSuggestedSkills.length > 0 && (
-                <div
-                  className="mt-2 p-2 rounded-md"
-                  style={{
-                    backgroundColor: "rgba(96, 190, 209, 0.08)",
-                    border: "1px solid rgba(96, 190, 209, 0.3)",
-                  }}
-                >
+                <div className="mt-2 p-2 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/30">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan" />
                     <span className="text-micro font-medium text-gray-700">Sugestões de IA</span>
@@ -782,12 +774,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
-                    className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                    style={{
-                      backgroundColor:
-                        editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "var(--gray-100)",
-                      color: editArchetypeTags.length > 0 ? "var(--gray-950)" : "var(--gray-400)",
-                    }}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 text-gray-950" : "bg-gray-100 text-gray-400"}`}
                     title="Buscar tags similares com IA"
                   >
                     {isFindingSimilarTags ? (
@@ -838,13 +825,7 @@ export function EditArchetypeModal({
                 )}
               </div>
               {aiSuggestedTags.length > 0 && (
-                <div
-                  className="mt-2 p-2 rounded-md"
-                  style={{
-                    backgroundColor: "rgba(96, 190, 209, 0.08)",
-                    border: "1px solid rgba(96, 190, 209, 0.3)",
-                  }}
-                >
+                <div className="mt-2 p-2 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/30">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan" />
                     <span className="text-micro font-medium text-gray-700">Sugestões de IA</span>

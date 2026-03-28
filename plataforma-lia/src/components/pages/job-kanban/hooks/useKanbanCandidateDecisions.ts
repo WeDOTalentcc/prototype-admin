@@ -1,22 +1,37 @@
 "use client"
 
 import { useToast } from "@/hooks/use-toast"
-import { type KanbanCandidate } from "@/components/kanban"
+import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
+import { type KanbanJob } from "@/components/pages/job-kanban/types"
+
+interface RubricCriterion {
+  name: string
+  score: number
+  weight: number
+  details: string
+}
+
+interface RubricEvaluationData {
+  overall_score: number
+  recommendation: 'approve' | 'review' | 'reject'
+  summary: string
+  criteria: RubricCriterion[]
+}
 
 export interface KanbanCandidateDecisionsContext {
   toast: ReturnType<typeof useToast>["toast"]
-  job: any
-  dynamicStages: any[]
-  setCandidatesData: (updater: (prev: Record<string, any[]>) => Record<string, any[]>) => void
+  job: KanbanJob | null
+  dynamicStages: DynamicStage[]
+  setCandidatesData: (updater: (prev: Record<string, KanbanCandidate[]>) => Record<string, KanbanCandidate[]>) => void
   setShowDecisionFlowModal: (open: boolean) => void
-  setDecisionFlowCandidate: (candidate: any | null) => void
-  decisionFlowCandidate: any | null
+  setDecisionFlowCandidate: (candidate: KanbanCandidate | null) => void
+  decisionFlowCandidate: KanbanCandidate | null
   openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   setTransitionInitialPrompt: (prompt: string | undefined) => void
   onCloseTriagem: () => void
-  setRubricCandidate: (candidate: any) => void
+  setRubricCandidate: (candidate: KanbanCandidate) => void
   setShowRubricModal: (open: boolean) => void
-  setRubricEvaluationData: (data: any) => void
+  setRubricEvaluationData: (data: RubricEvaluationData) => void
   setDecisionFlowType: (type: string) => void
 }
 
@@ -38,7 +53,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setDecisionFlowType,
   } = ctx
 
-  const handleApproveCandidate = async (candidate: any) => {
+  const handleApproveCandidate = async (candidate: KanbanCandidate) => {
     try {
       const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/screening-decision/`, {
         method: 'POST',
@@ -64,13 +79,13 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
 
         setCandidatesData(prev => {
           const currentStage = Object.keys(prev).find(stage =>
-            (prev as any)[stage]?.some((c: any) => c.id === candidate.id)
+            prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
           )
           if (!currentStage) return prev
 
-          const newData = { ...prev } as any
-          newData[currentStage] = newData[currentStage].filter((c: any) => c.id !== candidate.id)
-          const updatedCandidate = { ...candidate, stage: targetStageId, status: 'approved_screening' }
+          const newData = { ...prev }
+          newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+          const updatedCandidate: KanbanCandidate = { ...candidate, stage: targetStageId, status: 'approved_screening' }
           newData[targetStageId] = [...(newData[targetStageId] || []), updatedCandidate]
           return newData
         })
@@ -106,7 +121,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     }
   }
 
-  const handleRejectCandidate = async (candidate: any) => {
+  const handleRejectCandidate = async (candidate: KanbanCandidate) => {
     try {
       const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/screening-decision/`, {
         method: 'POST',
@@ -121,13 +136,13 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       const moveToRejected = () => {
         setCandidatesData(prev => {
           const currentStage = Object.keys(prev).find(stage =>
-            (prev as any)[stage]?.some((c: any) => c.id === candidate.id)
+            prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
           )
           if (!currentStage) return prev
 
-          const newData = { ...prev } as any
-          newData[currentStage] = newData[currentStage].filter((c: any) => c.id !== candidate.id)
-          const updatedCandidate = { ...candidate, stage: 'rejected', status: 'rejected_screening' }
+          const newData = { ...prev }
+          newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+          const updatedCandidate: KanbanCandidate = { ...candidate, stage: 'rejected', status: 'rejected_screening' }
           newData['rejected'] = [...(newData['rejected'] || []), updatedCandidate]
           return newData
         })
@@ -158,7 +173,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     }
   }
 
-  const handleApproveFromScreening = async (candidate: any) => {
+  const handleApproveFromScreening = async (candidate: KanbanCandidate) => {
     const interviewStage = dynamicStages.find(s =>
       s.id.startsWith('interview') || s.id.includes('entrevista')
     )
@@ -201,7 +216,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       return
     }
 
-    const scoreInfo = candidate.liaScore || candidate.score
+    const scoreInfo = candidate.wsiScore || candidate.score
     const promptParts = [
       `${candidate.name} foi aprovado na triagem`,
       scoreInfo ? ` com score de ${scoreInfo}%` : '',
@@ -215,17 +230,17 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     const kanbanCandidate: KanbanCandidate = {
       id: candidate.id,
       name: candidate.name,
-      role: candidate.role || candidate.cargo,
+      role: candidate.role,
       avatar: candidate.avatar,
-      score: candidate.liaScore || candidate.score,
+      score: candidate.wsiScore || candidate.score,
       email: candidate.email,
-      phone: candidate.phone || candidate.telefone,
+      phone: candidate.phone,
     }
 
     openTransition([kanbanCandidate], 'screening', targetStage)
   }
 
-  const handleRejectFromScreening = async (candidate: any) => {
+  const handleRejectFromScreening = async (candidate: KanbanCandidate) => {
     try {
       const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/screening-decision/`, {
         method: 'POST',
@@ -255,7 +270,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       return
     }
 
-    const scoreInfo = candidate.liaScore || candidate.score
+    const scoreInfo = candidate.wsiScore || candidate.score
     const promptParts = [
       `O recrutador decidiu reprovar ${candidate.name} após a triagem`,
       scoreInfo ? ` (score: ${scoreInfo}%)` : '',
@@ -268,11 +283,11 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     const kanbanCandidate: KanbanCandidate = {
       id: candidate.id,
       name: candidate.name,
-      role: candidate.role || candidate.cargo,
+      role: candidate.role,
       avatar: candidate.avatar,
-      score: candidate.liaScore || candidate.score,
+      score: candidate.wsiScore || candidate.score,
       email: candidate.email,
-      phone: candidate.phone || candidate.telefone,
+      phone: candidate.phone,
     }
 
     openTransition([kanbanCandidate], 'screening', 'rejected')
@@ -299,19 +314,19 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setDecisionFlowCandidate(null)
   }
 
-  const handleTriagemApprove = async (candidate: any) => {
+  const handleTriagemApprove = async (candidate: KanbanCandidate) => {
     onCloseTriagem()
     await handleApproveFromScreening(candidate)
   }
 
-  const handleTriagemReject = async (candidate: any) => {
+  const handleTriagemReject = async (candidate: KanbanCandidate) => {
     onCloseTriagem()
     await handleRejectFromScreening(candidate)
   }
 
-  const openDecisionFlowModal = (candidate: any, action: 'approve' | 'reject') => {
-    const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
-    const isTriagemCompleted = stage === 'triagem' || candidate.triagemHistory || candidate.screeningHistory
+  const openDecisionFlowModal = (candidate: KanbanCandidate, action: 'approve' | 'reject') => {
+    const stage = (candidate.stage || 'funil').toLowerCase()
+    const isTriagemCompleted = stage === 'triagem' || stage === 'screening'
 
     setDecisionFlowCandidate(candidate)
 
@@ -332,7 +347,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setShowDecisionFlowModal(true)
   }
 
-  const handleOpenAnalysis = async (candidate: any) => {
+  const handleOpenAnalysis = async (candidate: KanbanCandidate) => {
     setRubricCandidate(candidate)
     setShowRubricModal(true)
 
@@ -342,12 +357,13 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         const data = await response.json()
         setRubricEvaluationData(data)
       } else {
-        const mockEvaluation = {
+        const fitScore = candidate.fitScore ?? 0
+        const mockEvaluation: RubricEvaluationData = {
           overall_score: candidate.fitScore || candidate.score || 75,
-          recommendation: candidate.fitScore >= 70 ? 'approve' : candidate.fitScore >= 50 ? 'review' : 'reject',
+          recommendation: fitScore >= 70 ? 'approve' : fitScore >= 50 ? 'review' : 'reject',
           summary: `Análise do candidato ${candidate.name} para a vaga. Avaliação baseada no currículo e requisitos da posição.`,
           criteria: [
-            { name: 'Experiência Técnica', score: Math.round((candidate.technicalTestScore || candidate.fitScore || 70) * 0.8 + 20), weight: 30, details: 'Avaliação da experiência técnica do candidato' },
+            { name: 'Experiência Técnica', score: Math.round((candidate.wsiScore || candidate.fitScore || 70) * 0.8 + 20), weight: 30, details: 'Avaliação da experiência técnica do candidato' },
             { name: 'Formação Acadêmica', score: Math.round(60 + Math.random() * 30), weight: 20, details: 'Compatibilidade da formação com a vaga' },
             { name: 'Habilidades Interpessoais', score: Math.round(65 + Math.random() * 25), weight: 20, details: 'Competências comportamentais identificadas' },
             { name: 'Fit Cultural', score: Math.round(70 + Math.random() * 20), weight: 15, details: 'Alinhamento com os valores da empresa' },
@@ -358,7 +374,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       }
     } catch (error) {
       console.error('Error fetching rubric evaluation:', error)
-      const mockEvaluation = {
+      const mockEvaluation: RubricEvaluationData = {
         overall_score: candidate.fitScore || candidate.score || 75,
         recommendation: 'review',
         summary: `Análise do candidato ${candidate.name} para a vaga.`,

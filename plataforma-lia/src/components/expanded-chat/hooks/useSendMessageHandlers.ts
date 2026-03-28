@@ -32,7 +32,9 @@ import type {
   TechnicalSkill,
   BehavioralCompetency,
   SalaryInfo,
+  WSIQuestion,
 } from "../ExpandedChatContext"
+import type { WSIQuestionCandidate } from "../types"
 import type { FastTrackSuggestion, FastTrackJobData } from "@/hooks/useFastTrack"
 import type { useContextSwitching } from "./useContextSwitching"
 import type { useConversationMemory } from "./useConversationMemory"
@@ -42,6 +44,39 @@ import type { useLearning } from "./useLearning"
 import type { ToolCall } from "./useToolCalling"
 import { parseSalaryValue, applySalaryUpdate, addSkillIfNotExists, removeSkillByName, parseCommand, getStageLabel } from "../utils"
 import type { ParsedNavigationCommand, ParsedEditCommand } from "../utils"
+import type { CompensationAnalysisResult } from "@/components/job-creation/compensation-analysis-panel"
+import type { TechnicalSkillSuggestion, BehavioralCompetencySuggestion } from "@/components/job-creation/competencies-chat-message"
+import type { JobConfig } from "./usePublishingState"
+import type { FieldChange } from "./useChatSync"
+import type { VacancySummary } from "@/components/job-creation/vacancy-search-results"
+import type { VacancyFullDetails } from "@/components/job-creation/vacancy-full-summary"
+import type { EvaluationStepResponse } from "@/hooks/use-job-wizard-backend"
+
+interface EvaluationStepResult {
+  compensation_analysis?: CompensationAnalysisResult
+  technical_skills?: Array<{
+    name?: string
+    level?: string
+    weight?: number
+    weight_justification?: string
+    source?: string
+    required?: boolean
+    category?: string
+  }>
+  behavioral_competencies?: Array<{
+    name?: string
+    weight?: number
+    justification?: string
+    weight_justification?: string
+    source?: string
+  }>
+  [key: string]: unknown
+}
+
+interface CompetencySuggestions {
+  technicalSkills: TechnicalSkillSuggestion[]
+  behavioralCompetencies: BehavioralCompetencySuggestion[]
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context interface — everything the hook needs from the parent component
@@ -53,9 +88,9 @@ export interface SendMessageHandlersContext {
   onClose: () => void
   isJobCreationMode: boolean
   inline: boolean
-  onJobCreated?: (...args: any[]) => void
+  onJobCreated?: (jobId: string, jobData?: Record<string, unknown>) => void
   onOrchestratedMessage?: (msg: string) => Promise<{ content: string; ui_action?: string | null; ui_action_params?: Record<string, unknown> }>
-  onMessagesUpdate?: (...args: any[]) => void
+  onMessagesUpdate?: (messages: Array<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: Date }>) => void
 
   // ─── Input ───────────────────────────────────────────────────────────────────
   inputValue: string
@@ -96,8 +131,8 @@ export interface SendMessageHandlersContext {
   setAwaitingSensitiveFieldsConfirmation: (val: boolean) => void
 
   // ─── Draft ───────────────────────────────────────────────────────────────────
-  pendingDraftData: Partial<WizardDraftData> | null | any
-  setPendingDraftData: (data: any) => void
+  pendingDraftData: Partial<WizardDraftData> | null | Record<string, unknown>
+  setPendingDraftData: (data: Partial<WizardDraftData> | null) => void
   setHasAppliedRestoredDraft: (val: boolean) => void
   applyPendingDraft: () => void
   clearWizardDraft: () => void
@@ -105,8 +140,8 @@ export interface SendMessageHandlersContext {
   // ─── Calibration ─────────────────────────────────────────────────────────────
   calibrationComplete: boolean
   setCalibrationComplete: (val: boolean) => void
-  approvedCandidates: any[]
-  rejectedCandidates: any[]
+  approvedCandidates: string[]
+  rejectedCandidates: string[]
   setIsPanelOpen: (val: boolean) => void
   localCandidateCount: number
   setShowCalibrationModal: (val: boolean) => void
@@ -115,14 +150,14 @@ export interface SendMessageHandlersContext {
   fastTrack: ReturnType<typeof import("@/hooks/useFastTrack").useFastTrack>
   fastTrackState: FastTrackState
   setFastTrackState: (state: FastTrackState) => void
-  fastTrackSearchResults: any[]
-  setFastTrackSearchResults: (results: any[]) => void
-  fastTrackSelectedVacancy: any | null
-  setFastTrackSelectedVacancy: (vacancy: any | null) => void
-  fastTrackAdjustments: any | null
-  setFastTrackAdjustments: React.Dispatch<React.SetStateAction<any>>
-  fastTrackSearchCriteria: any | null
-  setFastTrackSearchCriteria: (criteria: any | null) => void
+  fastTrackSearchResults: VacancySummary[]
+  setFastTrackSearchResults: (results: VacancySummary[]) => void
+  fastTrackSelectedVacancy: VacancyFullDetails | null
+  setFastTrackSelectedVacancy: (vacancy: VacancyFullDetails | null) => void
+  fastTrackAdjustments: VacancyAdjustments
+  setFastTrackAdjustments: React.Dispatch<React.SetStateAction<VacancyAdjustments>>
+  fastTrackSearchCriteria: VacancySearchCriteria
+  setFastTrackSearchCriteria: (criteria: VacancySearchCriteria) => void
   isSearchingVacancies: boolean
   setIsSearchingVacancies: (val: boolean) => void
   setWizardFastTrackSourceJobId: (id: string | null) => void
@@ -147,21 +182,21 @@ export interface SendMessageHandlersContext {
   setBehavioralCompetencies: React.Dispatch<React.SetStateAction<BehavioralCompetency[]>>
   salaryInfo: SalaryInfo
   setSalaryInfo: React.Dispatch<React.SetStateAction<SalaryInfo>>
-  wsiQuestions: any[]
-  setWsiQuestions: React.Dispatch<React.SetStateAction<any[]>>
-  wsiCandidates: any[]
-  setWsiCandidates: React.Dispatch<React.SetStateAction<any[]>>
-  setCompetencySuggestions: (val: any) => void
+  wsiQuestions: WSIQuestion[]
+  setWsiQuestions: React.Dispatch<React.SetStateAction<WSIQuestion[]>>
+  wsiCandidates: WSIQuestionCandidate[]
+  setWsiCandidates: React.Dispatch<React.SetStateAction<WSIQuestionCandidate[]>>
+  setCompetencySuggestions: (val: CompetencySuggestions) => void
   generatedJobDescription: string
   setGeneratedJobDescription: (val: string) => void
 
   // ─── Salary / Compensation ───────────────────────────────────────────────────
-  compensationAnalysis: any | null
-  setCompensationAnalysis: (val: any | null) => void
+  compensationAnalysis: CompensationAnalysisResult | null
+  setCompensationAnalysis: (val: CompensationAnalysisResult | null) => void
   setIsLoadingEnrichment: (val: boolean) => void
 
   // ─── Job config ──────────────────────────────────────────────────────────────
-  setJobConfig: React.Dispatch<React.SetStateAction<any>>
+  setJobConfig: React.Dispatch<React.SetStateAction<JobConfig>>
   setInternalJobCreationMode: (val: boolean) => void
   setDynamicInitialMessage: (val: string | null) => void
 
@@ -169,7 +204,7 @@ export interface SendMessageHandlersContext {
   setDisplayedText: (val: string) => void
 
   // ─── Functions ───────────────────────────────────────────────────────────────
-  buildCollectedData: () => any
+  buildCollectedData: () => Record<string, unknown>
   processOrchestratorResponse: (result: WizardOrchestratorResponse, processingMessageId: string) => Promise<void>
   generateParecerData: () => ParecerLIAData
   extractCriteriaFromText: (text: string) => DetectedCriteria
@@ -182,8 +217,8 @@ export interface SendMessageHandlersContext {
   parseFastTrackAdjustment: (content: string) => VacancyAdjustments | null
   detectFastTrackIntent: (content: string) => "fast_track" | "from_scratch" | "confirm" | "adjust" | "select" | "criteria" | null
   generateCriteriaResponse: (criteria: DetectedCriteria) => string
-  callEvaluationStep: (content: string, context: any) => Promise<any>
-  trackFieldChange: (change: any) => void
+  callEvaluationStep: (content: string, context?: { job_title?: string; seniority?: string; department?: string; location?: string; work_model?: string; technical_skills?: string[]; behavioral_skills?: string[] }) => Promise<EvaluationStepResponse | null>
+  trackFieldChange: (change: Omit<FieldChange, 'id' | 'timestamp'>) => void
 
   // ─── Hooks ───────────────────────────────────────────────────────────────────
   contextSwitching: ReturnType<typeof useContextSwitching>
@@ -709,31 +744,32 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       setIsLoading(true)
       try {
         const { regenerateWSIQuestions } = await import('@/services/lia-api')
-        const currentQuestions = wsiCandidates.map(q => ({
-          question: q.question,
-          type: q.type || 'open',
-          required: q.required !== false,
-          competency_validated: q.competency
+        const currentQuestions = wsiCandidates.map((q, idx) => ({
+          id: q.id || `wsi-${idx}`,
+          question_text: q.question,
+          question_type: (q.type || 'open') as 'open' | 'yes-no' | 'numeric' | 'multiple-choice',
+          competency_validated: q.competency || null,
+          competency_type: null as null,
         }))
         const result = await regenerateWSIQuestions({
           company_id: user?.company || 'default',
           job_title: basicInfoFields.cargo,
-          current_questions: currentQuestions as any,
+          current_questions: currentQuestions,
           technical_skills: technicalSkills.map(s => s.name),
           behavioral_competencies: behavioralCompetencies.map(c => c.name),
           seniority: undefined,
           max_questions: 10
         })
         if (result.success && result.questions.length > 0) {
-          setWsiCandidates(result.questions.map((q: any, idx: number) => ({
+          setWsiCandidates(result.questions.map((q, idx) => ({
             id: `wsi-regen-${idx}-${Date.now()}`,
-            question: q.question,
-            type: q.type || 'open',
-            required: q.required !== false,
+            question: q.question_text,
+            type: (q.question_type || 'open') as WSIQuestion['type'],
+            required: true,
             selected: true,
             batch: 0,
             isWSI: true,
-            competency: q.competency_validated,
+            competency: q.competency_validated ?? undefined,
           })))
           analytics.trackSuggestion('fast_track_wsi_regenerated', true)
           const successMessage: Message = {
@@ -1146,16 +1182,23 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
         setFastTrackAdjustments(prev => ({ ...prev, ...adjustments }))
         setFastTrackState('adjusting')
         if (fastTrackSelectedVacancy) {
-          const updatedVacancy = { ...fastTrackSelectedVacancy }
-          if (adjustments.salary_min) updatedVacancy.salary_range.min = adjustments.salary_min
-          if (adjustments.salary_max) updatedVacancy.salary_range.max = adjustments.salary_max
-          if (adjustments.work_model) updatedVacancy.work_model = adjustments.work_model
-          if (adjustments.location) updatedVacancy.location = adjustments.location
+          const updatedVacancy: VacancyFullDetails = {
+            ...fastTrackSelectedVacancy,
+            salary_range: {
+              ...fastTrackSelectedVacancy.salary_range,
+              min: adjustments.salary_min ?? fastTrackSelectedVacancy.salary_range?.min,
+              max: adjustments.salary_max ?? fastTrackSelectedVacancy.salary_range?.max,
+            },
+            work_model: adjustments.work_model ?? fastTrackSelectedVacancy.work_model,
+            location: adjustments.location ?? fastTrackSelectedVacancy.location,
+          }
           setFastTrackSelectedVacancy(updatedVacancy)
+          const salaryMin = updatedVacancy.salary_range?.min?.toLocaleString('pt-BR') ?? '–'
+          const salaryMax = updatedVacancy.salary_range?.max?.toLocaleString('pt-BR') ?? '–'
           const liaMessage: Message = {
             id: `lia-adjust-${Date.now()}`,
             role: 'assistant',
-            content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${updatedVacancy.salary_range.min.toLocaleString('pt-BR')} - R$ ${updatedVacancy.salary_range.max.toLocaleString('pt-BR')}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
+            content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${salaryMin} - R$ ${salaryMax}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
             timestamp: new Date()
           }
           setMessages(prev => [...prev, liaMessage])
@@ -1682,16 +1725,16 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
         }
         callEvaluationStep(content, evaluationContext).then((evalResult) => {
           if (evalResult?.compensation_analysis) setCompensationAnalysis(evalResult.compensation_analysis)
-          const evalResultAny = evalResult as any
-          if (evalResultAny?.technical_skills || evalResultAny?.behavioral_competencies) {
-            const technicalSuggestions = (evalResultAny.technical_skills || []).map((skill: any) => ({
-              name: skill.name || skill, level: skill.level || 'Intermediário', weight: skill.weight || 3,
+          const suggestions = evalResult?.suggestions as EvaluationStepResult | undefined
+          if (suggestions?.technical_skills || suggestions?.behavioral_competencies) {
+            const technicalSuggestions: TechnicalSkillSuggestion[] = (suggestions.technical_skills || []).map((skill) => ({
+              name: skill.name || '', level: (skill.level as TechnicalSkillSuggestion['level']) || 'Intermediário', weight: skill.weight || 3,
               weightJustification: skill.weight_justification || 'Baseado em análise de mercado',
-              source: skill.source || 'market_benchmark', required: skill.required ?? true, category: skill.category || 'tool'
+              source: (skill.source as TechnicalSkillSuggestion['source']) || 'market_benchmark', required: skill.required ?? true, category: (skill.category as TechnicalSkillSuggestion['category']) || 'tool'
             }))
-            const behavioralSuggestions = (evalResultAny.behavioral_competencies || []).map((comp: any) => ({
-              name: comp.name || comp, weight: comp.weight || 3, justification: comp.justification || '',
-              weightJustification: comp.weight_justification || 'Baseado em histórico da empresa', source: comp.source || 'company_history'
+            const behavioralSuggestions: BehavioralCompetencySuggestion[] = (suggestions.behavioral_competencies || []).map((comp) => ({
+              name: comp.name || '', weight: comp.weight || 3, justification: comp.justification || '',
+              weightJustification: comp.weight_justification || 'Baseado em histórico da empresa', source: (comp.source as BehavioralCompetencySuggestion['source']) || 'company_history'
             }))
             if (technicalSuggestions.length > 0 || behavioralSuggestions.length > 0) {
               setCompetencySuggestions({ technicalSkills: technicalSuggestions, behavioralCompetencies: behavioralSuggestions })
@@ -1753,7 +1796,7 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
         if (orchestratedResponse.ui_action === 'start_job_wizard') {
           setInternalJobCreationMode(true)
           setCurrentStage('input-evaluation')
-          if ((orchestratedResponse.ui_action_params as any)?.initial_message) {
+          if (orchestratedResponse.ui_action_params?.['initial_message']) {
             setDynamicInitialMessage(INITIAL_JOB_CREATION_MESSAGE)
           }
         }

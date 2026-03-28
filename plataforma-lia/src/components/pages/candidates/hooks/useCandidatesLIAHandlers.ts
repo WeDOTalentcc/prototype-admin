@@ -4,17 +4,56 @@ import React from "react"
 import { callOrchestratedTalentChat, type OrchestratedTalentChatResponse } from "@/lib/api/kanban-assistant"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { Candidate } from "../types"
-import type { ParsedEntities, SearchMode } from "@/components/search/smart-search-input"
+import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
+import type { SearchAnalytics } from "@/components/proactive-insight-card"
+import type { CalibrationCandidate } from "@/components/calibration-card"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
+
+export interface LIAChatMessage {
+  id: string
+  type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
+  content: string
+  timestamp: Date
+  metadata?: {
+    action_executed?: boolean
+    action_result?: Record<string, unknown>
+    action_type?: string
+    needs_confirmation?: boolean
+    needs_params?: boolean
+    pending_action_id?: string
+    conversation_id?: string
+  }
+  searchResults?: {
+    localCount: number
+    globalCount: number
+    query: string
+  }
+  analytics?: SearchAnalytics
+  candidates?: CalibrationCandidate[]
+}
+
+interface AppRouter {
+  push: (href: string) => void
+  replace: (href: string) => void
+  back: () => void
+  refresh: () => void
+}
+
+interface AuthUser {
+  id?: string
+  email?: string
+  company?: string
+  name?: string
+}
 
 export interface CandidatesLIAHandlersContext {
   candidates: Candidate[]
   setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
-  chatMessages: any[]
-  setChatMessages: React.Dispatch<React.SetStateAction<any[]>>
+  chatMessages: LIAChatMessage[]
+  setChatMessages: React.Dispatch<React.SetStateAction<LIAChatMessage[]>>
   liaPromptValue: string
   setLiaPromptValue: React.Dispatch<React.SetStateAction<string>>
   liaWidth: number
@@ -73,17 +112,17 @@ export interface CandidatesLIAHandlersContext {
   handleCandidateClick: (candidate: Candidate) => void
   executeSearch: (
     query: string,
-    entities?: ParsedEntities | null,
+    entities?: ParsedEntities,
     mode?: SearchMode,
-    metadata?: any,
+    metadata?: SearchMetadata,
     usePearch?: boolean
   ) => Promise<void>
   talentFunnel: {
     toggleFavoriteCandidate: (id: string, note?: string) => void
   }
   toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
-  user: any
-  router: any
+  user: AuthUser | null
+  router: AppRouter
 }
 
 export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
@@ -114,7 +153,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
 
   // 🎯 Handler para quick actions do ProactiveInsightCard
   const handleQuickAction = async (actionId: string, actionType: string) => {
-    const liaMessage: any = {
+    const liaMessage: LIAChatMessage = {
       id: `lia-action-${Date.now()}`,
       type: 'lia',
       content: '',
@@ -192,7 +231,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
           link.download = `candidatos_${new Date().toISOString().split('T')[0]}.csv`
           link.click()
 
-          const successMessage: any = {
+          const successMessage: LIAChatMessage = {
             id: `lia-export-success-${Date.now()}`,
             type: 'lia',
             content: `✅ **Exportação concluída!**\n\n${exportData.length} candidatos exportados para CSV.`,
@@ -221,9 +260,9 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
       current_company: c.current_company,
       location: c.location_city || c.location,
       skills: c.skills || [],
-      experience_years: c.experience_years,
+      experience_years: c.years_of_experience,
       lia_score: c.liaAnalysis?.score || c.score,
-      wsi_score: c.wsi_score,
+      wsi_score: c.lia_score,
       source: c.source,
       // Campos adicionais para análises completas
       work_model: c.work_model_preference || c.workModel,
@@ -246,7 +285,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
       total_results: searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0),
       local_results: searchResults.localCount,
       global_results: searchResults.globalCount,
-      active_filters: activeSearchFilters
+      active_filters: activeSearchFilters as Record<string, unknown>
     }
 
     try {
@@ -462,7 +501,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
     }
 
     // Adicionar mensagem do usuário ao chat
-    const userMessage: any = {
+    const userMessage: LIAChatMessage = {
       id: `user-${Date.now()}`,
       type: 'user',
       content: trimmedMessage,
@@ -483,7 +522,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
             ? `_Agentes: ${response.agents_consulted.join(', ')}_\n\n`
             : ''
 
-          const liaResponse: any = {
+          const liaResponse: LIAChatMessage = {
             id: `lia-response-${Date.now()}`,
             type: 'lia',
             content: agentInfo + response.content,
@@ -501,7 +540,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
           setChatMessages(prev => [...prev, liaResponse])
 
           if (response.suggested_prompts && response.suggested_prompts.length > 0) {
-            const suggestionsMessage: any = {
+            const suggestionsMessage: LIAChatMessage = {
               id: `lia-suggestions-${Date.now()}`,
               type: 'lia',
               content: `💡 **Sugestões:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
@@ -521,7 +560,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
           ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
           : `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`
 
-        const fallbackResponse: any = {
+        const fallbackResponse: LIAChatMessage = {
           id: `lia-response-${Date.now()}`,
           type: 'lia',
           content: fallbackContent,
@@ -542,7 +581,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
     const trimmedCommand = command.trim().toLowerCase()
 
     // Adicionar mensagem do usuário ao chat
-    const userMessage: any = {
+    const userMessage: LIAChatMessage = {
       id: `user-${Date.now()}`,
       type: 'user',
       content: command,
@@ -555,7 +594,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
 
     try {
       // Determinar tipo de comando e processar
-      let liaResponse: any
+      let liaResponse: LIAChatMessage
 
       // Comandos de resumo de busca
       if (trimmedCommand.includes('resumir') && (trimmedCommand.includes('busca') || trimmedCommand.includes('resultado'))) {
@@ -964,7 +1003,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
       setChatMessages(prev => [...prev, liaResponse])
     } catch (error) {
       console.error('handleAICommand error:', error)
-      const errorMessage: any = {
+      const errorMessage: LIAChatMessage = {
         id: `lia-error-${Date.now()}`,
         type: 'lia',
         content: `❌ Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.`,
