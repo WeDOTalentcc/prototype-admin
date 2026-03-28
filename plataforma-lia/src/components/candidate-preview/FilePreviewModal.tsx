@@ -143,7 +143,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
         </div>
 
         {/* Conteúdo do Preview com Transcrição para Vídeos */}
-        <div className="p-4 overflow-auto" style={{ maxHeight: 'calc(90vh - 100px)' }}>
+        <div className="p-4 overflow-auto" style={{maxHeight: 'calc(90vh - 100px)'}}>
           {previewType === 'pdf' && (
             <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-6 min-h-[600px] flex items-center justify-center">
               <div className="text-center">
@@ -163,11 +163,9 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               <img
                 src={selectedFile.url || candidate.avatar_url || candidate.avatar}
                 alt={selectedFile.name}
-                style={{
-                  width: `${imageZoom}%`,
+                style={{width: `${imageZoom}%`,
                   maxWidth: '100%',
-                  height: 'auto'
-                }}
+                  height: 'auto'}}
                 className="rounded-md transition-all duration-300"
               />
             </div>
@@ -272,7 +270,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
+                        <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--status-success)', color: 'white'}}>
                           91% - Altamente Recomendado
                         </Badge>
                       </div>
@@ -291,7 +289,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de vídeo */}
                   <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
                     <div className="flex items-center gap-2">
-                      <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--gray-700)', color: 'var(--white)' }}>
+                      <Badge className="text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--gray-700)', color: 'var(--white)'}}>
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
                       </Badge>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '3:45'}</span>
@@ -368,7 +366,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </Button>
                       <div className="flex-1">
                         <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full bg-gray-700 dark:bg-gray-400 rounded-full transition-all" style={{ width: audioPlaying ? '35%' : '0%' }} />
+                          <div className="h-full bg-gray-700 dark:bg-gray-400 rounded-full transition-all" style={{width: audioPlaying ? '35%' : '0%'}} />
                         </div>
                       </div>
                       <span className="text-xs text-gray-600 dark:text-gray-400 font-mono w-20 text-right">
@@ -460,7 +458,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
+                        <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--status-success)', color: 'white'}}>
                           93% - Altamente Recomendado
                         </Badge>
                       </div>

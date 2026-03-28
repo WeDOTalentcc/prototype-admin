@@ -163,8 +163,7 @@ export default function MonitoramentoPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -182,7 +181,7 @@ export default function MonitoramentoPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -198,14 +197,14 @@ export default function MonitoramentoPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: statusConfig.bgColor }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: statusConfig.bgColor}}>
                   <MonitorDot className={`w-5 h-5 ${statusConfig.iconColor}`} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -221,14 +220,14 @@ export default function MonitoramentoPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 146, 60, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(251, 146, 60, 0.1)'}}>
                   <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -242,14 +241,14 @@ export default function MonitoramentoPage() {
                     <span className="text-xs text-status-warning">2 alta prioridade</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -264,7 +263,7 @@ export default function MonitoramentoPage() {
                     <span className="text-xs text-status-success">Últimos 30 dias</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <Server className="w-5 h-5 text-status-success" />
                 </div>
               </div>
@@ -275,7 +274,7 @@ export default function MonitoramentoPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card className="mb-6" >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
@@ -328,7 +327,7 @@ export default function MonitoramentoPage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
@@ -379,7 +378,7 @@ export default function MonitoramentoPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -443,13 +442,12 @@ export default function MonitoramentoPage() {
               <Link key={page.href} href={page.href}>
                 <Card 
                   className="cursor-pointer hover:transition-shadow h-full"
-                  style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                  
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div 
-                        className="w-10 h-10 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                        className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                       >
                         <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>
@@ -468,14 +466,13 @@ export default function MonitoramentoPage() {
           })}
           <Card 
             className="h-full border-dashed border-2 border-gray-200 dark:border-gray-700"
-            style={{boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-              backgroundColor: 'rgba(96, 190, 209, 0.02)'}}
+            style={{backgroundColor: 'rgba(96, 190, 209, 0.02)'}}
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div 
                   className="w-10 h-10 rounded-md flex items-center justify-center"
-                  style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}
+                  style={{backgroundColor: 'rgba(139, 92, 246, 0.1)'}}
                 >
                   <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>

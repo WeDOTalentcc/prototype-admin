@@ -121,8 +121,7 @@ export default function ControlesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <FileCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -143,7 +142,7 @@ export default function ControlesPage() {
           </Button>
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -222,13 +221,12 @@ export default function ControlesPage() {
               <Link key={framework.key} href={framework.href}>
                 <Card 
                   className="h-full transition-all hover:cursor-pointer"
-                  style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                  
                 >
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-4">
                       <div 
-                        className="w-12 h-12 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                        className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
                       >
                         {framework.icon}
                       </div>
@@ -275,13 +273,12 @@ export default function ControlesPage() {
             <Link href="/admin/compliance/controles/cobertura">
               <Card 
                 className="h-full transition-all hover:cursor-pointer border-dashed"
-                style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                
               >
                 <CardContent className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
                     <div 
-                      className="w-12 h-12 rounded-md flex items-center justify-center"
-                      style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                      className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
                     >
                       <Grid3X3 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                     </div>
@@ -305,7 +302,7 @@ export default function ControlesPage() {
           </div>
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardContent className="p-6">
             <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-100">
               Legenda de Status

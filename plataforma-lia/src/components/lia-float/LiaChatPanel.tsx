@@ -253,7 +253,7 @@ export function LiaChatPanel() {
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
           </div>
-          <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" >LIA</span>
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}
@@ -338,7 +338,7 @@ export function LiaChatPanel() {
       {/* History panel */}
       {showHistory && (
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" style={{ fontFamily: "Inter, sans-serif" }}>
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
             Conversas recentes
           </p>
           {recentChats.length === 0 ? (
@@ -388,7 +388,7 @@ export function LiaChatPanel() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >LIA</span>
                     </div>
                     <HITLConfirmCard
                       action={hitlPending.action}
@@ -496,7 +496,7 @@ function EmptyState() {
         <Brain className="w-5 h-5 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "Inter, sans-serif" }}>
+        <p className="text-base-ui font-medium text-gray-700 dark:text-gray-300" >
           Como posso ajudar?
         </p>
         <p className="text-sm-ui text-gray-400 dark:text-gray-500 mt-1">
@@ -515,12 +515,12 @@ function ThinkingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "300ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "0ms"}} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "150ms"}} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "300ms"}} />
         </span>
       </div>
     </div>
@@ -547,7 +547,7 @@ function StreamingBubble({ content }: { content: string }) {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >LIA</span>
         </div>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
@@ -598,7 +598,7 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >LIA</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">

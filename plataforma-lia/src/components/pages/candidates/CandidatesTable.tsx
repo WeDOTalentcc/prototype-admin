@@ -286,7 +286,7 @@ export function CandidatesTable({
                 )}
               </td>
               <td className="p-4">
-                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                <div className="flex flex-wrap gap-1 max-w-sidebar-content">
                   {candidate.technical_skills?.slice(0, 3).map((skill) => (
                     <Badge 
                       key={skill} 

@@ -273,7 +273,7 @@ export default function WelcomePage() {
                   width={300}
                   height={100}
                   priority
-                  style={{ width: 'auto', height: 'auto' }}
+                  style={{width: 'auto', height: 'auto'}}
                 />
               </motion.div>
             </motion.div>
@@ -296,7 +296,7 @@ export default function WelcomePage() {
                   width={180}
                   height={60}
                   priority
-                  style={{ width: 'auto', height: 'auto' }}
+                  style={{width: 'auto', height: 'auto'}}
                 />
               </motion.div>
 

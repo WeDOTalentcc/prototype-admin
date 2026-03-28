@@ -308,7 +308,7 @@ export function CompetenciesStage({
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[200px] text-xs bg-white border border-gray-200">
+                <TooltipContent side="top" className="max-w-sidebar-content text-xs bg-white border border-gray-200">
                   <div className="flex items-start gap-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                     <div>
@@ -655,7 +655,7 @@ export function CompetenciesStage({
                                 <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-[200px] text-xs bg-white border border-gray-200">
+                            <TooltipContent side="top" className="max-w-sidebar-content text-xs bg-white border border-gray-200">
                               <div className="flex items-start gap-1.5">
                                 <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                                 <div>

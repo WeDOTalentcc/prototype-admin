@@ -95,15 +95,15 @@ const CONTEXT_COLORS: Record<string, {
 }> = {
   candidates: {
     border: 'var(--wedo-green-light)',
-    bg: 'rgba(123, 194, 154, 0.1)',
+    bg: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A) 10%, transparent)',
     headerText: 'var(--status-success)',
-    headerBg: 'rgba(123, 194, 154, 0.15)'
+    headerBg: 'color-mix(in srgb, var(--wedo-green-light, #7BC29A) 15%, transparent)'
   },
   jobs: {
     border: 'var(--gray-400)',
-    bg: 'rgba(107, 114, 128, 0.05)',
+    bg: 'color-mix(in srgb, var(--gray-500) 5%, transparent)',
     headerText: 'var(--gray-600)',
-    headerBg: 'rgba(107, 114, 128, 0.1)'
+    headerBg: 'color-mix(in srgb, var(--gray-500) 10%, transparent)'
   }
 }
 
@@ -2266,7 +2266,7 @@ export function ExpandableAIPrompt({
                       onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
                       className={`p-1.5 rounded-md transition-all ${
                         requireEmails 
-                          ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                          ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
@@ -2289,7 +2289,7 @@ export function ExpandableAIPrompt({
                       onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
                       className={`p-1.5 rounded-md transition-all ${
                         requirePhoneNumbers 
-                          ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                          ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
@@ -2363,7 +2363,7 @@ export function ExpandableAIPrompt({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 lia-btn-secondary rounded-md flex items-center justify-center transition-colors bg-gray-800" style={{ color: 'white' }}
+                className="w-8 h-8 lia-btn-secondary rounded-md flex items-center justify-center transition-colors bg-gray-800" style={{color: 'white'}}
                 title="Fechar análise do candidato"
               >
                 <X className="w-4 h-4" />
@@ -2383,7 +2383,7 @@ export function ExpandableAIPrompt({
 
         {/* Área Expandida - REORGANIZADA SEM DUPLICAÇÃO */}
         {isExpanded && (
-          <div className="lia-prompt-expanded space-y-4" style={{ backgroundColor: 'var(--gray-100)' }}>
+          <div className="lia-prompt-expanded space-y-4" style={{backgroundColor: 'var(--gray-100)'}}>
 
             {/* AI-First Context Pills + Quick Actions */}
             {(contextPill || quickActions.length > 0) && (
@@ -2751,7 +2751,7 @@ export function ExpandableAIPrompt({
                                 onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
                                 className={`p-1.5 rounded-md transition-all ${
                                   requireEmails 
-                                    ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                                    ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                                     : 'hover:bg-gray-100'
                                 }`}
                               >
@@ -2773,7 +2773,7 @@ export function ExpandableAIPrompt({
                                 onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
                                 className={`p-1.5 rounded-md transition-all ${
                                   requirePhoneNumbers 
-                                    ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                                    ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                                     : 'hover:bg-gray-100'
                                 }`}
                               >
@@ -2820,11 +2820,11 @@ export function ExpandableAIPrompt({
                                   : 'hover:bg-gray-50'
                               }`}
                             >
-                              <span style={{ color: 'var(--gray-950)' }}>{suggestion.text}</span>
+                              <span style={{color: 'var(--gray-950)'}}>{suggestion.text}</span>
                               <span className="text-xs text-gray-400">{suggestion.category}</span>
                             </button>
                           ))}
-                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid color-mix(in srgb, black 5%, transparent)'}}>
                             <span>Use ↑↓ para navegar, Tab para selecionar</span>
                             <span>Esc para fechar</span>
                           </div>
@@ -2843,11 +2843,7 @@ export function ExpandableAIPrompt({
                     {/* Prompt Enhancement Card */}
                     {promptEnhancement && !showAutocomplete && (
                       <div 
-                        className="mt-2 p-3 rounded-md border transition-all"
-                        style={{ 
-                          backgroundColor: 'rgba(229, 231, 235, 0.2)',
-                          borderColor: 'rgba(96, 190, 209, 0.3)'
-                        }}
+                        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'color-mix(in srgb, var(--wedo-cyan) 30%, transparent)' }}
                       >
                         <div className="flex items-start gap-2">
                           <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
@@ -2865,7 +2861,7 @@ export function ExpandableAIPrompt({
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={handleAcceptEnhancement}
-                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors bg-gray-900" style={{ color: 'white' }}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors bg-gray-900" style={{color: 'white'}}
                               >
                                 <Check className="w-3 h-3" />
                                 Usar sugestão
@@ -2888,10 +2884,8 @@ export function ExpandableAIPrompt({
                       <div className="flex items-center gap-1.5 mt-2 mb-1">
                         <div 
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-                          style={{ 
-                            backgroundColor: 'rgba(96, 190, 209, 0.08)', 
-                            border: '1px solid rgba(96, 190, 209, 0.2)'
-                          }}
+                          style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)', 
+                            border: '1px solid color-mix(in srgb, var(--wedo-cyan) 20%, transparent)'}}
                         >
                           <Home className="w-3 h-3" />
                           <span>Base Local</span>
@@ -2912,23 +2906,21 @@ export function ExpandableAIPrompt({
                           <div
                             key={tag.key}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all"
-                            style={{ 
-                              backgroundColor: colors.bg,
-                              color: colors.text,
-                            }}
+                            style={{backgroundColor: colors.bg,
+                              color: colors.text}}
                             title={tag.value}
                           >
                             <div 
                               className="flex items-center justify-center w-4 h-4 rounded"
-                              style={{ backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent' }}
+                              style={{backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent'}}
                             >
-                              <TagIcon className="w-3 h-3" style={{ color: tag.filled ? colors.iconBg : colors.text }} />
+                              <TagIcon className="w-3 h-3" style={{color: tag.filled ? colors.iconBg : colors.text}} />
                             </div>
                             <span className="font-medium">{tag.label}</span>
                             {tag.filled && tag.value && (
                               <>
-                                <span style={{ opacity: 0.5 }}>·</span>
-                                <span className="max-w-20 truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                                <span style={{opacity: 0.5}}>·</span>
+                                <span className="max-w-20 truncate font-normal" style={{opacity: 0.85}}>{tag.value}</span>
                               </>
                             )}
                           </div>
@@ -2962,31 +2954,29 @@ export function ExpandableAIPrompt({
                               </span>
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-[300px] p-3" className="max-w-[300px] p-3 border-gray-300 dark:border-gray-600">
+                          <TooltipContent side="bottom" className="max-w-panel-sm p-3 max-w-panel-sm p-3 border-gray-300 dark:border-gray-600">
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                                  <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)' }}>
+                                  <span className="font-semibold text-sm" style={{color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                                     {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                                   </span>
                                 </div>
-                                <span className="text-micro px-2 py-0.5 rounded-full" style={{ 
-                                  backgroundColor: autocompleteEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                  color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'
-                                }}>
+                                <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'color-mix(in srgb, var(--status-success) 10%, transparent)' : 'color-mix(in srgb, var(--status-error) 10%, transparent)',
+                                  color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                                   {autocompleteEnabled ? 'ON' : 'OFF'}
                                 </span>
                               </div>
                               <div>
-                                <span className="font-medium text-sm" className="text-gray-800 dark:text-gray-100">
+                                <span className="font-medium text-sm text-gray-800 dark:text-gray-100">
                                   Assistente de Busca Inteligente
                                 </span>
                               </div>
-                              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
                               </p>
-                              <ul className="text-xs space-y-1" className="text-gray-500 dark:text-gray-400">
+                              <ul className="text-xs space-y-1 text-gray-500 dark:text-gray-400">
                                 <li className="flex items-start gap-1.5">
                                   <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-600" />
                                   <span>Indica critérios faltantes</span>
@@ -3015,17 +3005,13 @@ export function ExpandableAIPrompt({
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => setShowSaveArchetypeModal(true)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90"
-                                style={{ 
-                                  backgroundColor: 'rgba(229, 231, 235, 0.3)', 
-                                  border: '1px solid rgba(96, 190, 209, 0.3)',
-                                }}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid color-mix(in srgb, var(--wedo-cyan) 30%, transparent)' }}
                               >
                                 <Target className="w-3 h-3" />
                                 <span className="font-medium">Salvar Arquétipo</span>
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Salvar busca como arquétipo</p>
                               <p className="text-xs text-gray-300">Reutilize esta busca no futuro</p>
                             </TooltipContent>
@@ -3036,45 +3022,41 @@ export function ExpandableAIPrompt({
                     
                     {/* Análise de Qualidade da Busca */}
                     {naturalSearchValue && searchAnalysis && (
-                      <div className="space-y-2 pt-2 mt-2 border-t" className="border-gray-300 dark:border-gray-600">
+                      <div className="space-y-2 pt-2 mt-2 border-t border-gray-300 dark:border-gray-600">
                         {/* Barra de completude */}
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium" className="text-gray-500 dark:text-gray-400">
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                                 Qualidade da busca
                               </span>
                               <span 
                                 className="text-xs font-bold"
-                                style={{ 
-                                  color: searchAnalysis.completeness_score >= 60 
+                                style={{color: searchAnalysis.completeness_score >= 60 
                                     ? 'var(--status-success)' 
                                     : searchAnalysis.completeness_score >= 40 
                                       ? 'var(--status-warning)' 
-                                      : 'var(--status-error)' 
-                                }}
+                                      : 'var(--status-error)'}}
                               >
                                 {searchAnalysis.completeness_score}%
                               </span>
                             </div>
-                            <div className="h-1.5 rounded-full overflow-hidden" className="bg-gray-100 dark:bg-gray-800">
+                            <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
                               <div 
                                 className="h-full rounded-full transition-all duration-500"
-                                style={{ 
-                                  width: `${searchAnalysis.completeness_score}%`,
+                                style={{width: `${searchAnalysis.completeness_score}%`,
                                   backgroundColor: searchAnalysis.completeness_score >= 60 
                                     ? 'var(--status-success)' 
                                     : searchAnalysis.completeness_score >= 40 
                                       ? 'var(--status-warning)' 
-                                      : 'var(--status-error)'
-                                }}
+                                      : 'var(--status-error)'}}
                               />
                             </div>
                           </div>
                           {searchAnalysis.next_recommended_action && (
                             <div 
                               className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-                              style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
+                              style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)'}}
                             >
                               <TrendingUp className="w-3 h-3" />
                               <span>{searchAnalysis.next_recommended_action}</span>
@@ -3089,11 +3071,9 @@ export function ExpandableAIPrompt({
                               <div 
                                 key={index}
                                 className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-gray-400"
-                                style={{
-                                  backgroundColor: alert.severity === 'warning'
-                                    ? 'rgba(245, 158, 11, 0.08)'
-                                    : 'rgba(96, 190, 209, 0.08)',
-                                }}
+                                style={{backgroundColor: alert.severity === 'warning'
+                                    ? 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
+                                    : 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)'}}
                               >
                                 {alert.severity === 'warning' ? (
                                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
@@ -3184,7 +3164,7 @@ export function ExpandableAIPrompt({
                                     + URL
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="text-xs max-w-[200px]">
+                                <TooltipContent side="top" className="text-xs max-w-sidebar-content">
                                   Adicione até 2 perfis para a LIA criar um perfil ideal combinado
                                 </TooltipContent>
                               </Tooltip>
@@ -3216,7 +3196,7 @@ export function ExpandableAIPrompt({
                             <div 
                               key={index}
                               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
-                              style={{ backgroundColor: 'var(--gray-100)' }}
+                              style={{backgroundColor: 'var(--gray-100)'}}
                             >
                               <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                               <span className="max-w-[150px] truncate">{file.name}</span>
@@ -3229,7 +3209,7 @@ export function ExpandableAIPrompt({
                             <button
                               onClick={() => cvFileInputRef.current?.click()}
                               className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
-                              style={{ backgroundColor: 'var(--gray-100)' }}
+                              style={{backgroundColor: 'var(--gray-100)'}}
                             >
                               <Upload className="w-3 h-3" />
                               + CV
@@ -3240,7 +3220,7 @@ export function ExpandableAIPrompt({
                         <button
                           onClick={() => cvFileInputRef.current?.click()}
                           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-100 transition-colors border border-gray-200"
-                          style={{ backgroundColor: 'var(--gray-100)' }}
+                          style={{backgroundColor: 'var(--gray-100)'}}
                         >
                           <Upload className="w-3.5 h-3.5" />
                           Arraste CVs aqui ou clique para upload (máx. 2)
@@ -3271,7 +3251,7 @@ export function ExpandableAIPrompt({
 
                     {/* Combined Suggestions Box */}
                     {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-                      <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "var(--gray-50)" }}>
+                      <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{backgroundColor: "var(--gray-50)"}}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -3323,10 +3303,8 @@ export function ExpandableAIPrompt({
                       }}
                       disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ 
-                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "var(--gray-200)",
-                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--gray-400)"
-                      }}
+                      style={{backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "var(--gray-200)",
+                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--gray-400)"}}
                     >
                       <Search className="w-4 h-4" />
                       {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}
@@ -3476,7 +3454,7 @@ export function ExpandableAIPrompt({
                                 onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
                                 className={`p-1.5 rounded-md transition-all ${
                                   requireEmails 
-                                    ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                                    ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                                     : 'hover:bg-gray-100'
                                 }`}
                               >
@@ -3498,7 +3476,7 @@ export function ExpandableAIPrompt({
                                 onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
                                 className={`p-1.5 rounded-md transition-all ${
                                   requirePhoneNumbers 
-                                    ? 'bg-[rgba(123,194,154,0.15)] ring-1 ring-wedo-green-light' 
+                                    ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                                     : 'hover:bg-gray-100'
                                 }`}
                               >
@@ -3526,20 +3504,20 @@ export function ExpandableAIPrompt({
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="text-xs" style={{ color: 'var(--gray-400)' }}>Operadores:</span>
+                      <span className="text-xs" style={{color: 'var(--gray-400)'}}>Operadores:</span>
                       {['AND', 'OR', 'NOT', '( )', '" "'].map((op) => (
                         <button
                           key={op}
                           onClick={() => setBooleanSearchValue(prev => prev + ' ' + op + ' ')}
                           className="lia-pill font-mono"
-                          style={{ padding: '2px 8px' }}
+                          style={{padding: '2px 8px'}}
                         >
                           {op}
                         </button>
                       ))}
                     </div>
                     {/* Dica contextual */}
-                    <div className="p-2.5 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                    <div className="p-2.5 rounded-md" style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 6%, transparent)'}}>
                       <div className="flex items-start gap-2">
                         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
                         <p className="text-xs text-gray-800 dark:text-gray-200">
@@ -4016,21 +3994,21 @@ export function ExpandableAIPrompt({
             className="border border-gray-200"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold" style={{ color: "var(--gray-950)" }}>
+              <h3 className="text-lg font-semibold" style={{color: "var(--gray-950)"}}>
                 Editar Arquétipo
               </h3>
               <button
                 onClick={closeEditArchetype}
                 className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
               >
-                <X className="w-4 h-4" style={{ color: "var(--gray-400)" }} />
+                <X className="w-4 h-4" style={{color: "var(--gray-400)"}} />
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="flex gap-2">
                 <div className="w-16">
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Emoji</label>
+                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Emoji</label>
                   <input
                     type="text"
                     value={editArchetypeEmoji}
@@ -4040,7 +4018,7 @@ export function ExpandableAIPrompt({
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Nome</label>
+                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Nome</label>
                   <input
                     type="text"
                     value={editArchetypeName}
@@ -4052,7 +4030,7 @@ export function ExpandableAIPrompt({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Query de Busca</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Query de Busca</label>
                 <textarea
                   value={editArchetypeQuery}
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
@@ -4063,7 +4041,7 @@ export function ExpandableAIPrompt({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Descrição (opcional)</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Descrição (opcional)</label>
                 <textarea
                   value={editArchetypeDescription}
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
@@ -4075,7 +4053,7 @@ export function ExpandableAIPrompt({
 
               {/* Tags Section */}
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Tags</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Tags</label>
                 
                 {/* Existing tags as removable chips */}
                 {editArchetypeTags.length > 0 && (
@@ -4129,7 +4107,7 @@ export function ExpandableAIPrompt({
                 onClick={closeEditArchetype}
                 variant="outline"
                 className="flex-1"
-                style={{ color: "var(--gray-400)" }}
+                style={{color: "var(--gray-400)"}}
               >
                 Cancelar
               </Button>
@@ -4137,10 +4115,8 @@ export function ExpandableAIPrompt({
                 onClick={saveArchetype}
                 disabled={isSavingArchetype || !editArchetypeName}
                 className="flex-1"
-                style={{ 
-                  backgroundColor: editArchetypeName ? "var(--gray-950)" : "var(--gray-200)",
-                  color: editArchetypeName ? "white" : "var(--gray-400)"
-                }}
+                style={{backgroundColor: editArchetypeName ? "var(--gray-950)" : "var(--gray-200)",
+                  color: editArchetypeName ? "white" : "var(--gray-400)"}}
               >
                 {isSavingArchetype ? (
                   <>
@@ -4163,7 +4139,7 @@ export function ExpandableAIPrompt({
       <AlertDialog open={showDeleteArchetypeDialog} onOpenChange={setShowDeleteArchetypeDialog}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-50)' }}
+          style={{backgroundColor: 'var(--gray-50)'}}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
@@ -4192,7 +4168,7 @@ export function ExpandableAIPrompt({
             <AlertDialogAction
               onClick={confirmDeleteArchetype}
               className="flex-1 h-9 text-sm px-3 rounded-md text-white flex items-center justify-center gap-1.5"
-              style={{ backgroundColor: 'var(--status-error)' }}
+              style={{backgroundColor: 'var(--status-error)'}}
             >
               <Trash2 className="w-3.5 h-3.5" />
               Excluir
@@ -4204,10 +4180,10 @@ export function ExpandableAIPrompt({
       {/* Modal de Confirmação para Mudança de Fonte (Híbrido/Global) */}
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
-          className="sm:max-w-[200px] w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-100)' }}
+          className="sm:max-w-sidebar-content w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border" 
+          style={{backgroundColor: 'var(--gray-100)'}}
         >
-          <div className="space-y-2" style={{ fontSize: '10px', lineHeight: '1.4' }}>
+          <div className="space-y-2" style={{fontSize: '10px', lineHeight: '1.4'}}>
             <div className="flex items-center gap-1.5">
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-3 h-3 text-gray-600" />

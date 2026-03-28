@@ -297,7 +297,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
           <Card 
             key={indicator.id} 
             className="hover:transition-shadow"
-            style={{ animationDelay: `${index * 100}ms` }}
+            style={{animationDelay: `${index * 100}ms`}}
           >
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
@@ -384,10 +384,8 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   <div className="h-8 bg-gray-100 rounded-md overflow-hidden">
                     <div 
                       className={`h-full ${colors[index] || 'bg-gray-400'} rounded-md transition-all duration-700 ease-out flex items-center justify-end pr-2`}
-                      style={{ 
-                        width: `${widthPercent}%`,
-                        animation: `slideIn 0.5s ease-out ${index * 100}ms backwards`
-                      }}
+                      style={{width: `${widthPercent}%`,
+                        animation: `slideIn 0.5s ease-out ${index * 100}ms backwards`}}
                     >
                       <span className="text-xs font-bold text-white font-['Open_Sans']">
                         {stage.count}
@@ -504,7 +502,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                           <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50 rounded-full transition-all duration-500"
-                              style={{ width: `${recruiter.quality_score}%` }}
+                              style={{width: `${recruiter.quality_score}%`}}
                             />
                           </div>
                           <span className="text-gray-800 dark:text-gray-200 font-medium">{recruiter.quality_score.toFixed(0)}</span>

@@ -1,22 +1,22 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
-> **Última atualização:** 2026-03-28 (Sprint 4.10 — DS tokens, type safety, dark mode + remoção de style={} inline)
+> **Última atualização:** 2026-03-28 (Revisão pós-Sprint 4.10 — componentes extraídos, tamanhos corrigidos, novos hooks admin documentados)
 > **Arquitetura:** Bridge Architecture — 3 camadas de abstração (CSS vars → framework config → componentes) — ver Seção 0
-> **Componentes:** 504 .tsx em 38+ diretórios (redução de 65 arquivos vs. Sprint 4.6 via Fase 0 + splits + limpeza)
-> **Hooks:** 116 em `src/hooks/` + 44 em subdiretórios de componentes = **160 custom hooks**
+> **Componentes:** 504 .tsx em 48+ diretórios (504 confirmados via `find`)
+> **Hooks:** 90 em `src/hooks/` + 10 em `hooks/admin/` + 36 em subdiretórios de componentes = **~136 custom hooks** (contagem revisada)
 > **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
 > **Rotas:** 90 page routes + 5 layouts + 424 API endpoints
 > **CSS:** 242 variáveis, 29 keyframes, 200+ classes customizadas, 169 ícones Lucide
 > **Localização:** `plataforma-lia/src/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
 >
-> **Estado das Fases (2026-03-28):**
-> ✅ Fase 0 — Limpeza de código morto (-9.820L)
-> ✅ Fase 1 — Escala tipográfica (~4.500 valores arbitrários eliminados)
-> ✅ Fase 2 — Tokenização de cores (54+ → **9 arquivos** com hex hardcoded)
-> ✅ Fase 3 — Consolidação de badges (dark mode + tokens DS v4.2.1)
-> 🔄 Fase 4 — Split de monolitos (Sprints 4.6–4.10 em andamento)
-> ⏳ Fase 5 — Padronização de dimensões (pendente)
+> **Estado das Fases (2026-03-28 — Análise Profunda):**
+> ✅ Fases 0–3 — Limpeza, tipografia, cores, badges (concluídas)
+> 🔄 Fase 4 — Split de monolitos (15 >2.000L restantes, incl. lia-api.ts 4.853L)
+> ⏳ Fase 5 — Inline styles (238 arq / 1.439 occ)
+> ✅ Fases 6–9 — Bridge, Design Audit, Code Review, Auditoria 14D (executadas)
+> ⏳ Fase 10 — Score Frontend 9.0+ (P0-P6 planejados, 4 sprints multi-agent)
+> **Score Frontend:** 7.6/10 → target 9.0/10 | **Unsafe any:** 1.189 (846 + 343 `as any`)
 
 ---
 
@@ -99,7 +99,7 @@ Sprint 4.4+  (Integração)      → Todas as 6 dimensões auditadas
 | 1 | `src/app/globals.css` | 1.477 | Variáveis compostas, keyframes, classes utilitárias |
 | 2 | `tailwind.config.ts` | ~200 | Mapeia tokens para classes Tailwind |
 | 2→3 | `src/lib/design-tokens.ts` | 644 | Tokens em TypeScript + mapeamento Tailwind→Vuetify |
-| 2→3 | `src/lib/theme-colors.ts` | ~150 | Temas por página (6 variantes) |
+| ~~2→3~~ | ~~`src/lib/theme-colors.ts`~~ | ~~150~~ | ~~Temas por página (6 variantes)~~ — ✅ REMOVIDO Fase 2 |
 
 ### 0.6 O que Já Está Implementado
 
@@ -138,28 +138,34 @@ Sprint 4.4+  (Integração)      → Todas as 6 dimensões auditadas
 **Infraestrutura de Migração Vue:**
 - `design-tokens.ts` contém `tailwindToVuetify` com mapeamentos completos de cores, tipografia, espaçamento, border-radius, sombras e layout — pronto para consumo por scripts de conversão automatizada
 
-### 0.7 O que Falta (Fase 4 residual + Fase 5)
+### 0.7 O que Falta (Análise Profunda 2026-03-28)
 
-> **Status:** Fases 0–3 concluídas. Fase 4 (split) em andamento. Fase 5 pendente.
+> **Status:** Fases 0–9 executadas. Fase 10 (Score Frontend 9.0+) planejada.
+> **Números corrigidos via scan real do código no Replit.**
 
-| Fase | Escopo | Impacto | Status |
+| Fase/Prioridade | Escopo | Escopo Real (scan) | Status |
 |------|--------|---------|--------|
-| 2 | Cores — tokenizar hex hardcoded | 54+ → **9 arquivos** com hex | ✅ CONCLUÍDA — 95% resolvido |
-| 3 | Badges & Status — unificar 7 → 5 implementações | dark mode + tokens DS v4.2.1 | ✅ CONCLUÍDA (Sprint 4.9/4.10) |
-| 4 | Giant Components — Sprints 4.6–4.10 | Redução de ~35.000L em monolitos | 🔄 EM ANDAMENTO — 5 monolitos críticos restantes |
-| 5 | Modals & Inline Styles — padronizar | **216** arquivos com inline styles (era 249) | ⏳ PENDENTE |
+| 2 — Cores | tokenizar hex hardcoded | 12 isentos. **Mas:** 102 rgba + 114 color-mix + 60 hex restantes | ✅ parcial — P5 pendente |
+| 3 — Badges | unificar 7 → 5 implementações | dark mode + tokens DS v4.2.1 | ✅ CONCLUÍDA |
+| 4 — Split | Giant Components | **15 monolitos >2.000L** (incl. lia-api.ts 4.853L) | 🔄 P0 pendente |
+| 5 — Inline Styles | padronizar | **238 arquivos / 1.439 occ** (real > estimado) | ⏳ P3 pendente |
+| P1 — Type Safety | `: any` + `as any` | **1.189 unsafe any total** (846 + 343) | ⏳ P1 pendente |
+| P2 — DS Consistency | `rounded` → `rounded-md` | **819 ocorrências** | ⏳ P2 pendente |
+| P4 — Performance | React.memo + dynamic imports | **11 + 11 usos** (muito baixo) | ⏳ P4 pendente |
 
-**Monolitos críticos restantes (Fase 4):**
+**Monolitos >4.000L restantes (Tier A — Plano v2 P0):**
 
-| Arquivo | Linhas atuais | Status | Sprint sugerida |
-|---------|--------------|--------|----------------|
-| `pages/chat-page.tsx` | 5.583 | ⚠️ Pendente | Sprint 4.11 |
-| `pages/candidates-page.tsx` | 5.260 | ⚠️ Pendente | Sprint 4.11 |
-| `settings/CompanyTeamHub.tsx` | 5.235 | ⚠️ Pendente | Sprint 4.12 |
-| `pages/job-kanban-page.tsx` | 4.990 | ⚠️ Pendente | Sprint 4.12 |
-| `expandable-ai-prompt.tsx` | 4.306 | ⚠️ Pendente | Sprint 4.12 |
+| Arquivo | Linhas REAIS | `: any` + `as any` | Status |
+|---------|-------------|-------------------|--------|
+| `pages/job-kanban-page.tsx` | **4.940** | 55 + 23 = 78 | ⚠️ Pendente |
+| `services/lia-api.ts` | **4.853** | 11 + 0 = 11 | ⚠️ **NOVO** — serviço |
+| `pages/candidates-page.tsx` | **4.811** | 20 + 6 = 26 | ⚠️ Pendente |
+| `pages/jobs-page.tsx` | **4.667** | 8 + 10 = 18 | ⚠️ Pendente |
+| `expanded-chat-modal.tsx` | **4.409** | 9 + 12 = 21 | ⚠️ Pendente |
+| `expandable-ai-prompt.tsx` | **4.262** | 10 + 5 = 15 | ⚠️ Pendente |
 
-> **Detalhamento completo das fases:** seções 29-32 deste documento.
+> **Monolitos resolvidos:** CompanyTeamHub (5.235→183 ✅), settings-page (4.449→134 ✅), chat-page (5.583→3.936 parcial)
+> **Detalhamento completo:** Plano v2 Seções 10.0-10.8 em `docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md`
 
 ### 0.8 Regras Para Novos Desenvolvimentos
 
@@ -297,7 +303,7 @@ Interface de conversação com a LIA.
 | 10 | `chat/resume-analysis-result` | 198 | Resultado de análise de currículo |
 | 11 | `chat/typing-indicator` | 55 | Indicador de digitação da LIA |
 | 12 | `chat/voice-chat-button` | 244 | Botão de chat por voz |
-| 13 | `expanded-chat-modal` | 11228 | Modal principal do chat expandido (maior componente) |
+| 13 | `expanded-chat-modal` | 4423 | Modal principal do chat expandido — ✅ Split Sprint 4.8 (era 11.228) |
 | 14 | `expanded-chat/ExpandedChatContext` | 250 | Context provider do chat expandido |
 | 15 | `expanded-chat/components/tool-confirmation-message` | 189 | Mensagem de confirmação de tool |
 | 16 | `expanded-chat/components/tool-execution-feedback` | 165 | Feedback de execução de ferramenta |
@@ -310,7 +316,7 @@ Interface de conversação com a LIA.
 
 ---
 
-## 3. Job Creation & Wizard (`job-creation/`, `job-wizard/`, `wizard/`, `job-description/`) — 28 componentes
+## 3. Job Creation & Wizard (`job-creation/`, `job-wizard/`, `wizard/`, `job-description/`) — 27 componentes ativos (1 deletado)
 
 Fluxo de criação e edição de vagas.
 
@@ -343,7 +349,7 @@ Fluxo de criação e edição de vagas.
 | 25 | `job-wizard/wizard-requirements-step` | 612 | Step de requisitos |
 | 26 | `job-wizard/wizard-review-step` | 703 | Step de revisão final |
 | 27 | `job-wizard/wizard-stepper` | 311 | Stepper visual do wizard |
-| 28 | `wizard/suggestion-badge` | 146 | Badge de sugestão IA |
+| 28 | ~~`wizard/suggestion-badge`~~ | ~~146~~ | ~~Badge de sugestão IA~~ — ✅ **DELETADO** na Fase 3 (badge órfão) |
 
 ---
 
@@ -411,7 +417,7 @@ Busca inteligente e sourcing de candidatos. Inclui filtros avançados, presets g
 | 32 | `search/SearchSourceSelector` | 155 | Seletor de fonte de busca |
 | 33 | `search/SimilarProfilesInput` | 246 | Input de perfis similares |
 | 34 | `search/SkillsFilterInput` | 370 | Filtro de skills |
-| 35 | `search/smart-search-input` | 5475 | Input de busca inteligente (3º maior componente) |
+| 35 | `search/smart-search-input` | 3868 | Input de busca inteligente — ✅ Split Sprint 4.9 (era 5.475) |
 | 36 | `search/TimezoneDropdown` | 170 | Dropdown de timezone |
 | 37 | `search/UniversitiesFilterInput` | 460 | Filtro de universidades |
 | 38 | `search/UniversityLocationsInput` | 276 | Input de localização de universidades |
@@ -496,9 +502,11 @@ Gestão visual do pipeline de recrutamento. Estrutura modular com hooks, utils e
 
 ---
 
-## 8. Settings & Admin (`settings/`, `admin/`) — 32 componentes
+## 8. Settings & Admin (`settings/`, `admin/`) — 46 componentes
 
 Configurações, gestão de empresa, equipe e preferências.
+
+> **Atualizado 2026-03-28:** CompanyTeamHub splitado (5.235→183L), settings-page splitado (4.444→134L). 14 novos componentes/arquivos.
 
 | # | Componente | Linhas | Função |
 |---|-----------|--------|--------|
@@ -526,7 +534,7 @@ Configurações, gestão de empresa, equipe e preferências.
 | 22 | `settings/CommunicationHub` | 1796 | Hub de comunicações |
 | 23 | `settings/CompanyDataCard` | 259 | Card de dados da empresa |
 | 24 | `settings/CompanyDataSection` | 1036 | Seção completa dados empresa |
-| 25 | `settings/CompanyTeamHub` | 5235 | Hub de equipe (4º maior) |
+| 25 | `settings/CompanyTeamHub` | **183** | Hub de equipe — **splitado de 5.235L** (Sprint 4.10) |
 | 26 | `settings/CultureAnalyzer` | 610 | Analisador de cultura |
 | 27 | `settings/CultureProfilePreview` | 671 | Preview do perfil cultural |
 | 28 | `settings/DataRequestTab` | 978 | Tab de solicitação de dados |
@@ -534,6 +542,20 @@ Configurações, gestão de empresa, equipe e preferências.
 | 30 | `settings/GoalsPlanningHub` | 1050 | Hub de metas |
 | 31 | `settings/RecruitmentHub` | 901 | Hub de recrutamento |
 | 32 | `settings/SmartImportZone` | 584 | Zona de importação inteligente |
+| 33 | `settings/companyTeamHub.types` | 506 | Types extraídos do CompanyTeamHub — **novo Sprint 4.10** |
+| 34 | `settings/settings-api-keys-tab` | 60 | Tab de chaves API — **novo Sprint 4.10** |
+| 35 | `settings/settings-billing-tab` | 427 | Tab de faturamento — **novo Sprint 4.10** |
+| 36 | `settings/settings-company-tabs` | 848 | Container tabs empresa — **novo Sprint 4.10** |
+| 37 | `settings/settings-general-tab` | 193 | Tab geral — **novo Sprint 4.10** |
+| 38 | `settings/settings-integrations-tab` | 743 | Tab integrações — **novo Sprint 4.10** |
+| 39 | `settings/settings-journey-tab` | 722 | Tab jornada recrutamento — **novo Sprint 4.10** |
+| 40 | `settings/settings-notifications-tab` | 90 | Tab notificações — **novo Sprint 4.10** |
+| 41 | `settings/settings-recruitment-tabs` | 1123 | Container tabs recrutamento — **novo Sprint 4.10** |
+| 42 | `settings/settings-security-tab` | 64 | Tab segurança — **novo Sprint 4.10** |
+| 43 | `settings/HiringPoliciesHub` | 362 | Hub políticas contratação — **novo Sprint 4.10** |
+| 44 | `settings/RecruitmentJourneyConfig` | 456 | Config jornada recrutamento — **novo Sprint 4.10** |
+| 45 | `settings/LiaFieldToggle` | 435 | Toggle de campos LIA — **novo Sprint 4.10** |
+| 46 | `settings/StageCard` | 241 | Card de estágio pipeline — **novo Sprint 4.10** |
 
 ---
 
@@ -659,8 +681,8 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 | 16 | `dashboard-app` | 187 | App principal do dashboard |
 | 17 | `disc-assessment-modal` | 557 | Modal de assessment DISC |
 | 18 | `events-section` | 440 | Seção de eventos |
-| 19 | `expandable-ai-prompt` | 4308 | Prompt expansível da IA (5º maior) |
-| 20 | `expanded-chat-modal` | 11228 | Modal do chat expandido (maior componente) |
+| 19 | `expandable-ai-prompt` | 4306 | Prompt expansível da IA — ⚠️ Pendente split (Sprint 4.12) |
+| 20 | `expanded-chat-modal` | 4423 | Modal do chat expandido — ✅ Split Sprint 4.8 (era 11.228) |
 | 21 | `experience-highlight-card` | 247 | Card de destaque de experiência |
 | 22 | `export-tools` | 325 | Ferramentas de exportação |
 | 23 | `fairness-warning-banner` | 49 | Banner de aviso de fairness/viés |
@@ -725,8 +747,10 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 | 13. Talent Funnel | 4 | ~2.500 |
 | 14. Autonomous & Proactive | 5 | ~1.400 |
 | 15. Layout & Navigation | 9 | ~1.400 |
-| 16. Standalone (raiz) | 62 | ~38.000 |
-| **Subtotal Seções 1-16** | **~343** | **~160.400** |
+| 16. Standalone (raiz) | 62 | ~29.000 |
+| **Subtotal Seções 1-16** | **~343** | **~151.000** |
+
+> ⚠️ Linha 16 e total revisados — valores anteriores incluíam `expanded-chat-modal` (11.228) e `candidates-page` (9.604) pré-split. Valores atuais refletem estado pós-Sprint 4.10.
 
 ---
 
@@ -735,20 +759,24 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 > ✅ Atualizado após Sprint 4.10 (DS tokens, type safety, dark mode + remoção style={} inline)
 > Sprints 4.8/4.9 reduziram drasticamente `expanded-chat-modal` (−6.805L) e `smart-search-input` (−1.595L)
 
-| # | Componente | Linhas | Sprint anterior | Delta |
-|---|-----------|--------|----------------|-------|
-| 1 | `pages/chat-page` | 5.583 | 5.592 (Sprint 4.7) | −9 |
-| 2 | `pages/candidates-page` | 5.260 | 8.453 (Sprint 4.7) | **−3.193L** Sprint 4.9 |
-| 3 | `settings/CompanyTeamHub` | 5.235 | 5.235 | ⚠️ Pendente split |
-| 4 | `pages/job-kanban-page` | 4.990 | 6.308 (Sprint 4.7) | **−1.318L** Sprint 4.9 |
-| 5 | `pages/jobs-page` | 4.735 | 4.735 | estável |
-| 6 | `pages/settings-page` | 4.449 | 4.449 | estável |
-| 7 | `expanded-chat-modal` | 4.423 | 11.228 (Sprint 4.7) | **−6.805L** Sprint 4.8 ✅ |
-| 8 | `expandable-ai-prompt` | 4.306 | 4.308 | −2 |
-| 9 | `search/smart-search-input` | 3.868 | 5.475 (Sprint 4.7) | **−1.607L** Sprint 4.9 ✅ |
-| 10 | `pages/dashboards-page` | 3.283 | ~3.283 | estável |
+| # | Componente | Linhas (doc) | Linhas REAIS (Replit) | Sprint anterior | Delta real |
+|---|-----------|-------------|----------------------|----------------|-----------|
+| 1 | `settings/CompanyTeamHub` | 5.235 | **5.217** | 5.235 | ⚠️ Pendente split |
+| 2 | `pages/candidates-page` | 5.260 | **4.999** | 8.453 (Sprint 4.7) | **−3.454L** Sprint 4.9 |
+| 3 | `pages/job-kanban-page` | 4.990 | **4.960** | 6.308 (Sprint 4.7) | **−1.348L** Sprint 4.9 |
+| 4 | `pages/jobs-page` | 4.735 | **4.690** | 4.735 | estável |
+| 5 | `pages/settings-page` | 4.449 | **4.444** | 4.449 | estável |
+| 6 | `expanded-chat-modal` | 4.423 | **4.409** | 11.228 (Sprint 4.7) | **−6.819L** Sprint 4.8 ✅ |
+| 7 | `expandable-ai-prompt` | 4.306 | **4.262** | 4.308 | −46 |
+| 8 | `pages/chat-page` | 5.583 | **3.936** | 5.592 | **−1.656L** ✅ Split não documentado (→ ChatContextPanel + ChatMessageList) |
+| 9 | `search/smart-search-input` | 3.868 | **3.790** | 5.475 (Sprint 4.7) | **−1.685L** Sprint 4.9 ✅ |
+| 10 | `pages/dashboards-page` | 3.283 | **3.280** | ~3.283 | estável |
 
-**11º lugar (referência):** `modals/advanced-filters-modal` — 3.282 linhas | `candidate-preview` — 2.742 linhas ✅ (era 5.994)
+**11º-14º (novos no ranking):**
+- `modals/advanced-filters-modal` — 3.282L
+- `candidate-preview` — 2.727L ✅ (era 5.994)
+- `screening-config/ScreeningConfigManager` — 2.396L
+- `settings/goals-management` — **2.296L** (**NOVO** — não documentado anteriormente)
 
 ---
 
@@ -837,7 +865,7 @@ Widget flutuante da LIA — chat contextual acessível de qualquer página.
 
 ---
 
-## 20. Notifications (`notifications/`) — 4 componentes
+## 20. Notifications (`notifications/`) — 5 componentes
 
 Sistema de notificações e toasts.
 
@@ -847,6 +875,7 @@ Sistema de notificações e toasts.
 | 2 | `notifications/notification-context` | 149 | Context provider de notificações |
 | 3 | `notifications/proactive-alert-toast` | 265 | Toast de alerta proativo |
 | 4 | `notifications/toast-container` | 22 | Container de toasts |
+| 5 | `notifications/toast` | 142 | Toast base do sistema (**novo** — não documentado anteriormente) |
 
 ---
 
@@ -948,6 +977,23 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 11 | `SaveAsArchetypeModal` | 181 | Modal para salvar query como arquétipo — **Sprint 4.6** |
 | 12 | `EditQueryModal` | 131 | Modal para editar query de busca com SmartSearchInput — **Sprint 4.6** |
 | 13 | `PreviewSuggestionModal` | 317 | Modal de preview/edição de sugestão IA de arquétipo — **Sprint 4.6** |
+| 14 | `CandidateSearchResultsView` | 1281 | View de resultados de busca (painel completo) — **Sprint 4.9** ✅ |
+| 15 | `CandidateTableCellRenderer` | 1174 | Renderers de célula extraídos de candidates-page (−737L) — **Sprint 4.9** ✅ |
+| 16 | `LIASearchSidebar` | 1330 | Sidebar LIA no contexto de busca de candidatos — **Sprint 4.9** ✅ |
+| 17 | `ContactFilterConfirmModal` | 96 | Confirmação de filtro por contato — **Sprint 4.9** |
+| 18 | `DeleteArchetypeModal` | 96 | Modal de deletar arquétipo — **Sprint 4.9** |
+| 19 | `GlobalExpansionConfirmModal` | 99 | Confirmação de expansão global de busca — **Sprint 4.9** |
+| 20 | `SourceChangeConfirmModal` | 94 | Confirmação de troca de fonte de busca — **Sprint 4.9** |
+| 21 | `hooks/useCandidatesActions` | 453 | Ações do candidato (mover, reprovar, etc.) — **Sprint 4.9** |
+| 22 | `hooks/useCandidatesCVHandlers` | 146 | Handlers de CV upload/preview — **Sprint 4.9** |
+| 23 | `hooks/useCandidatesLIAHandlers` | 1029 | Handlers de interação com LIA — **Sprint 4.9** |
+| 24 | `hooks/useCandidatesSearch` | 576 | Lógica de busca de candidatos — **Sprint 4.9** |
+| 25 | `CandidatePreviewPanel` | 321 | Painel de preview do candidato — **novo Sprint 4.10** |
+| 26 | `hooks/useCandidatesFilterSort` | 405 | Filtros e ordenação de candidatos — **novo Sprint 4.10** |
+| 27 | `hooks/useCandidatesTableConfig` | 330 | Configuração da tabela de candidatos — **novo Sprint 4.10** |
+| 28 | `hooks/useCandidatesArchetypes` | 255 | Gerenciamento de arquétipos de busca — **novo Sprint 4.10** |
+| 29 | `hooks/useCandidatesExecuteSearch` | 577 | Execução de buscas avançadas — **novo Sprint 4.10** |
+| 30 | `index` | 33 | Barrel exports — **novo Sprint 4.10** |
 
 ### 22.2 Job Kanban Module (`pages/job-kanban/`)
 
@@ -961,6 +1007,19 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 6 | `KanbanFiltersPanel` | 184 | Painel de filtros do kanban (score, status, origem, modelo) — **Sprint 4.6** |
 | 7 | `KanbanColumnConfigPanel` | 194 | Configuração de colunas visíveis do kanban — **Sprint 4.6** |
 | 8 | `AddColumnPopover` | 266 | Popover para adicionar nova etapa ao pipeline — **Sprint 4.6** |
+| 9 | `KanbanColumnRenderer` | 1192 | Renderer completo da coluna kanban — **Sprint 4.7** ✅ |
+| 10 | `KanbanTableView` | 1323 | Visão tabular do kanban — **Sprint 4.7** ✅ |
+| 11 | `KanbanLIASidebar` | 394 | Sidebar LIA no contexto do kanban — **Sprint 4.7** ✅ |
+| 12 | `LIAQuestionsPanel` | 208 | Painel de perguntas LIA por etapa (−199L de job-kanban-page) — **Sprint 4.6** ✅ |
+| 13 | `LIASuggestionsPanel` | 138 | Painel de sugestões LIA — **Sprint 4.6** ✅ |
+| 14 | `TestHistoryModal` | 372 | Modal histórico de testes técnicos (−344L) — **Sprint 4.6** ✅ |
+| 15 | `TestLibraryModal` | 542 | Modal biblioteca de testes (−519L) — **Sprint 4.6** ✅ |
+| 16 | `TestPreviewModal` | 273 | Modal preview de teste (−377L parcial) — **Sprint 4.6** ✅ |
+| 17 | `hooks/useKanbanBulkActions` | 260 | Ações em lote no kanban — **Sprint 4.7** |
+| 18 | `hooks/useKanbanCandidateDecisions` | 404 | Decisões sobre candidatos — **Sprint 4.7** |
+| 19 | `hooks/useKanbanDragDrop` | 221 | Drag & drop entre colunas — **Sprint 4.7** |
+| 20 | `hooks/useKanbanJobEditing` | 206 | Edição inline de vaga no kanban — **Sprint 4.7** |
+| 21 | `hooks/useKanbanLIAHandlers` | 553 | Handlers de interação com LIA — **Sprint 4.7** |
 
 ### 22.3 Jobs Module (`pages/jobs/`)
 
@@ -992,13 +1051,13 @@ Subdiretório novo criado no Sprint 4.6 para componentes extraídos de `candidat
 | 2 | `ats-integrations-page` | 1522 | Integrações ATS |
 | 3 | `big-five-dashboard-page` | 640 | Dashboard Big Five |
 | 4 | `candidate-review-modal` | 822 | Modal de revisão de candidato |
-| 5 | `candidates-page` | 9604 | Página de candidatos (3º maior) — era 10.329, -721L no Sprint 4.6 |
-| 6 | `chat-page` | 5592 | Página de chat |
+| 5 | `candidates-page` | 5260 | Página de candidatos — ✅ era 9.604 (Sprint 4.6), depois 8.453 → **5.260** Sprint 4.9 (−3.193L) |
+| 6 | `chat-page` | 5583 | Página de chat — ⚠️ Pendente split (Sprint 4.11) |
 | 7 | `dashboards-page` | 3283 | Página de dashboards |
 | 8 | `executive-dashboard-page` | 680 | Dashboard executivo |
 | 9 | `indicators-page` | 1753 | Página de indicadores |
 | 10 | `integrations-page` | 804 | Página de integrações |
-| 11 | `job-kanban-page` | 8440 | Página do kanban (2º maior) — era 10.377, -1.934L no Sprint 4.6 |
+| 11 | `job-kanban-page` | 4990 | Página do kanban — ✅ era 8.440 → **4.990** Sprint 4.9 (−1.318L) |
 | 12 | `jobs-page` | 4735 | Página de vagas — era 8.046, -3.309L no Sprint 4.6 |
 | 13 | `jobs2-page` | 569 | Página de vagas v2 |
 | 14 | `job-templates-page` | 549 | Templates de vagas |
@@ -1016,26 +1075,51 @@ Subdiretório novo criado no Sprint 4.6 para componentes extraídos de `candidat
 | 26 | `workflow-automation-page` | 640 | Automação de workflow |
 | 27 | `work-model-analytics-page` | 567 | Analytics de modelo de trabalho |
 
-### 22.6 Pendências de Split — Monolitos Restantes
+### 22.6 Pendências de Split — Monolitos Restantes (Análise Profunda 2026-03-28)
 
-Arquivos ainda acima de 5.000 linhas após Sprint 4.7:
+> ✅ **Splits concluídos:** `CompanyTeamHub` (5.235→183), `settings-page` (4.449→134), `expanded-chat-modal` parcial (11.824→4.409), `candidate-preview` parcial (5.994→2.727), `smart-search-input` parcial (5.475→3.761), `chat-page` parcial (5.583→3.936)
+> ⚠️ **15 monolitos >2.000L restantes** (scan real do código no Replit):
 
-| Arquivo | Linhas atuais | Blocos identificados para extração |
-|---------|--------------|-----------------------------------|
-| `candidates-page.tsx` | 8.453 | Bloco search results (`activeTab === 'search' && showSearchResults`, ~864L) contendo compact LIA bar + layout de resultados |
-| `job-kanban-page.tsx` | 6.308 | Superchat view (~80L), tab de edição de vaga (~400L) |
-| `expanded-chat-modal.tsx` | 11.228 | Candidato a Sprint 4.9 — maior monolito restante |
-| `smart-search-input.tsx` | 5.475 | Candidato a Sprint 4.9 |
-| `CompanyTeamHub.tsx` | 5.235 | Candidato a Sprint 4.9 |
+**Tier A — Críticos (>4.000L):**
 
-> **Critério de priorização:** extrair blocos >400L que sejam autocontidos (estado próprio + props claras).
-> **Próxima sprint de split sugerida:** Sprint 4.8 — candidates-page search results view (~864L) + expanded-chat-modal.
+| Arquivo | Linhas | `: any` + `as any` | Plano v2 |
+|---------|--------|-------------------|----------|
+| `pages/job-kanban-page.tsx` | 4.940 | 78 | P0 Sprint 2 |
+| `services/lia-api.ts` | 4.853 | 11 | P0 Sprint 2 (**NOVO** — serviço, split por domínio) |
+| `pages/candidates-page.tsx` | 4.811 | 26 | P0 Sprint 2 |
+| `pages/jobs-page.tsx` | 4.667 | 18 | P0 Sprint 2 |
+| `expanded-chat-modal.tsx` | 4.409 | 21 | P0 Sprint 2 |
+| `expandable-ai-prompt.tsx` | 4.262 | 15 | P0 Sprint 2 |
+
+**Tier B — Altos (3.000-4.000L):**
+
+| Arquivo | Linhas | Plano v2 |
+|---------|--------|----------|
+| `pages/chat-page.tsx` | 3.936 | P0 Sprint 3 |
+| `search/smart-search-input.tsx` | 3.761 | P0 Sprint 3 |
+| `search/advanced-filters-modal.tsx` | 3.282 | P0 Sprint 3 |
+| `pages/dashboards-page.tsx` | 3.280 | P0 Sprint 3 (82 inline styles!) |
+
+**Tier C — Médios (2.000-3.000L):**
+
+| Arquivo | Linhas | Plano v2 |
+|---------|--------|----------|
+| `candidate-preview.tsx` | 2.727 | P0 Sprint 3 |
+| `candidate-page.tsx` | 2.491 | P0 Sprint 3 |
+| `screening-config/ScreeningConfigManager.tsx` | 2.396 | P0 Sprint 3 |
+| `settings/goals-management.tsx` | 2.296 | P0 Sprint 3 |
+| `pages/tasks-page.tsx` | 2.174 | P0 Sprint 3 |
+
+> **Critério de sucesso:** Nenhum arquivo >1.500L. Subcomponentes <500L cada.
+> **Detalhamento completo:** Plano v2 Seção 10.1 em `docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md`
 
 ---
 
-## 23. Custom Hooks (`src/hooks/`) — 93 hooks
+## 23. Custom Hooks (`src/hooks/`) — 95 hooks
 
 Hooks customizados que encapsulam lógica de negócio, state management e integrações com API.
+
+> **Atualizado 2026-03-28:** +2 hooks novos em `hooks/settings/` (extraídos do CompanyTeamHub split).
 
 | # | Hook | Linhas | Domínio |
 |---|------|--------|---------|
@@ -1156,8 +1240,20 @@ Hooks customizados que encapsulam lógica de negócio, state management e integr
 | 24 | `use-table-columns` | `tables/hooks/` | 129 | Colunas de tabela |
 | 25 | `use-table-selection` | `tables/hooks/` | 63 | Seleção em tabela |
 | 26 | `use-table-sorting` | `tables/hooks/` | 75 | Ordenação em tabela |
+| 27 | `useAuditLogs` | `hooks/admin/` | 200 | Logs de auditoria (admin) |
+| 28 | `useBiasAudits` | `hooks/admin/` | 96 | Auditorias de viés (admin) |
+| 29 | `useClientSaasMetrics` | `hooks/admin/` | 247 | Métricas SaaS por cliente |
+| 30 | `useComplianceControls` | `hooks/admin/` | 134 | Controles de compliance |
+| 31 | `useDashboardSummary` | `hooks/admin/` | 42 | Resumo do dashboard admin |
+| 32 | `useDefaultTemplates` | `hooks/admin/` | 219 | Templates padrão |
+| 33 | `useGlobalPolicies` | `hooks/admin/` | 175 | Políticas globais |
+| 34 | `useLGPDCompliance` | `hooks/admin/` | 108 | Conformidade LGPD |
+| 35 | `usePlatformMetrics` | `hooks/admin/` | 87 | Métricas da plataforma |
+| 36 | `useTechnicalTests` | `hooks/admin/` | 139 | Testes técnicos (admin) |
+| 37 | `useCompanyData` | `hooks/settings/` | 665 | Dados da empresa (extraído CompanyTeamHub) — **novo Sprint 4.10** |
+| 38 | `useDepartmentManagement` | `hooks/settings/` | 557 | Gestão de departamentos (extraído CompanyTeamHub) — **novo Sprint 4.10** |
 
-> **Total de hooks:** 93 (raiz) + 27 (componentes) = **120 custom hooks**
+> **Total de hooks:** 91 (raiz) + 10 (admin) + 38 (componentes) = **~139 custom hooks** ⚠️ Contagem revisada pós-Sprint 4.10
 
 ---
 
@@ -1197,7 +1293,7 @@ Hooks customizados que encapsulam lógica de negócio, state management e integr
 | 4 | `template-variables.ts` | 393 | Variáveis para templates de email |
 | 5 | `hiring-policy-utils.ts` | 193 | Utilitários de políticas de contratação |
 | 6 | `chat-format.ts` | 122 | Formatação de mensagens de chat |
-| 7 | `theme-colors.ts` | 114 | **6 temas por página (54 cores hardcoded fora do DS)** |
+| 7 | ~~`theme-colors.ts`~~ | ~~114~~ | ~~6 temas por página~~ — ✅ **REMOVIDO** na Fase 2 (cores migradas para tokens DS) |
 | 8 | `session-crypto.ts` | 71 | Criptografia de sessão |
 | 9 | `workos.ts` | 39 | Config WorkOS |
 | 10 | `workos-session.ts` | 10 | Sessão WorkOS |
@@ -1205,7 +1301,7 @@ Hooks customizados que encapsulam lógica de negócio, state management e integr
 | 12 | `chat-commands.ts` | 14 | Comandos de chat |
 | 13 | `utils.ts` | 6 | Utilitário cn() (classnames) |
 
-> **Alerta:** `theme-colors.ts` define 6 temas de página com 54 cores hardcoded que **não usam tokens do design system**. Ver seção 28.6.
+> ✅ **`theme-colors.ts` removido** — 6 temas de página com 54 cores hardcoded foram migrados para tokens DS na Fase 2.
 
 ---
 
@@ -1404,9 +1500,11 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 
 > **Insight:** App é desktop-first — 97% dos breakpoints são sm/md/lg. xl/2xl quase não usados.
 
-### 28.6 Sistema de Temas por Página — 6 temas (fora do DS)
+### 28.6 Sistema de Temas por Página — ✅ RESOLVIDO
 
-`src/lib/theme-colors.ts` define 6 temas com **54 cores hardcoded** que não usam tokens:
+> ✅ **`src/lib/theme-colors.ts` foi removido** na Fase 2. Os 6 temas de página com 54 cores hardcoded foram migrados para tokens `wedo-*` e `status-*` do Design System. Não há mais sistema paralelo de temas.
+
+`src/lib/theme-colors.ts` definia 6 temas com **54 cores hardcoded** que não usavam tokens:
 
 | Página | Primary | Accent | Status |
 |--------|---------|--------|--------|
@@ -1506,27 +1604,31 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 ## Resumo Expandido — Inventário 100%
 
 > ✅ Atualizado Sprint 4.10 (2026-03-28) — componentes reduzidos via Fase 0 (limpeza) + splits Sprints 4.6–4.10
+> ✅ **Atualizado 2026-03-28 (Plano v2 Fases 1-8):** +14 settings, +6 candidates, +2 hooks. Métricas recalculadas.
 
 | Dimensão | Quantidade | Status |
 |----------|-----------|--------|
-| Componentes .tsx totais (seções 1-22) | **504** | 100% coberto (era 556 antes Fase 0 + splits) |
-| Custom hooks (src/hooks/ + subdirs) | **160** | 100% coberto (116 + 44 em subdirs de componentes) |
+| Componentes .tsx totais (seções 1-22) | **~525** | +20 novos (14 settings + 6 candidates) |
+| Custom hooks (src/hooks/ + subdirs) | **~139** | +2 settings hooks novos |
 | Contexts & providers | 5 | 100% coberto |
 | Types & config files | 17 | 100% coberto |
 | Lib utilities | 13 | 100% coberto |
 | Page routes | 90 | 100% coberto |
 | API endpoints | 424 | 100% coberto |
-| CSS variables (design-tokens.css + globals.css) | 242 | 100% coberto |
+| CSS variables (design-tokens.css + globals.css) | **~260** | +18 tokens (layout, z-index, spacing) |
 | Keyframe animations | 29 | 100% coberto |
 | Custom CSS classes | 200+ | 100% coberto |
 | Ícones catalogados | 169 | 100% coberto |
 | Breakpoints quantificados | 5 | 100% coberto |
 | Dark mode coverage | 16.058 usos | 100% coberto |
-| Tipografia quantificada | 11 tamanhos | 100% coberto |
+| Tipografia quantificada | 11 tamanhos | 100% coberto — **não alterada** |
 | Temas por página | 6 | 100% coberto |
 | Badges ativos | **5** | 100% coberto (eram 7 — 2 órfãos deletados Fase 3) |
 | Modais no diretório modals/ | **33** | 100% coberto (+1 arquivo de teste) |
-| Arquivos com inline style | **216** | era 249 — −33 via Sprint 4.10 |
+| Arquivos com inline style | **~190** (1.321 ocorrências) | era 249 → 216 → 203 → **~190** (-12% Plano v2 Fase 5) |
+| rgba() hardcoded | **25** (chart-only) | era 320 → **25** (-92% Plano v2 Fase 2) |
+| `: any` em hooks | **1** | era 47 → **1** (100% hooks clean, Plano v2 Fase 8) |
+| `: any` total | **~844** | era 868 → **~844** (-3%; hooks clean, components parcial) |
 
 ---
 
@@ -1663,29 +1765,49 @@ Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez 
 | `h-[80px]` | 5 | `h-20` (80px — equivalente exato) |
 | `h-[56px]` | 5 | `h-14` (56px — equivalente exato) |
 
-### 29.3 Componentes Gigantes — estado atualizado pós-Sprints 4.6–4.10
+### 29.3 Componentes Gigantes — estado atualizado (Análise Profunda 2026-03-28)
 
-> **Atualizado Sprint 4.10 (2026-03-28):** Fase 4 em andamento. Os Sprints 4.6–4.10 reduziram os monolitos mais críticos. `expanded-chat-modal` caiu de 11.824 → 4.423 (Sprint 4.8). `candidate-preview` caiu de 5.994 → 2.742 (Sprint 4.7). `smart-search-input` caiu de 5.475 → 3.868 (Sprint 4.9).
+> **Atualizado 2026-03-28 (Análise Profunda):** Números corrigidos via scan real do código no Replit. Inclui `lia-api.ts` (serviço, 4.853L) como monolito — não era listado anteriormente. CompanyTeamHub (5.235→183) e settings-page (4.449→134) já splitados.
 
-**Monolitos críticos PENDENTES (>4.000 linhas):**
+**Monolitos críticos PENDENTES — Tier A (>4.000 linhas):**
 
-| # | Componente | Linhas atuais | Sprint anterior | Delta | Status |
-|---|-----------|--------------|----------------|-------|--------|
-| 1 | `pages/chat-page` | 5.583 | 5.592 | −9 | ⚠️ Pendente Sprint 4.11 |
-| 2 | `pages/candidates-page` | 5.260 | 8.453 | −3.193 ✅ | ⚠️ Ainda alto — Sprint 4.11 |
-| 3 | `settings/CompanyTeamHub` | 5.235 | 5.235 | — | ⚠️ Pendente Sprint 4.12 |
-| 4 | `pages/job-kanban-page` | 4.990 | 6.308 | −1.318 ✅ | ⚠️ Ainda alto — Sprint 4.12 |
-| 5 | `pages/jobs-page` | 4.735 | 4.735 | — | Estável (abaixo de 5.000L) |
-| 6 | `pages/settings-page` | 4.449 | 4.449 | — | ⚠️ Pendente Sprint 4.12 |
-| 7 | `expanded-chat-modal` | 4.423 | 11.228 | **−6.805L ✅** | Sprint 4.8 concluída |
-| 8 | `expandable-ai-prompt` | 4.306 | 4.308 | −2 | ⚠️ Pendente Sprint 4.12 |
+| # | Componente | Linhas reais | `: any` | `as any` | Status |
+|---|-----------|-------------|---------|----------|--------|
+| 1 | `pages/job-kanban-page.tsx` | 4.940 | 55 | 23 | ⚠️ Pendente Plano v2 P0 |
+| 2 | `services/lia-api.ts` | 4.853 | 11 | 0 | ⚠️ **NOVO** — serviço monolítico, split por domínio |
+| 3 | `pages/candidates-page.tsx` | 4.811 | 20 | 6 | ⚠️ Pendente Plano v2 P0 |
+| 4 | `pages/jobs-page.tsx` | 4.667 | 8 | 10 | ⚠️ Pendente Plano v2 P0 |
+| 5 | `expanded-chat-modal.tsx` | 4.409 | 9 | 12 | ⚠️ Pendente Plano v2 P0 |
+| 6 | `expandable-ai-prompt.tsx` | 4.262 | 10 | 5 | ⚠️ Pendente Plano v2 P0 |
 
-**Monolitos RESOLVIDOS via Fase 4 (splits concluídos):**
+**Monolitos PENDENTES — Tier B (3.000-4.000 linhas):**
+
+| # | Componente | Linhas reais | Status |
+|---|-----------|-------------|--------|
+| 7 | `pages/chat-page.tsx` | 3.936 | ⚠️ Split parcial (was 5.583) |
+| 8 | `search/smart-search-input.tsx` | 3.761 | ⚠️ Split parcial (was 5.475) |
+| 9 | `search/advanced-filters-modal.tsx` | 3.282 | ⚠️ Pendente |
+| 10 | `pages/dashboards-page.tsx` | 3.280 | ⚠️ Pendente (82 inline styles!) |
+
+**Monolitos PENDENTES — Tier C (2.000-3.000 linhas):**
+
+| # | Componente | Linhas reais | Status |
+|---|-----------|-------------|--------|
+| 11 | `candidate-preview.tsx` | 2.727 | ⚠️ Split parcial (was 5.994) |
+| 12 | `candidate-page.tsx` | 2.491 | ⚠️ Pendente (26 `as any`!) |
+| 13 | `screening-config/ScreeningConfigManager.tsx` | 2.396 | ⚠️ Pendente (44 `: any`!) |
+| 14 | `settings/goals-management.tsx` | 2.296 | ⚠️ Pendente |
+| 15 | `pages/tasks-page.tsx` | 2.174 | ⚠️ Pendente |
+
+**Monolitos RESOLVIDOS (splits concluídos):**
 
 | # | Componente | Antes | Depois | Sprint |
 |---|-----------|-------|--------|--------|
-| ✅ | `candidate-preview` | 5.994 | 2.742 | Sprint 4.7 |
-| ✅ | `smart-search-input` | 5.475 | 3.868 | Sprint 4.9 |
+| ✅ | `settings/CompanyTeamHub.tsx` | 5.235 | **183** | Sprint 4.10 — 14 subcomponentes |
+| ✅ | `pages/settings-page.tsx` | 4.449 | **134** | Sprint 4.10 — tabs extraídas |
+| ✅ | `candidate-preview.tsx` | 5.994 | 2.727 | Sprint 4.7 (parcial) |
+| ✅ | `smart-search-input.tsx` | 5.475 | 3.761 | Sprint 4.9 (parcial) |
+| ✅ | `expanded-chat-modal.tsx` | 11.824 | 4.409 | Sprint 4.8 (parcial) |
 
 **Histórico completo dos tamanhos originais (pré-Fase 4):**
 
@@ -1792,20 +1914,33 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Recomendação:** Converter gradualmente para classes Tailwind. Priorizar os componentes que aparecem em dark mode.
 
-### 29.8 Resumo Quantitativo — Estado Atual (Sprint 4.10)
+### 29.8 Resumo Quantitativo — Estado Atual (Análise Profunda 2026-03-28)
 
 > ✅ = Resolvido | 🔄 = Em andamento | ⏳ = Pendente
+> **Nota:** Números atualizados via scan completo do código real no Replit (Plano v2 Seção 10.0).
 
-| Problema | Escopo original | Escopo atual | Status | Impacto na conversão Vue |
-|----------|----------------|-------------|--------|------------------------|
+| Problema | Escopo original | Escopo atual (real) | Status | Impacto na conversão Vue |
+|----------|----------------|---------------------|--------|------------------------|
 | Cores hex hardcoded | 298 cores / 1.607 linhas | **12 arquivos** (isentos) | ✅ **Fase 2 concluída** | CSS vars sobrevivem migração |
+| rgba() hardcoded | 320 ocorrências / 41 arquivos | **25** (chart-only) | ✅ **Plano v2 Fase 2** (-92%) | var() tokens compartilhados |
+| `color-mix()` (artefato subagente) | — | **114 ocorrências** | ⏳ **Plano v2 P5** | Não padrão DS — avaliar remoção |
+| Hex hardcoded restante | — | **60 ocorrências** | ⏳ **Plano v2 P5** | Migrar para tokens |
 | Valores arbitrários tipografia | 4.765 ocorrências | **~17 residuais** | ✅ **Fase 1 concluída** | 4 tokens mapeados 1:1 Vuetify |
-| Valores arbitrários dimensões | ~5.400 (w/h) | ~5.400 | ⏳ **Fase 5 pendente** | Tokens de layout compartilhados |
-| Componentes >1.000 linhas | 37 / 118.037L | **8 críticos / ~38.000L** | 🔄 **Fase 4 em andamento** | Conversão componente a componente |
+| Valores arbitrários dimensões (w-[]/h-[]) | ~5.400 | **499 ocorrências** | ⏳ **Fase 5 pendente** | Avaliar caso a caso |
+| `rounded` bare (4px→6px) | — | **819 ocorrências** | ⏳ **Plano v2 P2** | `rounded-md` como padrão DS |
+| Monolitos >2.000L | 37 / 118.037L | **15 arquivos >2.000L** (incl. `lia-api.ts` 4.853L) | 🔄 **Plano v2 P0** | CompanyTeamHub+settings splitados |
+| Monolitos >4.000L | 7 | **5 componentes + 1 serviço** | 🔄 **Plano v2 P0 Tier A** | Conversão componente a componente |
 | Arquivos mortos | 8 / ~7.000L | **0** (todos deletados) | ✅ **Fase 0 concluída** | Ruído eliminado |
 | Badges duplicados | 7 / ~1.400L | **5 ativos** (2 deletados) | ✅ **Fase 3 concluída** | Componente canônico definido |
 | Modais sem padrão | 154 arquivos | 154 arquivos | ⏳ **Fase 5 pendente** | 33 modais no diretório, restante espalhado |
-| Inline styles | 249 / 54% | **216 / 43%** | 🔄 −33 Sprint 4.10 | Fase 5 target: < 50 arquivos |
+| Inline styles (`style={{`) | 249 / 54% | **238 arquivos / 1.439 occ** | 🔄 **Plano v2 P3** | Target: < 100 arquivos |
+| `: any` tipos | 868 ocorrências | **846** (hooks ~clean) | 🔄 **Plano v2 P1** | TypeScript migration-ready |
+| `as any` (NÃO contabilizado antes) | — | **343 ocorrências** | ⏳ **Plano v2 P1** | Unsafe cast — precisa eliminar |
+| **Total unsafe any** | **868** | **1.189** (846 + 343) | 🔄 **Plano v2 P1** | Target: <100 total |
+| Cores raw Tailwind | 6 arquivos | **0** | ✅ **Plano v2 Fase 3** | Tokens semânticos prontos |
+| React.memo | — | **11 usos (em 500+ componentes)** | ⏳ **Plano v2 P4** | Muito baixo — precisa +20 |
+| `dynamic()` lazy loading | — | **11 usos** | ⏳ **Plano v2 P4** | Muito baixo para 15 monolitos |
+| Tipografia ratio | — | **Inter 172 > Open Sans 150** | ⚠️ **Invertido vs DS** | DS diz Open Sans 85% / Inter 10% |
 
 ---
 
@@ -2553,3 +2688,111 @@ extend: {
 | 4 — Split 🔄 | 37 monolitos → splits Sprints 4.6–4.10 | 8 críticos restantes (>4.000L), 5 resolvidos | Nenhum | Alto | Sprint 4.11–4.12 | Conversão componente a componente |
 | 5 — Dimensões ⏳ | px → tokens de layout + inline styles | ~5.400 valores arbitrários + 216 inline styles | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
 | **Total** | | **~138.700** | **Zero** | | **~6-7 semanas** | **Conversão viável** |
+
+---
+
+## 33. Notas de Correção — Análise Cruzada Código Real vs Inventário (2026-03-28)
+
+> **Origem:** Análise cruzada detalhada do código real no Replit vs este inventário.
+> **Plano de implementação:** `docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md`
+
+### 33.1 Tamanhos de Monolitos — Correções
+
+O código real no Replit mostra tamanhos **menores** que o documentado para vários arquivos.
+O caso mais significativo é `chat-page.tsx` que aparentemente teve um split parcial **não documentado**.
+
+| Arquivo | Este doc dizia | Código real (2026-03-28) | Delta | Causa provável |
+|---------|---------------|------------------------|-------|---------------|
+| `pages/chat-page.tsx` | 5.583 | **3.936** | **−1.647** | Split não documentado — `ChatContextPanel.tsx` (1.378L) + `ChatMessageList.tsx` extraídos |
+| `pages/candidates-page.tsx` | 5.260 | **4.999** | −261 | Limpezas pontuais |
+| `settings/CompanyTeamHub.tsx` | 5.235 | **183** ✅ | **−5.052** | ✅ **SPLITADO Sprint 4.10** → 10 tabs + 2 hooks |
+| `pages/job-kanban-page.tsx` | 4.990 | **4.960** | −30 | Limpeza pontual |
+| `pages/jobs-page.tsx` | 4.735 | **4.690** | −45 | Limpeza pontual |
+| `pages/settings-page.tsx` | 4.449 | **134** ✅ | **−4.315** | ✅ **SPLITADO Sprint 4.10** → componentes de settings existentes |
+| `expanded-chat-modal.tsx` | 4.423 | **4.409** | −14 | Trivial |
+| `expandable-ai-prompt.tsx` | 4.306 | **4.262** | −44 | Limpeza pontual |
+| `search/smart-search-input.tsx` | 3.868 | **3.790** | −78 | Limpeza pontual |
+
+### 33.2 Componentes Não Documentados
+
+Os seguintes componentes existem no código mas **não estão no inventário**:
+
+| Arquivo | Linhas | Diretório | Observação |
+|---------|--------|-----------|-----------|
+| `settings/goals-management.tsx` | **2.296** | settings/ | Monolito não documentado — candidato a split |
+| `jobs/JobEditTab.tsx` | **1.727** | jobs/ | Monolito não documentado — candidato a split |
+| `chat/ChatContextPanel.tsx` | **1.378** | chat/ | Recém-extraído de chat-page — documenta split não registrado |
+| `chat/ChatMessageList.tsx` | ~300 | chat/ | Recém-extraído de chat-page |
+| `candidate-preview/CandidateActivitiesTab.tsx` | **1.205** | candidate-preview/ | Extraído mas não documentado com tamanho correto |
+| `app/admin/setup-empresa/page.tsx` | **1.733** | app/admin/ | Página monolítica não documentada como candidata a split |
+| `ui-actions/panels/` | 7 arquivos | ui-actions/ | Subdiretório panels/ com componentes organizados |
+| `ui-actions/cards/` | 6 arquivos | ui-actions/ | Subdiretório cards/ com componentes organizados |
+| `search/SearchModeArchetypes.tsx` | ~600+ | search/ | 41 inline styles — ofensor significativo |
+
+### 33.3 Contagens Atualizadas
+
+> **Atualizado 2026-03-28 — Análise Profunda (scan real do código no Replit):**
+
+| Métrica | Doc original | Pós Plano v2 | Análise Profunda (real) | Status |
+|---------|-------------|-------------|------------------------|--------|
+| Componentes .tsx totais | 504 | **~525** | ~525 | +20 (14 settings + 6 candidates) |
+| Custom hooks (src/hooks/) | 160 | **~139** | ~139 | +2 settings hooks + contagem corrigida |
+| Monolitos >2.000L | — | — | **15** | **NOVO** — inclui lia-api.ts (4.853L) |
+| Monolitos >4.000L | 7 | **5** | **5 componentes + 1 serviço** | lia-api.ts agora contado |
+| Monolitos >1.000L | 37 | **~40** | **41** | −2 splitados + novos descobertos |
+| Arquivos inline style | 216 | **~190** / 1.321 occ | **238 arq / 1.439 occ** | ⚠️ Número real maior que estimado |
+| Arquivos hex hardcoded | 12 isentos | **7** | 7 | Estável (isentos) |
+| rgba() hardcoded | 41 arq / 320 occ | **25 occ** (chart-only) | 102 occ (fora tokens) | ⚠️ Precisa re-scan |
+| `color-mix()` | — | — | **114 occ** | **NOVO** — artefato subagente |
+| Hex hardcoded | — | — | **60 occ** | **NOVO** — fora de tokens |
+| `: any` types | 868 occ | **~844** | **846** | Hooks ~clean |
+| `as any` (NÃO contado antes) | — | — | **343** | **NOVO** — total unsafe = 1.189 |
+| `rounded` bare | — | — | **819** | **NOVO** — migrar → rounded-md |
+| React.memo | — | — | **11 usos** | **NOVO** — muito baixo |
+| `dynamic()` | — | — | **11 usos** | **NOVO** — muito baixo |
+| Tipografia Inter vs Open Sans | — | — | **172 vs 150** | **NOVO** — ratio invertido vs DS |
+| CSS variables | 242 | **~260** | ~260 | +18 tokens bridge |
+
+### 33.4 Problemas NÃO Documentados no Inventário — Status Pós-Plano v2
+
+| Problema | Escopo original | Status pós-Plano v2 |
+|---------|--------|---------|
+| **rgba() hardcoded** | 41 arquivos / 320 occ | ✅ **RESOLVIDO** — 25 occ restantes (chart-only isentos) |
+| **`: any` types** | 190 arquivos / 868 occ | 🔄 **PARCIAL** — hooks 100% clean (47→1), components ~844 restantes |
+| **`ui-actions/` reestruturado** | panels/ + cards/ subdirs | ⏳ Organização nova documentada mas seção 18 pendente atualização |
+| **`chat/` componentes novos** | ChatContextPanel, ChatMessageList | ⏳ Documentado na seção 33.2 |
+
+### 33.5 Status Atualizado das Fases
+
+> **Atualizado 2026-03-28 (Análise Profunda):** Status reflete Fases 1-9 executadas + Fase 10 planejada. Score frontend separado de score geral.
+
+| Fase | Status no inventário | Status real (Análise Profunda) |
+|------|---------------------|------------|
+| 0 — Limpeza | ✅ CONCLUÍDA | ✅ Confirmado |
+| 1 — Tipografia | ✅ CONCLUÍDA | ✅ Confirmado |
+| 2 — Cores hex | ✅ CONCLUÍDA (12 isentos) | ✅ Confirmado. **Mas:** 102 rgba + 114 color-mix + 60 hex restantes |
+| 3 — Badges | ✅ CONCLUÍDA | ✅ Confirmado. Raw Tailwind colors: 6→0 |
+| 4 — Split | 🔄 5 monolitos pendentes | 🔄 **15 monolitos >2.000L** (incl. lia-api.ts 4.853L) |
+| 5 — Dimensões | ⏳ PENDENTE | 🔄 **238 arq / 1.439 inline styles** (real > estimado) |
+| 6+7 Bridge+Design | ✅ Audits | ✅ Confirmado |
+| 8 — Code Review | 🔄 `:any` parcial | 🔄 **1.189 total unsafe** (846 `: any` + 343 `as any`) |
+| 9 — Auditoria 14D | ✅ Score 7.6/10 | ✅ Score Frontend 7.6/10 (separado de backend 7.7/10) |
+| **10 — Score 9.0+** | — | ⏳ **PLANEJADA** — P0-P6 em 4 sprints multi-agent |
+
+### 33.6 Plano de Implementação Expandido
+
+O inventário previa Fases 0-5. Executadas 9 fases. Fase 10 planejada para score frontend 9.0+.
+
+| Prioridade | Ação | Impacto no Score | Sprint |
+|-----------|------|-----------------|--------|
+| P0 | Split 15 monolitos >2.000L (Tiers A/B/C) | Consistência 7→9, Performance 7→8.5 | Sprint 2+3 |
+| P1 | Eliminar 1.189 unsafe any (`: any` + `as any`) → <100 | Tipos 6→9 | Sprint 1+3 |
+| P2 | Migrar 819 `rounded` → `rounded-md` | UI/DS 8→9 | Sprint 1 |
+| P3 | Converter inline styles: 1.439 → <300 | Consistência +0.5 | Sprint 4 |
+| P4 | React.memo (11→30+) + dynamic imports (11→25+) | Performance 7→8.5 | Sprint 4 |
+| P5 | Cores residuais: 102 rgba + 114 color-mix + 60 hex | UI/DS +0.3 | Sprint 1 |
+| P6 | Zod schemas para API responses | Dados 7→8.5 | Sprint 4 |
+
+**Projeção:** Score Frontend 7.6 → **9.1/10** após 4 sprints.
+
+> **Detalhamento completo:** `docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md` (Seções 10.0-10.8)

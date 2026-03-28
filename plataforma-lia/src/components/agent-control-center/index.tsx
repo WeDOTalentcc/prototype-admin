@@ -218,12 +218,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     <Badge
                       variant="outline"
                       className="text-xs"
-                      style={{
-                        borderColor: alert.severity === 'high' ? 'var(--status-error)' :
+                      style={{borderColor: alert.severity === 'high' ? 'var(--status-error)' :
                                     alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)',
                         color: alert.severity === 'high' ? 'var(--status-error)' :
-                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)'
-                      }}
+                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)'}}
                     >
                       {alert.severity}
                     </Badge>
@@ -267,7 +265,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <div className="flex items-center gap-1">
                     <span 
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: getStatusColor(agent.status) }}
+                      style={{backgroundColor: getStatusColor(agent.status)}}
                     />
                     <ChevronRight
                       className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500"
@@ -298,7 +296,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     {/* Progress bar */}
                     <div className="mt-1 h-1 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                       <div 
-                        className="h-full rounded-full transition-all bg-gray-900" style={{ width: `${Math.min(agent.progress, 100)}%` }}
+                        className="h-full rounded-full transition-all bg-gray-900" style={{width: `${Math.min(agent.progress, 100)}%`}}
                       />
                     </div>
                   </div>
@@ -308,7 +306,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </span>
                     <span 
                       className="text-lg font-bold"
-                      style={{ color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
+                      style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
                     >
                       {agent.progress}%
                     </span>
@@ -328,10 +326,9 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 {/* Warning for warning status */}
                 {agent.status === 'warning' && (
                   <div 
-                    className="mt-2 p-2 rounded-md flex items-center gap-2"
-                    style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                    className="mt-2 p-2 rounded-md flex items-center gap-2 bg-status-error/10"
                   >
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--status-error)' }} />
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{color: 'var(--status-error)'}} />
                     <span className="text-xs line-clamp-1 text-gray-500 dark:text-gray-400">
                       Requer atenção
                     </span>
@@ -362,9 +359,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'today' ? '' : 'text-gray-500 dark:text-gray-400'}`}
                   onClick={() => setFilterPeriod('today')}
-                  style={{
-                    backgroundColor: filterPeriod === 'today' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'
-                  }}
+                  style={{backgroundColor: filterPeriod === 'today' ? 'color-mix(in srgb, var(--gray-200) 30%, transparent)' : 'transparent'}}
                 >
                   Hoje
                 </Button>
@@ -373,9 +368,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'week' ? '' : 'text-gray-500 dark:text-gray-400'}`}
                   onClick={() => setFilterPeriod('week')}
-                  style={{
-                    backgroundColor: filterPeriod === 'week' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'
-                  }}
+                  style={{backgroundColor: filterPeriod === 'week' ? 'color-mix(in srgb, var(--gray-200) 30%, transparent)' : 'transparent'}}
                 >
                   Semana
                 </Button>
@@ -393,10 +386,8 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     key={agent.id}
                     onClick={() => toggleAgentFilter(agent.id)}
                     className={`px-2 py-1 rounded-full text-xs transition-all ${selectedAgentFilter.includes(agent.id) ? '' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}
-                    style={{
-                      backgroundColor: selectedAgentFilter.includes(agent.id) ? 'rgba(96, 190, 209, 0.15)' : undefined,
-                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'transparent'}`
-                    }}
+                    style={{backgroundColor: selectedAgentFilter.includes(agent.id) ? 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)' : undefined,
+                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'transparent'}`}}
                   >
                     {agent.icon} {agent.name.split(' ')[0]}
                   </button>
@@ -410,16 +401,14 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     key={status}
                     onClick={() => toggleStatusFilter(status)}
                     className={`px-2 py-1 rounded-full text-xs transition-all flex items-center gap-1 ${!selectedStatusFilter.includes(status) ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' : ''}`}
-                    style={{
-                      backgroundColor: selectedStatusFilter.includes(status) ?
-                        (status === 'success' ? 'rgba(96, 209, 134, 0.15)' : status === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)') :
+                    style={{backgroundColor: selectedStatusFilter.includes(status) ?
+                        (status === 'success' ? 'color-mix(in srgb, var(--wedo-green, #5DA47A)  15%, transparent)' : status === 'error' ? 'color-mix(in srgb, var(--status-error) 15%, transparent)' : 'color-mix(in srgb, var(--status-warning) 15%, transparent)') :
                         undefined,
                       color: selectedStatusFilter.includes(status) ?
                         (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') :
                         undefined,
                       border: `1px solid ${selectedStatusFilter.includes(status) ?
-                        (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 'transparent'}`
-                    }}
+                        (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 'transparent'}`}}
                   >
                     {status === 'success' && <CheckCircle className="w-2.5 h-2.5" />}
                     {status === 'in_progress' && <Clock className="w-2.5 h-2.5" />}
@@ -454,7 +443,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <div 
                     key={activity.id}
                     className="flex items-start gap-3 p-4 transition-colors hover:bg-opacity-50"
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{backgroundColor: 'transparent'}}
                   >
                     <div className="flex-shrink-0 mt-0.5">
                       <span className="text-lg">{activity.agent_icon}</span>
@@ -468,7 +457,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (
-                          <Badge variant="outline" className="text-xs px-1 py-0" style={{ borderColor: 'var(--status-error)', color: 'var(--status-error)' }}>
+                          <Badge variant="outline" className="text-xs px-1 py-0" style={{borderColor: 'var(--status-error)', color: 'var(--status-error)'}}>
                             SLA
                           </Badge>
                         )}
@@ -485,10 +474,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <CheckCircle className="w-4 h-4 text-wedo-green-bright" />
                       )}
                       {activity.status === 'in_progress' && (
-                        <Clock className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
+                        <Clock className="w-4 h-4" style={{color: 'var(--status-warning)'}} />
                       )}
                       {activity.status === 'error' && (
-                        <XCircle className="w-4 h-4" style={{ color: 'var(--status-error)' }} />
+                        <XCircle className="w-4 h-4" style={{color: 'var(--status-error)'}} />
                       )}
                       {activity.status === 'pending' && (
                         <Clock className="w-4 h-4 text-gray-400" />
@@ -535,7 +524,7 @@ function DeltaIndicator({ value }: { value: number }) {
   }
   
   return (
-    <div className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--status-error)' }}>
+    <div className="flex items-center gap-0.5 text-xs" style={{color: 'var(--status-error)'}}>
       <TrendingDown className="w-2.5 h-2.5" />
       <span>{value}%</span>
     </div>
@@ -560,11 +549,11 @@ function MetricCard({
       className="p-3 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
     >
       <div className="flex items-center gap-2 mb-1.5">
-        <div style={{ color }}>{icon}</div>
+        <div style={{color}}>{icon}</div>
         <span className="text-xs text-gray-400 dark:text-gray-500">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-xl font-bold" style={{ color }}>{value}</span>
+        <span className="text-xl font-bold" style={{color}}>{value}</span>
         {delta !== undefined && (
           <DeltaIndicator value={delta} />
         )}

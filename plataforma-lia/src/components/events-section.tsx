@@ -192,7 +192,7 @@ export function EventsSection() {
     return badges[priority as keyof typeof badges]
   }
 
-  const renderEventCard = (event: any, index: number) => (
+  const renderEventCard = (event: typeof morningEvents[number], index: number) => (
     <div
       key={event.id}
       className={`flex items-start gap-3 p-4 rounded-md hover:transition-all duration-200 cursor-pointer border ${
@@ -256,7 +256,7 @@ export function EventsSection() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          {event.actions.map((action: any, actionIndex: number) => (
+          {event.actions.map((action: { icon: React.ComponentType<{ className?: string }>; label: string }, actionIndex: number) => (
             <Button
               key={actionIndex}
               size="sm"
@@ -352,7 +352,7 @@ export function EventsSection() {
           {selectedEvent && isExpanded && (
             <div
               className="border-t border-gray-200 dark:border-gray-700 pt-4 overflow-hidden"
-              style={{ animation: 'slideInUp 0.3s ease-out' }}
+              style={{animation: 'slideInUp 0.3s ease-out'}}
             >
                 {(() => {
                   const event = [...morningEvents, ...afternoonEvents].find(e => e.id === selectedEvent)
@@ -417,7 +417,7 @@ export function EventsSection() {
                       )}
 
                       <div className="flex flex-wrap gap-2">
-                        {event.actions.map((action: any, actionIndex: number) => (
+                        {event.actions.map((action: { icon: React.ComponentType<{ className?: string }>; label: string }, actionIndex: number) => (
                           <Button
                             key={actionIndex}
                             size="sm"

@@ -107,7 +107,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
         <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${percentage >= 80 ? 'bg-status-success' : percentage >= 50 ? 'bg-status-warning' : 'bg-status-error'}`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
+            style={{width: `${Math.min(percentage, 100)}%`}}
           />
         </div>
       </div>

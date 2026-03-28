@@ -100,7 +100,7 @@ function InlineFieldEditor({
           autoFocus
           disabled={isSaving}
           className="text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
-          style={{ fontFamily: '"Inter", sans-serif' }}
+          style={{fontFamily: '"Inter", sans-serif'}}
         >
           <option value="">Selecionar...</option>
           {config.options.map(opt => (
@@ -137,7 +137,7 @@ function InlineFieldEditor({
         max={config?.max}
         placeholder={config?.placeholder || ''}
         className="w-24 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
-        style={{ fontFamily: '"Inter", sans-serif' }}
+        style={{fontFamily: '"Inter", sans-serif'}}
       />
       {config?.suffix && (
         <span className="text-micro text-gray-500">{config.suffix}</span>
@@ -215,7 +215,7 @@ export function HiringPoliciesHub() {
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
           <div
             className="h-1.5 rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-100"
-            style={{ width: `${setupProgress}%` }}
+            style={{width: `${setupProgress}%`}}
           />
         </div>
       </div>
@@ -223,11 +223,11 @@ export function HiringPoliciesHub() {
       <div className="flex gap-4 flex-1 min-h-0">
         <div
           className="w-[60%] flex flex-col bg-white dark:bg-gray-900 rounded-md overflow-hidden"
-          style={{ border: '1px solid var(--gray-200)' }}
+          style={{border: '1px solid var(--gray-200)'}}
         >
           <div
             className="flex-shrink-0 px-4 py-3"
-            style={{ backgroundColor: 'var(--gray-50)' }}
+            style={{backgroundColor: 'var(--gray-50)'}}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -270,7 +270,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-            style={{ backgroundColor: 'var(--gray-50)' }}
+            style={{backgroundColor: 'var(--gray-50)'}}
           >
             {messages.map((msg, idx) => (
               <LiaChatMessage
@@ -286,7 +286,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-shrink-0 p-4"
-            style={{ backgroundColor: 'var(--gray-50)' }}
+            style={{backgroundColor: 'var(--gray-50)'}}
           >
             <LiaChatInput
               value={inputValue}
@@ -311,7 +311,7 @@ export function HiringPoliciesHub() {
               <Card
                 key={block.key}
                 className="bg-white dark:bg-gray-800 overflow-hidden rounded-md"
-                style={{ border: '1px solid var(--gray-200)' }}
+                style={{border: '1px solid var(--gray-200)'}}
               >
                 <button
                   onClick={() => toggleBlock(block.key)}
@@ -344,7 +344,7 @@ export function HiringPoliciesHub() {
                 </button>
 
                 {isExpanded && blockData && (
-                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid var(--gray-200)' }}>
+                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--gray-200)'}}>
                     <div className="space-y-1">
                       {block.fields.map((field) => {
                         const value = blockData[field]
@@ -396,7 +396,7 @@ export function HiringPoliciesHub() {
                 )}
 
                 {isExpanded && !blockData && (
-                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid var(--gray-200)' }}>
+                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--gray-200)'}}>
                     <p className={textStyles.description}>Nenhum dado configurado ainda.</p>
                   </CardContent>
                 )}

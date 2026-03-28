@@ -344,7 +344,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
       <div className="flex gap-6">
       <div
         className="flex-shrink-0"
-        style={{ width: '220px' }}
+        style={{width: '220px'}}
       >
         <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md overflow-hidden">
           <nav className="p-3 h-full overflow-y-auto">
@@ -363,7 +363,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                   ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-wedo-cyan-dark dark:text-gray-300'
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-transparent'
               }`}
-              style={{ fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500' }}
+              style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
             >
               <section.icon className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -397,7 +397,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                   ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-wedo-cyan-dark dark:text-gray-300'
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-transparent'
               }`}
-              style={{ fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500' }}
+              style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
             >
               <section.icon className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -535,10 +535,10 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       {statusChangeConfirm.screeningImpact === 'ask_reactivate' && <Play className="w-3 h-3 text-status-success" />}
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" >
                         Impacto na Triagem
                       </p>
-                      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" >
                         {statusChangeConfirm.screeningImpact === 'pause' &&
                           'Ao paralisar esta vaga, a triagem ativa será pausada automaticamente. Candidatos em avaliação serão mantidos no estado atual até a reativação.'}
                         {statusChangeConfirm.screeningImpact === 'complete' && statusChangeConfirm.newStatus === 'Concluída' &&
@@ -871,7 +871,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         onChange={(e) => updateField("description", e.target.value)}
                         disabled={!isEditing}
                         placeholder="Descrição detalhada da vaga..."
-                        style={{ minHeight: '280px' }}
+                        style={{minHeight: '280px'}}
                       />
                     </div>
                   </CardContent>

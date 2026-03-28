@@ -384,8 +384,7 @@ export default function SeguroCiberneticoPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <ShieldPlus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -421,7 +420,7 @@ export default function SeguroCiberneticoPage() {
                 <div 
                   key={alert.id}
                   className="p-4 rounded-md border-l-4 flex items-center gap-3"
-                  style={{ backgroundColor: style.bg, borderLeftColor: style.border }}
+                  style={{backgroundColor: style.bg, borderLeftColor: style.border}}
                 >
                   <AlertTriangle className={`w-5 h-5 ${style.icon}`} />
                   <div className="flex-1">
@@ -440,7 +439,7 @@ export default function SeguroCiberneticoPage() {
         {isExpiringSoon && !isExpired && activePolicy && (
           <div 
             className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
-            style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)', borderLeftColor: 'var(--status-warning)' }}
+            style={{backgroundColor: 'rgba(234, 179, 8, 0.1)', borderLeftColor: 'var(--status-warning)'}}
           >
             <AlertTriangle className="w-5 h-5 text-status-warning" />
             <div>
@@ -454,8 +453,7 @@ export default function SeguroCiberneticoPage() {
 
         {isExpired && activePolicy && (
           <div 
-            className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
-            style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeftColor: 'var(--status-error)' }}
+            className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3 bg-red-500/10" style={{ borderLeftColor: 'var(--status-error)' }}
           >
             <AlertTriangle className="w-5 h-5 text-status-error" />
             <div>
@@ -468,7 +466,7 @@ export default function SeguroCiberneticoPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15">
@@ -484,7 +482,7 @@ export default function SeguroCiberneticoPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -500,7 +498,7 @@ export default function SeguroCiberneticoPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15">
@@ -516,7 +514,7 @@ export default function SeguroCiberneticoPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-wedo-purple/15">
@@ -535,7 +533,7 @@ export default function SeguroCiberneticoPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {activePolicy && (
-            <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card className="lg:col-span-2" >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -617,7 +615,7 @@ export default function SeguroCiberneticoPage() {
             </Card>
           )}
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }} className={activePolicy ? '' : 'lg:col-span-3'}>
+          <Card  className={activePolicy ? '' : 'lg:col-span-3'}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -668,7 +666,7 @@ export default function SeguroCiberneticoPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -728,7 +726,7 @@ export default function SeguroCiberneticoPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -781,7 +779,7 @@ export default function SeguroCiberneticoPage() {
                 ))}
               </div>
 
-              <div className="mt-4 p-3 rounded-md border-l-4 border-l-gray-300" style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}>
+              <div className="mt-4 p-3 rounded-md border-l-4 border-l-gray-300 bg-gray-200/20">
                 <p className="text-xs text-gray-400 dark:text-gray-500" >
                   <strong>Resolução BCB 498/2025</strong> - Dispõe sobre a política de segurança cibernética e sobre os requisitos para a contratação de serviços de processamento e armazenamento de dados e de computação em nuvem.
                 </p>
@@ -790,7 +788,7 @@ export default function SeguroCiberneticoPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card className="mb-6" >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -862,7 +860,7 @@ export default function SeguroCiberneticoPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

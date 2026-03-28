@@ -56,9 +56,7 @@ export function Loading({
                 'rounded-full bg-gray-700 dark:bg-gray-300',
                 size === 'sm' ? 'w-1 h-1' : size === 'md' ? 'w-2 h-2' : 'w-3 h-3'
               )}
-              style={{
-                animation: `dotsPulse 0.8s infinite ${i * 0.2}s`
-              }}
+              style={{animation: `dotsPulse 0.8s infinite ${i * 0.2}s`}}
             />
           ))}
         </div>

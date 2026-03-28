@@ -371,7 +371,7 @@ export function SearchCalibrationStage({
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-gray-900 dark:bg-gray-50 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(approvedCandidates.length / 3) * 100}%` }}
+                    style={{width: `${(approvedCandidates.length / 3) * 100}%`}}
                   />
                 </div>
               </div>

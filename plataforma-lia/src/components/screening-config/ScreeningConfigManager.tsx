@@ -550,7 +550,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
   return (
     <div className={_hideOwnSidebar ? "" : "flex gap-6"}>
       {!_hideOwnSidebar && (
-      <div className="flex-shrink-0" style={{ width: '220px' }}>
+      <div className="flex-shrink-0" style={{width: '220px'}}>
         <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md overflow-hidden">
           <nav className="space-y-1 p-3 h-full overflow-y-auto">
             {SCREENING_SECTIONS.map((section) => {
@@ -564,7 +564,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-wedo-cyan-dark dark:text-gray-300'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-transparent'
                   }`}
-                  style={{ fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500' }}
+                  style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
                 >
                   <section.icon className="w-4 h-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -698,7 +698,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     )}
                   </span>
                   <div className="flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-3 ml-1">
-                    <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <span className="text-micro text-gray-500 dark:text-gray-400" >
                       Triagem
                     </span>
                     {(job.screeningStatus === 'not_configured' || !job.screeningStatus) ? (
@@ -715,7 +715,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       >
                         <span
                           className="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200"
-                          style={{ transform: 'translateX(2px)' }}
+                          style={{transform: 'translateX(2px)'}}
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
@@ -742,7 +742,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       >
                         <span
                           className="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200"
-                          style={{ transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)' }}
+                          style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}}
                         />
                       </button>
                     )}
@@ -797,7 +797,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         : <Pause className="w-3 h-3 text-status-warning" />
                       }
                     </div>
-                    <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" >
                       {showScreeningToggleConfirm === 'activate'
                         ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'
@@ -871,7 +871,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
                         <div className="flex items-center gap-2.5 opacity-50 cursor-not-allowed" title="Clique em Editar Configurações para alterar">
-                          <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro text-gray-400 dark:text-gray-500" >
                             {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                           </span>
                           <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
@@ -879,7 +879,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           }`}>
                             <span
                               className="inline-block h-3.5 w-3.5 transform rounded-full bg-white"
-                              style={{ transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)' }}
+                              style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}}
                             />
                           </div>
                         </div>
@@ -899,7 +899,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                             <div className="flex items-center gap-2">
                               <ChIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400" >{ch.label}</span>
                               {ch.key === 'phone' && !ch.enabled && (
                                 <span className="text-micro text-gray-300 dark:text-gray-600">(Integração pendente)</span>
                               )}
@@ -928,10 +928,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} >{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
-                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} >{preset.score}</span>
                                 <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                               </div>
                             )
@@ -996,10 +996,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} >{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
-                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
+                                <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} >{preset.limit}</span>
                                 <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                               </div>
                             )
@@ -1010,14 +1010,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <div className="border border-gray-100 dark:border-gray-700 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-micro text-gray-400 dark:text-gray-500">Progresso atual</span>
-                            <span className="text-micro font-medium text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span className="text-micro font-medium text-gray-500 dark:text-gray-400" >
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{screeningConfig?.settings?.auto_approval_limit ?? 10} aprovações
                             </span>
                           </div>
                           <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1">
                             <div
                               className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= (screeningConfig?.settings?.auto_approval_limit ?? 10) ? 'bg-status-warning' : 'bg-gray-300 dark:bg-gray-600'}`}
-                              style={{ width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / (screeningConfig?.settings?.auto_approval_limit ?? 10)) * 100)}%` }}
+                              style={{width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / (screeningConfig?.settings?.auto_approval_limit ?? 10)) * 100)}%`}}
                             />
                           </div>
                         </div>
@@ -1025,7 +1025,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {screeningConfig?.settings?.auto_approval_paused && (
                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
-                          <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido, aguardando revisão humana</span>
+                          <span className="text-micro font-medium" >Triagem pausada — limite atingido, aguardando revisão humana</span>
                         </div>
                       )}
                     </div>
@@ -1056,10 +1056,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               return (
                                 <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-gray-300 bg-gray-50/50' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800/50'}`}>
                                   <div className="flex items-center justify-between mb-0.5">
-                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`} >{preset.label}</span>
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                   </div>
-                                  <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                  <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} >{preset.score}</span>
                                   <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                                 </div>
                               )
@@ -1133,7 +1133,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </div>
                       {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
                         <div className="flex items-center gap-2.5">
-                          <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro text-gray-500 dark:text-gray-400" >
                             {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                           </span>
                           <button
@@ -1150,7 +1150,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           >
                             <span
                               className="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200"
-                              style={{ transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)' }}
+                              style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}}
                             />
                           </button>
                         </div>
@@ -1171,7 +1171,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                             <div className="flex items-center gap-2">
                               <ChIcon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                              <span className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
+                              <span className="text-xs font-medium text-gray-800 dark:text-gray-200" >{ch.label}</span>
                               {ch.key === 'phone' && !enabled && (
                                 <span className="text-micro text-gray-400 dark:text-gray-500">(Integração pendente)</span>
                               )}
@@ -1203,10 +1203,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} >{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
-                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" >{preset.score}</span>
                                 <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                               </button>
                             )
@@ -1249,10 +1249,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             return (
                               <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                  <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} >{preset.label}</span>
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
-                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
+                                <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" >{preset.limit}</span>
                                 <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                               </button>
                             )
@@ -1263,14 +1263,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <div className="border border-gray-200 dark:border-gray-600 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
                             <span className="text-micro text-gray-500 dark:text-gray-400">Progresso atual</span>
-                            <span className="text-micro font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span className="text-micro font-medium text-gray-700 dark:text-gray-300" >
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{approvalPresetToLimit(editAutoApprovalPreset)} aprovações
                             </span>
                           </div>
                           <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1">
                             <div
                               className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= approvalPresetToLimit(editAutoApprovalPreset) ? 'bg-status-warning' : 'bg-gray-400 dark:bg-gray-500'}`}
-                              style={{ width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / approvalPresetToLimit(editAutoApprovalPreset)) * 100)}%` }}
+                              style={{width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / approvalPresetToLimit(editAutoApprovalPreset)) * 100)}%`}}
                             />
                           </div>
                         </div>
@@ -1278,8 +1278,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {screeningConfig?.settings?.auto_approval_paused && (
                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
-                          <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido</span>
-                          <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="text-micro font-medium" >Triagem pausada — limite atingido</span>
+                          <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" >
                             Retomar
                           </button>
                         </div>
@@ -1331,10 +1331,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               return (
                                 <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-all ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'}`}>
                                   <div className="flex items-center justify-between mb-0.5">
-                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.label}</span>
+                                    <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} >{preset.label}</span>
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                   </div>
-                                  <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
+                                  <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" >{preset.score}</span>
                                   <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                                 </button>
                               )
@@ -1706,7 +1706,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             { num: 4, label: 'Resultado' },
                           ].map((step, idx, arr) => (
                             <React.Fragment key={step.num}>
-                              <div className="flex flex-col items-center" style={{ minWidth: '56px' }}>
+                              <div className="flex flex-col items-center" style={{minWidth: '56px'}}>
                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500 ${
                                   (wsiGenerationStep > step.num || (wsiGenerationStep === step.num && wsiGenerationCompleted))
                                     ? 'text-white'
@@ -1727,7 +1727,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </span>
                               </div>
                               {idx < arr.length - 1 && (
-                                <div className="flex-1 flex items-center" style={{ marginTop: '11px' }}>
+                                <div className="flex-1 flex items-center" style={{marginTop: '11px'}}>
                                   <div className={`w-full h-0.5 rounded-full transition-all duration-700 ${wsiGenerationStep > step.num ? 'bg-wedo-cyan' : 'bg-gray-200'}`} />
                                 </div>
                               )}

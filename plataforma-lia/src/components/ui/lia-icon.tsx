@@ -20,7 +20,7 @@ function SoundWaveBars({ size }: { size: string }) {
             "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
             barHeight
           )}
-          style={{ animationDelay: `${i * 0.15}s` }}
+          style={{animationDelay: `${i * 0.15}s`}}
         />
       ))}
     </div>

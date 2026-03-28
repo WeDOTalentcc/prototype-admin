@@ -816,9 +816,9 @@ export default function CandidatePortalPage() {
             <CardHeader className="text-center">
               <div
                 className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: `${primaryColor}20` }}
+                style={{backgroundColor: `${primaryColor}20`}}
               >
-                <User className="w-8 h-8" style={{ color: primaryColor }} />
+                <User className="w-8 h-8" style={{color: primaryColor}} />
               </div>
               <CardTitle className="text-xl">Olá, {portalData?.candidate_info.name}!</CardTitle>
               <CardDescription>
@@ -855,7 +855,7 @@ export default function CandidatePortalPage() {
                     onClick={requestOTP}
                     disabled={otpLoading}
                     className="w-full h-12"
-                    style={{ backgroundColor: primaryColor }}
+                    style={{backgroundColor: primaryColor}}
                   >
                     {otpLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -901,7 +901,7 @@ export default function CandidatePortalPage() {
                     onClick={verifyOTP}
                     disabled={otpLoading || otpCode.join("").length !== 6}
                     className="w-full h-12"
-                    style={{ backgroundColor: primaryColor }}
+                    style={{backgroundColor: primaryColor}}
                   >
                     {otpLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -920,7 +920,7 @@ export default function CandidatePortalPage() {
                         onClick={requestOTP}
                         disabled={otpLoading}
                         className="text-sm hover:underline"
-                        style={{ color: primaryColor }}
+                        style={{color: primaryColor}}
                       >
                         Reenviar código
                       </button>
@@ -953,9 +953,9 @@ export default function CandidatePortalPage() {
             <CardContent className="pt-8 pb-8 text-center">
               <div
                 className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-                style={{ backgroundColor: `${primaryColor}20` }}
+                style={{backgroundColor: `${primaryColor}20`}}
               >
-                <CheckCircle2 className="w-10 h-10" style={{ color: primaryColor }} />
+                <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>
               <h1 className="text-2xl font-semibold text-gray-900 mb-3">
                 Obrigado!
@@ -1002,17 +1002,15 @@ export default function CandidatePortalPage() {
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-gray-500">Progresso</span>
-            <span className="text-xs font-semibold" style={{ color: primaryColor }}>
+            <span className="text-xs font-semibold" style={{color: primaryColor}}>
               {Math.round(portalData?.completion_percentage || 0)}%
             </span>
           </div>
           <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="absolute left-0 top-0 h-full transition-all duration-500 rounded-full"
-              style={{
-                width: `${portalData?.completion_percentage || 0}%`,
-                backgroundColor: primaryColor,
-              }}
+              style={{width: `${portalData?.completion_percentage || 0}%`,
+                backgroundColor: primaryColor}}
             />
           </div>
         </div>
@@ -1051,7 +1049,7 @@ export default function CandidatePortalPage() {
               onClick={submitForm}
               disabled={submitting || saving}
               className="w-full h-12 text-base font-medium"
-              style={{ backgroundColor: primaryColor }}
+              style={{backgroundColor: primaryColor}}
             >
               {submitting ? (
                 <>

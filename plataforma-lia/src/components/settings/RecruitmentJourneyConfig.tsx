@@ -227,7 +227,7 @@ export function RecruitmentJourneyConfig({
                         onClick={() => handleAddFromCatalog(cs)}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
                       >
-                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cs.color || 'var(--gray-400)' }} />
+                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cs.color || 'var(--gray-400)'}} />
                         <span className={`flex-1 ${textStyles.body} text-gray-800 dark:text-gray-200`}>{cs.display_name}</span>
                         {cs.action_behavior && (
                           <span className="text-micro text-gray-400">{getActionBehaviorShort(cs.action_behavior)}</span>

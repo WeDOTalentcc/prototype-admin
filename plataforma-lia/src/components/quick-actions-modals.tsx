@@ -1716,7 +1716,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-status-success h-2 rounded-full"
-                          style={{ width: `${candidate.technicalMatch}%` }}
+                          style={{width: `${candidate.technicalMatch}%`}}
                         ></div>
                       </div>
                       <span className="text-sm font-medium">{candidate.technicalMatch}%</span>
@@ -1728,7 +1728,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-gray-900 dark:bg-gray-50 h-2 rounded-full"
-                          style={{ width: `${candidate.culturalFit}%` }}
+                          style={{width: `${candidate.culturalFit}%`}}
                         ></div>
                       </div>
                       <span className="text-sm font-medium">{candidate.culturalFit}%</span>

@@ -899,7 +899,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       <div className="flex items-center gap-2">
                         <div 
                           className="w-6 h-6 rounded-md border border-gray-200 dark:border-gray-700" 
-                          style={{ backgroundColor: config.branding.primaryColor }}
+                          style={{backgroundColor: config.branding.primaryColor}}
                         />
                         <span className="text-xs font-mono text-gray-700 dark:text-gray-300">{config.branding.primaryColor}</span>
                       </div>

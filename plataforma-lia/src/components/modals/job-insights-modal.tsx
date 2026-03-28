@@ -902,7 +902,7 @@ export function JobInsightsModal({
                       <div className="flex-1 h-2 bg-white/50 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${rate.status === 'good' ? 'bg-status-success' : rate.status === 'warning' ? 'bg-status-warning' : 'bg-status-error'}`}
-                          style={{ width: `${Math.min(rate.rate, 100)}%` }}
+                          style={{width: `${Math.min(rate.rate, 100)}%`}}
                         />
                       </div>
                       <span className={`text-sm font-bold ${colors.text}`}>{rate.rate}%</span>
@@ -931,7 +931,7 @@ export function JobInsightsModal({
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
                         className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-all"
-                        style={{ height: `${(val / trendData.maxCandidates) * 100}%` }}
+                        style={{height: `${(val / trendData.maxCandidates) * 100}%`}}
                       />
                       <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
                       <span className="text-micro font-medium text-gray-700">{val}</span>
@@ -947,7 +947,7 @@ export function JobInsightsModal({
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
                         className="w-full bg-status-success rounded-t transition-all"
-                        style={{ height: `${(val / 100) * 100}%` }}
+                        style={{height: `${(val / 100) * 100}%`}}
                       />
                       <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
                       <span className="text-micro font-medium text-gray-700">{val}%</span>
@@ -970,7 +970,7 @@ export function JobInsightsModal({
                   <div className="flex-1 h-7 bg-gray-100 rounded-md overflow-hidden relative">
                     <div 
                       className={`h-full ${stage.color} transition-all duration-500`}
-                      style={{ width: `${stage.percentage}%` }}
+                      style={{width: `${stage.percentage}%`}}
                     />
                     <div className="absolute inset-0 flex items-center px-2">
                       <span className="text-xs font-semibold text-gray-800">{stage.value}</span>
@@ -1001,7 +1001,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${city.percentage}%` }}
+                              style={{width: `${city.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{city.count}</span>
@@ -1028,7 +1028,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${model.percentage}%` }}
+                              style={{width: `${model.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{model.count}</span>
@@ -1055,7 +1055,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${gender.percentage}%` }}
+                              style={{width: `${gender.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{gender.count}</span>
@@ -1082,7 +1082,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${ageRange.percentage}%` }}
+                              style={{width: `${ageRange.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{ageRange.count}</span>
@@ -1107,7 +1107,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${edu.percentage}%` }}
+                              style={{width: `${edu.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{edu.count}</span>
@@ -1132,7 +1132,7 @@ export function JobInsightsModal({
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gray-900 dark:bg-gray-50" 
-                              style={{ width: `${exp.percentage}%` }}
+                              style={{width: `${exp.percentage}%`}}
                             />
                           </div>
                           <span className="text-micro text-gray-600 w-8 text-right">{exp.count}</span>
@@ -1352,7 +1352,7 @@ export function JobInsightsModal({
                         dim.score >= 80 ? 'bg-gray-900 dark:bg-gray-50' : 
                         dim.score >= 60 ? 'bg-status-warning' : 'bg-status-error'
                       }`}
-                      style={{ width: `${dim.score}%` }}
+                      style={{width: `${dim.score}%`}}
                     />
                   </div>
                   <span className={`text-xs font-semibold w-10 text-right ${

@@ -39,7 +39,7 @@ export function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsPro
               {tab.comingSoon && (
                 <span
                   className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                  style={{ backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)' }}
+                  style={{backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)'}}
                 >
                   Em Breve
                 </span>

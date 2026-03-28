@@ -358,7 +358,7 @@ export function WizardRightPanel({
     <div
       ref={resizeRef}
       className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-gray-50 border border-gray-200"
-      style={{ width: `${panelWidth}%` }}
+      style={{width: `${panelWidth}%`}}
     >
       {/* Resize Handle - cursor change only, no visual indicator */}
       <div

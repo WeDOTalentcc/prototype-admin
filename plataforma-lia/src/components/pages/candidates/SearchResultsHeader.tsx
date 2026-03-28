@@ -184,7 +184,7 @@ export function SearchResultsHeader({
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="left" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+          <TooltipContent side="left" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
             <p className="text-xs font-bold">Voltar para Busca Inteligente</p>
           </TooltipContent>
         </Tooltip>
@@ -212,7 +212,7 @@ export function SearchResultsHeader({
                     <Edit className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                <TooltipContent side="bottom" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
                   <p className="text-xs font-bold">Editar query de busca</p>
                 </TooltipContent>
               </Tooltip>

@@ -44,10 +44,8 @@ export function CreditConfirmationDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent 
         className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4"
-        style={{
-          backgroundColor: 'var(--gray-50)',
-          borderRadius: '10px',
-        }}
+        style={{backgroundColor: 'var(--gray-50)',
+          borderRadius: '10px'}}
       >
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
@@ -119,7 +117,7 @@ export function CreditConfirmationDialog({
         <AlertDialogFooter className="flex flex-row justify-end gap-2.5 sm:justify-end pt-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{ backgroundColor: 'transparent', borderRadius: '6px' }}
+            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{backgroundColor: 'transparent', borderRadius: '6px'}}
           >
             Cancelar
           </AlertDialogCancel>
@@ -128,9 +126,7 @@ export function CreditConfirmationDialog({
             onClick={onConfirm}
             disabled={isLoading}
             className="text-white h-8 text-xs px-4 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 font-medium"
-            style={{ 
-              borderRadius: '6px',
-            }}
+            style={{borderRadius: '6px'}}
           >
             {isLoading ? (
               <>

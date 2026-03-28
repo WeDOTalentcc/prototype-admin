@@ -516,6 +516,34 @@ export const cssVariables = {
   '--lia-radius-sm': borderRadius.sm,
   '--lia-radius-default': borderRadius.DEFAULT,
   '--lia-radius-lg': borderRadius.lg,
+
+  // Layout
+  '--layout-panel-sm': '300px',
+  '--layout-panel-md': '350px',
+  '--layout-panel-lg': '400px',
+  '--layout-panel-xl': '500px',
+  '--layout-sidebar': '200px',
+  '--layout-chart-h': '200px',
+
+  // Z-Index
+  '--z-base': '0',
+  '--z-raised': '10',
+  '--z-dropdown': '40',
+  '--z-sticky': '50',
+  '--z-overlay': '60',
+  '--z-toast': '100',
+  '--z-select': '200',
+  '--z-backdrop': '9998',
+  '--z-modal': '9999',
+  '--z-max': '10000',
+
+  // Spacing
+  '--space-xs': '4px',
+  '--space-sm': '8px',
+  '--space-md': '16px',
+  '--space-lg': '24px',
+  '--space-xl': '32px',
+  '--space-2xl': '48px',
 } as const
 
 /**

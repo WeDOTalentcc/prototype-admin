@@ -133,7 +133,7 @@ export function CalibrationStage() {
         <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full bg-gray-900 dark:bg-gray-50 transition-all duration-300"
-            style={{ width: `${(processedCount / Math.min(5, totalCandidates)) * 100}%` }}
+            style={{width: `${(processedCount / Math.min(5, totalCandidates)) * 100}%`}}
           />
         </div>
       </div>

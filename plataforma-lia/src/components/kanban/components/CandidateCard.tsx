@@ -169,16 +169,14 @@ export function CandidateCard({
         (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-gray-300 dark:border-l-gray-600 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800' : 
         'border-gray-200 dark:border-gray-700'
       } ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-move'} hover:transition-all duration-300 group`}
-      style={{
-        animationDelay: `${index * 50}ms`,
+      style={{animationDelay: `${index * 50}ms`,
         minHeight: '110px',
         transition: 'all 0.3s ease',
-        animation: dropZoneActive ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : undefined
-      }}
+        animation: dropZoneActive ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : undefined}}
       onMouseEnter={(e) => {
         if (!isDragging) {
           e.currentTarget.style.transform = 'translateY(-1px)'
-          e.currentTarget.style.boxShadow = '0 4px 12px rgb(0 0 0 / 0.1)'
+          e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, black 10%, transparent)'
         }
       }}
       onMouseLeave={(e) => {

@@ -386,11 +386,11 @@ export function InteractiveChart({
                 highlightedSeries === key ? 'border-2 bg-gray-100 dark:bg-gray-800' : ''
               }`}
               onClick={() => setHighlightedSeries(highlightedSeries === key ? null : key)}
-              style={{ borderColor: COLORS[index % COLORS.length] }}
+              style={{borderColor: COLORS[index % COLORS.length]}}
             >
               <div
                 className="w-2 h-2 rounded-full mr-2"
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                style={{backgroundColor: COLORS[index % COLORS.length]}}
               />
               {key}
             </Badge>
@@ -399,7 +399,7 @@ export function InteractiveChart({
       </CardHeader>
 
       <CardContent>
-        <div className="w-full" style={{ height }}>
+        <div className="w-full" style={{height}}>
           {renderChart()}
         </div>
 
@@ -483,7 +483,7 @@ export function RecruiterPerformanceChart() {
           >
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: metric.color }}
+              style={{backgroundColor: metric.color}}
             />
             {metric.label}
           </Button>

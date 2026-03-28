@@ -466,7 +466,7 @@ export function AdvancedReportExporter({
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${exportProgress}%` }}
+                          style={{width: `${exportProgress}%`}}
                         />
                       </div>
                     </div>

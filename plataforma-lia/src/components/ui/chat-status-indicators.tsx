@@ -73,9 +73,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
               className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
                 isActive ? 'bg-gray-200 dark:bg-gray-700' : ''
               }`}
-              style={{
-                animation: `fadeInRight 0.3s ease-out ${index * 0.1}s backwards`
-              }}
+              style={{animation: `fadeInRight 0.3s ease-out ${index * 0.1}s backwards`}}
             >
               <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-colors ${
                 isCompleted ? 'bg-gray-700 text-white dark:bg-gray-300 dark:text-gray-950' :

@@ -230,7 +230,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4" style={{ color: 'var(--wedo-blue)' }} />
+            <Bell className="w-4 h-4" style={{color: 'var(--wedo-blue)'}} />
             <h3 className="font-sans font-semibold text-sm text-gray-950 dark:text-gray-50">Notificações</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="h-5 px-1.5 text-xs">
@@ -340,7 +340,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                           </span>
                           
                           {notification.action_label && (
-                            <span className="text-xs font-medium" style={{ color: 'var(--wedo-blue)' }}>
+                            <span className="text-xs font-medium" style={{color: 'var(--wedo-blue)'}}>
                               {notification.action_label} →
                             </span>
                           )}

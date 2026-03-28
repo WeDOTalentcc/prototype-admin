@@ -465,8 +465,7 @@ export default function HealthCheckPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <ClipboardCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -502,15 +501,14 @@ export default function HealthCheckPage() {
             <Card 
               key={fw.framework}
               className={`cursor-pointer hover:transition-shadow ${frameworkFilter === fw.framework ? 'ring-2 ring-gray-900/20' : ''}`}
-              style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+              
               onClick={() => setFrameworkFilter(frameworkFilter === fw.framework ? 'all' : fw.framework)}
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div 
-                      className="w-8 h-8 rounded-md flex items-center justify-center"
-                      style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                      className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30"
                     >
                       {fw.icon}
                     </div>
@@ -551,7 +549,7 @@ export default function HealthCheckPage() {
           ))}
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-3 mb-4">
               <div className="relative flex-1">
@@ -832,7 +830,7 @@ export default function HealthCheckPage() {
                         Documentação Requerida:
                       </span>
                       <pre 
-                        className="mt-2 text-xs whitespace-pre-wrap text-gray-500 dark:text-gray-400" style={{ fontFamily: 'inherit' }}
+                        className="mt-2 text-xs whitespace-pre-wrap text-gray-500 dark:text-gray-400" style={{fontFamily: 'inherit'}}
                       >
                         {selectedItem.evidenceDetails}
                       </pre>
@@ -848,7 +846,7 @@ export default function HealthCheckPage() {
               <Button 
                 onClick={handleVerify} 
                 disabled={isVerifying}
-                className="bg-gray-900" style={{ color: 'white' }}
+                className="bg-gray-900" style={{color: 'white'}}
               >
                 {isVerifying ? (
                   <>

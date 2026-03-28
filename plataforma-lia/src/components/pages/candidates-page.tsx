@@ -150,6 +150,9 @@ import { useCandidatesActions } from "@/components/pages/candidates/hooks/useCan
 import { createCellRenderer } from "@/components/pages/candidates/CandidateTableCellRenderer"
 import { useCandidatesSearchState } from "@/hooks/use-candidates-search-state"
 import { useCandidatesViewState } from "@/hooks/use-candidates-view-state"
+import { useCandidatesArchetypes, type Archetype, type BackendArchetype, type AISuggestion } from "@/components/pages/candidates/hooks/useCandidatesArchetypes"
+import { useCandidatesTableConfig } from "@/components/pages/candidates/hooks/useCandidatesTableConfig"
+import { useCandidatesFilterSort } from "@/components/pages/candidates/hooks/useCandidatesFilterSort"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
@@ -555,105 +558,66 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   
   // Estado para modal de filtros avançados removido - agora usa painel lateral
   
-  // 🏷️ Estados para sistema de Arquétipos
-  type Archetype = {
-    id: string
-    name: string
-    description: string
-    emoji: string
-    query: string
-    filters: {
-      job_title?: string
-      seniority?: string
-      skills?: string[]
-      location?: string
-      experience_years?: number
-    }
-    tags?: string[]
-    industry?: string
-    createdAt: Date
-    isDefault?: boolean
-    usage_count?: number
-  }
-  
-  // Backend archetypes loaded from API
-  type BackendArchetype = {
-    id: string
-    name: string
-    description?: string
-    emoji: string
-    query: string
-    filters: Record<string, any>
-    tags: string[]
-    industry?: string
-    seniority?: string
-    is_default: boolean
-    is_active: boolean
-    usage_count: number
-    created_at?: string
-  }
-  const [backendArchetypes, setBackendArchetypes] = useState<BackendArchetype[]>([])
-  const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(false)
-  const [archetypesLoadError, setArchetypesLoadError] = useState<string | null>(null)
-  const [isSearchingByArchetype, setIsSearchingByArchetype] = useState(false)
-  
-  const [userArchetypes, setUserArchetypes] = useState<Archetype[]>([])
-  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
-  const [archetypeCreationStep, setArchetypeCreationStep] = useState<'initial' | 'input' | 'extracting' | 'review' | 'saving'>('initial')
-  const [newArchetypeData, setNewArchetypeData] = useState<Partial<Archetype>>({})
-  const [archetypeJobDescription, setArchetypeJobDescription] = useState("")
-  const [archetypeLibraryTab, setArchetypeLibraryTab] = useState<'meus' | 'sugestoes' | 'templates'>('meus')
-  const [showSaveAsArchetypeModal, setShowSaveAsArchetypeModal] = useState(false)
-  const [lastSuccessfulQuery, setLastSuccessfulQuery] = useState("") // Armazena a última query bem-sucedida para o modal de arquétipo
-  
-  // Estado para preview de sugestão IA
-  type AISuggestion = {
-    name: string
-    description: string
-    query: string
-    filters: {
-      job_title?: string
-      seniority?: string
-      skills?: string[]
-      location?: string
-    }
-  }
-  const [previewSuggestion, setPreviewSuggestion] = useState<AISuggestion | null>(null)
+  const [pearchSearchOptions, setPearchSearchOptions] = useState({
+    searchType: 'fast' as 'fast' | 'pro',
+    limit: 50,
+    showEmails: false,
+    showPhoneNumbers: false,
+    highFreshness: false,
+    requireEmails: false,
+    requirePhoneNumbers: false
+  })
 
-  // Estado para preview de arquétipo do usuário (Meus Arquétipos)
-  const [previewingUserArchetype, setPreviewingUserArchetype] = useState<Archetype | null>(null)
-  
-  // Estado para exclusão de arquétipo com confirmação
-  const [archetypeToDelete, setArchetypeToDelete] = useState<Archetype | null>(null)
-  const [isDeletingArchetype, setIsDeletingArchetype] = useState(false)
-  
-  const buildFiltersFromTags = (tags: string[]): Record<string, string[]> => {
-    const seniorityKeywords = ['júnior', 'junior', 'pleno', 'sênior', 'senior', 'especialista', 'lead', 'principal', 'staff', 'estagiário', 'trainee']
-    const locationKeywords = ['são paulo', 'rio de janeiro', 'belo horizonte', 'curitiba', 'porto alegre', 'brasília', 'salvador', 'fortaleza', 'recife', 'remoto', 'híbrido', 'presencial']
-    
-    const skills: string[] = []
-    const locations: string[] = []
-    const seniority: string[] = []
-    
-    tags.forEach(tag => {
-      const lowerTag = tag.toLowerCase().trim()
-      
-      if (seniorityKeywords.some(kw => lowerTag.includes(kw))) {
-        seniority.push(tag)
-      } else if (locationKeywords.some(kw => lowerTag.includes(kw))) {
-        locations.push(tag)
-      } else {
-        skills.push(tag)
-      }
-    })
-    
-    return {
-      skills,
-      locations,
-      seniority,
-      keywords: tags
+  type ChatMessage = {
+    id: string
+    type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
+    content: string
+    timestamp: Date
+    searchResults?: {
+      localCount: number
+      globalCount: number
+      query: string
+    }
+    analytics?: SearchAnalytics
+    candidates?: CalibrationCandidate[]
+    metadata?: {
+      action_executed?: boolean
+      action_result?: Record<string, unknown>
+      action_type?: string
+      needs_confirmation?: boolean
+      needs_params?: boolean
+      pending_action_id?: string
+      conversation_id?: string
     }
   }
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+
+  const archetypesHook = useCandidatesArchetypes({
+    searchSource, pearchSearchOptions, toast,
+    setCandidates, setHasSearchResults, setSearchResultsCount,
+    setLocalResultsCount, setPearchResultsCount,
+    setLastSearchQuery, setLastSearchMode, setActiveSearchTab: (v: any) => setActiveSearchTab(v),
+    setLiaPromptValue, setChatMessages,
+  })
+  const {
+    state: {
+      backendArchetypes, isLoadingArchetypes, archetypesLoadError,
+      isSearchingByArchetype, userArchetypes, isCreatingArchetype,
+      archetypeCreationStep, newArchetypeData, archetypeJobDescription,
+      archetypeLibraryTab, showSaveAsArchetypeModal, lastSuccessfulQuery,
+      previewSuggestion, previewingUserArchetype,
+      archetypeToDelete, isDeletingArchetype,
+    },
+    actions: {
+      setBackendArchetypes, setIsLoadingArchetypes, setArchetypesLoadError,
+      setIsSearchingByArchetype, setUserArchetypes, setIsCreatingArchetype,
+      setArchetypeCreationStep, setNewArchetypeData, setArchetypeJobDescription,
+      setArchetypeLibraryTab, setShowSaveAsArchetypeModal, setLastSuccessfulQuery,
+      setPreviewSuggestion, setPreviewingUserArchetype,
+      setArchetypeToDelete, setIsDeletingArchetype,
+      buildFiltersFromTags, loadArchetypesFromBackend, executeArchetypeSearch,
+    },
+  } = archetypesHook
   const [activeSearchFilters, setActiveSearchFilters] = useState<SearchFilters>({
     ppiOptions: {},
     general: {},
@@ -686,31 +650,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     globalDismissed: false
   })
   
-  // Estado para histórico de chat da LIA
-  type ChatMessage = {
-    id: string
-    type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
-    content: string
-    timestamp: Date
-    searchResults?: {
-      localCount: number
-      globalCount: number
-      query: string
-    }
-    analytics?: SearchAnalytics
-    candidates?: CalibrationCandidate[]
-    metadata?: {
-      action_executed?: boolean
-      action_result?: Record<string, unknown>
-      action_type?: string
-      needs_confirmation?: boolean
-      needs_params?: boolean
-      pending_action_id?: string
-      conversation_id?: string
-    }
-  }
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
-
   // CV Dropzone handlers — extracted to useCandidatesCVHandlers
   const cvHandlers = useCandidatesCVHandlers({
     setCandidates, setIsDroppingCV, setCvUploadLoading,
@@ -762,124 +701,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       setSearchTerm(`empresas:${companies.join(',')}`)
     }
   }, [])
-  
-  // 🎯 Load archetypes from backend
-  const loadArchetypesFromBackend = async () => {
-    setIsLoadingArchetypes(true)
-    setArchetypesLoadError(null)
-    try {
-      const response = await fetch('/api/backend-proxy/search/archetypes')
-      if (!response.ok) {
-        throw new Error(`Erro ao carregar arquétipos: ${response.status}`)
-      }
-      const data = await response.json()
-      setBackendArchetypes(data.archetypes || [])
-    } catch (error) {
-      setArchetypesLoadError(error instanceof Error ? error.message : 'Erro ao carregar arquétipos')
-    } finally {
-      setIsLoadingArchetypes(false)
-    }
-  }
-  
-  // Function to execute search by archetype
-  const executeArchetypeSearch = async (archetype: BackendArchetype) => {
-    setIsSearchingByArchetype(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/search/archetypes/${archetype.id}/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          search_local: true,
-          search_pearch: searchSource === 'global' || searchSource === 'hybrid',
-          pearch_type: pearchSearchOptions.searchType,
-          local_limit: 50,
-          pearch_limit: pearchSearchOptions.limit,
-          calculate_lia_score: true
-        })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Erro na busca: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      // Update UI with search results
-      setLiaPromptValue(archetype.query)
-      setActiveSearchTab('ia-natural')
-      
-      // Map candidates to expected format
-      if (data.candidates && data.candidates.length > 0) {
-        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
-          id: c.id || `arch-${Date.now()}-${Math.random()}`,
-          candidateId: c.id || '',
-          name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
-          email: '',
-          phone: '',
-          current_title: c.current_title || c.headline,
-          current_company: c.current_company,
-          linkedin_url: c.linkedin_url,
-          seniority_level: archetype.seniority,
-          technical_skills: c.skills || [],
-          location_city: c.location?.split(',')[0]?.trim(),
-          location_state: c.location?.split(',')[1]?.trim(),
-          avatar_url: c.picture_url,
-          years_of_experience: c.total_experience_years,
-          status: 'new',
-          source: c.source || 'pearch',
-          matching_score: c.lia_score || c.score || 0,
-          match_summary: c.lia_reasoning || c.match_summary,
-          is_opentowork: c.is_open_to_work,
-          lia_score: c.lia_score,
-          lia_breakdown: c.lia_breakdown,
-          lia_strengths: c.lia_strengths || [],
-          lia_concerns: c.lia_concerns || []
-        }))
-        
-        setCandidates(mappedCandidates)
-        setHasSearchResults(true)
-        setSearchResultsCount(mappedCandidates.length)
-        setLocalResultsCount(data.local_count || 0)
-        setPearchResultsCount(data.pearch_count || 0)
-        setLastSearchQuery(archetype.query)
-        setLastSearchMode('archetype')
-        
-        // Add chat message for LIA (only show local count - user can opt-in to global)
-        const localCount = data.local_count || mappedCandidates.length
-        const liaMessage: ChatMessage = {
-          id: `lia-arch-${Date.now()}`,
-          type: 'lia',
-          content: `🎯 Busca por arquétipo "${archetype.name}" concluída!\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.${data.credits_remaining !== undefined ? `\n\n💳 Créditos restantes: ${data.credits_remaining}` : ''}`,
-          timestamp: new Date(),
-          searchResults: {
-            localCount: localCount,
-            globalCount: 0,
-            query: archetype.query
-          }
-        }
-        setChatMessages(prev => [...prev, liaMessage])
-        
-        toast({
-          title: "Busca por arquétipo concluída",
-          description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"`,
-        })
-      } else {
-        toast({
-          title: "Nenhum candidato encontrado",
-          description: `A busca por "${archetype.name}" não retornou resultados`,
-          variant: "destructive"
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Erro na busca",
-        description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo',
-        variant: "destructive"
-      })
-    } finally {
-      setIsSearchingByArchetype(false)
-    }
-  }
 
   // ✨ Função para limpar filtro cross-tab
   const clearCrossTabFilter = () => {
@@ -958,15 +779,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   } | null>(null)
   const [creditEstimate, setCreditEstimate] = useState<CreditEstimate | null>(null)
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)
-  const [pearchSearchOptions, setPearchSearchOptions] = useState({
-    searchType: 'fast' as 'fast' | 'pro',
-    limit: 50, // Aumentado de 15 para 50 - limite máximo é 100
-    showEmails: false,
-    showPhoneNumbers: false,
-    highFreshness: false,
-    requireEmails: false, // Filtrar apenas candidatos com email disponível (+1 crédito)
-    requirePhoneNumbers: false // Filtrar apenas candidatos com telefone disponível (+1 crédito)
-  })
   
   // Source Change & Contact Filter Credit Confirmation Modals
   const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
@@ -2768,7 +2580,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
                       className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full"
-                      style={{ width: `${formatScore(candidate.score)}%` }}
+                      style={{width: `${formatScore(candidate.score)}%`}}
                     ></div>
                   </div>
                   <div className={`${textStyles.description} mt-1 dark:text-gray-400`}>
@@ -4140,7 +3952,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             
             {/* Candidate Preview - Painel lateral direito */}
             {showCandidatePreview && previewCandidate && (
-              <div className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
+              <div className="flex-shrink-0 relative" style={{width: `${previewWidth}px`}}>
                 <div
                   className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors z-10 group"
                   onMouseDown={handlePreviewResize}

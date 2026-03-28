@@ -159,19 +159,17 @@ export function LIASearchSidebar({
   return (
     <div
       className={`transition-all duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
-      style={{
-        width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
-        maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`
-      }}
+      style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
+        maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
-      <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-gray-300" style={{ backgroundColor: 'var(--gray-50)' }}>
+      <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-gray-300" style={{backgroundColor: 'var(--gray-50)'}}>
         {/* Header do Prompt Expandido - Design Specs v3.1 */}
-        <div className="flex-shrink-0 px-4 py-3" style={{ backgroundColor: 'var(--gray-50)' }}>
+        <div className="flex-shrink-0 px-4 py-3" style={{backgroundColor: 'var(--gray-50)'}}>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div
                 className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'var(--gray-50)' }}
+                style={{backgroundColor: 'var(--gray-50)'}}
               >
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
@@ -230,16 +228,16 @@ export function LIASearchSidebar({
         {/* Ações movidas para banner acima da tabela */}
 
         {/* Conteúdo das Abas */}
-        <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{ backgroundColor: 'var(--gray-50)' }}>
+        <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{backgroundColor: 'var(--gray-50)'}}>
 
           {/* ABA 1: IA NATURAL - Chat Format */}
           {activeSearchTab === 'ia-natural' && (
-            <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
+            <div className="flex flex-col h-full" style={{minHeight: '400px'}}>
               {/* Área de Chat - Histórico de Mensagens */}
               <div
                 ref={chatScrollRef}
                 className="flex-1 overflow-y-auto space-y-3 mb-4"
-                style={{ maxHeight: 'calc(100% - 80px)' }}
+                style={{maxHeight: 'calc(100% - 80px)'}}
               >
                 {/* Resultado da Busca (como resposta da LIA) - PRIMEIRO cronologicamente */}
                 {searchResults.query && (
@@ -336,7 +334,7 @@ export function LIASearchSidebar({
                                 </Button>
                                 <Button
                                   size="sm"
-                                  className="!text-xs !px-3 !py-1.5 bg-gray-900" style={{ color: 'var(--gray-50)' }}
+                                  className="!text-xs !px-3 !py-1.5 bg-gray-900" style={{color: 'var(--gray-50)'}}
                                   onClick={() => setShowGlobalExpansionConfirm(true)}
                                 >
                                   <Globe className="w-3 h-3 mr-1" />
@@ -447,9 +445,9 @@ export function LIASearchSidebar({
                         {/* Typing indicator */}
                         <div className="flex items-center gap-1.5 px-3 py-2">
                           <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                           </div>
                         </div>
                       </div>
@@ -789,10 +787,8 @@ export function LIASearchSidebar({
               {/* Botão Extrair e Buscar */}
               <button
                 className="w-full h-11 text-sm font-semibold flex items-center justify-center gap-2 rounded-md disabled:opacity-50"
-                style={{
-                  backgroundColor: isSearchingJD ? 'var(--gray-400)' : 'var(--gray-950)',
-                  color: 'var(--gray-50)',
-                }}
+                style={{backgroundColor: isSearchingJD ? 'var(--gray-400)' : 'var(--gray-950)',
+                  color: 'var(--gray-50)'}}
                 onClick={async () => {
                   if (jobDescriptionText.trim() && !isSearchingJD) {
                     setIsSearchingJD(true)
@@ -1139,11 +1135,11 @@ export function LIASearchSidebar({
                         }
                         setChatMessages(prev => [...prev, liaMessage])
                       }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                       const liaMessage: ChatMessage = {
                         id: `lia-similar-error-${Date.now()}`,
                         type: 'lia',
-                        content: `Erro ao buscar candidatos similares: ${error.message || 'Por favor, tente novamente.'}`,
+                        content: `Erro ao buscar candidatos similares: ${error instanceof Error ? error.message : 'Por favor, tente novamente.'}`,
                         timestamp: new Date()
                       }
                       setChatMessages(prev => [...prev, liaMessage])
@@ -1233,9 +1229,9 @@ export function LIASearchSidebar({
 
               {/* Resumo dos filtros ativos */}
               {Object.values(activeSearchFilters).some(category =>
-                Object.values(category as Record<string, any>).some(v => v === true || (typeof v === 'string' && v.length > 0))
+                Object.values(category as Record<string, unknown>).some(v => v === true || (typeof v === 'string' && v.length > 0))
               ) && (
-                <div className="p-3 rounded-md border bg-emerald-500/5 border-emerald-500/30">
+                <div className="p-3 rounded-md border bg-status-success/5 border-status-success/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-status-success" />
@@ -1266,10 +1262,8 @@ export function LIASearchSidebar({
               {/* Botão para abrir painel lateral de filtros da tabela */}
               <Button
                 className="w-full h-12 !text-sm font-semibold"
-                style={{
-                  backgroundColor: showTableFiltersPanel ? 'var(--gray-800)' : 'var(--gray-600)',
-                  color: 'var(--gray-50)',
-                }}
+                style={{backgroundColor: showTableFiltersPanel ? 'var(--gray-800)' : 'var(--gray-600)',
+                  color: 'var(--gray-50)'}}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
               >
                 <Filter className="w-4 h-4 mr-2" />

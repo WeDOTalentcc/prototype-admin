@@ -155,7 +155,7 @@ export function SidePanelContainer({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent 
         side="right" 
-        className="w-[500px] sm:max-w-[500px] overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700"
+        className="w-panel-xl sm:max-w-panel-xl overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700"
       >
         <SheetHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">

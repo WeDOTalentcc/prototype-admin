@@ -323,7 +323,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                       <div key={item.stage} className="flex items-center gap-2">
                         <span className="w-16 text-micro text-gray-800 dark:text-gray-200">{item.stage}</span>
                         <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                          <div className={`h-full ${item.color}`} style={{ width: `${item.percentage}%` }}></div>
+                          <div className={`h-full ${item.color}`} style={{width: `${item.percentage}%`}}></div>
                         </div>
                         <span className="w-8 text-micro font-medium text-right">{item.value}</span>
                         <span className="w-8 text-micro text-gray-500 text-right">{item.percentage}%</span>

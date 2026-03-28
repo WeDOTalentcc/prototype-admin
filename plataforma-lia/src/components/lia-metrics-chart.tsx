@@ -75,7 +75,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
               textAnchor="end"
               alignmentBaseline="middle"
               className="text-gray-600 dark:text-gray-400"
-              style={{ fontSize: '10px' }}
+              style={{fontSize: '10px'}}
             >
               {value}%
             </text>
@@ -96,7 +96,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
               x={width - padding.right + 5}
               y={yScale(targetValue)}
               className="text-status-error dark:text-status-error"
-              style={{ fontSize: '9px' }}
+              style={{fontSize: '9px'}}
               alignmentBaseline="middle"
             >
               Meta: {targetValue}%
@@ -146,7 +146,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
                 y={height - padding.bottom + 15}
                 textAnchor="middle"
                 className="text-gray-600 dark:text-gray-400"
-                style={{ fontSize: '9px' }}
+                style={{fontSize: '9px'}}
               >
                 {point.date}
               </text>
@@ -170,7 +170,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
             y={yScale(data[data.length - 1].value) - 12}
             textAnchor="middle"
             className="text-white"
-            style={{ fontSize: '10px', fontWeight: 'bold' }}
+            style={{fontSize: '10px', fontWeight: 'bold'}}
           >
             {data[data.length - 1].value}%
           </text>

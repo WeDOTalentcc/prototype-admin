@@ -537,7 +537,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
                           <div
                             className="bg-gray-700 dark:bg-gray-300 h-1.5 rounded-full"
-                            style={{ width: `${liaAnalysis.score}%` }}
+                            style={{width: `${liaAnalysis.score}%`}}
                           />
                         </div>
                       </CardContent>
@@ -553,7 +553,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
                           <div
                             className="bg-status-success h-1.5 rounded-full"
-                            style={{ width: `${liaAnalysis.culturalFit}%` }}
+                            style={{width: `${liaAnalysis.culturalFit}%`}}
                           />
                         </div>
                       </CardContent>
@@ -569,7 +569,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                           <div
                             className="bg-wedo-purple h-1.5 rounded-full"
-                            style={{ width: `${liaAnalysis.technicalFit}%` }}
+                            style={{width: `${liaAnalysis.technicalFit}%`}}
                           />
                         </div>
                       </CardContent>
@@ -640,7 +640,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                             <div className="flex-1 bg-gray-200 rounded-full h-2">
                               <div
                                 className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
-                                style={{ width: `${value}%` }}
+                                style={{width: `${value}%`}}
                               />
                             </div>
                             <span className="text-sm font-medium text-gray-950 dark:text-gray-50 w-12 text-right">

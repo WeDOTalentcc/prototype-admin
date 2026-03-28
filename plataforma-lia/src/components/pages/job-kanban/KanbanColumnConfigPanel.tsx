@@ -149,10 +149,8 @@ export function KanbanColumnConfigPanel({
                     >
                       <div
                         className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-                        style={{
-                          backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
-                          border: col.visible ? 'none' : '2px solid var(--gray-300)',
-                        }}
+                        style={{backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
+                          border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                       >
                         {col.visible && (
                           <CheckCircle className="w-3 h-3 text-white" strokeWidth={3} />
@@ -160,9 +158,7 @@ export function KanbanColumnConfigPanel({
                       </div>
                       <span
                         className={`text-xs flex-1 ${col.visible ? 'font-medium' : 'font-normal'}`}
-                        style={{
-                          color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
-                        }}
+                        style={{color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)'}}
                       >
                         {col.label}
                       </span>

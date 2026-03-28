@@ -206,10 +206,8 @@ export function CandidateTableRow({
             column.align === 'center' ? 'text-center' : 
             column.align === 'right' ? 'text-right' : 'text-left'
           }`}
-          style={{ 
-            width: column.width,
-            minWidth: column.minWidth 
-          }}
+          style={{width: column.width,
+            minWidth: column.minWidth}}
         >
           {renderCellContent(column)}
           {index === firstDataColumnIndex && overlayContent && (

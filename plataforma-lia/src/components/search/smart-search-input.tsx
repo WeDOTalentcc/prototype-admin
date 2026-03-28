@@ -424,7 +424,7 @@ export function SmartSearchInput({
     }
 
     return (
-      <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+      <span className="whitespace-pre-wrap break-words">
         {segments.map((seg, idx) => (
           <span 
             key={idx} 
@@ -1504,15 +1504,15 @@ export function SmartSearchInput({
               className={cn(
                 "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                 searchSource === 'local' 
-                  ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                  ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                   : "hover:bg-gray-100"
+              , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
               )}
-              style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
             >
               <Home className="w-4 h-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+          <TooltipContent side="bottom" className="!animate-none !duration-0">
             <p className="text-xs font-medium">Seu banco de talentos</p>
             <p className="text-xs text-gray-300">Gratuito • Local</p>
           </TooltipContent>
@@ -1529,15 +1529,15 @@ export function SmartSearchInput({
                 className={cn(
                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                   searchSource === 'hybrid' 
-                    ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                    ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                     : "hover:bg-gray-100"
+                , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                 )}
-                style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
               >
                 <Zap className="w-4 h-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+            <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Expanda sua busca</p>
               <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
             </TooltipContent>
@@ -1557,13 +1557,13 @@ export function SmartSearchInput({
                   searchSource === 'global' 
                     ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                     : "hover:bg-gray-100"
+                , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                 )}
-                style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
               >
                 <Globe className="w-4 h-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+            <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Alcance global</p>
               <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
             </TooltipContent>
@@ -1584,15 +1584,15 @@ export function SmartSearchInput({
                   className={cn(
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                     requireEmails 
-                      ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
+                  , requireEmails ? "text-wedo-green" : "text-gray-400"
                   )}
-                  style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                 >
                   <Mail className="w-3.5 h-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+              <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Email</p>
                 <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
@@ -1608,15 +1608,15 @@ export function SmartSearchInput({
                   className={cn(
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                     requirePhoneNumbers 
-                      ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
+                  , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                   )}
-                  style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                 >
                   <Phone className="w-3.5 h-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+              <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
                 <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
@@ -1633,11 +1633,7 @@ export function SmartSearchInput({
             onClick={onSearch}
             disabled={!canSubmit() || isLoading}
             size="sm"
-            className="h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
-            style={{ 
-              backgroundColor: canSubmit() ? "var(--gray-950)" : "rgb(243 244 246)",
-              color: canSubmit() ? "white" : "rgb(107 114 128)"
-            }}
+            className={cn("h-8 w-8 p-0 rounded-md transition-all hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
@@ -1701,18 +1697,14 @@ export function SmartSearchInput({
     <div 
       ref={containerRef}
       className={cn("space-y-4 relative", className)}
-      style={{ width: panelWidth }}
+      style={{width: panelWidth}}
     >
       <div 
-        className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
-        style={{ 
-          backgroundColor: "var(--lia-bg-primary)"
-        }}
+        className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-[var(--lia-bg-primary)]"
       >
         {/* Mode tabs - Estilo pill/tag elegante */}
         <div 
-          className="flex items-center gap-2 px-4 py-3 overflow-x-auto border-b border-gray-200"
-          style={{ backgroundColor: "var(--lia-bg-primary)" }}
+          className="flex items-center gap-2 px-4 py-3 overflow-x-auto border-b border-gray-200 bg-[var(--lia-bg-primary)]"
         >
           {modes.map((m) => (
             <button
@@ -1743,18 +1735,16 @@ export function SmartSearchInput({
               onClick={onOpenFilters}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all hover:bg-gray-100 dark:hover:bg-gray-800",
-                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20"
+                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20",
+                (activeFiltersCount > 0 || filledCount > 0) ? "text-gray-950" : "text-gray-600"
               )}
-              style={{ 
-                color: (activeFiltersCount > 0 || filledCount > 0) ? "var(--gray-950)" : "var(--gray-600)",
-                backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "rgba(229, 231, 235, 0.3)" : "transparent"
-              }}
+              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "color-mix(in srgb, var(--gray-200) 30%, transparent)" : "transparent"}}
             >
               <Filter className="w-3.5 h-3.5" />
               Filtros
               {(activeFiltersCount > 0 || filledCount > 0) && (
                 <Badge 
-                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-gray-900" style={{ color: "white" }}
+                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-gray-900 text-white"
                 >
                   {Math.max(activeFiltersCount, filledCount)}
                 </Badge>
@@ -1774,7 +1764,7 @@ export function SmartSearchInput({
                     <Table2 className="w-4 h-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Ir para Resultados</p>
                   <p className="text-xs text-gray-300">Buscar direto na tabela expandida</p>
                 </TooltipContent>
@@ -1784,7 +1774,7 @@ export function SmartSearchInput({
         </div>
 
         {/* Content area - changes based on mode */}
-        <div className="p-4" style={{ backgroundColor: "var(--lia-bg-primary)" }}>
+        <div className="p-4 bg-[var(--lia-bg-primary)]">
           {/* Natural search mode */}
           {mode === "natural" && (
             <div className="space-y-3">
@@ -1793,16 +1783,10 @@ export function SmartSearchInput({
                 {ghostTextSuffix && !showAutocomplete && (
                   <div 
                     ref={ghostOverlayRef}
-                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-14 overflow-hidden"
-                    style={{ 
-                      
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      zIndex: 1,
-                    }}
+                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-14 overflow-hidden whitespace-pre-wrap break-words z-[1]"
                     aria-hidden="true"
                   >
-                    <span style={{ color: 'transparent' }}>{value}</span>
+                    <span className="text-transparent">{value}</span>
                     <span className="text-gray-400">{ghostTextSuffix}</span>
                   </div>
                 )}
@@ -1818,17 +1802,10 @@ export function SmartSearchInput({
                     }
                   }}
                   placeholder={getPlaceholder()}
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border relative"
-                  style={{ 
-                    backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "var(--white)",
-                    color: "var(--gray-950)",
-                    caretColor: "var(--gray-950)",
-                    
-                    zIndex: 2,
-                  }}
+                  className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border relative text-gray-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-white")}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -1840,7 +1817,7 @@ export function SmartSearchInput({
                 />
                 {/* Seletor de Origem de Busca + Filtros de Contato - Próximo ao search */}
                 {onSearchSourceChange && (
-                  <div className="absolute right-12 bottom-2.5 flex items-center gap-1 flex-shrink-0" style={{ zIndex: 10 }}>
+                  <div className="absolute right-12 bottom-2.5 flex items-center gap-1 flex-shrink-0 z-10">
                     {/* Source selectors: Local, Hybrid, Global */}
                     <TooltipProvider>
                       <Tooltip>
@@ -1851,15 +1828,15 @@ export function SmartSearchInput({
                             className={cn(
                               "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                               searchSource === 'local' 
-                                ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                 : "hover:bg-gray-100"
+                            , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
                             )}
-                            style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                           >
                             <Home className="w-4 h-4" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                        <TooltipContent side="bottom" className="!animate-none !duration-0">
                           <p className="text-xs font-medium">Seu banco de talentos</p>
                           <p className="text-xs text-gray-300">Gratuito • Local</p>
                         </TooltipContent>
@@ -1876,15 +1853,15 @@ export function SmartSearchInput({
                               className={cn(
                                 "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                 searchSource === 'hybrid' 
-                                  ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                                  ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                                   : "hover:bg-gray-100"
+                              , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                               )}
-                              style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                             >
                               <Zap className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Expanda sua busca</p>
                             <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                           </TooltipContent>
@@ -1904,13 +1881,13 @@ export function SmartSearchInput({
                                 searchSource === 'global' 
                                   ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                   : "hover:bg-gray-100"
+                              , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                               )}
-                              style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                             >
                               <Globe className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Alcance global</p>
                             <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                           </TooltipContent>
@@ -1931,15 +1908,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   requireEmails 
-                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                    ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
+                                , requireEmails ? "text-wedo-green" : "text-gray-400"
                                 )}
-                                style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Mail className="w-3.5 h-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Apenas com Email</p>
                               <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
@@ -1955,15 +1932,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   requirePhoneNumbers 
-                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                    ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
+                                , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                                 )}
-                                style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Phone className="w-3.5 h-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Apenas com Telefone</p>
                               <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
@@ -1985,7 +1962,7 @@ export function SmartSearchInput({
 
                 {/* Microfone quando não há seletor de origem */}
                 {!onSearchSourceChange && (
-                  <div className="absolute right-12 bottom-2.5 flex items-center" style={{ zIndex: 10 }}>
+                  <div className="absolute right-12 bottom-2.5 flex items-center z-10">
                     <AudioRecordButton
                       onTranscription={(text) => onChange(value ? `${value} ${text}` : text)}
                       className="p-1.5 rounded-md hover:bg-gray-100"
@@ -1997,12 +1974,7 @@ export function SmartSearchInput({
                   onClick={handleSubmit}
                   disabled={!canSubmit()}
                   size="sm"
-                  className="absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
-                  style={{ 
-                    backgroundColor: canSubmit() ? "var(--gray-950)" : "rgb(243 244 246)",
-                    color: canSubmit() ? "white" : "rgb(107 114 128)",
-                    zIndex: 10
-                  }}
+                  className={cn("absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-all hover:scale-105 z-10", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
                 >
                   <Search className="w-4 h-4" />
                 </Button>
@@ -2010,11 +1982,7 @@ export function SmartSearchInput({
                 {/* Autocomplete inline - lista vertical compacta */}
                 {showAutocomplete && autocompleteItems.length > 0 && (
                 <div 
-                  className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-gray-200 flex flex-col gap-0 z-10 max-h-52 overflow-hidden"
-                  style={{
-                    backgroundColor: "var(--lia-bg-primary)",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)"
-                  }}
+                  className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-gray-200 flex flex-col gap-0 z-10 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)]"
                 >
                   {/* Header com toggle e botão fechar */}
                   <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
@@ -2103,7 +2071,7 @@ export function SmartSearchInput({
                       >
                         <IconComponent 
                           className="w-3.5 h-3.5 flex-shrink-0" 
-                          style={{ color: catColor.accent }}
+                          style={{color: catColor.accent}}
                         />
                         <span 
                           className="text-xs font-medium flex-1 truncate text-gray-950 dark:text-gray-50"
@@ -2137,11 +2105,7 @@ export function SmartSearchInput({
               {/* Fallback Suggestion Card - shown BELOW the textarea container when enhanced query doesn't start with user text */}
               {ghostTextInfo.showFallbackCard && ghostTextInfo.fullEnhancement && !showAutocomplete && (
                 <div 
-                  className="rounded-md border px-3 py-2 flex items-center gap-2"
-                  style={{
-                    backgroundColor: 'rgba(229, 231, 235, 0.2)',
-                    borderColor: 'rgba(96, 190, 209, 0.3)',
-                  }}
+                  className="rounded-md border px-3 py-2 flex items-center gap-2 bg-gray-200/20" style={{ borderColor: 'color-mix(in srgb, var(--wedo-cyan) 30%, transparent)' }}
                 >
                   <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-gray-700" />
                   <div className="flex-1 min-w-0">
@@ -2192,23 +2156,21 @@ export function SmartSearchInput({
                     <div
                       key={tag.key}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-all"
-                      style={{ 
-                        backgroundColor: colors.bg,
-                        color: colors.text,
-                      }}
+                      style={{backgroundColor: colors.bg,
+                        color: colors.text}}
                       title={tag.value}
                     >
                       <div 
                         className="flex items-center justify-center w-4 h-4 rounded"
-                        style={{ backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent' }}
+                        style={{backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent'}}
                       >
-                        <tag.icon className="w-3 h-3" style={{ color: tag.filled ? colors.iconBg : colors.text }} />
+                        <tag.icon className="w-3 h-3" style={{color: tag.filled ? colors.iconBg : colors.text}} />
                       </div>
                       <span className="font-medium">{tag.label}</span>
                       {tag.filled && tag.value && (
                         <>
-                          <span style={{ opacity: 0.5 }}>·</span>
-                          <span className="max-w-20 truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                          <span className="opacity-50">·</span>
+                          <span className="max-w-20 truncate font-normal opacity-[0.85]">{tag.value}</span>
                         </>
                       )}
                     </div>
@@ -2237,26 +2199,23 @@ export function SmartSearchInput({
                     </TooltipTrigger>
                     <TooltipContent 
                       side="bottom" 
-                      className="max-w-[300px] p-3"
-                      className="bg-white border-gray-300 dark:border-gray-600"
+                      className="max-w-panel-sm p-3 bg-white border-gray-300 dark:border-gray-600"
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
-                            <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)' }}>
+                            <span className={cn("font-semibold text-sm", autocompleteEnabled ? "text-status-success" : "text-status-error")}>
                               {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                             </span>
                           </div>
-                          <span className="text-micro px-2 py-0.5 rounded-full" style={{ 
-                            backgroundColor: autocompleteEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                            color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'
-                          }}>
+                          <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'color-mix(in srgb, var(--status-success) 10%, transparent)' : 'color-mix(in srgb, var(--status-error) 10%, transparent)',
+                            color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                             {autocompleteEnabled ? 'ON' : 'OFF'}
                           </span>
                         </div>
                         <div>
-                          <span className="font-medium text-sm" className="text-gray-800 dark:text-gray-100">
+                          <span className="font-medium text-sm text-gray-800 dark:text-gray-100">
                             Assistente de Busca Inteligente
                           </span>
                         </div>
@@ -2277,7 +2236,7 @@ export function SmartSearchInput({
                             <span>Alerta sobre buscas muito amplas ou restritivas</span>
                           </li>
                         </ul>
-                        <p className="text-micro pt-1 border-t text-gray-500" className="border-gray-300 dark:border-gray-600">
+                        <p className="text-micro pt-1 border-t text-gray-500 border-gray-300 dark:border-gray-600">
                           {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
                         </p>
                       </div>
@@ -2288,14 +2247,10 @@ export function SmartSearchInput({
                 {/* Indicador de análise - aparece depois do assistente */}
                 {isParsingEntities && (
                   <div 
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                    style={{ 
-                      backgroundColor: "rgba(229, 231, 235, 0.3)"
-                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200/30"
                   >
                     <div 
-                      className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" 
-                      style={{ borderTopColor: "transparent" }}
+                      className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
                     />
                     <span>Analisando...</span>
                   </div>
@@ -2304,7 +2259,7 @@ export function SmartSearchInput({
 
               {/* Assistente de Busca - Barra de completude e alertas */}
               {value && searchAnalysis && (
-                <div className="space-y-2 pt-2 border-t" className="border-gray-300 dark:border-gray-600">
+                <div className="space-y-2 pt-2 border-t border-gray-300 dark:border-gray-600">
                   {/* Barra de completude */}
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
@@ -2314,40 +2269,33 @@ export function SmartSearchInput({
                         </span>
                         <span 
                           className="text-xs font-bold"
-                          style={{ 
-                            color: searchAnalysis.completeness_score >= 60 
+                          style={{color: searchAnalysis.completeness_score >= 60 
                               ? "var(--status-success)" 
                               : searchAnalysis.completeness_score >= 40 
                                 ? "var(--status-warning)" 
-                                : "var(--status-error)" 
-                          }}
+                                : "var(--status-error)"}}
                         >
                           {searchAnalysis.completeness_score}%
                         </span>
                       </div>
                       <div 
-                        className="h-1.5 rounded-full overflow-hidden"
-                        className="bg-gray-100 dark:bg-gray-800"
+                        className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800"
                       >
                         <div 
                           className="h-full rounded-full transition-all duration-500"
-                          style={{ 
-                            width: `${searchAnalysis.completeness_score}%`,
+                          style={{width: `${searchAnalysis.completeness_score}%`,
                             backgroundColor: searchAnalysis.completeness_score >= 60 
                               ? "var(--status-success)" 
                               : searchAnalysis.completeness_score >= 40 
                                 ? "var(--status-warning)" 
-                                : "var(--status-error)"
-                          }}
+                                : "var(--status-error)"}}
                         />
                       </div>
                     </div>
                     {searchAnalysis.next_recommended_action && (
                       <div 
                         className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-                        style={{ 
-                          backgroundColor: "rgba(96, 190, 209, 0.08)"
-                        }}
+                        style={{backgroundColor: "color-mix(in srgb, var(--wedo-cyan) 8%, transparent)"}}
                       >
                         <TrendingUp className="w-3 h-3" />
                         <span>{searchAnalysis.next_recommended_action}</span>
@@ -2362,12 +2310,10 @@ export function SmartSearchInput({
                         <div 
                           key={index}
                           className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
-                          style={{ 
-                            backgroundColor: alert.severity === "warning" 
-                              ? "rgba(245, 158, 11, 0.08)" 
-                              : "rgba(96, 190, 209, 0.08)",
-                            color: "rgb(107 114 128)"
-                          }}
+                          style={{backgroundColor: alert.severity === "warning" 
+                              ? "color-mix(in srgb, var(--status-warning) 8%, transparent)" 
+                              : "color-mix(in srgb, var(--wedo-cyan) 8%, transparent)",
+                            color: 'var(--gray-500)'}}
                         >
                           {alert.severity === "warning" ? (
                             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
@@ -2406,10 +2352,7 @@ export function SmartSearchInput({
                             <button
                               key={`${category}-${item}`}
                               onClick={() => onChange(value + ", " + item)}
-                              className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
-                              style={{ 
-                                backgroundColor: "var(--lia-bg-primary)",
-                              }}
+                              className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0 bg-[var(--lia-bg-primary)]"
                             >
                               + {item}
                             </button>
@@ -2460,14 +2403,10 @@ export function SmartSearchInput({
                     onChange={(e) => updateSimilarUrl(index, e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
-                    className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-all border"
-                    style={{ 
-                      backgroundColor: "var(--lia-bg-primary)",
-                      color: "var(--gray-950)",
-                    }}
+                    className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
-                      e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                      e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2490,15 +2429,12 @@ export function SmartSearchInput({
                           <TooltipTrigger asChild>
                             <button
                               onClick={addSimilarUrl}
-                              className="px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors"
-                              style={{ 
-                                backgroundColor: "rgba(229, 231, 235, 0.3)"
-                              }}
+                              className="px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors bg-gray-200/30"
                             >
                               + URL
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="text-xs max-w-[200px] !animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="top" className="text-xs max-w-sidebar-content !animate-none !duration-0">
                             Adicione até 3 perfis para a LIA criar um perfil ideal combinado
                           </TooltipContent>
                         </Tooltip>
@@ -2529,8 +2465,7 @@ export function SmartSearchInput({
                     {similarCvFiles.map((file, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs"
-                        style={{ backgroundColor: "var(--gray-50)" }}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs bg-gray-50"
                       >
                         <FileText className="w-3 h-3 text-gray-500" />
                         <span className="max-w-[150px] truncate text-gray-800 dark:text-gray-200">{file.name}</span>
@@ -2542,8 +2477,7 @@ export function SmartSearchInput({
                     {similarCvFiles.length < MAX_CV_FILES && (
                       <button
                         onClick={() => cvFileInputRef.current?.click()}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors border"
-                        style={{ backgroundColor: "var(--lia-bg-primary)" }}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors border bg-[var(--lia-bg-primary)]"
                       >
                         <Upload className="w-3 h-3" />
                         + CV
@@ -2585,11 +2519,11 @@ export function SmartSearchInput({
 
               {/* Combined Suggestions Box */}
               {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-                <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "var(--gray-50)" }}>
+                <div className="p-3 rounded-md space-y-2 border border-gray-200 bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                      <span className="text-xs font-medium" className="text-gray-800 dark:text-gray-100">
+                      <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
                         Perfil Ideal sugerido pela LIA
                       </span>
                     </div>
@@ -2608,8 +2542,7 @@ export function SmartSearchInput({
                     {combinedSuggestions.map((keyword) => (
                       <div
                         key={keyword}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200"
-                        style={{ backgroundColor: "white" }}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200 bg-white"
                       >
                         <span className="text-gray-700">{keyword}</span>
                         <button
@@ -2644,14 +2577,10 @@ export function SmartSearchInput({
                       value={similarSearchPrompt}
                       onChange={(e) => setSimilarSearchPrompt(e.target.value)}
                       placeholder="Descreva o perfil que deseja buscar..."
-                      className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
-                      style={{ 
-                        backgroundColor: "var(--lia-bg-primary)",
-                        color: "var(--gray-950)",
-                      }}
+                      className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                        e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                       }}
                       onBlur={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2661,7 +2590,7 @@ export function SmartSearchInput({
                     />
                     {/* Ícones de escopo posicionados absolutamente dentro do textarea */}
                     {onSearchSourceChange && (
-                      <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1" style={{ zIndex: 10 }}>
+                      <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
                         <div className="flex items-center gap-1">
                           <TooltipProvider>
                             <Tooltip>
@@ -2672,15 +2601,15 @@ export function SmartSearchInput({
                                   className={cn(
                                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                     searchSource === 'local' 
-                                      ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
+                                  , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
                                   )}
-                                  style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Home className="w-4 h-4" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Seu banco de talentos</p>
                                 <p className="text-xs text-gray-300">Gratuito • Local</p>
                               </TooltipContent>
@@ -2697,15 +2626,15 @@ export function SmartSearchInput({
                                     className={cn(
                                       "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                       searchSource === 'hybrid' 
-                                        ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                                        ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                                         : "hover:bg-gray-100"
+                                    , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                                     )}
-                                    style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                   >
                                     <Zap className="w-4 h-4" />
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                <TooltipContent side="bottom" className="!animate-none !duration-0">
                                   <p className="text-xs font-medium">Expanda sua busca</p>
                                   <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                                 </TooltipContent>
@@ -2725,13 +2654,13 @@ export function SmartSearchInput({
                                       searchSource === 'global' 
                                         ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                         : "hover:bg-gray-100"
+                                    , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                                     )}
-                                    style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                   >
                                     <Globe className="w-4 h-4" />
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                <TooltipContent side="bottom" className="!animate-none !duration-0">
                                   <p className="text-xs font-medium">Alcance global</p>
                                   <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                                 </TooltipContent>
@@ -2751,15 +2680,15 @@ export function SmartSearchInput({
                                       className={cn(
                                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                         requireEmails 
-                                          ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                          ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                           : "hover:bg-gray-100"
+                                      , requireEmails ? "text-wedo-green" : "text-gray-400"
                                       )}
-                                      style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                     >
                                       <Mail className="w-3.5 h-3.5" />
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                  <TooltipContent side="bottom" className="!animate-none !duration-0">
                                     <p className="text-xs font-medium">Apenas com Email</p>
                                     <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                   </TooltipContent>
@@ -2775,15 +2704,15 @@ export function SmartSearchInput({
                                       className={cn(
                                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                         requirePhoneNumbers 
-                                          ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                          ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                           : "hover:bg-gray-100"
+                                      , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                                       )}
-                                      style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                     >
                                       <Phone className="w-3.5 h-3.5" />
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                  <TooltipContent side="bottom" className="!animate-none !duration-0">
                                     <p className="text-xs font-medium">Apenas com Telefone</p>
                                     <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                   </TooltipContent>
@@ -2803,8 +2732,8 @@ export function SmartSearchInput({
                                   className={cn(
                                     "flex items-center justify-center p-1.5 rounded-md transition-all",
                                     canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                                  , canSubmit() ? "text-gray-400" : "text-gray-200"
                                   )}
-                                  style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                                 >
                                   {isLoading ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -2813,7 +2742,7 @@ export function SmartSearchInput({
                                   )}
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Buscar Similares</p>
                                 <p className="text-xs text-gray-300">Encontra candidatos com perfil similar</p>
                               </TooltipContent>
@@ -2835,14 +2764,10 @@ export function SmartSearchInput({
                     value={similarSearchPrompt}
                     onChange={(e) => setSimilarSearchPrompt(e.target.value)}
                     placeholder="Edite o prompt de busca ou adicione perfis acima..."
-                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border"
-                    style={{ 
-                      backgroundColor: "var(--lia-bg-primary)",
-                      color: "var(--gray-950)",
-                    }}
+                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
-                      e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                      e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -2852,7 +2777,7 @@ export function SmartSearchInput({
                   />
                   {/* Ícones de escopo posicionados absolutamente dentro do textarea */}
                   {onSearchSourceChange && (
-                    <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1" style={{ zIndex: 10 }}>
+                    <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
                       <div className="flex items-center gap-1">
                         <TooltipProvider>
                           <Tooltip>
@@ -2863,15 +2788,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   searchSource === 'local' 
-                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                    ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
+                                , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
                                 )}
-                                style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Home className="w-4 h-4" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Seu banco de talentos</p>
                               <p className="text-xs text-gray-300">Gratuito • Local</p>
                             </TooltipContent>
@@ -2888,15 +2813,15 @@ export function SmartSearchInput({
                                   className={cn(
                                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                     searchSource === 'hybrid' 
-                                      ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                                      ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                                       : "hover:bg-gray-100"
+                                  , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                                   )}
-                                  style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                 >
                                   <Zap className="w-4 h-4" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Expanda sua busca</p>
                                 <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                               </TooltipContent>
@@ -2916,13 +2841,13 @@ export function SmartSearchInput({
                                     searchSource === 'global' 
                                       ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                       : "hover:bg-gray-100"
+                                  , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                                   )}
-                                  style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                 >
                                   <Globe className="w-4 h-4" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Alcance global</p>
                                 <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                               </TooltipContent>
@@ -2942,15 +2867,15 @@ export function SmartSearchInput({
                                     className={cn(
                                       "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                       requireEmails 
-                                        ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                        ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                         : "hover:bg-gray-100"
+                                    , requireEmails ? "text-wedo-green" : "text-gray-400"
                                     )}
-                                    style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                   >
                                     <Mail className="w-3.5 h-3.5" />
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                <TooltipContent side="bottom" className="!animate-none !duration-0">
                                   <p className="text-xs font-medium">Apenas com Email</p>
                                   <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                 </TooltipContent>
@@ -2966,15 +2891,15 @@ export function SmartSearchInput({
                                     className={cn(
                                       "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                       requirePhoneNumbers 
-                                        ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                        ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                         : "hover:bg-gray-100"
+                                    , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                                     )}
-                                    style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                   >
                                     <Phone className="w-3.5 h-3.5" />
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                                <TooltipContent side="bottom" className="!animate-none !duration-0">
                                   <p className="text-xs font-medium">Apenas com Telefone</p>
                                   <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                                 </TooltipContent>
@@ -2994,8 +2919,8 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md transition-all",
                                   canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                                , canSubmit() ? "text-gray-400" : "text-gray-200"
                                 )}
-                                style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                               >
                                 {isLoading ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -3004,7 +2929,7 @@ export function SmartSearchInput({
                                 )}
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Buscar Similares</p>
                               <p className="text-xs text-gray-300">Encontra candidatos com perfil similar</p>
                             </TooltipContent>
@@ -3048,7 +2973,7 @@ export function SmartSearchInput({
                 {selectedVacancy ? (
                   <div 
                     className="flex items-center justify-between p-2.5 rounded-md border"
-                    style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
+                    style={{backgroundColor: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)'}}
                   >
                     <div className="flex items-center gap-2">
                       <div 
@@ -3084,14 +3009,10 @@ export function SmartSearchInput({
                       value={jdVacancySearch}
                       onChange={(e) => setJdVacancySearch(e.target.value)}
                       placeholder="Digite o nome ou ID da vaga..."
-                      className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all"
-                      style={{ 
-                        backgroundColor: 'var(--gray-50)',
-                        color: 'var(--gray-950)',
-                      }}
+                      className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all bg-gray-50 text-gray-950"
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                        e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                       }}
                       onBlur={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -3103,7 +3024,7 @@ export function SmartSearchInput({
                     {showVacancyResults && jdVacancyResults.length > 0 && (
                       <div 
                         className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
-                        style={{ backgroundColor: 'var(--gray-50)' }}
+                        style={{backgroundColor: 'var(--gray-50)'}}
                       >
                         {jdVacancyResults.map((vacancy) => (
                           <button
@@ -3118,10 +3039,8 @@ export function SmartSearchInput({
                                   <Badge 
                                     variant="outline" 
                                     className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
-                                    style={{ 
-                                      borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-400)',
-                                      color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-500)'
-                                    }}
+                                    style={{borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-400)',
+                                      color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-500)'}}
                                   >
                                     {vacancy.status}
                                   </Badge>
@@ -3148,7 +3067,7 @@ export function SmartSearchInput({
                     {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
                       <div 
                         className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
-                        style={{ backgroundColor: 'var(--gray-50)' }}
+                        style={{backgroundColor: 'var(--gray-50)'}}
                       >
                         <p className="text-base-ui text-gray-500">Nenhuma vaga encontrada</p>
                       </div>
@@ -3203,13 +3122,11 @@ export function SmartSearchInput({
                   }}
                   placeholder={getPlaceholder()}
                   className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border"
-                  style={{ 
-                    backgroundColor: "var(--lia-bg-primary)",
-                    color: "var(--gray-950)",
-                  }}
+                  style={{backgroundColor: "var(--lia-bg-primary)",
+                    color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-200)"
@@ -3219,7 +3136,7 @@ export function SmartSearchInput({
                 />
                 {/* Ícones de escopo + botão de busca posicionados absolutamente dentro do textarea */}
                 {onSearchSourceChange && (
-                  <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1" style={{ zIndex: 10 }}>
+                  <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
                     <div className="flex items-center gap-1">
                       <TooltipProvider>
                         <Tooltip>
@@ -3230,15 +3147,15 @@ export function SmartSearchInput({
                               className={cn(
                                 "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                 searchSource === 'local' 
-                                  ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                  ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                   : "hover:bg-gray-100"
+                              , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
                               )}
-                              style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                             >
                               <Home className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Seu banco de talentos</p>
                             <p className="text-xs text-gray-300">Gratuito • Local</p>
                           </TooltipContent>
@@ -3255,15 +3172,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   searchSource === 'hybrid' 
-                                    ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                                    ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                                     : "hover:bg-gray-100"
+                                , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                                 )}
-                                style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                               >
                                 <Zap className="w-4 h-4" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Expanda sua busca</p>
                               <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                             </TooltipContent>
@@ -3283,13 +3200,13 @@ export function SmartSearchInput({
                                   searchSource === 'global' 
                                     ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                     : "hover:bg-gray-100"
+                                , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                                 )}
-                                style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                               >
                                 <Globe className="w-4 h-4" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Alcance global</p>
                               <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                             </TooltipContent>
@@ -3309,15 +3226,15 @@ export function SmartSearchInput({
                                   className={cn(
                                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                     requireEmails 
-                                      ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
+                                  , requireEmails ? "text-wedo-green" : "text-gray-400"
                                   )}
-                                  style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Mail className="w-3.5 h-3.5" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Apenas com Email</p>
                                 <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                               </TooltipContent>
@@ -3333,15 +3250,15 @@ export function SmartSearchInput({
                                   className={cn(
                                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                     requirePhoneNumbers 
-                                      ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
+                                  , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                                   )}
-                                  style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Phone className="w-3.5 h-3.5" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <TooltipContent side="bottom" className="!animate-none !duration-0">
                                 <p className="text-xs font-medium">Apenas com Telefone</p>
                                 <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                               </TooltipContent>
@@ -3361,8 +3278,8 @@ export function SmartSearchInput({
                               className={cn(
                                 "flex items-center justify-center p-1.5 rounded-md transition-all",
                                 canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                              , canSubmit() ? "text-gray-400" : "text-gray-200"
                               )}
-                              style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                             >
                               {isLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -3371,7 +3288,7 @@ export function SmartSearchInput({
                               )}
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Extrair e Buscar</p>
                             <p className="text-xs text-gray-300">Extrai requisitos e busca candidatos</p>
                           </TooltipContent>
@@ -3390,7 +3307,7 @@ export function SmartSearchInput({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5 text-gray-700" />
-                      <span className="text-xs font-medium" className="text-gray-800 dark:text-gray-100">
+                      <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
                         Preview do prompt de busca
                       </span>
                     </div>
@@ -3401,11 +3318,9 @@ export function SmartSearchInput({
                     onChange={(e) => setJdSearchPrompt(e.target.value)}
                     placeholder="O prompt será gerado a partir da descrição da vaga..."
                     className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 min-h-[60px]"
-                    style={{ 
-                      border: "1px solid rgb(209 213 219)",
+                    style={{border: "1px solid var(--gray-300)",
                       backgroundColor: "var(--gray-50)",
-                      color: "rgb(31 41 55)"
-                    }}
+                      color: 'var(--gray-800)'}}
                     rows={2}
                   />
                 </div>
@@ -3441,14 +3356,12 @@ export function SmartSearchInput({
                     "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-all border",
                     booleanError && "ring-2 ring-red-300"
                   )}
-                  style={{ 
-                    borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
+                  style={{borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
                     backgroundColor: "var(--lia-bg-primary)",
-                    color: "var(--gray-950)"
-                  }}
+                    color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--wedo-cyan) 12%, transparent)"
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = booleanError ? "var(--status-error)" : "var(--gray-200)"
@@ -3459,7 +3372,7 @@ export function SmartSearchInput({
                 />
                 {/* Ícones de escopo posicionados absolutamente dentro do textarea (como Natural) */}
                 {onSearchSourceChange && (
-                  <div className="absolute right-3 bottom-2.5 flex items-center gap-1 flex-shrink-0" style={{ zIndex: 10 }}>
+                  <div className="absolute right-3 bottom-2.5 flex items-center gap-1 flex-shrink-0 z-10">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -3469,15 +3382,15 @@ export function SmartSearchInput({
                             className={cn(
                               "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                               searchSource === 'local' 
-                                ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                 : "hover:bg-gray-100"
+                            , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
                             )}
-                            style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                           >
                             <Home className="w-4 h-4" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                        <TooltipContent side="bottom" className="!animate-none !duration-0">
                           <p className="text-xs font-medium">Seu banco de talentos</p>
                           <p className="text-xs text-gray-300">Gratuito • Local</p>
                         </TooltipContent>
@@ -3494,15 +3407,15 @@ export function SmartSearchInput({
                               className={cn(
                                 "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                 searchSource === 'hybrid' 
-                                  ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
+                                  ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                                   : "hover:bg-gray-100"
+                              , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
                               )}
-                              style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                             >
                               <Zap className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Expanda sua busca</p>
                             <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
                           </TooltipContent>
@@ -3522,13 +3435,13 @@ export function SmartSearchInput({
                                 searchSource === 'global' 
                                   ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                   : "hover:bg-gray-100"
+                              , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
                               )}
-                              style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                             >
                               <Globe className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <TooltipContent side="bottom" className="!animate-none !duration-0">
                             <p className="text-xs font-medium">Alcance global</p>
                             <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
                           </TooltipContent>
@@ -3548,15 +3461,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   requireEmails 
-                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                    ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
+                                , requireEmails ? "text-wedo-green" : "text-gray-400"
                                 )}
-                                style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Mail className="w-3.5 h-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Apenas com Email</p>
                               <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
@@ -3572,15 +3485,15 @@ export function SmartSearchInput({
                                 className={cn(
                                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
                                   requirePhoneNumbers 
-                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
+                                    ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
+                                , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                                 )}
-                                style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Phone className="w-3.5 h-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <TooltipContent side="bottom" className="!animate-none !duration-0">
                               <p className="text-xs font-medium">Apenas com Telefone</p>
                               <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                             </TooltipContent>
@@ -3597,8 +3510,8 @@ export function SmartSearchInput({
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md transition-all",
                         canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                      , canSubmit() ? "text-gray-400" : "text-gray-200"
                       )}
-                      style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -3618,16 +3531,14 @@ export function SmartSearchInput({
               )}
               
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs" className="text-gray-500 dark:text-gray-400">Operadores:</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Operadores:</span>
                 {["AND", "OR", "NOT", "(", ")"].map((op) => (
                   <button
                     key={op}
                     onClick={() => onChange(value + (value ? " " : "") + op + " ")}
                     className="px-2 py-0.5 rounded text-xs font-mono hover:bg-gray-100 transition-colors"
-                    style={{ 
-                      backgroundColor: "rgb(243 244 246)",
-                      color: "rgb(107 114 128)"
-                    }}
+                    style={{backgroundColor: 'var(--gray-100)',
+                      color: 'var(--gray-500)'}}
                   >
                     {op}
                   </button>
@@ -3696,8 +3607,7 @@ export function SmartSearchInput({
 
       {mode === "natural" && filledCount === 0 && value.length > 0 && (
         <p 
-          className="text-xs px-1"
-          className="text-gray-500 dark:text-gray-400"
+          className="text-xs px-1 text-gray-500 dark:text-gray-400"
         >
           Dica: Inclua cargo, localização e skills para melhores resultados
         </p>
@@ -3768,7 +3678,7 @@ export function SmartSearchInput({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-50)' }}
+          style={{backgroundColor: 'var(--gray-50)'}}
         >
           <AlertDialogTitle className="sr-only">
             {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
@@ -3777,7 +3687,7 @@ export function SmartSearchInput({
             <div className="flex items-center gap-2.5">
               <div 
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: pendingSourceChange === 'hybrid' ? 'rgba(96, 190, 209, 0.15)' : 'rgba(217, 119, 6, 0.15)' }}
+                style={{backgroundColor: pendingSourceChange === 'hybrid' ? 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)' : 'color-mix(in srgb, var(--status-warning) 15%, transparent)'}}
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />

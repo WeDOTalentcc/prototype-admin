@@ -54,7 +54,7 @@ export function HITLConfirmCard({
         />
         <p
           className="text-sm-ui font-semibold text-status-warning dark:text-status-warning leading-snug"
-          style={{ fontFamily: "Inter, sans-serif" }}
+          
         >
           Confirmação necessária
         </p>

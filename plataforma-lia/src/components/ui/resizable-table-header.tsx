@@ -67,10 +67,8 @@ export function ResizableTableHeader({
         isResizing && "bg-gray-100 dark:bg-gray-800",
         className
       )}
-      style={{ 
-        width: `${safeWidth}px`, 
-        minWidth: `${minWidth}px`, 
-      }}
+      style={{width: `${safeWidth}px`, 
+        minWidth: `${minWidth}px`}}
       draggable={!isFixed && !!onDragStart}
       onDragStart={!isFixed ? onDragStart : undefined}
       onDragOver={!isFixed ? onDragOver : undefined}

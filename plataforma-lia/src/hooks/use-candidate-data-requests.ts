@@ -181,7 +181,7 @@ export interface BulkDataRequestInfo {
 }
 
 export interface BulkCandidateDataRequestsResponse {
-  items: any[]
+  items: BulkDataRequestInfo[]
   byCandidate: Record<string, BulkDataRequestInfo>
 }
 

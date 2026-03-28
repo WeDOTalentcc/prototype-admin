@@ -35,7 +35,7 @@ export interface ReminderPreferenceResponse {
 export interface FieldValueSuggestion {
   field_key: string
   field_label: string
-  suggested_value: any
+  suggested_value: unknown
   source: string
   source_icon: string
   source_explanation: string
@@ -51,7 +51,7 @@ interface UseEmptyFieldNotificationsReturn {
   currentNotification: EmptyFieldNotification | null
   fetchNotifications: (companyId: string) => Promise<void>
   handleAction: (companyId: string, fieldKey: string, action: string) => Promise<ReminderPreferenceResponse | null>
-  getSuggestion: (companyId: string, fieldKey: string, jobContext?: any) => Promise<FieldValueSuggestion | null>
+  getSuggestion: (companyId: string, fieldKey: string, jobContext?: Record<string, unknown>) => Promise<FieldValueSuggestion | null>
   dismissCurrentNotification: () => void
   clearNotifications: () => void
 }
@@ -124,7 +124,7 @@ export function useEmptyFieldNotifications(): UseEmptyFieldNotificationsReturn {
   const getSuggestion = useCallback(async (
     companyId: string,
     fieldKey: string,
-    jobContext?: any
+    jobContext?: Record<string, unknown>
   ): Promise<FieldValueSuggestion | null> => {
     try {
       const response = await fetch(

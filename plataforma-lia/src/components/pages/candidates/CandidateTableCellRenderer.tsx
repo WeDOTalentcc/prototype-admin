@@ -145,7 +145,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
               <div
                 className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-stone-400/20"
               >
-                <Home className="w-3.5 h-3.5" style={{ color: "var(--gray-500)" }} />
+                <Home className="w-3.5 h-3.5" style={{color: "var(--gray-500)"}} />
               </div>
             ) : (
               <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-gray-100 dark:bg-gray-700">
@@ -157,7 +157,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
               <div className="px-3 py-2 rounded-md text-xs min-w-[180px] text-white bg-gray-900">
                 <div className="font-semibold mb-1 flex items-center gap-1.5">
                   {isLocal ? (
-                    <Home className="w-3.5 h-3.5" style={{ color: "var(--wedo-orange)" }} />
+                    <Home className="w-3.5 h-3.5" style={{color: "var(--wedo-orange)"}} />
                   ) : (
                     <Globe className="w-3.5 h-3.5 text-gray-300" />
                   )}
@@ -172,7 +172,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 ) : (
                   <div
                     className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700"
-                    style={{ color: "var(--status-warning)" }}
+                    style={{color: "var(--status-warning)"}}
                   >
                     <DollarSign className="w-3 h-3" />
                     {sourceInfo.credits || "5-7 créditos/candidato"}
@@ -214,7 +214,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
 
         return (
           <div className="flex items-center justify-center">
-            <div className="relative" style={{ width: ringSize, height: ringSize }}>
+            <div className="relative" style={{width: ringSize, height: ringSize}}>
               {/* Background ring */}
               <svg className="absolute" width={ringSize} height={ringSize}>
                 <circle
@@ -693,8 +693,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return (
           <Badge
             className="text-xs"
-            style={{
-              backgroundColor:
+            style={{backgroundColor:
                 workModel === "remoto"
                   ? "var(--gray-200)"
                   : workModel === "híbrido"
@@ -705,8 +704,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   ? "var(--gray-600)"
                   : workModel === "híbrido"
                     ? "var(--gray-600)"
-                    : "var(--gray-600)",
-            }}
+                    : "var(--gray-600)"}}
           >
             {workModel === "remoto"
               ? "🏠 Remoto"
@@ -871,7 +869,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "outreach_message":
         return candidate.outreach_message ? (
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-800 truncate max-w-[200px]">
+            <span className="text-xs text-gray-800 truncate max-w-sidebar-content">
               {candidate.outreach_message.slice(0, 50)}...
             </span>
             <button

@@ -17,19 +17,19 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'rgb(156 163 175 / 0.12)'
+    bgColor: 'var(--gray-400)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'rgb(245 158 11 / 0.12)'
+    bgColor: 'var(--status-warning)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'rgb(16 185 129 / 0.12)'
+    bgColor: 'var(--status-success)'
   }
 }
 
@@ -93,9 +93,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
     >
       <div 
         className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md"
-        style={{ 
-          boxShadow: '0 16px 32px -8px rgb(0 0 0 / 0.12)'
-        }}
+        
       >
         <div 
           className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 rounded-t-xl"
@@ -104,7 +102,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             <div 
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-blue/[.12]"
             >
-              <Globe className="w-4 h-4" style={{ color: 'var(--gray-600)' }} />
+              <Globe className="w-4 h-4" style={{color: 'var(--gray-600)'}} />
             </div>
             <div>
               <h2 
@@ -132,16 +130,16 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
         <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-gray-900">
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
-            style={{ backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30` }}
+            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30`}}
           >
             <div className="flex items-center gap-2">
               <StatusIcon 
                 className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin' : ''}`} 
-                style={{ color: statusConfig.color }} 
+                style={{color: statusConfig.color}} 
               />
               <span 
                 className="text-xs font-medium"
-                style={{ color: statusConfig.color }}
+                style={{color: statusConfig.color}}
               >
                 {statusConfig.label}
               </span>
@@ -173,7 +171,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    style={{ color: getScoreColor(testData.score) }}
+                    style={{color: getScoreColor(testData.score)}}
                   >
                     {testData.score}
                   </span>
@@ -187,7 +185,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
                 <div 
                   className="p-3 rounded-md"
-                  style={{ backgroundColor: `${levelInfo.color}10`, border: `1px solid ${levelInfo.color}30` }}
+                  style={{backgroundColor: `${levelInfo.color}10`, border: `1px solid ${levelInfo.color}30`}}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span 
@@ -199,7 +197,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   </div>
                   <span 
                     className="text-lg font-bold"
-                    style={{ color: levelInfo.color }}
+                    style={{color: levelInfo.color}}
                   >
                     {testData.level}
                   </span>
@@ -244,17 +242,14 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                           <div className="flex items-center gap-2">
                             <span 
                               className="text-micro px-1.5 py-0.5 rounded-full font-medium"
-                              style={{ 
-                                
-                                color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
-                                backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)'}15`
-                              }}
+                              style={{color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
+                                backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)'}15`}}
                             >
                               {skillLevel}
                             </span>
                             <span 
                               className="text-xs font-bold"
-                              style={{ color: getScoreColor(score) }}
+                              style={{color: getScoreColor(score)}}
                             >
                               {score}
                             </span>
@@ -310,7 +305,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           {status === 'in_progress' && (
             <div 
               className="flex flex-col items-center justify-center py-8"
-              style={{ color: 'var(--status-warning)' }}
+              style={{color: 'var(--status-warning)'}}
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 

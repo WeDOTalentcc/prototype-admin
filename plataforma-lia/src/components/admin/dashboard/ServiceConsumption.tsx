@@ -49,7 +49,7 @@ export function ServiceConsumption({
           return (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Icon className="w-5 h-5" style={{ color: item.iconColor }} />
+                <Icon className="w-5 h-5" style={{color: item.iconColor}} />
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {item.title}

@@ -260,7 +260,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3">
                       <div
                         className="h-3 rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-100"
-                        style={{ width: `${progress}%` }}
+                        style={{width: `${progress}%`}}
                       />
                     </div>
 

@@ -178,7 +178,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-status-success h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(item.remoto / maxValue) * 100}%` }}
+                  style={{width: `${(item.remoto / maxValue) * 100}%`}}
                 ></div>
               </div>
               <div className="w-8 text-xs text-gray-600 text-right">
@@ -195,7 +195,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(item.hibrido / maxValue) * 100}%` }}
+                  style={{width: `${(item.hibrido / maxValue) * 100}%`}}
                 ></div>
               </div>
               <div className="w-8 text-xs text-gray-600 text-right">
@@ -212,7 +212,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-gray-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(item.presencial / maxValue) * 100}%` }}
+                  style={{width: `${(item.presencial / maxValue) * 100}%`}}
                 ></div>
               </div>
               <div className="w-8 text-xs text-gray-600 text-right">
@@ -240,22 +240,16 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
 
               <div className="relative h-32 flex items-end justify-center gap-1">
                 {/* Remoto */}
-                <div className="w-3 bg-status-success rounded-t" style={{
-                  height: `${(item.remoto / maxTrendValue) * 100}%`,
-                  minHeight: '4px'
-                }} title={`Remoto: ${item.remoto}`}></div>
+                <div className="w-3 bg-status-success rounded-t" style={{height: `${(item.remoto / maxTrendValue) * 100}%`,
+                  minHeight: '4px'}} title={`Remoto: ${item.remoto}`}></div>
 
                 {/* Híbrido */}
-                <div className="w-3 bg-gray-700 dark:bg-gray-300 rounded-t" style={{
-                  height: `${(item.hibrido / maxTrendValue) * 100}%`,
-                  minHeight: '4px'
-                }} title={`Híbrido: ${item.hibrido}`}></div>
+                <div className="w-3 bg-gray-700 dark:bg-gray-300 rounded-t" style={{height: `${(item.hibrido / maxTrendValue) * 100}%`,
+                  minHeight: '4px'}} title={`Híbrido: ${item.hibrido}`}></div>
 
                 {/* Presencial */}
-                <div className="w-3 bg-gray-500 rounded-t" style={{
-                  height: `${(item.presencial / maxTrendValue) * 100}%`,
-                  minHeight: '4px'
-                }} title={`Presencial: ${item.presencial}`}></div>
+                <div className="w-3 bg-gray-500 rounded-t" style={{height: `${(item.presencial / maxTrendValue) * 100}%`,
+                  minHeight: '4px'}} title={`Presencial: ${item.presencial}`}></div>
               </div>
 
               <div className="mt-2 text-xs text-gray-800">

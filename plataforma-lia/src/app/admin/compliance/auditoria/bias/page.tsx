@@ -314,7 +314,7 @@ export default function BiasAuditPage() {
                               >
                                 <div
                                   className={`h-full rounded-full ${getProgressColor(dim.adverse_impact_ratio)}`}
-                                  style={{ width: `${Math.min(dim.adverse_impact_ratio * 100, 100)}%` }}
+                                  style={{width: `${Math.min(dim.adverse_impact_ratio * 100, 100)}%`}}
                                 />
                               </div>
                               <span className="text-sm font-mono text-gray-600 dark:text-gray-400">

@@ -101,8 +101,8 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                         <Clock className="w-3 h-3" />
                         <span className="font-medium">Tempo limite: 3:00</span>
                       </div>
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 max-w-[200px]">
-                        <div className="bg-gray-700 dark:bg-gray-400 h-1.5 rounded-full animate-pulse" style={{ width: '75%' }}></div>
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 max-w-sidebar-content">
+                        <div className="bg-gray-700 dark:bg-gray-400 h-1.5 rounded-full animate-pulse" style={{width: '75%'}}></div>
                       </div>
                     </div>
                   </div>

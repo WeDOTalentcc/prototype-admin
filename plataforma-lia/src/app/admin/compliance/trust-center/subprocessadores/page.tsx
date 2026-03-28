@@ -64,8 +64,7 @@ export default function SubprocessadoresPage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -129,10 +128,7 @@ export default function SubprocessadoresPage() {
                     </td>
                     <td className="px-4 py-4">
                       <span 
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                        style={{ 
-                          backgroundColor: 'rgba(229, 231, 235, 0.3)'
-                        }}
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200/30"
                       >
                         {sub.service}
                       </span>
@@ -166,11 +162,7 @@ export default function SubprocessadoresPage() {
         </div>
 
         <div 
-          className="mt-4 p-4 rounded-md border"
-          style={{ 
-            backgroundColor: 'rgba(229, 231, 235, 0.2)',
-            borderColor: 'rgba(96, 190, 209, 0.2)'
-          }}
+          className="mt-4 p-4 rounded-md border bg-gray-200/20 border-wedo-cyan/20"
         >
           <p className="text-sm text-gray-500 dark:text-gray-400" >
             <strong>Transparência:</strong> Todos os subprocessadores passam por avaliação de segurança e possuem acordos de processamento de dados (DPA) assinados. Notificamos nossos clientes sobre qualquer alteração nesta lista com antecedência mínima de 30 dias.

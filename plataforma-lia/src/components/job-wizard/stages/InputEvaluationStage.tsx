@@ -92,9 +92,7 @@ export function InputEvaluationStage() {
                     ? "bg-gray-50" 
                     : "bg-white"
                 )}
-                style={{ 
-                  boxShadow: isDetected ? '0 1px 3px rgb(34 197 94 / 0.12)' : '0 1px 2px rgb(0 0 0 / 0.04)'
-                }}
+                style={{boxShadow: isDetected ? '0 1px 3px color-mix(in srgb, var(--status-success) 12%, transparent)' : '0 1px 2px color-mix(in srgb, black 4%, transparent)'}}
               >
                 <div 
                   className={cn(
@@ -140,9 +138,7 @@ export function InputEvaluationStage() {
         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-50"
-            style={{ 
-              width: `${(detectedCount / totalCount) * 100}%`
-            }}
+            style={{width: `${(detectedCount / totalCount) * 100}%`}}
           />
         </div>
       </div>

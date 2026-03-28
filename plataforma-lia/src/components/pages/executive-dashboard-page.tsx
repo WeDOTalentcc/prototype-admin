@@ -328,7 +328,7 @@ export function ExecutiveDashboardPage() {
                           <div className="flex-1 relative h-7 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
                             <div
                               className={`h-full ${stage.color} flex items-center px-2`}
-                              style={{ width: `${Math.max(stage.pct, 8)}%` }}
+                              style={{width: `${Math.max(stage.pct, 8)}%`}}
                             >
                               <span className="text-xs font-bold text-white">{stage.count}</span>
                             </div>
@@ -574,7 +574,7 @@ export function ExecutiveDashboardPage() {
                               data.financialMetrics.budgetUtilization > 90 ? 'bg-status-error' :
                               data.financialMetrics.budgetUtilization > 75 ? 'bg-status-warning' : 'bg-status-success'
                             }`}
-                            style={{ width: `${data.financialMetrics.budgetUtilization}%` }}
+                            style={{width: `${data.financialMetrics.budgetUtilization}%`}}
                           />
                         </div>
                       </div>
@@ -629,7 +629,7 @@ export function ExecutiveDashboardPage() {
                               risk.probability > 50 ? 'bg-status-error' :
                               risk.probability > 30 ? 'bg-status-warning' : 'bg-status-success'
                             }`}
-                            style={{ width: `${risk.probability}%` }}
+                            style={{width: `${risk.probability}%`}}
                           />
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-400">

@@ -283,7 +283,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
                 <div 
                   className="text-lg font-semibold"
-                  style={{ color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
+                  style={{color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
                 >
                   {fitScore}%
                 </div>
@@ -454,7 +454,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-2">
                       <div
                         className={`h-full ${info.color} transition-all duration-500`}
-                        style={{ width: `${score}%` }}
+                        style={{width: `${score}%`}}
                       />
                     </div>
 

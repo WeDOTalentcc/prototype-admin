@@ -60,7 +60,7 @@ interface PipelineReportProps {
 }
 
 const getActionIcon = (iconName: string) => {
-  const icons: Record<string, any> = {
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
     "filter": Filter,
     "calendar": Calendar,
     "message-square": MessageSquare,
@@ -183,11 +183,10 @@ const JobGroup = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   
   return (
-    <div className="border rounded-md overflow-hidden" className="border-gray-200 dark:border-gray-700">
+    <div className="border rounded-md overflow-hidden border-gray-200 dark:border-gray-700">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-        className="bg-gray-100 dark:bg-gray-800"
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-gray-100 dark:bg-gray-800"
       >
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -213,7 +212,7 @@ const JobGroup = ({
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t" className="border-gray-200 dark:border-gray-700">
+        <div className="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700">
           {group.candidates.map((candidate) => (
             <CandidateCard
               key={candidate.id}

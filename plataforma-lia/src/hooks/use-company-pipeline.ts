@@ -41,8 +41,8 @@ export function useCompanyPipeline(): UseCompanyPipelineResult {
           if (data.pipeline && Array.isArray(data.pipeline)) {
             setPipeline(
               data.pipeline
-                .filter((s: any) => s.is_active !== false)
-                .map((s: any, i: number) => ({
+                .filter((s: Record<string, unknown>) => s.is_active !== false)
+                .map((s: Record<string, unknown>, i: number) => ({
                   stageName: s.display_name || s.name,
                   order: i + 1,
                   type: "interview" as const,

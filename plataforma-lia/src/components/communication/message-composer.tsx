@@ -378,7 +378,7 @@ export function MessageComposer({
                 onClick={handleAdjustWithLIA}
                 disabled={isGenerating || (!aiPrompt.trim() && !message.trim())}
                 className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                style={{ backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--gray-600)', color: 'white' }}
+                style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--gray-600)', color: 'white'}}
               >
                 {isGenerating ? (
                   <>
@@ -397,11 +397,11 @@ export function MessageComposer({
             {isGenerating && (
               <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                 <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '0ms'}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '150ms'}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '300ms'}}></span>
                 </div>
-                <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)' }}>
+                <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                   A LIA está analisando e ajustando a mensagem...
                 </span>
               </div>
@@ -433,7 +433,7 @@ export function MessageComposer({
                 </Button>
               </div>
             </div>
-            <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+            <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
               <div>
                 <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                   Alterações Realizadas
@@ -483,7 +483,7 @@ export function MessageComposer({
               </Button>
               <Button 
                 onClick={handleConfirmAIAdjustment}
-                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900" style={{ color: 'white' }}
+                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900" style={{color: 'white'}}
               >
                 <Check className="w-3.5 h-3.5" />
                 Aplicar Ajustes

@@ -469,7 +469,7 @@ export function useCommunicationTemplates(options: UseCommunicationTemplatesOpti
         const result = await response.json()
         const templatesArray = result.items || (Array.isArray(result) ? result : [])
         
-        const mappedTemplates: CommunicationTemplate[] = templatesArray.map((t: any) => ({
+        const mappedTemplates: CommunicationTemplate[] = templatesArray.map((t: Record<string, unknown>) => ({
           id: t.id,
           name: t.name,
           category: t.category || 'followup',

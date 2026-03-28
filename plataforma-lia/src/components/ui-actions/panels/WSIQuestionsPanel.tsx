@@ -212,10 +212,10 @@ export function WSIQuestionsPanel({
               <Brain className="h-5 w-5 text-wedo-cyan" />
             </div>
             <div>
-              <CardTitle className="text-base font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+              <CardTitle className="text-base font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
                 Gerar Perguntas com IA
               </CardTitle>
-              <p className="text-xs mt-1 dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <p className="text-xs mt-1 dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 A LIA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
               </p>
             </div>
@@ -224,7 +224,7 @@ export function WSIQuestionsPanel({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Quantidade de perguntas
               </Label>
               <Select
@@ -233,10 +233,8 @@ export function WSIQuestionsPanel({
               >
                 <SelectTrigger 
                   className="h-9 text-sm dark:bg-gray-900 dark:border-gray-700"
-                  style={{ 
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -250,7 +248,7 @@ export function WSIQuestionsPanel({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Nível de proficiência
               </Label>
               <Select
@@ -259,10 +257,8 @@ export function WSIQuestionsPanel({
               >
                 <SelectTrigger 
                   className="h-9 text-sm dark:bg-gray-900 dark:border-gray-700"
-                  style={{ 
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -297,10 +293,10 @@ export function WSIQuestionsPanel({
 
           <div 
             className="flex items-start gap-2 p-3 rounded-md dark:bg-gray-900/50"
-            style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
             <Brain className="h-4 w-4 shrink-0 mt-0.5 text-wedo-cyan" />
-            <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+            <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
               As perguntas são geradas considerando: requisitos técnicos da vaga, 
               competências comportamentais definidas, nível de senioridade e 
               metodologia WSI (Bloom + Dreyfus + Big Five).
@@ -309,18 +305,18 @@ export function WSIQuestionsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{ backgroundColor: 'var(--lia-bg-secondary)' }}>
+      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <CardTitle 
               className="text-sm flex items-center gap-2 font-sans dark:text-gray-100"
-              style={{ color: 'var(--lia-text-primary)' }}
+              style={{color: 'var(--lia-text-primary)'}}
             >
               <span>📝</span> Perguntas Selecionadas ({questions.length})
             </CardTitle>
             <div 
               className="flex items-center gap-2 text-xs dark:text-gray-400"
-              style={{ color: 'var(--lia-text-tertiary)' }}
+              style={{color: 'var(--lia-text-tertiary)'}}
             >
               <Clock className="h-3 w-3" />
               {getTotalTime()} min total
@@ -331,12 +327,12 @@ export function WSIQuestionsPanel({
           {questions.length === 0 ? (
             <div 
               className="text-center py-8 text-sm dark:text-gray-400"
-              style={{ color: 'var(--lia-text-tertiary)' }}
+              style={{color: 'var(--lia-text-tertiary)'}}
             >
               <Brain className="h-8 w-8 mx-auto mb-3 text-wedo-cyan opacity-50" />
               Nenhuma pergunta adicionada.
               <br />
-              <span className="font-medium dark:text-gray-300" style={{ color: 'var(--lia-text-secondary)' }}>
+              <span className="font-medium dark:text-gray-300" style={{color: 'var(--lia-text-secondary)'}}>
                 Use a geração com IA acima para começar!
               </span>
             </div>
@@ -358,16 +354,14 @@ export function WSIQuestionsPanel({
 
       <div 
         className="border rounded-md overflow-hidden dark:border-gray-700"
-        style={{ borderColor: 'var(--lia-border-subtle)' }}
+        style={{borderColor: 'var(--lia-border-subtle)'}}
       >
         <button
           type="button"
           onClick={() => setShowTemplates(!showTemplates)}
           className="w-full flex items-center justify-between p-3 transition-colors dark:hover:bg-gray-700"
-          style={{ 
-            backgroundColor: 'var(--lia-bg-secondary)',
-            color: 'var(--lia-text-secondary)'
-          }}
+          style={{backgroundColor: 'var(--lia-bg-secondary)',
+            color: 'var(--lia-text-secondary)'}}
         >
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4" />
@@ -385,14 +379,12 @@ export function WSIQuestionsPanel({
         {showTemplates && (
           <div 
             className="p-4 border-t dark:border-gray-700"
-            style={{ 
-              borderColor: 'var(--lia-border-subtle)',
-              backgroundColor: 'var(--lia-bg-primary)'
-            }}
+            style={{borderColor: 'var(--lia-border-subtle)',
+              backgroundColor: 'var(--lia-bg-primary)'}}
           >
             <p 
               className="text-xs mb-4 dark:text-gray-400"
-              style={{ color: 'var(--lia-text-tertiary)' }}
+              style={{color: 'var(--lia-text-tertiary)'}}
             >
               Use estes templates como inspiração. Para melhores resultados, 
               recomendamos a geração com IA que personaliza as perguntas para sua vaga.
@@ -401,7 +393,7 @@ export function WSIQuestionsPanel({
             <Tabs value={selectedArea} onValueChange={(v) => setSelectedArea(v as WSIArea)}>
               <TabsList 
                 className="grid w-full grid-cols-7 h-auto"
-                style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+                style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
               >
                 {(Object.keys(AREA_LABELS) as WSIArea[]).map((area) => (
                   <TabsTrigger
@@ -421,56 +413,48 @@ export function WSIQuestionsPanel({
                     <div
                       key={index}
                       className="border rounded-md p-3 transition-colors dark:border-gray-700"
-                      style={{
-                        borderColor: 'var(--lia-border-subtle)',
+                      style={{borderColor: 'var(--lia-border-subtle)',
                         backgroundColor: isTemplateAdded(template) 
                           ? 'var(--lia-bg-tertiary)' 
                           : 'var(--lia-bg-primary)',
-                        opacity: isTemplateAdded(template) ? 0.6 : 1
-                      }}
+                        opacity: isTemplateAdded(template) ? 0.6 : 1}}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p 
                             className="text-sm dark:text-gray-100"
-                            style={{ color: 'var(--lia-text-primary)' }}
+                            style={{color: 'var(--lia-text-primary)'}}
                           >
                             {template.question}
                           </p>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             <Badge 
                               className="text-xs"
-                              style={{
-                                backgroundColor: 'var(--lia-bg-tertiary)',
+                              style={{backgroundColor: 'var(--lia-bg-tertiary)',
                                 color: 'var(--lia-text-secondary)',
-                                border: '1px solid var(--lia-border-subtle)'
-                              }}
+                                border: '1px solid var(--lia-border-subtle)'}}
                             >
                               Bloom: {template.bloom_level}
                             </Badge>
                             <Badge 
                               className="text-xs"
-                              style={{
-                                backgroundColor: 'var(--lia-bg-tertiary)',
+                              style={{backgroundColor: 'var(--lia-bg-tertiary)',
                                 color: 'var(--lia-text-secondary)',
-                                border: '1px solid var(--lia-border-subtle)'
-                              }}
+                                border: '1px solid var(--lia-border-subtle)'}}
                             >
                               Dreyfus: {template.dreyfus_level}
                             </Badge>
                             <Badge 
                               variant="outline" 
                               className="text-xs"
-                              style={{
-                                borderColor: 'var(--lia-border-default)',
-                                color: 'var(--lia-text-tertiary)'
-                              }}
+                              style={{borderColor: 'var(--lia-border-default)',
+                                color: 'var(--lia-text-tertiary)'}}
                             >
                               {template.competency}
                             </Badge>
                             <span 
                               className="text-xs flex items-center gap-1 dark:text-gray-400"
-                              style={{ color: 'var(--lia-text-tertiary)' }}
+                              style={{color: 'var(--lia-text-tertiary)'}}
                             >
                               <Clock className="h-3 w-3" />
                               {template.time_estimate}min
@@ -483,12 +467,10 @@ export function WSIQuestionsPanel({
                           className="shrink-0 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                           onClick={() => handleAddTemplate(template)}
                           disabled={isTemplateAdded(template)}
-                          style={{
-                            borderColor: 'var(--lia-border-default)',
+                          style={{borderColor: 'var(--lia-border-default)',
                             color: isTemplateAdded(template) 
                               ? 'var(--lia-text-disabled)' 
-                              : 'var(--lia-text-secondary)'
-                          }}
+                              : 'var(--lia-text-secondary)'}}
                         >
                           {isTemplateAdded(template) ? "Adicionada" : "Adicionar"}
                         </Button>
@@ -504,15 +486,15 @@ export function WSIQuestionsPanel({
 
       <div 
         className="border rounded-md overflow-hidden dark:border-gray-700"
-        style={{ borderColor: 'var(--lia-border-subtle)' }}
+        style={{borderColor: 'var(--lia-border-subtle)'}}
       >
         <div 
           className="p-4"
-          style={{ backgroundColor: 'var(--lia-bg-secondary)' }}
+          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
         >
           <Label 
             className="text-sm font-medium flex items-center gap-2 mb-3 dark:text-gray-100"
-            style={{ color: 'var(--lia-text-primary)' }}
+            style={{color: 'var(--lia-text-primary)'}}
           >
             <Plus className="h-4 w-4" />
             Adicionar Pergunta Manual
@@ -524,15 +506,13 @@ export function WSIQuestionsPanel({
               placeholder="Digite sua pergunta WSI personalizada..."
               rows={3}
               className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-              style={{
-                borderColor: 'var(--lia-border-default)',
+              style={{borderColor: 'var(--lia-border-default)',
                 backgroundColor: 'var(--lia-bg-primary)',
-                color: 'var(--lia-text-primary)'
-              }}
+                color: 'var(--lia-text-primary)'}}
             />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                   Nível Bloom
                 </Label>
                 <Select
@@ -541,10 +521,8 @@ export function WSIQuestionsPanel({
                 >
                   <SelectTrigger 
                     className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700"
-                    style={{ 
-                      borderColor: 'var(--lia-border-default)',
-                      backgroundColor: 'var(--lia-bg-primary)'
-                    }}
+                    style={{borderColor: 'var(--lia-border-default)',
+                      backgroundColor: 'var(--lia-bg-primary)'}}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -558,7 +536,7 @@ export function WSIQuestionsPanel({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                   Nível Dreyfus
                 </Label>
                 <Select
@@ -567,10 +545,8 @@ export function WSIQuestionsPanel({
                 >
                   <SelectTrigger 
                     className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700"
-                    style={{ 
-                      borderColor: 'var(--lia-border-default)',
-                      backgroundColor: 'var(--lia-bg-primary)'
-                    }}
+                    style={{borderColor: 'var(--lia-border-default)',
+                      backgroundColor: 'var(--lia-bg-primary)'}}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -586,7 +562,7 @@ export function WSIQuestionsPanel({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                   Competência
                 </Label>
                 <Input
@@ -594,14 +570,12 @@ export function WSIQuestionsPanel({
                   onChange={(e) => setNewQuestion((prev) => ({ ...prev, competency: e.target.value }))}
                   placeholder="Ex: Resolução de Problemas"
                   className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-                  style={{
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                   Tempo (min)
                 </Label>
                 <Input
@@ -611,10 +585,8 @@ export function WSIQuestionsPanel({
                   className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                   min={5}
                   max={60}
-                  style={{
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 />
               </div>
             </div>
@@ -623,10 +595,8 @@ export function WSIQuestionsPanel({
               disabled={!newQuestion.question.trim() || !newQuestion.competency.trim()}
               className="w-full dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               variant="outline"
-              style={{
-                borderColor: 'var(--lia-border-default)',
-                color: 'var(--lia-text-primary)'
-              }}
+              style={{borderColor: 'var(--lia-border-default)',
+                color: 'var(--lia-text-primary)'}}
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Pergunta
@@ -672,69 +642,63 @@ function QuestionCard({
   return (
     <div 
       className="border rounded-md overflow-hidden dark:border-gray-700"
-      style={{ borderColor: 'var(--lia-border-subtle)' }}
+      style={{borderColor: 'var(--lia-border-subtle)'}}
     >
       <button
         type="button"
         className="w-full text-left p-3 transition-colors dark:hover:bg-gray-700/50"
         onClick={onToggleExpand}
-        style={{ backgroundColor: 'var(--lia-bg-primary)' }}
+        style={{backgroundColor: 'var(--lia-bg-primary)'}}
       >
         <div className="flex items-start gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <span 
               className="text-xs font-medium dark:text-gray-400"
-              style={{ color: 'var(--lia-text-tertiary)' }}
+              style={{color: 'var(--lia-text-tertiary)'}}
             >
               #{index + 1}
             </span>
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }} />
+              <ChevronDown className="h-4 w-4 dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}} />
             ) : (
-              <ChevronRight className="h-4 w-4 dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }} />
+              <ChevronRight className="h-4 w-4 dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}} />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <p 
               className="text-sm line-clamp-2 dark:text-gray-100"
-              style={{ color: 'var(--lia-text-primary)' }}
+              style={{color: 'var(--lia-text-primary)'}}
             >
               {question.question}
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <Badge 
                 className="text-xs"
-                style={{
-                  backgroundColor: 'var(--lia-bg-tertiary)',
+                style={{backgroundColor: 'var(--lia-bg-tertiary)',
                   color: 'var(--lia-text-secondary)',
-                  border: '1px solid var(--lia-border-subtle)'
-                }}
+                  border: '1px solid var(--lia-border-subtle)'}}
               >
                 {question.bloom_level}
               </Badge>
               <Badge 
                 className="text-xs"
-                style={{
-                  backgroundColor: 'var(--lia-bg-tertiary)',
+                style={{backgroundColor: 'var(--lia-bg-tertiary)',
                   color: 'var(--lia-text-secondary)',
-                  border: '1px solid var(--lia-border-subtle)'
-                }}
+                  border: '1px solid var(--lia-border-subtle)'}}
               >
                 {question.dreyfus_level}
               </Badge>
               <Badge 
                 variant="outline" 
                 className="text-xs"
-                style={{
-                  borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-tertiary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  color: 'var(--lia-text-tertiary)'}}
               >
                 {question.competency}
               </Badge>
               <span 
                 className="text-xs flex items-center gap-1 dark:text-gray-400"
-                style={{ color: 'var(--lia-text-tertiary)' }}
+                style={{color: 'var(--lia-text-tertiary)'}}
               >
                 <Clock className="h-3 w-3" />
                 {question.time_estimate}min
@@ -749,7 +713,7 @@ function QuestionCard({
               e.stopPropagation()
               onRemove()
             }}
-            style={{ color: 'var(--lia-text-tertiary)' }}
+            style={{color: 'var(--lia-text-tertiary)'}}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -759,13 +723,11 @@ function QuestionCard({
       {isExpanded && (
         <div 
           className="px-3 pb-3 pt-2 border-t space-y-3 dark:border-gray-700"
-          style={{ 
-            borderColor: 'var(--lia-border-subtle)',
-            backgroundColor: 'var(--lia-bg-tertiary)'
-          }}
+          style={{borderColor: 'var(--lia-border-subtle)',
+            backgroundColor: 'var(--lia-bg-tertiary)'}}
         >
           <div className="space-y-2">
-            <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+            <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
               Pergunta
             </Label>
             <Textarea
@@ -773,15 +735,13 @@ function QuestionCard({
               onChange={(e) => onUpdate("question", e.target.value)}
               rows={3}
               className="text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-              style={{
-                borderColor: 'var(--lia-border-default)',
-                backgroundColor: 'var(--lia-bg-primary)'
-              }}
+              style={{borderColor: 'var(--lia-border-default)',
+                backgroundColor: 'var(--lia-bg-primary)'}}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Nível Bloom
               </Label>
               <Select
@@ -790,10 +750,8 @@ function QuestionCard({
               >
                 <SelectTrigger 
                   className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700"
-                  style={{ 
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -807,7 +765,7 @@ function QuestionCard({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Nível Dreyfus
               </Label>
               <Select
@@ -816,10 +774,8 @@ function QuestionCard({
               >
                 <SelectTrigger 
                   className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700"
-                  style={{ 
-                    borderColor: 'var(--lia-border-default)',
-                    backgroundColor: 'var(--lia-bg-primary)'
-                  }}
+                  style={{borderColor: 'var(--lia-border-default)',
+                    backgroundColor: 'var(--lia-bg-primary)'}}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -835,21 +791,19 @@ function QuestionCard({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Competência
               </Label>
               <Input
                 value={question.competency}
                 onChange={(e) => onUpdate("competency", e.target.value)}
                 className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-                style={{
-                  borderColor: 'var(--lia-border-default)',
-                  backgroundColor: 'var(--lia-bg-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  backgroundColor: 'var(--lia-bg-primary)'}}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                 Tempo (min)
               </Label>
               <Input
@@ -859,10 +813,8 @@ function QuestionCard({
                 className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                 min={5}
                 max={60}
-                style={{
-                  borderColor: 'var(--lia-border-default)',
-                  backgroundColor: 'var(--lia-bg-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  backgroundColor: 'var(--lia-bg-primary)'}}
               />
             </div>
           </div>

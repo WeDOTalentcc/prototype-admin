@@ -81,7 +81,7 @@ export function WSIScoreCard({
         return (
           <Badge 
             className="border"
-            style={{ ...baseStyle, color: 'var(--lia-text-primary)' }}
+            style={{...baseStyle, color: 'var(--lia-text-primary)'}}
           >
             <CheckCircle2 className="h-3 w-3 mr-1 text-wedo-green" />
             Aprovado
@@ -91,7 +91,7 @@ export function WSIScoreCard({
         return (
           <Badge 
             className="border"
-            style={{ ...baseStyle, color: 'var(--lia-text-primary)' }}
+            style={{...baseStyle, color: 'var(--lia-text-primary)'}}
           >
             <AlertCircle className="h-3 w-3 mr-1 text-wedo-magenta" />
             Reprovado
@@ -101,7 +101,7 @@ export function WSIScoreCard({
         return (
           <Badge 
             className="border"
-            style={{ ...baseStyle, color: 'var(--lia-text-secondary)' }}
+            style={{...baseStyle, color: 'var(--lia-text-secondary)'}}
           >
             <Minus className="h-3 w-3 mr-1 text-gray-700 dark:text-gray-300" />
             Aguardando
@@ -126,23 +126,21 @@ export function WSIScoreCard({
   return (
     <Card 
       className="w-full max-w-md border-l-4 overflow-hidden"
-      style={{ 
-        backgroundColor: 'var(--lia-bg-secondary)',
-        borderLeftColor: 'var(--lia-border-default)'
-      }}
+      style={{backgroundColor: 'var(--lia-bg-secondary)',
+        borderLeftColor: 'var(--lia-border-default)'}}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div 
               className="h-12 w-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+              style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
             >
               <Brain className="h-6 w-6 text-wedo-purple" />
             </div>
             <div>
-              <div className="text-sm" style={{ color: 'var(--lia-text-tertiary)' }}>Avaliação WSI</div>
-              <h4 className="font-semibold" style={{ color: 'var(--lia-text-primary)' }}>
+              <div className="text-sm" style={{color: 'var(--lia-text-tertiary)'}}>Avaliação WSI</div>
+              <h4 className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
                 {data.candidate_name}
               </h4>
               <span className={`inline-flex items-center px-1.5 py-0.5 text-micro font-medium rounded-full ${classification.bg} ${classification.color}`}>
@@ -155,7 +153,7 @@ export function WSIScoreCard({
             <div className={`text-2xl font-bold ${scoreDisplay.text}`}>
               {percentage}%
             </div>
-            <div className="text-xs" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>
               {data.overall_score}/{data.max_score} pts
             </div>
           </div>
@@ -163,26 +161,24 @@ export function WSIScoreCard({
 
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: 'var(--lia-text-secondary)' }}>Score Geral</span>
+            <span className="text-sm" style={{color: 'var(--lia-text-secondary)'}}>Score Geral</span>
             {getRecommendationBadge(data.recommendation)}
           </div>
           <div 
             className="relative h-2 rounded-full overflow-hidden"
-            style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
             <div 
               className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-              style={{ 
-                width: `${percentage}%`,
-                backgroundColor: 'var(--lia-text-primary)'
-              }}
+              style={{width: `${percentage}%`,
+                backgroundColor: 'var(--lia-text-primary)'}}
             />
           </div>
         </div>
 
         {!compact && data.dimensions && data.dimensions.length > 0 && (
           <div className="mt-4 space-y-2">
-            <div className="text-sm font-medium" style={{ color: 'var(--lia-text-primary)' }}>
+            <div className="text-sm font-medium" style={{color: 'var(--lia-text-primary)'}}>
               Dimensões Avaliadas
             </div>
             {data.dimensions.slice(0, 4).map((dimension, index) => {
@@ -192,25 +188,23 @@ export function WSIScoreCard({
                   {getDimensionIcon(dimension.score / dimension.max_score)}
                   <span 
                     className="text-sm flex-1 truncate"
-                    style={{ color: 'var(--lia-text-secondary)' }}
+                    style={{color: 'var(--lia-text-secondary)'}}
                   >
                     {dimension.name}
                   </span>
                   <div 
                     className="w-20 h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
                   >
                     <div 
                       className="h-full rounded-full"
-                      style={{ 
-                        width: `${dimPercent}%`,
-                        backgroundColor: 'var(--lia-text-secondary)'
-                      }}
+                      style={{width: `${dimPercent}%`,
+                        backgroundColor: 'var(--lia-text-secondary)'}}
                     />
                   </div>
                   <span 
                     className="text-xs w-8 text-right"
-                    style={{ color: 'var(--lia-text-tertiary)' }}
+                    style={{color: 'var(--lia-text-tertiary)'}}
                   >
                     {dimPercent}%
                   </span>
@@ -222,7 +216,7 @@ export function WSIScoreCard({
 
         {!compact && data.strengths && data.strengths.length > 0 && (
           <div className="mt-4">
-            <div className="text-sm font-medium mb-2" style={{ color: 'var(--lia-text-primary)' }}>
+            <div className="text-sm font-medium mb-2" style={{color: 'var(--lia-text-primary)'}}>
               Pontos Fortes
             </div>
             <div className="space-y-1">
@@ -230,10 +224,8 @@ export function WSIScoreCard({
                 <div 
                   key={index}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded"
-                  style={{ 
-                    backgroundColor: 'var(--lia-bg-tertiary)',
-                    color: 'var(--lia-text-secondary)'
-                  }}
+                  style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                    color: 'var(--lia-text-secondary)'}}
                 >
                   <Star className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
                   <span>{strength}</span>
@@ -245,7 +237,7 @@ export function WSIScoreCard({
 
         {!compact && data.development_areas && data.development_areas.length > 0 && (
           <div className="mt-3">
-            <div className="text-sm font-medium mb-2" style={{ color: 'var(--lia-text-primary)' }}>
+            <div className="text-sm font-medium mb-2" style={{color: 'var(--lia-text-primary)'}}>
               Áreas de Desenvolvimento
             </div>
             <div className="space-y-1">
@@ -253,10 +245,8 @@ export function WSIScoreCard({
                 <div 
                   key={index}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded"
-                  style={{ 
-                    backgroundColor: 'var(--lia-bg-tertiary)',
-                    color: 'var(--lia-text-secondary)'
-                  }}
+                  style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                    color: 'var(--lia-text-secondary)'}}
                 >
                   <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-gray-300" />
                   <span>{area}</span>
@@ -269,12 +259,12 @@ export function WSIScoreCard({
         {data.summary && !compact && (
           <div 
             className="mt-4 p-3 rounded-md"
-            style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
-            <div className="text-xs mb-1" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="text-xs mb-1" style={{color: 'var(--lia-text-tertiary)'}}>
               Resumo da Avaliação
             </div>
-            <p className="text-sm line-clamp-3" style={{ color: 'var(--lia-text-secondary)' }}>
+            <p className="text-sm line-clamp-3" style={{color: 'var(--lia-text-secondary)'}}>
               {data.summary}
             </p>
           </div>
@@ -283,16 +273,14 @@ export function WSIScoreCard({
         {(onViewDetails || onViewReport) && (
           <div 
             className="mt-4 pt-3 border-t flex items-center gap-2"
-            style={{ borderColor: 'var(--lia-border-subtle)' }}
+            style={{borderColor: 'var(--lia-border-subtle)'}}
           >
             {onViewReport && (
               <Button 
                 size="sm" 
                 variant="outline"
-                style={{ 
-                  borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  color: 'var(--lia-text-primary)'}}
                 onClick={onViewReport}
               >
                 <FileText className="h-3.5 w-3.5 mr-1.5" />
@@ -304,7 +292,7 @@ export function WSIScoreCard({
                 size="sm" 
                 variant="ghost"
                 className="ml-auto"
-                style={{ color: 'var(--lia-text-secondary)' }}
+                style={{color: 'var(--lia-text-secondary)'}}
                 onClick={onViewDetails}
               >
                 Detalhes Completos
@@ -317,7 +305,7 @@ export function WSIScoreCard({
         {data.evaluated_at && (
           <div 
             className="mt-3 text-xs text-right"
-            style={{ color: 'var(--lia-text-tertiary)' }}
+            style={{color: 'var(--lia-text-tertiary)'}}
           >
             Avaliado em {data.evaluated_at}
           </div>

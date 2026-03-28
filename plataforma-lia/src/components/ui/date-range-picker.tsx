@@ -176,7 +176,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="gap-2 text-xs font-['Open_Sans'] min-w-[200px] justify-start"
+        className="gap-2 text-xs font-['Open_Sans'] min-w-sidebar-content justify-start"
       >
         <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
         <span className={value?.start_date ? 'text-gray-950' : 'text-gray-500'}>

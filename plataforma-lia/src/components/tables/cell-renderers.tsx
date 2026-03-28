@@ -389,10 +389,10 @@ export function NoteCell({
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
   if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgb(96 190 209 / 0.15)', textStyle: 'var(--gray-600)' }
-  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgb(239 68 68 / 0.15)', textStyle: 'var(--status-error)' }
-  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgb(245 158 11 / 0.15)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgb(107 114 128 / 0.15)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)', textStyle: 'var(--gray-600)' }
+  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'color-mix(in srgb, var(--status-error) 15%, transparent)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', textStyle: 'var(--status-warning)' }
+  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'color-mix(in srgb, var(--gray-500) 15%, transparent)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
@@ -406,7 +406,7 @@ export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?
   return (
     <Badge 
       className="text-micro px-1.5 py-0.5" 
-      style={{ backgroundColor: colors.bgStyle, color: colors.textStyle }}
+      style={{backgroundColor: colors.bgStyle, color: colors.textStyle}}
     >
       {displayName}
     </Badge>
@@ -474,7 +474,7 @@ export function InteractiveSubStatusCell({
         >
           <Badge 
             className="text-micro px-1.5 py-0.5 flex items-center gap-0.5" 
-            style={{ backgroundColor: colors.bgStyle, color: colors.textStyle }}
+            style={{backgroundColor: colors.bgStyle, color: colors.textStyle}}
           >
             {isUpdating ? 'Atualizando...' : displayName}
             <ChevronDown className="w-2.5 h-2.5" />
@@ -577,7 +577,7 @@ export function InteractiveStageCell({
     return (
       <Badge 
         className="text-micro px-1.5 py-0.5 font-medium"
-        style={{ backgroundColor: currentStageInfo?.color || 'var(--gray-200)' }}
+        style={{backgroundColor: currentStageInfo?.color || 'var(--gray-200)'}}
       >
         {stageDisplayName}
       </Badge>
@@ -595,7 +595,7 @@ export function InteractiveStageCell({
       >
         <Badge 
           className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
-          style={{ backgroundColor: currentStageInfo?.color || 'var(--gray-200)' }}
+          style={{backgroundColor: currentStageInfo?.color || 'var(--gray-200)'}}
         >
           {stageDisplayName}
           <ChevronDown className="w-2.5 h-2.5" />
@@ -702,7 +702,7 @@ export function StageCell({ stage }: { stage?: string }) {
   return (
     <Badge 
       className="text-micro px-1.5 py-0.5"
-      style={{ backgroundColor: stageInfo?.color || 'var(--gray-400)', color: 'var(--gray-50)' }}
+      style={{backgroundColor: stageInfo?.color || 'var(--gray-400)', color: 'var(--gray-50)'}}
     >
       {displayName}
     </Badge>

@@ -418,12 +418,12 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="space-y-6">
           <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse">
             <CardHeader className="pb-4">
-              <div className="h-5 w-48 rounded bg-gray-400" style={{ opacity: 0.3 }}></div>
+              <div className="h-5 w-48 rounded bg-gray-400" style={{opacity: 0.3}}></div>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-28 h-16 rounded-md bg-gray-400" style={{ opacity: 0.2 }}></div>
+                  <div key={i} className="w-28 h-16 rounded-md bg-gray-400" style={{opacity: 0.2}}></div>
                 ))}
               </div>
             </CardContent>

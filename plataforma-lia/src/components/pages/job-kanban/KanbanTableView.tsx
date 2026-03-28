@@ -458,7 +458,7 @@ export function KanbanTableView({
                       }}
                       title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
                     >
-                      <Gauge className="w-3.5 h-3.5" style={{ color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)' }} strokeWidth={2} />
+                      <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                         {hasNotaGeral ? ranking : '—'}
                       </span>
@@ -500,7 +500,7 @@ export function KanbanTableView({
                       }}
                       title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
                     >
-                      <Target className="w-3.5 h-3.5" style={{ color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)' }} strokeWidth={2} />
+                      <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasFitScore ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                         {hasFitScore ? formatScorePercent(fitValue, 0) : '—'}
                       </span>
@@ -521,7 +521,7 @@ export function KanbanTableView({
                       }}
                       title={hasTechnical ? 'Clique para ver detalhes' : 'Não realizado'}
                     >
-                      <Code className="w-3.5 h-3.5" style={{ color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
+                      <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasTechnical && (
                         <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                           {formatScorePercent(candidate.technicalTestScore, 0)}
@@ -544,7 +544,7 @@ export function KanbanTableView({
                       }}
                       title={hasEnglish ? 'Clique para ver detalhes' : 'Não realizado'}
                     >
-                      <Globe className="w-3.5 h-3.5" style={{ color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
+                      <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasEnglish && (
                         <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                           {formatScorePercent(candidate.englishTestScore, 0)}
@@ -570,7 +570,7 @@ export function KanbanTableView({
                       }}
                       title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
                     >
-                      <Fingerprint className="w-3.5 h-3.5" style={{ color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
+                      <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasBigFive ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                         {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
                       </span>
@@ -706,7 +706,7 @@ export function KanbanTableView({
                         <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
                           <Badge
                             className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50 cursor-pointer"
-                            style={{ backgroundColor: currentStageObj?.color || 'var(--gray-200)' }}
+                            style={{backgroundColor: currentStageObj?.color || 'var(--gray-200)'}}
                           >
                             {currentStageObj?.displayName || candidate.stage}
                           </Badge>
@@ -734,7 +734,7 @@ export function KanbanTableView({
                               >
                                 <div
                                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                  style={{ backgroundColor: stage.color }}
+                                  style={{backgroundColor: stage.color}}
                                 />
                                 <span className="flex-1 text-left text-gray-800 dark:text-gray-200 truncate">
                                   {stage.displayName}
@@ -824,7 +824,7 @@ export function KanbanTableView({
                 case 'outreach_message':
                   return candidate.outreach_message ? (
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-800 dark:text-gray-200 truncate max-w-[200px]">{candidate.outreach_message.slice(0, 50)}...</span>
+                      <span className="text-xs text-gray-800 dark:text-gray-200 truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -1267,7 +1267,7 @@ export function KanbanTableView({
 
     {/* Preview do Candidato - Painel Lateral Direito */}
     {isPreviewOpen && previewCandidate && (
-      <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-[400px]'}`}>
+      <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
         <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
         <React.Suspense fallback={null}>
           <CandidatePreviewDynamic

@@ -531,16 +531,14 @@ export function ChatMessageList({
                           variant="ghost"
                           size="sm"
                           className="text-xs transition-all duration-200 hover:scale-105 font-medium"
-                          style={{
-                            backgroundColor: buttonStyle.backgroundColor,
+                          style={{backgroundColor: buttonStyle.backgroundColor,
                             color: buttonStyle.color,
-                            border: `1px solid ${buttonStyle.borderColor}`,
-                          }}
+                            border: `1px solid ${buttonStyle.borderColor}`}}
                         >
                           {IconComponent && (
                             <IconComponent
                               className="w-3 h-3 mr-1"
-                              style={{ color: iconColor }}
+                              style={{color: iconColor}}
                             />
                           )}
                           {action.label}

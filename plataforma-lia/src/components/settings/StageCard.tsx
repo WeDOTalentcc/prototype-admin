@@ -332,7 +332,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
             >
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: ss.color || 'var(--gray-400)' }}
+                style={{backgroundColor: ss.color || 'var(--gray-400)'}}
               />
               <span className={`flex-1 text-xs font-medium ${ss.is_active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
                 {ss.display_name}
@@ -593,7 +593,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
   return (
     <Card
       className={`border rounded-md p-4 mb-3 bg-white dark:bg-gray-900 ${!stage.isActive ? "opacity-60" : ""} ${isSystemStage ? "border-gray-300 bg-gray-50/50" : "border-gray-200"}`}
-      style={{ borderLeft: stage.color ? `4px solid ${stage.color}` : undefined }}
+      style={{borderLeft: stage.color ? `4px solid ${stage.color}` : undefined}}
     >
       <div className="flex items-start gap-3">
         <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium ${isSystemStage ? "bg-gray-200 text-gray-500" : "bg-gray-100 text-gray-500"}`}>
@@ -700,7 +700,7 @@ export function SortableStageCard({
         } ${!stage.isActive ? "opacity-60" : ""} ${
           isSystemStage ? "border-gray-300 bg-gray-50/50 dark:bg-gray-900/50" : "border-gray-200 dark:border-gray-700"
         }`}
-        style={{ borderLeft: stage.color ? `4px solid ${stage.color}` : undefined }}
+        style={{borderLeft: stage.color ? `4px solid ${stage.color}` : undefined}}
       >
         <div className="flex items-start gap-3">
           {canDrag ? (

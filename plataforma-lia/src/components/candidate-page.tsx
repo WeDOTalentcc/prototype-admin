@@ -573,7 +573,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Linkedin className="w-4 h-4" className="text-gray-600" />
+                        <Linkedin className="w-4 h-4 text-gray-600" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -588,7 +588,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Github className="w-4 h-4" className="text-gray-950" />
+                        <Github className="w-4 h-4 text-gray-950" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">GitHub</TooltipContent>
@@ -858,7 +858,7 @@ export function CandidatePage({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--status-success)' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{color: 'var(--status-success)'}}>
                           <CheckCircle className="w-3 h-3" />
                           Pontos Fortes
                         </h4>
@@ -871,7 +871,7 @@ export function CandidatePage({
                         </ul>
                       </div>
                       <div>
-                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--status-warning)' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{color: 'var(--status-warning)'}}>
                           <AlertCircle className="w-3 h-3" />
                           A Desenvolver
                         </h4>
@@ -1046,7 +1046,7 @@ export function CandidatePage({
                           Pacote de Remuneração Total
                         </CardTitle>
                       </div>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--status-success)', color: 'white' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--status-success)', color: 'white'}}>
                         Total Compensation
                       </Badge>
                     </div>
@@ -1126,7 +1126,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Português
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--gray-100)', color: 'var(--status-success)'}}>
                         Nativo
                       </Badge>
                     </div>
@@ -1134,7 +1134,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Inglês
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-400)', color: 'white' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--gray-400)', color: 'white'}}>
                         Fluente
                       </Badge>
                     </div>
@@ -1142,7 +1142,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Espanhol
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-200)', color: 'var(--gray-700)' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--gray-200)', color: 'var(--gray-700)'}}>
                         Intermediário
                       </Badge>
                     </div>
@@ -1411,7 +1411,7 @@ export function CandidatePage({
                         onClick={() => setShowLiaModal(true)}
                         size="sm"
                         className="gap-1 text-white px-3 py-1.5 text-xs h-7"
-                        style={{ backgroundColor: 'var(--status-error)' }}
+                        style={{backgroundColor: 'var(--status-error)'}}
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
                         Nova Atividade
@@ -1495,7 +1495,7 @@ export function CandidatePage({
                     <div className="flex items-center gap-2">
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       <CardTitle className="text-sm">Previsão de Próximas Etapas - IA</CardTitle>
-                      <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--wedo-purple)', color: 'white' }}>
+                      <Badge className="text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--wedo-purple)', color: 'white'}}>
                         Análise Preditiva
                       </Badge>
                     </div>
@@ -1520,10 +1520,8 @@ export function CandidatePage({
                               </h5>
                               <Badge
                                 className="text-xs px-1 py-0 h-4 mt-1"
-                                style={{
-                                  backgroundColor: `${prediction.color}20`,
-                                  color: prediction.color
-                                }}
+                                style={{backgroundColor: `${prediction.color}20`,
+                                  color: prediction.color}}
                               >
                                 {prediction.probability}%
                               </Badge>
@@ -1556,10 +1554,8 @@ export function CandidatePage({
                             {/* Ponto na timeline */}
                             <div
                               className="absolute left-5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 z-10"
-                              style={{
-                                backgroundColor: activity.iconColor,
-                                marginTop: '6px'
-                              }}
+                              style={{backgroundColor: activity.iconColor,
+                                marginTop: '6px'}}
                             ></div>
 
                             {/* Card da atividade */}
@@ -1572,9 +1568,9 @@ export function CandidatePage({
                                   <div className="flex items-start gap-3">
                                     <div
                                       className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                                      style={{ backgroundColor: `${activity.iconColor}20` }}
+                                      style={{backgroundColor: `${activity.iconColor}20`}}
                                     >
-                                      <activity.icon className="w-4 h-4" style={{ color: activity.iconColor }} />
+                                      <activity.icon className="w-4 h-4" style={{color: activity.iconColor}} />
                                     </div>
 
                                     <div className="flex-1">
@@ -1594,10 +1590,8 @@ export function CandidatePage({
                                           {activity.score && (
                                             <Badge
                                               className="text-xs"
-                                              style={{
-                                                backgroundColor: 'var(--gray-100)',
-                                                color: activity.score >= 80 ? 'var(--status-success)' : 'var(--status-warning)'
-                                              }}
+                                              style={{backgroundColor: 'var(--gray-100)',
+                                                color: activity.score >= 80 ? 'var(--status-success)' : 'var(--status-warning)'}}
                                             >
                                               {activity.score}%
                                             </Badge>
@@ -1674,9 +1668,9 @@ export function CandidatePage({
                             <div className="flex items-start gap-3">
                               <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${activity.iconColor}20` }}
+                                style={{backgroundColor: `${activity.iconColor}20`}}
                               >
-                                <activity.icon className="w-4 h-4" style={{ color: activity.iconColor }} />
+                                <activity.icon className="w-4 h-4" style={{color: activity.iconColor}} />
                               </div>
                               <div className="flex-1">
                                 <h5 className="text-sm font-semibold text-gray-950 dark:text-gray-50">

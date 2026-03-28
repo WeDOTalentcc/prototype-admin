@@ -139,7 +139,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
               <div className="flex items-baseline gap-2">
                 <span 
                   className="text-3xl font-bold"
-                  style={{ color: getScoreColor(finalScore) }}
+                  style={{color: getScoreColor(finalScore)}}
                 >
                   {finalScore}
                 </span>
@@ -154,10 +154,8 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             <div className="text-right">
               <span 
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full"
-                style={{ 
-                  backgroundColor: `${getScoreColor(finalScore)}15`,
-                  color: getScoreColor(finalScore),
-                }}
+                style={{backgroundColor: `${getScoreColor(finalScore)}15`,
+                  color: getScoreColor(finalScore)}}
               >
                 <TrendingUp className="w-3 h-3" />
                 {getScoreLabel(finalScore)}
@@ -201,17 +199,14 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                       </div>
                       <span 
                         className="text-xs font-bold"
-                        style={{ 
-                          
-                          color: hasScore ? getScoreColor(score) : 'var(--gray-400)'
-                        }}
+                        style={{color: hasScore ? getScoreColor(score) : 'var(--gray-400)'}}
                       >
                         {hasScore ? `${score}` : 'N/A'}
                       </span>
                     </div>
                     <Progress 
                       value={hasScore ? score : 0} 
-                      className="h-1.5 bg-gray-200" style={{ ['--progress-color' as any]: hasScore ? getScoreColor(score) : 'var(--gray-200)' }}
+                      className="h-1.5 bg-gray-200" style={{['--progress-color' as any]: hasScore ? getScoreColor(score) : 'var(--gray-200)'}}
                     />
                     <p 
                       className="text-micro mt-1.5 text-gray-600"

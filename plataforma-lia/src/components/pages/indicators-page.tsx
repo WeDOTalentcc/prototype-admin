@@ -934,9 +934,7 @@ export function IndicatorsPage() {
                                     goal.status === 'achieved' ? 'bg-wedo-cyan' :
                                     goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
                                   }`}
-                                  style={{
-                                    width: `${Math.min((goal.current / goal.target) * 100, 100)}%`
-                                  }}
+                                  style={{width: `${Math.min((goal.current / goal.target) * 100, 100)}%`}}
                                 />
                               </div>
                             </div>
@@ -973,9 +971,7 @@ export function IndicatorsPage() {
                                     goal.status === 'achieved' ? 'bg-wedo-cyan' :
                                     goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
                                   }`}
-                                  style={{
-                                    width: `${Math.min((goal.current / goal.target) * 100, 100)}%`
-                                  }}
+                                  style={{width: `${Math.min((goal.current / goal.target) * 100, 100)}%`}}
                                 />
                               </div>
                             </div>
@@ -1034,9 +1030,7 @@ export function IndicatorsPage() {
                               <div className="w-20 bg-gray-200 rounded-full h-2">
                                 <div
                                   className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
-                                  style={{
-                                    width: `${(recruiter.totalHires / Math.max(...filteredRecruiters.map(r => r.totalHires))) * 100}%`
-                                  }}
+                                  style={{width: `${(recruiter.totalHires / Math.max(...filteredRecruiters.map(r => r.totalHires))) * 100}%`}}
                                 />
                               </div>
                               <span className="text-sm font-medium w-8 text-right">{recruiter.totalHires}</span>
@@ -1063,9 +1057,7 @@ export function IndicatorsPage() {
                               <div className="w-20 bg-gray-200 rounded-full h-2">
                                 <div
                                   className="bg-status-success h-2 rounded-full"
-                                  style={{
-                                    width: `${recruiter.npsScore}%`
-                                  }}
+                                  style={{width: `${recruiter.npsScore}%`}}
                                 />
                               </div>
                               <span className="text-sm font-medium w-8 text-right">{recruiter.npsScore}%</span>

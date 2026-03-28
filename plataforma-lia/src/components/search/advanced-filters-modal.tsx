@@ -2101,7 +2101,7 @@ export function AdvancedFiltersModal({
           {/* Main Content Area with Sidebar and Scrollable Content */}
           <div className="flex flex-1 overflow-hidden">
             {/* Left Sidebar Menu */}
-            <div className="w-[200px] flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 overflow-y-auto">
+            <div className="w-sidebar-content flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 overflow-y-auto">
               <nav className="py-3">
                 {sidebarCategories.map((category) => {
                   const Icon = category.icon
@@ -2175,7 +2175,7 @@ export function AdvancedFiltersModal({
                   >
                     <Badge 
                       className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{ backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none" }}
+                      style={{backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none"}}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>
@@ -2210,7 +2210,7 @@ export function AdvancedFiltersModal({
                   >
                     <Badge 
                       className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{ backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none" }}
+                      style={{backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none"}}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>

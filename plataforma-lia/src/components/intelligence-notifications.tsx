@@ -16,7 +16,7 @@ interface IntelligenceNotification {
   timestamp: Date
   title: string
   message: string
-  details: Record<string, any>
+  details: Record<string, unknown>
   actions: string[]
   read: boolean
 }

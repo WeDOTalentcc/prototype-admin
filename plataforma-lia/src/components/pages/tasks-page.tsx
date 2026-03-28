@@ -291,11 +291,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
     switch (priority) {
       case 'high':
-        return { backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
       case 'medium':
-        return { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
       case 'low':
-        return { backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }
     }
   }
 
@@ -303,11 +303,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   const getAlertSeverityStyle = (severity: 'high' | 'medium' | 'low') => {
     switch (severity) {
       case 'high':
-        return { backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
       case 'medium':
-        return { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
       case 'low':
-        return { backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }
+        return { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }
     }
   }
 
@@ -821,10 +821,10 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   // Funções auxiliares
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'urgent': return <AlertTriangle className="w-4 h-4" className="text-gray-400 dark:text-gray-500" />
-      case 'warning': return <AlertCircle className="w-4 h-4" className="text-gray-400 dark:text-gray-500" />
-      case 'success': return <CheckCircle className="w-4 h-4" style={{ color: 'rgb(31 41 55)' }} />
-      default: return <Info className="w-4 h-4" className="text-gray-400 dark:text-gray-500" />
+      case 'urgent': return <AlertTriangle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+      case 'warning': return <AlertCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+      case 'success': return <CheckCircle className="w-4 h-4" style={{color: 'var(--gray-800)'}} />
+      default: return <Info className="w-4 h-4 text-gray-400 dark:text-gray-500" />
     }
   }
 
@@ -840,10 +840,10 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   
   const getAlertStyle = (type: string) => {
     switch (type) {
-      case 'urgent': return { backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }
-      case 'warning': return { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }
-      case 'success': return { backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }
-      default: return { backgroundColor: 'rgb(255 251 235)', color: 'rgb(107 114 128)' }
+      case 'urgent': return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
+      case 'warning': return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
+      case 'success': return { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }
+      default: return { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }
     }
   }
 
@@ -854,15 +854,15 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   const getUrgencyBadge = (urgency: string, daysOpen: number) => {
     if (urgency === 'critical') {
-      return <Badge className="border-0 text-xs font-medium" style={{ backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }}>🔴 Crítico</Badge>
+      return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)'}}>🔴 Crítico</Badge>
     }
     if (urgency === 'urgent') {
-      return <Badge className="border-0 text-xs font-semibold" style={{ backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }}>⚠ Urgente</Badge>
+      return <Badge className="border-0 text-xs font-semibold" style={{backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)'}}>⚠ Urgente</Badge>
     }
     if (daysOpen > 30) {
-      return <Badge className="border-0 text-xs font-medium" style={{ backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }}>⏰ Atenção</Badge>
+      return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)'}}>⏰ Atenção</Badge>
     }
-    return <Badge className="border-0 text-xs" style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}>✓ Normal</Badge>
+    return <Badge className="border-0 text-xs" style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}>✓ Normal</Badge>
   }
 
   // Nova função para calcular taxa de conversão
@@ -879,45 +879,45 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   }
   
   const getConversionStyle = (rate: number) => {
-    if (rate >= 70) return { color: 'rgb(31 41 55)' }
-    if (rate >= 50) return { color: 'rgb(31 41 55)' }
-    return { color: 'rgb(31 41 55)' }
+    if (rate >= 70) return { color: 'var(--gray-800)' }
+    if (rate >= 50) return { color: 'var(--gray-800)' }
+    return { color: 'var(--gray-800)' }
   }
 
   // Funções helper para requisições de vagas (paleta sépia)
   const getRequestStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return { label: 'Rascunho', color: 'border-0', style: { backgroundColor: 'rgb(255 251 235)', color: 'rgb(107 114 128)' }, icon: '📝' }
+        return { label: 'Rascunho', color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '📝' }
       case 'pending_approval':
-        return { label: 'Aguardando Aprovação', color: 'border-0 font-medium', style: { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }, icon: '⏳' }
+        return { label: 'Aguardando Aprovação', color: 'border-0 font-medium', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '⏳' }
       case 'in_review':
-        return { label: 'Em Revisão', color: 'border-0 font-medium', style: { backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }, icon: '👁️' }
+        return { label: 'Em Revisão', color: 'border-0 font-medium', style: { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }, icon: '👁️' }
       case 'requires_changes':
-        return { label: 'Requer Alterações', color: 'border-0 font-semibold', style: { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }, icon: '✏️' }
+        return { label: 'Requer Alterações', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '✏️' }
       case 'approved':
-        return { label: 'Aprovado', color: 'border-0 font-semibold', style: { backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }, icon: '✅' }
+        return { label: 'Aprovado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }, icon: '✅' }
       case 'rejected':
-        return { label: 'Rejeitado', color: 'border-0 font-semibold', style: { backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }, icon: '❌' }
+        return { label: 'Rejeitado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }, icon: '❌' }
       case 'published':
         return { label: 'Publicado', color: 'border-0 font-medium', style: { backgroundColor: 'var(--gray-950)', color: 'var(--gray-50)' }, icon: '🚀' }
       default:
-        return { label: status, color: 'border-0', style: { backgroundColor: 'rgb(255 251 235)', color: 'rgb(107 114 128)' }, icon: '•' }
+        return { label: status, color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '•' }
     }
   }
 
   const getRequestPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'critical':
-        return { label: 'Crítico', color: 'border-0 font-medium', style: { backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }, icon: '🔴' }
+        return { label: 'Crítico', color: 'border-0 font-medium', style: { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }, icon: '🔴' }
       case 'high':
-        return { label: 'Alta', color: 'border-0 font-semibold', style: { backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }, icon: '🟠' }
+        return { label: 'Alta', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '🟠' }
       case 'medium':
-        return { label: 'Média', color: 'border-0 font-medium', style: { backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }, icon: '🟡' }
+        return { label: 'Média', color: 'border-0 font-medium', style: { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }, icon: '🟡' }
       case 'low':
-        return { label: 'Baixa', color: 'border-0', style: { backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }, icon: '🟢' }
+        return { label: 'Baixa', color: 'border-0', style: { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }, icon: '🟢' }
       default:
-        return { label: priority, color: 'border-0', style: { backgroundColor: 'rgb(255 251 235)', color: 'rgb(107 114 128)' }, icon: '•' }
+        return { label: priority, color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '•' }
     }
   }
 
@@ -1230,7 +1230,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgb(254 252 232)' }}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--yellow-50, #fefce8)'}}></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Manhã</h3>
                                 <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{morningTasks.length} atividades</span>
                               </div>
@@ -1286,7 +1286,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
                                               Avaliar
@@ -1307,7 +1307,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <Play className="w-2.5 h-2.5" />
                                               Iniciar
@@ -1328,7 +1328,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <Search className="w-2.5 h-2.5" />
                                               Buscar
@@ -1379,7 +1379,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgb(239 246 255)' }}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--blue-50, #eff6ff)'}}></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Tarde</h3>
                                 <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{afternoonTasks.length} atividades</span>
                               </div>
@@ -1435,7 +1435,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
                                               Avaliar
@@ -1456,7 +1456,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <Play className="w-2.5 h-2.5" />
                                               Iniciar
@@ -1477,7 +1477,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{ backgroundColor: 'rgb(240 253 244)', color: 'rgb(31 41 55)' }}
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
                                             >
                                               <Search className="w-2.5 h-2.5" />
                                               Buscar
@@ -1552,19 +1552,19 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     <div className="flex items-center gap-1.5">
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{ backgroundColor: 'rgb(253 242 248)', color: 'rgb(31 41 55)' }}
+                        style={{backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'high').length} Alto
                       </Badge>
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{ backgroundColor: 'rgb(254 252 232)', color: 'rgb(31 41 55)' }}
+                        style={{backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'medium').length} Médio
                       </Badge>
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{ backgroundColor: 'rgb(239 246 255)', color: 'rgb(31 41 55)' }}
+                        style={{backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'low').length} Baixo
                       </Badge>
@@ -1577,7 +1577,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div
                         key={alert.id}
                         className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 hover:transition-all"
-                        style={{ backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40' }}
+                        style={{backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40'}}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-start gap-2 flex-1">

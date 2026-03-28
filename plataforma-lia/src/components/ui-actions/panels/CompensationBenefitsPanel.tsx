@@ -16,7 +16,7 @@ import type { JobBenefit, BenefitCategory } from '@/types/benefits'
 import { BENEFIT_CATEGORY_META } from '@/types/benefits'
 import { BENEFITS_CATALOG, CompensationData } from "../types"
 
-const CATEGORY_ICONS: Record<string, any> = {
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   health: Stethoscope,
   food: Utensils,
   transport: Car,

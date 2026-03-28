@@ -353,7 +353,7 @@ function TechAutocomplete({
         <div
           ref={suggestionsRef}
           className="absolute z-50 top-full left-0 right-0 mt-1 border rounded-md max-h-48 overflow-auto dark:bg-gray-800 dark:border-gray-700"
-          style={{ backgroundColor: 'var(--lia-bg-primary)', borderColor: 'var(--lia-border-default)' }}
+          style={{backgroundColor: 'var(--lia-bg-primary)', borderColor: 'var(--lia-border-default)'}}
         >
           {availableTechs.length > 0 ? (
             availableTechs.slice(0, 10).map((tech, index) => (

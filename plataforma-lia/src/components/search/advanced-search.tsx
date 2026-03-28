@@ -92,7 +92,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
     <div className={cn("space-y-4", className)}>
       {/* Search Input Principal */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_rgb(0_0_0/0.1)]">
+        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_black/10]">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-600" />
             <input
@@ -106,7 +106,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             />
             <div className="absolute right-2 flex items-center gap-1">
               {activeFiltersCount > 0 && (
-                <div style={{ animation: 'scaleInDelayed 0.2s ease-out' }}>
+                <div style={{animation: 'scaleInDelayed 0.2s ease-out'}}>
                   <Badge variant="secondary" className="text-xs">
                     {activeFiltersCount}
                   </Badge>
@@ -131,7 +131,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         {searchFocused && suggestions.length > 0 && (
           <div
             className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md z-10"
-            style={{ animation: 'fadeInUp 0.2s ease-out' }}
+            style={{animation: 'fadeInUp 0.2s ease-out'}}
           >
             <div className="p-2">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Sugestões:</p>
@@ -144,9 +144,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                       setSearchFocused(false)
                     }}
                     className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                    style={{
-                      animation: `fadeInRight 0.2s ease-out ${index * 0.05}s backwards`
-                    }}
+                    style={{animation: `fadeInRight 0.2s ease-out ${index * 0.05}s backwards`}}
                   >
                     {suggestion}
                   </button>
@@ -205,7 +203,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {showAdvanced && (
         <div
           className="overflow-hidden"
-          style={{ animation: 'slideInUp 0.3s ease-out' }}
+          style={{animation: 'slideInUp 0.3s ease-out'}}
         >
           <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
             {/* Categorias */}
@@ -290,7 +288,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {activeFiltersCount > 0 && (
         <div
           className="flex flex-wrap items-center gap-2"
-          style={{ animation: 'fadeIn 0.3s ease-out' }}
+          style={{animation: 'fadeIn 0.3s ease-out'}}
         >
           <span className="text-xs text-gray-500 dark:text-gray-400">Filtros ativos:</span>
           {filters.categories.map((category) => (

@@ -50,7 +50,7 @@ export function useCompanyManagers(options: UseCompanyManagersOptions = {}): Use
       if (approversRes.ok) {
         const approversData = await approversRes.json()
         const approvers = Array.isArray(approversData) ? approversData : approversData.items || []
-        approvers.forEach((a: any) => {
+        approvers.forEach((a: Record<string, unknown>) => {
           if (a.user_id) approverIds.add(a.user_id)
         })
       }
@@ -70,7 +70,7 @@ export function useCompanyManagers(options: UseCompanyManagersOptions = {}): Use
       const managerRoles = ['manager', 'gerente', 'director', 'diretor', 'coordinator', 'coordenador', 'lead', 'líder', 'head', 'supervisor', 'admin']
       
       const managersList: Manager[] = users
-        .filter((user: any) => {
+        .filter((user: Record<string, unknown>) => {
           if (!user.is_active && options.activeOnly !== false) return false
           
           const role = (user.role || '').toLowerCase()
@@ -81,7 +81,7 @@ export function useCompanyManagers(options: UseCompanyManagersOptions = {}): Use
           
           return hasManagerRole || isApprover
         })
-        .map((user: any) => ({
+        .map((user: Record<string, unknown>) => ({
           id: user.id,
           name: user.name || user.full_name || user.email,
           email: user.email,

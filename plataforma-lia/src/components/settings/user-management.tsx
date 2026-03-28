@@ -218,8 +218,8 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       setIsCreating(false)
       setIsEditing(false)
       setSelectedUser(null)
-    } catch (err: any) {
-      alert(err.message || 'Erro ao salvar usuário')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao salvar usuário')
     }
   }
 
@@ -237,8 +237,8 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       }
       setSuccessMessage(`Convite reenviado com sucesso para ${userEmail}!`)
       setTimeout(() => setSuccessMessage(null), 5000)
-    } catch (err: any) {
-      alert(err.message || 'Erro ao reenviar convite')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao reenviar convite')
     } finally {
       setResendingInvite(null)
     }

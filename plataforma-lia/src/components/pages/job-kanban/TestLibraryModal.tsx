@@ -219,10 +219,10 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                       <p className={`${textStyles.description} mb-2`}>Distribuição de Notas</p>
                       <div className="flex items-end gap-1 h-8">
-                        <div className="flex-1 bg-status-error rounded-t" style={{ height: '20%' }} title="0-40%: 5%"></div>
-                        <div className="flex-1 bg-gray-600 rounded-t" style={{ height: '30%' }} title="40-60%: 15%"></div>
-                        <div className="flex-1 bg-gray-600 dark:bg-gray-500 rounded-t" style={{ height: '60%' }} title="60-80%: 35%"></div>
-                        <div className="flex-1 bg-gray-700 rounded-t" style={{ height: '80%' }} title="80-100%: 45%"></div>
+                        <div className="flex-1 bg-status-error rounded-t" style={{height: '20%'}} title="0-40%: 5%"></div>
+                        <div className="flex-1 bg-gray-600 rounded-t" style={{height: '30%'}} title="40-60%: 15%"></div>
+                        <div className="flex-1 bg-gray-600 dark:bg-gray-500 rounded-t" style={{height: '60%'}} title="60-80%: 35%"></div>
+                        <div className="flex-1 bg-gray-700 rounded-t" style={{height: '80%'}} title="80-100%: 45%"></div>
                       </div>
                       <div className="flex justify-between mt-1">
                         <span className={textStyles.bodySmall}>0%</span>

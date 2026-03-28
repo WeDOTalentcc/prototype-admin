@@ -42,7 +42,7 @@ export function useRecruitmentStages(): UseRecruitmentStagesResult {
       const data = await response.json()
       
       if (data.pipeline && Array.isArray(data.pipeline)) {
-        const stages: RecruitmentStage[] = data.pipeline.map((s: any, idx: number) => ({
+        const stages: RecruitmentStage[] = data.pipeline.map((s: Record<string, unknown>, idx: number) => ({
           id: s.id,
           name: s.name,
           display_name: s.display_name,

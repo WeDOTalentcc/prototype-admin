@@ -91,7 +91,7 @@ export function SimilarProfilesInput({
                       + URL
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs max-w-[200px]">
+                  <TooltipContent side="top" className="text-xs max-w-sidebar-content">
                     Adicione até 2 perfis para a LIA criar um perfil ideal combinado
                   </TooltipContent>
                 </Tooltip>
@@ -124,7 +124,7 @@ export function SimilarProfilesInput({
               <div
                 key={index}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
-                style={{ backgroundColor: "var(--gray-100)" }}
+                style={{backgroundColor: "var(--gray-100)"}}
               >
                 <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                 <span className="max-w-[150px] truncate">{file.name}</span>
@@ -137,7 +137,7 @@ export function SimilarProfilesInput({
               <button
                 onClick={() => cvFileInputRef.current?.click()}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
-                style={{ backgroundColor: "var(--gray-100)" }}
+                style={{backgroundColor: "var(--gray-100)"}}
               >
                 <Upload className="w-3 h-3" />
                 + CV
@@ -148,7 +148,7 @@ export function SimilarProfilesInput({
           <button
             onClick={() => cvFileInputRef.current?.click()}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-100 transition-colors border border-gray-200"
-            style={{ backgroundColor: "var(--gray-100)" }}
+            style={{backgroundColor: "var(--gray-100)"}}
           >
             <Upload className="w-3.5 h-3.5" />
             Arraste CVs aqui ou clique para upload (máx. 2)
@@ -179,7 +179,7 @@ export function SimilarProfilesInput({
 
       {/* Perfil Ideal Combinado */}
       {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-        <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "var(--gray-50)" }}>
+        <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{backgroundColor: "var(--gray-50)"}}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -223,10 +223,8 @@ export function SimilarProfilesInput({
         onClick={() => onSearch(validUrls)}
         disabled={!hasSource}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: hasSource ? "var(--gray-950)" : "var(--gray-200)",
-          color: hasSource ? "white" : "var(--gray-400)",
-        }}
+        style={{backgroundColor: hasSource ? "var(--gray-950)" : "var(--gray-200)",
+          color: hasSource ? "white" : "var(--gray-400)"}}
       >
         <Search className="w-4 h-4" />
         {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}

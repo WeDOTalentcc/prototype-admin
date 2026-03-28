@@ -65,7 +65,7 @@ function ProgressBar({ value, label, maxValue = 100 }: ScoreDimension) {
       <div className={cn("h-1.5 rounded-full w-full", getBarBgColor(percentage))}>
         <div
           className={cn("h-1.5 rounded-full transition-all duration-500", getBarColor(percentage))}
-          style={{ width: `${percentage}%` }}
+          style={{width: `${percentage}%`}}
         />
       </div>
     </div>

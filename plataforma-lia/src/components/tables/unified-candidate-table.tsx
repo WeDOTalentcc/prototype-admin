@@ -333,7 +333,7 @@ export function UnifiedCandidateTable({
         className="overflow-x-auto"
         style={enableVirtualScroll ? { overflowY: "auto", maxHeight: "600px" } : undefined}
       >
-        <table className="w-full" style={{ tableLayout: enableColumnResize ? 'fixed' : 'auto' }}>
+        <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
           <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
             <tr>
               {showCheckboxes && (
@@ -363,10 +363,8 @@ export function UnifiedCandidateTable({
                       ${isDropTarget ? 'bg-wedo-cyan/10' : ''}
                       ${column.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
                     `}
-                    style={{ 
-                      width: typeof width === 'number' ? `${width}px` : width,
-                      minWidth: column.minWidth || '50px'
-                    }}
+                    style={{width: typeof width === 'number' ? `${width}px` : width,
+                      minWidth: column.minWidth || '50px'}}
                     draggable={enableColumnReorder}
                     onDragStart={(e) => handleDragStart(e, column.id)}
                     onDragEnd={handleDragEnd}
@@ -405,7 +403,7 @@ export function UnifiedCandidateTable({
                             ? 'bg-gray-400 w-1' 
                             : 'bg-transparent hover:bg-gray-300 group-hover:bg-gray-200'
                         }`}
-                        style={{ zIndex: 20 }}
+                        style={{zIndex: 20}}
                         onMouseDown={(e) => {
                           e.stopPropagation()
                           const thElement = e.currentTarget.parentElement
@@ -457,14 +455,12 @@ export function UnifiedCandidateTable({
                       renderLeftOverlayActions={renderLeftOverlayActions ? () => renderLeftOverlayActions(candidate) : undefined}
                       renderCustomCell={renderCustomCell ? (colId) => renderCustomCell(candidate, colId) : undefined}
                       stageBorderColor={getStageBorderColor?.(candidate)}
-                      style={{
-                        position: "absolute",
+                      style={{position: "absolute",
                         top: 0,
                         left: 0,
                         width: "100%",
                         height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}
+                        transform: `translateY(${virtualRow.start}px)`}}
                     />
                   )
                 })

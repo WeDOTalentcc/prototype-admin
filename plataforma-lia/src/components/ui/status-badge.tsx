@@ -360,9 +360,7 @@ export function StatusBadge({
         onClick && 'cursor-pointer hover:opacity-80',
         className
       )}
-      style={{
-        ...cssVars,
-      }}
+      style={{...cssVars}}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       aria-label={onClick ? (tooltipText || displayText || undefined) : undefined}
@@ -373,9 +371,7 @@ export function StatusBadge({
       />
       <span 
         className="text-micro text-[var(--badge-text)] dark:text-[var(--badge-text-dark)]"
-        style={{ 
-          fontWeight: styles.fontWeight,
-        }}
+        style={{fontWeight: styles.fontWeight}}
       >
         {displayText}
       </span>

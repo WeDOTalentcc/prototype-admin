@@ -165,32 +165,12 @@ import { useKanbanLIAHandlers } from "@/components/pages/job-kanban/hooks/useKan
 import { useKanbanCandidateDecisions } from "@/components/pages/job-kanban/hooks/useKanbanCandidateDecisions"
 import { useKanbanJobEditing } from "@/components/pages/job-kanban/hooks/useKanbanJobEditing"
 import { useKanbanDragDrop } from "@/components/pages/job-kanban/hooks/useKanbanDragDrop"
+import { mapInterviewStagesToKanban, organizeCandidatesByDynamicStages, createInitialCandidatesData, createStageSlug, inferActionBehavior, DYNAMIC_STAGE_COLORS, type InterviewStageFromJob, type DynamicStage } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
+import { calculateNotaLiaGeral, getLiaAlerts, getFilteredAndSortedCandidates as getFilteredAndSortedCandidatesUtil } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
 
-// Interface para etapas dinâmicas do Kanban
-interface InterviewStageFromJob {
-  stageName: string
-  order: number
-  sla?: number
-  type: 'automated' | 'manual' | 'hybrid' | 'system' | 'interview' | 'test' | 'custom'
-}
-
-interface DynamicStage {
-  id: string
-  name: string
-  displayName: string
-  order: number
-  color: string
-  stageType: 'active' | 'final'
-  isInitial?: boolean
-  isFinal?: boolean
-  isHired?: boolean
-  isRejection?: boolean
-  isActive?: boolean
-  actionBehavior?: string
-}
 
 // Helper para criar slug a partir do nome da etapa
 const createStageSlug = (stageName: string): string => {
@@ -522,8 +502,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         title: "Vaga publicada!",
         description: "A vaga está ativa e o link de candidatura foi gerado.",
       })
-    } catch (error: any) {
-      const detail = error?.message || "Erro desconhecido"
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : "Erro desconhecido"
       toast({
         title: "Erro ao publicar",
         description: `Não foi possível publicar a vaga: ${detail}`,
@@ -2992,8 +2972,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         }
 
         .drop-zone-active {
-          background-color: rgba(96, 190, 209, 0.05);
-          border-color: rgb(96, 190, 209);
+          background-color: color-mix(in srgb, 'var(--wedo-cyan)' 5%, transparent);
+          border-color: 'var(--wedo-cyan)';
         }
       `}</style>
 
@@ -3455,7 +3435,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               {!showExpandedLIA && (
                 <div className="flex items-center gap-2">
                   {/* Prompt LIA Compacto - Estilo padronizado */}
-                  <div className="flex-shrink-0 flex-1 max-w-[300px]">
+                  <div className="flex-shrink-0 flex-1 max-w-panel-sm">
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer" onClick={() => setShowExpandedLIA(!showExpandedLIA)}>
                         <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -3466,13 +3446,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         value={liaPromptValue}
                         onChange={(e) => setLiaPromptValue(e.target.value)}
                         className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
-                        style={{ 
-                          backgroundColor: 'var(--gray-50)',
-                          color: 'var(--gray-950)',
-                        }}
+                        style={{backgroundColor: 'var(--gray-50)',
+                          color: 'var(--gray-950)'}}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'var(--gray-800)'
-                          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(31, 41, 55, 0.12)'
+                          e.currentTarget.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--gray-800) 12%, transparent)'
                           setShowExpandedLIA(true)
                         }}
                         onBlur={(e) => {
@@ -3766,7 +3744,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               <>
               <div 
                 className="flex-1 transition-all duration-300 pl-4 py-4 pr-0 min-w-0"
-                style={{ maxWidth: 'calc(100% - 48px)' }}
+                style={{maxWidth: 'calc(100% - 48px)'}}
               >
                 <div className="h-full flex flex-col">
                   <ExpandedChatModal
@@ -3832,7 +3810,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <Users className="w-4 h-4 text-gray-600" />
                     <span 
                       className="text-micro font-medium text-gray-600 tracking-wide"
-                      style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                      style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
                     >
                       Candidatos ({Object.values(candidatesData).flat().length})
                     </span>
@@ -3896,7 +3874,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <div key={stage.id} className="flex flex-col flex-1 bg-white rounded-md min-w-[250px] max-w-[320px] border border-gray-200 h-[calc(100vh-16rem)]" suppressHydrationWarning>
                           <div className="flex-shrink-0 p-2.5 pb-1.5">
                             <div className="flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: stage.color }}></div>
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: stage.color}}></div>
                               <h3 className="font-medium text-xs text-gray-400">{stage.displayName}</h3>
                               <span className="text-micro text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
                             </div>
@@ -3972,7 +3950,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
               {/* Preview do Candidato - Painel Lateral Direito (KANBAN) */}
               {isPreviewOpen && previewCandidate && (
-                <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-[400px]'}`}>
+                <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
                   <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate}
@@ -4598,7 +4576,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{ backgroundColor: 'var(--gray-100)' }}
+                      style={{backgroundColor: 'var(--gray-100)'}}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
@@ -4623,12 +4601,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{ 
-                        backgroundColor: selectedCandidateForModal.technicalTestScore >= 80 ? 'var(--status-success)' :
+                      style={{backgroundColor: selectedCandidateForModal.technicalTestScore >= 80 ? 'var(--status-success)' :
                                          selectedCandidateForModal.technicalTestScore >= 60 ? 'var(--status-warning)' :
                                          selectedCandidateForModal.technicalTestScore >= 40 ? 'var(--gray-400)' :
-                                         'var(--gray-400)'
-                      }}
+                                         'var(--gray-400)'}}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.technicalTestScore, 0)}
@@ -4653,12 +4629,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{ 
-                        backgroundColor: selectedCandidateForModal.englishTestScore >= 80 ? 'var(--status-success)' :
+                      style={{backgroundColor: selectedCandidateForModal.englishTestScore >= 80 ? 'var(--status-success)' :
                                          selectedCandidateForModal.englishTestScore >= 60 ? 'var(--gray-300)' :
                                          selectedCandidateForModal.englishTestScore >= 40 ? 'var(--gray-400)' :
-                                         'var(--gray-400)'
-                      }}
+                                         'var(--gray-400)'}}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.englishTestScore, 0)}

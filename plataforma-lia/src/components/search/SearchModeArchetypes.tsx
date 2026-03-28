@@ -118,18 +118,15 @@ export function SearchModeArchetypes({
             archetypeTab === "list"
               ? "bg-gray-100 ring-1 ring-gray-400"
               : "bg-white ring-1 ring-gray-200 hover:bg-gray-50"
+          , archetypeTab === "list" ? "text-gray-950" : "text-gray-400"
           )}
-          style={{
-            color: archetypeTab === "list" ? "var(--gray-950)" : "var(--gray-400)",
-          }}
         >
           <Target className="w-3 h-3" />
           Arquétipos
         </button>
         <button
           onClick={() => onArchetypeTabChange("create")}
-          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50"
-          style={{ backgroundColor: "white" }}
+          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-white"
         >
           <Plus className="w-3 h-3" />
           Criar Novo
@@ -142,8 +139,7 @@ export function SearchModeArchetypes({
           <div className="relative">
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
               <Search
-                className="w-3.5 h-3.5"
-                className="text-gray-500 dark:text-gray-400"
+                className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
               />
             </div>
             <input
@@ -151,26 +147,21 @@ export function SearchModeArchetypes({
               value={archetypeSearch}
               onChange={(e) => onArchetypeSearchChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2"
-              style={{
-                border: "1px solid rgb(209 213 219)",
-                backgroundColor: "rgb(249 250 251)",
-                color: "rgb(31 41 55)",
-              }}
+              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-gray-300 bg-gray-50 text-gray-800"
             />
           </div>
 
           {isLoadingArchetypes ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="w-5 h-5 animate-spin text-gray-700" />
-              <span className="ml-2 text-sm" className="text-gray-500 dark:text-gray-400">
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                 Carregando arquétipos...
               </span>
             </div>
           ) : filteredArchetypes.length === 0 ? (
             <div className="text-center py-6">
-              <Target className="w-8 h-8 mx-auto mb-2" className="text-gray-500 dark:text-gray-400" />
-              <p className="text-sm" className="text-gray-500 dark:text-gray-400">
+              <Target className="w-8 h-8 mx-auto mb-2 text-gray-500 dark:text-gray-400" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {archetypeVacancies.length === 0
                   ? "Nenhum arquétipo encontrado"
                   : "Nenhum arquétipo corresponde à busca"}
@@ -193,19 +184,13 @@ export function SearchModeArchetypes({
                   <div
                     key={arch.id}
                     className={cn(
-                      "group relative w-full rounded-md text-left transition-all cursor-pointer",
+                      "group relative w-full rounded-md text-left transition-all cursor-pointer border",
                       isExpanded
-                        ? "bg-gray-50 ring-1 ring-gray-900/20"
+                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-gray-300"
                         : selectedArchetype?.id === arch.id
-                        ? "bg-gray-50 ring-1 ring-gray-900/20"
-                        : "bg-white hover:bg-gray-50"
+                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-gray-300"
+                        : "bg-white hover:bg-gray-50 border-gray-200"
                     )}
-                    style={{
-                      border:
-                        isExpanded || selectedArchetype?.id === arch.id
-                          ? "1px solid var(--gray-300)"
-                          : "1px solid var(--gray-200)",
-                    }}
                   >
                     <div
                       className="px-3 py-2.5"
@@ -259,8 +244,7 @@ export function SearchModeArchetypes({
 
                     {isExpanded && (
                       <div
-                        className="px-3 pb-3 space-y-2 border-t border-t-gray-200"
-                        style={{ paddingTop: "10px" }}
+                        className="px-3 pb-3 space-y-2 border-t border-t-gray-200 pt-2.5"
                       >
                         {arch.description && (
                           <p className="text-micro">{arch.description}</p>
@@ -395,8 +379,7 @@ export function SearchModeArchetypes({
                               onArchetypeSearchPromptChange(buildArchetypePrompt(arch))
                               onExpandedArchetypeIdChange(null)
                             }}
-                            className="flex-1 text-xs h-8 bg-gray-800"
-                            style={{ color: "white" }}
+                            className="flex-1 text-xs h-8 bg-gray-800 text-white"
                           >
                             <Check className="w-3 h-3 mr-1" />
                             Usar Arquétipo
@@ -416,8 +399,7 @@ export function SearchModeArchetypes({
                               variant="ghost"
                               onClick={(e) => onDeleteArchetype(arch.id, e)}
                               disabled={isDeletingArchetype === arch.id}
-                              className="text-xs px-2"
-                              style={{ color: "var(--status-error)" }}
+                              className="text-xs px-2 text-status-error"
                             >
                               {isDeletingArchetype === arch.id ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -450,17 +432,12 @@ export function SearchModeArchetypes({
                   value={archetypeSearchPrompt}
                   onChange={(e) => onArchetypeSearchPromptChange(e.target.value)}
                   placeholder="Descreva o perfil do arquétipo..."
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
-                  style={{
-                    backgroundColor: "var(--lia-bg-primary)",
-                    color: "var(--gray-950)",
-                  }}
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                   rows={2}
                 />
                 {onSearchSourceChange && (
                   <div
-                    className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1"
-                    style={{ zIndex: 10 }}
+                    className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-[10]"
                   >
                     <ScopeButtons
                       searchSource={searchSource}
@@ -492,18 +469,13 @@ export function SearchModeArchetypes({
                     ? `Buscar perfis similares a "${selectedArchetype.title}"...`
                     : "Selecione um arquétipo acima para buscar..."
                 }
-                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border"
-                style={{
-                  backgroundColor: "var(--lia-bg-primary)",
-                  color: "var(--gray-950)",
-                }}
+                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
                 rows={2}
                 disabled={!selectedArchetype}
               />
               {onSearchSourceChange && (
                 <div
-                  className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1"
-                  style={{ zIndex: 10 }}
+                  className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10"
                 >
                   <ScopeButtons
                     searchSource={searchSource}
@@ -545,12 +517,9 @@ export function SearchModeArchetypes({
               className={cn(
                 "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all border border-gray-200",
                 archetypeCreateMode === "job"
-                  ? "bg-gray-100 ring-1 ring-gray-400"
-                  : "bg-white hover:bg-gray-50"
+                  ? "bg-gray-100 ring-1 ring-gray-400 text-gray-800"
+                  : "bg-white hover:bg-gray-50 text-gray-500"
               )}
-              style={{
-                color: archetypeCreateMode === "job" ? "var(--gray-800)" : "rgb(107 114 128)",
-              }}
             >
               <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
               A partir de Vaga
@@ -560,15 +529,9 @@ export function SearchModeArchetypes({
               className={cn(
                 "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all border border-gray-200",
                 archetypeCreateMode === "description"
-                  ? "bg-gray-100 ring-1 ring-gray-400"
-                  : "bg-white hover:bg-gray-50"
+                  ? "bg-gray-100 ring-1 ring-gray-400 text-gray-800"
+                  : "bg-white hover:bg-gray-50 text-gray-500"
               )}
-              style={{
-                color:
-                  archetypeCreateMode === "description"
-                    ? "var(--gray-800)"
-                    : "rgb(107 114 128)",
-              }}
             >
               <FileText className="w-3.5 h-3.5 inline mr-1.5" />
               A partir de Descrição
@@ -578,14 +541,13 @@ export function SearchModeArchetypes({
           {/* A partir de Vaga */}
           {archetypeCreateMode === "job" && (
             <div className="space-y-2">
-              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Busque por nome ou ID da vaga para criar um arquétipo:
               </p>
 
               <div className="relative">
                 <Search
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
-                  style={{ color: "var(--gray-400)" }}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
                 />
                 <input
                   type="text"
@@ -607,14 +569,14 @@ export function SearchModeArchetypes({
                   {isSearchingJobs ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                      <span className="ml-2 text-xs" className="text-gray-500 dark:text-gray-400">
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                         Buscando vagas...
                       </span>
                     </div>
                   ) : jobSearchResults.length === 0 ? (
                     <div className="text-center py-4 px-3">
-                      <Briefcase className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--gray-300)" }} />
-                      <p className="text-xs" style={{ color: "var(--gray-400)" }}>
+                      <Briefcase className="w-5 h-5 mx-auto mb-1.5" />
+                      <p className="text-xs text-gray-400">
                         Nenhuma vaga encontrada para "{jobSearchQuery}"
                       </p>
                     </div>
@@ -630,61 +592,58 @@ export function SearchModeArchetypes({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p
-                                className="font-medium text-xs truncate"
-                                style={{ color: "var(--gray-950)" }}
+                                className="font-medium text-xs truncate text-gray-950"
                               >
                                 {job.title}
                               </p>
                               <span
                                 className="px-1.5 py-0.5 rounded-full text-micro font-medium"
-                                style={{
-                                  backgroundColor:
+                                style={{backgroundColor:
                                     job.status === "Publicada"
-                                      ? "rgb(34 197 94 / 0.15)"
+                                      ? "color-mix(in srgb, var(--status-success) 15%, transparent)"
                                       : job.status === "Encerrada"
-                                      ? "rgb(156 163 175 / 0.2)"
-                                      : "rgb(245 158 11 / 0.15)",
+                                      ? "color-mix(in srgb, var(--gray-400) 20%, transparent)"
+                                      : "color-mix(in srgb, var(--status-warning) 15%, transparent)",
                                   color:
                                     job.status === "Publicada"
                                       ? "var(--status-success)"
                                       : job.status === "Encerrada"
                                       ? "var(--gray-400)"
-                                      : "var(--status-warning)",
-                                }}
+                                      : "var(--status-warning)"}}
                               >
                                 {job.status}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-micro" style={{ color: "var(--gray-400)" }}>
+                              <span className="text-micro text-gray-400">
                                 ID: {job.id.slice(0, 8)}...
                               </span>
                               {job.department && (
                                 <>
-                                  <span className="text-micro" style={{ color: "var(--gray-300)" }}>
+                                  <span className="text-micro text-gray-300">
                                     •
                                   </span>
-                                  <span className="text-micro" style={{ color: "var(--gray-400)" }}>
+                                  <span className="text-micro text-gray-400">
                                     {job.department}
                                   </span>
                                 </>
                               )}
                               {job.seniority_level && (
                                 <>
-                                  <span className="text-micro" style={{ color: "var(--gray-300)" }}>
+                                  <span className="text-micro text-gray-300">
                                     •
                                   </span>
-                                  <span className="text-micro" style={{ color: "var(--gray-400)" }}>
+                                  <span className="text-micro text-gray-400">
                                     {job.seniority_level}
                                   </span>
                                 </>
                               )}
                             </div>
-                            <p className="text-micro mt-0.5" style={{ color: "var(--gray-400)" }}>
+                            <p className="text-micro mt-0.5 text-gray-400">
                               Criada em {new Date(job.created_at).toLocaleDateString("pt-BR")}
                             </p>
                             {job.description && (
-                              <p className="text-micro mt-1 line-clamp-2" style={{ color: "var(--gray-400)" }}>
+                              <p className="text-micro mt-1 line-clamp-2 text-gray-400">
                                 {job.description.slice(0, 120)}
                                 {job.description.length > 120 ? "..." : ""}
                               </p>
@@ -699,8 +658,8 @@ export function SearchModeArchetypes({
 
               {!jobSearchQuery.trim() && (
                 <div className="text-center py-4 px-3 rounded-md border border-dashed border-gray-200">
-                  <Search className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--gray-300)" }} />
-                  <p className="text-xs" style={{ color: "var(--gray-400)" }}>
+                  <Search className="w-5 h-5 mx-auto mb-1.5" />
+                  <p className="text-xs text-gray-400">
                     Digite o nome ou ID da vaga para buscar
                   </p>
                 </div>
@@ -721,7 +680,7 @@ export function SearchModeArchetypes({
           {/* A partir de Descrição */}
           {archetypeCreateMode === "description" && (
             <div className="space-y-2">
-              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Descreva o perfil ideal que deseja buscar:
               </p>
               <textarea
@@ -729,24 +688,13 @@ export function SearchModeArchetypes({
                 onChange={(e) => onArchetypeDescriptionChange(e.target.value)}
                 placeholder="Ex: Desenvolvedor Python sênior com experiência em machine learning e cloud AWS, preferencialmente com background em fintechs..."
                 rows={3}
-                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"
-                style={{
-                  border: "1px solid rgb(209 213 219)",
-                  backgroundColor: "rgb(249 250 251)",
-                  color: "rgb(31 41 55)",
-                }}
+                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-gray-300 bg-gray-50 text-gray-800"
               />
               <Button
                 onClick={() => onCreateArchetypeFromDescription(archetypeDescription)}
                 disabled={archetypeDescription.length < 20 || isCreatingArchetype}
                 size="sm"
-                className="w-full"
-                style={{
-                  backgroundColor:
-                    archetypeDescription.length >= 20 ? "var(--gray-950)" : "rgb(243 244 246)",
-                  color:
-                    archetypeDescription.length >= 20 ? "white" : "rgb(107 114 128)",
-                }}
+                className={cn("w-full", archetypeDescription.length >= 20 ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
               >
                 {isCreatingArchetype ? (
                   <>
@@ -824,18 +772,15 @@ function ScopeButtons({
                   searchSource === "local"
                     ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                     : "hover:bg-gray-100"
+                , searchSource === "local" ? "text-wedo-green" : "text-gray-400"
                 )}
-                style={{
-                  color: searchSource === "local" ? "var(--wedo-green)" : "var(--gray-400)",
-                }}
               >
                 <Home className="w-4 h-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="!animate-none"
-              style={{ animation: "none", transitionDuration: "0ms" }}
+              className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Seu banco de talentos</p>
               <p className="text-xs text-gray-300">Gratuito • Local</p>
@@ -859,18 +804,15 @@ function ScopeButtons({
                     searchSource === "hybrid"
                       ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
                       : "hover:bg-gray-100"
+                  , searchSource === "hybrid" ? "text-wedo-orange" : "text-gray-400"
                   )}
-                  style={{
-                    color: searchSource === "hybrid" ? "var(--wedo-orange)" : "var(--gray-400)",
-                  }}
                 >
                   <Zap className="w-4 h-4" />
                 </button>
               </TooltipTrigger>
               <TooltipContent
                 side="bottom"
-                className="!animate-none"
-                style={{ animation: "none", transitionDuration: "0ms" }}
+                className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Expanda sua busca</p>
                 <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
@@ -895,18 +837,15 @@ function ScopeButtons({
                     searchSource === "global"
                       ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
                       : "hover:bg-gray-100"
+                  , searchSource === "global" ? "text-gray-950" : "text-gray-400"
                   )}
-                  style={{
-                    color: searchSource === "global" ? "var(--gray-950)" : "var(--gray-400)",
-                  }}
                 >
                   <Globe className="w-4 h-4" />
                 </button>
               </TooltipTrigger>
               <TooltipContent
                 side="bottom"
-                className="!animate-none"
-                style={{ animation: "none", transitionDuration: "0ms" }}
+                className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Alcance global</p>
                 <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
@@ -934,18 +873,15 @@ function ScopeButtons({
                         requireEmails
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
+                      , requireEmails ? "text-wedo-green" : "text-gray-400"
                       )}
-                      style={{
-                        color: requireEmails ? "var(--wedo-green)" : "var(--gray-400)",
-                      }}
                     >
                       <Mail className="w-3.5 h-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent
                     side="bottom"
-                    className="!animate-none"
-                    style={{ animation: "none", transitionDuration: "0ms" }}
+                    className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Email</p>
                     <p className="text-xs text-gray-300">
@@ -970,18 +906,15 @@ function ScopeButtons({
                         requirePhoneNumbers
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
+                      , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
                       )}
-                      style={{
-                        color: requirePhoneNumbers ? "var(--wedo-green)" : "var(--gray-400)",
-                      }}
                     >
                       <Phone className="w-3.5 h-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent
                     side="bottom"
-                    className="!animate-none"
-                    style={{ animation: "none", transitionDuration: "0ms" }}
+                    className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Telefone</p>
                     <p className="text-xs text-gray-300">
@@ -1003,10 +936,8 @@ function ScopeButtons({
                 className={cn(
                   "flex items-center justify-center p-1.5 rounded-md transition-all",
                   selectedArchetype ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                , selectedArchetype ? "text-gray-400" : "text-gray-200"
                 )}
-                style={{
-                  color: selectedArchetype ? "var(--gray-400)" : "var(--gray-200)",
-                }}
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1017,8 +948,7 @@ function ScopeButtons({
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="!animate-none"
-              style={{ animation: "none", transitionDuration: "0ms" }}
+              className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Buscar Arquétipo</p>
               <p className="text-xs text-gray-300">Encontra perfis similares ao arquétipo</p>

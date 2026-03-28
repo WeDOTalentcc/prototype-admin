@@ -74,21 +74,17 @@ export function CandidateSummaryCard({
   return (
     <Card 
       className="w-full max-w-md border-l-4 overflow-hidden"
-      style={{ 
-        backgroundColor: 'var(--lia-bg-secondary)',
-        borderLeftColor: 'var(--lia-border-default)'
-      }}
+      style={{backgroundColor: 'var(--lia-bg-secondary)',
+        borderLeftColor: 'var(--lia-border-default)'}}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <Avatar className="h-12 w-12 border-2" style={{ borderColor: 'var(--lia-bg-primary)' }}>
+          <Avatar className="h-12 w-12 border-2" style={{borderColor: 'var(--lia-bg-primary)'}}>
             <AvatarImage src={data.avatar_url} alt={data.name} />
             <AvatarFallback 
               className="font-medium"
-              style={{ 
-                backgroundColor: 'var(--lia-bg-tertiary)', 
-                color: 'var(--lia-text-primary)' 
-              }}
+              style={{backgroundColor: 'var(--lia-bg-tertiary)', 
+                color: 'var(--lia-text-primary)'}}
             >
               {getInitials(data.name)}
             </AvatarFallback>
@@ -97,10 +93,10 @@ export function CandidateSummaryCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="font-semibold truncate" style={{ color: 'var(--lia-text-primary)' }}>
+                <h4 className="font-semibold truncate" style={{color: 'var(--lia-text-primary)'}}>
                   {data.name}
                 </h4>
-                <p className="text-sm truncate" style={{ color: 'var(--lia-text-secondary)' }}>
+                <p className="text-sm truncate" style={{color: 'var(--lia-text-secondary)'}}>
                   {data.title}
                 </p>
               </div>
@@ -108,11 +104,9 @@ export function CandidateSummaryCard({
                 <Badge 
                   variant="outline" 
                   className="shrink-0"
-                  style={{ 
-                    borderColor: 'var(--lia-border-default)',
+                  style={{borderColor: 'var(--lia-border-default)',
                     backgroundColor: 'var(--lia-bg-primary)',
-                    color: 'var(--lia-text-primary)'
-                  }}
+                    color: 'var(--lia-text-primary)'}}
                 >
                   <Star className="h-3 w-3 mr-1 text-gray-600 dark:text-gray-400" />
                   {data.match_score}%
@@ -121,22 +115,22 @@ export function CandidateSummaryCard({
             </div>
 
             {!compact && (
-              <div className="mt-3 space-y-1.5 text-sm" style={{ color: 'var(--lia-text-secondary)' }}>
+              <div className="mt-3 space-y-1.5 text-sm" style={{color: 'var(--lia-text-secondary)'}}>
                 {data.location && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-3.5 w-3.5" style={{ color: 'var(--lia-text-tertiary)' }} />
+                    <MapPin className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
                     <span>{data.location}</span>
                   </div>
                 )}
                 {data.experience_years !== undefined && (
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-3.5 w-3.5" style={{ color: 'var(--lia-text-tertiary)' }} />
+                    <Briefcase className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
                     <span>{data.experience_years} anos de experiência</span>
                   </div>
                 )}
                 {data.current_company && (
                   <div className="flex items-center gap-2">
-                    <GraduationCap className="h-3.5 w-3.5" style={{ color: 'var(--lia-text-tertiary)' }} />
+                    <GraduationCap className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
                     <span>{data.current_company}</span>
                   </div>
                 )}
@@ -156,10 +150,8 @@ export function CandidateSummaryCard({
                     key={index} 
                     variant="secondary" 
                     className="text-xs"
-                    style={{ 
-                      backgroundColor: 'var(--lia-bg-tertiary)', 
-                      color: 'var(--lia-text-secondary)' 
-                    }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)', 
+                      color: 'var(--lia-text-secondary)'}}
                   >
                     {skill}
                   </Badge>
@@ -168,10 +160,8 @@ export function CandidateSummaryCard({
                   <Badge 
                     variant="outline" 
                     className="text-xs"
-                    style={{ 
-                      borderColor: 'var(--lia-border-subtle)',
-                      color: 'var(--lia-text-tertiary)'
-                    }}
+                    style={{borderColor: 'var(--lia-border-subtle)',
+                      color: 'var(--lia-text-tertiary)'}}
                   >
                     +{data.skills.length - (compact ? 3 : 5)}
                   </Badge>
@@ -185,10 +175,8 @@ export function CandidateSummaryCard({
                   <div 
                     key={index} 
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded"
-                    style={{ 
-                      backgroundColor: 'var(--lia-bg-tertiary)',
-                      color: 'var(--lia-text-secondary)'
-                    }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                      color: 'var(--lia-text-secondary)'}}
                   >
                     <ThumbsUp className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
                     <span>{highlight}</span>
@@ -203,10 +191,8 @@ export function CandidateSummaryCard({
                   <div 
                     key={index} 
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded"
-                    style={{ 
-                      backgroundColor: 'var(--lia-bg-tertiary)',
-                      color: 'var(--lia-text-secondary)'
-                    }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                      color: 'var(--lia-text-secondary)'}}
                   >
                     <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-gray-300" />
                     <span>{concern}</span>
@@ -220,17 +206,15 @@ export function CandidateSummaryCard({
         {(onApprove || onReject || onSchedule || onViewProfile) && (
           <div 
             className="mt-4 pt-3 border-t flex items-center gap-2 flex-wrap"
-            style={{ borderColor: 'var(--lia-border-subtle)' }}
+            style={{borderColor: 'var(--lia-border-subtle)'}}
           >
             {onApprove && (
               <Button 
                 size="sm" 
                 variant="outline"
                 className="hover:bg-opacity-10"
-                style={{ 
-                  borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  color: 'var(--lia-text-primary)'}}
                 onClick={onApprove}
               >
                 <ThumbsUp className="h-3.5 w-3.5 mr-1.5 text-wedo-green" />
@@ -242,10 +226,8 @@ export function CandidateSummaryCard({
                 size="sm" 
                 variant="outline"
                 className="hover:bg-opacity-10"
-                style={{ 
-                  borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  color: 'var(--lia-text-primary)'}}
                 onClick={onReject}
               >
                 <ThumbsDown className="h-3.5 w-3.5 mr-1.5 text-wedo-magenta" />
@@ -256,10 +238,8 @@ export function CandidateSummaryCard({
               <Button 
                 size="sm" 
                 variant="outline"
-                style={{ 
-                  borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-primary)'
-                }}
+                style={{borderColor: 'var(--lia-border-default)',
+                  color: 'var(--lia-text-primary)'}}
                 onClick={onSchedule}
               >
                 <Calendar className="h-3.5 w-3.5 mr-1.5" />
@@ -271,7 +251,7 @@ export function CandidateSummaryCard({
                 size="sm" 
                 variant="ghost"
                 className="ml-auto"
-                style={{ color: 'var(--lia-text-secondary)' }}
+                style={{color: 'var(--lia-text-secondary)'}}
                 onClick={onViewProfile}
               >
                 Ver Perfil

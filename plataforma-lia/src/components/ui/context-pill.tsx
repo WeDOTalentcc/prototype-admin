@@ -21,12 +21,7 @@ export function ContextPill({
 }: ContextPillProps) {
   return (
     <div 
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all duration-200 ${className}`}
-      style={{
-        backgroundColor: 'rgb(255 255 255)',
-        borderColor: 'rgb(209 213 219)',
-        color: 'rgb(31 41 55)'
-      }}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all duration-200 bg-white border-gray-300 text-gray-800 ${className}`}
     >
       <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">
         {icon}

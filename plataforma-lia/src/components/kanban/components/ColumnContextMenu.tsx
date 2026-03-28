@@ -165,7 +165,7 @@ export function ColumnContextMenu({
       </DropdownMenu>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Renomear Etapa
@@ -196,7 +196,7 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={slaOpen} onOpenChange={setSlaOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Configurar SLA
@@ -231,7 +231,7 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Remover Coluna

@@ -166,7 +166,7 @@ export function QuestionAdjustmentChat({
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0"
-        style={{ maxHeight: "280px" }}
+        style={{maxHeight: "280px"}}
       >
         {messages.map((msg) => (
           <div
@@ -231,7 +231,7 @@ export function QuestionAdjustmentChat({
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
           className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ focusRingColor: "rgb(96 190 209 / 0.3)" }}
+          style={{focusRingColor: "color-mix(in srgb, var(--wedo-cyan) 30%, transparent)"}}
         />
         <Button
           variant="ghost"

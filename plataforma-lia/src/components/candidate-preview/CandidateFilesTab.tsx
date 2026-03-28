@@ -352,7 +352,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gray-600 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
+                    style={{width: `${uploadProgress}%`}}
                   />
                 </div>
               </>
@@ -404,7 +404,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                             </span>
                             <Badge
                               className="text-xs px-1 py-0 h-3.5"
-                              style={{ backgroundColor: colors.bg, color: colors.text }}
+                              style={{backgroundColor: colors.bg, color: colors.text}}
                             >
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               {file.file_type === 'cv' ? 'Currículo' :
@@ -483,7 +483,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado há 2 dias
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--status-error-bg)', color: 'var(--status-error)' }}>
+                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--status-error-bg)', color: 'var(--status-error)'}}>
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Currículo
                       </Badge>
@@ -579,7 +579,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado hoje
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success)' }}>
+                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success)'}}>
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Foto
                       </Badge>
@@ -712,7 +712,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                       3:45
                     </span>
-                    <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--gray-700)', color: 'var(--white)' }}>
+                    <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--gray-700)', color: 'var(--white)'}}>
                       Prescreening
                     </Badge>
                   </div>
@@ -882,7 +882,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         2.8 MB • MP3 • 4:32
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}>
+                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Badge>

@@ -156,7 +156,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left side - Chat area (placeholder - will be passed as children or props) */}
-        <div className="flex flex-col transition-all duration-300 flex-1" style={{ width: isPanelOpen ? `${100 - panelWidth}%` : '100%' }}>
+        <div className="flex flex-col transition-all duration-300 flex-1" style={{width: isPanelOpen ? `${100 - panelWidth}%` : '100%'}}>
           <div className="flex-1 overflow-y-auto p-4">
             {/* Stage content will be rendered here */}
             <div className="text-center text-gray-500 py-8">
@@ -170,7 +170,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         {isPanelOpen && (
           <div 
             className="border-l border-gray-200 bg-white flex flex-col"
-            style={{ width: `${panelWidth}%` }}
+            style={{width: `${panelWidth}%`}}
           >
             <div className="p-3 border-b border-gray-200">
               <h3 className="text-xs font-semibold text-gray-800">
@@ -218,7 +218,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gray-900 dark:bg-gray-50 transition-all duration-300"
-                style={{ width: `${((currentStageIndex + 1) / WIZARD_STAGES.length) * 100}%` }}
+                style={{width: `${((currentStageIndex + 1) / WIZARD_STAGES.length) * 100}%`}}
               />
             </div>
           </div>

@@ -134,10 +134,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
           onActionComplete()
         }, 1500)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na operação',
-        description: error.message || 'Falha ao atualizar status.',
+        description: error instanceof Error ? error.message : 'Falha ao atualizar status.',
         variant: 'destructive',
       })
       setProgressModal(false)
@@ -174,10 +174,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
           onActionComplete()
         }, 1500)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na operação',
-        description: error.message || 'Falha ao atribuir à vaga.',
+        description: error instanceof Error ? error.message : 'Falha ao atribuir à vaga.',
         variant: 'destructive',
       })
       setProgressModal(false)
@@ -214,10 +214,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
           onActionComplete()
         }, 1500)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na operação',
-        description: error.message || 'Falha ao enviar emails.',
+        description: error instanceof Error ? error.message : 'Falha ao enviar emails.',
         variant: 'destructive',
       })
       setProgressModal(false)
@@ -252,10 +252,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
           onActionComplete()
         }, 1500)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na operação',
-        description: error.message || 'Falha ao iniciar triagem.',
+        description: error instanceof Error ? error.message : 'Falha ao iniciar triagem.',
         variant: 'destructive',
       })
       setProgressModal(false)
@@ -301,10 +301,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
         setProgressModal(false)
         setOperationResult(null)
       }, 1000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na exportação',
-        description: error.message || 'Falha ao exportar candidatos.',
+        description: error instanceof Error ? error.message : 'Falha ao exportar candidatos.',
         variant: 'destructive',
       })
       setProgressModal(false)
@@ -340,10 +340,10 @@ const BulkActionsBar = memo(function BulkActionsBar({
           onActionComplete()
         }, 1500)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Erro na operação',
-        description: error.message || 'Falha ao excluir candidatos.',
+        description: error instanceof Error ? error.message : 'Falha ao excluir candidatos.',
         variant: 'destructive',
       })
       setProgressModal(false)

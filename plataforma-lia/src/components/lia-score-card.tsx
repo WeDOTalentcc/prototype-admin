@@ -39,7 +39,7 @@ function ScoreBar({ value, color }: { value: number; color: string }) {
       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
         <div
           className={`h-full ${color} rounded-full transition-all duration-500`}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+          style={{width: `${Math.min(100, Math.max(0, value))}%`}}
         />
       </div>
       <span className="text-xs text-gray-500 w-8 text-right tabular-nums">

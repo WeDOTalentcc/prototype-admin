@@ -54,7 +54,7 @@ interface BackgroundJob {
   completed_at?: string
   error_message?: string
   result_summary?: string
-  config?: Record<string, any>
+  config?: Record<string, unknown>
 }
 
 interface JobsDashboardProps {

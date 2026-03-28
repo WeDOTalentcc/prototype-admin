@@ -215,7 +215,7 @@ export function ExcludedCompaniesInput({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-xs max-w-[200px]">
+              <p className="text-xs max-w-sidebar-content">
                 Excluir perfis com experiência nestas organizações
               </p>
             </TooltipContent>

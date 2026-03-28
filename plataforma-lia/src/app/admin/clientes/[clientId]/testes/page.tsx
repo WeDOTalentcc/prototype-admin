@@ -750,7 +750,7 @@ export default function ClientTestesPage({
                     <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gray-900 dark:bg-gray-50 rounded-full transition-all"
-                        style={{ width: `${avgCompletion}%` }}
+                        style={{width: `${avgCompletion}%`}}
                       />
                     </div>
                   </div>

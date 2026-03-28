@@ -4,11 +4,24 @@ import { useState, useCallback, useMemo } from 'react'
 
 export type FieldSource = 'inferred' | 'company_default' | 'benchmark' | 'manual'
 
+interface BackendDraftField {
+  id?: string
+  field?: string
+  type?: string
+  name?: string
+  label?: string
+  value?: unknown
+  data?: unknown
+  confidence?: number
+  confirmed?: boolean
+  category?: string
+}
+
 export interface JobDraftField {
   id: string
   field: string
   label: string
-  value: any
+  value: unknown
   confidence: number
   source: FieldSource
   confirmed: boolean
@@ -37,20 +50,20 @@ const MIN_COMPETENCIES_REQUIRED = 3
 interface UseJobDraftResult {
   state: JobDraftState
   initializeFromBackend: (data: {
-    inferred_criteria?: any[]
-    company_defaults?: any[]
-    suggested_from_benchmark?: any[]
+    inferred_criteria?: BackendDraftField[]
+    company_defaults?: BackendDraftField[]
+    suggested_from_benchmark?: BackendDraftField[]
     unified_title?: string
     needs_confirmation?: string[]
   }) => void
   confirmField: (fieldId: string) => void
   rejectField: (fieldId: string) => void
-  updateField: (fieldId: string, value: any) => void
+  updateField: (fieldId: string, value: unknown) => void
   getFieldsBySource: (source: FieldSource) => JobDraftField[]
   getFieldsByCategory: (category: string) => JobDraftField[]
   getAllConfirmedFields: () => JobDraftField[]
   getAllPendingFields: () => JobDraftField[]
-  validateMinCompetencies: (selectedTechSkills: any[], selectedBehavioralCompetencies: any[]) => CompetencyValidation
+  validateMinCompetencies: (selectedTechSkills: unknown[], selectedBehavioralCompetencies: unknown[]) => CompetencyValidation
   getConfidenceLevel: (confidence: number) => 'high' | 'medium' | 'low'
   reset: () => void
 }
@@ -64,7 +77,7 @@ const initialState: JobDraftState = {
 }
 
 function mapBackendFieldToJobDraftField(
-  field: any, 
+  field: BackendDraftField, 
   source: FieldSource, 
   index: number
 ): JobDraftField {
@@ -84,9 +97,9 @@ export function useJobDraft(): UseJobDraftResult {
   const [state, setState] = useState<JobDraftState>(initialState)
 
   const initializeFromBackend = useCallback((data: {
-    inferred_criteria?: any[]
-    company_defaults?: any[]
-    suggested_from_benchmark?: any[]
+    inferred_criteria?: BackendDraftField[]
+    company_defaults?: BackendDraftField[]
+    suggested_from_benchmark?: BackendDraftField[]
     unified_title?: string
     needs_confirmation?: string[]
   }) => {
@@ -136,7 +149,7 @@ export function useJobDraft(): UseJobDraftResult {
     }))
   }, [])
 
-  const updateField = useCallback((fieldId: string, value: any) => {
+  const updateField = useCallback((fieldId: string, value: unknown) => {
     updateFieldInArrays(fieldId, field => ({ 
       ...field, 
       value, 
@@ -182,8 +195,8 @@ export function useJobDraft(): UseJobDraftResult {
   }, [state])
 
   const validateMinCompetencies = useCallback((
-    selectedTechSkills: any[], 
-    selectedBehavioralCompetencies: any[]
+    selectedTechSkills: unknown[], 
+    selectedBehavioralCompetencies: unknown[]
   ): CompetencyValidation => {
     const techCount = selectedTechSkills.length
     const behavioralCount = selectedBehavioralCompetencies.length

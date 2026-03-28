@@ -130,7 +130,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Tempo estimado de preenchimento
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" >
                   {timeToFill.predicted_days} dias
                   <span className="text-micro font-normal text-gray-500 ml-1">
                     ({timeToFill.range_min}–{timeToFill.range_max})
@@ -151,7 +151,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Faixa salarial sugerida
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" >
                   {formatCurrency(salary.suggested_min)} – {formatCurrency(salary.suggested_max)}
                 </p>
                 <p className={`text-micro ${confidenceColor(salary.confidence_level)}`}>

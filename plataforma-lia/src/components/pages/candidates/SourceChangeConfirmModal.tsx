@@ -21,14 +21,14 @@ export function SourceChangeConfirmModal({
 }: SourceChangeConfirmModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100" style={{ borderRadius: '10px' }}>
+      <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100" style={{borderRadius: '10px'}}>
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-amber-600/15'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-status-warning/15'}`}>
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-4 h-4 text-gray-700" />
               ) : (
-                <Globe className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
+                <Globe className="w-4 h-4" style={{color: 'var(--status-warning)'}} />
               )}
             </div>
             <div>

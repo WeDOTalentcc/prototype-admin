@@ -230,7 +230,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                         <div className="w-full bg-gray-200 rounded-full h-1">
                           <div
                             className="bg-gray-700 dark:bg-gray-300 h-1 rounded-full transition-all"
-                            style={{ width: `${campaign.progress}%` }}
+                            style={{width: `${campaign.progress}%`}}
                           />
                         </div>
                       </div>

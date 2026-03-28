@@ -149,26 +149,23 @@ export function CandidateCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-semibold text-base truncate" className="text-gray-800 dark:text-gray-100">
+              <h4 className="font-semibold text-base truncate text-gray-800 dark:text-gray-100">
                 {name}
               </h4>
-              <Badge variant="secondary" className="text-xs shrink-0 border-0" style={{
-                backgroundColor: source_badge.includes("Banco Proprietário") ? 'rgb(250 250 249)' : 'rgba(96, 190, 209, 0.1)',
-                color: 'rgb(107 114 128)'
-              }}>
+              <Badge variant="secondary" className={`text-xs shrink-0 border-0 text-gray-500 ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
                 {source_badge}
               </Badge>
             </div>
             
             {title && (
-              <div className="flex items-center gap-1.5 text-sm mb-1" className="text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1.5 text-sm mb-1 text-gray-500 dark:text-gray-400">
                 <Building className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{title} {company && `• ${company}`}</span>
               </div>
             )}
             
             {location && (
-              <div className="flex items-center gap-1.5 text-sm mb-3" className="text-gray-400 dark:text-gray-500">
+              <div className="flex items-center gap-1.5 text-sm mb-3 text-gray-400 dark:text-gray-500">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{location}</span>
               </div>
@@ -180,20 +177,13 @@ export function CandidateCard({
                   <Badge
                     key={`${name}-${skill}`}
                     variant="outline"
-                    className="text-xs px-2 py-0.5"
-                    style={{
-                      borderColor: 'rgb(229 231 235)',
-                      color: 'rgb(107 114 128)'
-                    }}
+                    className="text-xs px-2 py-0.5 border-gray-200 text-gray-500"
                   >
                     {skill}
                   </Badge>
                 ))}
                 {skills.length > 6 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5" style={{
-                    borderColor: 'rgb(229 231 235)',
-                    color: 'rgb(156 163 175)'
-                  }}>
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-gray-200 text-gray-400">
                     +{skills.length - 6}
                   </Badge>
                 )}
@@ -283,7 +273,7 @@ export function CandidateCard({
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
                       </div>
                     ) : communications.length === 0 ? (
-                      <div className="text-center py-3 text-xs" className="text-gray-400 dark:text-gray-500">
+                      <div className="text-center py-3 text-xs text-gray-400 dark:text-gray-500">
                         Nenhuma comunicação registrada
                       </div>
                     ) : (
@@ -298,11 +288,11 @@ export function CandidateCard({
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-xs font-medium truncate" className="text-gray-800 dark:text-gray-100">
+                                <span className="text-xs font-medium truncate text-gray-800 dark:text-gray-100">
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-micro" className="text-gray-400 dark:text-gray-500">
+                              <div className="flex items-center gap-2 text-micro text-gray-400 dark:text-gray-500">
                                 <span>{formatDate(comm.sent_at || comm.created_at)}</span>
                                 <span className="flex items-center gap-0.5">
                                   {getStatusIcon(comm.status)}

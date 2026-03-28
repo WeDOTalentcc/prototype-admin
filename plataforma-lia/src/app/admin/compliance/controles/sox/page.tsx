@@ -228,8 +228,7 @@ export default function SOXPage() {
               </Button>
             </Link>
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <Scale className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -255,7 +254,7 @@ export default function SOXPage() {
             <Card 
               key={section.id} 
               className={`cursor-pointer hover:transition-shadow ${sectionFilter === section.id ? 'ring-2 ring-gray-900/20' : ''}`}
-              style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+              
               onClick={() => setSectionFilter(sectionFilter === section.id ? 'all' : section.id)}
             >
               <CardContent className="p-3">
@@ -273,7 +272,7 @@ export default function SOXPage() {
           ))}
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
@@ -320,7 +319,7 @@ export default function SOXPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-3 mb-4">
               <div className="relative flex-1">

@@ -178,7 +178,7 @@ export function RubricEvaluationCard({
     <div className={`space-y-3 ${className}`}>
       <div className="flex items-center justify-between border-b border-gray-200/50 pb-2">
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+          <Target className="w-4 h-4" style={{color: ACCENT_COLOR}} />
           <span className={`${textStyles.subtitle} text-gray-800`}>
             Análise CV vs Vaga
           </span>
@@ -207,10 +207,8 @@ export function RubricEvaluationCard({
           <div className="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[160px]">
             <div 
               className="h-full rounded-full transition-all duration-500 ease-out"
-              style={{ 
-                width: `${score}%`,
-                backgroundColor: getScoreColor(score)
-              }}
+              style={{width: `${score}%`,
+                backgroundColor: getScoreColor(score)}}
             />
           </div>
           <span className={`${textStyles.label} text-gray-950 dark:text-gray-50 font-bold min-w-10`}>
@@ -347,11 +345,9 @@ export function RubricEvaluationCard({
           variant="ghost"
           size="sm"
           className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} hover:bg-opacity-20 border`}
-          style={{ 
-            backgroundColor: `${ACCENT_COLOR}15`,
+          style={{backgroundColor: `${ACCENT_COLOR}15`,
             borderColor: `${ACCENT_COLOR}40`,
-            color: ACCENT_COLOR
-          }}
+            color: ACCENT_COLOR}}
           onClick={(e) => {
             e.stopPropagation()
             onScheduleInterview?.()

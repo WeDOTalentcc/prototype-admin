@@ -1287,7 +1287,7 @@ function SetupEmpresaContent() {
                         {evpData.pillars.map((pillar, idx) => (
                           <div key={idx} className="bg-white dark:bg-gray-800 border rounded-md p-4 border-gray-200 dark:border-gray-700" >
                             <div className="flex items-start gap-3">
-                              <Badge className="shrink-0 bg-gray-900" style={{ color: 'white' }}>
+                              <Badge className="shrink-0 bg-gray-900" style={{color: 'white'}}>
                                 {pillar.name}
                               </Badge>
                               <div className="flex-1">

@@ -148,7 +148,7 @@ export function InterviewsSection() {
                         candidate.score >= 7 ? 'bg-status-warning' :
                         candidate.score >= 6 ? 'bg-wedo-orange' : 'bg-status-error'
                       }`}
-                      style={{ width: `${(candidate.score / 10) * 100}%` }}
+                      style={{width: `${(candidate.score / 10) * 100}%`}}
                     />
                   </div>
                 </div>

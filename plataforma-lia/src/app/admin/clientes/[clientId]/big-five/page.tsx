@@ -297,7 +297,7 @@ export default function ClientBigFivePage({
               Perfis por Cargo
             </CardTitle>
             <Select value={selectedJob} onValueChange={handleJobChange}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-sidebar-content">
                 <SelectValue placeholder="Selecione um cargo" />
               </SelectTrigger>
               <SelectContent>
@@ -322,9 +322,9 @@ export default function ClientBigFivePage({
                     <div className="flex items-start gap-3 mb-4">
                       <div 
                         className="w-10 h-10 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: `${trait.color}20` }}
+                        style={{backgroundColor: `${trait.color}20`}}
                       >
-                        <Icon className="w-5 h-5" style={{ color: trait.color }} />
+                        <Icon className="w-5 h-5" style={{color: trait.color}} />
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
@@ -342,7 +342,7 @@ export default function ClientBigFivePage({
                           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Peso/Importância
                           </span>
-                          <span className="text-xs font-semibold" style={{ color: trait.color }}>
+                          <span className="text-xs font-semibold" style={{color: trait.color}}>
                             {config.weight}%
                           </span>
                         </div>
@@ -360,7 +360,7 @@ export default function ClientBigFivePage({
                           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Valor Ideal
                           </span>
-                          <span className="text-xs font-semibold" style={{ color: trait.color }}>
+                          <span className="text-xs font-semibold" style={{color: trait.color}}>
                             {config.idealValue}%
                           </span>
                         </div>
@@ -474,9 +474,9 @@ export default function ClientBigFivePage({
                       <div key={trait.key} className="flex items-center gap-3">
                         <div 
                           className="w-8 h-8 rounded-md flex items-center justify-center"
-                          style={{ backgroundColor: `${trait.color}20` }}
+                          style={{backgroundColor: `${trait.color}20`}}
                         >
-                          <trait.icon className="w-4 h-4" style={{ color: trait.color }} />
+                          <trait.icon className="w-4 h-4" style={{color: trait.color}} />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
@@ -487,7 +487,7 @@ export default function ClientBigFivePage({
                               <span className="text-xs text-gray-400 dark:text-gray-500">
                                 Ideal: {idealValue}%
                               </span>
-                              <span className="text-xs font-semibold" style={{ color: trait.color }}>
+                              <span className="text-xs font-semibold" style={{color: trait.color}}>
                                 {candidateScore}%
                               </span>
                             </div>
@@ -495,14 +495,12 @@ export default function ClientBigFivePage({
                           <div className="relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                             <div 
                               className="absolute h-full rounded-full transition-all"
-                              style={{ 
-                                width: `${candidateScore}%`, 
-                                backgroundColor: trait.color 
-                              }}
+                              style={{width: `${candidateScore}%`, 
+                                backgroundColor: trait.color}}
                             />
                             <div 
                               className="absolute h-full w-1 bg-gray-900 dark:bg-white"
-                              style={{ left: `${idealValue}%`, opacity: 0.5 }}
+                              style={{left: `${idealValue}%`, opacity: 0.5}}
                             />
                           </div>
                         </div>

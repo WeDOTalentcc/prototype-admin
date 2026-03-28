@@ -513,12 +513,12 @@ export function CandidateSearchResultsView({
 
       {/* ✨ Banner Visualizando Lista */}
       {viewingList && (
-        <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{ borderLeftColor: viewingList.color || 'var(--gray-600)' }}>
+        <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{borderLeftColor: viewingList.color || 'var(--gray-600)'}}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: viewingList.color || 'var(--gray-600)' }}
+                style={{backgroundColor: viewingList.color || 'var(--gray-600)'}}
               >
                 <List className="w-5 h-5 text-white" />
               </div>
@@ -564,11 +564,11 @@ export function CandidateSearchResultsView({
       {!showExpandedLIA && (
         <div className="flex items-center justify-between gap-4 mb-1 mt-1">
           {/* Prompt LIA - Compacto (max 300px) - Design Specs v3.1 */}
-          <div className="flex-1 max-w-[300px]">
+          <div className="flex-1 max-w-panel-sm">
             <div
               className={`relative flex items-center h-10 rounded-md bg-white transition-all ${
                 isLIAThinking ? 'cursor-wait' : ''
-              } border border-gray-200`} style={{ paddingLeft: '16px', paddingRight: '80px' }}
+              } border border-gray-200`} style={{paddingLeft: '16px', paddingRight: '80px'}}
             >
               <input
                 type="text"
@@ -643,9 +643,9 @@ export function CandidateSearchResultsView({
                 <Brain className="w-3 h-3 animate-pulse text-wedo-cyan" />
                 <span className="font-medium text-gray-800">LIA está pensando</span>
                 <div className="flex gap-0.5">
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
                 </div>
               </div>
             )}
@@ -843,7 +843,7 @@ export function CandidateSearchResultsView({
               {/* Ícone da tabela */}
               <div className="flex flex-col items-center gap-2 text-gray-800">
                 <Users className="w-5 h-5" />
-                <span className="text-xs font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                <span className="text-xs font-medium" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
                   Candidatos ({sortedCandidates.length})
                 </span>
               </div>
@@ -1169,10 +1169,8 @@ export function CandidateSearchResultsView({
                             </h4>
                             <span
                               className="text-xs px-2 py-0.5 rounded-full"
-                              style={{
-                                backgroundColor: visibleCount > 0 ? 'var(--gray-100)' : 'var(--gray-100)',
-                                color: visibleCount > 0 ? 'var(--gray-600)' : 'var(--gray-400)',
-                              }}
+                              style={{backgroundColor: visibleCount > 0 ? 'var(--gray-100)' : 'var(--gray-100)',
+                                color: visibleCount > 0 ? 'var(--gray-600)' : 'var(--gray-400)'}}
                             >
                               {visibleCount}/{columns.length}
                             </span>
@@ -1187,18 +1185,14 @@ export function CandidateSearchResultsView({
                                   ))
                                 }}
                                 className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all hover:bg-gray-100"
-                                style={{
-                                  backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
-                                  border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'
-                                }}
+                                style={{backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
+                                  border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'}}
                               >
                                 {/* Custom Checkbox - Monocromático */}
                                 <div
                                   className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-                                  style={{
-                                    backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
-                                    border: col.visible ? 'none' : '2px solid var(--gray-300)'
-                                  }}
+                                  style={{backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
+                                    border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                                 >
                                   {col.visible && (
                                     <Check className="w-3 h-3 text-white" strokeWidth={3} />
@@ -1206,10 +1200,8 @@ export function CandidateSearchResultsView({
                                 </div>
                                 <span
                                   className="text-xs flex-1 flex items-center gap-1.5"
-                                  style={{
-                                    color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
-                                    fontWeight: col.visible ? 500 : 400
-                                  }}
+                                  style={{color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
+                                    fontWeight: col.visible ? 500 : 400}}
                                 >
                                   {col.isGlobalSearch && (
                                     <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
@@ -1230,7 +1222,7 @@ export function CandidateSearchResultsView({
 
           {/* Candidate Preview - Painel lateral direito */}
           {showCandidatePreview && previewCandidate && (
-            <div className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
+            <div className="flex-shrink-0 relative" style={{width: `${previewWidth}px`}}>
               {/* Resize Handle */}
               <div
                 className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors z-10 group"

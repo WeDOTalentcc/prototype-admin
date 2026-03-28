@@ -130,7 +130,7 @@ export function RobustFilters({
     <div className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_rgb(0_0_0/0.1)]">
+        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_black/10]">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-600" />
             <input
@@ -203,7 +203,7 @@ export function RobustFilters({
       {showAdvanced && (
         <div
           className="overflow-hidden"
-          style={{ animation: 'slideInUp 0.3s ease-out' }}
+          style={{animation: 'slideInUp 0.3s ease-out'}}
         >
           <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50 space-y-6">
 
@@ -384,7 +384,7 @@ export function RobustFilters({
       {activeFiltersCount > 0 && (
         <div
           className="flex flex-wrap items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-md"
-          style={{ animation: 'fadeIn 0.3s ease-out' }}
+          style={{animation: 'fadeIn 0.3s ease-out'}}
         >
           <span className="text-sm font-medium text-gray-900 dark:text-gray-50">
             Filtros aplicados ({activeFiltersCount}):

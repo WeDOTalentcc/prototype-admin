@@ -17,19 +17,19 @@ const STATUS_CONFIG = {
     label: 'Pendente',
     icon: AlertCircle,
     color: 'var(--gray-400)',
-    bgColor: 'rgb(156 163 175 / 0.12)'
+    bgColor: 'var(--gray-400)'
   },
   in_progress: {
     label: 'Em andamento',
     icon: Loader2,
     color: 'var(--status-warning)',
-    bgColor: 'rgb(245 158 11 / 0.12)'
+    bgColor: 'var(--status-warning)'
   },
   completed: {
     label: 'Concluído',
     icon: CheckCircle,
     color: 'var(--status-success)',
-    bgColor: 'rgb(16 185 129 / 0.12)'
+    bgColor: 'var(--status-success)'
   }
 }
 
@@ -65,8 +65,8 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
   const getComparisonIcon = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore
-    if (diff > 5) return <TrendingUp className="w-3 h-3" style={{ color: 'var(--status-success)' }} />
-    if (diff < -5) return <TrendingDown className="w-3 h-3" style={{ color: 'var(--status-error)' }} />
+    if (diff > 5) return <TrendingUp className="w-3 h-3" style={{color: 'var(--status-success)'}} />
+    if (diff < -5) return <TrendingDown className="w-3 h-3" style={{color: 'var(--status-error)'}} />
     return <Minus className="w-3 h-3 text-gray-400" />
   }
 
@@ -117,19 +117,19 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: 'var(--gray-50)' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{backgroundColor: 'var(--gray-50)'}}>
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
-            style={{ backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30` }}
+            style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.color}30`}}
           >
             <div className="flex items-center gap-2">
               <StatusIcon 
                 className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin' : ''}`} 
-                style={{ color: statusConfig.color }} 
+                style={{color: statusConfig.color}} 
               />
               <span 
                 className="text-xs font-medium"
-                style={{ color: statusConfig.color }}
+                style={{color: statusConfig.color}}
               >
                 {statusConfig.label}
               </span>
@@ -161,7 +161,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    style={{ color: getScoreColor(testData.score) }}
+                    style={{color: getScoreColor(testData.score)}}
                   >
                     {testData.score}
                   </span>
@@ -210,10 +210,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 </span>
                 <span 
                   className="text-xs font-semibold ml-auto"
-                  style={{ 
-                    
-                    color: testData.score >= testData.averageScore ? 'var(--status-success)' : 'var(--status-error)' 
-                  }}
+                  style={{color: testData.score >= testData.averageScore ? 'var(--status-success)' : 'var(--status-error)'}}
                 >
                   {getComparisonLabel(testData.score, testData.averageScore)}
                 </span>
@@ -244,7 +241,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                           {getComparisonIcon(category.score, category.avgScore)}
                           <span 
                             className="text-xs font-bold"
-                            style={{ color: getScoreColor(category.score) }}
+                            style={{color: getScoreColor(category.score)}}
                           >
                             {category.score}
                           </span>
@@ -256,7 +253,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                           className="h-1.5 bg-gray-200"
                         />
                         <div 
-                          className="absolute top-0 h-1.5 rounded-full opacity-30 bg-gray-400" style={{ width: `${category.avgScore}%` }}
+                          className="absolute top-0 h-1.5 rounded-full opacity-30 bg-gray-400" style={{width: `${category.avgScore}%`}}
                         />
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -268,10 +265,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         </span>
                         <span 
                           className="text-micro"
-                          style={{ 
-                            
-                            color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)' 
-                          }}
+                          style={{color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)'}}
                         >
                           {category.score >= category.avgScore ? '+' : ''}{category.score - category.avgScore}
                         </span>
@@ -306,7 +300,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           {status === 'in_progress' && (
             <div 
               className="flex flex-col items-center justify-center py-8"
-              style={{ color: 'var(--status-warning)' }}
+              style={{color: 'var(--status-warning)'}}
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 

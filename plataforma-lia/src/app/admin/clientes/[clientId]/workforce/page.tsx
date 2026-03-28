@@ -543,7 +543,7 @@ export default function ClientWorkforcePage({
                     <div 
                       key={idx}
                       className="p-3 rounded-md"
-                      style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
+                      style={{backgroundColor: 'rgba(96, 190, 209, 0.08)'}}
                     >
                       <p className="text-sm text-gray-800 dark:text-gray-100">
                         {suggestion.text}

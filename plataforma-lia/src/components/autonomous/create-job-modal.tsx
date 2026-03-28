@@ -77,7 +77,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
   const [scheduledDate, setScheduledDate] = useState('')
   const [scheduledTime, setScheduledTime] = useState('')
   const [loading, setLoading] = useState(false)
-  const [config, setConfig] = useState<Record<string, any>>({})
+  const [config, setConfig] = useState<Record<string, string>>({})
 
   const selectedJobType = JOB_TYPES.find(t => t.value === jobType)
 
@@ -142,7 +142,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                 type="number"
                 placeholder="50"
                 value={config.limit || ''}
-                onChange={(e) => setConfig({ ...config, limit: parseInt(e.target.value) || undefined })}
+                onChange={(e) => setConfig({ ...config, limit: e.target.value || '' })}
               />
             </div>
           </div>

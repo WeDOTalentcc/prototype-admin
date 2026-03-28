@@ -68,18 +68,18 @@ export default function LoginPage() {
       {/* Left Section - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col z-10">
         {/* Logo — absoluto no topo, fora do fluxo */}
-        <div className="absolute top-10 left-[38px]" style={{ width: "230px" }}>
+        <div className="absolute top-10 left-[38px]" style={{width: "230px"}}>
           <Image
             src="/logos/wedo-logo-transparent.png"
             alt="WeDo Talent"
             width={230}
             height={73}
-            style={{ width: "230px", height: "auto", maxWidth: "230px" }}
+            style={{width: "230px", height: "auto", maxWidth: "230px"}}
             priority
           />
           <span
             className="block text-right text-gray-950 font-semibold uppercase tracking-[0.18em] text-lg"
-            style={{ marginTop: "-5px", paddingRight: "6px" }}
+            style={{marginTop: "-5px", paddingRight: "6px"}}
           >
             talent
           </span>
@@ -151,7 +151,7 @@ export default function LoginPage() {
               alt="WeDo Talent"
               width={120}
               height={40}
-              style={{ width: "auto", height: "auto" }}
+              style={{width: "auto", height: "auto"}}
               priority
             />
           </div>

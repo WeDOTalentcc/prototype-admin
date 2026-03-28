@@ -85,7 +85,7 @@ export function ChatInputBar({
           "text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500",
           "focus:outline-none leading-relaxed min-w-0 resize-none"
         )}
-        style={{ maxHeight: "120px" }}
+        style={{maxHeight: "120px"}}
       />
 
       {showMic && (

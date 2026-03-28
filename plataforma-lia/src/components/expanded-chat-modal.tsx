@@ -511,7 +511,7 @@ function ExpandedChatModalContent({
       counts: Record<string, number>
       recommendations: string[]
     }
-    prefill_data: Record<string, any>
+    prefill_data: Record<string, unknown>
   } | null>(null)
   
   // Track when wizard greeting has been loaded to prevent race conditions
@@ -4005,13 +4005,13 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                      <span className="text-xs font-bold text-gray-800" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     </div>
                     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                       </div>
                     </div>
                   </div>

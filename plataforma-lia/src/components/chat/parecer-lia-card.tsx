@@ -90,7 +90,7 @@ function CompletenessBar({ score }: { score: number }) {
       <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-all duration-700 ease-out", barColor)}
-          style={{ width: `${score}%` }}
+          style={{width: `${score}%`}}
         />
       </div>
       <span className="font-['Inter',sans-serif] text-micro font-medium tabular-nums text-gray-600 dark:text-gray-400">

@@ -41,30 +41,30 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   pending: {
     icon: <ClipboardList className="w-3 h-3" />,
     label: 'Aguardando',
-    bgColor: 'rgb(96 190 209 / 0.15)',
+    bgColor: 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)',
   },
   complete: {
     icon: <Check className="w-3 h-3" />,
     label: 'Completo',
     color: 'var(--status-success)',
-    bgColor: 'rgb(123 194 154 / 0.15)',
+    bgColor: 'color-mix(in srgb, var(--status-success) 15%, transparent)',
   },
   partial: {
     icon: <AlertTriangle className="w-3 h-3" />,
     label: 'Parcial',
     color: 'var(--wedo-orange)',
-    bgColor: 'rgb(232 168 124 / 0.15)',
+    bgColor: 'color-mix(in srgb, var(--wedo-orange) 15%, transparent)',
   },
   expired: {
     icon: <Clock className="w-3 h-3" />,
     label: 'Expirado',
     color: 'var(--status-error)',
-    bgColor: 'rgb(239 68 68 / 0.15)',
+    bgColor: 'color-mix(in srgb, var(--status-error) 15%, transparent)',
   },
   cancelled: {
     icon: <XCircle className="w-3 h-3" />,
     label: 'Cancelado',
-    bgColor: 'rgb(107 114 128 / 0.15)',
+    bgColor: 'color-mix(in srgb, var(--gray-500) 15%, transparent)',
   },
 }
 
@@ -122,10 +122,8 @@ export function DataRequestIndicator({
               containerSize,
               className
             )}
-            style={{
-              backgroundColor: effectiveConfig.bgColor,
-              color: effectiveConfig.color,
-            }}
+            style={{backgroundColor: effectiveConfig.bgColor,
+              color: effectiveConfig.color}}
             onClick={(e) => {
               e.stopPropagation()
               onViewDetails?.(candidateId)
@@ -143,10 +141,8 @@ export function DataRequestIndicator({
               <div className="flex items-center gap-2">
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{
-                    backgroundColor: effectiveConfig.bgColor,
-                    color: effectiveConfig.color,
-                  }}
+                  style={{backgroundColor: effectiveConfig.bgColor,
+                    color: effectiveConfig.color}}
                 >
                   {effectiveConfig.icon}
                 </span>
@@ -156,10 +152,8 @@ export function DataRequestIndicator({
               </div>
               <span 
                 className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: effectiveConfig.bgColor,
-                  color: effectiveConfig.color,
-                }}
+                style={{backgroundColor: effectiveConfig.bgColor,
+                  color: effectiveConfig.color}}
               >
                 {percentage}%
               </span>

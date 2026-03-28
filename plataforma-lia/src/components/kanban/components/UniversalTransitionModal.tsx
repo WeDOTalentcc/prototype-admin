@@ -158,7 +158,7 @@ export function UniversalTransitionModal({
   const [manuallyEditedCandidates, setManuallyEditedCandidates] = useState<Set<string>>(new Set())
   const [showAllPerCandidate, setShowAllPerCandidate] = useState(false)
   const [policyWarnings, setPolicyWarnings] = useState<string[]>([])
-  const [policyMetadata, setPolicyMetadata] = useState<Record<string, any>>({})
+  const [policyMetadata, setPolicyMetadata] = useState<Record<string, unknown>>({})
   const [selectedToStage, setSelectedToStage] = useState(toStage)
   const [selectedToStageDisplayName, setSelectedToStageDisplayName] = useState(toStageDisplayName)
   const [currentActionBehavior, setCurrentActionBehavior] = useState(actionBehavior)

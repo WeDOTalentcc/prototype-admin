@@ -57,7 +57,7 @@ export default function AjudaPage() {
           </Link>
           
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+            <div className="p-2 rounded-md bg-wedo-cyan/15">
               <Brain className="w-8 h-8 text-wedo-cyan" />
             </div>
             <div>
@@ -101,7 +101,7 @@ export default function AjudaPage() {
                   <div key={item.level} className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
                     <Badge 
                       className="mt-0.5 text-white font-medium px-3 py-1"
-                      style={{ backgroundColor: item.color }}
+                      style={{backgroundColor: item.color}}
                     >
                       {item.level}
                     </Badge>
@@ -139,7 +139,7 @@ export default function AjudaPage() {
 
               <div className="border-t pt-4">
                 <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                  <Users className="w-4 h-4" style={{ color: '#E57373' }} />
+                  <Users className="w-4 h-4" style={{color: '#E57373'}} />
                   Soft Skills (Competências Comportamentais)
                 </h4>
                 <p className="text-gray-600 mb-2">
@@ -151,7 +151,7 @@ export default function AjudaPage() {
                       key={skill} 
                       variant="outline" 
                       className="text-xs"
-                      style={{ borderColor: '#E5737340', backgroundColor: '#E5737310', color: '#C62828' }}
+                      style={{borderColor: '#E5737340', backgroundColor: '#E5737310', color: '#C62828'}}
                     >
                       {skill}
                     </Badge>
@@ -200,7 +200,7 @@ export default function AjudaPage() {
                       key={field} 
                       variant="outline" 
                       className="text-xs"
-                      style={{ color: '#0891b2' }}
+                      style={{color: '#0891b2'}}
                     >
                       {field}
                     </Badge>
@@ -244,7 +244,7 @@ export default function AjudaPage() {
 
           <div className="border-t border-gray-200 dark:border-gray-700 my-8 pt-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+              <div className="p-2 rounded-md bg-wedo-cyan/15">
                 <Fingerprint className="w-6 h-6 text-gray-700" />
               </div>
               <div>
@@ -361,12 +361,12 @@ export default function AjudaPage() {
                   <div 
                     key={archetype.name} 
                     className="p-3 rounded-md border border-gray-100 dark:border-gray-700"
-                    style={{ backgroundColor: `${archetype.color}10` }}
+                    style={{backgroundColor: `${archetype.color}10`}}
                   >
                     <div className="flex items-start gap-2 mb-2">
                       <Badge 
                         className="text-white font-medium text-xs px-2 py-0.5"
-                        style={{ backgroundColor: archetype.color }}
+                        style={{backgroundColor: archetype.color}}
                       >
                         {archetype.profile}
                       </Badge>

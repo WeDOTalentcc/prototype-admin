@@ -417,14 +417,12 @@ export function CultureAnalyzer({
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-6 overflow-hidden shadow-inner">
             <div
               className="h-3 rounded-full transition-all duration-700 ease-out relative bg-gray-900 dark:bg-gray-50"
-              style={{ width: `${displayProgress}%` }}
+              style={{width: `${displayProgress}%`}}
             >
               <div 
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                style={{
-                  animation: 'shimmer 2s infinite',
-                  backgroundSize: '200% 100%',
-                }}
+                style={{animation: 'shimmer 2s infinite',
+                  backgroundSize: '200% 100%'}}
               />
               <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/50 rounded-full blur-sm" />
             </div>

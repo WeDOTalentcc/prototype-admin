@@ -106,7 +106,7 @@ export function CandidateDetailSidebar({
 
   return (
     <Sheet open={open} onOpenChange={() => onClose()}>
-      <SheetContent className="w-[450px] sm:w-[500px] p-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+      <SheetContent className="w-[450px] sm:w-panel-xl p-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
         <SheetHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-start gap-4">
             <Avatar className="h-16 w-16">

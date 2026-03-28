@@ -135,7 +135,7 @@ function formatMessageWithVariables(message: string): React.ReactNode[] {
   return parts.map((part, index) => {
     if (part.match(/^\{[^}]+\}$/)) {
       return (
-        <span key={index} style={{ fontWeight: 500 }}>
+        <span key={index} style={{fontWeight: 500}}>
           {part}
         </span>
       )
@@ -598,7 +598,7 @@ export function ScreeningQuestionsPanel({
               <Badge 
                 variant="outline" 
                 className="text-micro px-1.5 py-0"
-                style={{ backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-100)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--gray-500)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-300)' }}
+                style={{backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-100)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--gray-500)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-300)'}}
               >
                 {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
               </Badge>

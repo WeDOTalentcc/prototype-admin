@@ -176,11 +176,11 @@ export default function ClientJornadaPage({
                       ? 'bg-white dark:bg-gray-900'
                       : 'bg-gray-50 dark:bg-gray-800 opacity-50 border-gray-200 dark:border-gray-700'
                   }`}
-                  style={{ borderColor: stage.isActive ? stage.color : undefined }}
+                  style={{borderColor: stage.isActive ? stage.color : undefined}}
                 >
                   <div 
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: stage.color }}
+                    style={{backgroundColor: stage.color}}
                   />
                   <span 
                     className="text-sm font-medium text-center text-gray-800 dark:text-gray-100"

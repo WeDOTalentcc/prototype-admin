@@ -408,7 +408,7 @@ export default function AuditLogsPage() {
                   setCurrentPage(1)
                 }}
               >
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-sidebar-content">
                   <Building2 className="w-4 h-4 mr-2 text-gray-400" />
                   <SelectValue placeholder="Cliente" />
                 </SelectTrigger>

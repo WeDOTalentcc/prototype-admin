@@ -166,8 +166,7 @@ export default function FornecedoresPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <Truck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -189,7 +188,7 @@ export default function FornecedoresPage() {
           </Button>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderLeft: '4px solid #f59e0b' }}>
+        <Card className="mb-6" style={{borderLeft: '4px solid #f59e0b'}}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />
@@ -213,10 +212,10 @@ export default function FornecedoresPage() {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
@@ -227,10 +226,10 @@ export default function FornecedoresPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
@@ -241,10 +240,10 @@ export default function FornecedoresPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
@@ -255,10 +254,10 @@ export default function FornecedoresPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <Award className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
@@ -269,10 +268,10 @@ export default function FornecedoresPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
@@ -284,7 +283,7 @@ export default function FornecedoresPage() {
           </Card>
         </div>
         
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -332,7 +331,7 @@ export default function FornecedoresPage() {
                       <TableRow key={vendor.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                               <Building2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                             </div>
                             <span className="font-medium text-gray-800 dark:text-gray-100" >

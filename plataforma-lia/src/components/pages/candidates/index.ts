@@ -18,6 +18,11 @@ export { useCandidatesLIAHandlers } from "./hooks/useCandidatesLIAHandlers"
 export { useCandidatesSearch } from "./hooks/useCandidatesSearch"
 export { useCandidatesQuery } from "./hooks/useCandidatesQuery"
 export { useCandidatesSelection } from "./hooks/useCandidatesSelection"
+export { useCandidatesArchetypes } from "./hooks/useCandidatesArchetypes"
+export type { Archetype, BackendArchetype, AISuggestion } from "./hooks/useCandidatesArchetypes"
+export { useCandidatesTableConfig } from "./hooks/useCandidatesTableConfig"
+export type { TableColumnConfig, SavedColumnView } from "./hooks/useCandidatesTableConfig"
+export { useCandidatesFilterSort } from "./hooks/useCandidatesFilterSort"
 export type { 
   Candidate, 
   CandidatesPageState, 

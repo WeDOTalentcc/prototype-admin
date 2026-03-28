@@ -631,7 +631,7 @@ export function JDEvaluationPanel({
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs px-3 border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                  style={{ minWidth: '160px' }}
+                  style={{minWidth: '160px'}}
                   onClick={(e) => {
                     e.stopPropagation()
                     if (onSaveJDInline) {
@@ -692,7 +692,7 @@ export function JDEvaluationPanel({
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs px-3 border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                style={{ minWidth: '160px' }}
+                style={{minWidth: '160px'}}
                 onClick={(e) => {
                   e.stopPropagation()
                   if (onSaveJDInline) {
@@ -823,7 +823,7 @@ export function JDEvaluationPanel({
                             "text-xs text-gray-700 dark:text-gray-300 leading-relaxed",
                             !showFullDescription && "line-clamp-4"
                           )}
-                          style={{ fontFamily: "'Inter', sans-serif" }}
+                          
                         >
                           {description}
                         </p>
@@ -831,7 +831,7 @@ export function JDEvaluationPanel({
                           <button
                             onClick={() => setShowFullDescription(!showFullDescription)}
                             className="text-micro text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mt-1 underline"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            
                           >
                             {showFullDescription ? "ver menos" : "ver mais"}
                           </button>
@@ -846,7 +846,7 @@ export function JDEvaluationPanel({
                           {responsibilities.map((item, idx) => (
                             <li key={idx} className="flex items-start gap-1.5">
                               <span className="text-xs text-gray-400 mt-0.5 shrink-0">•</span>
-                              <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>{item}</span>
+                              <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" >{item}</span>
                             </li>
                           ))}
                         </ul>
@@ -858,7 +858,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1">Competências Técnicas</span>
                         <div className="flex flex-wrap gap-1.5">
                           {technicalSkills.map((skill, idx) => (
-                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" >
                               {skill}
                             </span>
                           ))}
@@ -871,7 +871,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                         <div className="flex flex-wrap gap-1.5">
                           {behavioralCompetencies.map((comp, idx) => (
-                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" >
                               {comp}
                             </span>
                           ))}
@@ -887,12 +887,12 @@ export function JDEvaluationPanel({
 
                     {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
                       <div className="border rounded-md p-3 space-y-3 dark:bg-gray-800/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
-                        <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap" >
                           {enrichedJd.generated_jd_text || enrichedJd.description}
                         </p>
 
                         {enrichedJd.updated_at && (
-                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full bg-wedo-cyan/[.08]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full bg-wedo-cyan/[.08]" >
                             Gerado em {new Date(enrichedJd.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
                           </span>
                         )}
@@ -904,7 +904,7 @@ export function JDEvaluationPanel({
                               {enrichedJd.responsibilities.map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
                                   <span className="text-xs mt-0.5 shrink-0 text-gray-700">•</span>
-                                  <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>{item}</span>
+                                  <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" >{item}</span>
                                 </li>
                               ))}
                             </ul>
@@ -916,7 +916,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.technical_skills.map((skill, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" >
                                   {skill}
                                 </span>
                               ))}
@@ -929,7 +929,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.behavioral_competencies.map((comp, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300 bg-wedo-cyan/10" >
                                   {comp}
                                 </span>
                               ))}
@@ -941,7 +941,7 @@ export function JDEvaluationPanel({
                       <div className="border rounded-md p-3 dark:bg-gray-800/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
                         <div className="flex flex-col items-center justify-center py-6">
                           <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
-                          <p className="text-xs text-gray-400 dark:text-gray-500 text-center leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 text-center leading-relaxed" >
                             Nenhum JD enriquecido gerado ainda.<br />
                             Clique em Editar Descrição para gerar.
                           </p>
@@ -967,7 +967,7 @@ export function JDEvaluationPanel({
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="w-full h-40 text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-900/20 focus:border-gray-400 bg-gray-50 dark:bg-gray-800"
                             placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
-                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            
                           />
                         </div>
                       </div>
@@ -980,7 +980,7 @@ export function JDEvaluationPanel({
                             {editResponsibilities.map((item, idx) => (
                               <div key={idx} className="group flex items-start gap-2 py-1 px-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <span className="text-xs text-gray-400 mt-0.5 shrink-0">•</span>
-                                <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>{item}</span>
+                                <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 leading-relaxed" >{item}</span>
                                 <button
                                   onClick={() => setEditResponsibilities(prev => prev.filter((_, i) => i !== idx))}
                                   className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-status-error shrink-0 transition-opacity"
@@ -999,7 +999,7 @@ export function JDEvaluationPanel({
                                 className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar responsabilidade..."
                                 autoFocus
-                                style={{ fontFamily: "'Inter', sans-serif" }}
+                                
                               />
                               <button onClick={() => { if (newItem.trim()) { setEditResponsibilities(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs text-gray-600 hover:text-gray-900 px-2">OK</button>
                             </div>
@@ -1059,7 +1059,7 @@ export function JDEvaluationPanel({
                                 className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar competência técnica..."
                                 autoFocus
-                                style={{ fontFamily: "'Inter', sans-serif" }}
+                                
                               />
                               <button onClick={() => { if (newItem.trim()) { setEditTechSkills(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs text-gray-600 hover:text-gray-900 px-2">OK</button>
                             </div>
@@ -1119,7 +1119,7 @@ export function JDEvaluationPanel({
                                 className="flex-1 h-7 text-xs border border-gray-200 dark:border-gray-700 rounded px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
                                 placeholder="Adicionar competência comportamental..."
                                 autoFocus
-                                style={{ fontFamily: "'Inter', sans-serif" }}
+                                
                               />
                               <button onClick={() => { if (newItem.trim()) { setEditBehavCompetencies(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs text-gray-600 hover:text-gray-900 px-2">OK</button>
                             </div>
@@ -1226,7 +1226,7 @@ export function JDEvaluationPanel({
                         {!generatedJD && !isGeneratingJD && (
                           <div className="flex flex-col items-center justify-center py-16 px-4">
                             <Brain className="h-6 w-6 mb-2 text-wedo-cyan" />
-                            <p className="text-xs text-gray-400 dark:text-gray-500 text-center" style={{ fontFamily: "'Inter', sans-serif" }}>Descrição gerada pela LIA aparecerá aqui</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 text-center" >Descrição gerada pela LIA aparecerá aqui</p>
                           </div>
                         )}
                       </div>

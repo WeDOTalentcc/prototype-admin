@@ -313,7 +313,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                 <div
                   key={command.id}
                   className="group bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 p-4 hover:border-gray-300 dark:hover:border-gray-700 hover:transition-all"
-                  style={{ borderLeftWidth: '3px', borderLeftColor: categoryInfo.color }}
+                  style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
                   <div className="flex items-start justify-between mb-2">
@@ -326,7 +326,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
-                        style={{ color: isFavorite ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
+                        style={{color: isFavorite ? 'var(--wedo-orange)' : 'var(--gray-400)'}}
                       />
                     </button>
                   </div>
@@ -342,7 +342,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                       <Badge 
                         variant="secondary" 
                         className="text-xs px-1.5 py-0 h-5 font-open-sans"
-                        style={{ backgroundColor: `${categoryInfo.color}15`, color: categoryInfo.color }}
+                        style={{backgroundColor: `${categoryInfo.color}15`, color: categoryInfo.color}}
                       >
                         {categoryInfo.label}
                       </Badge>
@@ -365,7 +365,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                         size="sm"
                         onClick={() => executeCommand(command.command, command.title)}
                         className="h-7 px-2.5 text-xs font-open-sans text-white"
-                        style={{ backgroundColor: categoryInfo.color }}
+                        style={{backgroundColor: categoryInfo.color}}
                       >
                         <MessageCircle className="w-3 h-3 mr-1" />
                         Executar

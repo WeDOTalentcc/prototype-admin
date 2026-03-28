@@ -452,7 +452,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <List className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 <div
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800"
-                  style={{ backgroundColor: list.color || 'var(--gray-400)' }}
+                  style={{backgroundColor: list.color || 'var(--gray-400)'}}
                 />
               </div>
 
@@ -793,7 +793,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                         ? 'ring-2 ring-offset-2 ring-gray-400'
                         : 'hover:scale-110'
                     }`}
-                    style={{ backgroundColor: color.value }}
+                    style={{backgroundColor: color.value}}
                     title={color.name}
                   >
                     {formColor === color.value && (

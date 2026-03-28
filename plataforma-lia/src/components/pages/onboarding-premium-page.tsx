@@ -630,7 +630,7 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
-              style={{ width: `${candidate.progress}%` }}
+              style={{width: `${candidate.progress}%`}}
             />
           </div>
         </div>
@@ -783,7 +783,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div
                           className="bg-gray-700 dark:bg-gray-300 h-3 rounded-full"
-                          style={{ width: `${candidate.progress}%` }}
+                          style={{width: `${candidate.progress}%`}}
                         />
                       </div>
 

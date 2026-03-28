@@ -802,7 +802,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.linkedin_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
-                          <Linkedin className="w-5 h-5" style={{ color: candidate.linkedin_url ? '#0A66C2' : 'var(--gray-400)' }} />
+                          <Linkedin className="w-5 h-5" style={{color: candidate.linkedin_url ? '#0A66C2' : 'var(--gray-400)'}} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>LinkedIn</TooltipContent>
@@ -816,7 +816,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.github_url ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.github_url && e.preventDefault()}
                         >
-                          <Github className="w-5 h-5" style={{ color: candidate.github_url ? '#181717' : 'var(--gray-400)' }} />
+                          <Github className="w-5 h-5" style={{color: candidate.github_url ? '#181717' : 'var(--gray-400)'}} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>GitHub</TooltipContent>
@@ -872,7 +872,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.portfolio_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
-                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? 'var(--gray-950)' : 'var(--gray-400)' }} />
+                          <Globe className="w-5 h-5" style={{color: candidate.portfolio_url ? 'var(--gray-950)' : 'var(--gray-400)'}} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Portfolio</TooltipContent>
@@ -882,7 +882,7 @@ export default function CandidateProfilePage() {
                 </div>
 
                 {/* RIGHT SIDE COLUMN - Extended Info */}
-                <div className="text-right space-y-3 min-w-[200px]">
+                <div className="text-right space-y-3 min-w-sidebar-content">
                   {/* Work Preferences (Híbrido, CLT, etc) */}
                   <div className="flex flex-wrap gap-1.5 justify-end">
                     {(candidate as any).work_model && (
@@ -1363,7 +1363,7 @@ export default function CandidateProfilePage() {
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
                                 <div 
                                   className={`h-1.5 rounded-full ${levelInfo.color}`} 
-                                  style={{ width: `${levelInfo.percent}%` }}
+                                  style={{width: `${levelInfo.percent}%`}}
                                 />
                               </div>
                             </div>
@@ -2082,7 +2082,7 @@ export default function CandidateProfilePage() {
                               </div>
                               <p className="text-sm text-gray-800 dark:text-gray-200 font-medium mb-2">Enviando... {uploadProgress}%</p>
                               <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-gray-600 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                <div className="h-full bg-gray-600 rounded-full transition-all duration-300" style={{width: `${uploadProgress}%`}} />
                               </div>
                             </>
                           ) : (
@@ -2120,7 +2120,7 @@ export default function CandidateProfilePage() {
                                             {formatFileSize(file.file_size)} • {file.file_name.split('.').pop()?.toUpperCase()}
                                           </span>
                                           <span className="text-xs text-gray-500">{formatRelativeTime(file.created_at)}</span>
-                                          <Badge className="text-xs px-1.5 py-0 h-4" style={{ backgroundColor: colors.bg, color: colors.text }}>
+                                          <Badge className="text-xs px-1.5 py-0 h-4" style={{backgroundColor: colors.bg, color: colors.text}}>
                                             <Tag className="w-2.5 h-2.5 mr-0.5" />
                                             {getCategoryLabel(file.file_type)}
                                           </Badge>
@@ -2173,7 +2173,7 @@ export default function CandidateProfilePage() {
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Pareceres da LIA
                       {opinionsHistory.length > 0 && (
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900" style={{ color: 'white' }}>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900" style={{color: 'white'}}>
                           {opinionsHistory.length}
                         </Badge>
                       )}

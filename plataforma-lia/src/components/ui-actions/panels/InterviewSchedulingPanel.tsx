@@ -185,32 +185,32 @@ export function InterviewSchedulingPanel({
     <div className="space-y-6">
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             👤 Candidato
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm font-medium dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>{candidateName}</p>
+          <p className="text-sm font-medium dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>{candidateName}</p>
           {candidateId && (
-            <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>ID: {candidateId}</p>
+            <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>ID: {candidateId}</p>
           )}
         </CardContent>
       </Card>
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
-            <CalendarIcon className="h-4 w-4" style={{ color: 'var(--lia-text-secondary)' }} />
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
+            <CalendarIcon className="h-4 w-4" style={{color: 'var(--lia-text-secondary)'}} />
             Data da Entrevista
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-3 dark:border-gray-700" style={{ border: '1px solid var(--lia-border-subtle)' }}>
+          <div className="rounded-md p-3 dark:border-gray-700" style={{border: '1px solid var(--lia-border-subtle)'}}>
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="icon" className="dark:text-gray-300 dark:hover:bg-gray-700" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium capitalize dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>{monthLabel}</span>
+              <span className="text-sm font-medium capitalize dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>{monthLabel}</span>
               <Button variant="ghost" size="icon" className="dark:text-gray-300 dark:hover:bg-gray-700" onClick={handleNextMonth}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -220,7 +220,7 @@ export function InterviewSchedulingPanel({
                 <div 
                   key={day} 
                   className="text-xs font-medium py-1 dark:text-gray-400"
-                  style={{ color: 'var(--lia-text-tertiary)' }}
+                  style={{color: 'var(--lia-text-tertiary)'}}
                 >
                   {day}
                 </div>
@@ -239,8 +239,7 @@ export function InterviewSchedulingPanel({
                     disabled={!isSelectable}
                     onClick={() => date && isSelectable && setSelectedDate(date)}
                     className="h-8 w-full rounded text-sm transition-colors"
-                    style={{
-                      visibility: !date ? 'hidden' : 'visible',
+                    style={{visibility: !date ? 'hidden' : 'visible',
                       backgroundColor: isSelected ? 'var(--lia-btn-primary-bg)' : 'transparent',
                       color: isSelected 
                         ? 'var(--lia-btn-primary-text)' 
@@ -250,8 +249,7 @@ export function InterviewSchedulingPanel({
                             ? 'var(--lia-text-primary)' 
                             : 'var(--lia-text-secondary)',
                       border: !isSelected && isToday ? '1px solid var(--lia-border-default)' : 'none',
-                      cursor: !isSelectable ? 'not-allowed' : 'pointer'
-                    }}
+                      cursor: !isSelectable ? 'not-allowed' : 'pointer'}}
                     onMouseEnter={(e) => {
                       if (isSelectable && !isSelected) {
                         e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'
@@ -271,7 +269,7 @@ export function InterviewSchedulingPanel({
           </div>
           <p 
             className="text-xs mt-2 text-center capitalize dark:text-gray-400"
-            style={{ color: 'var(--lia-text-tertiary)' }}
+            style={{color: 'var(--lia-text-tertiary)'}}
           >
             {formatDisplayDate(selectedDate)}
           </p>
@@ -280,14 +278,14 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
-            <Clock className="h-4 w-4" style={{ color: 'var(--lia-text-secondary)' }} />
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
+            <Clock className="h-4 w-4" style={{color: 'var(--lia-text-secondary)'}} />
             Horário Disponível
           </CardTitle>
         </CardHeader>
         <CardContent>
           {availableSlots.length === 0 ? (
-            <div className="text-center py-4 text-sm dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="text-center py-4 text-sm dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
               Sem horários disponíveis nesta data.
               <br />
               Selecione outro dia útil.
@@ -300,11 +298,9 @@ export function InterviewSchedulingPanel({
                   type="button"
                   onClick={() => setSelectedTime(time)}
                   className="py-2 px-3 rounded text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'transparent',
+                  style={{backgroundColor: selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'transparent',
                     color: selectedTime === time ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
-                    border: `1px solid ${selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`
-                  }}
+                    border: `1px solid ${selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
                   onMouseEnter={(e) => {
                     if (selectedTime !== time) {
                       e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'
@@ -326,7 +322,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             ⏱️ Duração
           </CardTitle>
         </CardHeader>
@@ -338,11 +334,9 @@ export function InterviewSchedulingPanel({
                 type="button"
                 onClick={() => setDuration(option.value)}
                 className="py-2 px-3 rounded text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: duration === option.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
+                style={{backgroundColor: duration === option.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
                   color: duration === option.value ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
-                  border: `1px solid ${duration === option.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`
-                }}
+                  border: `1px solid ${duration === option.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
                 onMouseEnter={(e) => {
                   if (duration !== option.value) {
                     e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'
@@ -363,7 +357,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             📍 Tipo de Entrevista
           </CardTitle>
         </CardHeader>
@@ -375,11 +369,9 @@ export function InterviewSchedulingPanel({
                 type="button"
                 onClick={() => setInterviewType(type.value)}
                 className="py-3 px-4 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
+                style={{backgroundColor: interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
                   color: interviewType === type.value ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
-                  border: `1px solid ${interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`
-                }}
+                  border: `1px solid ${interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
                 onMouseEnter={(e) => {
                   if (interviewType !== type.value) {
                     e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'
@@ -401,8 +393,8 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
-            <Users className="h-4 w-4" style={{ color: 'var(--lia-text-secondary)' }} />
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
+            <Users className="h-4 w-4" style={{color: 'var(--lia-text-secondary)'}} />
             Entrevistadores
           </CardTitle>
         </CardHeader>
@@ -423,14 +415,14 @@ export function InterviewSchedulingPanel({
                 htmlFor={`interviewer-${interviewer.id}`}
                 className="flex-1 cursor-pointer"
               >
-                <p className="text-sm font-medium dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>{interviewer.name}</p>
-                <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>{interviewer.role}</p>
+                <p className="text-sm font-medium dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>{interviewer.name}</p>
+                <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>{interviewer.role}</p>
               </label>
             </div>
           ))}
           {selectedInterviewers.length > 0 && (
-            <div className="pt-2 mt-3" style={{ borderTop: '1px solid var(--lia-border-subtle)' }}>
-              <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="pt-2 mt-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
+              <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
                 {selectedInterviewers.length} entrevistador(es) selecionado(s)
               </p>
             </div>
@@ -440,7 +432,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             📝 Notas para o Candidato
           </CardTitle>
         </CardHeader>
@@ -456,27 +448,27 @@ export function InterviewSchedulingPanel({
       </Card>
 
       {selectedTime && (
-        <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{ backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-default)' }}>
+        <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-default)'}}>
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
-              <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 dark:text-gray-300" style={{ color: 'var(--lia-text-secondary)' }} />
+              <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 dark:text-gray-300" style={{color: 'var(--lia-text-secondary)'}} />
               <div>
-                <p className="text-sm font-medium dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>Resumo do Agendamento</p>
-                <p className="text-xs mt-1 dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+                <p className="text-sm font-medium dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>Resumo do Agendamento</p>
+                <p className="text-xs mt-1 dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
                   {formatDisplayDate(selectedDate)} às {selectedTime}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   <Badge 
                     variant="secondary" 
                     className="text-xs border-0"
-                    style={{ backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
                   >
                     {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
                   </Badge>
                   <Badge 
                     variant="secondary" 
                     className="text-xs border-0"
-                    style={{ backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' }}
+                    style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
                   >
                     {INTERVIEW_TYPES.find((t) => t.value === interviewType)?.label}
                   </Badge>
@@ -484,7 +476,7 @@ export function InterviewSchedulingPanel({
                     <Badge 
                       variant="secondary" 
                       className="text-xs border-0"
-                      style={{ backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)' }}
+                      style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
                     >
                       {selectedInterviewers.length} entrevistador(es)
                     </Badge>

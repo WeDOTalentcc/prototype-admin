@@ -797,15 +797,13 @@ export function CandidatesFilterPanel({
                         }))
                       }
                       className="px-2 py-1.5 text-micro rounded-md transition-all"
-                      style={{
-                        backgroundColor:
+                      style={{backgroundColor:
                           tableFilters.availabilityWindow === opt.value ? "var(--gray-950)" : "var(--gray-50)",
                         color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--gray-500)",
                         border:
                           tableFilters.availabilityWindow === opt.value
                             ? "none"
-                            : "1px solid var(--gray-200)",
-                      }}
+                            : "1px solid var(--gray-200)"}}
                     >
                       {opt.label}
                     </button>
@@ -1028,24 +1026,18 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all hover:bg-gray-50"
-      style={{
-        backgroundColor: checked ? "rgb(96 190 209 / 0.08)" : "transparent",
-        border: checked ? "1px solid rgb(96 190 209 / 0.2)" : "1px solid transparent",
-      }}
+      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
     >
       <div
         className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-        style={{
-          backgroundColor: checked ? "var(--gray-950)" : "transparent",
-          border: checked ? "none" : "2px solid var(--gray-300)",
-        }}
+        style={{backgroundColor: checked ? "var(--gray-950)" : "transparent",
+          border: checked ? "none" : "2px solid var(--gray-300)"}}
       >
         {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
       </div>
       <span
         className="text-xs"
-        style={{ color: checked ? "var(--gray-800)" : "var(--gray-500)" }}
+        style={{color: checked ? "var(--gray-800)" : "var(--gray-500)"}}
       >
         {label}
       </span>
@@ -1108,11 +1100,9 @@ function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
           className="flex-1 px-2 py-1.5 text-micro rounded-md transition-all"
-          style={{
-            backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
+          style={{backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
             color: value === opt.value ? "white" : "var(--gray-500)",
-            border: value === opt.value ? "none" : "1px solid var(--gray-200)",
-          }}
+            border: value === opt.value ? "none" : "1px solid var(--gray-200)"}}
         >
           {opt.label}
         </button>

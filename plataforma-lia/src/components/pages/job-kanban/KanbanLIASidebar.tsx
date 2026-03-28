@@ -29,7 +29,7 @@ interface LIAMessage {
   id: string
   type: "user" | "assistant"
   content: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 interface LIASuggestion {
@@ -62,7 +62,7 @@ interface KanbanLIASidebarProps {
   setShowCandidatePage: (value: boolean) => void
   openSuperChat: () => void
   handleAICommand: (command: string) => void
-  handleLiaUiAction: (action: string, params: Record<string, any>) => void
+  handleLiaUiAction: (action: string, params: Record<string, unknown>) => void
 }
 
 export function KanbanLIASidebar({
@@ -93,7 +93,7 @@ export function KanbanLIASidebar({
   return (
     <div
       className="flex-shrink-0 transition-all duration-300 pl-4 py-4 pr-0 relative"
-      style={{ width: `${liaExpandedWidth}px` }}
+      style={{width: `${liaExpandedWidth}px`}}
     >
       <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-gray-300 bg-gray-50 dark:bg-gray-900 max-h-[calc(100vh-16rem)]">
         {/* Mensagem de Apresentação da LIA */}

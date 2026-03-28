@@ -152,12 +152,10 @@ export function SetupAlertBadge() {
       ref={badgeRef}
       onClick={handleClick}
       className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md select-none"
-      style={{
-        left: `${position.x}px`,
+      style={{left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? 'grabbing' : 'pointer',
-        ...progressCssVar,
-      }}
+        ...progressCssVar}}
       title="Clique para completar o setup da empresa. Arraste para reposicionar."
     >
       <div
@@ -172,16 +170,16 @@ export function SetupAlertBadge() {
         <div className="w-8 h-8 rounded-md flex items-center justify-center relative">
           <div
             className="absolute inset-0 rounded-md opacity-[0.12]"
-            style={{ backgroundColor: 'var(--progress-color)' }}
+            style={{backgroundColor: 'var(--progress-color)'}}
           />
           <AlertCircle
             className="w-4 h-4 relative z-10"
-            style={{ color: 'var(--progress-color)' }}
+            style={{color: 'var(--progress-color)'}}
           />
         </div>
         <div
           className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold text-white dark:text-gray-950"
-          style={{ backgroundColor: 'var(--progress-color)' }}
+          style={{backgroundColor: 'var(--progress-color)'}}
         >
           !
         </div>
@@ -193,17 +191,15 @@ export function SetupAlertBadge() {
         <div className="flex items-center gap-1.5">
           <span
             className="text-xs font-semibold leading-tight"
-            style={{ color: 'var(--progress-color)' }}
+            style={{color: 'var(--progress-color)'}}
           >
             {overallCompletion}%
           </span>
           <div className="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${overallCompletion}%`,
-                backgroundColor: 'var(--progress-color)',
-              }}
+              style={{width: `${overallCompletion}%`,
+                backgroundColor: 'var(--progress-color)'}}
             />
           </div>
         </div>

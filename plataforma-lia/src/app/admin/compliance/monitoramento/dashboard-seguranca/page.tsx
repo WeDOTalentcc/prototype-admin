@@ -172,8 +172,7 @@ export default function DashboardSegurancaPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <MonitorDot className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -191,7 +190,7 @@ export default function DashboardSegurancaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -206,14 +205,14 @@ export default function DashboardSegurancaPage() {
                     <span className="text-xs text-status-success">+12% vs semana anterior</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -228,14 +227,14 @@ export default function DashboardSegurancaPage() {
                     <span className="text-xs text-status-success">-2 vs ontem</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <ShieldAlert className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -251,14 +250,14 @@ export default function DashboardSegurancaPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <Clock className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -274,7 +273,7 @@ export default function DashboardSegurancaPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Gauge className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
@@ -285,13 +284,12 @@ export default function DashboardSegurancaPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderColor: 'rgba(96, 190, 209, 0.3)' }}>
+        <Card className="mb-6" style={{borderColor: 'rgba(96, 190, 209, 0.3)'}}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-10 h-10 rounded-md flex items-center justify-center"
-                  style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                  className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                 >
                   <KeyRound className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -350,7 +348,7 @@ export default function DashboardSegurancaPage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -361,11 +359,11 @@ export default function DashboardSegurancaPage() {
               <div className="flex items-end justify-between h-40 gap-3">
                 {eventsByDay.map((item, idx) => (
                   <div key={idx} className="flex flex-col items-center flex-1">
-                    <div className="w-full flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${(item.count / maxDayCount) * 100}%`, minHeight: '20px' }}>
-                      <div style={{ height: `${(item.low / item.count) * 100}%`, backgroundColor: 'var(--status-success)' }} />
-                      <div style={{ height: `${(item.medium / item.count) * 100}%`, backgroundColor: 'var(--status-warning)' }} />
-                      <div style={{ height: `${(item.high / item.count) * 100}%`, backgroundColor: 'var(--status-warning)' }} />
-                      <div style={{ height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)' }} />
+                    <div className="w-full flex flex-col-reverse rounded-t overflow-hidden" style={{height: `${(item.count / maxDayCount) * 100}%`, minHeight: '20px'}}>
+                      <div style={{height: `${(item.low / item.count) * 100}%`, backgroundColor: 'var(--status-success)'}} />
+                      <div style={{height: `${(item.medium / item.count) * 100}%`, backgroundColor: 'var(--status-warning)'}} />
+                      <div style={{height: `${(item.high / item.count) * 100}%`, backgroundColor: 'var(--status-warning)'}} />
+                      <div style={{height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)'}} />
                     </div>
                     <span className="text-xs font-medium mt-2 text-gray-800 dark:text-gray-100" >
                       {item.count}
@@ -378,26 +376,26 @@ export default function DashboardSegurancaPage() {
               </div>
               <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700" >
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-error)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-error)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-success)'}} />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Baixo</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -410,7 +408,7 @@ export default function DashboardSegurancaPage() {
                   <div key={idx}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
+                        <div className="w-3 h-3 rounded" style={{backgroundColor: item.color}} />
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                           {item.severity}
                         </span>
@@ -427,15 +425,14 @@ export default function DashboardSegurancaPage() {
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                       <div 
                         className="h-full rounded-full transition-all"
-                        style={{ width: `${item.percentage}%`, backgroundColor: item.color }}
+                        style={{width: `${item.percentage}%`, backgroundColor: item.color}}
                       />
                     </div>
                   </div>
                 ))}
               </div>
               <div 
-                className="mt-4 p-3 rounded-md"
-                style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
+                className="mt-4 p-3 rounded-md bg-gray-200/20"
               >
                 <p className="text-xs text-gray-400 dark:text-gray-500" >
                   Total: {totalSeverityCount.toLocaleString('pt-BR')} eventos nos últimos 7 dias
@@ -446,7 +443,7 @@ export default function DashboardSegurancaPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <AlertTriangle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -463,8 +460,7 @@ export default function DashboardSegurancaPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                        style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gray-200/30"
                       >
                         {idx + 1}
                       </div>
@@ -491,7 +487,7 @@ export default function DashboardSegurancaPage() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
@@ -541,7 +537,7 @@ export default function DashboardSegurancaPage() {
                             {severityConfig.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell max-w-[200px]">
+                        <TableCell className="hidden md:table-cell max-w-sidebar-content">
                           <span className="text-xs truncate block text-gray-400 dark:text-gray-500" >
                             {event.description}
                           </span>

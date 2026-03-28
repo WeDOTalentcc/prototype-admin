@@ -37,7 +37,7 @@ interface TransitionChatPanelProps {
   onClose?: () => void
   actionBehavior: string
   placeholder?: string
-  extractedPreferences?: Record<string, any> | null
+  extractedPreferences?: Record<string, unknown> | null
   sessionId?: string
 }
 
@@ -65,7 +65,7 @@ const formatTime = (date: Date) => {
 function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
   return (
     <div className="mt-2 pt-2 border-t border-gray-200/30">
-      <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" >
         Tarefas agendadas
       </p>
       {tasks.map((task, idx) => (
@@ -89,7 +89,7 @@ function OutOfScopeIndicator() {
     <div className="mt-2 pt-2 border-t border-status-warning/30/50">
       <div className="flex items-center gap-1.5">
         <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0" />
-        <span className="text-micro font-medium text-status-warning" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <span className="text-micro font-medium text-status-warning" >
           Fora do escopo desta conversa
         </span>
       </div>
@@ -105,7 +105,7 @@ function FairnessWarning({ fairnessResult }: { fairnessResult: { is_fair: boolea
       <div className="flex items-start gap-1.5">
         <ShieldAlert className="w-3.5 h-3.5 text-status-error flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-xs font-semibold text-status-error" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-xs font-semibold text-status-error" >
             Alerta de Fairness
           </p>
           {fairnessResult.warnings.map((w, idx) => (
@@ -126,7 +126,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
     <div className="mt-2 pt-2 border-t border-gray-200/30">
       <div className="flex items-center gap-1 mb-1">
         <Lightbulb className="w-3 h-3 text-status-warning" />
-        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <span className="text-micro font-medium text-gray-500" >
           Baseado no seu histórico
         </span>
       </div>
@@ -136,7 +136,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
             key={idx}
             onClick={() => onAccept(s)}
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded text-micro text-status-warning hover:bg-status-warning/15 transition-colors"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            
           >
             <Sparkles className="w-2.5 h-2.5" />
             {s.key}: {s.value}
@@ -154,7 +154,7 @@ function ConfidenceBadge({ confidence, layer }: { confidence?: number; layer?: n
   const color = pct >= 80 ? 'text-status-success' : pct >= 50 ? 'text-status-warning' : 'text-status-error'
 
   return (
-    <span className={cn("text-micro font-medium ml-1", color)} style={{ fontFamily: 'Inter, sans-serif' }}>
+    <span className={cn("text-micro font-medium ml-1", color)} >
       {pct}%{layer === 3 && <span className="text-gray-400 ml-0.5">AI</span>}
     </span>
   )
@@ -225,7 +225,7 @@ export function TransitionChatPanel({
               <div className="w-7 h-7 rounded-full flex items-center justify-center">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" >
                 LIA
               </span>
             </div>
@@ -304,7 +304,7 @@ export function TransitionChatPanel({
                           {msg.content}
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-xs text-gray-400 px-1" >
                         {formatTime(timestamp)}
                       </span>
                     </div>
@@ -333,7 +333,7 @@ export function TransitionChatPanel({
                   </div>
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >
                         LIA
                       </span>
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
@@ -354,7 +354,7 @@ export function TransitionChatPanel({
                               <span
                                 key={key}
                                 className="inline-flex items-center gap-1 text-micro bg-gray-50 rounded-full px-2 py-0.5 text-gray-600"
-                                style={{ fontFamily: 'Inter, sans-serif' }}
+                                
                               >
                                 <span className="font-medium">{label}:</span> {String(value)}
                               </span>
@@ -379,7 +379,7 @@ export function TransitionChatPanel({
                       originalResponse={msg.content}
                       className="px-1"
                     />
-                    <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <span className="text-xs text-gray-400 px-1" >
                       {formatTime(timestamp)}
                     </span>
                   </div>
@@ -394,15 +394,15 @@ export function TransitionChatPanel({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >
                     LIA
                   </span>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                   </div>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export function TransitionChatPanel({
                   <span
                     key={key}
                     className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-300"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+                    
                   >
                     <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span> {String(value)}
                   </span>

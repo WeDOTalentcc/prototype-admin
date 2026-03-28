@@ -99,7 +99,7 @@ export function LanguagesPanel({
     <div className="space-y-6">
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             🌍 Idiomas Requeridos
           </CardTitle>
         </CardHeader>
@@ -110,29 +110,29 @@ export function LanguagesPanel({
           />
 
           {languages.length === 0 ? (
-            <div className="text-center py-8 text-sm dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="text-center py-8 text-sm dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
               Nenhum idioma adicionado.
               <br />
               Use o campo acima para adicionar.
             </div>
           ) : (
-            <div className="rounded-md overflow-hidden dark:border-gray-700" style={{ border: '1px solid var(--lia-border-subtle)' }}>
+            <div className="rounded-md overflow-hidden dark:border-gray-700" style={{border: '1px solid var(--lia-border-subtle)'}}>
               <table className="w-full">
-                <thead style={{ backgroundColor: 'var(--lia-bg-secondary)' }}>
+                <thead style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
                   <tr>
-                    <th className="text-left px-3 py-2 text-xs font-medium dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                    <th className="text-left px-3 py-2 text-xs font-medium dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                       Idioma
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                    <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                       Nível
                     </th>
-                    <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>
+                    <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
                       Obrigatório?
                     </th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y dark:divide-gray-700" style={{ borderColor: 'var(--lia-border-subtle)' }}>
+                <tbody className="divide-y dark:divide-gray-700" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   {languages.map((lang) => (
                     <tr 
                       key={lang.id} 
@@ -143,15 +143,13 @@ export function LanguagesPanel({
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{getFlag(lang.code)}</span>
-                          <span className="text-sm font-medium dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>{lang.name}</span>
+                          <span className="text-sm font-medium dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>{lang.name}</span>
                           {lang.required && (
                             <Badge 
                               variant="secondary" 
                               className="text-xs border-0"
-                              style={{ 
-                                backgroundColor: 'var(--lia-bg-tertiary)', 
-                                color: 'var(--lia-text-secondary)' 
-                              }}
+                              style={{backgroundColor: 'var(--lia-bg-tertiary)', 
+                                color: 'var(--lia-text-secondary)'}}
                             >
                               Obrigatório
                             </Badge>
@@ -175,11 +173,9 @@ export function LanguagesPanel({
                                 <SelectItem key={level} value={level}>
                                   <span 
                                     className="inline-block px-1.5 py-0.5 rounded text-xs"
-                                    style={{ 
-                                      backgroundColor: styles.bg, 
+                                    style={{backgroundColor: styles.bg, 
                                       color: styles.text,
-                                      opacity: styles.opacity
-                                    }}
+                                      opacity: styles.opacity}}
                                   >
                                     {level}
                                   </span>
@@ -216,12 +212,12 @@ export function LanguagesPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>📊 Resumo</CardTitle>
+          <CardTitle className="text-sm font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {languages.length === 0 ? (
-              <span className="text-sm dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+              <span className="text-sm dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
                 Nenhum idioma adicionado ainda.
               </span>
             ) : (
@@ -230,18 +226,16 @@ export function LanguagesPanel({
                   key={lang.id}
                   variant="outline"
                   className="text-xs dark:border-gray-600 dark:text-gray-300"
-                  style={{ 
-                    borderColor: lang.required ? 'var(--lia-border-default)' : 'var(--lia-border-subtle)',
+                  style={{borderColor: lang.required ? 'var(--lia-border-default)' : 'var(--lia-border-subtle)',
                     backgroundColor: lang.required ? 'var(--lia-bg-secondary)' : 'transparent',
-                    color: 'var(--lia-text-secondary)'
-                  }}
+                    color: 'var(--lia-text-secondary)'}}
                 >
                   {getFlag(lang.code)} {lang.name} ({lang.level.charAt(0)})
                 </Badge>
               ))
             )}
           </div>
-          <div className="mt-3 text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+          <div className="mt-3 text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
             {languages.filter((l) => l.required).length} obrigatórios,{" "}
             {languages.filter((l) => !l.required).length} desejáveis
           </div>
@@ -335,7 +329,7 @@ function LanguageAutocomplete({
         <div className="relative flex-1">
           <Search 
             className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" 
-            style={{ color: 'var(--lia-text-tertiary)' }}
+            style={{color: 'var(--lia-text-tertiary)'}}
           />
           <Input
             ref={inputRef}
@@ -371,20 +365,16 @@ function LanguageAutocomplete({
         <div
           ref={suggestionsRef}
           className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md max-h-48 overflow-auto dark:bg-gray-800 dark:border-gray-700"
-          style={{
-            backgroundColor: 'var(--lia-bg-primary)',
-            border: '1px solid var(--lia-border-subtle)'
-          }}
+          style={{backgroundColor: 'var(--lia-bg-primary)',
+            border: '1px solid var(--lia-border-subtle)'}}
         >
           {availableLanguages.slice(0, 10).map((lang, index) => (
             <button
               key={lang.code}
               type="button"
               className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors dark:hover:bg-gray-700"
-              style={{ 
-                backgroundColor: index === selectedIndex ? 'var(--lia-interactive-hover)' : 'transparent',
-                color: 'var(--lia-text-primary)'
-              }}
+              style={{backgroundColor: index === selectedIndex ? 'var(--lia-interactive-hover)' : 'transparent',
+                color: 'var(--lia-text-primary)'}}
               onClick={() => handleAdd(lang)}
               onMouseEnter={() => setSelectedIndex(index)}
             >

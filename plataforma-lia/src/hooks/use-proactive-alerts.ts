@@ -48,7 +48,7 @@ export function useProactiveAlerts({
       const response = await res.json()
       
       if (response.success && response.data?.alerts) {
-        const newAlerts: ProactiveAlert[] = response.data.alerts.map((alert: any, index: number) => ({
+        const newAlerts: ProactiveAlert[] = response.data.alerts.map((alert: Record<string, unknown>, index: number) => ({
           id: `alert_${Date.now()}_${index}`,
           condition: alert.condition,
           category: alert.category || 'system',
@@ -69,8 +69,8 @@ export function useProactiveAlerts({
       }
       
       setLastCheck(new Date())
-    } catch (err: any) {
-      setError(err.message || 'Erro ao verificar alertas')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao verificar alertas')
     } finally {
       setIsLoading(false)
     }

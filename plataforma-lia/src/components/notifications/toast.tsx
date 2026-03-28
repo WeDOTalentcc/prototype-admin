@@ -62,28 +62,28 @@ export function Toast({ notification }: ToastProps) {
         config.bgColor,
         config.borderColor
       )}
-      style={{ animation: 'slideInFromRight 0.3s ease-out' }}
+      style={{animation: 'slideInFromRight 0.3s ease-out'}}
     >
       {/* Indicador de tempo real */}
       {notification.realTime && (
         <div
           className="absolute -top-1 -right-1 w-3 h-3 bg-status-success rounded-full"
-          style={{ animation: 'scaleInDelayed 0.2s ease-out' }}
+          style={{animation: 'scaleInDelayed 0.2s ease-out'}}
         >
           <div
             className="w-full h-full bg-status-success rounded-full"
-            style={{ animation: 'realtimePulse 2s infinite' }}
+            style={{animation: 'realtimePulse 2s infinite'}}
           />
         </div>
       )}
 
       <div className="flex items-start gap-3">
-        <div style={{ animation: 'scaleRotateIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards' }}>
+        <div style={{animation: 'scaleRotateIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards'}}>
           <Icon className={cn("w-5 h-5 flex-shrink-0", config.iconColor)} />
         </div>
 
         <div className="flex-1 min-w-0">
-          <div style={{ animation: 'fadeInUp 0.3s ease-out 0.2s backwards' }}>
+          <div style={{animation: 'fadeInUp 0.3s ease-out 0.2s backwards'}}>
             <h4 className={cn("text-sm font-semibold", config.titleColor)}>
               {notification.title}
             </h4>
@@ -99,7 +99,7 @@ export function Toast({ notification }: ToastProps) {
           {notification.actions && notification.actions.length > 0 && (
             <div
               className="flex gap-2 mt-3"
-              style={{ animation: 'fadeInDown 0.3s ease-out 0.3s backwards' }}
+              style={{animation: 'fadeInDown 0.3s ease-out 0.3s backwards'}}
             >
               {notification.actions.map((action, index) => (
                 <Button
@@ -116,7 +116,7 @@ export function Toast({ notification }: ToastProps) {
           )}
         </div>
 
-        <div style={{ animation: 'scaleInDelayed 0.2s ease-out 0.4s backwards' }}>
+        <div style={{animation: 'scaleInDelayed 0.2s ease-out 0.4s backwards'}}>
           <Button
             variant="ghost"
             size="sm"
@@ -132,9 +132,7 @@ export function Toast({ notification }: ToastProps) {
       {notification.duration && notification.duration > 0 && (
         <div
           className="absolute bottom-0 left-0 h-1 bg-current opacity-20 rounded-b-lg"
-          style={{
-            animation: `progressShrink ${durationSeconds}s linear forwards`
-          }}
+          style={{animation: `progressShrink ${durationSeconds}s linear forwards`}}
         />
       )}
     </div>

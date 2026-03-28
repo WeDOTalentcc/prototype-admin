@@ -121,7 +121,7 @@ export function CandidateTableRow({
               <Badge 
                 variant="secondary" 
                 className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
-                style={{ backgroundColor: 'var(--gray-300)' }}
+                style={{backgroundColor: 'var(--gray-300)'}}
               >
                 {formatScorePercent(candidate.liaScore ?? candidate.score, 0)}
               </Badge>
@@ -138,7 +138,7 @@ export function CandidateTableRow({
           <Badge 
             variant="secondary" 
             className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
-            style={{ backgroundColor: 'var(--gray-400)' }}
+            style={{backgroundColor: 'var(--gray-400)'}}
           >
             {formatScorePercent(candidate.skillsMatch || candidate.fitScore || 0, 0)}
           </Badge>
@@ -151,12 +151,10 @@ export function CandidateTableRow({
             <Badge
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
-              style={{
-                backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
+              style={{backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.technicalTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.technicalTestScore >= 40 ? 'var(--gray-400)' :
-                                 'var(--gray-600)'
-              }}
+                                 'var(--gray-600)'}}
               onClick={(e) => {
                 e.stopPropagation()
               }}
@@ -177,12 +175,10 @@ export function CandidateTableRow({
             <Badge
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
-              style={{
-                backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
+              style={{backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.englishTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.englishTestScore >= 40 ? 'var(--gray-400)' :
-                                 'var(--gray-600)'
-              }}
+                                 'var(--gray-600)'}}
               onClick={(e) => {
                 e.stopPropagation()
               }}
@@ -217,11 +213,9 @@ export function CandidateTableRow({
               >
                 <div 
                   className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 text-gray-950 dark:text-gray-50"
-                  style={{
-                    backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
+                  style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
                                      value >= 40 ? (index === 0 ? 'var(--gray-500)' : index === 1 ? 'var(--gray-300)' : 'var(--gray-500)') :
-                                     'var(--gray-600)'
-                  }}
+                                     'var(--gray-600)'}}
                 >
                   {value}
                 </div>
@@ -305,16 +299,14 @@ export function CandidateTableRow({
       <td className="px-2 py-2">
         <Badge
           className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50"
-          style={{
-            backgroundColor: 
+          style={{backgroundColor: 
               candidate.stage === 'Funil' ? 'var(--gray-200)' :
               candidate.stage === 'Triagem' ? 'var(--gray-300)' :
               candidate.stage === 'Entrevista' ? 'var(--gray-400)' :
               candidate.stage === 'Final' ? 'var(--gray-500)' :
               candidate.stage === 'Aprovados' ? 'var(--status-success)' :
               candidate.stage === 'Reprovados' ? 'var(--gray-200)' :
-              'var(--gray-200)'
-          }}
+              'var(--gray-200)'}}
         >
           {candidate.stage}
         </Badge>

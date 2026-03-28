@@ -81,8 +81,8 @@ export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompa
       // Backend returns: skills_by_category, competencies, total_skills, total_competencies
       // Frontend expects: technical_skills.{language, framework, database, tool, infrastructure, general}
       // Helper to generate unique stable IDs with category prefix to avoid collisions
-      const mapSkillsFromCategory = (skills: any[], category: string) =>
-        (skills || []).map((s: any, i: number) => ({
+      const mapSkillsFromCategory = (skills: Record<string, unknown>[], category: string) =>
+        (skills || []).map((s: Record<string, unknown>, i: number) => ({
           id: s.id || `${category}-skill-${s.name?.toLowerCase().replace(/\s+/g, '-') || i}`,
           name: s.name,
           category,
@@ -102,7 +102,7 @@ export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompa
           infrastructure: mapSkillsFromCategory(data.skills_by_category?.infrastructure, 'infrastructure'),
           general: mapSkillsFromCategory(data.skills_by_category?.general, 'general'),
         },
-        behavioral_competencies: (data.competencies || []).map((c: any) => ({
+        behavioral_competencies: (data.competencies || []).map((c: Record<string, unknown>) => ({
           id: c.id || c.name,
           name: c.name,
           description: c.description || '',

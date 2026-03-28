@@ -167,9 +167,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
     acc[source].avgScore = (acc[source].avgScore * (acc[source].count - 1) + (c.liaScore || 0)) / acc[source].count
 
     return acc
-  }, {} as Record<string, any>)
+  }, {} as Record<string, { source: string; count: number; contacted: number; avgScore: number }>)
 
-  const sourceMetrics = Object.values(sourceMetricsObj).map((source: any) => ({
+  type SourceMetric = { source: string; count: number; contacted: number; avgScore: number }
+  const sourceMetrics = (Object.values(sourceMetricsObj) as SourceMetric[]).map((source) => ({
     ...source,
     conversionRate: source.count > 0 ? (source.contacted / source.count) * 100 : 0
   }))
@@ -334,7 +335,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                             stage.rate >= 50 ? 'bg-wedo-orange' :
                             'bg-status-error'
                           }`}
-                          style={{ width: `${stage.rate}%` }}
+                          style={{width: `${stage.rate}%`}}
                         />
                       </div>
                     </div>
@@ -499,7 +500,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                         source.conversionRate >= 50 ? 'bg-status-warning' :
                         'bg-status-error'
                       }`}
-                      style={{ width: `${source.conversionRate}%` }}
+                      style={{width: `${source.conversionRate}%`}}
                     />
                   </div>
                 </div>
@@ -633,7 +634,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-wedo-cyan transition-all duration-500"
-                style={{ width: `${avgLiaScore * 10}%` }}
+                style={{width: `${avgLiaScore * 10}%`}}
               />
             </div>
           </CardContent>
@@ -657,7 +658,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-wedo-green transition-all duration-500"
-                style={{ width: `${avgSkillsMatch}%` }}
+                style={{width: `${avgSkillsMatch}%`}}
               />
             </div>
           </CardContent>
@@ -826,11 +827,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="absolute h-full bg-gray-400 rounded-full transition-all duration-500"
-                    style={{ width: `${((avgTimeTotal + 7) / 15) * 100}%` }}
+                    style={{width: `${((avgTimeTotal + 7) / 15) * 100}%`}}
                   />
                   <div
                     className="absolute h-full border-r-2 border-status-error/30"
-                    style={{ left: '100%' }}
+                    style={{left: '100%'}}
                   />
                 </div>
               </div>

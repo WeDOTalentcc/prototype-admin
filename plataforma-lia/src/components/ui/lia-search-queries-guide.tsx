@@ -128,11 +128,9 @@ export function LiaSearchQueriesGuide({
             isOpen && "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50",
             className
           )}
-          style={{ 
-            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)', 
+          style={{borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)', 
             
-            fontWeight: 500
-          }}
+            fontWeight: 500}}
         >
           <Lightbulb className="w-3.5 h-3.5" />
           <span>Mais ideias</span>
@@ -142,21 +140,16 @@ export function LiaSearchQueriesGuide({
         className="w-[340px] p-0 border-0" 
         align="start" 
         sideOffset={6}
-        style={{ 
-          backgroundColor: 'var(--gray-50)',
+        style={{backgroundColor: 'var(--gray-50)',
           borderRadius: '12px',
-          boxShadow: '0 4px 16px rgb(0 0 0 / 0.10), 0 1px 4px rgb(0 0 0 / 0.06)',
-          border: '1px solid var(--gray-200)'
-        }}
+          border: '1px solid var(--gray-200)'}}
       >
         {/* Header com busca */}
-        <div className="px-3 py-2.5 border-b" style={{ borderColor: 'var(--gray-200)' }}>
+        <div className="px-3 py-2.5 border-b" style={{borderColor: 'var(--gray-200)'}}>
           <div 
             className="flex items-center gap-2 px-2.5 py-2 rounded-md"
-            style={{ 
-              backgroundColor: 'var(--gray-100)',
-              border: '1px solid var(--gray-200)'
-            }}
+            style={{backgroundColor: 'var(--gray-100)',
+              border: '1px solid var(--gray-200)'}}
           >
             <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
             <input
@@ -165,7 +158,7 @@ export function LiaSearchQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
-              style={{ color: 'var(--gray-800)' }}
+              style={{color: 'var(--gray-800)'}}
               autoFocus
             />
             {searchTerm && (
@@ -180,7 +173,7 @@ export function LiaSearchQueriesGuide({
         </div>
 
         {/* Filtros de categoria */}
-        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{ borderColor: 'var(--gray-200)' }}>
+        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{borderColor: 'var(--gray-200)'}}>
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
@@ -215,7 +208,7 @@ export function LiaSearchQueriesGuide({
         {selectedCount > 0 && (
           <div 
             className="px-3 py-2 border-b flex items-center gap-2"
-            style={{ borderColor: 'var(--gray-200)', backgroundColor: 'var(--gray-50)' }}
+            style={{borderColor: 'var(--gray-200)', backgroundColor: 'var(--gray-50)'}}
           >
             <UserCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             <span 
@@ -235,10 +228,8 @@ export function LiaSearchQueriesGuide({
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
                 className="w-full px-2.5 py-2 text-left transition-all rounded-md group flex items-center gap-2"
-                style={{ 
-                  backgroundColor: 'var(--gray-50)',
-                  border: '1px solid var(--gray-100)'
-                }}
+                style={{backgroundColor: 'var(--gray-50)',
+                  border: '1px solid var(--gray-100)'}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--gray-50)'
                   e.currentTarget.style.borderColor = 'var(--gray-200)'
@@ -249,17 +240,13 @@ export function LiaSearchQueriesGuide({
                 }}
               >
                 <div 
-                  className="p-1.5 rounded-md flex-shrink-0"
-                  className="bg-gray-900/[0.08]"
+                  className="p-1.5 rounded-md flex-shrink-0 bg-gray-900/[0.08]"
                 >
                   <query.icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                 </div>
                 <span 
                   className="text-xs leading-snug font-medium"
-                  style={{ 
-                    
-                    color: 'var(--gray-800)'
-                  }}
+                  style={{color: 'var(--gray-800)'}}
                 >
                   {query.question}
                 </span>
@@ -270,16 +257,13 @@ export function LiaSearchQueriesGuide({
               <div className="py-8 text-center">
                 <div 
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'var(--gray-50)' }}
+                  style={{backgroundColor: 'var(--gray-50)'}}
                 >
                   <Search className="w-3.5 h-3.5 text-gray-300" />
                 </div>
                 <p 
                   className="text-xs"
-                  style={{ 
-                    
-                    color: 'var(--gray-400)'
-                  }}
+                  style={{color: 'var(--gray-400)'}}
                 >
                   Nenhuma análise encontrada
                 </p>
@@ -291,17 +275,12 @@ export function LiaSearchQueriesGuide({
         {/* Footer */}
         <div 
           className="px-3 py-2 border-t rounded-b-xl"
-          style={{ 
-            borderColor: 'var(--gray-200)',
-            backgroundColor: 'var(--gray-50)'
-          }}
+          style={{borderColor: 'var(--gray-200)',
+            backgroundColor: 'var(--gray-50)'}}
         >
           <p 
             className="text-micro text-center"
-            style={{ 
-              
-              color: 'var(--gray-400)'
-            }}
+            style={{color: 'var(--gray-400)'}}
           >
             Clique para inserir no prompt
           </p>

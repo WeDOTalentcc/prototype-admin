@@ -27,7 +27,7 @@ export function KanbanColumn({
 }: KanbanColumnProps) {
   return (
     <div 
-      className="flex flex-col w-[300px] min-w-[300px] bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700"
+      className="flex flex-col w-panel-sm min-w-panel-sm bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700"
       data-testid="kanban-column"
       data-stage-id={stage.id}
     >
@@ -35,7 +35,7 @@ export function KanbanColumn({
         <div className="flex items-center gap-2">
           <div 
             className="w-3 h-3 rounded-full" 
-            style={{ backgroundColor: stage.color }}
+            style={{backgroundColor: stage.color}}
           />
           <span className="font-medium text-gray-900 dark:text-gray-50">{stage.name}</span>
           <Badge 

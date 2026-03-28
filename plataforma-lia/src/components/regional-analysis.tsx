@@ -375,17 +375,17 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                       <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
                         <div
                           className="bg-status-success"
-                          style={{ width: `${percentages.remoto}%` }}
+                          style={{width: `${percentages.remoto}%`}}
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
                         />
                         <div
                           className="bg-gray-700 dark:bg-gray-300"
-                          style={{ width: `${percentages.hibrido}%` }}
+                          style={{width: `${percentages.hibrido}%`}}
                           title={`Híbrido: ${item.hibrido} (${percentages.hibrido.toFixed(1)}%)`}
                         />
                         <div
                           className="bg-gray-500"
-                          style={{ width: `${percentages.presencial}%` }}
+                          style={{width: `${percentages.presencial}%`}}
                           title={`Presencial: ${item.presencial} (${percentages.presencial.toFixed(1)}%)`}
                         />
                       </div>
@@ -428,15 +428,15 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                               <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                                 <div
                                   className="bg-status-success"
-                                  style={{ width: `${(estado.remoto / estado.total) * 100}%` }}
+                                  style={{width: `${(estado.remoto / estado.total) * 100}%`}}
                                 />
                                 <div
                                   className="bg-gray-700 dark:bg-gray-300"
-                                  style={{ width: `${(estado.hibrido / estado.total) * 100}%` }}
+                                  style={{width: `${(estado.hibrido / estado.total) * 100}%`}}
                                 />
                                 <div
                                   className="bg-gray-500"
-                                  style={{ width: `${(estado.presencial / estado.total) * 100}%` }}
+                                  style={{width: `${(estado.presencial / estado.total) * 100}%`}}
                                 />
                               </div>
 

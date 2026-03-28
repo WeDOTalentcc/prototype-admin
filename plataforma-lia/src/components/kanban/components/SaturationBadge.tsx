@@ -173,7 +173,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
         {badgeElement}
       </PopoverTrigger>
       <PopoverContent
-        className="w-[300px] rounded-md p-0 shadow-none border border-gray-200"
+        className="w-panel-sm rounded-md p-0 shadow-none border border-gray-200"
         align="start"
         sideOffset={8}
       >
@@ -196,7 +196,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-all ${data.organic.is_saturated ? 'bg-status-error' : organicPercent >= 90 ? 'bg-status-warning' : 'bg-wedo-cyan'}`}
-                  style={{ width: `${organicPercent}%` }}
+                  style={{width: `${organicPercent}%`}}
                 />
               </div>
             </div>
@@ -214,7 +214,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-all ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-gray-500'}`}
-                  style={{ width: `${sourcingPercent}%` }}
+                  style={{width: `${sourcingPercent}%`}}
                 />
               </div>
             </div>

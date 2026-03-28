@@ -1,0 +1,484 @@
+{
+  "timestamp": "2026-02-08T18:48:18.412Z",
+  "epics": [
+    {
+      "key": "WT-1307",
+      "label": "epic-otm-busca"
+    },
+    {
+      "key": "WT-1308",
+      "label": "epic-criterios"
+    },
+    {
+      "key": "WT-1309",
+      "label": "epic-aprendizado"
+    },
+    {
+      "key": "WT-1310",
+      "label": "epic-observ"
+    }
+  ],
+  "cards": [
+    {
+      "code": "WDT-008",
+      "jiraKey": "WT-1311",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-008",
+        "sprint-2",
+        "priority-media",
+        "feedback",
+        "analytics",
+        "dashboard",
+        "area-fullstack",
+        "epic-otm-busca"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-009",
+      "jiraKey": "WT-1312",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-009",
+        "sprint-3",
+        "priority-critica",
+        "search",
+        "classification",
+        "blocker",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-010",
+      "jiraKey": "WT-1313",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-010",
+        "sprint-3",
+        "priority-alta",
+        "ux",
+        "classification",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "2",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-011",
+      "jiraKey": "WT-1314",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-011",
+        "sprint-4",
+        "priority-alta",
+        "search",
+        "statistics",
+        "optimization",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-012",
+      "jiraKey": "WT-1315",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-012",
+        "sprint-4",
+        "priority-alta",
+        "search",
+        "statistics",
+        "optimization",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-013",
+      "jiraKey": "WT-1316",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-013",
+        "sprint-4",
+        "priority-media",
+        "search",
+        "quality",
+        "diagnostics",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "3",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-014",
+      "jiraKey": "WT-1317",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-014",
+        "sprint-5",
+        "priority-alta",
+        "search",
+        "wrf",
+        "optimization",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-015",
+      "jiraKey": "WT-1318",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-015",
+        "sprint-5",
+        "priority-alta",
+        "search",
+        "wrf",
+        "performance",
+        "area-backend",
+        "epic-otm-busca"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1307"
+    },
+    {
+      "code": "WDT-016",
+      "jiraKey": "WT-1319",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-016",
+        "sprint-6",
+        "priority-critica",
+        "criteria",
+        "game-changer",
+        "core",
+        "area-backend",
+        "epic-criterios"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-017",
+      "jiraKey": "WT-1320",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-017",
+        "sprint-7",
+        "priority-alta",
+        "criteria",
+        "admin",
+        "ux",
+        "area-frontend",
+        "cancelado",
+        "epic-criterios"
+      ],
+      "sp": "8",
+      "cancelled": true,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-018",
+      "jiraKey": "WT-1321",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-018",
+        "sprint-8",
+        "priority-critica",
+        "criteria",
+        "llm",
+        "core",
+        "area-backend",
+        "epic-criterios"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-019",
+      "jiraKey": "WT-1322",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-019",
+        "sprint-9",
+        "priority-media",
+        "criteria",
+        "analytics",
+        "area-fullstack",
+        "cancelado",
+        "epic-criterios"
+      ],
+      "sp": "5",
+      "cancelled": true,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-020",
+      "jiraKey": "WT-1323",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-020",
+        "sprint-9-10",
+        "priority-alta",
+        "criteria",
+        "data",
+        "onboarding",
+        "area-backend",
+        "cancelado",
+        "epic-criterios"
+      ],
+      "sp": "13",
+      "cancelled": true,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-021",
+      "jiraKey": "WT-1324",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-021",
+        "sprint-10",
+        "priority-alta",
+        "evidence",
+        "llm",
+        "quality",
+        "area-backend",
+        "epic-criterios"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-022",
+      "jiraKey": "WT-1325",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-022",
+        "sprint-11",
+        "priority-media",
+        "evidence",
+        "transparency",
+        "area-fullstack",
+        "epic-criterios"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1308"
+    },
+    {
+      "code": "WDT-023",
+      "jiraKey": "WT-1326",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-023",
+        "sprint-12",
+        "priority-alta",
+        "requirements",
+        "filter",
+        "quality",
+        "area-fullstack",
+        "epic-aprendizado"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-024",
+      "jiraKey": "WT-1327",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-024",
+        "sprint-13",
+        "priority-media",
+        "enrichment",
+        "executive-search",
+        "area-backend",
+        "epic-aprendizado"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-025",
+      "jiraKey": "WT-1328",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-025",
+        "sprint-13",
+        "priority-media",
+        "feedback",
+        "ux",
+        "quality",
+        "area-fullstack",
+        "epic-aprendizado"
+      ],
+      "sp": "5",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-026",
+      "jiraKey": "WT-1329",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-026",
+        "sprint-14",
+        "priority-media",
+        "quality",
+        "flags",
+        "heuristics",
+        "area-backend",
+        "epic-aprendizado"
+      ],
+      "sp": "3",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-027",
+      "jiraKey": "WT-1330",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-027",
+        "sprint-15-16",
+        "priority-alta",
+        "learning",
+        "evolution",
+        "core",
+        "area-backend",
+        "epic-aprendizado"
+      ],
+      "sp": "13",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-028",
+      "jiraKey": "WT-1331",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-028",
+        "sprint-17",
+        "priority-media",
+        "ab-testing",
+        "optimization",
+        "area-backend",
+        "epic-aprendizado"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1309"
+    },
+    {
+      "code": "WDT-029",
+      "jiraKey": "WT-1332",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-029",
+        "sprint-2+",
+        "priority-media",
+        "docs",
+        "architecture",
+        "area-backend",
+        "epic-observ"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1310"
+    },
+    {
+      "code": "WDT-030",
+      "jiraKey": "WT-1333",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "talent-funnel",
+        "wdt-030",
+        "sprint-18",
+        "priority-media",
+        "monitoring",
+        "dashboard",
+        "ops",
+        "area-fullstack",
+        "epic-observ"
+      ],
+      "sp": "8",
+      "cancelled": false,
+      "epicKey": "WT-1310"
+    }
+  ],
+  "summary": {
+    "cardsCreated": 23,
+    "errors": 0
+  }
+}

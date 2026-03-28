@@ -214,8 +214,7 @@ export default function IncidentesPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -238,7 +237,7 @@ export default function IncidentesPage() {
                 Registrar Incidente
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-panel-xl">
               <DialogHeader>
                 <DialogTitle className="text-gray-800 dark:text-gray-100" >Registrar Novo Incidente</DialogTitle>
                 <DialogDescription>
@@ -344,10 +343,8 @@ export default function IncidentesPage() {
 
         <div 
           className="rounded-md border p-4 mb-6 flex items-center gap-3"
-          style={{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            borderColor: 'rgba(239, 68, 68, 0.3)'
-          }}
+          style={{backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            borderColor: 'rgba(239, 68, 68, 0.3)'}}
         >
           <AlertCircle className="w-5 h-5 text-status-error" />
           <div className="flex-1">
@@ -363,7 +360,7 @@ export default function IncidentesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -379,14 +376,14 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 146, 60, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(251, 146, 60, 0.1)'}}>
                   <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -402,14 +399,14 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: criticalIncidents === 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: criticalIncidents === 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}}>
                   <Shield className={`w-5 h-5 ${criticalIncidents === 0 ? 'text-status-success' : 'text-status-error'}`} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -425,7 +422,7 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
               </div>
@@ -433,7 +430,7 @@ export default function IncidentesPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card className="mb-6" >
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
               Workflow de Resposta a Incidentes (PRI)
@@ -447,8 +444,7 @@ export default function IncidentesPage() {
                   <React.Fragment key={step.phase}>
                     <div className="flex flex-col items-center text-center flex-1 min-w-[100px]">
                       <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center mb-2"
-                        style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                        className="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200/30"
                       >
                         <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>
@@ -474,7 +470,7 @@ export default function IncidentesPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -591,7 +587,7 @@ export default function IncidentesPage() {
             </Card>
           </div>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 SLAs por Severidade
@@ -626,8 +622,7 @@ export default function IncidentesPage() {
                 })}
               </div>
               <div 
-                className="mt-4 p-3 rounded-md"
-                style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
+                className="mt-4 p-3 rounded-md bg-gray-200/20"
               >
                 <p className="text-xs text-gray-400 dark:text-gray-500" >
                   Os prazos são contados a partir da data de conhecimento do incidente pela organização, conforme Art. 48 da LGPD.

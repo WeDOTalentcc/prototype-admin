@@ -31,7 +31,7 @@ interface ApprovalRequest {
   target_type: string | null
   target_name: string
   target_description: string | null
-  target_data: Record<string, any>
+  target_data: Record<string, unknown>
   approver_id: string | null
   approver_name: string
   approver_email: string

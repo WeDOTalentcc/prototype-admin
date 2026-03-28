@@ -59,7 +59,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Content Area com scroll suave e altura flexível */}
           <CardContent
             className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500"
-            style={{ scrollBehavior: 'smooth' }}
+            style={{scrollBehavior: 'smooth'}}
           >
           {contextData.type === "compensation-package" && (
             <div className="space-y-6 font-open-sans">
@@ -86,7 +86,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             {contextData.data.recommended_package.base_salary.target}
                           </p>
                         </div>
-                        <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
+                        <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-gray-800 dark:text-gray-100">
                           Percentil 90
                         </Badge>
                       </div>
@@ -156,7 +156,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar Valores
                       </Button>
-                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Pacote
                       </Button>
@@ -183,7 +183,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Highlight Card - Missing Layer */}
-                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                    <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                       <h5 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100">
                         {contextData.data.current_structure.missing_layer.role}
                       </h5>
@@ -248,7 +248,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Estrutura
                       </Button>
-                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Análise
                       </Button>
@@ -271,7 +271,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Highlight - Main Focus */}
-                    <div className="p-5 rounded-md bg-yellow-50 dark:bg-yellow-900/20">
+                    <div className="p-5 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
                       <h4 className="text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Foco Principal</h4>
                       <p className="text-base font-bold text-gray-800 dark:text-gray-100">
                         {contextData.data.role_focus}
@@ -283,7 +283,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Responsabilidades Principais</h4>
                       <div className="space-y-2">
                         {contextData.data.key_responsibilities.map((responsibility: string, index: number) => (
-                          <div key={index} className="flex items-start space-x-3 p-3 rounded-md bg-green-50 dark:bg-green-900/20">
+                          <div key={index} className="flex items-start space-x-3 p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
                             <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                             <span className="text-sm text-gray-800 dark:text-gray-100">{responsibility}</span>
                           </div>
@@ -297,7 +297,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Escopo
                       </Button>
-                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Definição
                       </Button>
@@ -446,7 +446,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <Globe className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-950 dark:text-gray-50">Publicação Multi-Canal</span>
                     </div>
-                    <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
+                    <Badge className="bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">
                       {contextData.data.ats_integration.status}
                     </Badge>
                   </CardTitle>
@@ -454,7 +454,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* ATS Integration Highlight */}
-                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                    <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sistema ATS Integrado</p>
@@ -512,7 +512,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Canais
                       </Button>
-                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Publicar Vaga
                       </Button>
@@ -542,19 +542,19 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         </p>
                         <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Aplicações</p>
                       </div>
-                      <div className="text-center p-4 rounded-md bg-green-50 dark:bg-green-900/20">
+                      <div className="text-center p-4 rounded-md bg-status-success/10 dark:bg-status-success/20">
                         <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.active_sourcing_reached}
                         </p>
                         <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Sourcing Ativo</p>
                       </div>
-                      <div className="text-center p-4 rounded-md bg-red-100 dark:bg-red-900/20">
+                      <div className="text-center p-4 rounded-md bg-status-error/10 dark:bg-status-error/20">
                         <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.response_rate}
                         </p>
                         <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Taxa Resposta</p>
                       </div>
-                      <div className="text-center p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                      <div className="text-center p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                         <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.avg_candidate_score}
                         </p>
@@ -573,7 +573,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                 <h5 className="font-medium text-gray-800 dark:text-gray-100">{candidate.name}</h5>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.current_role}</p>
                               </div>
-                              <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
+                              <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-gray-800 dark:text-gray-100">
                                 Score: {candidate.score}
                               </Badge>
                             </div>
@@ -598,7 +598,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Eye className="w-4 h-4 mr-2" />
                         Ver Pipeline Completo
                       </Button>
-                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Convidar Candidatos
                       </Button>
@@ -632,7 +632,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             </div>
                             <Badge 
                               variant="outline" 
-                              style={{ backgroundColor: interview.status === 'Confirmed' ? 'rgb(240 253 244)' : 'rgb(254 252 232)', borderColor: 'rgb(229 231 235)' }}
+                              style={{backgroundColor: interview.status === 'Confirmed' ? 'var(--green-50, #f0fdf4)' : 'var(--yellow-50, #fefce8)', borderColor: 'var(--gray-200)'}}
                             >
                               {interview.status}
                             </Badge>
@@ -673,7 +673,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md bg-green-50 dark:bg-green-900/20">
+                    <div className="p-4 rounded-md bg-status-success/10 dark:bg-status-success/20">
                       <h4 className="font-medium text-gray-800 dark:text-gray-100">Candidato Selecionado: Carlos Mendonça</h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Score Final: 94/100 • Cultural Fit: Excelente</p>
                     </div>
@@ -683,15 +683,15 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div className="space-y-3 font-open-sans">
                         <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Referências Profissionais</span>
-                          <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">Concluído</Badge>
+                          <Badge className="bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">Concluído</Badge>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Background Check</span>
-                          <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">Aprovado</Badge>
+                          <Badge className="bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">Aprovado</Badge>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Proposta Salarial</span>
-                          <Badge className="bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">Aceita</Badge>
+                          <Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">Aceita</Badge>
                         </div>
                       </div>
                     </div>
@@ -716,7 +716,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Revisar Proposta
                       </Button>
-                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Seleção
                       </Button>
@@ -738,7 +738,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                    <div className="p-5 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                       <h4 className="text-base font-bold mb-2 text-gray-800 dark:text-gray-100">Programa de 90 Dias</h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Integração estratégica e cultural personalizada</p>
                     </div>
@@ -781,7 +781,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Cronograma
                       </Button>
-                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Plano
                       </Button>
@@ -807,7 +807,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md bg-yellow-50 dark:bg-yellow-900/20">
+                    <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
                       <h4 className="font-medium text-gray-800 dark:text-gray-100">Framework de Avaliação Anual</h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">OKRs + 360-feedback + desenvolvimento contínuo</p>
                     </div>
@@ -854,7 +854,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar OKRs
                       </Button>
-                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Framework
                       </Button>
@@ -876,7 +876,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                    <div className="p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                       <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100">Sumário Executivo</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -969,7 +969,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md bg-red-100 dark:bg-red-900/20">
+                    <div className="p-4 rounded-md bg-status-error/10 dark:bg-status-error/20">
                       <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-100">Base de Análise</h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
@@ -1025,7 +1025,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div className="space-y-2">
                         {Object.entries(contextData.data.implementation_roadmap).map(([phase, description]: [string, any], index) => (
                           <div key={index} className="flex items-center space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                               {index + 1}
                             </div>
                             <span className="text-sm">{description}</span>
@@ -1091,7 +1091,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Revisar e Editar
                       </Button>
-                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Enviar para Candidato
                       </Button>
@@ -1125,7 +1125,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                 <h5 className="font-medium text-gray-800 dark:text-gray-100">{candidate.name}</h5>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Score: {candidate.score}/100</p>
                               </div>
-                              <Badge className="bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                              <Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                                 {candidate.interview_type}
                               </Badge>
                             </div>
@@ -1153,11 +1153,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                   key={i}
                                   disabled={!slot.available}
                                   className={`p-2 rounded text-xs transition-all ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
-                                  style={{
-                                    backgroundColor: slot.available ? 'rgb(240 253 244)' : 'rgb(243 244 246)',
+                                  style={{backgroundColor: slot.available ? 'var(--green-50, #f0fdf4)' : 'var(--gray-100)',
                                     color: 'inherit',
-                                    border: `1px solid ${slot.available ? 'rgb(229 231 235)' : 'rgb(243 244 246)'}`
-                                  }}
+                                    border: `1px solid ${slot.available ? 'var(--gray-200)' : 'var(--gray-100)'}`}}
                                 >
                                   {slot.time}
                                   <div className="text-xs text-gray-400 dark:text-gray-500">{slot.duration}</div>
@@ -1189,7 +1187,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar Horários
                       </Button>
-                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
+                      <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Agendamentos
                       </Button>
@@ -1318,7 +1316,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       </div>
                       <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800">
                         <div 
-                          className="h-full rounded-full transition-all duration-500 bg-gray-700" style={{ width: `${contextData.data.completion_percentage}%` }}
+                          className="h-full rounded-full transition-all duration-500 bg-gray-700" style={{width: `${contextData.data.completion_percentage}%`}}
                         />
                       </div>
                     </div>
@@ -1328,7 +1326,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Status dos Campos</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {contextData.data.collected_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-green-50 dark:bg-green-900/20">
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-status-success/10 dark:bg-status-success/20">
                             <CheckCircle className="w-4 h-4 text-status-success" />
                             <span className="text-sm">{field}</span>
                           </div>

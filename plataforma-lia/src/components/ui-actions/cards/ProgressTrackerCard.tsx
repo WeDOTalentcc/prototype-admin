@@ -49,25 +49,23 @@ export function ProgressTrackerCard({
   return (
     <Card 
       className="w-full max-w-md border-l-4 overflow-hidden"
-      style={{ 
-        backgroundColor: 'var(--lia-bg-secondary)',
-        borderLeftColor: 'var(--lia-border-default)'
-      }}
+      style={{backgroundColor: 'var(--lia-bg-secondary)',
+        borderLeftColor: 'var(--lia-border-default)'}}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div 
               className="h-10 w-10 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+              style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
             >
               <Target className="h-5 w-5 text-wedo-purple" />
             </div>
             <div>
-              <div className="font-semibold" style={{ color: 'var(--lia-text-primary)' }}>
+              <div className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
                 {data.job_title}
               </div>
-              <div className="text-xs" style={{ color: 'var(--lia-text-tertiary)' }}>
+              <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>
                 Progresso do Pipeline
               </div>
             </div>
@@ -75,11 +73,9 @@ export function ProgressTrackerCard({
           <Badge 
             variant="outline"
             className="border"
-            style={{ 
-              borderColor: 'var(--lia-border-default)',
+            style={{borderColor: 'var(--lia-border-default)',
               backgroundColor: 'var(--lia-bg-primary)',
-              color: 'var(--lia-text-primary)'
-            }}
+              color: 'var(--lia-text-primary)'}}
           >
             {isOnTrack ? (
               <>
@@ -97,26 +93,24 @@ export function ProgressTrackerCard({
 
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm mb-2">
-            <span style={{ color: 'var(--lia-text-secondary)' }}>Meta de Candidatos</span>
-            <span className="font-semibold" style={{ color: 'var(--lia-text-primary)' }}>
+            <span style={{color: 'var(--lia-text-secondary)'}}>Meta de Candidatos</span>
+            <span className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
               {data.total_candidates} / {data.target_candidates}
             </span>
           </div>
           <div 
             className="relative h-2 rounded-full overflow-hidden"
-            style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
             <div 
               className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-              style={{ 
-                width: `${progressPercent}%`,
-                backgroundColor: 'var(--lia-text-primary)'
-              }}
+              style={{width: `${progressPercent}%`,
+                backgroundColor: 'var(--lia-text-primary)'}}
             />
           </div>
           <div 
             className="text-xs mt-1 text-right"
-            style={{ color: 'var(--lia-text-tertiary)' }}
+            style={{color: 'var(--lia-text-tertiary)'}}
           >
             {progressPercent}% concluído
           </div>
@@ -124,19 +118,17 @@ export function ProgressTrackerCard({
 
         {!compact && data.stages && data.stages.length > 0 && (
           <div className="mb-4">
-            <div className="text-sm mb-2" style={{ color: 'var(--lia-text-secondary)' }}>Pipeline</div>
+            <div className="text-sm mb-2" style={{color: 'var(--lia-text-secondary)'}}>Pipeline</div>
             <div 
               className="flex h-4 rounded-full overflow-hidden"
-              style={{ backgroundColor: 'var(--lia-bg-tertiary)' }}
+              style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
             >
               {data.stages.map((stage, index) => (
                 <div
                   key={index}
                   className={`${stage.color} relative`}
-                  style={{ 
-                    width: `${(stage.count / data.total_candidates) * 100}%`,
-                    minWidth: stage.count > 0 ? "16px" : "0"
-                  }}
+                  style={{width: `${(stage.count / data.total_candidates) * 100}%`,
+                    minWidth: stage.count > 0 ? "16px" : "0"}}
                   title={`${stage.name}: ${stage.count}`}
                 />
               ))}
@@ -145,8 +137,8 @@ export function ProgressTrackerCard({
               {data.stages.map((stage, index) => (
                 <div key={index} className="flex items-center gap-1.5 text-xs">
                   <div className={`h-2 w-2 rounded-full ${stage.color}`} />
-                  <span style={{ color: 'var(--lia-text-secondary)' }}>{stage.name}</span>
-                  <span className="font-medium" style={{ color: 'var(--lia-text-primary)' }}>
+                  <span style={{color: 'var(--lia-text-secondary)'}}>{stage.name}</span>
+                  <span className="font-medium" style={{color: 'var(--lia-text-primary)'}}>
                     {stage.count}
                   </span>
                 </div>
@@ -158,38 +150,32 @@ export function ProgressTrackerCard({
         <div className="grid grid-cols-3 gap-2">
           <div 
             className="text-center p-2 rounded-md border"
-            style={{ 
-              backgroundColor: 'var(--lia-bg-primary)',
-              borderColor: 'var(--lia-border-subtle)'
-            }}
+            style={{backgroundColor: 'var(--lia-bg-primary)',
+              borderColor: 'var(--lia-border-subtle)'}}
           >
             <div className="text-lg font-bold text-gray-700 dark:text-gray-300">{data.days_open}</div>
-            <div className="text-xs" style={{ color: 'var(--lia-text-tertiary)' }}>Dias Aberta</div>
+            <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>Dias Aberta</div>
           </div>
           {data.avg_time_to_hire !== undefined && (
             <div 
               className="text-center p-2 rounded-md border"
-              style={{ 
-                backgroundColor: 'var(--lia-bg-primary)',
-                borderColor: 'var(--lia-border-subtle)'
-              }}
+              style={{backgroundColor: 'var(--lia-bg-primary)',
+                borderColor: 'var(--lia-border-subtle)'}}
             >
-              <div className="text-lg font-bold" style={{ color: 'var(--lia-text-primary)' }}>
+              <div className="text-lg font-bold" style={{color: 'var(--lia-text-primary)'}}>
                 {data.avg_time_to_hire}d
               </div>
-              <div className="text-xs" style={{ color: 'var(--lia-text-tertiary)' }}>Tempo Médio</div>
+              <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>Tempo Médio</div>
             </div>
           )}
           {data.conversion_rate !== undefined && (
             <div 
               className="text-center p-2 rounded-md border"
-              style={{ 
-                backgroundColor: 'var(--lia-bg-primary)',
-                borderColor: 'var(--lia-border-subtle)'
-              }}
+              style={{backgroundColor: 'var(--lia-bg-primary)',
+                borderColor: 'var(--lia-border-subtle)'}}
             >
               <div className="text-lg font-bold text-wedo-green">{data.conversion_rate}%</div>
-              <div className="text-xs" style={{ color: 'var(--lia-text-tertiary)' }}>Conversão</div>
+              <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>Conversão</div>
             </div>
           )}
         </div>
@@ -200,10 +186,8 @@ export function ProgressTrackerCard({
               <div 
                 key={index}
                 className="flex items-start gap-2 text-xs px-2 py-1.5 rounded"
-                style={{ 
-                  backgroundColor: 'var(--lia-bg-tertiary)',
-                  color: 'var(--lia-text-secondary)'
-                }}
+                style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                  color: 'var(--lia-text-secondary)'}}
               >
                 <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-gray-300" />
                 <span>{alert}</span>

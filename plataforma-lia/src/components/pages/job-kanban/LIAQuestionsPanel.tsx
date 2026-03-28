@@ -21,7 +21,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
       />
 
       {/* Painel Lateral */}
-      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-gray-900" style={{ animation: 'slideInRight 0.3s ease-out' }}>
+      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-gray-900" style={{animation: 'slideInRight 0.3s ease-out'}}>
         {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">

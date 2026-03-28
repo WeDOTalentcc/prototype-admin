@@ -146,8 +146,7 @@ export default function CoberturaPage() {
               </Button>
             </Link>
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <Grid3X3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -169,7 +168,7 @@ export default function CoberturaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -190,7 +189,7 @@ export default function CoberturaPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -209,7 +208,7 @@ export default function CoberturaPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -228,7 +227,7 @@ export default function CoberturaPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -248,7 +247,7 @@ export default function CoberturaPage() {
           </Card>
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Cobertura por Framework
@@ -262,9 +261,9 @@ export default function CoberturaPage() {
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-8 h-8 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: `${framework.color}20` }}
+                        style={{backgroundColor: `${framework.color}20`}}
                       >
-                        <div style={{ color: framework.color }}>
+                        <div style={{color: framework.color}}>
                           {framework.icon}
                         </div>
                       </div>
@@ -289,10 +288,8 @@ export default function CoberturaPage() {
                   <div className="relative h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
                     <div 
                       className="absolute inset-y-0 left-0 rounded-md transition-all duration-500"
-                      style={{ 
-                        width: `${framework.stats?.compliancePercentage || 0}%`,
-                        backgroundColor: framework.color 
-                      }}
+                      style={{width: `${framework.stats?.compliancePercentage || 0}%`,
+                        backgroundColor: framework.color}}
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="flex items-center gap-4 text-xs">
@@ -323,7 +320,7 @@ export default function CoberturaPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
@@ -391,7 +388,7 @@ export default function CoberturaPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Mapeamento Cross-Framework

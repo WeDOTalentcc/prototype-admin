@@ -232,7 +232,7 @@ export function AddColumnPopover({
           disabled={columnName.length < 2 || isAddingColumn}
           onClick={handleAddCustom}
           className="w-full py-2.5 rounded text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)' }}
+          style={{backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)'}}
         >
           {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
         </button>
@@ -248,7 +248,7 @@ export function AddColumnPopover({
                   onClick={() => handleAddCatalog(cat)}
                   className="flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
                   <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{cat.name}</span>
                 </button>
               ))}

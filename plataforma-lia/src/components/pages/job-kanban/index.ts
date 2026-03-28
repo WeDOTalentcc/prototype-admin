@@ -14,6 +14,9 @@ export { useKanbanCandidateDecisions } from "./hooks/useKanbanCandidateDecisions
 export { useKanbanDragDrop } from "./hooks/useKanbanDragDrop"
 export { useKanbanJobEditing } from "./hooks/useKanbanJobEditing"
 export { useKanbanLIAHandlers } from "./hooks/useKanbanLIAHandlers"
+export { mapInterviewStagesToKanban, organizeCandidatesByDynamicStages, createInitialCandidatesData, createStageSlug, inferActionBehavior, DYNAMIC_STAGE_COLORS } from "./utils/kanbanStageUtils"
+export type { InterviewStageFromJob, DynamicStage } from "./utils/kanbanStageUtils"
+export { calculateNotaLiaGeral, getLiaAlerts, getFilteredAndSortedCandidates } from "./utils/kanbanHelpers"
 export type {
   KanbanCandidate,
   KanbanStage,

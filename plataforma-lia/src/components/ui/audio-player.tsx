@@ -114,7 +114,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 min-w-[200px] max-w-[280px] font-['Open_Sans',sans-serif]",
+        "flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
         className
       )}
     >
@@ -149,7 +149,7 @@ export function AudioPlayer({
         >
           <div
             className="absolute inset-y-0 left-0 bg-gray-900 dark:bg-gray-100 rounded-full transition-[width] duration-100"
-            style={{ width: `${progress}%` }}
+            style={{width: `${progress}%`}}
           />
         </div>
         <div className="flex justify-between text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500 tabular-nums">

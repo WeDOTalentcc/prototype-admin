@@ -148,8 +148,7 @@ export function InlineChatPanel({
       className={`transition-all duration-300 relative group h-full ${
         isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen) ? "flex-1" : "flex-shrink-0"
       }`}
-      style={{
-        width:
+      style={{width:
           isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen)
             ? "auto"
             : chatMode === "job-creation"
@@ -161,8 +160,7 @@ export function InlineChatPanel({
             : chatMode === "job-creation"
               ? "900px"
               : `${liaWidth}px`,
-        transition: "all 0.3s ease-in-out",
-      }}
+        transition: "all 0.3s ease-in-out"}}
     >
       {/* MODO CRIAÇÃO DE VAGA - Super Chat com Critérios */}
       {chatMode === "job-creation" && showInlineChat ? (
@@ -202,7 +200,7 @@ export function InlineChatPanel({
         /* MODO GERAL - Prompt Expandido Original */
         <Card
           className="h-full flex flex-col overflow-hidden border border-gray-300 bg-gray-50 dark:bg-gray-800"
-          style={{ maxHeight: "calc(100vh - 180px)" }}
+          style={{maxHeight: "calc(100vh - 180px)"}}
         >
           {/* Mensagem de Apresentação da LIA */}
           <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-gray-800">
@@ -465,7 +463,7 @@ export function InlineChatPanel({
               {activeSearchTab === "job-description" && (
                 <div className="space-y-3">
                   {/* Descrição */}
-                  <div className="p-2.5 rounded-md" style={{ backgroundColor: "var(--gray-50)" }}>
+                  <div className="p-2.5 rounded-md" style={{backgroundColor: "var(--gray-50)"}}>
                     <p className="text-xs">
                       Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você,
                       configurando todos os detalhes.
@@ -479,7 +477,7 @@ export function InlineChatPanel({
                       value={jobDescriptionText}
                       onChange={(e) => setJobDescriptionText(e.target.value)}
                       className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-all resize-none text-gray-950 dark:text-gray-50 border border-gray-100"
-                      style={{ backgroundColor: "var(--gray-50)" }}
+                      style={{backgroundColor: "var(--gray-50)"}}
                     />
                     {/* Botões de Anexo */}
                     <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -537,10 +535,8 @@ export function InlineChatPanel({
                   {/* Botão Criar Vaga */}
                   <Button
                     className="w-full h-9 !text-xs font-medium rounded-md"
-                    style={{
-                      backgroundColor: jobDescriptionText.trim() ? "var(--gray-800)" : "var(--gray-50)",
-                      color: jobDescriptionText.trim() ? "var(--white)" : "var(--gray-400)",
-                    }}
+                    style={{backgroundColor: jobDescriptionText.trim() ? "var(--gray-800)" : "var(--gray-50)",
+                      color: jobDescriptionText.trim() ? "var(--white)" : "var(--gray-400)"}}
                     onClick={() => {
                       if (jobDescriptionText.trim()) {
                         onSetShowExpandedLIA(false)
@@ -578,7 +574,7 @@ export function InlineChatPanel({
                         <div
                           key={template.title}
                           className="cursor-pointer transition-all rounded-md p-2 hover:border border-gray-100"
-                          style={{ backgroundColor: "var(--gray-50)" }}
+                          style={{backgroundColor: "var(--gray-50)"}}
                           onClick={() => {
                             onSetLiaPromptValue(`Criar vaga ${template.title}`)
                             setActiveSearchTab("ia-natural")
@@ -595,7 +591,7 @@ export function InlineChatPanel({
                                   <span
                                     key={tag}
                                     className="text-micro px-1 py-0.5 rounded-full text-gray-400"
-                                    style={{ backgroundColor: "var(--gray-50)" }}
+                                    style={{backgroundColor: "var(--gray-50)"}}
                                   >
                                     {tag}
                                   </span>
@@ -622,7 +618,7 @@ export function InlineChatPanel({
                         type="text"
                         placeholder="Buscar vaga por título ou ID..."
                         className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100"
-                        style={{ backgroundColor: "var(--gray-50)" }}
+                        style={{backgroundColor: "var(--gray-50)"}}
                         onFocus={(e) => (e.target.style.borderColor = "var(--gray-400)")}
                         onBlur={(e) => (e.target.style.borderColor = "var(--gray-50)")}
                       />
@@ -638,7 +634,7 @@ export function InlineChatPanel({
                         <div
                           key={job.id}
                           className="flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors border border-gray-100"
-                          style={{ backgroundColor: "var(--gray-50)" }}
+                          style={{backgroundColor: "var(--gray-50)"}}
                           onClick={() => {
                             onSetLiaPromptValue(`Duplicar vaga ${job.id} - ${job.title}`)
                             setActiveSearchTab("ia-natural")
@@ -648,7 +644,7 @@ export function InlineChatPanel({
                         >
                           <span
                             className="text-micro px-1.5 py-0.5 rounded-full"
-                            style={{ backgroundColor: "var(--gray-50)" }}
+                            style={{backgroundColor: "var(--gray-50)"}}
                           >
                             {job.id}
                           </span>
@@ -686,8 +682,7 @@ export function InlineChatPanel({
       {/* Resize Handle - só mostra no modo geral */}
       {chatMode !== "job-creation" && (
         <div
-          className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-status-warning transition-colors group-hover:opacity-100 opacity-0"
-          className="bg-amber-400/30"
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-status-warning transition-colors group-hover:opacity-100 opacity-0 bg-status-warning/30"
           onMouseDown={(e) => {
             e.preventDefault()
             onSetIsResizingLIA(true)

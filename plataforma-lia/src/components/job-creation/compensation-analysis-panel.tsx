@@ -204,28 +204,22 @@ function SalaryComparisonBar({
       
       <div 
         className="absolute top-6 h-2 bg-wedo-purple/20 dark:bg-wedo-purple rounded-full"
-        style={{
-          left: `${getPosition(market.min)}%`,
-          width: `${getPosition(market.max) - getPosition(market.min)}%`
-        }}
+        style={{left: `${getPosition(market.min)}%`,
+          width: `${getPosition(market.max) - getPosition(market.min)}%`}}
       />
       
       {policy && (
         <div 
           className="absolute top-6 h-2 bg-wedo-cyan/20 dark:bg-wedo-cyan/10 rounded-full opacity-60"
-          style={{
-            left: `${getPosition(policy.min)}%`,
-            width: `${getPosition(policy.max) - getPosition(policy.min)}%`
-          }}
+          style={{left: `${getPosition(policy.min)}%`,
+            width: `${getPosition(policy.max) - getPosition(policy.min)}%`}}
         />
       )}
       
       <div 
         className="absolute top-5 h-4 bg-status-success dark:bg-status-success rounded-full"
-        style={{
-          left: `${getPosition(proposed.min)}%`,
-          width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`
-        }}
+        style={{left: `${getPosition(proposed.min)}%`,
+          width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`}}
       />
 
       <div className="absolute top-11 left-0 text-micro text-muted-foreground">
@@ -277,7 +271,7 @@ function CompensationBreakdownChart({
           <div
             key={segment.label}
             className={cn(segment.color, 'transition-all')}
-            style={{ width: `${segment.percentage}%` }}
+            style={{width: `${segment.percentage}%`}}
           />
         ))}
       </div>

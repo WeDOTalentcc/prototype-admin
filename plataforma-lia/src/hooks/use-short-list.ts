@@ -51,7 +51,7 @@ async function apiFetch(url: string, options?: RequestInit) {
   return res.json()
 }
 
-function toShortList(raw: any): ShortList {
+function toShortList(raw: Record<string, unknown>): ShortList {
   return {
     id: raw.id,
     jobId: raw.job_id,

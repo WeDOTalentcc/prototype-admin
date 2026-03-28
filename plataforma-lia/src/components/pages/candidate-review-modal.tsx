@@ -287,7 +287,7 @@ const EditCriteriaPopup: React.FC<{
             </button>
 
             {showPresets && (
-              <div className="absolute left-0 bottom-full mb-2 bg-white rounded-md border border-gray-200 py-2 min-w-[200px] z-20">
+              <div className="absolute left-0 bottom-full mb-2 bg-white rounded-md border border-gray-200 py-2 min-w-sidebar-content z-20">
                 <p className="px-3 py-1 text-xs text-gray-600 uppercase tracking-wide">Select a preset</p>
                 {allPresets.map((preset) => (
                   <button
@@ -753,11 +753,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     }
                   }}
                   className="w-full justify-center text-sm font-semibold"
-                  style={{
-                    backgroundColor: 'white',
+                  style={{backgroundColor: 'white',
                     color: 'var(--status-success)',
-                    border: '2px solid var(--status-success)'
-                  }}
+                    border: '2px solid var(--status-success)'}}
                 >
                   Approve
                   <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded">A</span>
@@ -771,11 +769,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     }
                   }}
                   className="w-full justify-center text-sm font-semibold"
-                  style={{
-                    backgroundColor: 'white',
+                  style={{backgroundColor: 'white',
                     color: 'var(--status-error)',
-                    border: '2px solid var(--status-error)'
-                  }}
+                    border: '2px solid var(--status-error)'}}
                 >
                   Reject
                   <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded">R</span>

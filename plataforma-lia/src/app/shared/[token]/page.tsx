@@ -546,7 +546,7 @@ export default function SharedSearchPage() {
                 <div className="w-full bg-zinc-800 rounded-full h-2">
                   <div
                     className="bg-gray-900 dark:bg-gray-50 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(evaluatedCount / totalCount) * 100 || 0}%` }}
+                    style={{width: `${(evaluatedCount / totalCount) * 100 || 0}%`}}
                   />
                 </div>
                 <div className="flex gap-4 mt-4 text-sm">

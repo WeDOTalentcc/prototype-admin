@@ -119,8 +119,8 @@ export function InterviewSchedulingModal({
         setSchedulingPrompt("")
         setError(null)
       }, 4000)
-    } catch (error: any) {
-      setError(error.message || "Erro ao agendar entrevista. Por favor, tente novamente.")
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "Erro ao agendar entrevista. Por favor, tente novamente.")
     } finally {
       setIsScheduling(false)
     }

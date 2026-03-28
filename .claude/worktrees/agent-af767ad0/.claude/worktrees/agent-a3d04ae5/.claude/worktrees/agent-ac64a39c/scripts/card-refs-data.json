@@ -1,0 +1,3708 @@
+{
+  "AUTH-001": {
+    "title": "Tela de Login",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/access/page.tsx"
+      },
+      {
+        "filename": "auth-context.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/auth-context.tsx"
+      },
+      {
+        "filename": "auth-headers.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/api/auth-headers.ts"
+      },
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      }
+    ]
+  },
+  "AUTH-002": {
+    "title": "Integração WorkOS SSO",
+    "refs": [
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/sso/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/callback/route.ts"
+      },
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      },
+      {
+        "filename": "workos-links.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos-links.ts"
+      },
+      {
+        "filename": "workos-admin-portal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/workos-admin-portal.tsx"
+      },
+      {
+        "filename": "workos-link-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/workos-link-card.tsx"
+      },
+      {
+        "filename": "workos.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/workos.py"
+      },
+      {
+        "filename": "workos_provisioning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/workos_provisioning_service.py"
+      }
+    ]
+  },
+  "AUTH-003": {
+    "title": "Middleware de Autenticação",
+    "refs": [
+      {
+        "filename": "auth-context.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/auth-context.tsx"
+      },
+      {
+        "filename": "auth-headers.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/api/auth-headers.ts"
+      },
+      {
+        "filename": "workos-session.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos-session.ts"
+      },
+      {
+        "filename": "session-crypto.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/session-crypto.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/session/route.ts"
+      },
+      {
+        "filename": "models.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/auth/models.py"
+      },
+      {
+        "filename": "schemas.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/auth/schemas.py"
+      }
+    ]
+  },
+  "AUTH-004": {
+    "title": "Gestão de Sessão JWT",
+    "refs": [
+      {
+        "filename": "workos-session.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos-session.ts"
+      },
+      {
+        "filename": "session-crypto.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/session-crypto.ts"
+      },
+      {
+        "filename": "useSessionRefresh.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSessionRefresh.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/refresh/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/session/route.ts"
+      },
+      {
+        "filename": "models.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/auth/models.py"
+      },
+      {
+        "filename": "schemas.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/auth/schemas.py"
+      }
+    ]
+  },
+  "WIZ-001": {
+    "title": "Interface Chat Conversacional",
+    "refs": [
+      {
+        "filename": "ExpandedChatContext.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/ExpandedChatContext.tsx"
+      },
+      {
+        "filename": "WizardHeader.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardHeader.tsx"
+      },
+      {
+        "filename": "WizardSidebar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardSidebar.tsx"
+      },
+      {
+        "filename": "expanded-chat-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat-modal.tsx"
+      },
+      {
+        "filename": "voice-chat-button.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/chat/voice-chat-button.tsx"
+      },
+      {
+        "filename": "message-feedback.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/chat/message-feedback.tsx"
+      },
+      {
+        "filename": "use-job-wizard-backend.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-job-wizard-backend.ts"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/types.ts"
+      }
+    ]
+  },
+  "WIZ-002": {
+    "title": "Orquestrador de Intenções",
+    "refs": [
+      {
+        "filename": "intent_classifier.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/intent_classifier.py"
+      },
+      {
+        "filename": "enhanced_intent_classifier.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/enhanced_intent_classifier.py"
+      },
+      {
+        "filename": "job_wizard_graph.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/agents/job_wizard_graph.py"
+      },
+      {
+        "filename": "nodes.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/agents/nodes.py"
+      },
+      {
+        "filename": "wizard_smart_orchestrator.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wizard_smart_orchestrator.py"
+      },
+      {
+        "filename": "wizard_orchestrator_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wizard_orchestrator_service.py"
+      }
+    ]
+  },
+  "WIZ-003": {
+    "title": "Serviço de Insights de Mercado",
+    "refs": [
+      {
+        "filename": "market_benchmark_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/market_benchmark_service.py"
+      },
+      {
+        "filename": "job_insights_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_insights_service.py"
+      },
+      {
+        "filename": "compensation_analysis_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/compensation_analysis_service.py"
+      },
+      {
+        "filename": "intelligence_layer_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/intelligence_layer_service.py"
+      },
+      {
+        "filename": "job_wizard_tools.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/tools/job_wizard_tools.py"
+      }
+    ]
+  },
+  "WIZ-004": {
+    "title": "Gerador de Job Description",
+    "refs": [
+      {
+        "filename": "jd_generator_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_generator_service.py"
+      },
+      {
+        "filename": "jd_enrichment_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_enrichment_service.py"
+      },
+      {
+        "filename": "jd_import_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_import_service.py"
+      },
+      {
+        "filename": "job_wizard_tools.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/tools/job_wizard_tools.py"
+      },
+      {
+        "filename": "EnrichedJDStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/EnrichedJDStage.tsx"
+      }
+    ]
+  },
+  "WIZ-005": {
+    "title": "Salvamento de Rascunho",
+    "refs": [
+      {
+        "filename": "use-job-draft.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-job-draft.ts"
+      },
+      {
+        "filename": "use-wizard-auto-save.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-wizard-auto-save.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/wizard/smart-orchestrate/route.ts"
+      },
+      {
+        "filename": "wizard_data_priority_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wizard_data_priority_service.py"
+      },
+      {
+        "filename": "wizard_smart_orchestrator.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wizard_smart_orchestrator.py"
+      }
+    ]
+  },
+  "WIZ-006": {
+    "title": "Sugestões Clicáveis",
+    "refs": [
+      {
+        "filename": "use-wizard-suggestions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-wizard-suggestions.ts"
+      },
+      {
+        "filename": "use-lia-suggestions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-lia-suggestions.ts"
+      },
+      {
+        "filename": "AISuggestionBadge.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/ai/AISuggestionBadge.tsx"
+      },
+      {
+        "filename": "expandable-ai-prompt.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expandable-ai-prompt.tsx"
+      },
+      {
+        "filename": "wizard_suggestions.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wizard_suggestions.py"
+      }
+    ]
+  },
+  "WIZ-007": {
+    "title": "Preview da Vaga (Live)",
+    "refs": [
+      {
+        "filename": "ReviewPublishStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/ReviewPublishStage.tsx"
+      },
+      {
+        "filename": "WizardSidebar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardSidebar.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-description/types.ts"
+      },
+      {
+        "filename": "use-job-draft.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-job-draft.ts"
+      }
+    ]
+  },
+  "WIZ-008": {
+    "title": "Formulário de Edição Completa",
+    "refs": [
+      {
+        "filename": "InputEvaluationStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/InputEvaluationStage.tsx"
+      },
+      {
+        "filename": "SalaryStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/SalaryStage.tsx"
+      },
+      {
+        "filename": "CompetenciesStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/CompetenciesStage.tsx"
+      },
+      {
+        "filename": "WSIQuestionsStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/WSIQuestionsStage.tsx"
+      },
+      {
+        "filename": "ReviewPublishStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/ReviewPublishStage.tsx"
+      },
+      {
+        "filename": "WizardSidebar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardSidebar.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/types.ts"
+      }
+    ]
+  },
+  "WIZ-009": {
+    "title": "Skip Calibração Conversacional",
+    "refs": [
+      {
+        "filename": "calibration-dashboard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/calibration/calibration-dashboard.tsx"
+      },
+      {
+        "filename": "lia-feedback-widget.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/calibration/lia-feedback-widget.tsx"
+      },
+      {
+        "filename": "index.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/calibration/index.tsx"
+      },
+      {
+        "filename": "calibration-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/calibration-card.tsx"
+      },
+      {
+        "filename": "calibration_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calibration_service.py"
+      }
+    ]
+  },
+  "WIZ-010": {
+    "title": "Estágio de Salário Interativo",
+    "refs": [
+      {
+        "filename": "SalaryStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/SalaryStage.tsx"
+      },
+      {
+        "filename": "WizardSidebar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardSidebar.tsx"
+      },
+      {
+        "filename": "compensation_analysis_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/compensation_analysis_service.py"
+      },
+      {
+        "filename": "market_benchmark_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/market_benchmark_service.py"
+      }
+    ]
+  },
+  "WIZ-011": {
+    "title": "Estágio de Competências",
+    "refs": [
+      {
+        "filename": "CompetenciesStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/CompetenciesStage.tsx"
+      },
+      {
+        "filename": "AddSkillModal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/modals/AddSkillModal.tsx"
+      },
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      },
+      {
+        "filename": "skills_catalog.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/skills_catalog.py"
+      }
+    ]
+  },
+  "WIZ-012": {
+    "title": "Estágio de Perguntas WSI",
+    "refs": [
+      {
+        "filename": "WSIQuestionsStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/WSIQuestionsStage.tsx"
+      },
+      {
+        "filename": "WSIQualityBar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WSIQualityBar.tsx"
+      },
+      {
+        "filename": "wsi_question_generator.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_generator.py"
+      },
+      {
+        "filename": "wsi_question_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_service.py"
+      },
+      {
+        "filename": "wsi_questions.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi_questions.py"
+      }
+    ]
+  },
+  "WIZ-013": {
+    "title": "Quality Gates WSI",
+    "refs": [
+      {
+        "filename": "WSIQualityBar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WSIQualityBar.tsx"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "confidence_policy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/confidence_policy_service.py"
+      },
+      {
+        "filename": "wsi.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi.py"
+      },
+      {
+        "filename": "wsi_endpoints.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/wsi_endpoints.py"
+      }
+    ]
+  },
+  "MAP-001": {
+    "title": "Lista de Candidatos da Base",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "search-preview-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-preview-card.tsx"
+      },
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "CandidatesHeader.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesHeader.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/types.ts"
+      },
+      {
+        "filename": "candidate-preview.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-preview.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      }
+    ]
+  },
+  "MAP-002": {
+    "title": "Busca Semântica com Elasticsearch + PG Vector + WRF",
+    "refs": [
+      {
+        "filename": "useSemanticSearch.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSemanticSearch.ts"
+      },
+      {
+        "filename": "useUnifiedSearch.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useUnifiedSearch.ts"
+      },
+      {
+        "filename": "candidate-search.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/api/candidate-search.ts"
+      },
+      {
+        "filename": "smart-search-input.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/smart-search-input.tsx"
+      },
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "embedding_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/embedding_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "MAP-003": {
+    "title": "Filtros Avancados",
+    "refs": [
+      {
+        "filename": "advanced-search.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/advanced-search.tsx"
+      },
+      {
+        "filename": "advanced-filters-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/advanced-filters-modal.tsx"
+      },
+      {
+        "filename": "filter-autocomplete.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/filter-autocomplete.tsx"
+      },
+      {
+        "filename": "SkillsFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/SkillsFilterInput.tsx"
+      },
+      {
+        "filename": "LocationFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/LocationFilterInput.tsx"
+      },
+      {
+        "filename": "CompanyFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/CompanyFilterInput.tsx"
+      },
+      {
+        "filename": "IndustryFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/IndustryFilterInput.tsx"
+      },
+      {
+        "filename": "LanguageFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/LanguageFilterInput.tsx"
+      },
+      {
+        "filename": "UniversitiesFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/UniversitiesFilterInput.tsx"
+      },
+      {
+        "filename": "ExpertiseAreasInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/ExpertiseAreasInput.tsx"
+      },
+      {
+        "filename": "DegreeRequirementsInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/DegreeRequirementsInput.tsx"
+      },
+      {
+        "filename": "GraduationYearInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/GraduationYearInput.tsx"
+      },
+      {
+        "filename": "RadiusDropdown.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/RadiusDropdown.tsx"
+      },
+      {
+        "filename": "TimezoneDropdown.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/TimezoneDropdown.tsx"
+      },
+      {
+        "filename": "FundingStagesInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/FundingStagesInput.tsx"
+      }
+    ]
+  },
+  "MAP-004": {
+    "title": "Adicionar Candidato a Vaga",
+    "refs": [
+      {
+        "filename": "add-to-job-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/add-to-job-modal.tsx"
+      },
+      {
+        "filename": "add-candidates-to-vacancy-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/add-candidates-to-vacancy-modal.tsx"
+      },
+      {
+        "filename": "add-candidate-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/add-candidate-modal.tsx"
+      },
+      {
+        "filename": "new-candidate-unified-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/new-candidate-unified-modal.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/assign-job/route.ts"
+      }
+    ]
+  },
+  "MAP-005": {
+    "title": "Matching Score IA",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "candidate-comparison.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-comparison.tsx"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      },
+      {
+        "filename": "candidate_comparison_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_comparison_service.py"
+      },
+      {
+        "filename": "cv_scoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_scoring_service.py"
+      }
+    ]
+  },
+  "MAP-006": {
+    "title": "Sugestoes Proativas LIA",
+    "refs": [
+      {
+        "filename": "use-lia-suggestions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-lia-suggestions.ts"
+      },
+      {
+        "filename": "AISuggestionBadge.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/ai/AISuggestionBadge.tsx"
+      },
+      {
+        "filename": "proactive-actions.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/autonomous/proactive-actions.tsx"
+      },
+      {
+        "filename": "proactive-actions-bell.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/autonomous/proactive-actions-bell.tsx"
+      },
+      {
+        "filename": "proactive_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/proactive_service.py"
+      },
+      {
+        "filename": "proactive_alert_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/proactive_alert_service.py"
+      }
+    ]
+  },
+  "MAP-007": {
+    "title": "Endpoint de Busca Paginada",
+    "refs": [
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "candidate-search.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/api/candidate-search.ts"
+      },
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "MAP-008": {
+    "title": "Componente de Paginação On-Demand",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "use-talent-funnel.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-talent-funnel.ts"
+      }
+    ]
+  },
+  "MAP-009": {
+    "title": "Adaptar Elasticsearch Query para Exclusão de IDs",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "MAP-010": {
+    "title": "Adaptar PG Vector Query para Exclusão de IDs",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "embedding_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/embedding_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "MAP-011": {
+    "title": "API de Feedback Like/Dislike",
+    "refs": [
+      {
+        "filename": "candidate_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_feedback_service.py"
+      },
+      {
+        "filename": "feedback_learning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feedback_learning_service.py"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/search/calibration/feedback/route.ts"
+      }
+    ]
+  },
+  "MAP-012": {
+    "title": "Componente Like/Dislike no Card de Candidato",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "message-feedback.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/chat/message-feedback.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/search/calibration/feedback/route.ts"
+      }
+    ]
+  },
+  "MAP-013": {
+    "title": "Remover Ordenação Automática por Ranking",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "useUnifiedSearch.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useUnifiedSearch.ts"
+      }
+    ]
+  },
+  "WSI-001": {
+    "title": "Motor de Geracao de Perguntas",
+    "refs": [
+      {
+        "filename": "wsi_question_generator.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_generator.py"
+      },
+      {
+        "filename": "wsi_question_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_service.py"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_questions.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi_questions.py"
+      },
+      {
+        "filename": "wsi.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi.py"
+      }
+    ]
+  },
+  "WSI-002": {
+    "title": "Blocos de Metodologia WSI",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "wsi.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi.py"
+      },
+      {
+        "filename": "wsi_endpoints.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/wsi_endpoints.py"
+      }
+    ]
+  },
+  "WSI-003": {
+    "title": "Preview de Perguntas",
+    "refs": [
+      {
+        "filename": "WSIQuestionsStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/WSIQuestionsStage.tsx"
+      },
+      {
+        "filename": "WSIQualityBar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WSIQualityBar.tsx"
+      },
+      {
+        "filename": "wsi_question_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_service.py"
+      },
+      {
+        "filename": "wsi_questions.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi_questions.py"
+      }
+    ]
+  },
+  "WSI-004": {
+    "title": "Edicao Manual de Perguntas",
+    "refs": [
+      {
+        "filename": "WSIQuestionsStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/WSIQuestionsStage.tsx"
+      },
+      {
+        "filename": "wsi_question_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_service.py"
+      },
+      {
+        "filename": "wsi_questions.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi_questions.py"
+      }
+    ]
+  },
+  "WSI-005": {
+    "title": "Aprovacao de Perguntas",
+    "refs": [
+      {
+        "filename": "WSIQuestionsStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/WSIQuestionsStage.tsx"
+      },
+      {
+        "filename": "ReviewPublishStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/ReviewPublishStage.tsx"
+      },
+      {
+        "filename": "wsi_question_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_question_service.py"
+      },
+      {
+        "filename": "confidence_policy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/confidence_policy_service.py"
+      }
+    ]
+  },
+  "TRI-001": {
+    "title": "Configuracao Twilio WhatsApp",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp_provider.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_provider.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      }
+    ]
+  },
+  "TRI-002": {
+    "title": "Envio de Mensagem Inicial",
+    "refs": [
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_meta_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_meta_service.py"
+      },
+      {
+        "filename": "communication_dispatcher.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_dispatcher.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      }
+    ]
+  },
+  "TRI-003": {
+    "title": "Webhook de Recebimento",
+    "refs": [
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "webhooks.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/webhooks.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      }
+    ]
+  },
+  "TRI-004": {
+    "title": "Fluxo Conversacional LIA",
+    "refs": [
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "conversation_manager.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/conversation_manager.py"
+      },
+      {
+        "filename": "conversation_memory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/conversation_memory.py"
+      },
+      {
+        "filename": "pre_qualification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pre_qualification_service.py"
+      }
+    ]
+  },
+  "TRI-005": {
+    "title": "Persistencia de Conversa",
+    "refs": [
+      {
+        "filename": "conversation_memory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/conversation_memory.py"
+      },
+      {
+        "filename": "memory_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/memory_service.py"
+      },
+      {
+        "filename": "conversation_manager.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/conversation_manager.py"
+      }
+    ]
+  },
+  "TRI-006": {
+    "title": "Tela de Monitoramento",
+    "refs": [
+      {
+        "filename": "data_request_whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/data_request_whatsapp_service.py"
+      },
+      {
+        "filename": "data_request_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/data_request_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "use-data-request-config.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-data-request-config.ts"
+      },
+      {
+        "filename": "use-data-request-modals.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-data-request-modals.ts"
+      }
+    ]
+  },
+  "TRI-007": {
+    "title": "Timeout e Retentativas",
+    "refs": [
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "cv_scoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_scoring_service.py"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      },
+      {
+        "filename": "rubric_evaluation_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/rubric_evaluation_service.py"
+      }
+    ]
+  },
+  "TRI-008": {
+    "title": "Opt-out e Consentimento",
+    "refs": [
+      {
+        "filename": "company-screening-settings.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/company-screening-settings.tsx"
+      },
+      {
+        "filename": "useScreeningConfig.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useScreeningConfig.ts"
+      },
+      {
+        "filename": "use-screening-questions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-screening-questions.ts"
+      }
+    ]
+  },
+  "TRI-009": {
+    "title": "Templates de Mensagem WhatsApp",
+    "refs": [
+      {
+        "filename": "candidate_report_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_report_service.py"
+      },
+      {
+        "filename": "report_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/report_service.py"
+      },
+      {
+        "filename": "explainability_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/explainability_service.py"
+      }
+    ]
+  },
+  "TRI-010": {
+    "title": "Envio em Massa (Bulk)",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "cv_scoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_scoring_service.py"
+      }
+    ]
+  },
+  "TRI-011": {
+    "title": "Pré-Qualificação Automatizada",
+    "refs": [
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      },
+      {
+        "filename": "communication_dispatcher.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_dispatcher.py"
+      },
+      {
+        "filename": "kpi-alert-system.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/kpi-alert-system.tsx"
+      }
+    ]
+  },
+  "SCO-001": {
+    "title": "Cálculo de Score WSI",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      },
+      {
+        "filename": "wsi.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/wsi.py"
+      }
+    ]
+  },
+  "SCO-002": {
+    "title": "Modelo Big Five Comportamental",
+    "refs": [
+      {
+        "filename": "big-five-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/big-five-modal.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/big-five/profiles/route.ts"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "SCO-003": {
+    "title": "Avaliação Bloom/Dreyfus",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "rubric_evaluation_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/rubric_evaluation_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      }
+    ]
+  },
+  "SCO-004": {
+    "title": "Parecer Textual LIA",
+    "refs": [
+      {
+        "filename": "candidate_report_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_report_service.py"
+      },
+      {
+        "filename": "explainability_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/explainability_service.py"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "SCO-005": {
+    "title": "Visualização de Score",
+    "refs": [
+      {
+        "filename": "WSIQualityBar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WSIQualityBar.tsx"
+      },
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "SCO-006": {
+    "title": "Breakdown de Dimensões",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "explainability_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/explainability_service.py"
+      }
+    ]
+  },
+  "SCO-007": {
+    "title": "Comparação entre Candidatos",
+    "refs": [
+      {
+        "filename": "candidate-comparison.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-comparison.tsx"
+      },
+      {
+        "filename": "candidate_comparison_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_comparison_service.py"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      }
+    ]
+  },
+  "SCO-008": {
+    "title": "Histórico de Scores",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "activity_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/activity_service.py"
+      }
+    ]
+  },
+  "GAT-001": {
+    "title": "Gate 1 - Aprovar Mapeados",
+    "refs": [
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      },
+      {
+        "filename": "stage_automation_engine.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_automation_engine.py"
+      },
+      {
+        "filename": "stage_transition_automation.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_transition_automation.py"
+      },
+      {
+        "filename": "stage_transition_automation.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/stage_transition_automation.py"
+      }
+    ]
+  },
+  "GAT-002": {
+    "title": "Gate 2 - Aprovar Triados",
+    "refs": [
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      },
+      {
+        "filename": "stage_automation_engine.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_automation_engine.py"
+      },
+      {
+        "filename": "stage_transition_automation.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_transition_automation.py"
+      }
+    ]
+  },
+  "GAT-003": {
+    "title": "Modal de Reprovação",
+    "refs": [
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      },
+      {
+        "filename": "stage_automation_engine.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_automation_engine.py"
+      },
+      {
+        "filename": "technical_tests.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/technical_tests.py"
+      }
+    ]
+  },
+  "GAT-004": {
+    "title": "Geração de Feedback LIA",
+    "refs": [
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      },
+      {
+        "filename": "stage_automation_engine.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_automation_engine.py"
+      },
+      {
+        "filename": "batch-approval-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/batch-approval-modal.tsx"
+      }
+    ]
+  },
+  "GAT-005": {
+    "title": "Envio de Feedback",
+    "refs": [
+      {
+        "filename": "batch-approval-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/batch-approval-modal.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/approvals/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/approvals/[id]/approve/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/approvals/[id]/reject/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/approvals/pending/route.ts"
+      }
+    ]
+  },
+  "GAT-006": {
+    "title": "Aprovação em Massa",
+    "refs": [
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      },
+      {
+        "filename": "stage_automation_engine.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/stage_automation_engine.py"
+      },
+      {
+        "filename": "kpi-alert-system.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/kpi-alert-system.tsx"
+      }
+    ]
+  },
+  "GAT-007": {
+    "title": "Histórico de Decisões",
+    "refs": [
+      {
+        "filename": "strategic-dashboard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/dashboard/strategic-dashboard.tsx"
+      },
+      {
+        "filename": "predictive-analytics-tab.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/dashboard/predictive-analytics-tab.tsx"
+      },
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      }
+    ]
+  },
+  "TPL-001": {
+    "title": "Template de Abordagem Inicial",
+    "refs": [
+      {
+        "filename": "email-templates-manager.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-templates-manager.tsx"
+      },
+      {
+        "filename": "email-template-form-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-template-form-modal.tsx"
+      },
+      {
+        "filename": "template-variables.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/template-variables.ts"
+      },
+      {
+        "filename": "email_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/email_service.py"
+      },
+      {
+        "filename": "recruitment_email_templates.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/recruitment_email_templates.py"
+      }
+    ]
+  },
+  "TPL-002": {
+    "title": "Template de Agendamento",
+    "refs": [
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_meta_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_meta_service.py"
+      },
+      {
+        "filename": "communication_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_service.py"
+      }
+    ]
+  },
+  "TPL-003": {
+    "title": "Template de Confirmação",
+    "refs": [
+      {
+        "filename": "email-templates-manager.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-templates-manager.tsx"
+      },
+      {
+        "filename": "send-email-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/send-email-modal.tsx"
+      },
+      {
+        "filename": "email_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/email_service.py"
+      },
+      {
+        "filename": "recruitment_email_templates.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/recruitment_email_templates.py"
+      }
+    ]
+  },
+  "TPL-004": {
+    "title": "Template Pós-Entrevista",
+    "refs": [
+      {
+        "filename": "email-templates-manager.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-templates-manager.tsx"
+      },
+      {
+        "filename": "personalized_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/personalized_feedback_service.py"
+      },
+      {
+        "filename": "recruitment_email_templates.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/recruitment_email_templates.py"
+      }
+    ]
+  },
+  "TPL-005": {
+    "title": "Editor de Templates",
+    "refs": [
+      {
+        "filename": "email-templates-manager.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-templates-manager.tsx"
+      },
+      {
+        "filename": "recruitment_email_templates.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/recruitment_email_templates.py"
+      },
+      {
+        "filename": "email_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/email_service.py"
+      }
+    ]
+  },
+  "TPL-006": {
+    "title": "Variáveis Dinâmicas",
+    "refs": [
+      {
+        "filename": "email-template-form-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-template-form-modal.tsx"
+      },
+      {
+        "filename": "email-templates-manager.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-templates-manager.tsx"
+      },
+      {
+        "filename": "template-variables.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/template-variables.ts"
+      }
+    ]
+  },
+  "TPL-007": {
+    "title": "Preview de Template",
+    "refs": [
+      {
+        "filename": "template-variables.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/template-variables.ts"
+      },
+      {
+        "filename": "email-template-form-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/email-templates/email-template-form-modal.tsx"
+      },
+      {
+        "filename": "recruitment_email_templates.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/recruitment_email_templates.py"
+      }
+    ]
+  },
+  "AGE-001": {
+    "title": "Integração Microsoft Graph",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "calendar.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/calendar.py"
+      }
+    ]
+  },
+  "AGE-002": {
+    "title": "Consulta de Disponibilidade",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "calendar.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/calendar.py"
+      }
+    ]
+  },
+  "AGE-003": {
+    "title": "Sugestão de Horários (AI)",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "autonomous_agent_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/autonomous_agent_service.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      }
+    ]
+  },
+  "AGE-004": {
+    "title": "Criação de Evento Teams",
+    "refs": [
+      {
+        "filename": "teams_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/teams_service.py"
+      },
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "teams.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/teams.py"
+      }
+    ]
+  },
+  "AGE-005": {
+    "title": "Confirmação do Candidato",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "communication_dispatcher.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_dispatcher.py"
+      }
+    ]
+  },
+  "AGE-006": {
+    "title": "Reagendamento",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      }
+    ]
+  },
+  "AGE-007": {
+    "title": "Lembretes Automáticos",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      },
+      {
+        "filename": "deadline_calculator_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/deadline_calculator_service.py"
+      }
+    ]
+  },
+  "AGE-008": {
+    "title": "Cancelamento",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      }
+    ]
+  },
+  "NOT-001": {
+    "title": "Sistema de Notificações Bell",
+    "refs": [
+      {
+        "filename": "kpi-alert-system.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/kpi-alert-system.tsx"
+      },
+      {
+        "filename": "alert-settings-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/alert-settings-modal.tsx"
+      },
+      {
+        "filename": "use-proactive-alerts.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-proactive-alerts.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/alerts/route.ts"
+      },
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      }
+    ]
+  },
+  "NOT-002": {
+    "title": "Notificações em Tempo Real",
+    "refs": [
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      },
+      {
+        "filename": "proactive_alert_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/proactive_alert_service.py"
+      },
+      {
+        "filename": "use-proactive-alerts.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-proactive-alerts.ts"
+      }
+    ]
+  },
+  "NOT-003": {
+    "title": "Preferências de Notificação",
+    "refs": [
+      {
+        "filename": "alert-settings-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/alert-settings-modal.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/alerts/preferences/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/alerts/config/route.ts"
+      }
+    ]
+  },
+  "NOT-004": {
+    "title": "Notificações Push",
+    "refs": [
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      },
+      {
+        "filename": "communication_dispatcher.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_dispatcher.py"
+      }
+    ]
+  },
+  "NOT-005": {
+    "title": "Histórico de Notificações",
+    "refs": [
+      {
+        "filename": "kpi-alert-system.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/kpi-alert-system.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/alerts/route.ts"
+      },
+      {
+        "filename": "notification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/notification_service.py"
+      }
+    ]
+  },
+  "NOT-006": {
+    "title": "Badge de Não Lidas",
+    "refs": [
+      {
+        "filename": "kpi-alert-system.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/alerts/kpi-alert-system.tsx"
+      },
+      {
+        "filename": "use-proactive-alerts.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-proactive-alerts.ts"
+      }
+    ]
+  },
+  "KAN-001": {
+    "title": "Estrutura do Kanban 4 Colunas",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/kanban/types.ts"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/job-kanban/types.ts"
+      },
+      {
+        "filename": "use-recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-recruitment-stages.ts"
+      },
+      {
+        "filename": "recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/recruitment-stages.ts"
+      },
+      {
+        "filename": "pipeline_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_service.py"
+      }
+    ]
+  },
+  "KAN-002": {
+    "title": "Card de Candidato",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/kanban/types.ts"
+      },
+      {
+        "filename": "pipeline_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_service.py"
+      },
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      }
+    ]
+  },
+  "KAN-003": {
+    "title": "Drag-and-Drop entre Colunas",
+    "refs": [
+      {
+        "filename": "candidate-preview.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-preview.tsx"
+      },
+      {
+        "filename": "candidate-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-modal.tsx"
+      },
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      }
+    ]
+  },
+  "KAN-004": {
+    "title": "Menu de Ações do Card",
+    "refs": [
+      {
+        "filename": "candidate-decision-flow-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-decision-flow-modal.tsx"
+      },
+      {
+        "filename": "contextual-actions-banner.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/contextual-actions-banner.tsx"
+      },
+      {
+        "filename": "bulk-actions-bar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/bulk-actions-bar.tsx"
+      }
+    ]
+  },
+  "KAN-005": {
+    "title": "Ícones de Ação Rápida",
+    "refs": [
+      {
+        "filename": "useJobFiltersPersistence.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useJobFiltersPersistence.ts"
+      },
+      {
+        "filename": "useJobColumnConfig.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useJobColumnConfig.ts"
+      },
+      {
+        "filename": "column-configuration-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/column-configuration-modal.tsx"
+      }
+    ]
+  },
+  "KAN-006": {
+    "title": "Badge de Score WSI",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/recruitment-stages.ts"
+      },
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      }
+    ]
+  },
+  "KAN-007": {
+    "title": "Filtro por Status",
+    "refs": [
+      {
+        "filename": "contextual-actions-banner.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/contextual-actions-banner.tsx"
+      },
+      {
+        "filename": "bulk-actions-bar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/bulk-actions-bar.tsx"
+      },
+      {
+        "filename": "candidate-decision-flow-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-decision-flow-modal.tsx"
+      }
+    ]
+  },
+  "KAN-008": {
+    "title": "Busca de Candidato",
+    "refs": [
+      {
+        "filename": "bulk-actions-bar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/bulk-actions-bar.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/update-status/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/send-email/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/export/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/delete/route.ts"
+      }
+    ]
+  },
+  "KAN-010": {
+    "title": "Feedback Implícito em Transições",
+    "refs": [
+      {
+        "filename": "candidate-decision-flow-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-decision-flow-modal.tsx"
+      },
+      {
+        "filename": "use-transition-context.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-transition-context.ts"
+      },
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      }
+    ]
+  },
+  "TAB-001": {
+    "title": "Tabela de Candidatos",
+    "refs": [
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "CandidatesHeader.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesHeader.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/types.ts"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/tables/types.ts"
+      }
+    ]
+  },
+  "TAB-002": {
+    "title": "Colunas Ordenáveis",
+    "refs": [
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "useTableFeatures.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useTableFeatures.ts"
+      },
+      {
+        "filename": "use-table-features.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-table-features.tsx"
+      }
+    ]
+  },
+  "TAB-003": {
+    "title": "Seleção Múltipla",
+    "refs": [
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "useCandidatesSelection.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/hooks/useCandidatesSelection.ts"
+      },
+      {
+        "filename": "bulk-actions-bar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/bulk-actions-bar.tsx"
+      }
+    ]
+  },
+  "TAB-004": {
+    "title": "Paginação",
+    "refs": [
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "use-talent-funnel.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-talent-funnel.ts"
+      }
+    ]
+  },
+  "TAB-005": {
+    "title": "Ações em Massa (Barra Sticky)",
+    "refs": [
+      {
+        "filename": "bulk-actions-bar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/bulk-actions-bar.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/update-status/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/send-email/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/candidates/bulk/export/route.ts"
+      }
+    ]
+  },
+  "PRV-001": {
+    "title": "Preview Lateral do Candidato",
+    "refs": [
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "candidate-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-modal.tsx"
+      }
+    ]
+  },
+  "PRV-002": {
+    "title": "Tab Perfil",
+    "refs": [
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "PRV-003": {
+    "title": "Tab Atividades",
+    "refs": [
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "activity-feed.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/activity-feed.tsx"
+      }
+    ]
+  },
+  "PRV-004": {
+    "title": "Tab Arquivos",
+    "refs": [
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "cv-preview.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/cv/cv-preview.tsx"
+      }
+    ]
+  },
+  "PRV-005": {
+    "title": "Tab Parecer LIA",
+    "refs": [
+      {
+        "filename": "candidate-page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/candidate-page.tsx"
+      },
+      {
+        "filename": "candidate_report_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_report_service.py"
+      },
+      {
+        "filename": "explainability_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/explainability_service.py"
+      }
+    ]
+  },
+  "VAG-001": {
+    "title": "Tabela de Vagas",
+    "refs": [
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/jobs/types.ts"
+      },
+      {
+        "filename": "useJobColumnConfig.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useJobColumnConfig.ts"
+      },
+      {
+        "filename": "useJobFiltersPersistence.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useJobFiltersPersistence.ts"
+      }
+    ]
+  },
+  "VAG-002": {
+    "title": "Tabs de Status",
+    "refs": [
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/jobs/types.ts"
+      },
+      {
+        "filename": "useJobFiltersPersistence.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useJobFiltersPersistence.ts"
+      }
+    ]
+  },
+  "VAG-003": {
+    "title": "Menu de Ações da Vaga",
+    "refs": [
+      {
+        "filename": "edit-job-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/edit-job-modal.tsx"
+      },
+      {
+        "filename": "job-status-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-status-modal.tsx"
+      },
+      {
+        "filename": "job-duplicate-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-duplicate-modal.tsx"
+      }
+    ]
+  },
+  "VAG-004": {
+    "title": "Pausar/Ativar Vaga",
+    "refs": [
+      {
+        "filename": "job-status-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-status-modal.tsx"
+      },
+      {
+        "filename": "job_vacancy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_vacancy_service.py"
+      }
+    ]
+  },
+  "VAG-005": {
+    "title": "Duplicar Vaga",
+    "refs": [
+      {
+        "filename": "job-duplicate-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-duplicate-modal.tsx"
+      },
+      {
+        "filename": "job_clone_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_clone_service.py"
+      }
+    ]
+  },
+  "VAG-006": {
+    "title": "Arquivar Vaga",
+    "refs": [
+      {
+        "filename": "job-status-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-status-modal.tsx"
+      },
+      {
+        "filename": "job_vacancy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_vacancy_service.py"
+      }
+    ]
+  },
+  "VAG-007": {
+    "title": "Contador de Candidatos por Etapa",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/recruitment-stages.ts"
+      },
+      {
+        "filename": "pipeline_stage_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_stage_service.py"
+      }
+    ]
+  },
+  "VAG-008": {
+    "title": "Navegação Vaga → Kanban",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/jobs/types.ts"
+      }
+    ]
+  },
+  "INT-TWI-001": {
+    "title": "Configurar Twilio Account",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "whatsapp_provider.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_provider.py"
+      }
+    ]
+  },
+  "INT-TWI-002": {
+    "title": "Sandbox WhatsApp",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "whatsapp_meta_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_meta_service.py"
+      }
+    ]
+  },
+  "INT-TWI-003": {
+    "title": "Número de Produção",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      }
+    ]
+  },
+  "INT-TWI-004": {
+    "title": "Webhook de Mensagens",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "webhooks.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/webhooks.py"
+      }
+    ]
+  },
+  "INT-TWI-005": {
+    "title": "Templates Aprovados Meta (HSM)",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "whatsapp_meta_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_meta_service.py"
+      },
+      {
+        "filename": "communication_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_service.py"
+      }
+    ]
+  },
+  "INT-TWI-006": {
+    "title": "Status Delivery Reports",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "communication_dispatcher.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_dispatcher.py"
+      }
+    ]
+  },
+  "INT-TWI-007": {
+    "title": "Rate Limiting e Filas",
+    "refs": [
+      {
+        "filename": "whatsapp_twilio_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_twilio_service.py"
+      },
+      {
+        "filename": "whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_service.py"
+      },
+      {
+        "filename": "whatsapp_factory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/whatsapp_factory.py"
+      },
+      {
+        "filename": "whatsapp.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/whatsapp.py"
+      },
+      {
+        "filename": "circuit_breaker.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/circuit_breaker.py"
+      },
+      {
+        "filename": "automation_scheduler.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/automation_scheduler.py"
+      }
+    ]
+  },
+  "INT-MSG-001": {
+    "title": "Configurar Azure App Registration",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "microsoft_graph.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/microsoft_graph.py"
+      }
+    ]
+  },
+  "INT-MSG-002": {
+    "title": "OAuth Flow Microsoft",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "microsoft_graph.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/microsoft_graph.py"
+      }
+    ]
+  },
+  "INT-MSG-003": {
+    "title": "Calendar API",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "calendar.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/calendar.py"
+      }
+    ]
+  },
+  "INT-MSG-004": {
+    "title": "Teams Meeting API",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "teams_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/teams_service.py"
+      },
+      {
+        "filename": "teams.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/teams.py"
+      }
+    ]
+  },
+  "INT-MSG-005": {
+    "title": "Webhook de Eventos",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "webhooks.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/webhooks.py"
+      }
+    ]
+  },
+  "INT-MSG-006": {
+    "title": "Token Refresh",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      }
+    ]
+  },
+  "INT-MSG-007": {
+    "title": "Multi-tenant Calendar",
+    "refs": [
+      {
+        "filename": "microsoft_graph_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/microsoft_graph_service.py"
+      },
+      {
+        "filename": "graph_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/graph_client.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      }
+    ]
+  },
+  "INT-LLM-001": {
+    "title": "Cliente Anthropic Claude",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      }
+    ]
+  },
+  "INT-LLM-002": {
+    "title": "Cliente Google Gemini",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      },
+      {
+        "filename": "gemini_voice_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/gemini_voice_service.py"
+      }
+    ]
+  },
+  "INT-LLM-003": {
+    "title": "Router de Modelos",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      }
+    ]
+  },
+  "INT-LLM-004": {
+    "title": "Fallback entre Modelos",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      },
+      {
+        "filename": "circuit_breaker.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/circuit_breaker.py"
+      }
+    ]
+  },
+  "INT-LLM-005": {
+    "title": "Gestão de Prompts",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      }
+    ]
+  },
+  "INT-LLM-006": {
+    "title": "Cache de Respostas",
+    "refs": [
+      {
+        "filename": "response_cache_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/response_cache_service.py"
+      },
+      {
+        "filename": "ai_cache_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/ai_cache_service.py"
+      },
+      {
+        "filename": "cache_manager_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cache_manager_service.py"
+      }
+    ]
+  },
+  "INT-LLM-007": {
+    "title": "Monitoramento de Custos",
+    "refs": [
+      {
+        "filename": "token_tracking_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/token_tracking_service.py"
+      },
+      {
+        "filename": "ConsumptionChart.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/ai-consumption/ConsumptionChart.tsx"
+      },
+      {
+        "filename": "ConsumptionSummaryCard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/ai-consumption/ConsumptionSummaryCard.tsx"
+      },
+      {
+        "filename": "AgentBreakdown.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/ai-consumption/AgentBreakdown.tsx"
+      }
+    ]
+  },
+  "INT-LLM-008": {
+    "title": "Rate Limiting LLM",
+    "refs": [
+      {
+        "filename": "llm_router_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/llm.py"
+      },
+      {
+        "filename": "circuit_breaker.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/circuit_breaker.py"
+      }
+    ]
+  },
+  "INT-LLM-009": {
+    "title": "Logging de Conversas",
+    "refs": [
+      {
+        "filename": "conversation_memory.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/conversation_memory.py"
+      },
+      {
+        "filename": "memory_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/memory_service.py"
+      },
+      {
+        "filename": "chat.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/chat.py"
+      }
+    ]
+  },
+  "INT-WOS-001": {
+    "title": "Configurar WorkOS Account",
+    "refs": [
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      },
+      {
+        "filename": "workos-links.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos-links.ts"
+      },
+      {
+        "filename": "workos.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/workos.py"
+      }
+    ]
+  },
+  "INT-WOS-002": {
+    "title": "SSO SAML/OIDC",
+    "refs": [
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/sso/route.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/auth/workos/callback/route.ts"
+      },
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      }
+    ]
+  },
+  "INT-WOS-003": {
+    "title": "Directory Sync SCIM",
+    "refs": [
+      {
+        "filename": "use-scim-config.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-scim-config.ts"
+      },
+      {
+        "filename": "workos_provisioning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/workos_provisioning_service.py"
+      },
+      {
+        "filename": "workos.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/workos.py"
+      }
+    ]
+  },
+  "INT-WOS-004": {
+    "title": "MFA Enforcement",
+    "refs": [
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      },
+      {
+        "filename": "auth-context.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/auth-context.tsx"
+      }
+    ]
+  },
+  "INT-WOS-005": {
+    "title": "User Management SDK",
+    "refs": [
+      {
+        "filename": "workos.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos.ts"
+      },
+      {
+        "filename": "workos-session.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/workos-session.ts"
+      },
+      {
+        "filename": "workos.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/workos.py"
+      }
+    ]
+  },
+  "INT-WOS-006": {
+    "title": "Webhook de Eventos",
+    "refs": [
+      {
+        "filename": "webhooks.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/webhooks.py"
+      },
+      {
+        "filename": "workos.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/workos.py"
+      }
+    ]
+  },
+  "INT-WOS-007": {
+    "title": "Admin Portal",
+    "refs": [
+      {
+        "filename": "workos-admin-portal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/workos-admin-portal.tsx"
+      },
+      {
+        "filename": "workos-link-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/workos-link-card.tsx"
+      },
+      {
+        "filename": "use-workos-metrics.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-workos-metrics.ts"
+      }
+    ]
+  },
+  "INT-APY-001": {
+    "title": "Configurar Apify Account",
+    "refs": [
+      {
+        "filename": "apify_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/apify_service.py"
+      },
+      {
+        "filename": "apify_mcp_client.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/apify_mcp_client.py"
+      }
+    ]
+  },
+  "INT-APY-002": {
+    "title": "LinkedIn Scraper Actor",
+    "refs": [
+      {
+        "filename": "apify_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/apify_service.py"
+      },
+      {
+        "filename": "company_scraper_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/company_scraper_service.py"
+      }
+    ]
+  },
+  "INT-APY-003": {
+    "title": "Integração com Sourcing Agent",
+    "refs": [
+      {
+        "filename": "apify_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/apify_service.py"
+      },
+      {
+        "filename": "sourcing_pipeline_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/sourcing_pipeline_service.py"
+      },
+      {
+        "filename": "sourcing_pipeline.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/sourcing_pipeline.py"
+      }
+    ]
+  },
+  "JD-001": {
+    "title": "Preview de Job Description com Sugestões LIA",
+    "refs": [
+      {
+        "filename": "EnrichedJDStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/EnrichedJDStage.tsx"
+      },
+      {
+        "filename": "ReviewPublishStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/ReviewPublishStage.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-description/types.ts"
+      },
+      {
+        "filename": "jd_enrichment_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_enrichment_service.py"
+      },
+      {
+        "filename": "jd_generator_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_generator_service.py"
+      }
+    ]
+  },
+  "JD-002": {
+    "title": "Job Description Final para Publicação",
+    "refs": [
+      {
+        "filename": "ReviewPublishStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/job-wizard/stages/ReviewPublishStage.tsx"
+      },
+      {
+        "filename": "job-publish-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-publish-modal.tsx"
+      },
+      {
+        "filename": "jd_generator_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_generator_service.py"
+      },
+      {
+        "filename": "job_board_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_board_service.py"
+      }
+    ]
+  },
+  "JDW-001": {
+    "title": "Interação com Sugestões LIA via Chat",
+    "refs": [
+      {
+        "filename": "EnrichedJDStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/EnrichedJDStage.tsx"
+      },
+      {
+        "filename": "use-wizard-suggestions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-wizard-suggestions.ts"
+      },
+      {
+        "filename": "use-lia-suggestions.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-lia-suggestions.ts"
+      },
+      {
+        "filename": "jd_enrichment_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_enrichment_service.py"
+      },
+      {
+        "filename": "job_wizard_tools.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/tools/job_wizard_tools.py"
+      }
+    ]
+  },
+  "JDW-002": {
+    "title": "Análise de Compensação de Mercado",
+    "refs": [
+      {
+        "filename": "compensation_analysis_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/compensation_analysis_service.py"
+      },
+      {
+        "filename": "market_benchmark_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/market_benchmark_service.py"
+      },
+      {
+        "filename": "SalaryStage.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/stages/SalaryStage.tsx"
+      }
+    ]
+  },
+  "JDW-003": {
+    "title": "Insights de Mercado para Vagas",
+    "refs": [
+      {
+        "filename": "job_insights_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_insights_service.py"
+      },
+      {
+        "filename": "market_benchmark_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/market_benchmark_service.py"
+      },
+      {
+        "filename": "intelligence_layer_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/intelligence_layer_service.py"
+      },
+      {
+        "filename": "job-insights-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/modals/job-insights-modal.tsx"
+      }
+    ]
+  },
+  "CFG-001": {
+    "title": "LIA Field Toggles",
+    "refs": [
+      {
+        "filename": "lia_field_config_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_field_config_service.py"
+      },
+      {
+        "filename": "feature_flag_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feature_flag_service.py"
+      },
+      {
+        "filename": "WizardSidebar.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/expanded-chat/components/WizardSidebar.tsx"
+      }
+    ]
+  },
+  "CFG-002": {
+    "title": "Verificação de Completude de Configuração",
+    "refs": [
+      {
+        "filename": "config_completeness_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/config_completeness_service.py"
+      },
+      {
+        "filename": "company_configuration_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/company_configuration_service.py"
+      }
+    ]
+  },
+  "CFG-003": {
+    "title": "Configuração de Jornada de Recrutamento",
+    "refs": [
+      {
+        "filename": "recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/recruitment-stages.ts"
+      },
+      {
+        "filename": "use-recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-recruitment-stages.ts"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/company/pipeline-templates/route.ts"
+      },
+      {
+        "filename": "pipeline_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pipeline_service.py"
+      },
+      {
+        "filename": "pipeline.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/pipeline.py"
+      }
+    ]
+  },
+  "CFG-004": {
+    "title": "Hub de Comunicação",
+    "refs": [
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/admin/configuracoes/comunicacoes/page.tsx"
+      },
+      {
+        "filename": "BriefingsSection.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/admin/configuracoes/comunicacoes/components/BriefingsSection.tsx"
+      },
+      {
+        "filename": "AutomationsSection.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/admin/configuracoes/comunicacoes/components/AutomationsSection.tsx"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/admin/configuracoes/comunicacoes/components/types.ts"
+      },
+      {
+        "filename": "communication_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/communication_service.py"
+      }
+    ]
+  },
+  "CFG-005": {
+    "title": "Dados da Empresa para LIA",
+    "refs": [
+      {
+        "filename": "company_configuration_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/company_configuration_service.py"
+      },
+      {
+        "filename": "culture_analyzer_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/culture_analyzer_service.py"
+      },
+      {
+        "filename": "company_scraper_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/company_scraper_service.py"
+      }
+    ]
+  },
+  "IMP-001": {
+    "title": "Importação Inteligente de Dados",
+    "refs": [
+      {
+        "filename": "jd_import_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/jd_import_service.py"
+      },
+      {
+        "filename": "cv_parser.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_parser.py"
+      },
+      {
+        "filename": "template_importer_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/template_importer_service.py"
+      },
+      {
+        "filename": "cv-upload-modal.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/cv/cv-upload-modal.tsx"
+      }
+    ]
+  },
+  "AGT-001": {
+    "title": "Agente Avaliador WSI",
+    "refs": [
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      },
+      {
+        "filename": "wsi_deterministic_scorer.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_deterministic_scorer.py"
+      },
+      {
+        "filename": "autonomous_agent_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/autonomous_agent_service.py"
+      },
+      {
+        "filename": "agent_monitoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/agent_monitoring_service.py"
+      }
+    ]
+  },
+  "AGT-002": {
+    "title": "Agente de Triagem Curricular",
+    "refs": [
+      {
+        "filename": "cv_scoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_scoring_service.py"
+      },
+      {
+        "filename": "cv_parser.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/cv_parser.py"
+      },
+      {
+        "filename": "autonomous_agent_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/autonomous_agent_service.py"
+      },
+      {
+        "filename": "pre_qualification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pre_qualification_service.py"
+      }
+    ]
+  },
+  "AGT-003": {
+    "title": "Agente Inteligente de Agendamento",
+    "refs": [
+      {
+        "filename": "scheduling_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/scheduling_service.py"
+      },
+      {
+        "filename": "autonomous_agent_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/autonomous_agent_service.py"
+      },
+      {
+        "filename": "calendar_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/calendar_service.py"
+      },
+      {
+        "filename": "agent_monitoring_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/agent_monitoring_service.py"
+      }
+    ]
+  },
+  "TRI-012": {
+    "title": "Serviço de Pré-Qualificação",
+    "refs": [
+      {
+        "filename": "pre_qualification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pre_qualification_service.py"
+      },
+      {
+        "filename": "eligibility_verification_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/eligibility_verification_service.py"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "DAT-001": {
+    "title": "Sistema de Solicitação de Dados",
+    "refs": [
+      {
+        "filename": "data_request_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/data_request_service.py"
+      },
+      {
+        "filename": "data_request_whatsapp_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/data_request_whatsapp_service.py"
+      },
+      {
+        "filename": "use-data-request-config.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-data-request-config.ts"
+      },
+      {
+        "filename": "use-data-request-modals.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-data-request-modals.ts"
+      }
+    ]
+  },
+  "ENT-001": {
+    "title": "Análise de Transcrição de Entrevista",
+    "refs": [
+      {
+        "filename": "interview_transcript_analysis_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/interview_transcript_analysis_service.py"
+      },
+      {
+        "filename": "multimodal_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/multimodal_service.py"
+      },
+      {
+        "filename": "deepgram_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/deepgram_service.py"
+      },
+      {
+        "filename": "transcription.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/transcription.py"
+      }
+    ]
+  },
+  "KAN-009": {
+    "title": "Componentes Kanban Modulares",
+    "refs": [
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/kanban/types.ts"
+      },
+      {
+        "filename": "types.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/job-kanban/types.ts"
+      },
+      {
+        "filename": "page.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/jobs/[id]/page.tsx"
+      },
+      {
+        "filename": "use-recruitment-stages.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-recruitment-stages.ts"
+      }
+    ]
+  },
+  "WDT-001": {
+    "title": "Endpoint de Busca Paginada",
+    "refs": [
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "candidate-search.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/lib/api/candidate-search.ts"
+      },
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "WDT-002": {
+    "title": "Componente de Paginação On-Demand",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "CandidatesTable.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/pages/candidates/CandidatesTable.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "use-talent-funnel.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/use-talent-funnel.ts"
+      }
+    ]
+  },
+  "WDT-003": {
+    "title": "Adaptar Elasticsearch Query para Exclusão de IDs",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "WDT-004": {
+    "title": "Adaptar PG Vector Query para Exclusão de IDs",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "embedding_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/embedding_service.py"
+      },
+      {
+        "filename": "search_assistant.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/search_assistant.py"
+      }
+    ]
+  },
+  "WDT-006": {
+    "title": "API de Feedback Like/Dislike",
+    "refs": [
+      {
+        "filename": "candidate_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_feedback_service.py"
+      },
+      {
+        "filename": "feedback_learning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feedback_learning_service.py"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/search/calibration/feedback/route.ts"
+      }
+    ]
+  },
+  "WDT-007": {
+    "title": "Componente Like/Dislike no Card de Candidato",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "message-feedback.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/chat/message-feedback.tsx"
+      },
+      {
+        "filename": "route.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/app/api/backend-proxy/search/calibration/feedback/route.ts"
+      }
+    ]
+  },
+  "WDT-005": {
+    "title": "Remover Ordenação Automática por Ranking",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "useSearchFlow.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useSearchFlow.ts"
+      },
+      {
+        "filename": "useUnifiedSearch.ts",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/hooks/useUnifiedSearch.ts"
+      }
+    ]
+  },
+  "WDT-008": {
+    "title": "Dashboard Básico de Métricas de Feedback",
+    "refs": [
+      {
+        "filename": "strategic-dashboard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/dashboard/strategic-dashboard.tsx"
+      },
+      {
+        "filename": "chart-components.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/charts/chart-components.tsx"
+      },
+      {
+        "filename": "candidate_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_feedback_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      }
+    ]
+  },
+  "WDT-009": {
+    "title": "Classificação Automática de Nível de Qualificação da Vaga",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "job_context_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/job_context_service.py"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      }
+    ]
+  },
+  "WDT-010": {
+    "title": "Exibição e Override da Classificação de Vaga",
+    "refs": [
+      {
+        "filename": "search-results-card.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/search-results-card.tsx"
+      },
+      {
+        "filename": "advanced-search.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/advanced-search.tsx"
+      },
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      }
+    ]
+  },
+  "WDT-011": {
+    "title": "Cálculo de Taxa de Queda de Score (Elasticsearch)",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      }
+    ]
+  },
+  "WDT-012": {
+    "title": "Cálculo de Gap Semântico (PG Vector)",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "embedding_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/embedding_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      }
+    ]
+  },
+  "WDT-013": {
+    "title": "Teste de Estabilidade Intra-Query",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      }
+    ]
+  },
+  "WDT-014": {
+    "title": "Parametrização Dinâmica do K no WRF",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      }
+    ]
+  },
+  "WDT-015": {
+    "title": "Filtro Pré-WRF Combinando Análises Estatísticas",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      }
+    ]
+  },
+  "WDT-016": {
+    "title": "Schema e Modelo da Base de Critérios",
+    "refs": [
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      },
+      {
+        "filename": "skills_catalog.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/skills_catalog.py"
+      },
+      {
+        "filename": "responsibilities_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/responsibilities_catalog_service.py"
+      }
+    ]
+  },
+  "WDT-017": {
+    "title": "Interface Admin para Gestão de Critérios",
+    "refs": [
+      {
+        "filename": "AdminTemplateHub.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/AdminTemplateHub.tsx"
+      },
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      },
+      {
+        "filename": "skills_catalog.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/skills_catalog.py"
+      }
+    ]
+  },
+  "WDT-018": {
+    "title": "Integração de Critérios com Prompt da LLM",
+    "refs": [
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      },
+      {
+        "filename": "nodes.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/agents/nodes.py"
+      },
+      {
+        "filename": "job_wizard_tools.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/tools/job_wizard_tools.py"
+      }
+    ]
+  },
+  "WDT-019": {
+    "title": "Dashboard de Gestão e Métricas de Critérios",
+    "refs": [
+      {
+        "filename": "AdminTemplateHub.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/AdminTemplateHub.tsx"
+      },
+      {
+        "filename": "strategic-dashboard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/dashboard/strategic-dashboard.tsx"
+      },
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      }
+    ]
+  },
+  "WDT-020": {
+    "title": "Alimentação Inicial com RH Sênior",
+    "refs": [
+      {
+        "filename": "skills_catalog_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/skills_catalog_service.py"
+      },
+      {
+        "filename": "template_importer_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/template_importer_service.py"
+      },
+      {
+        "filename": "learning_loop_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/learning_loop_service.py"
+      }
+    ]
+  },
+  "WDT-021": {
+    "title": "Sistema de Classificação Explicit/Implicit/Inferred",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      },
+      {
+        "filename": "confidence_policy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/confidence_policy_service.py"
+      }
+    ]
+  },
+  "WDT-022": {
+    "title": "Score de Confiança Individual por Requisito",
+    "refs": [
+      {
+        "filename": "lia_score_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/lia_score_service.py"
+      },
+      {
+        "filename": "confidence_policy_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/confidence_policy_service.py"
+      },
+      {
+        "filename": "wsi_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/wsi_service.py"
+      }
+    ]
+  },
+  "WDT-023": {
+    "title": "Toggle de Requisito Essencial Excludente",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "advanced-search.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/advanced-search.tsx"
+      },
+      {
+        "filename": "SkillsFilterInput.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/search/SkillsFilterInput.tsx"
+      }
+    ]
+  },
+  "WDT-024": {
+    "title": "Enriquecimento de Perfil Sob Demanda via Web",
+    "refs": [
+      {
+        "filename": "candidate_enrichment_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_enrichment_service.py"
+      },
+      {
+        "filename": "pearch_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pearch_service.py"
+      },
+      {
+        "filename": "apify_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/apify_service.py"
+      },
+      {
+        "filename": "sourcing.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/api/v1/sourcing.py"
+      }
+    ]
+  },
+  "WDT-025": {
+    "title": "Análise Pós-Busca com Feedback de Qualidade",
+    "refs": [
+      {
+        "filename": "candidate_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_feedback_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "feedback_learning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feedback_learning_service.py"
+      }
+    ]
+  },
+  "WDT-026": {
+    "title": "Flags Automáticas de Inconsistência",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "proactive_alert_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/proactive_alert_service.py"
+      }
+    ]
+  },
+  "WDT-027": {
+    "title": "Motor de Aprendizado via Feedback",
+    "refs": [
+      {
+        "filename": "feedback_learning_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feedback_learning_service.py"
+      },
+      {
+        "filename": "candidate_feedback_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/candidate_feedback_service.py"
+      },
+      {
+        "filename": "learning_loop_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/learning_loop_service.py"
+      },
+      {
+        "filename": "pattern_detector_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/pattern_detector_service.py"
+      }
+    ]
+  },
+  "WDT-028": {
+    "title": "Framework de A/B Testing de Parâmetros",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "feature_flag_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/feature_flag_service.py"
+      }
+    ]
+  },
+  "WDT-029": {
+    "title": "Documentação Técnica Completa do Sistema de Busca",
+    "refs": [
+      {
+        "filename": "semantic_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/semantic_search_service.py"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "vacancy_search_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/vacancy_search_service.py"
+      }
+    ]
+  },
+  "WDT-030": {
+    "title": "Dashboard de Observabilidade do Sistema de Busca",
+    "refs": [
+      {
+        "filename": "strategic-dashboard.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/dashboard/strategic-dashboard.tsx"
+      },
+      {
+        "filename": "chart-components.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/charts/chart-components.tsx"
+      },
+      {
+        "filename": "search_analytics_service.py",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#lia-agent-system/app/services/search_analytics_service.py"
+      },
+      {
+        "filename": "ConsumptionChart.tsx",
+        "url": "https://replit.com/@paulogmoraesjr/workspace#plataforma-lia/src/components/admin/ai-consumption/ConsumptionChart.tsx"
+      }
+    ]
+  }
+}

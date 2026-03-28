@@ -38,7 +38,7 @@ import { ProactiveAction as ApiProactiveAction } from "@/services/lia-api"
 
 interface ProactiveAction extends ApiProactiveAction {
   action_type?: string
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   expires_at?: string
 }
 

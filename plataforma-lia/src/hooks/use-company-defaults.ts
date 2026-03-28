@@ -75,8 +75,8 @@ export function useCompanyDefaults(): UseCompanyDefaultsResult {
         const benefitsData = await responses[1].json()
         const rawBenefits = Array.isArray(benefitsData) ? benefitsData : benefitsData.items || []
         benefits = rawBenefits
-          .filter((b: any) => b.is_active !== false)
-          .map((b: any) => ({
+          .filter((b: Record<string, unknown>) => b.is_active !== false)
+          .map((b: Record<string, unknown>) => ({
             id: b.id,
             name: b.name,
             category: b.category || 'Outros',

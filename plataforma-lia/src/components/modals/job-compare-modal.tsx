@@ -895,7 +895,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} transition-all duration-300`}
-                              style={{ width: "100%" }}
+                              style={{width: "100%"}}
                             />
                           </div>
                           <span className={`text-xs font-semibold w-20 text-right ${jobColor.text}`}>
@@ -908,7 +908,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-70 transition-all duration-300`}
-                              style={{ width: `${Math.max(screeningPct, 0)}%` }}
+                              style={{width: `${Math.max(screeningPct, 0)}%`}}
                             />
                           </div>
                           <span className={`text-xs font-medium w-20 text-right text-gray-700`}>
@@ -921,7 +921,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-50 transition-all duration-300`}
-                              style={{ width: `${Math.max(approvedPct, 0)}%` }}
+                              style={{width: `${Math.max(approvedPct, 0)}%`}}
                             />
                           </div>
                           <span className={`text-xs font-medium w-20 text-right text-gray-700`}>

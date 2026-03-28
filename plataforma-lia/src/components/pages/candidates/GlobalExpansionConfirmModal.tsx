@@ -49,7 +49,7 @@ export function GlobalExpansionConfirmModal({
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-800">Busca atual:</span>
-                <span className="font-medium text-xs max-w-[200px] truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
+                <span className="font-medium text-xs max-w-sidebar-content truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-800">Resultados locais:</span>

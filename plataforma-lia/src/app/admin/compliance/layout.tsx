@@ -105,8 +105,7 @@ export default function ComplianceLayout({
           <div className="py-4">
             <div className="flex items-center gap-3">
               <div 
-                className="w-12 h-12 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
               >
                 <Shield className="w-6 h-6 text-gray-600 dark:text-gray-400" />
               </div>

@@ -406,7 +406,7 @@ export function CandidateActivitiesTab({
                         <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${cat.score >= 80 ? 'bg-status-success' : cat.score >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
-                            style={{ width: `${cat.score}%` }}
+                            style={{width: `${cat.score}%`}}
                           />
                         </div>
                         <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{cat.score}%</span>
@@ -914,7 +914,7 @@ export function CandidateActivitiesTab({
         <div key={activity.id} className="relative flex items-start ml-12">
           <div
             className="absolute -left-6 w-3 h-3 rounded-full border-2 border-white z-10"
-            style={{ backgroundColor: activity.iconColor, marginTop: '14px' }}
+            style={{backgroundColor: activity.iconColor, marginTop: '14px'}}
           ></div>
           <div className="flex-1 border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
             <div
@@ -924,9 +924,9 @@ export function CandidateActivitiesTab({
               <div className="flex items-start gap-3">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${activity.iconColor}20` }}
+                  style={{backgroundColor: `${activity.iconColor}20`}}
                 >
-                  <ActivityIcon className="w-4 h-4" style={{ color: activity.iconColor }} />
+                  <ActivityIcon className="w-4 h-4" style={{color: activity.iconColor}} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
@@ -979,9 +979,9 @@ export function CandidateActivitiesTab({
           <div className="flex items-start gap-2">
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${activity.iconColor}20` }}
+              style={{backgroundColor: `${activity.iconColor}20`}}
             >
-              <ActivityIcon className="w-3.5 h-3.5" style={{ color: activity.iconColor }} />
+              <ActivityIcon className="w-3.5 h-3.5" style={{color: activity.iconColor}} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
@@ -1099,10 +1099,8 @@ export function CandidateActivitiesTab({
           <button
             onClick={() => setActivityFilter('lia')}
             className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
-            style={{
-              backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'rgb(96 190 209 / 0.15)',
-              color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'
-            }}
+            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'color-mix(in srgb, var(--wedo-cyan) 15%, transparent)',
+              color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
           >
             🤖 LIA
           </button>

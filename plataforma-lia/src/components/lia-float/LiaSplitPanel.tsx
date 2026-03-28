@@ -365,9 +365,9 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "0ms"}} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "150ms"}} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "300ms"}} />
           </span>
         ) : (
           <p className="whitespace-pre-wrap">{content}</p>

@@ -62,7 +62,7 @@ export interface CandidateResult {
   is_decision_maker?: boolean
   is_top_universities?: boolean
   is_startup?: boolean
-  company_info?: Record<string, any>
+  company_info?: Record<string, unknown>
   expertise?: string[]
   outreach_message?: string
   pearch_profile_id?: string

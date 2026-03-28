@@ -285,8 +285,7 @@ export default function PortalTitularPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <UserCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -317,10 +316,10 @@ export default function PortalTitularPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <FileSearch className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
@@ -333,10 +332,10 @@ export default function PortalTitularPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-amber-500/10">
                   <Loader2 className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
@@ -349,10 +348,10 @@ export default function PortalTitularPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
@@ -365,10 +364,10 @@ export default function PortalTitularPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
@@ -383,7 +382,7 @@ export default function PortalTitularPage() {
         </div>
 
         {stats && stats.overdueRequests > 0 && (
-          <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderColor: 'rgba(239, 68, 68, 0.5)', backgroundColor: 'rgba(239, 68, 68, 0.08)' }}>
+          <Card className="mb-6" style={{borderColor: 'rgba(239, 68, 68, 0.5)', backgroundColor: 'rgba(239, 68, 68, 0.08)'}}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-status-error" />
@@ -402,7 +401,7 @@ export default function PortalTitularPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -485,7 +484,7 @@ export default function PortalTitularPage() {
                             <TableRow key={request.id} className="hover:bg-gray-50">
                               <TableCell>
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                                  <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                                     <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                   </div>
                                   <span className="font-medium text-gray-800 dark:text-gray-100" >{typeInfo.label}</span>
@@ -580,7 +579,7 @@ export default function PortalTitularPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -613,7 +612,7 @@ export default function PortalTitularPage() {
                         className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors bg-gray-100 dark:bg-gray-800"
                         
                       >
-                        <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                        <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                           <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         </div>
                         <div className="flex-1">
@@ -634,7 +633,7 @@ export default function PortalTitularPage() {
           </div>
 
           <div className="space-y-6">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader>
                 <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Settings className="w-4 h-4" />
@@ -671,7 +670,7 @@ export default function PortalTitularPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader>
                 <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Métricas de Desempenho
@@ -703,7 +702,7 @@ export default function PortalTitularPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader>
                 <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Por Tipo de Solicitação
@@ -743,7 +742,7 @@ export default function PortalTitularPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderColor: 'rgba(96, 190, 209, 0.3)', backgroundColor: 'rgba(96, 190, 209, 0.02)' }}>
+            <Card style={{borderColor: 'rgba(96, 190, 209, 0.3)', backgroundColor: 'rgba(96, 190, 209, 0.02)'}}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />

@@ -43,7 +43,7 @@ export function BarChart({ data, maxValue }: BarChartProps) {
               className={`h-2 rounded-full transition-all duration-500 ${
                 item.color || 'bg-gray-400'
               }`}
-              style={{ width: `${(item.value / max) * 100}%` }}
+              style={{width: `${(item.value / max) * 100}%`}}
             />
           </div>
           <div className="w-12 text-xs text-gray-950 dark:text-gray-50 font-semibold text-right">
@@ -166,7 +166,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
           <div key={index} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: item.color }}
+              style={{backgroundColor: item.color}}
             />
             <span className="text-xs text-gray-600 dark:text-gray-600">
               {item.label}

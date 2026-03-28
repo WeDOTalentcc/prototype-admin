@@ -513,7 +513,7 @@ export function CalibrationDashboard() {
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all"
-                      style={{ width: `${weight.adjusted_weight * 100}%` }}
+                      style={{width: `${weight.adjusted_weight * 100}%`}}
                     />
                   </div>
                   <div className="flex justify-between mt-1">

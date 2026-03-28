@@ -47,7 +47,7 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
             "h-1.5 rounded-full",
             pct >= 80 ? "bg-status-success" : pct >= 60 ? "bg-status-warning" : "bg-status-error"
           )}
-          style={{ width: `${pct}%` }}
+          style={{width: `${pct}%`}}
         />
       </div>
       <span className={cn("text-micro font-semibold w-8 text-right", getScoreColor(value))}>

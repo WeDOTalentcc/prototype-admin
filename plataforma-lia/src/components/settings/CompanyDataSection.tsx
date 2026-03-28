@@ -493,7 +493,7 @@ export function CompanyDataSection({
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-2 rounded-full transition-all duration-500 bg-gray-900" style={{ width: `${liaAnalysisProgress}%` }}
+                    className="h-2 rounded-full transition-all duration-500 bg-gray-900" style={{width: `${liaAnalysisProgress}%`}}
                   />
                 </div>
               </div>

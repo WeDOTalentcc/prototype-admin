@@ -86,8 +86,7 @@ export default function RecursosPage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -116,11 +115,11 @@ export default function RecursosPage() {
                 <div className="flex items-start gap-4">
                   <div 
                     className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: resource.requestRequired ? 'rgba(251, 191, 36, 0.1)' : 'rgba(229, 231, 235, 0.3)' }}
+                    style={{backgroundColor: resource.requestRequired ? 'rgba(251, 191, 36, 0.1)' : 'rgba(229, 231, 235, 0.3)'}}
                   >
                     <IconComponent 
                       className="w-5 h-5" 
-                      style={{ color: resource.requestRequired ? 'var(--status-warning)' : 'var(--gray-600)' }}
+                      style={{color: resource.requestRequired ? 'var(--status-warning)' : 'var(--gray-600)'}}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -149,10 +148,8 @@ export default function RecursosPage() {
                     ) : (
                       <button 
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors"
-                        style={{ 
-                          borderColor: 'var(--status-warning)',
-                          color: 'var(--status-warning)'
-                        }}
+                        style={{borderColor: 'var(--status-warning)',
+                          color: 'var(--status-warning)'}}
                         onClick={() => handleRequest(resource.name)}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -168,13 +165,11 @@ export default function RecursosPage() {
 
         <div 
           className="mt-6 p-4 rounded-md border"
-          style={{ 
-            backgroundColor: 'rgba(251, 191, 36, 0.05)',
-            borderColor: 'rgba(251, 191, 36, 0.2)'
-          }}
+          style={{backgroundColor: 'rgba(251, 191, 36, 0.05)',
+            borderColor: 'rgba(251, 191, 36, 0.2)'}}
         >
           <div className="flex items-start gap-3">
-            <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--status-warning)' }} />
+            <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{color: 'var(--status-warning)'}} />
             <div>
               <h4 className="font-medium text-sm mb-1 text-gray-800 dark:text-gray-100" >
                 Documentos com Acesso Restrito

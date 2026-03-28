@@ -5,13 +5,13 @@ import { useState, useEffect, useRef, useCallback } from "react"
 export interface PolicyData {
   id?: string
   company_id: string
-  pipeline_rules: Record<string, any>
-  scheduling_rules: Record<string, any>
-  communication_rules: Record<string, any>
-  screening_rules: Record<string, any>
-  automation_rules: Record<string, any>
-  pipeline_templates: any[]
-  learned_patterns: any[]
+  pipeline_rules: Record<string, unknown>
+  scheduling_rules: Record<string, unknown>
+  communication_rules: Record<string, unknown>
+  screening_rules: Record<string, unknown>
+  automation_rules: Record<string, unknown>
+  pipeline_templates: unknown[]
+  learned_patterns: unknown[]
   setup_progress: number
   setup_completed_at: string | null
 }
@@ -28,7 +28,7 @@ export interface ChatResponse {
   current_question: number | null
   total_questions: number
   setup_progress: number
-  updated_fields: Record<string, any>
+  updated_fields: Record<string, unknown>
   block_completed: boolean
   all_completed: boolean
 }
@@ -204,7 +204,7 @@ export function useHiringPolicies() {
     setEditingField(null)
   }
 
-  const saveFieldValue = async (block: string, field: string, value: any) => {
+  const saveFieldValue = async (block: string, field: string, value: unknown) => {
     setIsSavingBlock(true)
     try {
       const res = await fetch(`${API_BASE}/block`, {

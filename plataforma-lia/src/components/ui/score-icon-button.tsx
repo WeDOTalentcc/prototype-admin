@@ -60,7 +60,7 @@ export function ScoreIconButton({
     >
       <Icon 
         className={cn("w-3.5 h-3.5")} 
-        style={{ color: isClickable ? activeColor : inactiveColor }} 
+        style={{color: isClickable ? activeColor : inactiveColor}} 
       />
       {hasScore && displayValue && (
         <span className="text-xs font-bold text-gray-700 dark:text-gray-300">

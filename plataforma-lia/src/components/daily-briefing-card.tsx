@@ -339,17 +339,15 @@ export function DailyBriefingCard({
             {/* Card Urgentes */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ 
-                backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
-                borderColor: 'var(--gray-200)'
-              }}
+              style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
+                borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <AlertCircle className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Urgentes</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.urgent_count}
               </p>
             </div>
@@ -357,14 +355,14 @@ export function DailyBriefingCard({
             {/* Card Tarefas Hoje */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
+              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Target className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.tasks_today}
               </p>
             </div>
@@ -372,14 +370,14 @@ export function DailyBriefingCard({
             {/* Card Entrevistas */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
+              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Entrevistas</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.interviews_today}
               </p>
             </div>
@@ -387,14 +385,14 @@ export function DailyBriefingCard({
             {/* Card Alertas */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
+              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Bell className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Alertas</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.alerts_active}
               </p>
             </div>
@@ -402,7 +400,7 @@ export function DailyBriefingCard({
 
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
                 <Zap className="w-4 h-4 text-gray-700" />
                 Ações Urgentes
               </h4>
@@ -411,13 +409,11 @@ export function DailyBriefingCard({
                   <div
                     key={action.id}
                     className="flex items-center justify-between p-2 rounded-md border"
-                    style={{ 
-                      backgroundColor: 'var(--gray-50)',
-                      borderColor: 'var(--gray-200)'
-                    }}
+                    style={{backgroundColor: 'var(--gray-50)',
+                      borderColor: 'var(--gray-200)'}}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: 'var(--wedo-cyan-dark)' }}>
+                      <p className="text-xs font-medium truncate" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {action.title}
                       </p>
                       <p className="text-xs truncate text-gray-700">
@@ -441,7 +437,7 @@ export function DailyBriefingCard({
 
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
                 <Calendar className="w-4 h-4 text-gray-700" />
                 Agenda do Dia
               </h4>
@@ -450,17 +446,17 @@ export function DailyBriefingCard({
                   <div
                     key={item.id}
                     className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer hover:transition-all"
-                    style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
+                    style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
                     onClick={() => handleActionClick('view_interview', item)}
                   >
                     <div 
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: 'var(--gray-100)' }}
+                      style={{backgroundColor: 'var(--gray-100)'}}
                     >
                       <Clock className="w-4 h-4 text-gray-700" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium" style={{ color: 'var(--wedo-cyan-dark)' }}>
+                      <p className="text-xs font-medium" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {item.time}
                       </p>
                       <p className="text-xs truncate text-gray-700">
@@ -480,7 +476,7 @@ export function DailyBriefingCard({
 
           {briefing.insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Insights LIA
               </h4>
@@ -518,13 +514,13 @@ export function DailyBriefingCard({
           {/* Card Pipeline - Paleta Monocromática */}
           <div 
             className="p-3 rounded-md border"
-            style={{ backgroundColor: 'var(--gray-50)' }}
+            style={{backgroundColor: 'var(--gray-50)'}}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div 
                   className="w-8 h-8 rounded-md flex items-center justify-center"
-                  style={{ backgroundColor: 'var(--gray-100)' }}
+                  style={{backgroundColor: 'var(--gray-100)'}}
                 >
                   <BarChart3 className="w-4 h-4 text-gray-700" />
                 </div>

@@ -28,10 +28,8 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
             <span
               key={i}
               className="w-2 h-2 rounded-full bg-wedo-cyan"
-              style={{
-                animation: "triagemTypingDot 1.4s ease-in-out infinite",
-                animationDelay: `${i * 0.2}s`,
-              }}
+              style={{animation: "triagemTypingDot 1.4s ease-in-out infinite",
+                animationDelay: `${i * 0.2}s`}}
             />
           ))}
         </div>

@@ -17,14 +17,14 @@ interface PresentationModeProps {
   isActive: boolean
   onToggle: () => void
   currentPage: string
-  data?: any
+  data?: Record<string, unknown>
 }
 
 interface DashboardSlide {
   id: string
   title: string
-  component: React.ComponentType<any>
-  icon: React.ComponentType<any>
+  component: React.ComponentType<{ data: Record<string, unknown> }>
+  icon: React.ComponentType<{ className?: string }>
   duration?: number // seconds to auto-advance
 }
 
@@ -52,7 +52,7 @@ const mockData = {
 } as const
 
 // Componente de KPI memoizado
-const KPICard = React.memo(({ kpi, index }: { kpi: any; index: number }) => (
+const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
   <Card key={index} className="bg-white dark:bg-gray-800 border-2 hover:transition-all">
     <CardContent className="p-8 text-center">
       <div className="text-5xl font-bold text-gray-950 dark:text-gray-50 mb-4">
@@ -79,7 +79,7 @@ const KPICard = React.memo(({ kpi, index }: { kpi: any; index: number }) => (
 KPICard.displayName = 'KPICard'
 
 // Slide Components memoizados
-const KPISlide = React.memo(({ data }: { data: any }) => {
+const KPISlide = React.memo(({ data }: { data: Record<string, unknown> }) => {
   const currentDate = useMemo(() => new Date().toLocaleDateString('pt-BR'), [])
 
   return (
@@ -92,7 +92,7 @@ const KPISlide = React.memo(({ data }: { data: any }) => {
       </p>
 
       <div className="grid grid-cols-3 gap-8">
-        {data.kpis.map((kpi: any, index: number) => (
+        {(data.kpis as { label: string; value: number; change: number; trend: string; color: string }[]).map((kpi, index: number) => (
           <KPICard key={`${kpi.label}-${index}`} kpi={kpi} index={index} />
         ))}
       </div>
@@ -103,7 +103,7 @@ const KPISlide = React.memo(({ data }: { data: any }) => {
 KPISlide.displayName = 'KPISlide'
 
 // Componente de departamento memoizado
-const DepartmentCard = React.memo(({ dept, index }: { dept: any; index: number }) => (
+const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; efficiency: number; openPositions: number; avgDays: number }; index: number }) => (
   <Card key={index} className="bg-white dark:bg-gray-800 border-2">
     <CardContent className="p-8">
       <div className="text-center mb-6">
@@ -141,7 +141,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: any; index: number }
 
 DepartmentCard.displayName = 'DepartmentCard'
 
-const DepartmentSlide = React.memo(({ data }: { data: any }) => (
+const DepartmentSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
     <h1 className="text-6xl font-bold text-gray-950 dark:text-gray-50 mb-4 text-center">
       Performance por Departamento
@@ -151,7 +151,7 @@ const DepartmentSlide = React.memo(({ data }: { data: any }) => (
     </p>
 
     <div className="grid grid-cols-2 gap-8">
-      {data.departments.map((dept: any, index: number) => (
+      {(data.departments as { name: string; efficiency: number; openPositions: number; avgDays: number }[]).map((dept, index: number) => (
         <DepartmentCard key={`${dept.name}-${index}`} dept={dept} index={index} />
       ))}
     </div>
@@ -161,7 +161,7 @@ const DepartmentSlide = React.memo(({ data }: { data: any }) => (
 DepartmentSlide.displayName = 'DepartmentSlide'
 
 // Componente de alerta memoizado
-const AlertItem = React.memo(({ alert, index }: { alert: any; index: number }) => {
+const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message: string }; index: number }) => {
   const getIcon = useMemo(() => {
     switch (alert.type) {
       case "success": return <CheckCircle className="w-8 h-8 text-status-success" />
@@ -194,7 +194,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: any; index: number }) =
 
 AlertItem.displayName = 'AlertItem'
 
-const AlertsSlide = React.memo(({ data }: { data: any }) => (
+const AlertsSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
     <h1 className="text-6xl font-bold text-gray-950 dark:text-gray-50 mb-4 text-center">
       Alertas e Status
@@ -204,7 +204,7 @@ const AlertsSlide = React.memo(({ data }: { data: any }) => (
     </p>
 
     <div className="space-y-6">
-      {data.alerts.map((alert: any, index: number) => (
+      {(data.alerts as { type: string; message: string }[]).map((alert, index: number) => (
         <AlertItem key={`${alert.type}-${index}`} alert={alert} index={index} />
       ))}
     </div>
@@ -389,7 +389,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
       <div className="h-1 bg-gray-200 dark:bg-gray-700">
         <div
           className="h-full bg-gray-700 dark:bg-gray-300 transition-all duration-300"
-          style={{ width: `${progress}%` }}
+          style={{width: `${progress}%`}}
         />
       </div>
 

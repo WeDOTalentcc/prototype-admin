@@ -259,8 +259,7 @@ export default function ConsentimentosPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <CheckSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -290,10 +289,10 @@ export default function ConsentimentosPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
@@ -306,10 +305,10 @@ export default function ConsentimentosPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckSquare className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
@@ -322,10 +321,10 @@ export default function ConsentimentosPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-amber-500/10">
                   <RefreshCw className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
@@ -338,10 +337,10 @@ export default function ConsentimentosPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <XCircle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
@@ -354,10 +353,10 @@ export default function ConsentimentosPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(168, 85, 247, 0.1)'}}>
                   <Ban className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
@@ -388,7 +387,7 @@ export default function ConsentimentosPage() {
           </TabsList>
 
           <TabsContent value="versions">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -454,7 +453,7 @@ export default function ConsentimentosPage() {
                         <TableRow key={version.id} className="hover:bg-gray-50">
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                               </div>
                               <span className="font-medium text-gray-800 dark:text-gray-100" >
@@ -529,7 +528,7 @@ export default function ConsentimentosPage() {
           </TabsContent>
 
           <TabsContent value="events">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
@@ -673,7 +672,7 @@ export default function ConsentimentosPage() {
 
           <TabsContent value="stats">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+              <Card >
                 <CardHeader>
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Taxa de Consentimento por Tipo
@@ -716,7 +715,7 @@ export default function ConsentimentosPage() {
                 </CardContent>
               </Card>
 
-              <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+              <Card >
                 <CardHeader>
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Atividade Recente
@@ -767,7 +766,7 @@ export default function ConsentimentosPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+              <Card className="md:col-span-2" >
                 <CardHeader>
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Resumo Geral

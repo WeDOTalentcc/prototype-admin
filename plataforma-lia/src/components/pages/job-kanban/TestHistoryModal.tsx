@@ -87,7 +87,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     <div
                       key={i}
                       className="flex-1 bg-white/30 rounded-t hover:bg-white/40 transition-colors relative group"
-                      style={{ height: `${((value - 6) / 2) * 100}%` }}
+                      style={{height: `${((value - 6) / 2) * 100}%`}}
                     >
                       <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                         {value}
@@ -203,7 +203,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     <div
                       key={i}
                       className="flex-1 bg-gray-600 dark:bg-gray-500 rounded-t opacity-80"
-                      style={{ height: `${(height / 12) * 100}%` }}
+                      style={{height: `${(height / 12) * 100}%`}}
                     />
                   ))}
                 </div>
@@ -259,7 +259,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     <div
                       key={i}
                       className="flex-1 bg-gray-600 dark:bg-gray-500 rounded-t opacity-80"
-                      style={{ height: `${(height / 8) * 100}%` }}
+                      style={{height: `${(height / 8) * 100}%`}}
                     />
                   ))}
                 </div>
@@ -315,7 +315,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     <div
                       key={i}
                       className="flex-1 bg-gray-400 rounded-t opacity-60"
-                      style={{ height: `${(height / 6) * 100}%` }}
+                      style={{height: `${(height / 6) * 100}%`}}
                     />
                   ))}
                 </div>

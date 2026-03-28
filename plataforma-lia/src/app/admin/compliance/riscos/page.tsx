@@ -126,8 +126,7 @@ export default function RiscosPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <AlertTriangle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -145,7 +144,7 @@ export default function RiscosPage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -160,14 +159,14 @@ export default function RiscosPage() {
                     <span className="text-xs text-status-warning">+2 este mês</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <FileWarning className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -183,14 +182,14 @@ export default function RiscosPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <AlertCircle className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -207,14 +206,14 @@ export default function RiscosPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'rgba(234, 179, 8, 0.1)'}}>
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -231,7 +230,7 @@ export default function RiscosPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
               </div>
@@ -240,7 +239,7 @@ export default function RiscosPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="lg:col-span-1" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card className="lg:col-span-1" >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -264,10 +263,8 @@ export default function RiscosPage() {
                     <div className="h-2 rounded-full overflow-hidden bg-gray-50 dark:bg-gray-900" >
                       <div 
                         className="h-full rounded-full transition-all"
-                        style={{ 
-                          width: `${(category.count / totalRisks) * 100}%`,
-                          backgroundColor: category.color 
-                        }}
+                        style={{width: `${(category.count / totalRisks) * 100}%`,
+                          backgroundColor: category.color}}
                       />
                     </div>
                   </div>
@@ -286,7 +283,7 @@ export default function RiscosPage() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -318,7 +315,7 @@ export default function RiscosPage() {
                             <td key={colIndex} className="p-1">
                               <div 
                                 className="w-8 h-8 rounded flex items-center justify-center mx-auto text-xs font-bold"
-                                style={{ backgroundColor: cellColor.bg, color: cellColor.text }}
+                                style={{backgroundColor: cellColor.bg, color: cellColor.text}}
                               >
                                 {value}
                               </div>
@@ -332,19 +329,19 @@ export default function RiscosPage() {
               </div>
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500" >
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-success)'}} />
                   <span>Baixo (1-4)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span>Médio (5-9)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-warning)'}} />
                   <span>Alto (10-14)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-error)' }} />
+                  <div className="w-3 h-3 rounded" style={{backgroundColor: 'var(--status-error)'}} />
                   <span>Crítico (15+)</span>
                 </div>
               </div>
@@ -352,7 +349,7 @@ export default function RiscosPage() {
           </Card>
         </div>
 
-        <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card className="mb-6" >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -378,16 +375,14 @@ export default function RiscosPage() {
                   <div 
                     key={risk.id}
                     className="p-4 rounded-md border-l-4"
-                    style={{ 
-                      backgroundColor: scoreConfig.bg,
-                      borderLeftColor: scoreConfig.text
-                    }}
+                    style={{backgroundColor: scoreConfig.bg,
+                      borderLeftColor: scoreConfig.text}}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <Badge variant="outline" className="text-micro font-mono" style={{ borderColor: scoreConfig.text, color: scoreConfig.text }}>
+                      <Badge variant="outline" className="text-micro font-mono" style={{borderColor: scoreConfig.text, color: scoreConfig.text}}>
                         {risk.id}
                       </Badge>
-                      <span className="text-lg font-bold" style={{ color: scoreConfig.text }}>{risk.score}</span>
+                      <span className="text-lg font-bold" style={{color: scoreConfig.text}}>{risk.score}</span>
                     </div>
                     <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
                       {risk.name}
@@ -417,13 +412,12 @@ export default function RiscosPage() {
               <Link key={page.href} href={page.href}>
                 <Card 
                   className="cursor-pointer transition-all hover:h-full"
-                  style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}
+                  
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div 
-                        className="w-10 h-10 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+                        className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                       >
                         <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>

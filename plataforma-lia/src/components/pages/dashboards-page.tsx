@@ -251,7 +251,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                       }`}>
                         <Icon 
                           className="w-3.5 h-3.5" 
-                          style={{ color: item.color }}
+                          style={{color: item.color}}
                         />
                       </div>
                     ) : (
@@ -265,7 +265,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                           }`}>
                             <Icon 
                               className="w-3.5 h-3.5" 
-                              style={{ color: item.color }}
+                              style={{color: item.color}}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -458,7 +458,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '40%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '40%'}}></div>
               </div>
             </div>
 
@@ -473,7 +473,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{ width: '60%' }}></div>
+                <div className="h-2 rounded-full bg-gray-900" style={{width: '60%'}}></div>
               </div>
             </div>
 
@@ -488,7 +488,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '90%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-orange" style={{width: '90%'}}></div>
               </div>
             </div>
 
@@ -503,7 +503,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '100%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-purple" style={{width: '100%'}}></div>
               </div>
             </div>
           </CardContent>
@@ -613,8 +613,8 @@ function IndicadoresEstrategicosPlaceholder() {
                 </Badge>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-wedo-green-bright" style={{ width: '85%' }} title="Performance"></div>
-                <div className="bg-wedo-orange" style={{ width: '15%' }} title="Orçamento não utilizado"></div>
+                <div className="bg-wedo-green-bright" style={{width: '85%'}} title="Performance"></div>
+                <div className="bg-wedo-orange" style={{width: '15%'}} title="Orçamento não utilizado"></div>
               </div>
             </div>
 
@@ -629,8 +629,8 @@ function IndicadoresEstrategicosPlaceholder() {
                 </Badge>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '72%' }} title="Performance"></div>
-                <div className="bg-wedo-orange" style={{ width: '28%' }} title="Orçamento não utilizado"></div>
+                <div className="bg-gray-900" style={{width: '72%'}} title="Performance"></div>
+                <div className="bg-wedo-orange" style={{width: '28%'}} title="Orçamento não utilizado"></div>
               </div>
             </div>
 
@@ -645,8 +645,8 @@ function IndicadoresEstrategicosPlaceholder() {
                 </Badge>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-wedo-purple" style={{ width: '68%' }} title="Performance"></div>
-                <div className="bg-wedo-orange" style={{ width: '32%' }} title="Orçamento não utilizado"></div>
+                <div className="bg-wedo-purple" style={{width: '68%'}} title="Performance"></div>
+                <div className="bg-wedo-orange" style={{width: '32%'}} title="Orçamento não utilizado"></div>
               </div>
             </div>
 
@@ -661,8 +661,8 @@ function IndicadoresEstrategicosPlaceholder() {
                 </Badge>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-wedo-orange" style={{ width: '58%' }} title="Performance"></div>
-                <div className="bg-wedo-purple" style={{ width: '42%' }} title="Orçamento não utilizado"></div>
+                <div className="bg-wedo-orange" style={{width: '58%'}} title="Performance"></div>
+                <div className="bg-wedo-purple" style={{width: '42%'}} title="Orçamento não utilizado"></div>
               </div>
             </div>
           </div>
@@ -900,7 +900,7 @@ function PrevisoesIAPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{ width: '92%' }}></div>
+                <div className="h-2 rounded-full bg-gray-900" style={{width: '92%'}}></div>
               </div>
             </div>
 
@@ -915,7 +915,7 @@ function PrevisoesIAPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '85%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '85%'}}></div>
               </div>
             </div>
 
@@ -930,7 +930,7 @@ function PrevisoesIAPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{ width: '78%' }}></div>
+                <div className="h-2 rounded-full bg-gray-900" style={{width: '78%'}}></div>
               </div>
             </div>
 
@@ -945,7 +945,7 @@ function PrevisoesIAPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '71%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-purple" style={{width: '71%'}}></div>
               </div>
             </div>
 
@@ -960,7 +960,7 @@ function PrevisoesIAPlaceholder() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '62%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-purple" style={{width: '62%'}}></div>
               </div>
             </div>
           </CardContent>
@@ -1154,7 +1154,7 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">42%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                <div className="h-3 rounded-full bg-gray-900" style={{ width: '42%' }}></div>
+                <div className="h-3 rounded-full bg-gray-900" style={{width: '42%'}}></div>
               </div>
             </div>
 
@@ -1168,7 +1168,7 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">35%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                <div className="h-3 rounded-full bg-wedo-green-bright" style={{ width: '35%' }}></div>
+                <div className="h-3 rounded-full bg-wedo-green-bright" style={{width: '35%'}}></div>
               </div>
             </div>
 
@@ -1182,7 +1182,7 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">23%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                <div className="h-3 rounded-full bg-wedo-orange" style={{ width: '23%' }}></div>
+                <div className="h-3 rounded-full bg-wedo-orange" style={{width: '23%'}}></div>
               </div>
             </div>
           </CardContent>
@@ -1306,9 +1306,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">78% Remoto • 18% Híbrido • 4% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '78%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '18%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '4%' }}></div>
+                <div className="bg-gray-900" style={{width: '78%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '18%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '4%'}}></div>
               </div>
             </div>
 
@@ -1319,9 +1319,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">15% Remoto • 62% Híbrido • 23% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '15%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '62%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '23%' }}></div>
+                <div className="bg-gray-900" style={{width: '15%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '62%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '23%'}}></div>
               </div>
             </div>
 
@@ -1332,9 +1332,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">32% Remoto • 51% Híbrido • 17% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '32%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '51%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '17%' }}></div>
+                <div className="bg-gray-900" style={{width: '32%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '51%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '17%'}}></div>
               </div>
             </div>
 
@@ -1345,9 +1345,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">8% Remoto • 25% Híbrido • 67% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '8%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '25%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '67%' }}></div>
+                <div className="bg-gray-900" style={{width: '8%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '25%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '67%'}}></div>
               </div>
             </div>
 
@@ -1358,9 +1358,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">55% Remoto • 38% Híbrido • 7% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '55%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '38%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '7%' }}></div>
+                <div className="bg-gray-900" style={{width: '55%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '38%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '7%'}}></div>
               </div>
             </div>
 
@@ -1371,9 +1371,9 @@ function ModelosTrabalhoPlaceholder() {
                 <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">42% Remoto • 45% Híbrido • 13% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <div className="bg-gray-900" style={{ width: '42%' }}></div>
-                <div className="bg-wedo-green-bright" style={{ width: '45%' }}></div>
-                <div className="bg-wedo-orange" style={{ width: '13%' }}></div>
+                <div className="bg-gray-900" style={{width: '42%'}}></div>
+                <div className="bg-wedo-green-bright" style={{width: '45%'}}></div>
+                <div className="bg-wedo-orange" style={{width: '13%'}}></div>
               </div>
             </div>
           </div>
@@ -1447,7 +1447,7 @@ function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">3.247</span>
               </div>
-              <div className="w-full h-4 rounded-full" style={{ background: 'linear-gradient(to right, var(--gray-700), var(--gray-600))' }}></div>
+              <div className="w-full h-4 rounded-full" style={{background: 'linear-gradient(to right, var(--gray-700), var(--gray-600))'}}></div>
             </div>
 
             {/* Triagem LIA */}
@@ -1460,7 +1460,7 @@ function FunilPerformancePlaceholder() {
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">2.013</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div className="h-4 rounded-full bg-gray-900" style={{ width: '62%' }}></div>
+                <div className="h-4 rounded-full bg-gray-900" style={{width: '62%'}}></div>
               </div>
             </div>
 
@@ -1474,7 +1474,7 @@ function FunilPerformancePlaceholder() {
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">1.234</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div className="h-4 rounded-full bg-wedo-purple" style={{ width: '38%' }}></div>
+                <div className="h-4 rounded-full bg-wedo-purple" style={{width: '38%'}}></div>
               </div>
             </div>
 
@@ -1488,7 +1488,7 @@ function FunilPerformancePlaceholder() {
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">585</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div className="h-4 rounded-full bg-wedo-orange" style={{ width: '18%' }}></div>
+                <div className="h-4 rounded-full bg-wedo-orange" style={{width: '18%'}}></div>
               </div>
             </div>
 
@@ -1502,7 +1502,7 @@ function FunilPerformancePlaceholder() {
                 <span className="text-lg font-inter font-bold text-status-success dark:text-status-success">389</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div className="h-4 rounded-full bg-wedo-green-bright" style={{ width: '12%' }}></div>
+                <div className="h-4 rounded-full bg-wedo-green-bright" style={{width: '12%'}}></div>
               </div>
             </div>
           </div>
@@ -1532,7 +1532,7 @@ function FunilPerformancePlaceholder() {
                 </Badge>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{ width: '14.3%' }}></div>
+                <div className="h-2 rounded-full bg-gray-900" style={{width: '14.3%'}}></div>
               </div>
             </div>
 
@@ -1548,7 +1548,7 @@ function FunilPerformancePlaceholder() {
                 </Badge>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '22.8%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '22.8%'}}></div>
               </div>
             </div>
 
@@ -1564,7 +1564,7 @@ function FunilPerformancePlaceholder() {
                 </Badge>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '9.7%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-orange" style={{width: '9.7%'}}></div>
               </div>
             </div>
 
@@ -1580,7 +1580,7 @@ function FunilPerformancePlaceholder() {
                 </Badge>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '4.3%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-purple" style={{width: '4.3%'}}></div>
               </div>
             </div>
 
@@ -1596,7 +1596,7 @@ function FunilPerformancePlaceholder() {
                 </Badge>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-magenta" style={{ width: '4.5%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-magenta" style={{width: '4.5%'}}></div>
               </div>
             </div>
           </CardContent>
@@ -1618,7 +1618,7 @@ function FunilPerformancePlaceholder() {
                 <div className="text-2xl font-inter font-bold text-status-success dark:text-status-success">66%</div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '66%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '66%'}}></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 60% • +6% vs. meta</p>
             </div>
@@ -1630,7 +1630,7 @@ function FunilPerformancePlaceholder() {
  <div className="text-2xl font-inter font-bold text-gray-900 dark:text-gray-300">21<span className="text-sm">d</span></div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{ width: '70%' }}></div>
+                <div className="h-2 rounded-full bg-gray-900" style={{width: '70%'}}></div>
               </div>
               <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-2`}>-4 dias vs. mês anterior</p>
             </div>
@@ -1642,7 +1642,7 @@ function FunilPerformancePlaceholder() {
                 <div className="text-2xl font-inter font-bold text-wedo-purple dark:text-wedo-purple">8.7<span className="text-sm">/10</span></div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '87%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-purple" style={{width: '87%'}}></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>NPS: +74 (Excelente)</p>
             </div>
@@ -1654,7 +1654,7 @@ function FunilPerformancePlaceholder() {
                 <div className="text-2xl font-inter font-bold text-wedo-orange dark:text-wedo-orange">92%</div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '92%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-orange" style={{width: '92%'}}></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 85% • +7% vs. meta</p>
             </div>
@@ -2147,8 +2147,8 @@ function AnaliseCompetenciasPlaceholder() {
               <Badge className="bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error font-inter font-bold">Gap 73%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-              <div className="bg-wedo-green-bright" style={{ width: '27%' }} title="Disponível"></div>
-              <div className="bg-wedo-magenta" style={{ width: '73%' }} title="Gap"></div>
+              <div className="bg-wedo-green-bright" style={{width: '27%'}} title="Disponível"></div>
+              <div className="bg-wedo-magenta" style={{width: '73%'}} title="Gap"></div>
             </div>
           </div>
 
@@ -2162,8 +2162,8 @@ function AnaliseCompetenciasPlaceholder() {
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">Gap 55%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-              <div className="bg-wedo-green-bright" style={{ width: '45%' }} title="Disponível"></div>
-              <div className="bg-wedo-orange" style={{ width: '55%' }} title="Gap"></div>
+              <div className="bg-wedo-green-bright" style={{width: '45%'}} title="Disponível"></div>
+              <div className="bg-wedo-orange" style={{width: '55%'}} title="Gap"></div>
             </div>
           </div>
 
@@ -2177,8 +2177,8 @@ function AnaliseCompetenciasPlaceholder() {
               <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning font-inter font-bold">Gap 31%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-              <div className="bg-wedo-green-bright" style={{ width: '69%' }} title="Disponível"></div>
-              <div className="bg-wedo-orange" style={{ width: '31%' }} title="Gap"></div>
+              <div className="bg-wedo-green-bright" style={{width: '69%'}} title="Disponível"></div>
+              <div className="bg-wedo-orange" style={{width: '31%'}} title="Gap"></div>
             </div>
           </div>
         </CardContent>
@@ -2356,7 +2356,7 @@ function BigFiveAnalyticsDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">68%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '68%' }}></div>
+              <div className="h-2 rounded-full bg-wedo-purple" style={{width: '68%'}}></div>
             </div>
           </div>
 
@@ -2367,7 +2367,7 @@ function BigFiveAnalyticsDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">74%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '74%' }}></div>
+              <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '74%'}}></div>
             </div>
           </div>
 
@@ -2378,7 +2378,7 @@ function BigFiveAnalyticsDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">61%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gray-900" style={{ width: '61%' }}></div>
+              <div className="h-2 rounded-full bg-gray-900" style={{width: '61%'}}></div>
             </div>
           </div>
 
@@ -2389,7 +2389,7 @@ function BigFiveAnalyticsDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">72%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '72%' }}></div>
+              <div className="h-2 rounded-full bg-wedo-orange" style={{width: '72%'}}></div>
             </div>
           </div>
 
@@ -2400,7 +2400,7 @@ function BigFiveAnalyticsDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">55%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="h-2 rounded-full bg-wedo-magenta" style={{ width: '55%' }}></div>
+              <div className="h-2 rounded-full bg-wedo-magenta" style={{width: '55%'}}></div>
             </div>
           </div>
         </CardContent>
@@ -2527,8 +2527,8 @@ function DiversidadeInclusaoDashboard() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
-                <div className="h-2 bg-wedo-purple" style={{ width: '40%' }}></div>
-                <div className="h-2 bg-gray-900" style={{ width: '60%' }}></div>
+                <div className="h-2 bg-wedo-purple" style={{width: '40%'}}></div>
+                <div className="h-2 bg-gray-900" style={{width: '60%'}}></div>
               </div>
             </div>
 
@@ -2541,8 +2541,8 @@ function DiversidadeInclusaoDashboard() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
-                <div className="h-2 bg-wedo-purple" style={{ width: '45%' }}></div>
-                <div className="h-2 bg-gray-900" style={{ width: '55%' }}></div>
+                <div className="h-2 bg-wedo-purple" style={{width: '45%'}}></div>
+                <div className="h-2 bg-gray-900" style={{width: '55%'}}></div>
               </div>
             </div>
 
@@ -2555,8 +2555,8 @@ function DiversidadeInclusaoDashboard() {
                 </div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
-                <div className="h-2 bg-wedo-purple" style={{ width: '48%' }}></div>
-                <div className="h-2 bg-gray-900" style={{ width: '52%' }}></div>
+                <div className="h-2 bg-wedo-purple" style={{width: '48%'}}></div>
+                <div className="h-2 bg-gray-900" style={{width: '52%'}}></div>
               </div>
             </div>
           </CardContent>
@@ -2607,7 +2607,7 @@ function DiversidadeInclusaoDashboard() {
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">PCD: 8.2% atingido (meta 5%)</p>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-green" style={{ width: '100%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-green" style={{width: '100%'}}></div>
               </div>
             </div>
           </div>
@@ -2616,7 +2616,7 @@ function DiversidadeInclusaoDashboard() {
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">Mulheres em Tech: 48% (meta 50%)</p>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-700 dark:bg-gray-300" style={{ width: '96%' }}></div>
+                <div className="h-2 rounded-full bg-gray-700 dark:bg-gray-300" style={{width: '96%'}}></div>
               </div>
             </div>
           </div>
@@ -2625,7 +2625,7 @@ function DiversidadeInclusaoDashboard() {
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">Liderança Negra: 12% (meta 20%)</p>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '60%' }}></div>
+                <div className="h-2 rounded-full bg-wedo-orange" style={{width: '60%'}}></div>
               </div>
             </div>
           </div>
@@ -2704,7 +2704,7 @@ function NPSDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">72%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div className="h-3 rounded-full bg-wedo-green" style={{ width: '72%' }}></div>
+              <div className="h-3 rounded-full bg-wedo-green" style={{width: '72%'}}></div>
             </div>
           </div>
 
@@ -2718,7 +2718,7 @@ function NPSDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">23%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div className="h-3 rounded-full bg-gray-400" style={{ width: '23%' }}></div>
+              <div className="h-3 rounded-full bg-gray-400" style={{width: '23%'}}></div>
             </div>
           </div>
 
@@ -2732,7 +2732,7 @@ function NPSDashboard() {
               <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">5%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div className="h-3 rounded-full bg-wedo-magenta" style={{ width: '5%' }}></div>
+              <div className="h-3 rounded-full bg-wedo-magenta" style={{width: '5%'}}></div>
             </div>
           </div>
         </CardContent>
@@ -3067,7 +3067,7 @@ function AgentActivityDashboard() {
 
                 {/* Nome e descrição */}
                 <div className="mb-2">
-                  <p className="font-semibold font-open-sans text-sm text-gray-950 dark:text-gray-50 truncate" style={{ color: agent.color }}>
+                  <p className="font-semibold font-open-sans text-sm text-gray-950 dark:text-gray-50 truncate" style={{color: agent.color}}>
                     {agent.name}
                   </p>
                   <p className="text-xs tracking-tight font-open-sans text-gray-800 dark:text-gray-200 truncate">
@@ -3097,11 +3097,9 @@ function AgentActivityDashboard() {
                     <div 
                       key={idx}
                       className="flex-1 rounded-sm transition-all"
-                      style={{ 
-                        height: `${value}%`, 
+                      style={{height: `${value}%`, 
                         backgroundColor: agent.color,
-                        opacity: 0.4 + (idx * 0.08)
-                      }}
+                        opacity: 0.4 + (idx * 0.08)}}
                     ></div>
                   ))}
                 </div>
@@ -3131,7 +3129,7 @@ function AgentActivityDashboard() {
                   <div key={agent.id} className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: agent.color }}></div>
+                        <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: agent.color}}></div>
                         <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{agent.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -3148,7 +3146,7 @@ function AgentActivityDashboard() {
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
                         className="h-2 rounded-full transition-all"
-                        style={{ width: `${percentage}%`, backgroundColor: agent.color }}
+                        style={{width: `${percentage}%`, backgroundColor: agent.color}}
                       ></div>
                     </div>
                   </div>
@@ -3215,7 +3213,7 @@ function AgentActivityDashboard() {
                       </td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: agent?.color || 'var(--gray-950)' }}></div>
+                          <div className="w-2 h-2 rounded-full" style={{backgroundColor: agent?.color || 'var(--gray-950)'}}></div>
                           <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{action.agentName}</span>
                         </div>
                       </td>
@@ -3225,7 +3223,7 @@ function AgentActivityDashboard() {
                         </Badge>
                       </td>
                       <td className="py-2 px-2">
-                        <span className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[200px]">{action.description}</span>
+                        <span className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-1 max-w-sidebar-content">{action.description}</span>
                       </td>
                       <td className="py-2 px-2">
                         <Badge className={`text-xs tracking-tight ${getActionStatusColor(action.status)}`}>

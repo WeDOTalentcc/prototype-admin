@@ -213,7 +213,7 @@ export function TemplateSuggestionToast({
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-b">
         <div
           className="h-full bg-gray-700 dark:bg-gray-300 rounded-b transition-all duration-[15000ms] ease-linear"
-          style={{ width: isVisible ? '0%' : '100%' }}
+          style={{width: isVisible ? '0%' : '100%'}}
         />
       </div>
     </div>

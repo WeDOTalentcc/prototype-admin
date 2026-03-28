@@ -156,7 +156,7 @@ export function EditArchetypeModal({
             <Target className="w-5 h-5 text-gray-700" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold" style={{ color: "var(--gray-950)" }}>
+            <h3 className="text-sm font-semibold" style={{color: "var(--gray-950)"}}>
               {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
             </h3>
             <p className="text-xs truncate">
@@ -286,12 +286,12 @@ export function EditArchetypeModal({
                   onClick={() => onIsIndustryDropdownOpenChange(!isIndustryDropdownOpen)}
                   className="w-full rounded px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                 >
-                  <span style={{ color: editArchetypeIndustry ? "var(--gray-950)" : "var(--gray-400)" }}>
+                  <span style={{color: editArchetypeIndustry ? "var(--gray-950)" : "var(--gray-400)"}}>
                     {editArchetypeIndustry
                       ? (INDUSTRIES.find((i) => i.key === editArchetypeIndustry)?.labelPt || editArchetypeIndustry)
                       : "Selecionar..."}
                   </span>
-                  <ChevronDown className="w-3 h-3" style={{ color: "var(--gray-400)" }} />
+                  <ChevronDown className="w-3 h-3" style={{color: "var(--gray-400)"}} />
                 </button>
                 {isIndustryDropdownOpen && (
                   <div className="absolute z-10 mt-1 w-full bg-white rounded-md border border-gray-200 max-h-[200px] overflow-hidden">
@@ -314,7 +314,7 @@ export function EditArchetypeModal({
                           onIndustrySearchQueryChange("")
                         }}
                         className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50"
-                        style={{ color: "var(--gray-400)" }}
+                        style={{color: "var(--gray-400)"}}
                       >
                         - Nenhum -
                       </button>
@@ -594,7 +594,7 @@ export function EditArchetypeModal({
                         }}
                       >
                         <Code className="w-3 h-3 text-gray-400" />
-                        <span style={{ color: "var(--gray-950)" }}>{suggestion.term}</span>
+                        <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
                           <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                             sinônimo
@@ -663,7 +663,7 @@ export function EditArchetypeModal({
                         onSelectedAiSkillsChange([])
                       }}
                       className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900"
-                      style={{ color: "white" }}
+                      style={{color: "white"}}
                     >
                       Adicionar {selectedAiSkills.length} Selecionado
                       {selectedAiSkills.length > 1 ? "s" : ""}
@@ -806,7 +806,7 @@ export function EditArchetypeModal({
                         }}
                       >
                         <Tag className="w-3 h-3 text-gray-400" />
-                        <span style={{ color: "var(--gray-950)" }}>{suggestion.term}</span>
+                        <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
                           <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                             sinônimo
@@ -875,7 +875,7 @@ export function EditArchetypeModal({
                         onSelectedAiTagsChange([])
                       }}
                       className="mt-2 w-full py-1 rounded text-micro font-medium transition-colors bg-gray-900"
-                      style={{ color: "white" }}
+                      style={{color: "white"}}
                     >
                       Adicionar {selectedAiTags.length} Selecionado
                       {selectedAiTags.length > 1 ? "s" : ""}
@@ -894,7 +894,7 @@ export function EditArchetypeModal({
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-md text-xs font-medium transition-colors hover:bg-gray-200 border border-gray-200"
-              style={{ backgroundColor: "transparent" }}
+              style={{backgroundColor: "transparent"}}
             >
               Cancelar
             </button>
@@ -902,11 +902,9 @@ export function EditArchetypeModal({
               onClick={onSave}
               disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}
               className="px-4 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50"
-              style={{
-                backgroundColor:
+              style={{backgroundColor:
                   editArchetypeName && editArchetypeQuery ? "var(--gray-800)" : "var(--gray-200)",
-                color: editArchetypeName && editArchetypeQuery ? "white" : "var(--gray-400)",
-              }}
+                color: editArchetypeName && editArchetypeQuery ? "white" : "var(--gray-400)"}}
             >
               {isSavingArchetype ? (
                 <>

@@ -49,7 +49,7 @@ export function QuickActions({
               >
                 <Icon 
                   className="w-5 h-5" 
-                  style={{ color: action.iconColor }}
+                  style={{color: action.iconColor}}
                 />
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-100">

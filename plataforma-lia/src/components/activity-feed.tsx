@@ -28,7 +28,7 @@ interface Activity {
     name: string | null
     type: string | null
   } | null
-  extra_data: Record<string, any>
+  extra_data: Record<string, unknown>
   priority: string
   category: string | null
   action: {
@@ -291,13 +291,13 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
         <div
           key={activity.id}
           className="rounded-md p-2 border border-gray-200 dark:border-gray-700 transition-all cursor-pointer"
-          style={{ backgroundColor: getActivityCardBackground(activity.activity_type) }}
+          style={{backgroundColor: getActivityCardBackground(activity.activity_type)}}
         >
           <div className="flex items-start gap-2">
             {/* Icon with colored background (mockup style) */}
             <div 
               className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0" 
-              style={{ backgroundColor: getActivityIconBackground(activity.activity_type) }}
+              style={{backgroundColor: getActivityIconBackground(activity.activity_type)}}
             >
               {getActivityIconComponent(activity.activity_type)}
             </div>

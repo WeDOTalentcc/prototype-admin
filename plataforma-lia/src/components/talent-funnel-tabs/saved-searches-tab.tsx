@@ -439,7 +439,7 @@ export function SavedSearchesTab({
       )}
 
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-panel-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <LIAIcon size="sm" />
@@ -551,7 +551,7 @@ export function SavedSearchesTab({
       </Dialog>
 
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-panel-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="w-5 h-5 text-gray-600 dark:text-gray-400" />

@@ -63,12 +63,9 @@ export function JobPreviewPanel({
   return (
               <div 
                 className="flex-shrink-0 bg-white dark:bg-gray-800 rounded-md overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
-                style={{ 
-                  
-                  width: `${previewWidth}px`,
+                style={{width: `${previewWidth}px`,
                   minWidth: '320px',
-                  maxWidth: '700px'
-                }}
+                  maxWidth: '700px'}}
               >
                 {/* Resize Handle - Left Side */}
                 <div
@@ -106,7 +103,7 @@ export function JobPreviewPanel({
                           <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                             {previewJob.title}
                           </h3>
-                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{ backgroundColor: 'color-mix(in srgb, var(--gray-500) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--gray-500) 30%, transparent)' }}>
+                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'color-mix(in srgb, var(--gray-500) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--gray-500) 30%, transparent)'}}>
                             {previewJob.jobId}
                           </Badge>
                           {previewJob.isAffirmative && (
@@ -227,7 +224,7 @@ export function JobPreviewPanel({
                           {/* Badge de status */}
                           <Badge 
                             className="text-micro px-1.5 py-0 h-4 font-medium"
-                            style={{ backgroundColor: getStatusColor(previewJob.status as Job['status']), color: 'var(--white)' }}
+                            style={{backgroundColor: getStatusColor(previewJob.status as Job['status']), color: 'var(--white)'}}
                           >
                             {previewJob.status}
                           </Badge>
@@ -250,7 +247,7 @@ export function JobPreviewPanel({
                             return (
                               <Badge 
                                 className="text-micro px-1.5 py-0 h-4 font-medium text-gray-800"
-                                style={{ backgroundColor: scrColors[scrStatus] || 'var(--gray-200)' }}
+                                style={{backgroundColor: scrColors[scrStatus] || 'var(--gray-200)'}}
                               >
                                 {scrLabels[scrStatus] || 'Triagem: N/C'}
                               </Badge>
@@ -597,7 +594,7 @@ export function JobPreviewPanel({
                             <span className="text-xs text-gray-800 dark:text-gray-200 w-24">Pipeline LIA</span>
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1" style={{ width: '100%' }}>
+                                <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1" style={{width: '100%'}}>
                                   <span className="text-xs text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
                                 </div>
                               </div>
@@ -616,7 +613,7 @@ export function JobPreviewPanel({
                                   const widthPercent = pipelineLia > 0 ? (triagensAgendadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-500 dark:bg-gray-400 h-3 rounded-full flex items-center justify-end pr-1"
-                                         style={{ width: `${Math.min(widthPercent, 100)}%` }}>
+                                         style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white font-medium">{triagensAgendadas}</span>
                                     </div>
                                   )
@@ -643,7 +640,7 @@ export function JobPreviewPanel({
                                   const widthPercent = pipelineLia > 0 ? (triagensRealizadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-600 dark:bg-gray-300 h-3 rounded-full flex items-center justify-end pr-1"
-                                         style={{ width: `${Math.min(widthPercent, 100)}%` }}>
+                                         style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white dark:text-gray-50 font-medium">{triagensRealizadas}</span>
                                     </div>
                                   )
@@ -670,7 +667,7 @@ export function JobPreviewPanel({
                                   const widthPercent = pipelineLia > 0 ? (entrevistasAgendadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-900 dark:bg-gray-100 h-3 rounded-full flex items-center justify-end pr-1"
-                                         style={{ width: `${Math.min(widthPercent, 100)}%` }}>
+                                         style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white dark:text-gray-50 font-bold">{entrevistasAgendadas}</span>
                                     </div>
                                   )
@@ -759,7 +756,7 @@ export function JobPreviewPanel({
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
                                 const percent = pipelineLia > 0 ? (semResposta / pipelineLia) * 100 : 0
-                                return <div className="bg-status-warning h-1.5 rounded-full" style={{ width: `${percent}%` }}></div>
+                                return <div className="bg-status-warning h-1.5 rounded-full" style={{width: `${percent}%`}}></div>
                               })()}
                             </div>
                             <p className="text-xs text-gray-800 mt-1">
@@ -787,7 +784,7 @@ export function JobPreviewPanel({
                                 const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                                 const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
                                 const percent = agendadas > 0 ? ((agendadas - realizadas) / agendadas) * 100 : 0
-                                return <div className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full" style={{ width: `${Math.max(0, percent)}%` }}></div>
+                                return <div className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full" style={{width: `${Math.max(0, percent)}%`}}></div>
                               })()}
                             </div>
                             <p className="text-xs text-gray-800 mt-1">triagens pendentes</p>
@@ -1611,7 +1608,7 @@ export function JobPreviewPanel({
                               <span className="text-xs text-gray-800 dark:text-gray-200 w-20">Total</span>
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1" style={{ width: '100%' }}>
+                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1" style={{width: '100%'}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.total}</span>
                                   </div>
                                 </div>
@@ -1625,7 +1622,7 @@ export function JobPreviewPanel({
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
-                                       style={{ width: `${(previewJob.funnel.screening / previewJob.funnel.total) * 100}%` }}>
+                                       style={{width: `${(previewJob.funnel.screening / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.screening}</span>
                                   </div>
                                 </div>
@@ -1642,7 +1639,7 @@ export function JobPreviewPanel({
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
-                                       style={{ width: `${(previewJob.funnel.interview / previewJob.funnel.total) * 100}%` }}>
+                                       style={{width: `${(previewJob.funnel.interview / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.interview}</span>
                                   </div>
                                 </div>
@@ -1659,7 +1656,7 @@ export function JobPreviewPanel({
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
-                                       style={{ width: `${(previewJob.funnel.final / previewJob.funnel.total) * 100}%` }}>
+                                       style={{width: `${(previewJob.funnel.final / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.final}</span>
                                   </div>
                                 </div>
@@ -1676,7 +1673,7 @@ export function JobPreviewPanel({
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                   <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1"
-                                       style={{ width: previewJob.funnel.hired > 0 ? `${(previewJob.funnel.hired / previewJob.funnel.total) * 100}%` : '5%' }}>
+                                       style={{width: previewJob.funnel.hired > 0 ? `${(previewJob.funnel.hired / previewJob.funnel.total) * 100}%` : '5%'}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.hired}</span>
                                   </div>
                                 </div>

@@ -101,23 +101,19 @@ function MiniSalaryBar({
         
         <div 
           className="absolute top-2.5 h-1 bg-gray-400 dark:bg-gray-500 rounded-full"
-          style={{
-            left: `${getPosition(market.min)}%`,
-            width: `${getPosition(market.max) - getPosition(market.min)}%`
-          }}
+          style={{left: `${getPosition(market.min)}%`,
+            width: `${getPosition(market.max) - getPosition(market.min)}%`}}
         />
         
         <div 
           className="absolute top-2 h-2 bg-status-success dark:bg-status-success rounded-full"
-          style={{
-            left: `${getPosition(proposed.min)}%`,
-            width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`
-          }}
+          style={{left: `${getPosition(proposed.min)}%`,
+            width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`}}
         />
 
         <div 
           className="absolute top-0 w-0.5 h-6 bg-gray-900 dark:bg-gray-50"
-          style={{ left: `${percentile}%` }}
+          style={{left: `${percentile}%`}}
         >
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
             P{percentile}

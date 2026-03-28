@@ -294,17 +294,17 @@ export function WorkModelAnalyticsPage() {
                         <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                           <div
                             className="bg-status-success"
-                            style={{ width: `${(cargo.remoto / cargo.total) * 100}%` }}
+                            style={{width: `${(cargo.remoto / cargo.total) * 100}%`}}
                             title={`Remoto: ${cargo.remoto}`}
                           />
                           <div
                             className="bg-gray-700 dark:bg-gray-300"
-                            style={{ width: `${(cargo.hibrido / cargo.total) * 100}%` }}
+                            style={{width: `${(cargo.hibrido / cargo.total) * 100}%`}}
                             title={`Híbrido: ${cargo.hibrido}`}
                           />
                           <div
                             className="bg-gray-500"
-                            style={{ width: `${(cargo.presencial / cargo.total) * 100}%` }}
+                            style={{width: `${(cargo.presencial / cargo.total) * 100}%`}}
                             title={`Presencial: ${cargo.presencial}`}
                           />
                         </div>
@@ -361,17 +361,17 @@ export function WorkModelAnalyticsPage() {
                         <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
                           <div
                             className="bg-status-success"
-                            style={{ width: `${(level.remoto / level.total) * 100}%` }}
+                            style={{width: `${(level.remoto / level.total) * 100}%`}}
                             title={`Remoto: ${level.remoto}`}
                           />
                           <div
                             className="bg-gray-700 dark:bg-gray-300"
-                            style={{ width: `${(level.hibrido / level.total) * 100}%` }}
+                            style={{width: `${(level.hibrido / level.total) * 100}%`}}
                             title={`Híbrido: ${level.hibrido}`}
                           />
                           <div
                             className="bg-gray-500"
-                            style={{ width: `${(level.presencial / level.total) * 100}%` }}
+                            style={{width: `${(level.presencial / level.total) * 100}%`}}
                             title={`Presencial: ${level.presencial}`}
                           />
                         </div>
@@ -424,15 +424,15 @@ export function WorkModelAnalyticsPage() {
                         <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                           <div
                             className="bg-status-success"
-                            style={{ width: `${(region.remoto / region.total) * 100}%` }}
+                            style={{width: `${(region.remoto / region.total) * 100}%`}}
                           />
                           <div
                             className="bg-gray-700 dark:bg-gray-300"
-                            style={{ width: `${(region.hibrido / region.total) * 100}%` }}
+                            style={{width: `${(region.hibrido / region.total) * 100}%`}}
                           />
                           <div
                             className="bg-gray-500"
-                            style={{ width: `${(region.presencial / region.total) * 100}%` }}
+                            style={{width: `${(region.presencial / region.total) * 100}%`}}
                           />
                         </div>
 

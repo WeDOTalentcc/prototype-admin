@@ -136,8 +136,8 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
       const jobTitle = formData.title.trim()
       handleClose()
       onJobCreated?.(jobId, jobTitle)
-    } catch (error: any) {
-      const detail = error?.message || "Erro desconhecido"
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error(`Erro ao criar vaga: ${detail}`)
     } finally {
       setIsSubmitting(false)

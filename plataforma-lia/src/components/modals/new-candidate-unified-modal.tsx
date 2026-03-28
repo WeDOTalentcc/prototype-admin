@@ -1117,7 +1117,7 @@ export function NewCandidateUnifiedModal({
         }
       </p>
       {uploadProgress > 0 && !isEnriching && (
-        <Progress value={uploadProgress} className="max-w-[200px] mx-auto h-1.5 mt-4" />
+        <Progress value={uploadProgress} className="max-w-sidebar-content mx-auto h-1.5 mt-4" />
       )}
     </div>
   )

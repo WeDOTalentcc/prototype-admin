@@ -32,7 +32,7 @@ export function AddBenefitModal({
 
   return (
     <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl w-[400px] p-6">
+      <div className="bg-white rounded-2xl w-panel-lg p-6">
         <h3
           className="text-lg font-semibold text-gray-800 mb-4"
          

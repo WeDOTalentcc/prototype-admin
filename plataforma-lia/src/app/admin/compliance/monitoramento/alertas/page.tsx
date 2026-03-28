@@ -235,8 +235,7 @@ export default function AlertasPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
@@ -254,7 +253,7 @@ export default function AlertasPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -265,14 +264,14 @@ export default function AlertasPage() {
                     {alerts.length}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -283,14 +282,14 @@ export default function AlertasPage() {
                     {newAlerts}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <AlertTriangle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -301,14 +300,14 @@ export default function AlertasPage() {
                     {highSeverityAlerts}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <Zap className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -319,7 +318,7 @@ export default function AlertasPage() {
                     {channels.filter(c => c.enabled).length}/{channels.length}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <Settings className="w-5 h-5 text-status-success" />
                 </div>
               </div>
@@ -329,7 +328,7 @@ export default function AlertasPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -396,7 +395,7 @@ export default function AlertasPage() {
                             <div className="flex items-center gap-2">
                               <div 
                                 className="w-8 h-8 rounded-md flex items-center justify-center"
-                                style={{ backgroundColor: typeConfig.iconBg }}
+                                style={{backgroundColor: typeConfig.iconBg}}
                               >
                                 <TypeIcon className={`w-4 h-4 ${typeConfig.iconColor}`} />
                               </div>
@@ -476,7 +475,7 @@ export default function AlertasPage() {
           </div>
 
           <div className="space-y-6">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -496,7 +495,7 @@ export default function AlertasPage() {
                         <div className="flex items-center gap-3">
                           <div 
                             className="w-8 h-8 rounded-md flex items-center justify-center"
-                            style={{ backgroundColor: channel.enabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(107, 114, 128, 0.1)' }}
+                            style={{backgroundColor: channel.enabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(107, 114, 128, 0.1)'}}
                           >
                             <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'text-gray-400'}`} />
                           </div>
@@ -520,7 +519,7 @@ export default function AlertasPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Alertas por Tipo
@@ -541,7 +540,7 @@ export default function AlertasPage() {
                         <div className="flex items-center gap-2">
                           <div 
                             className="w-6 h-6 rounded flex items-center justify-center"
-                            style={{ backgroundColor: typeConfig.iconBg }}
+                            style={{backgroundColor: typeConfig.iconBg}}
                           >
                             <TypeIcon className={`w-3 h-3 ${typeConfig.iconColor}`} />
                           </div>

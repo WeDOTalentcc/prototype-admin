@@ -69,15 +69,13 @@ function MetricCard({
         </CardTitle>
         <div
           className="p-2 rounded-md"
-          style={{
-            backgroundColor: accentColor
+          style={{backgroundColor: accentColor
               ? `${accentColor}15`
-              : "rgba(107, 114, 128, 0.1)",
-          }}
+              : "rgba(107, 114, 128, 0.1)"}}
         >
           <Icon
             className="w-4 h-4"
-            style={{ color: accentColor || "var(--gray-400)" }}
+            style={{color: accentColor || "var(--gray-400)"}}
           />
         </div>
       </CardHeader>

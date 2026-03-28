@@ -15,7 +15,7 @@ export interface ProactiveAlert {
   severity: 'info' | 'warning' | 'urgent' | 'success' | 'action_required'
   suggestedAction?: string
   actionLabel?: string
-  data?: Record<string, any>
+  data?: Record<string, unknown>
   timestamp: Date
   autoDismiss?: boolean
   duration?: number
@@ -135,7 +135,7 @@ export function ProactiveAlertToast({
         severity.border,
         "transform transition-all duration-300 ease-out"
       )}
-      style={{ animation: 'slideInFromRight 0.4s ease-out' }}
+      style={{animation: 'slideInFromRight 0.4s ease-out'}}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -143,7 +143,7 @@ export function ProactiveAlertToast({
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-b-xl overflow-hidden">
           <div 
             className={cn("h-full transition-all duration-100", severity.progressBg)}
-            style={{ width: `${progress}%` }}
+            style={{width: `${progress}%`}}
           />
         </div>
       )}
@@ -192,7 +192,7 @@ export function ProactiveAlertToast({
               size="sm"
               onClick={() => onNavigateToChat(alert)}
               className="h-8 px-3 text-xs gap-1.5"
-              style={{ backgroundColor: 'var(--wedo-blue)' }}
+              style={{backgroundColor: 'var(--wedo-blue)'}}
             >
               <LIAIcon size="xs" className="w-3.5 h-3.5" />
               Reanalisar

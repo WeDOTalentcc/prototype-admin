@@ -338,7 +338,7 @@ export function OnboardingPage() {
                       <div className="w-24 bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
-                          style={{ width: `${candidate.progress}%` }}
+                          style={{width: `${candidate.progress}%`}}
                         />
                       </div>
                       <span className="text-sm font-medium">{candidate.progress}%</span>
@@ -482,7 +482,7 @@ export function OnboardingPage() {
                         candidate.status === 'completed' ? 'bg-status-success' :
                         candidate.status === 'delayed' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
                       }`}
-                      style={{ width: `${candidate.progress}%` }}
+                      style={{width: `${candidate.progress}%`}}
                     />
                   </div>
                 </div>
@@ -765,7 +765,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className="bg-gray-700 dark:bg-gray-300 h-3 rounded-full"
-                        style={{ width: `${candidate.progress}%` }}
+                        style={{width: `${candidate.progress}%`}}
                       />
                     </div>
                     <div className="flex justify-between text-sm text-gray-600">

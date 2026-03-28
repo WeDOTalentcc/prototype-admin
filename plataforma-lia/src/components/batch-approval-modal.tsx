@@ -327,9 +327,7 @@ export function BatchApprovalModal({
         <div className="w-full bg-gray-200 dark:bg-gray-700 h-1">
           <div
             className="bg-gray-900 dark:bg-gray-50 h-1 transition-all duration-500"
-            style={{
-              width: `${(['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1) * 20}%`
-            }}
+            style={{width: `${(['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1) * 20}%`}}
           />
         </div>
 

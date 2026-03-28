@@ -914,7 +914,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
         </div>
       ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[calc(100vh-280px)] min-h-[400px]">
-        <div className="space-y-3 overflow-y-auto pr-2 pb-8" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+        <div className="space-y-3 overflow-y-auto pr-2 pb-8" style={{maxHeight: 'calc(100vh - 280px)'}}>
           {filteredTemplates.length === 0 ? (
             <Card className="border border-dashed border-gray-200 dark:border-gray-700 rounded-md">
               <CardContent className="p-4 text-center">
@@ -1018,7 +1018,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           )}
         </div>
 
-        <div className="space-y-3 lg:sticky lg:top-0 overflow-y-auto pb-20" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+        <div className="space-y-3 lg:sticky lg:top-0 overflow-y-auto pb-20" style={{maxHeight: 'calc(100vh - 220px)'}}>
           {selectedTemplate ? (
             <>
               <div className="flex items-center justify-between">
@@ -1166,9 +1166,9 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     {isGenerating && (
                       <div className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-gray-800">
                         <div className="flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{ animationDelay: '300ms' }}></span>
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{animationDelay: '0ms'}}></span>
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{animationDelay: '150ms'}}></span>
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900 dark:bg-gray-50" style={{animationDelay: '300ms'}}></span>
                         </div>
                         <span className="text-xs text-gray-700 dark:text-gray-300" >
                           A LIA está analisando e ajustando o template...
@@ -1202,7 +1202,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+                    <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
                       <div>
                         <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2" >
                           Alterações Realizadas
@@ -1453,8 +1453,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   value={sendingHours.start}
                   onChange={(e) => setSendingHours(prev => ({ ...prev, start: parseInt(e.target.value) }))}
                   disabled={!isEditingSchedule}
-                  className="flex-1 disabled:opacity-50"
-                  className="accent-gray-700"
+                  className="flex-1 disabled:opacity-50 accent-gray-700"
                 />
                 <div className="w-14 text-center">
                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50" >{sendingHours.start}:00</span>
@@ -1473,8 +1472,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   value={sendingHours.end}
                   onChange={(e) => setSendingHours(prev => ({ ...prev, end: parseInt(e.target.value) }))}
                   disabled={!isEditingSchedule}
-                  className="flex-1 disabled:opacity-50"
-                  className="accent-gray-700"
+                  className="flex-1 disabled:opacity-50 accent-gray-700"
                 />
                 <div className="w-14 text-center">
                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50" >{sendingHours.end}:00</span>
@@ -1492,7 +1490,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             </div>
             <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="absolute h-full rounded-full bg-gray-800" style={{ left: `${((sendingHours.start - 6) / 18) * 100}%`, width: `${((sendingHours.end - sendingHours.start) / 18) * 100}%` }}
+                className="absolute h-full rounded-full bg-gray-800" style={{left: `${((sendingHours.start - 6) / 18) * 100}%`, width: `${((sendingHours.end - sendingHours.start) / 18) * 100}%`}}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2">
                 <span className="text-micro text-gray-600" >6:00</span>
@@ -1513,8 +1511,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={respectHolidays}
                   onChange={(e) => setRespectHolidays(e.target.checked)}
                   disabled={!isEditingSchedule}
-                  className="rounded" 
-                  className="accent-gray-700" 
+                  className="rounded accent-gray-700" 
                 />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
@@ -1524,8 +1521,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={respectWeekends}
                   onChange={(e) => setRespectWeekends(e.target.checked)}
                   disabled={!isEditingSchedule}
-                  className="rounded" 
-                  className="accent-gray-700" 
+                  className="rounded accent-gray-700" 
                 />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
@@ -1535,8 +1531,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                   checked={maxMessagesPerDay > 0}
                   onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)}
                   disabled={!isEditingSchedule}
-                  className="rounded" 
-                  className="accent-gray-700" 
+                  className="rounded accent-gray-700" 
                 />
               </label>
             </div>
@@ -1617,12 +1612,10 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <div className="flex items-start gap-2">
                   <div 
                     className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{ 
-                      backgroundColor: alert.enabled ? 'rgb(55 65 81 / 0.1)' : undefined,
-                      color: alert.enabled ? 'var(--gray-600)' : undefined
-                    }}
+                    style={{backgroundColor: alert.enabled ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined,
+                      color: alert.enabled ? 'var(--gray-600)' : undefined}}
                   >
-                    <Bell className="w-3.5 h-3.5" style={{ color: alert.enabled ? 'var(--gray-600)' : undefined }} />
+                    <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--gray-600)' : undefined}} />
                   </div>
                   <div>
                     <p className={`text-xs font-medium ${alert.enabled ? 'text-gray-950 dark:text-gray-50' : 'text-gray-800'}`} >
@@ -1647,7 +1640,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
                     className="relative w-9 h-5 rounded-full transition-colors disabled:opacity-60"
-                    style={{ backgroundColor: alert.enabled ? 'var(--gray-600)' : 'var(--gray-200)' }}
+                    style={{backgroundColor: alert.enabled ? 'var(--gray-600)' : 'var(--gray-200)'}}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
                       alert.enabled ? 'left-4' : 'left-0.5'
@@ -1673,13 +1666,11 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               onClick={() => setBriefingFrequency('twice_daily')}
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
-              style={{ 
-                borderColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'twice_daily' ? 'rgb(55 65 81 / 0.1)' : undefined
-              }}
+              style={{borderColor: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : 'var(--gray-200)',
+                backgroundColor: briefingFrequency === 'twice_daily' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <RefreshCw className="w-3.5 h-3.5" style={{ color: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : undefined }} />
+                <RefreshCw className="w-3.5 h-3.5" style={{color: briefingFrequency === 'twice_daily' ? 'var(--gray-600)' : undefined}} />
                 <span className="text-xs font-medium" >2x ao Dia</span>
               </div>
               <p className="text-xs text-gray-600" >
@@ -1690,10 +1681,8 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               onClick={() => setBriefingFrequency('daily')}
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
-              style={{ 
-                borderColor: briefingFrequency === 'daily' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'daily' ? 'rgb(55 65 81 / 0.1)' : undefined
-              }}
+              style={{borderColor: briefingFrequency === 'daily' ? 'var(--gray-600)' : 'var(--gray-200)',
+                backgroundColor: briefingFrequency === 'daily' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
@@ -1707,13 +1696,11 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               onClick={() => setBriefingFrequency('weekly')}
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
-              style={{ 
-                borderColor: briefingFrequency === 'weekly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'weekly' ? 'rgb(55 65 81 / 0.1)' : undefined
-              }}
+              style={{borderColor: briefingFrequency === 'weekly' ? 'var(--gray-600)' : 'var(--gray-200)',
+                backgroundColor: briefingFrequency === 'weekly' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-3.5 h-3.5" style={{ color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined }} />
+                <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />
                 <span className="text-xs font-medium" >Semanal</span>
               </div>
               <p className="text-xs text-gray-600" >
@@ -1724,13 +1711,11 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
               onClick={() => setBriefingFrequency('monthly')}
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
-              style={{ 
-                borderColor: briefingFrequency === 'monthly' ? 'var(--gray-600)' : 'var(--gray-200)',
-                backgroundColor: briefingFrequency === 'monthly' ? 'rgb(55 65 81 / 0.1)' : undefined
-              }}
+              style={{borderColor: briefingFrequency === 'monthly' ? 'var(--gray-600)' : 'var(--gray-200)',
+                backgroundColor: briefingFrequency === 'monthly' ? 'color-mix(in srgb, var(--gray-600) 10%, transparent)' : undefined}}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-3.5 h-3.5" style={{ color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined }} />
+                <Calendar className="w-3.5 h-3.5" style={{color: (briefingFrequency === 'weekly' || briefingFrequency === 'monthly') ? 'var(--gray-600)' : undefined}} />
                 <span className="text-xs font-medium" >Mensal</span>
               </div>
               <p className="text-xs text-gray-600" >

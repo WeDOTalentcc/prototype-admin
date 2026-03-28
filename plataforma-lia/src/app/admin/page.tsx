@@ -229,7 +229,7 @@ export default function AdminDashboard() {
         <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5" style={{ color: "#16a34a" }} />
+              <UserPlus className="w-5 h-5 text-green-600" />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Novos Clientes</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-success/15 text-status-success">
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
         <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" style={{ color: "var(--status-warning)" }} />
+              <Clock className="w-5 h-5" style={{color: "var(--status-warning)"}} />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Clientes em Trial</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-wedo-orange/15 text-wedo-orange">
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
         <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <UserMinus className="w-5 h-5" style={{ color: "#dc2626" }} />
+              <UserMinus className="w-5 h-5 text-red-600" />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Churned</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-error/15 text-status-error">

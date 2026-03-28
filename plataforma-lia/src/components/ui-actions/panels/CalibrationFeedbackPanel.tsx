@@ -140,12 +140,12 @@ export function CalibrationFeedbackPanel({
     <div className="space-y-6">
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             🎯 Calibração de Busca
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+          <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
             Avalie os candidatos abaixo para calibrar a busca. Sua avaliação ajudará
             a IA a entender melhor o perfil ideal para a vaga.
           </p>
@@ -153,30 +153,30 @@ export function CalibrationFeedbackPanel({
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: 'var(--lia-btn-primary-bg)' }} 
+                style={{backgroundColor: 'var(--lia-btn-primary-bg)'}} 
               />
-              <span className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>{stats.approved} aprovados</span>
+              <span className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>{stats.approved} aprovados</span>
             </div>
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: 'var(--lia-border-default)' }} 
+                style={{backgroundColor: 'var(--lia-border-default)'}} 
               />
-              <span className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>{stats.maybe} talvez</span>
+              <span className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>{stats.maybe} talvez</span>
             </div>
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: 'var(--lia-text-tertiary)' }} 
+                style={{backgroundColor: 'var(--lia-text-tertiary)'}} 
               />
-              <span className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>{stats.rejected} reprovados</span>
+              <span className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>{stats.rejected} reprovados</span>
             </div>
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: 'var(--lia-border-subtle)' }} 
+                style={{backgroundColor: 'var(--lia-border-subtle)'}} 
               />
-              <span className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-secondary)' }}>{stats.pending} pendentes</span>
+              <span className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>{stats.pending} pendentes</span>
             </div>
           </div>
         </CardContent>
@@ -196,7 +196,7 @@ export function CalibrationFeedbackPanel({
 
       <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
             💬 Feedback Geral
           </CardTitle>
         </CardHeader>
@@ -272,43 +272,39 @@ function CandidateCard({
   return (
     <Card 
       className="transition-all rounded-md dark:bg-gray-800 dark:border-gray-700"
-      style={{ 
-        borderColor: borderStyle.borderColor, 
+      style={{borderColor: borderStyle.borderColor, 
         backgroundColor: borderStyle.backgroundColor,
-        borderWidth: '1px'
-      }}
+        borderWidth: '1px'}}
     >
       <CardContent className="pt-4">
         <div className="flex items-start gap-4">
           <div 
             className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg shrink-0"
-            style={{ 
-              backgroundColor: 'var(--lia-bg-tertiary)', 
-              color: 'var(--lia-text-primary)' 
-            }}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)', 
+              color: 'var(--lia-text-primary)'}}
           >
             {candidate.name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h3 className="text-sm font-semibold dark:text-gray-100" style={{ color: 'var(--lia-text-primary)' }}>
+                <h3 className="text-sm font-semibold dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
                   {candidate.name}
                 </h3>
-                <p className="text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+                <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
                   {candidate.title}
                 </p>
               </div>
               <Badge 
                 className="text-xs shrink-0 border-0"
-                style={{ backgroundColor: scoreStyle.bg, color: scoreStyle.text }}
+                style={{backgroundColor: scoreStyle.bg, color: scoreStyle.text}}
               >
                 <Star className="h-3 w-3 mr-1" />
                 {candidate.match_score}%
               </Badge>
             </div>
             
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs dark:text-gray-400" style={{ color: 'var(--lia-text-tertiary)' }}>
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}}>
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {candidate.location}
@@ -325,10 +321,8 @@ function CandidateCard({
                   key={skill} 
                   variant="outline" 
                   className="text-xs dark:border-gray-600 dark:text-gray-300"
-                  style={{ 
-                    borderColor: 'var(--lia-border-subtle)', 
-                    color: 'var(--lia-text-secondary)' 
-                  }}
+                  style={{borderColor: 'var(--lia-border-subtle)', 
+                    color: 'var(--lia-text-secondary)'}}
                 >
                   {skill}
                 </Badge>
@@ -337,10 +331,8 @@ function CandidateCard({
                 <Badge 
                   variant="outline" 
                   className="text-xs dark:border-gray-600 dark:text-gray-400"
-                  style={{ 
-                    borderColor: 'var(--lia-border-subtle)', 
-                    color: 'var(--lia-text-tertiary)' 
-                  }}
+                  style={{borderColor: 'var(--lia-border-subtle)', 
+                    color: 'var(--lia-text-tertiary)'}}
                 >
                   +{candidate.skills.length - 5}
                 </Badge>

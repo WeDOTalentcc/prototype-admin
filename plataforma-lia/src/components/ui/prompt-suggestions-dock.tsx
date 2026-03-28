@@ -193,9 +193,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           <div>
             <h3 
               className="text-sm font-semibold flex items-center gap-2"
-              style={{
-                color: 'var(--gray-800)'
-              }}
+              style={{color: 'var(--gray-800)'}}
             >
               <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -214,10 +212,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
                 className="p-4 rounded-md transition-all text-left group"
-                style={{ 
-                  border: `1px solid ${colors.bg}`,
-                  backgroundColor: 'var(--gray-50)',
-                }}
+                style={{border: `1px solid ${colors.bg}`,
+                  backgroundColor: 'var(--gray-50)'}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.hoverBg
                   e.currentTarget.style.borderColor = colors.border
@@ -232,24 +228,20 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <div className="flex items-start gap-3">
                   <div 
                     className="p-2 rounded-md flex-shrink-0"
-                    style={{ backgroundColor: colors.bg }}
+                    style={{backgroundColor: colors.bg}}
                   >
-                    <Icon className="w-4 h-4" style={{ color: colors.icon }} />
+                    <Icon className="w-4 h-4" style={{color: colors.icon}} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 
                       className="font-semibold text-sm leading-tight mb-1"
-                      style={{ 
-                        color: 'var(--gray-800)',
-                      }}
+                      style={{color: 'var(--gray-800)'}}
                     >
                       {suggestion.title}
                     </h3>
                     <p 
                       className="text-xs leading-snug line-clamp-2"
-                      style={{ 
-                        color: 'var(--gray-500)',
-                      }}
+                      style={{color: 'var(--gray-500)'}}
                     >
                       {suggestion.description}
                     </p>
@@ -273,22 +265,18 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           onClick={() => setIsExpanded(true)}
           onMouseDown={handleMouseDown}
           className="fixed h-9 px-4 rounded-md transition-all hover:scale-105 z-50 select-none opacity-80 hover:opacity-100"
-          style={{
-            top: `${position.top}px`,
+          style={{top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--gray-50)',
             border: '1px solid var(--gray-200)',
-            cursor: isDragging ? 'grabbing' : 'grab'
-          }}
+            cursor: isDragging ? 'grabbing' : 'grab'}}
         >
           <div className="p-1 rounded-md mr-2 bg-gray-900/[0.08]">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
             className="text-xs font-medium"
-            style={{ 
-              color: 'var(--gray-500)',
-            }}
+            style={{color: 'var(--gray-500)'}}
           >
             Sugestões
           </span>
@@ -299,20 +287,16 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
         <Card
           ref={cardRef}
           className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-gray-200 bg-gray-50"
-          style={{
-            top: `${position.top}px`,
-            right: `${position.right}px`,
-          }}
+          style={{top: `${position.top}px`,
+            right: `${position.right}px`}}
         >
           {/* Header - Draggable */}
           <div
             className="px-4 py-3 flex items-center justify-between border-b rounded-t-md"
             onMouseDown={handleMouseDown}
-            style={{
-              backgroundColor: 'var(--gray-50)',
+            style={{backgroundColor: 'var(--gray-50)',
               borderColor: 'var(--gray-200)',
-              cursor: isDragging ? 'grabbing' : 'grab',
-            }}
+              cursor: isDragging ? 'grabbing' : 'grab'}}
           >
             <div className="flex items-center gap-2">
               <Move className="w-3 h-3 text-gray-300" />
@@ -321,9 +305,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               </div>
               <h3
                 className="text-sm font-semibold"
-                style={{ 
-                  color: 'var(--gray-800)'
-                }}
+                style={{color: 'var(--gray-800)'}}
               >
                 Tarefas Sugeridas
               </h3>
@@ -351,10 +333,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     setIsExpanded(false)
                   }}
                   className="w-full p-3 rounded-md transition-all text-left group"
-                  style={{ 
-                    backgroundColor: 'var(--gray-50)',
-                    border: `1px solid ${colors.bg}`
-                  }}
+                  style={{backgroundColor: 'var(--gray-50)',
+                    border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = colors.hoverBg
                     e.currentTarget.style.borderColor = colors.border
@@ -367,16 +347,14 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                   <div className="flex items-center gap-3">
                     <div 
                       className="p-2 rounded-md flex-shrink-0"
-                      style={{ backgroundColor: colors.bg }}
+                      style={{backgroundColor: colors.bg}}
                     >
-                      <Icon className="w-4 h-4" style={{ color: colors.icon }} />
+                      <Icon className="w-4 h-4" style={{color: colors.icon}} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 
                         className="font-medium text-sm leading-tight"
-                        style={{ 
-                          color: 'var(--gray-800)',
-                        }}
+                        style={{color: 'var(--gray-800)'}}
                       >
                         {suggestion.title}
                       </h4>

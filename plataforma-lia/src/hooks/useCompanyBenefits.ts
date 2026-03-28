@@ -81,8 +81,8 @@ export function useCompanyBenefits({
       benefitsCache.set(cacheKey, { data: benefitsList, timestamp: Date.now() })
       setBenefits(benefitsList)
       setLastFetched(new Date())
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar benefícios')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar benefícios')
     } finally {
       setIsLoading(false)
     }

@@ -125,8 +125,7 @@ export default function TreinamentosPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <GraduationCap className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -301,7 +300,7 @@ export default function TreinamentosPage() {
                               <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                 <div 
                                   className={`h-full rounded-full ${getProgressColor(training.completion)}`}
-                                  style={{ width: `${training.completion}%` }}
+                                  style={{width: `${training.completion}%`}}
                                 />
                               </div>
                               <span className={`text-sm font-medium ${getCompletionColor(training.completion)}`}>

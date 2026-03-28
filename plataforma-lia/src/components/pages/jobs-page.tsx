@@ -85,6 +85,9 @@ import { ColumnConfigPanel } from "@/components/pages/jobs/ColumnConfigPanel"
 import { TableFiltersPanel } from "@/components/pages/jobs/TableFiltersPanel"
 import { InlineChatPanel } from "@/components/pages/jobs/InlineChatPanel"
 import { JobPreviewPanel } from "@/components/pages/jobs/JobPreviewPanel"
+import { JobsCompactTableView } from "@/components/pages/jobs/JobsCompactTableView"
+import { JobsModalsSection } from "@/components/pages/jobs/JobsModalsSection"
+import { JobsDashboardView } from "@/components/pages/jobs/JobsDashboardView"
 
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
 
@@ -2720,40 +2723,40 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
   const renderSkeletonLoading = () => (
     <div className="overflow-x-auto">
-      <table className="w-full" style={{ tableLayout: 'fixed' }}>
+      <table className="w-full" style={{tableLayout: 'fixed'}}>
         <thead>
           <tr className="">
             <th className="py-3 px-3 text-center w-12">
               <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '80px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '80px'}}>
               <div className="w-8 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '200px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '200px'}}>
               <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-center" style={{ width: '100px' }}>
+            <th className="py-3 px-3 text-center" style={{width: '100px'}}>
               <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '180px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '180px'}}>
               <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '100px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '100px'}}>
               <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '60px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '60px'}}>
               <div className="w-10 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '120px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '120px'}}>
               <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-left" style={{ width: '100px' }}>
+            <th className="py-3 px-3 text-left" style={{width: '100px'}}>
               <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </th>
-            <th className="py-3 px-3 text-center" style={{ width: '100px' }}>
+            <th className="py-3 px-3 text-center" style={{width: '100px'}}>
               <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
             </th>
-            <th className="py-3 px-3 text-center" style={{ width: '80px' }}>
+            <th className="py-3 px-3 text-center" style={{width: '80px'}}>
               <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto" />
             </th>
           </tr>
@@ -2821,7 +2824,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
   const renderCompactView = () => (
     <div className="overflow-auto h-full">
-      <table className="w-full" style={{ tableLayout: 'fixed' }}>
+      <table className="w-full" style={{tableLayout: 'fixed'}}>
         <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
@@ -2862,7 +2865,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   <th 
                     key={columnId} 
                     className="text-center py-3 px-3 text-xs font-semibold text-gray-950 dark:text-gray-200"
-                    style={{ width: jobsColumnWidths.acoes }}
+                    style={{width: jobsColumnWidths.acoes}}
                   >
                     <span className="sr-only">Ações</span>
                     <MoreVertical className="w-4 h-4 text-gray-800 dark:text-gray-200 mx-auto" aria-hidden="true" />
@@ -2884,7 +2887,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                     ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
                     ${config.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
                   `}
-                  style={{ width: `${width}px`, minWidth: '50px' }}
+                  style={{width: `${width}px`, minWidth: '50px'}}
                   draggable={columnId !== 'checkbox' && columnId !== 'acoes'}
                   onDragStart={(e) => handleJobsColumnDragStart(columnId, e)}
                   onDragOver={(e) => handleJobsColumnDragOver(columnId, e)}
@@ -2956,7 +2959,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'id') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-200">
                                 V{job.id.toString().padStart(4, '0')}
                               </span>
@@ -2966,7 +2969,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'vaga') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <div>
                                 <div className="font-semibold text-xs text-gray-950 dark:text-gray-50 flex items-center gap-1">
                                   {pinnedJobs.has(job.id) && (
@@ -2996,25 +2999,23 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'candidatos') {
                           return (
-                            <td key={columnId} className="py-2 px-2" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}}>
                               <div className="flex items-center justify-center group relative cursor-help">
                                 <div className="flex items-center gap-1">
                                   <Users 
                                     className="w-3.5 h-3.5"
-                                    style={{
-                                      color: job.funnel.total >= 50
+                                    style={{color: job.funnel.total >= 50
                                         ? 'var(--gray-600)'
                                         : job.funnel.total >= 20
                                         ? 'var(--status-error)'
-                                        : 'var(--status-warning)'
-                                    }}
+                                        : 'var(--status-warning)'}}
                                   />
                                   <span className="text-sm font-normal text-gray-800 dark:text-gray-50">
                                     {job.funnel.total}
                                   </span>
                                 </div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                  <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md text-xs min-w-[200px]">
+                                  <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md text-xs min-w-sidebar-content">
                                     <div className="font-semibold mb-2">Funil de Candidatos</div>
                                     <div className="space-y-1.5 mb-2">
                                       <div className="flex items-center justify-between">
@@ -3092,17 +3093,15 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                           }
                           
                           return (
-                            <td key={columnId} className="py-2 px-2" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}}>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{ 
-                                        backgroundColor: 'var(--gray-200)',
+                                      style={{backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.pipeline)}px`,
-                                        minWidth: '24px'
-                                      }}>
+                                        minWidth: '24px'}}>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.pipeline}
                                       </span>
@@ -3122,11 +3121,9 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{ 
-                                        backgroundColor: 'var(--gray-300)',
+                                      style={{backgroundColor: 'var(--gray-300)',
                                         width: `${getCardWidth(liaTriages.agendadas)}px`,
-                                        minWidth: '24px'
-                                      }}>
+                                        minWidth: '24px'}}>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.agendadas}
                                       </span>
@@ -3143,10 +3140,8 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
-                                      style={{ 
-                                        width: `${getCardWidth(liaTriages.realizadas)}px`,
-                                        minWidth: '24px'
-                                      }}>
+                                      style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
+                                        minWidth: '24px'}}>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.realizadas}
                                       </span>
@@ -3163,11 +3158,9 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{ 
-                                        backgroundColor: 'var(--gray-200)',
+                                      style={{backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
-                                        minWidth: '24px'
-                                      }}>
+                                        minWidth: '24px'}}>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
@@ -3188,12 +3181,12 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'status') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <div className="space-y-1">
                                 <Badge
                                   variant="outline"
                                   className="border-0 text-xs font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50"
-                                  style={{ backgroundColor: getStatusColor(job.status) }}
+                                  style={{backgroundColor: getStatusColor(job.status)}}
                                 >
                                   {job.status}
                                 </Badge>
@@ -3219,11 +3212,11 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                             completed: 'var(--gray-400)',
                           }
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <Badge
                                 variant="outline"
                                 className="border-0 text-micro font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
-                                style={{ backgroundColor: screeningColors[status] || 'var(--gray-200)' }}
+                                style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleJobPreview(job)
@@ -3237,7 +3230,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'recrutador') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
@@ -3255,7 +3248,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'gestor') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <div className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.manager}
                               </div>
@@ -3265,7 +3258,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'prazoTriagem') {
                           return (
-                            <td key={columnId} className="py-2 px-3 text-center" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}}>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.openDate 
                                   ? new Date(job.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
@@ -3277,7 +3270,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
 
                         if (columnId === 'prazoShortlist' || columnId === 'prazoEncerramento') {
                           return (
-                            <td key={columnId} className="py-2 px-3 text-center" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}}>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.deadline 
                                   ? new Date(job.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
@@ -3293,7 +3286,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                           const isFavorite = favoriteJobs.has(job.id)
                           
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
                               <div className="flex items-center gap-1">
                                 {/* Ícone Urgente - sempre visível e clicável */}
                                 <Button
@@ -3699,7 +3692,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
           {!showExpandedLIA && !showInlineChat && (
             <div className="flex-shrink-0 flex items-center justify-between gap-4 mt-3 mb-2">
               {/* Prompt LIA - Compacto (max 300px) - Estilo Funil de Talentos */}
-              <div className="flex-1 max-w-[300px]">
+              <div className="flex-1 max-w-panel-sm">
               <div className="relative">
                 <input
                   ref={liaInputRef}
@@ -3708,13 +3701,11 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
                   className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
-                  style={{ 
-                    backgroundColor: "var(--lia-bg-primary)",
-                    color: "var(--gray-950)",
-                  }}
+                  style={{backgroundColor: "var(--lia-bg-primary)",
+                    color: "var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-800)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(31, 41, 55, 0.12)"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px color-mix(in srgb, var(--gray-800) 12%, transparent)"
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
@@ -3919,7 +3910,7 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
                   {/* Ícone da tabela */}
                   <div className="flex flex-col items-center gap-2 text-gray-800">
                     <Briefcase className="w-5 h-5" />
-                    <span className="text-xs font-medium writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                    <span className="text-xs font-medium writing-mode-vertical" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
                       Vagas ({filteredJobs.length})
                     </span>
                   </div>
@@ -4007,42 +3998,16 @@ const [screeningBlockExpanded, setScreeningBlockExpanded] = useState(true)
         </div>
         )}
 
-        {/* Report Modal */}
-        {showReport && reportJob && (
-          <JobReportModal
-            job={reportJob}
-            isOpen={showReport}
-            onClose={handleCloseReport}
-          />
-        )}
-
-        {/* Modais de Ações em Massa para Vagas */}
-        <JobCompareModal
-          isOpen={showCompareModal}
-          onClose={() => setShowCompareModal(false)}
-          jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
-            code: job.jobId,
-            title: job.title,
-            department: job.department,
-            location: job.location,
-            work_model: job.workModel,
-            salary_range: undefined,
-            status: job.status,
-            deadline: job.deadline,
-            candidates_count: job.funnel?.total || 0,
-            approved_count: job.funnel?.hired || 0,
-            screening_count: job.funnel?.screening || 0,
-            performance_score: job.funnel?.hired ? Math.round((job.funnel.hired / Math.max(job.funnel.total, 1)) * 100) : 0,
-            benefits: job.benefits,
-            technical_requirements: job.technicalRequirements,
-            behavioral_competencies: job.behavioralCompetencies
-          }))}
-        />
-
-        <JobPublishModal
-          isOpen={showPublishModal}
-          onClose={() => setShowPublishModal(false)}
+        <JobsModalsSection
+          allJobs={allJobs}
+          selectedJobsForBatch={selectedJobsForBatch}
+          showReport={showReport}
+          reportJob={reportJob}
+          onCloseReport={handleCloseReport}
+          showCompareModal={showCompareModal}
+          onCloseCompareModal={() => setShowCompareModal(false)}
+          showPublishModal={showPublishModal}
+          onClosePublishModal={() => setShowPublishModal(false)}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
             id: String(job.id),
             code: job.jobId,

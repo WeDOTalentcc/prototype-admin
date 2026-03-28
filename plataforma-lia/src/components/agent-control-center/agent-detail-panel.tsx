@@ -127,7 +127,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   <div className="flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)' }}
+                      style={{backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
                     />
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
@@ -149,7 +149,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="text-center">
                 <div
                   className="text-xl font-bold"
-                  style={{ color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
+                  style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
                 >
                   {agent.progress}%
                 </div>
@@ -179,7 +179,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   )}
                   <span
                     className="text-xs"
-                    style={{ color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : undefined }}
+                    style={{color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : undefined}}
                   className={agent.delta === 0 ? 'text-gray-400 dark:text-gray-500' : ''}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
@@ -202,11 +202,9 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-gray-500 dark:text-gray-400' : ''}`}
-                  style={{
-                    color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
-                    backgroundColor: activeTab === tab.id ? 'rgb(229 231 235 / 0.2)' : 'transparent',
-                    borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'
-                  }}
+                  style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
+                    backgroundColor: activeTab === tab.id ? 'color-mix(in srgb, var(--gray-200) 20%, transparent)' : 'transparent',
+                    borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
                 >
                   <tab.icon className="w-3.5 h-3.5" />
                   {tab.label}
@@ -266,14 +264,12 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   <div className="flex flex-col items-center py-4">
                     <div
                       className="relative w-24 h-24 rounded-full flex items-center justify-center"
-                      style={{
-                        background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, rgb(229 231 235) 0)`
-                      }}
+                      style={{background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, var(--gray-200) 0)`}}
                     >
                       <div
                         className="w-20 h-20 rounded-full flex flex-col items-center justify-center bg-white dark:bg-gray-950"
                       >
-                        <span className="text-2xl font-bold" style={{ color: getHealthTierColor(healthScore.tier) }}>
+                        <span className="text-2xl font-bold" style={{color: getHealthTierColor(healthScore.tier)}}>
                           {healthScore.score}
                         </span>
                         <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -283,11 +279,9 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     </div>
                     <Badge 
                       className="mt-3"
-                      style={{ 
-                        backgroundColor: `${getHealthTierColor(healthScore.tier)}20`,
+                      style={{backgroundColor: `${getHealthTierColor(healthScore.tier)}20`,
                         color: getHealthTierColor(healthScore.tier),
-                        border: `1px solid ${getHealthTierColor(healthScore.tier)}`
-                      }}
+                        border: `1px solid ${getHealthTierColor(healthScore.tier)}`}}
                     >
                       {getHealthTierLabel(healthScore.tier)}
                     </Badge>
@@ -310,7 +304,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                                 {driver.impact === 'positive' && <TrendingUp className="w-3 h-3 text-status-success" />}
                                 {driver.impact === 'negative' && <TrendingDown className="w-3 h-3 text-status-error" />}
                                 {driver.impact === 'neutral' && <Minus className="w-3 h-3 text-gray-600" />}
-                                <span className="text-xs font-medium" style={{ color: getImpactColor(driver.impact) }}>
+                                <span className="text-xs font-medium" style={{color: getImpactColor(driver.impact)}}>
                                   {driver.value}%
                                 </span>
                               </div>
@@ -318,10 +312,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                             <div className="h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                               <div
                                 className="h-full rounded-full"
-                                style={{
-                                  width: `${Math.min(driver.value, 100)}%`,
-                                  backgroundColor: getImpactColor(driver.impact)
-                                }}
+                                style={{width: `${Math.min(driver.value, 100)}%`,
+                                  backgroundColor: getImpactColor(driver.impact)}}
                               />
                             </div>
                           </div>

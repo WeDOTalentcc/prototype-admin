@@ -157,17 +157,17 @@ export default {
       // Substituem valores arbitrários w-[Npx] / h-[Npx]
       // ──────────────────────────────────────────────
       width: {
-        'panel-sm': '300px',
-        'panel-md': '350px',
-        'panel-lg': '400px',
-        'panel-xl': '500px',
-        'sidebar-content': '200px',
+        'panel-sm': '300px',   // w-panel-sm  → 300px
+        'panel-md': '350px',   // w-panel-md  → 350px
+        'panel-lg': '400px',   // w-panel-lg  → 400px
+        'panel-xl': '500px',   // w-panel-xl  → 500px
+        'sidebar-content': '200px', // w-sidebar-content → 200px
       },
       height: {
-        'chart': '200px',
-        'panel-md': '300px',
-        'panel-lg': '400px',
-        'card-lg': '180px',
+        'chart-sm':    '200px', // h-chart-sm    → 200px  (era 'chart')
+        'content-md':  '300px', // h-content-md  → 300px  (era 'panel-md' — renomeado para evitar ambiguidade com w-panel-md=350px)
+        'content-lg':  '400px', // h-content-lg  → 400px  (era 'panel-lg')
+        'card-lg':     '180px', // h-card-lg     → 180px
       },
       minWidth: {
         'panel-sm': '300px',
@@ -178,7 +178,24 @@ export default {
         'panel-lg': '400px',
       },
       maxHeight: {
-        'panel-lg': '400px',
+        'content-lg': '400px', // era 'panel-lg' — renomeado para consistência com height
+      },
+      // ──────────────────────────────────────────────
+      // Z-INDEX SEMÂNTICO — DS v4.2.1
+      // Substituem valores arbitrários z-[N]
+      // Uso: z-overlay, z-modal, z-toast, etc.
+      // ──────────────────────────────────────────────
+      zIndex: {
+        'base':    '0',
+        'raised':  '10',
+        'dropdown':'40',
+        'sticky':  '50',
+        'overlay': '60',    // sub-modais, modais secundários, confirmações
+        'toast':   '100',   // notificações, toasts
+        'select':  '200',   // SelectContent dentro de modais
+        'backdrop':'9998',  // Dialog overlay/backdrop
+        'modal':   '9999',  // Dialog content, modais principais
+        'max':     '10000', // Sempre acima de tudo (variable-selector)
       },
     }
   },

@@ -213,8 +213,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
       <Select value={selectedPeriod} onValueChange={(v) => handlePeriodChange(v as PeriodOption)}>
         <SelectTrigger 
           className="w-[160px] h-9 text-sm border-gray-200 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-          style={{ 
-          }}
+          
         >
           <SelectValue placeholder="Selecionar período" />
         </SelectTrigger>

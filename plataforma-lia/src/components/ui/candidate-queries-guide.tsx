@@ -137,9 +137,7 @@ export function CandidateQueriesGuide({
             isOpen && "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50",
             className
           )}
-          style={{
-            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)'
-          }}
+          style={{borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)'}}
         >
           <Lightbulb className="w-3.5 h-3.5" />
           <span>Mais ideias</span>
@@ -149,19 +147,15 @@ export function CandidateQueriesGuide({
         className="w-[420px] p-0 border-0" 
         align="start" 
         sideOffset={8}
-        style={{
-          backgroundColor: 'var(--gray-50)',
+        style={{backgroundColor: 'var(--gray-50)',
           borderRadius: '8px',
-          border: '1px solid var(--gray-200)'
-        }}
+          border: '1px solid var(--gray-200)'}}
       >
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--gray-200)' }}>
+        <div className="px-5 py-4 border-b" style={{borderColor: 'var(--gray-200)'}}>
           <div 
             className="flex items-center gap-3 px-4 py-3 rounded-md"
-            style={{ 
-              backgroundColor: 'var(--gray-100)',
-              border: '1px solid var(--gray-200)'
-            }}
+            style={{backgroundColor: 'var(--gray-100)',
+              border: '1px solid var(--gray-200)'}}
           >
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <input
@@ -170,7 +164,7 @@ export function CandidateQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-              style={{ color: 'var(--gray-950)' }}
+              style={{color: 'var(--gray-950)'}}
               autoFocus
             />
             {searchTerm && (
@@ -185,7 +179,7 @@ export function CandidateQueriesGuide({
           </div>
         </div>
 
-        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto" style={{ borderColor: 'var(--gray-200)' }}>
+        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto" style={{borderColor: 'var(--gray-200)'}}>
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
@@ -223,17 +217,15 @@ export function CandidateQueriesGuide({
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
                 className="w-full px-4 py-3 text-left transition-all rounded-md group flex items-start gap-3"
-                style={{
-                  backgroundColor: 'var(--gray-50)',
-                  border: '1px solid var(--gray-100)'
-                }}
+                style={{backgroundColor: 'var(--gray-50)',
+                  border: '1px solid var(--gray-100)'}}
               >
                 <div className="p-2 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
                   <query.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
                 <span
                   className="text-sm leading-relaxed pt-1"
-                  style={{ color: 'var(--gray-600)' }}
+                  style={{color: 'var(--gray-600)'}}
                 >
                   {query.question}
                 </span>
@@ -244,13 +236,13 @@ export function CandidateQueriesGuide({
               <div className="py-12 text-center">
                 <div 
                   className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'var(--gray-50)' }}
+                  style={{backgroundColor: 'var(--gray-50)'}}
                 >
                   <Search className="w-5 h-5 text-gray-300" />
                 </div>
                 <p
                   className="text-sm"
-                  style={{ color: 'var(--gray-400)' }}
+                  style={{color: 'var(--gray-400)'}}
                 >
                   Nenhuma consulta encontrada
                 </p>
@@ -261,14 +253,12 @@ export function CandidateQueriesGuide({
 
         <div 
           className="px-5 py-3 border-t rounded-b-md"
-          style={{ 
-            borderColor: 'var(--gray-200)',
-            backgroundColor: 'var(--gray-50)'
-          }}
+          style={{borderColor: 'var(--gray-200)',
+            backgroundColor: 'var(--gray-50)'}}
         >
           <p
             className="text-xs text-center"
-            style={{ color: 'var(--gray-400)' }}
+            style={{color: 'var(--gray-400)'}}
           >
             Clique para inserir no prompt
           </p>

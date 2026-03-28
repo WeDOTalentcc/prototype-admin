@@ -75,7 +75,7 @@ export function MoveConfirmationModal({
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: fromStage.color }}
+                style={{backgroundColor: fromStage.color}}
               />
               <span className="text-gray-700 dark:text-gray-300">{fromStage.name}</span>
             </div>
@@ -85,7 +85,7 @@ export function MoveConfirmationModal({
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: toStage.color }}
+                style={{backgroundColor: toStage.color}}
               />
               <span className="text-gray-900 dark:text-gray-50 font-medium">{toStage.name}</span>
             </div>

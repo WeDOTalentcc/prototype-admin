@@ -37,7 +37,7 @@ export function OnboardingReplayButton({
       >
         <div
           className="transition-transform duration-300"
-          style={{ transform: isHovered ? 'rotate(360deg)' : 'rotate(0deg)' }}
+          style={{transform: isHovered ? 'rotate(360deg)' : 'rotate(0deg)'}}
         >
           <HelpCircle className="w-4 h-4" />
         </div>
@@ -58,7 +58,7 @@ export function OnboardingReplayButton({
         >
           <div
             className="transition-transform duration-200"
-            style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
+            style={{transform: isHovered ? 'scale(1.1)' : 'scale(1)'}}
           >
             <HelpCircle className="w-4 h-4" />
           </div>

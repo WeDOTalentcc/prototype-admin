@@ -94,10 +94,8 @@ export function LiaExpandedPrompt({
         variant="outline"
         size="sm"
         onClick={() => onCommand?.('expand')}
-        style={{
-          borderColor: colors.borderColor,
-          color: colors.textColor
-        }}
+        style={{borderColor: colors.borderColor,
+          color: colors.textColor}}
         className="w-full justify-start gap-2"
       >
         <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -108,17 +106,15 @@ export function LiaExpandedPrompt({
 
   return (
     <Card
-      style={{
-        borderColor: colors.borderColor,
-        backgroundColor: colors.backgroundColor
-      }}
+      style={{borderColor: colors.borderColor,
+        backgroundColor: colors.backgroundColor}}
       className="border-2"
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3 flex-1">
             <div
-              style={{ backgroundColor: colors.iconBg }}
+              style={{backgroundColor: colors.iconBg}}
               className="p-2 rounded-md"
             >
               <LIAIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -126,7 +122,7 @@ export function LiaExpandedPrompt({
             <div className="flex-1">
               <h3
                 className="text-sm font-semibold"
-                style={{ color: colors.textColor }}
+                style={{color: colors.textColor}}
               >
                 {title}
               </h3>
@@ -161,11 +157,9 @@ export function LiaExpandedPrompt({
                   key={index}
                   onClick={() => onCommand?.(suggestion.action)}
                   className="flex items-start gap-2 p-2 rounded-md hover:opacity-90 transition-all text-left border border-gray-200"
-                  style={{
-                    backgroundColor: 'white',
+                  style={{backgroundColor: 'white',
                     borderColor: colors.borderColor + '40',
-                    color: colors.textColor
-                  }}
+                    color: colors.textColor}}
                 >
                   <span className="flex-shrink-0 mt-0.5">{suggestion.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -186,7 +180,7 @@ export function LiaExpandedPrompt({
         {/* Footer com dica */}
         <div
           className="text-xs p-2 rounded-md text-gray-600"
-          style={{ backgroundColor: colors.iconBg }}
+          style={{backgroundColor: colors.iconBg}}
         >
           <div className="flex items-start gap-2">
             <Lightbulb className="w-3 h-3 mt-0.5 flex-shrink-0" />

@@ -143,9 +143,7 @@ export function InputEvaluationStage({
         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-50"
-            style={{
-              width: `${(criteriaItems.filter(item => getCriteriaStatus(item.value)).length / criteriaItems.length) * 100}%`
-            }}
+            style={{width: `${(criteriaItems.filter(item => getCriteriaStatus(item.value)).length / criteriaItems.length) * 100}%`}}
           />
         </div>
       </div>

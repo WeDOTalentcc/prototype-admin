@@ -25,22 +25,22 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
     score >= 60 ? 'var(--status-success)' : score >= 40 ? 'var(--status-warning)' : 'var(--status-error)'
 
   return (
-    <div className="space-y-2 pt-2 mt-2 border-t" className="border-gray-300 dark:border-gray-600">
+    <div className="space-y-2 pt-2 mt-2 border-t border-gray-300 dark:border-gray-600">
       {/* Barra de completude */}
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium" className="text-gray-500 dark:text-gray-400">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
               Qualidade da busca
             </span>
-            <span className="text-xs font-bold" style={{ color: scoreColor }}>
+            <span className="text-xs font-bold" style={{color: scoreColor}}>
               {score}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" className="bg-gray-100 dark:bg-gray-800">
+          <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${score}%`, backgroundColor: scoreColor }}
+              style={{width: `${score}%`, backgroundColor: scoreColor}}
             />
           </div>
         </div>
@@ -62,13 +62,11 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
             <div
               key={index}
               className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
-              style={{
-                backgroundColor:
+              style={{backgroundColor:
                   alert.severity === 'warning'
-                    ? 'rgb(245 158 11 / 0.08)'
-                    : 'rgb(96 190 209 / 0.08)',
-                color: 'rgb(107 114 128)',
-              }}
+                    ? 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
+                    : 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)',
+                color: 'var(--gray-500)'}}
             >
               {alert.severity === 'warning' ? (
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />

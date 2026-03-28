@@ -72,8 +72,7 @@ export default function LGPDPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <Lock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -98,7 +97,7 @@ export default function LGPDPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -109,14 +108,14 @@ export default function LGPDPage() {
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (stats?.dpoRegistered ? 'Sim' : 'Não')}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <UserCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -130,14 +129,14 @@ export default function LGPDPage() {
                     Ver em Consentimentos
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <CheckCircle className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -151,14 +150,14 @@ export default function LGPDPage() {
                     Ver no Portal do Titular
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-amber-500/10">
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -174,7 +173,7 @@ export default function LGPDPage() {
                     </p>
                   ) : null}
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-500/10">
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
               </div>
@@ -184,10 +183,10 @@ export default function LGPDPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Link href="/admin/compliance/lgpd/dpo">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <UserCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div className="flex-1">
@@ -201,10 +200,10 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/portal-titular">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div className="flex-1">
@@ -218,10 +217,10 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/consentimentos">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <CheckSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div className="flex-1">
@@ -235,10 +234,10 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/transferencias">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div className="flex-1">
@@ -254,7 +253,7 @@ export default function LGPDPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -289,7 +288,7 @@ export default function LGPDPage() {
           </div>
 
           <div className="space-y-6">
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   DPOs Cadastrados
@@ -311,7 +310,7 @@ export default function LGPDPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
@@ -335,7 +334,7 @@ export default function LGPDPage() {
               </CardContent>
             </Card>
 
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <AlertTriangle className="w-4 h-4 text-status-warning" />
@@ -348,7 +347,7 @@ export default function LGPDPage() {
                     <div
                       key={alert.id}
                       className="flex items-start gap-3 p-3 rounded-md"
-                      style={{ backgroundColor: getAlertBg(alert.type) }}
+                      style={{backgroundColor: getAlertBg(alert.type)}}
                     >
                       {getAlertIcon(alert.type)}
                       <div className="flex-1 min-w-0">

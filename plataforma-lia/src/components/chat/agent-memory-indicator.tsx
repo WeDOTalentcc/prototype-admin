@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Brain, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useAgentMemory } from "@/hooks/useAgentMemory";
+import { cn } from "@/lib/utils";
 
 const stageLabels: Record<string, string> = {
   "input-evaluation": "Avaliação Inicial",
@@ -87,87 +88,58 @@ export function AgentMemoryIndicator({
   const relTime = formatRelativeTime(memory.last_updated);
 
   return (
-    <div style={{ position: "relative", marginTop: "6px" }}>
+    <div className="relative mt-1.5">
       <div
         role="button"
         tabIndex={0}
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          padding: "5px 10px",
-          borderRadius: "6px",
-          border: "1px solid rgb(229 231 235)",
-          backgroundColor: "rgb(249 250 251)",
-          cursor: "pointer",
-          fontFamily: "Inter, sans-serif",
-          fontSize: "12px",
-          color: "rgb(107 114 128)",
-          userSelect: "none",
-          transition: "background-color 0.15s",
-        }}
+        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-gray-200 bg-gray-50 cursor-pointer text-xs text-gray-500 select-none transition-colors"
       >
         <Brain
-          className="text-wedo-cyan flex-shrink-0"
-          style={{ width: 14, height: 14 }}
+          className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
         />
 
         <span
-          style={{
-            color: "rgb(31 41 55)",
-            fontWeight: 500,
-            whiteSpace: "nowrap",
-          }}
+          className="text-gray-800 font-medium whitespace-nowrap"
         >
           {stageName}
         </span>
 
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            minWidth: 80,
-          }}
+          className="flex items-center gap-1 min-w-[80px]"
         >
           <div
-            className="bg-gray-200" style={{ flex: 1, height: 4, borderRadius: 2, overflow: "hidden" }}
+            className="bg-gray-200 flex-1 h-1 rounded-[2px] overflow-hidden"
           >
             <div
-              style={{
-                width: `${pct}%`,
-                height: "100%",
-                borderRadius: 2,
-                backgroundColor: "var(--wedo-cyan)",
-                transition: "width 0.3s ease",
-              }}
+              className="h-full rounded-[2px] bg-wedo-cyan transition-[width] duration-300 ease-in-out"
+              style={{width: `${pct}%`}}
             />
           </div>
-          <span style={{ fontSize: 11 }}>
+          <span className="text-[11px]">
             {pct}%
           </span>
         </div>
 
         <span
-          className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8 }}
+          className="text-gray-400 border-l border-l-gray-200 text-[11px] pl-2"
         >
           {memory.fields_count} campos
         </span>
 
         {relTime && (
           <span
-            className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8 }}
+            className="text-gray-400 border-l border-l-gray-200 text-[11px] pl-2"
           >
             {relTime}
           </span>
         )}
 
         {expanded ? (
-          <ChevronUp style={{ width: 12, height: 12, marginLeft: "auto" }} />
+          <ChevronUp className="w-3 h-3 ml-auto" />
         ) : (
-          <ChevronDown style={{ width: 12, height: 12, marginLeft: "auto" }} />
+          <ChevronDown className="w-3 h-3 ml-auto" />
         )}
       </div>
 
@@ -178,45 +150,30 @@ export function AgentMemoryIndicator({
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            style={{ overflow: "hidden" }}
+            className="overflow-hidden"
           >
             <div
-              style={{
-                marginTop: 4,
-                padding: "12px 14px",
-                borderRadius: 6,
-                border: "1px solid rgb(229 231 235)",
-                backgroundColor: "rgb(249 250 251)",
-                maxHeight: 280,
-                overflowY: "auto",
-                fontFamily: "Inter, sans-serif",
-                fontSize: 12,
-                color: "rgb(31 41 55)",
-              }}
+              className="mt-1 px-3.5 py-3 rounded-md border border-gray-200 bg-gray-50 max-h-[280px] overflow-y-auto text-xs text-gray-800"
             >
               <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: 13,
-                  marginBottom: 8,
-                  }}
+                className="font-semibold text-[13px] mb-2"
               >
                 Memória do Agente
               </div>
 
               <div
-                className="bg-gray-200" style={{ height: 1, marginBottom: 8 }}
+                className="bg-gray-200 h-px mb-2"
               />
 
-              <div style={{ marginBottom: 6 }}>
-                <span style={{ fontWeight: 500 }}>Estágio: </span>
+              <div className="mb-1.5">
+                <span className="font-medium">Estágio: </span>
                 <span>
                   {stageName}
                 </span>
               </div>
 
-              <div style={{ marginBottom: 10 }}>
-                <span style={{ fontWeight: 500 }}>Progresso: </span>
+              <div className="mb-2.5">
+                <span className="font-medium">Progresso: </span>
                 <span>
                   {pct}% ({memory.fields_count} campos)
                 </span>
@@ -224,31 +181,22 @@ export function AgentMemoryIndicator({
 
               {fullMemory &&
                 Object.keys(fullMemory.collected_fields).length > 0 && (
-                  <div style={{ marginBottom: 10 }}>
+                  <div className="mb-2.5">
                     <div
-                      style={{
-                        fontWeight: 500,
-                        marginBottom: 4,
-                        }}
+                      className="font-medium mb-1"
                     >
                       Campos coletados:
                     </div>
                     <ul
-                      style={{
-                        margin: 0,
-                        paddingLeft: 16,
-                        listStyleType: "disc",
-                      }}
+                      className="m-0 pl-4 list-disc"
                     >
                       {Object.entries(fullMemory.collected_fields).map(
                         ([key, val]) => (
                           <li
                             key={key}
-                            style={{
-                              marginBottom: 2,
-                              }}
+                            className="mb-0.5"
                           >
-                            <span style={{ fontWeight: 500 }}>
+                            <span className="font-medium">
                               {key}:
                             </span>{" "}
                             {typeof val === "object"
@@ -264,8 +212,8 @@ export function AgentMemoryIndicator({
               {fullMemory &&
                 fullMemory.pending_actions &&
                 fullMemory.pending_actions.length > 0 && (
-                  <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontWeight: 500 }}>Ações pendentes: </span>
+                  <div className="mb-1.5">
+                    <span className="font-medium">Ações pendentes: </span>
                     <span>
                       {fullMemory.pending_actions.length}
                     </span>
@@ -273,20 +221,14 @@ export function AgentMemoryIndicator({
                 )}
 
               {fullMemory && fullMemory.agent_notes && (
-                <div style={{ marginBottom: 10 }}>
+                <div className="mb-2.5">
                   <div
-                    style={{
-                      fontWeight: 500,
-                      marginBottom: 4,
-                      }}
+                    className="font-medium mb-1"
                   >
                     Notas do agente:
                   </div>
                   <div
-                    style={{
-                      fontStyle: "italic",
-                      fontSize: 11,
-                    }}
+                    className="italic text-[11px]"
                   >
                     {fullMemory.agent_notes}
                   </div>
@@ -295,14 +237,14 @@ export function AgentMemoryIndicator({
 
               {!fullMemory && (
                 <div
-                  className="text-gray-400" style={{ fontSize: 11, fontStyle: "italic" }}
+                  className="text-gray-400 text-[11px] italic"
                 >
                   Carregando detalhes...
                 </div>
               )}
 
               <div
-                className="bg-gray-200" style={{ height: 1, margin: "8px 0" }}
+                className="bg-gray-200 h-px my-2"
               />
 
               <button
@@ -310,9 +252,9 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "var(--gray-100)" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "var(--wedo-cyan)" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
               >
-                <Trash2 style={{ width: 12, height: 12 }} />
+                <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}
               </button>
             </div>

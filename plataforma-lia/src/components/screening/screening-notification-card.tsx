@@ -97,7 +97,7 @@ export function ScreeningNotificationCard({
                         ? "bg-status-warning/10"
                         : "bg-status-error/10"
                   }`}
-                  style={{ width: `${wsiScore}%` }}
+                  style={{width: `${wsiScore}%`}}
                 />
               </div>
             </div>

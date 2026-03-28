@@ -131,8 +131,7 @@ export default function AuditoriaPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
             <ClipboardList className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>

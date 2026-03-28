@@ -219,8 +219,7 @@ export default function ComplianceDashboardPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
               <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </div>
@@ -243,7 +242,7 @@ export default function ComplianceDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -258,7 +257,7 @@ export default function ComplianceDashboardPage() {
                     <span className="text-xs text-status-success">{implementedControls} implementados</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <FileCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
@@ -271,7 +270,7 @@ export default function ComplianceDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -287,7 +286,7 @@ export default function ComplianceDashboardPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-500/10">
                   <Lock className="w-5 h-5 text-status-success" />
                 </div>
               </div>
@@ -301,7 +300,7 @@ export default function ComplianceDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -320,7 +319,7 @@ export default function ComplianceDashboardPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: biasAlertCount > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: biasAlertCount > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)'}}>
                   <Scale className={`w-5 h-5 ${biasAlertCount > 0 ? 'text-status-warning' : 'text-status-success'}`} />
                 </div>
               </div>
@@ -334,7 +333,7 @@ export default function ComplianceDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <Card >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -349,7 +348,7 @@ export default function ComplianceDashboardPage() {
                     <span className="text-xs text-gray-400 dark:text-gray-500" >Próximos 30 dias</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                   <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
@@ -371,7 +370,7 @@ export default function ComplianceDashboardPage() {
           {displayFrameworks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {displayFrameworks.map((fw) => (
-                <Card key={fw.key} style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+                <Card key={fw.key} >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100" >
@@ -406,7 +405,7 @@ export default function ComplianceDashboardPage() {
               ))}
             </div>
           ) : (
-            <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+            <Card >
               <CardContent className="p-6 text-center">
                 <FileCheck className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm text-gray-400 dark:text-gray-500" >
@@ -437,7 +436,7 @@ export default function ComplianceDashboardPage() {
           </Button>
         </div>
 
-        <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+        <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >

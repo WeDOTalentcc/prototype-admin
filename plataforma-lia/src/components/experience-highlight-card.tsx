@@ -131,8 +131,8 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
       const data = await generateResponse.json()
       setHighlight(data)
       fetchedRef.current = candidate.id
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       setError('Não foi possível gerar o resumo')
     } finally {
       setIsLoading(false)

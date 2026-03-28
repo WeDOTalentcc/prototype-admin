@@ -106,7 +106,7 @@ export function PipelineStagesCarousel({
       <div
         ref={scrollContainerRef}
         className="overflow-x-auto [scrollbar-width:none] scroll-smooth px-2"
-        style={{ msOverflowStyle: 'none' }}
+        style={{msOverflowStyle: 'none'}}
       >
         <div className="flex items-center gap-2 py-1 min-w-max">
           {stages.map((stage, index) => {
@@ -158,10 +158,8 @@ export function PipelineStagesCarousel({
                     <div className="mt-1.5 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: stageColor,
-                          width: isSelected ? '100%' : '60%',
-                        }}
+                        style={{backgroundColor: stageColor,
+                          width: isSelected ? '100%' : '60%'}}
                       />
                     </div>
                   </div>

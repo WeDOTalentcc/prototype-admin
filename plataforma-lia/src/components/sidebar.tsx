@@ -435,7 +435,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         "bg-white dark:bg-gray-900 min-h-screen flex flex-col border-r border-gray-100 dark:border-gray-800 relative font-sans",
         isTemporaryExpanded && "z-50"
       )}
-      style={{ width: dynamicWidth }}
+      style={{width: dynamicWidth}}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -452,7 +452,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               width={120}
               height={40}
               className="dark:invert"
-              style={{ width: 'auto', height: 'auto' }}
+              style={{width: 'auto', height: 'auto'}}
               priority
             />
           ) : (
@@ -462,7 +462,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               width={40}
               height={40}
               className="dark:invert"
-              style={{ width: 'auto', height: 'auto' }}
+              style={{width: 'auto', height: 'auto'}}
               priority
             />
           )}

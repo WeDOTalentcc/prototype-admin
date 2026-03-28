@@ -50,19 +50,17 @@ export function LiaExpandedPanel({
   return (
     <div 
       className={`flex-shrink-0 transition-all duration-300 relative group ${className}`}
-      style={{ width: width ? `${width}px` : undefined }}
+      style={{width: width ? `${width}px` : undefined}}
     >
       <Card 
         className="flex flex-col overflow-hidden bg-white dark:bg-gray-900" 
-        style={{ 
-          border: '1px solid var(--gray-200)',
-          height
-        }}
+        style={{border: '1px solid var(--gray-200)',
+          height}}
       >
         {/* Header Padronizado */}
         <div 
           className="flex-shrink-0 px-4 py-3" 
-          style={{ backgroundColor: 'var(--gray-50)' }}
+          style={{backgroundColor: 'var(--gray-50)'}}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -72,7 +70,7 @@ export function LiaExpandedPanel({
               <div className="min-w-0 flex-1">
                 <h3 
                   className="text-base-ui font-bold leading-tight truncate text-gray-900 dark:text-gray-50" 
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  
                 >
                   {title}
                 </h3>
@@ -135,11 +133,7 @@ export function LiaExpandedPanel({
         {/* Context Pills (quando há itens selecionados) */}
         {contextPills && (
           <div 
-            className="flex-shrink-0 px-4 py-3" 
-            style={{ 
-              backgroundColor: 'rgb(0 184 184 / 0.04)',
-              borderBottom: '1px solid var(--gray-200)' 
-            }}
+            className="flex-shrink-0 px-4 py-3 bg-chat-cyan/[0.04] border-b border-gray-200"
           >
             {contextPills}
           </div>
@@ -149,7 +143,7 @@ export function LiaExpandedPanel({
         {quickActions && (
           <div 
             className="flex-shrink-0 px-4 py-3" 
-            style={{ borderBottom: '1px solid var(--gray-200)' }}
+            style={{borderBottom: '1px solid var(--gray-200)'}}
           >
             {quickActions}
           </div>
@@ -159,7 +153,7 @@ export function LiaExpandedPanel({
         {tabs && (
           <div 
             className="flex-shrink-0 px-4 pt-2" 
-            style={{ borderBottom: '1px solid var(--gray-200)' }}
+            style={{borderBottom: '1px solid var(--gray-200)'}}
           >
             {tabs}
           </div>
@@ -168,7 +162,7 @@ export function LiaExpandedPanel({
         {/* Main Content - Scrollable */}
         <div 
           className="flex-1 overflow-y-auto"
-          style={{ backgroundColor: 'var(--gray-50)' }}
+          style={{backgroundColor: 'var(--gray-50)'}}
         >
           {children}
         </div>
@@ -177,7 +171,7 @@ export function LiaExpandedPanel({
         {footer && (
           <div 
             className="flex-shrink-0 p-4" 
-            style={{ backgroundColor: 'var(--gray-50)' }}
+            style={{backgroundColor: 'var(--gray-50)'}}
           >
             {footer}
           </div>
@@ -219,7 +213,7 @@ export function LiaTabButton({
         className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
           active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
         }`}
-        style={{ ...(active ? { backgroundColor: 'var(--gray-600)' } : {}) }}
+        style={{...(active ? { backgroundColor: 'var(--gray-600)' } : {})}}
       >
         <div className="flex items-center gap-1.5">
           {icon}
@@ -347,10 +341,8 @@ export function LiaChatInput({
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
           className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-all resize-none text-gray-950 dark:text-gray-50"
-          style={{ 
-            border: '1px solid var(--gray-200)',
-            backgroundColor: 'var(--gray-50)'
-          }}
+          style={{border: '1px solid var(--gray-200)',
+            backgroundColor: 'var(--gray-50)'}}
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
@@ -372,8 +364,7 @@ export function LiaChatInput({
           </div>
           <Button
             className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' : 'bg-gray-100 text-gray-400'}`}
-            style={{
-            }}
+            
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}
           >
@@ -462,7 +453,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
             />
           </div>
           {timestamp && (
-            <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-xs text-gray-400 px-1" >
               {formatTime(timestamp)}
             </span>
           )}
@@ -482,7 +473,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >
             LIA
           </span>
         </div>
@@ -504,7 +495,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           className="px-1"
         />
         {timestamp && (
-          <span className="text-xs text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs text-gray-400 px-1" >
             {formatTime(timestamp)}
           </span>
         )}
@@ -521,15 +512,15 @@ export function LiaLoadingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200" >
             LIA
           </span>
         </div>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
           </div>
         </div>
       </div>

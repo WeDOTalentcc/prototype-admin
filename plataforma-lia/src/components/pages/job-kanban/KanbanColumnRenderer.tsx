@@ -367,12 +367,10 @@ export function KanbanColumnRenderer({
                 ? "border-l-4 border-l-green-500 border-gray-200 dark:border-gray-700 bg-status-success/10/30 dark:bg-status-success/20"
                 : "border-gray-200 dark:border-gray-700"
             } hover:transition-all duration-300 cursor-move group`}
-            style={{
-              animationDelay: `${index * 50}ms`,
+            style={{animationDelay: `${index * 50}ms`,
               minHeight: "110px",
               transition: "all 0.3s ease",
-              animation: isDropping ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : undefined,
-            }}
+              animation: isDropping ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : undefined}}
             onMouseEnter={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(-1px)"

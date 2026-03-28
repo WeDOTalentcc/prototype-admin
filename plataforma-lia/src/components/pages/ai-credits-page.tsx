@@ -183,7 +183,7 @@ export function AiCreditsPage({ companyId }: Props) {
                     ? 'bg-status-warning'
                     : 'bg-gray-900'
                 }`}
-                style={{ width: `${Math.min(usagePct, 100)}%` }}
+                style={{width: `${Math.min(usagePct, 100)}%`}}
               />
             </div>
             <div className="mt-1.5 flex justify-between text-xs text-gray-400">

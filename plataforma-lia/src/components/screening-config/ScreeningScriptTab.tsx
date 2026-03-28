@@ -158,7 +158,7 @@ function formatMessageWithVariables(message: string): React.ReactNode[] {
   return parts.map((part, index) => {
     if (part.match(/^\{[^}]+\}$/)) {
       return (
-        <span key={index} style={{ fontWeight: 500 }}>
+        <span key={index} style={{fontWeight: 500}}>
           {part}
         </span>
       )

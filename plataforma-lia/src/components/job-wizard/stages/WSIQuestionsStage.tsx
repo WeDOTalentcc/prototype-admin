@@ -237,7 +237,7 @@ export function WSIQuestionsStage() {
             selectedCount >= 5 ? "bg-status-success" : 
             selectedCount >= 3 ? "bg-gray-900 dark:bg-gray-50" : "bg-status-warning"
           )}
-          style={{ width: `${(selectedCount / 5) * 100}%` }}
+          style={{width: `${(selectedCount / 5) * 100}%`}}
         />
       </div>
 

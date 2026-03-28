@@ -1,0 +1,255 @@
+import { useState } from "react"
+import type { Candidate } from "../types"
+import type { ParsedEntities, SearchMode } from "@/components/search/smart-search-input"
+
+export type Archetype = {
+  id: string
+  name: string
+  description: string
+  emoji: string
+  query: string
+  filters: {
+    job_title?: string
+    seniority?: string
+    skills?: string[]
+    location?: string
+    experience_years?: number
+  }
+  tags?: string[]
+  industry?: string
+  createdAt: Date
+  isDefault?: boolean
+  usage_count?: number
+}
+
+export type BackendArchetype = {
+  id: string
+  name: string
+  description?: string
+  emoji: string
+  query: string
+  filters: Record<string, any>
+  tags: string[]
+  industry?: string
+  seniority?: string
+  is_default: boolean
+  is_active: boolean
+  usage_count: number
+  created_at?: string
+}
+
+export type AISuggestion = {
+  name: string
+  description: string
+  query: string
+  filters: {
+    job_title?: string
+    seniority?: string
+    skills?: string[]
+    location?: string
+  }
+}
+
+export interface UseCandidatesArchetypesParams {
+  searchSource: string
+  pearchSearchOptions: { searchType: string; limit: number }
+  toast: (opts: any) => void
+  setCandidates: (candidates: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
+  setHasSearchResults: (v: boolean) => void
+  setSearchResultsCount: (v: number) => void
+  setLocalResultsCount: (v: number) => void
+  setPearchResultsCount: (v: number) => void
+  setLastSearchQuery: (v: string) => void
+  setLastSearchMode: (v: any) => void
+  setActiveSearchTab: (v: any) => void
+  setLiaPromptValue: (v: string) => void
+  setChatMessages: (fn: (prev: any[]) => any[]) => void
+}
+
+export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
+  const {
+    searchSource, pearchSearchOptions, toast,
+    setCandidates, setHasSearchResults, setSearchResultsCount,
+    setLocalResultsCount, setPearchResultsCount,
+    setLastSearchQuery, setLastSearchMode, setActiveSearchTab,
+    setLiaPromptValue, setChatMessages,
+  } = params
+
+  const [backendArchetypes, setBackendArchetypes] = useState<BackendArchetype[]>([])
+  const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(false)
+  const [archetypesLoadError, setArchetypesLoadError] = useState<string | null>(null)
+  const [isSearchingByArchetype, setIsSearchingByArchetype] = useState(false)
+  const [userArchetypes, setUserArchetypes] = useState<Archetype[]>([])
+  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
+  const [archetypeCreationStep, setArchetypeCreationStep] = useState<'initial' | 'input' | 'extracting' | 'review' | 'saving'>('initial')
+  const [newArchetypeData, setNewArchetypeData] = useState<Partial<Archetype>>({})
+  const [archetypeJobDescription, setArchetypeJobDescription] = useState("")
+  const [archetypeLibraryTab, setArchetypeLibraryTab] = useState<'meus' | 'sugestoes' | 'templates'>('meus')
+  const [showSaveAsArchetypeModal, setShowSaveAsArchetypeModal] = useState(false)
+  const [lastSuccessfulQuery, setLastSuccessfulQuery] = useState("")
+  const [previewSuggestion, setPreviewSuggestion] = useState<AISuggestion | null>(null)
+  const [previewingUserArchetype, setPreviewingUserArchetype] = useState<Archetype | null>(null)
+  const [archetypeToDelete, setArchetypeToDelete] = useState<Archetype | null>(null)
+  const [isDeletingArchetype, setIsDeletingArchetype] = useState(false)
+
+  const buildFiltersFromTags = (tags: string[]): Record<string, string[]> => {
+    const seniorityKeywords = ['júnior', 'junior', 'pleno', 'sênior', 'senior', 'especialista', 'lead', 'principal', 'staff', 'estagiário', 'trainee']
+    const locationKeywords = ['são paulo', 'rio de janeiro', 'belo horizonte', 'curitiba', 'porto alegre', 'brasília', 'salvador', 'fortaleza', 'recife', 'remoto', 'híbrido', 'presencial']
+    
+    const skills: string[] = []
+    const locations: string[] = []
+    const seniority: string[] = []
+    
+    tags.forEach(tag => {
+      const lowerTag = tag.toLowerCase().trim()
+      
+      if (seniorityKeywords.some(kw => lowerTag.includes(kw))) {
+        seniority.push(tag)
+      } else if (locationKeywords.some(kw => lowerTag.includes(kw))) {
+        locations.push(tag)
+      } else {
+        skills.push(tag)
+      }
+    })
+    
+    return {
+      skills,
+      locations,
+      seniority,
+      keywords: tags
+    }
+  }
+
+  const loadArchetypesFromBackend = async () => {
+    setIsLoadingArchetypes(true)
+    setArchetypesLoadError(null)
+    try {
+      const response = await fetch('/api/backend-proxy/search/archetypes')
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar arquétipos: ${response.status}`)
+      }
+      const data = await response.json()
+      setBackendArchetypes(data.archetypes || [])
+    } catch (error) {
+      setArchetypesLoadError(error instanceof Error ? error.message : 'Erro ao carregar arquétipos')
+    } finally {
+      setIsLoadingArchetypes(false)
+    }
+  }
+
+  const executeArchetypeSearch = async (archetype: BackendArchetype) => {
+    setIsSearchingByArchetype(true)
+    try {
+      const response = await fetch(`/api/backend-proxy/search/archetypes/${archetype.id}/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          search_local: true,
+          search_pearch: searchSource === 'global' || searchSource === 'hybrid',
+          pearch_type: pearchSearchOptions.searchType,
+          local_limit: 50,
+          pearch_limit: pearchSearchOptions.limit,
+          calculate_lia_score: true
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Erro na busca: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      setLiaPromptValue(archetype.query)
+      setActiveSearchTab('ia-natural')
+      
+      if (data.candidates && data.candidates.length > 0) {
+        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
+          id: c.id || `arch-${Date.now()}-${Math.random()}`,
+          candidateId: c.id || '',
+          name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
+          email: '',
+          phone: '',
+          current_title: c.current_title || c.headline,
+          current_company: c.current_company,
+          linkedin_url: c.linkedin_url,
+          seniority_level: archetype.seniority,
+          technical_skills: c.skills || [],
+          location_city: c.location?.split(',')[0]?.trim(),
+          location_state: c.location?.split(',')[1]?.trim(),
+          avatar_url: c.picture_url,
+          years_of_experience: c.total_experience_years,
+          status: 'new',
+          source: c.source || 'pearch',
+          matching_score: c.lia_score || c.score || 0,
+          match_summary: c.lia_reasoning || c.match_summary,
+          is_opentowork: c.is_open_to_work,
+          lia_score: c.lia_score,
+          lia_breakdown: c.lia_breakdown,
+          lia_strengths: c.lia_strengths || [],
+          lia_concerns: c.lia_concerns || []
+        })) as any[]
+        
+        setCandidates(mappedCandidates)
+        setHasSearchResults(true)
+        setSearchResultsCount(mappedCandidates.length)
+        setLocalResultsCount(data.local_count || 0)
+        setPearchResultsCount(data.pearch_count || 0)
+        setLastSearchQuery(archetype.query)
+        setLastSearchMode('archetype')
+        
+        const localCount = data.local_count || mappedCandidates.length
+        const liaMessage = {
+          id: `lia-arch-${Date.now()}`,
+          type: 'lia' as const,
+          content: `🎯 Busca por arquétipo "${archetype.name}" concluída!\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.${data.credits_remaining !== undefined ? `\n\n💳 Créditos restantes: ${data.credits_remaining}` : ''}`,
+          timestamp: new Date(),
+          searchResults: {
+            localCount: localCount,
+            globalCount: 0,
+            query: archetype.query
+          }
+        }
+        setChatMessages(prev => [...prev, liaMessage])
+        
+        toast({
+          title: "Busca por arquétipo concluída",
+          description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"`,
+        })
+      } else {
+        toast({
+          title: "Nenhum candidato encontrado",
+          description: `A busca por "${archetype.name}" não retornou resultados`,
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erro na busca",
+        description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo',
+        variant: "destructive"
+      })
+    } finally {
+      setIsSearchingByArchetype(false)
+    }
+  }
+
+  return {
+    state: {
+      backendArchetypes, isLoadingArchetypes, archetypesLoadError,
+      isSearchingByArchetype, userArchetypes, isCreatingArchetype,
+      archetypeCreationStep, newArchetypeData, archetypeJobDescription,
+      archetypeLibraryTab, showSaveAsArchetypeModal, lastSuccessfulQuery,
+      previewSuggestion, previewingUserArchetype,
+      archetypeToDelete, isDeletingArchetype,
+    },
+    actions: {
+      setBackendArchetypes, setIsLoadingArchetypes, setArchetypesLoadError,
+      setIsSearchingByArchetype, setUserArchetypes, setIsCreatingArchetype,
+      setArchetypeCreationStep, setNewArchetypeData, setArchetypeJobDescription,
+      setArchetypeLibraryTab, setShowSaveAsArchetypeModal, setLastSuccessfulQuery,
+      setPreviewSuggestion, setPreviewingUserArchetype,
+      setArchetypeToDelete, setIsDeletingArchetype,
+      buildFiltersFromTags, loadArchetypesFromBackend, executeArchetypeSearch,
+    },
+  }
+}

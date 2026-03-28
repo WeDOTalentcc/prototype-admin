@@ -74,7 +74,7 @@ export function WSIQualityBar({
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={cn('h-full rounded-full transition-all duration-500', colors.bg)}
-                  style={{ width: `${score}%` }}
+                  style={{width: `${score}%`}}
                 />
               </div>
             </div>

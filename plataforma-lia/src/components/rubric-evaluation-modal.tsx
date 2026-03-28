@@ -126,21 +126,21 @@ export function RubricEvaluationModal({
   }
 
   const getScoreBadge = (scoreValue: number) => {
-    if (scoreValue >= 85) return { label: 'Excelente', bg: 'rgb(96 190 209 / 0.12)' }
-    if (scoreValue >= 70) return { label: 'Bom', bg: 'rgb(96 190 209 / 0.08)' }
-    if (scoreValue >= 50) return { label: 'Moderado', bg: 'rgb(245 158 11 / 0.12)', color: 'var(--status-warning)' }
-    if (scoreValue >= 30) return { label: 'Fraco', bg: 'rgb(225 97 98 / 0.12)', color: 'var(--status-error)' }
-    return { label: 'Inadequado', bg: 'rgb(225 97 98 / 0.15)', color: 'var(--status-error)' }
+    if (scoreValue >= 85) return { label: 'Excelente', bg: 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)' }
+    if (scoreValue >= 70) return { label: 'Bom', bg: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)' }
+    if (scoreValue >= 50) return { label: 'Moderado', bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)' }
+    if (scoreValue >= 30) return { label: 'Fraco', bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)' }
+    return { label: 'Inadequado', bg: 'color-mix(in srgb, var(--status-error) 15%, transparent)', color: 'var(--status-error)' }
   }
 
   const getDecisionBadge = (decisao?: string) => {
     switch (decisao?.toUpperCase()) {
       case 'APROVAR_TRIAGEM':
-        return { label: 'Aprovar para Triagem', bg: 'rgb(96 190 209 / 0.12)', icon: CheckCircle }
+        return { label: 'Aprovar para Triagem', bg: 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)', icon: CheckCircle }
       case 'MANTER_ESPERA':
-        return { label: 'Manter em Espera', bg: 'rgb(245 158 11 / 0.12)', color: 'var(--status-warning)', icon: Clock }
+        return { label: 'Manter em Espera', bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)', icon: Clock }
       case 'NAO_PROSSEGUIR':
-        return { label: 'Não Prosseguir', bg: 'rgb(225 97 98 / 0.12)', color: 'var(--status-error)', icon: XCircle }
+        return { label: 'Não Prosseguir', bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)', icon: XCircle }
       default:
         return null
     }
@@ -157,7 +157,7 @@ export function RubricEvaluationModal({
       case 'meets':
         return <Check className="w-3.5 h-3.5 text-gray-700" />
       case 'partial':
-        return <AlertTriangle className="w-3.5 h-3.5" style={{ color: 'var(--status-warning)' }} />
+        return <AlertTriangle className="w-3.5 h-3.5" style={{color: 'var(--status-warning)'}} />
       case 'missing':
         return <X className="w-3.5 h-3.5 text-wedo-coral" />
       default:
@@ -168,13 +168,13 @@ export function RubricEvaluationModal({
   const getRubricStyle = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return { bg: 'rgb(96 190 209 / 0.08)', border: 'var(--gray-50)' }
+        return { bg: 'color-mix(in srgb, var(--wedo-cyan) 8%, transparent)', border: 'var(--gray-50)' }
       case 'meets':
-        return { bg: 'rgb(96 190 209 / 0.04)', border: 'var(--gray-50)' }
+        return { bg: 'color-mix(in srgb, var(--wedo-cyan) 4%, transparent)', border: 'var(--gray-50)' }
       case 'partial':
-        return { bg: 'rgb(245 158 11 / 0.08)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
+        return { bg: 'color-mix(in srgb, var(--status-warning) 8%, transparent)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
       case 'missing':
-        return { bg: 'rgb(225 97 98 / 0.08)', border: 'var(--gray-50)', color: 'var(--status-error)' }
+        return { bg: 'color-mix(in srgb, var(--status-error) 8%, transparent)', border: 'var(--gray-50)', color: 'var(--status-error)' }
       default:
         return { bg: 'var(--gray-50)', border: 'var(--gray-50)' }
     }
@@ -211,9 +211,9 @@ export function RubricEvaluationModal({
   const getPriorityStyle = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'essential':
-        return { bg: 'rgb(225 97 98 / 0.12)', color: 'var(--status-error)' }
+        return { bg: 'color-mix(in srgb, var(--status-error) 12%, transparent)', color: 'var(--status-error)' }
       case 'important':
-        return { bg: 'rgb(245 158 11 / 0.12)', color: 'var(--status-warning)' }
+        return { bg: 'color-mix(in srgb, var(--status-warning) 12%, transparent)', color: 'var(--status-warning)' }
       case 'nice-to-have':
         return { bg: 'var(--gray-50)' }
       default:
@@ -345,7 +345,7 @@ export function RubricEvaluationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', boxShadow: '0 16px 32px -8px rgb(0 0 0 / 0.12)' }}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{backgroundColor: 'var(--gray-50)'}}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100">
           <div className="flex items-center gap-3">
@@ -388,11 +388,8 @@ export function RubricEvaluationModal({
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-                style={{
-                  
-                  backgroundColor: activeSection === tab.id ? 'rgb(96 190 209 / 0.12)' : 'transparent',
-                  color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)',
-                }}
+                style={{backgroundColor: activeSection === tab.id ? 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)' : 'transparent',
+                  color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)'}}
               >
                 <TabIcon className="w-3.5 h-3.5" />
                 {tab.label}
@@ -407,28 +404,22 @@ export function RubricEvaluationModal({
           {activeSection === 'overview' && (
             <div className="space-y-3">
               {/* Score Card */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">Score de Aderência</span>
                   <div className="flex items-center gap-2">
                     <span 
                       className="text-micro font-medium px-2 py-0.5 rounded-full"
-                      style={{ 
-                        
-                        backgroundColor: scoreBadge.bg,
-                        color: scoreBadge.color
-                      }}
+                      style={{backgroundColor: scoreBadge.bg,
+                        color: scoreBadge.color}}
                     >
                       {evaluation.score_label || scoreBadge.label}
                     </span>
                     {decisionBadge && (
                       <span 
                         className="text-micro font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
-                        style={{ 
-                          
-                          backgroundColor: decisionBadge.bg,
-                          color: decisionBadge.color
-                        }}
+                        style={{backgroundColor: decisionBadge.bg,
+                          color: decisionBadge.color}}
                       >
                         <decisionBadge.icon className="w-3 h-3" />
                         {decisionBadge.label}
@@ -440,10 +431,8 @@ export function RubricEvaluationModal({
                   <div className="flex-1 h-3 rounded-full overflow-hidden bg-gray-100">
                     <div 
                       className="h-full rounded-full transition-all duration-700 ease-out"
-                      style={{ 
-                        width: `${score}%`,
-                        backgroundColor: getScoreColor(score)
-                      }}
+                      style={{width: `${score}%`,
+                        backgroundColor: getScoreColor(score)}}
                     />
                   </div>
                   <span className="text-xl font-bold min-w-[55px] text-right text-gray-950 dark:text-gray-50">
@@ -455,7 +444,7 @@ export function RubricEvaluationModal({
                 <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-t-gray-100">
                   <div className="text-center">
                     <div className="text-micro mb-1 text-gray-500">Essenciais</div>
-                    <div className="text-base-ui font-semibold" style={{ color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)' }}>
+                    <div className="text-base-ui font-semibold" style={{color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)'}}>
                       {essentialMet}/{essentialReqs.length}
                     </div>
                   </div>
@@ -475,7 +464,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Parecer da LIA - Expandido */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-gray-950 dark:text-gray-50">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Parecer da LIA
@@ -540,7 +529,7 @@ export function RubricEvaluationModal({
                           <div 
                             key={idx} 
                             className="p-2 rounded-md"
-                            style={{ borderLeft: `2px solid ${nivelColor}` }}
+                            style={{borderLeft: `2px solid ${nivelColor}`}}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
@@ -554,7 +543,7 @@ export function RubricEvaluationModal({
                               <div className="flex flex-col items-end gap-1">
                                 <span 
                                   className="text-micro font-medium px-1.5 py-0.5 rounded-full"
-                                  style={{ backgroundColor: `${nivelColor}15`, color: nivelColor }}
+                                  style={{backgroundColor: `${nivelColor}15`, color: nivelColor}}
                                 >
                                   Risco {rm.nivel === 'alto' ? 'Alto' : rm.nivel === 'medio' ? 'Médio' : 'Baixo'}
                                 </span>
@@ -577,10 +566,10 @@ export function RubricEvaluationModal({
                 {mockParecer.recomendacao_final && (
                   <div>
                     <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500">
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'rgb(96 190 209 / 0.12)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)' }}>4</span>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'color-mix(in srgb, var(--wedo-cyan) 12%, transparent)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)'}}>4</span>
                       Recomendação Final
                     </div>
-                    <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)' }}>
+                    <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)'}}>
                       <p className="text-xs leading-relaxed mb-2 text-gray-800 dark:text-gray-200">
                         {mockParecer.recomendacao_final.justificativa}
                       </p>
@@ -603,7 +592,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Why This Candidate */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50">
                   <Lightbulb className="w-4 h-4 text-gray-700" />
                   Por que este candidato?
@@ -629,7 +618,7 @@ export function RubricEvaluationModal({
           {activeSection === 'details' && (
             <div className="space-y-3">
               {/* Avaliação por Requisito */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50">
                   <FileText className="w-4 h-4 text-gray-700" />
                   Matriz de Avaliação por Requisito
@@ -644,10 +633,8 @@ export function RubricEvaluationModal({
                       <div 
                         key={idx} 
                         className="p-2.5 rounded-md transition-colors"
-                        style={{ 
-                          backgroundColor: rubricStyle.bg,
-                          border: `1px solid ${rubricStyle.border}`
-                        }}
+                        style={{backgroundColor: rubricStyle.bg,
+                          border: `1px solid ${rubricStyle.border}`}}
                       >
                         <div className="flex items-start gap-2">
                           <div className="mt-0.5 flex-shrink-0">
@@ -661,18 +648,15 @@ export function RubricEvaluationModal({
                               {req.priority && (
                                 <span 
                                   className="text-micro font-medium px-1.5 py-0 rounded-full"
-                                  style={{ 
-                                    
-                                    backgroundColor: priorityStyle.bg,
-                                    color: priorityStyle.color
-                                  }}
+                                  style={{backgroundColor: priorityStyle.bg,
+                                    color: priorityStyle.color}}
                                 >
                                   {getPriorityLabel(req.priority)}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-micro font-medium" style={{ color: rubricStyle.color }}>
+                              <span className="text-micro font-medium" style={{color: rubricStyle.color}}>
                                 {getRubricLabel(level)}
                               </span>
                               {req.evidence && (
@@ -703,7 +687,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Red Flags */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950 dark:text-gray-50">
                   <Shield className="w-4 h-4 text-gray-700" />
                   Verificação de Red Flags
@@ -735,7 +719,7 @@ export function RubricEvaluationModal({
               </div>
 
               {/* Auditoria - Collapsible */}
-              <div className="p-3 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px' }}>
+              <div className="p-3 border border-gray-100" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <button
                   onClick={() => setShowAudit(!showAudit)}
                   className="w-full flex items-center justify-between text-xs font-semibold text-gray-950 dark:text-gray-50"
@@ -763,13 +747,13 @@ export function RubricEvaluationModal({
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro text-gray-500">Red Flags</div>
-                        <div className="text-sm font-bold" style={{ color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'var(--status-warning)' : 'var(--gray-600)' }}>
+                        <div className="text-sm font-bold" style={{color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'var(--status-warning)' : 'var(--gray-600)'}}>
                           {mockRedFlags.filter(f => f.status !== 'ok').length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro text-gray-500">Taxa Essenciais</div>
-                        <div className="text-sm font-bold" style={{ color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)' }}>
+                        <div className="text-sm font-bold" style={{color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)'}}>
                           {essentialReqs.length > 0 ? Math.round((essentialMet / essentialReqs.length) * 100) : 100}%
                         </div>
                       </div>
@@ -793,7 +777,7 @@ export function RubricEvaluationModal({
                         <div key={idx} className="flex items-center gap-1 p-1.5 rounded bg-gray-50">
                           <span 
                             className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded"
-                            style={{ backgroundColor: `${item.color}15`, color: item.color }}
+                            style={{backgroundColor: `${item.color}15`, color: item.color}}
                           >
                             {item.code}
                           </span>
@@ -835,8 +819,7 @@ export function RubricEvaluationModal({
               onClick={handleReject}
               disabled={isLoading || !onReject}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-gray-300 text-status-error dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-status-error"
-              style={{ 
-              }}
+              
             >
               {isRejecting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -849,8 +832,7 @@ export function RubricEvaluationModal({
               onClick={handleApprove}
               disabled={isLoading || !onApprove}
               className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
-              style={{ 
-              }}
+              
             >
               {isApproving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

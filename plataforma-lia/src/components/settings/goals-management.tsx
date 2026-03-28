@@ -1015,8 +1015,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       } else {
         showSuccess(`"${template.name}" aplicado com sucesso para ${appliedCount} usuário(s)`)
       }
-    } catch (error: any) {
-      showError(error.message || 'Erro ao aplicar template')
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao aplicar template')
     } finally {
       setIsSaving(false)
       setSavingTemplateId(null)
@@ -1086,8 +1086,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
       setSelectedTemplateIds(new Set())
       setShowTemplates(false)
-    } catch (error: any) {
-      showError(error.message || 'Erro ao aplicar templates')
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao aplicar templates')
     } finally {
       setIsSaving(false)
     }
@@ -1155,8 +1155,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         userId: ''
       })
       setSelectedUser(null)
-    } catch (error: any) {
-      showError(error.message || 'Erro ao criar meta')
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao criar meta')
     } finally {
       setIsSaving(false)
     }
@@ -1172,8 +1172,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
       showSuccess('Meta atualizada com sucesso!')
       setEditingGoal(null)
-    } catch (error: any) {
-      showError(error.message || 'Erro ao atualizar meta')
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao atualizar meta')
     } finally {
       setIsSaving(false)
     }
@@ -1195,8 +1195,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
       showSuccess('Meta excluída com sucesso!')
       setDeleteConfirmGoal(null)
-    } catch (error: any) {
-      showError(error.message || 'Erro ao excluir meta')
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao excluir meta')
     } finally {
       setIsDeleting(false)
     }

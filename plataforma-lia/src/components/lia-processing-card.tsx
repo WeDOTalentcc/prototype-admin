@@ -227,7 +227,7 @@ export function LIAProcessingCard({
                       "h-full rounded-full transition-all duration-500",
                       allCompleted ? "bg-status-success" : "bg-gray-900 dark:bg-gray-50"
                     )}
-                    style={{ width: `${(completedCount / steps.length) * 100}%` }}
+                    style={{width: `${(completedCount / steps.length) * 100}%`}}
                   />
                 </div>
                 <span className="text-xs text-gray-500">
@@ -337,7 +337,7 @@ export function LIACommandBadge({
       {status === 'completed' && (
         <Check className="w-3 h-3 text-status-success" />
       )}
-      <span className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-[300px]">
+      <span className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-panel-sm">
         {command}
       </span>
     </div>

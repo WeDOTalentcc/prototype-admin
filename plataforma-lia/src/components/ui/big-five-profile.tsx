@@ -214,7 +214,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                   <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
                     {dimension.shortName}
                   </span>
-                  <span className="text-xs font-bold" style={{ color: dimension.color }}>
+                  <span className="text-xs font-bold" style={{color: dimension.color}}>
                     {score}%
                   </span>
                 </div>
@@ -223,10 +223,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className="h-full transition-all duration-500 rounded-full"
-                    style={{
-                      width: `${score}%`,
-                      backgroundColor: dimension.color
-                    }}
+                    style={{width: `${score}%`,
+                      backgroundColor: dimension.color}}
                   />
                 </div>
 
@@ -271,27 +269,27 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
             <div className="flex flex-wrap gap-1">
               <span className="text-xs text-gray-500 dark:text-gray-400">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-success)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--status-success)'}}>
                   Gestão
                 </Badge>
               )}
               {scores.openness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-error)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--status-error)'}}>
                   Inovação
                 </Badge>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-warning)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--status-warning)'}}>
                   Liderança
                 </Badge>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--wedo-purple)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--wedo-purple)'}}>
                   Atendimento
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-600)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--gray-600)'}}>
                   Alta Pressão
                 </Badge>
               )}

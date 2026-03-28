@@ -191,7 +191,7 @@ export function AddToListModal({
                         <RadioGroupItem value={list.id} id={list.id} />
                         <div
                           className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: list.color || 'var(--gray-400)' }}
+                          style={{backgroundColor: list.color || 'var(--gray-400)'}}
                         />
                         <div className="flex-1 min-w-0">
                           <Label
@@ -283,7 +283,7 @@ export function AddToListModal({
                               ? "border-gray-900 scale-110"
                               : "border-transparent hover:scale-105"
                           )}
-                          style={{ backgroundColor: color.value }}
+                          style={{backgroundColor: color.value}}
                           onClick={() => setNewListColor(color.value)}
                           title={color.name}
                         >

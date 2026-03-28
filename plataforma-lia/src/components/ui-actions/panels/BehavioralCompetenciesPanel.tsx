@@ -117,11 +117,9 @@ export function BehavioralCompetenciesPanel({
                     <div
                       key={level}
                       className="w-2 h-2 rounded-full"
-                      style={{
-                        backgroundColor: level <= c.level
+                      style={{backgroundColor: level <= c.level
                           ? 'var(--lia-btn-primary-bg)'
-                          : 'var(--lia-bg-tertiary)'
-                      }}
+                          : 'var(--lia-bg-tertiary)'}}
                     />
                   ))}
                 </div>
@@ -230,7 +228,7 @@ function CompetencyCard({
               <ul className="space-y-1">
                 {competency.behaviors.map((behavior, index) => (
                   <li key={index} className="text-xs flex items-start gap-2 dark:text-gray-300">
-                    <span className="mt-1" style={{ color: 'var(--lia-text-secondary)' }}>•</span>
+                    <span className="mt-1" style={{color: 'var(--lia-text-secondary)'}}>•</span>
                     <span>{behavior}</span>
                   </li>
                 ))}
@@ -249,10 +247,8 @@ function CompetencyCard({
                   <li
                     key={index}
                     className="text-xs p-2 rounded border italic dark:text-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                    style={{
-                      backgroundColor: 'var(--lia-bg-primary)',
-                      borderColor: 'var(--lia-border-subtle)'
-                    }}
+                    style={{backgroundColor: 'var(--lia-bg-primary)',
+                      borderColor: 'var(--lia-border-subtle)'}}
                   >
                     "{question}"
                   </li>

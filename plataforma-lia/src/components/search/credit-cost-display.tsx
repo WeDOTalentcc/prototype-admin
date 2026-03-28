@@ -129,7 +129,7 @@ export function CreditCostDisplay({
             </div>
           )}
 
-          <div className="border-t pt-2 mt-2" className="border-gray-300 dark:border-gray-600">
+          <div className="border-t pt-2 mt-2 border-gray-300 dark:border-gray-600">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />

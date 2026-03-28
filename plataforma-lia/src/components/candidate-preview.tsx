@@ -1352,7 +1352,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
                   >
-                    <Linkedin className="w-3.5 h-3.5" style={{ color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)' }} />
+                    <Linkedin className="w-3.5 h-3.5" style={{color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)'}} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -1733,7 +1733,7 @@ export function CandidatePreview({
                     {expertiseList.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Linkedin className="w-3 h-3" className="text-gray-600" />
+                          <Linkedin className="w-3 h-3 text-gray-600" />
                           <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Expertise LinkedIn</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1880,7 +1880,7 @@ export function CandidatePreview({
                 <Card className="border-gray-100 dark:border-gray-700">
                   <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                     <div className="flex items-center gap-1.5">
-                      <Linkedin className="w-3.5 h-3.5" className="text-gray-600" />
+                      <Linkedin className="w-3.5 h-3.5 text-gray-600" />
                       <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                         Perfil LinkedIn
                       </CardTitle>
@@ -2369,7 +2369,7 @@ export function CandidatePreview({
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Análises
                 {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}>
+                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
                     {savedAnalyses.total_analyses}
                   </Badge>
                 )}
@@ -2505,7 +2505,7 @@ export function CandidatePreview({
                                   <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                   <Badge 
                                     className="text-micro px-1.5 py-0 h-4"
-                                    style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}
+                                    style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}
                                   >
                                     {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                   </Badge>

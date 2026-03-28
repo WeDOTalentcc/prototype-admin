@@ -356,9 +356,9 @@ export function SmartImportZone({
             Identificando campos e validando dados
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{animationDelay: '0ms'}} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{animationDelay: '150ms'}} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-bounce" style={{animationDelay: '300ms'}} />
           </div>
         </div>
       </CardContent>
@@ -447,7 +447,7 @@ export function SmartImportZone({
                           {previewData.headers.map((header, colIdx) => (
                             <td 
                               key={colIdx} 
-                              className="px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border-b border-gray-50 dark:border-gray-800 truncate max-w-[200px] font-['Open_Sans',sans-serif]"
+                              className="px-2 py-1.5 text-xs text-gray-800 dark:text-gray-200 border-b border-gray-50 dark:border-gray-800 truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
                             >
                               {row[header] || '-'}
                             </td>

@@ -341,10 +341,8 @@ export function WSITextScreeningModal({
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ 
-                      width: `${displayValue}%`,
-                      backgroundColor: trait.color
-                    }}
+                    style={{width: `${displayValue}%`,
+                      backgroundColor: trait.color}}
                   />
                 </div>
                 <span className="text-xs w-8 text-right text-gray-800 dark:text-gray-200">{displayValue}%</span>

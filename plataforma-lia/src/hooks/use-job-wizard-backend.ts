@@ -212,10 +212,10 @@ interface WizardStepResponse {
   detected_criteria?: DetectedCriteria
   field_origins?: Record<string, FieldOrigin>
   is_complete: boolean
-  created_job?: any
+  created_job?: Record<string, unknown>
   intent_detected?: string
-  benchmarks?: any
-  suggestions?: any
+  benchmarks?: Record<string, unknown>
+  suggestions?: Record<string, unknown>
 }
 
 export interface EvaluationStepResponse {
@@ -224,7 +224,7 @@ export interface EvaluationStepResponse {
   field_origins?: Record<string, FieldOrigin>
   compensation_analysis?: CompensationAnalysisResult
   lia_message?: string
-  suggestions?: any
+  suggestions?: Record<string, unknown>
 }
 
 interface UseJobWizardBackendOptions {

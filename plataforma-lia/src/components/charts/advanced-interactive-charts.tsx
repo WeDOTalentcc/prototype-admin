@@ -550,7 +550,7 @@ export function AdvancedInteractiveChart({
       </CardHeader>
 
       <CardContent>
-        <div className="w-full" style={{ height }}>
+        <div className="w-full" style={{height}}>
           {renderChart()}
         </div>
 

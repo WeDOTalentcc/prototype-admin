@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react"
 interface CommandHistory {
   command: string
   timestamp: Date
-  filters?: any
+  filters?: Record<string, unknown>
   actions?: string[]
   complexity: number
   sessionId: string
@@ -50,7 +50,7 @@ export const useTemplateSuggestions = () => {
     const savedHistory = localStorage.getItem('lia-command-history')
     if (savedHistory) {
       try {
-        const parsed = JSON.parse(savedHistory).map((item: any) => ({
+        const parsed = JSON.parse(savedHistory).map((item: Record<string, unknown>) => ({
           ...item,
           timestamp: new Date(item.timestamp)
         }))
@@ -85,7 +85,7 @@ export const useTemplateSuggestions = () => {
   }, [])
 
   // Calcular complexidade do comando
-  const calculateComplexity = useCallback((command: string, filters?: any, actions?: string[]): number => {
+  const calculateComplexity = useCallback((command: string, filters?: Record<string, unknown>, actions?: string[]): number => {
     let complexity = 0
 
     // Complexidade baseada no tamanho do comando
@@ -116,7 +116,7 @@ export const useTemplateSuggestions = () => {
   }, [])
 
   // Registrar novo comando
-  const addCommand = useCallback((command: string, filters?: any, actions?: string[]) => {
+  const addCommand = useCallback((command: string, filters?: Record<string, unknown>, actions?: string[]) => {
     if (!settings.enabled || !command.trim()) return
 
     const complexity = calculateComplexity(command, filters, actions)

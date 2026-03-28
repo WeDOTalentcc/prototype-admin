@@ -270,10 +270,8 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
           <motion.div
             key={i}
             className="absolute w-4 h-4 lia-bg-white opacity-10 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
+            style={{left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`}}
             animate={{
               y: [0, -100, 0],
               opacity: [0, 0.2, 0],
@@ -426,10 +424,8 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
           <motion.div
             key={i}
             className="absolute w-3 h-3 lia-bg-white opacity-15 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
+            style={{left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`}}
             animate={{
               y: [0, -80, 0],
               opacity: [0, 0.25, 0],
@@ -472,7 +468,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
                 ease: "easeInOut"
               }}
             >
-              <CheckCircle className="w-16 h-16" style={{ color: 'var(--wedo-green-pastel)' }} />
+              <CheckCircle className="w-16 h-16" style={{color: 'var(--wedo-green-pastel)'}} />
             </motion.div>
           </motion.div>
           
