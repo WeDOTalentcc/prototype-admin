@@ -120,7 +120,7 @@ export function BigFiveRadar({
           <defs>
             <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="var(--gray-600)" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#3BA5B8" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="var(--wedo-cyan)" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           <polygon

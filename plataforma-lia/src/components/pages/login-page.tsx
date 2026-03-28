@@ -99,7 +99,7 @@ export function LoginPage() {
   return (
     <div
       className="min-h-screen flex font-open-sans relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #9ac6dc 0%, #b2d6e8 25%, #c8e4f0 55%, #daeef8 100%)' }}
+      style={{ background: 'var(--login-bg-gradient)' }}
     >
       {/* Cloud blobs - estático, sem animação */}
       <div className="absolute inset-0 pointer-events-none z-0">

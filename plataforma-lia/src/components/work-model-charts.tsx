@@ -108,7 +108,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   cy="100"
                   r="80"
                   fill="none"
-                  stroke={item.color.replace('bg-', '#').replace('500', '#3B82F6').replace('green', 'var(--status-success)').replace('gray', 'var(--gray-400)')}
+                  stroke={item.color.replace('bg-', '#').replace('500', 'var(--wedo-blue)').replace('green', 'var(--status-success)').replace('gray', 'var(--gray-400)')}
                   strokeWidth="20"
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}

@@ -69,8 +69,8 @@ const LIST_COLORS = [
   { value: 'var(--status-warning)', name: 'Amarelo' },
   { value: 'var(--status-error)', name: 'Vermelho' },
   { value: 'var(--wedo-purple)', name: 'Roxo' },
-  { value: '#EC4899', name: 'Rosa' },
-  { value: '#3B82F6', name: 'Azul' },
+  { value: 'var(--wedo-magenta)', name: 'Rosa' },
+  { value: 'var(--wedo-blue)', name: 'Azul' },
 ]
 
 interface ListsTabProps {

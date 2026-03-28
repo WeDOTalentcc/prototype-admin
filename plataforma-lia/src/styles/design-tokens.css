@@ -87,9 +87,18 @@
   --wedo-amber-light: rgba(245, 158, 11, 0.1);
   --wedo-amber-hover: #D97706;
   
-  /* Azul - Links e informações (LEGACY - usar wedo-cyan) */
+  /* Azul - Informativo (legado — preferir wedo-cyan) */
+  --wedo-blue: #3B82F6;                /* Azul informativo legado */
   --lia-info-color: #60BED1;           /* Atualizado para ciano WeDo */
   --lia-info-light: #A8CED5;           /* Background info sutil */
+
+  /* Terceiros — cores de marca de integrações externas */
+  /* Página de Login — gradiente de céu */
+  --login-bg-gradient: linear-gradient(180deg, #9ac6dc 0%, #b2d6e8 25%, #c8e4f0 55%, #daeef8 100%);
+
+  --whatsapp-bg: #E5DDD5;              /* Fundo do chat WhatsApp */
+  --whatsapp-bubble: #DCF8C6;          /* Bolha de mensagem enviada WhatsApp */
+  --whatsapp-green: #25D366;           /* Verde do ícone WhatsApp */
   
   /* ========================================
      SISTEMA DE STATUS - Monocromático

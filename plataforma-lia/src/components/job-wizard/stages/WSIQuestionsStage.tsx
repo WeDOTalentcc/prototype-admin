@@ -206,7 +206,7 @@ export function WSIQuestionsStage() {
       {/* Header with counter */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <Phone className="w-3.5 h-3.5 text-[#25D366]" />
+          <Phone className="w-3.5 h-3.5 text-whatsapp-green" />
           <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
             Perguntas de Triagem WSI
           </span>

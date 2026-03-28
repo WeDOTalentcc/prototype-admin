@@ -213,15 +213,15 @@ export function AiCreditsPage({ companyId }: Props) {
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
                   tickLine={false}
                   axisLine={false}
                   unit="K"

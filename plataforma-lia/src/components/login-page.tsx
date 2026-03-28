@@ -357,11 +357,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   {/* Submit button */}
                   <Button
                     type="submit"
-                    className="w-full text-white py-3 mt-6 hover-lift micro-bounce font-medium"
-                    style={{
-                      backgroundColor: '#0094c6',
-                      '--hover-bg': 'rgba(0, 148, 198, 0.9)'
-                    } as React.CSSProperties}
+                    className="w-full text-white py-3 mt-6 hover-lift micro-bounce font-medium bg-wedo-cyan hover:bg-wedo-cyan-dark"
                     disabled={isLoading}
                   >
                     {isLoading ? (

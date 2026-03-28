@@ -313,8 +313,8 @@ export function BigFiveDashboardPage() {
       {
         label: 'Amabilidade',
         data: departmentData.map(d => d.agreeableness),
-        borderColor: '#A8CCE8',
-        backgroundColor: 'rgba(168, 204, 232, 0.2)',
+        borderColor: 'var(--wedo-cyan-light)',
+        backgroundColor: 'rgba(96, 190, 209, 0.15)',
         borderWidth: 2
       },
       {

@@ -304,7 +304,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         <div className="space-y-1.5">
           {selectedWSI.map((q, i) => (
             <div key={q.id} className="flex items-start gap-2 text-xs">
-              <span className="w-4 h-4 rounded-full bg-[#25D366]/10 text-[#25D366] text-micro flex items-center justify-center flex-shrink-0">
+              <span className="w-4 h-4 rounded-full bg-whatsapp-green/10 text-whatsapp-green text-micro flex items-center justify-center flex-shrink-0">
                 {i + 1}
               </span>
               <span className="text-gray-800 line-clamp-1">{q.question}</span>
