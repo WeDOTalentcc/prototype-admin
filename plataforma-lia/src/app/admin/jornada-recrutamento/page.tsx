@@ -196,8 +196,8 @@ export default function JornadaRecrutamentoPage() {
           <div className="flex items-center gap-3 mb-2">
             <Workflow className="w-7 h-7 text-gray-600 dark:text-gray-400" />
             <h1
-              className="text-2xl font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Jornada de Recrutamento
             </h1>

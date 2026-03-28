@@ -143,7 +143,7 @@ export function SearchModeArchetypes({
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
               <Search
                 className="w-3.5 h-3.5"
-                style={{ color: "var(--eleven-text-secondary)" }}
+                className="text-gray-500 dark:text-gray-400"
               />
             </div>
             <input
@@ -153,9 +153,9 @@ export function SearchModeArchetypes({
               placeholder="Buscar arquétipos..."
               className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2"
               style={{
-                border: "1px solid var(--eleven-border)",
-                backgroundColor: "var(--eleven-bg-main)",
-                color: "var(--eleven-text-primary)",
+                border: "1px solid rgb(209 213 219)",
+                backgroundColor: "rgb(249 250 251)",
+                color: "rgb(31 41 55)",
               }}
             />
           </div>
@@ -163,14 +163,14 @@ export function SearchModeArchetypes({
           {isLoadingArchetypes ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="w-5 h-5 animate-spin text-gray-700" />
-              <span className="ml-2 text-sm" style={{ color: "var(--eleven-text-secondary)" }}>
+              <span className="ml-2 text-sm" className="text-gray-500 dark:text-gray-400">
                 Carregando arquétipos...
               </span>
             </div>
           ) : filteredArchetypes.length === 0 ? (
             <div className="text-center py-6">
-              <Target className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--eleven-text-secondary)" }} />
-              <p className="text-sm" style={{ color: "var(--eleven-text-secondary)" }}>
+              <Target className="w-8 h-8 mx-auto mb-2" className="text-gray-500 dark:text-gray-400" />
+              <p className="text-sm" className="text-gray-500 dark:text-gray-400">
                 {archetypeVacancies.length === 0
                   ? "Nenhum arquétipo encontrado"
                   : "Nenhum arquétipo corresponde à busca"}
@@ -549,7 +549,7 @@ export function SearchModeArchetypes({
                   : "bg-white hover:bg-gray-50"
               )}
               style={{
-                color: archetypeCreateMode === "job" ? "var(--gray-800)" : "var(--eleven-text-secondary)",
+                color: archetypeCreateMode === "job" ? "var(--gray-800)" : "rgb(107 114 128)",
               }}
             >
               <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
@@ -567,7 +567,7 @@ export function SearchModeArchetypes({
                 color:
                   archetypeCreateMode === "description"
                     ? "var(--gray-800)"
-                    : "var(--eleven-text-secondary)",
+                    : "rgb(107 114 128)",
               }}
             >
               <FileText className="w-3.5 h-3.5 inline mr-1.5" />
@@ -578,7 +578,7 @@ export function SearchModeArchetypes({
           {/* A partir de Vaga */}
           {archetypeCreateMode === "job" && (
             <div className="space-y-2">
-              <p className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
                 Busque por nome ou ID da vaga para criar um arquétipo:
               </p>
 
@@ -607,7 +607,7 @@ export function SearchModeArchetypes({
                   {isSearchingJobs ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                      <span className="ml-2 text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+                      <span className="ml-2 text-xs" className="text-gray-500 dark:text-gray-400">
                         Buscando vagas...
                       </span>
                     </div>
@@ -721,7 +721,7 @@ export function SearchModeArchetypes({
           {/* A partir de Descrição */}
           {archetypeCreateMode === "description" && (
             <div className="space-y-2">
-              <p className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
                 Descreva o perfil ideal que deseja buscar:
               </p>
               <textarea
@@ -731,9 +731,9 @@ export function SearchModeArchetypes({
                 rows={3}
                 className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"
                 style={{
-                  border: "1px solid var(--eleven-border)",
-                  backgroundColor: "var(--eleven-bg-main)",
-                  color: "var(--eleven-text-primary)",
+                  border: "1px solid rgb(209 213 219)",
+                  backgroundColor: "rgb(249 250 251)",
+                  color: "rgb(31 41 55)",
                 }}
               />
               <Button
@@ -743,9 +743,9 @@ export function SearchModeArchetypes({
                 className="w-full"
                 style={{
                   backgroundColor:
-                    archetypeDescription.length >= 20 ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
+                    archetypeDescription.length >= 20 ? "var(--gray-950)" : "rgb(243 244 246)",
                   color:
-                    archetypeDescription.length >= 20 ? "white" : "var(--eleven-text-secondary)",
+                    archetypeDescription.length >= 20 ? "white" : "rgb(107 114 128)",
                 }}
               >
                 {isCreatingArchetype ? (

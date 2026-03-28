@@ -133,15 +133,12 @@ export default function RiscosPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Gestão de Riscos
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Dashboard de riscos, continuidade e seguro cibernético
             </p>
           </div>
@@ -152,10 +149,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Total de Riscos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {riskStats.total}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -174,10 +171,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Riscos Críticos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {riskStats.critical}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -197,10 +194,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Riscos em Tratamento
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {risks.filter(r => r.status === 'mitigating').length}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -221,10 +218,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Taxa de Mitigação
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {Math.round((riskStats.mitigated / riskStats.total) * 100)}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -247,7 +244,7 @@ export default function RiscosPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Riscos por Categoria
                 </CardTitle>
               </div>
@@ -257,14 +254,14 @@ export default function RiscosPage() {
                 {risksByCategory.filter(c => c.count > 0).map((category) => (
                   <div key={category.category}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {category.category}
                       </span>
-                      <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                         {category.count}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="h-2 rounded-full overflow-hidden bg-gray-50 dark:bg-gray-900" >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
@@ -276,9 +273,9 @@ export default function RiscosPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                     Cobertura de Seguro
                   </span>
                   <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
@@ -293,7 +290,7 @@ export default function RiscosPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Matriz de Riscos (Probabilidade x Impacto)
                 </CardTitle>
               </div>
@@ -303,18 +300,18 @@ export default function RiscosPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr>
-                      <th className="w-24 text-left p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Prob/Impacto</th>
-                      <th className="text-center p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Mín</th>
-                      <th className="text-center p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Baixo</th>
-                      <th className="text-center p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Médio</th>
-                      <th className="text-center p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Alto</th>
-                      <th className="text-center p-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Crítico</th>
+                      <th className="w-24 text-left p-1 text-gray-400 dark:text-gray-500" >Prob/Impacto</th>
+                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Mín</th>
+                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Baixo</th>
+                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Médio</th>
+                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Alto</th>
+                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Crítico</th>
                     </tr>
                   </thead>
                   <tbody>
                     {riskMatrix.map((row, rowIndex) => (
                       <tr key={rowIndex}>
-                        <td className="p-1 font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>{row.probability}</td>
+                        <td className="p-1 font-medium text-gray-500 dark:text-gray-400" >{row.probability}</td>
                         {row.impacts.map((value, colIndex) => {
                           const cellColor = getMatrixCellColor(value)
                           return (
@@ -333,7 +330,7 @@ export default function RiscosPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center justify-center gap-4 mt-4 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500" >
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
                   <span>Baixo (1-4)</span>
@@ -360,7 +357,7 @@ export default function RiscosPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-status-error" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Top 5 Riscos Prioritários
                 </CardTitle>
               </div>
@@ -392,18 +389,18 @@ export default function RiscosPage() {
                       </Badge>
                       <span className="text-lg font-bold" style={{ color: scoreConfig.text }}>{risk.score}</span>
                     </div>
-                    <p className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
                       {risk.name}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" className="text-micro">
                         {risk.category}
                       </Badge>
-                      <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs text-gray-400 dark:text-gray-500" >
                         {getStatusLabel(risk.status)}
                       </span>
                     </div>
-                    <div className="mt-2 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="mt-2 text-xs text-gray-400 dark:text-gray-500" >
                       Owner: {risk.owner}
                     </div>
                   </div>
@@ -431,10 +428,10 @@ export default function RiscosPage() {
                         <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="font-medium text-sm truncate text-gray-800 dark:text-gray-100" >
                           {page.name}
                         </p>
-                        <p className="text-xs truncate" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs truncate text-gray-400 dark:text-gray-500" >
                           {page.description}
                         </p>
                       </div>

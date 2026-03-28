@@ -288,10 +288,10 @@ export default function ClientWorkforcePage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-100">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
           {error}
         </p>
         <Button variant="outline" onClick={fetchPlan}>
@@ -309,13 +309,12 @@ export default function ClientWorkforcePage({
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Planejamento de Contratações
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Planejamento anual de contratações e headcount
           </p>
         </div>
@@ -323,12 +322,7 @@ export default function ClientWorkforcePage({
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="text-sm border rounded-md px-3 py-2"
-            style={{ 
-              borderColor: 'var(--eleven-border-subtle)',
-              backgroundColor: 'var(--eleven-bg-card)',
-              color: 'var(--eleven-text-primary)'
-            }}
+            className="text-sm border rounded-md px-3 py-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100"
           >
             <option value={2024}>2024</option>
             <option value={2025}>2025</option>
@@ -391,13 +385,13 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Total Planejado {selectedYear}
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {plan?.totalPlanned || 0}
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                   vagas no plano anual
                 </p>
               </div>
@@ -412,10 +406,10 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Preenchidas
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {plan?.totalFilled || 0}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -436,13 +430,13 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Em Processo
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {plan?.totalOpen || 0}
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                   vagas abertas
                 </p>
               </div>
@@ -457,13 +451,13 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Departamentos
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {departmentSummaries.length}
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                   com vagas planejadas
                 </p>
               </div>
@@ -479,7 +473,7 @@ export default function ClientWorkforcePage({
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
                 <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Plano Anual por Mês
               </CardTitle>
@@ -488,25 +482,24 @@ export default function ClientWorkforcePage({
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                      <th className="text-left py-2 pr-4 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Mês</th>
-                      <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Planejado</th>
-                      <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Preenchido</th>
-                      <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Aberto</th>
-                      <th className="text-left py-2 pl-4 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Progresso</th>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-2 pr-4 font-medium text-gray-400 dark:text-gray-500">Mês</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Planejado</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Preenchido</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Aberto</th>
+                      <th className="text-left py-2 pl-4 font-medium text-gray-400 dark:text-gray-500">Progresso</th>
                     </tr>
                   </thead>
                   <tbody>
                     {monthlyData.map((row, idx) => (
                       <tr 
                         key={row.month} 
-                        className="border-b last:border-0"
-                        style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                        className="border-b last:border-0 border-gray-200 dark:border-gray-700"
                       >
-                        <td className="py-3 pr-4 font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-100">
                           {row.month}
                         </td>
-                        <td className="py-3 px-2 text-center" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <td className="py-3 px-2 text-center text-gray-500 dark:text-gray-400">
                           {row.planned}
                         </td>
                         <td className="py-3 px-2 text-center">
@@ -521,7 +514,7 @@ export default function ClientWorkforcePage({
                               value={row.planned > 0 ? (row.filled / row.planned) * 100 : 0} 
                               className="h-2 flex-1" 
                             />
-                            <span className="text-xs min-w-10" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs min-w-10 text-gray-400 dark:text-gray-500">
                               {row.planned > 0 ? Math.round((row.filled / row.planned) * 100) : 0}%
                             </span>
                           </div>
@@ -538,7 +531,7 @@ export default function ClientWorkforcePage({
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Sugestões da LIA
               </CardTitle>
@@ -552,7 +545,7 @@ export default function ClientWorkforcePage({
                       className="p-3 rounded-md"
                       style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
                     >
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm text-gray-800 dark:text-gray-100">
                         {suggestion.text}
                       </p>
                     </div>
@@ -560,11 +553,10 @@ export default function ClientWorkforcePage({
                 </div>
               ) : (
                 <div 
-                  className="p-4 rounded-md text-center"
-                  style={{ backgroundColor: 'var(--eleven-bg-main)' }}
+                  className="p-4 rounded-md text-center bg-gray-50 dark:bg-gray-900"
                 >
                   <Brain className="w-8 h-8 mx-auto mb-2 text-wedo-cyan opacity-50" />
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
                     A LIA analisará os dados de recrutamento e fornecerá sugestões de otimização do plano.
                   </p>
                 </div>
@@ -577,7 +569,7 @@ export default function ClientWorkforcePage({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
               <Building2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               Breakdown por Departamento
             </CardTitle>
@@ -600,7 +592,7 @@ export default function ClientWorkforcePage({
           {departmentSummaries.length === 0 ? (
             <div className="text-center py-8">
               <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Nenhuma vaga planejada para {selectedYear}
               </p>
             </div>
@@ -609,8 +601,7 @@ export default function ClientWorkforcePage({
               {departmentSummaries.map((dept) => (
                 <div 
                   key={dept.name}
-                  className="border rounded-md overflow-hidden"
-                  style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                  className="border rounded-md overflow-hidden border-gray-200 dark:border-gray-700"
                 >
                   <div 
                     className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -618,25 +609,25 @@ export default function ClientWorkforcePage({
                   >
                     <div className="flex items-center gap-3">
                       {expandedDepts.has(dept.name) ? (
-                        <ChevronDown className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                        <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       ) : (
-                        <ChevronRight className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                        <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       )}
                       <div>
-                        <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="font-medium text-gray-800 dark:text-gray-100">
                           {dept.name}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           {dept.vacancies.length} posição(ões)
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {dept.totalFilled}/{dept.totalPlanned}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           preenchidas
                         </p>
                       </div>
@@ -651,22 +642,18 @@ export default function ClientWorkforcePage({
 
                   {expandedDepts.has(dept.name) && (
                     <div 
-                      className="border-t"
-                      style={{ 
-                        borderColor: 'var(--eleven-border-subtle)',
-                        backgroundColor: 'var(--eleven-bg-main)'
-                      }}
+                      className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                     >
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                              <th className="text-left py-2 px-4 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Posição</th>
-                              <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Mês</th>
-                              <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Tipo</th>
-                              <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Prioridade</th>
-                              <th className="text-center py-2 px-2 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Status</th>
-                              <th className="text-center py-2 px-4 font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Budget</th>
+                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                              <th className="text-left py-2 px-4 font-medium text-gray-400 dark:text-gray-500">Posição</th>
+                              <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Mês</th>
+                              <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Tipo</th>
+                              <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Prioridade</th>
+                              <th className="text-center py-2 px-2 font-medium text-gray-400 dark:text-gray-500">Status</th>
+                              <th className="text-center py-2 px-4 font-medium text-gray-400 dark:text-gray-500">Budget</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -675,19 +662,18 @@ export default function ClientWorkforcePage({
                               return (
                                 <tr 
                                   key={vacancy.id}
-                                  className="border-b last:border-0"
-                                  style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                                  className="border-b last:border-0 border-gray-200 dark:border-gray-700"
                                 >
-                                  <td className="py-3 px-4" style={{ color: 'var(--eleven-text-primary)' }}>
+                                  <td className="py-3 px-4 text-gray-800 dark:text-gray-100">
                                     {vacancy.title}
                                   </td>
-                                  <td className="py-3 px-2 text-center" style={{ color: 'var(--eleven-text-secondary)' }}>
+                                  <td className="py-3 px-2 text-center text-gray-500 dark:text-gray-400">
                                     {months[vacancy.plannedMonth - 1]}
                                   </td>
                                   <td className="py-3 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1">
-                                      <HeadcountIcon className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                                      <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                      <HeadcountIcon className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                                      <span className="text-xs text-gray-400 dark:text-gray-500">
                                         {headcountTypeConfig[vacancy.headcountType]?.label}
                                       </span>
                                     </div>

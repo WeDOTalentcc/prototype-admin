@@ -692,10 +692,10 @@ export default function AdminComunicacoesPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h1 className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100" >
           Comunicações
         </h1>
-        <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+        <p className="text-sm text-gray-500 dark:text-gray-400" >
           Gerenciamento global de templates, webhooks e políticas de comunicação
         </p>
       </div>
@@ -714,15 +714,14 @@ export default function AdminComunicacoesPage() {
         </div>
       )}
 
-      <div className="flex gap-2 mb-6 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700" >
         {tabs.map(tab => {
           const isActive = activeTab === tab.id
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${isActive ? 'text-gray-700 dark:text-gray-300' : ''}`}
-              style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${isActive ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}

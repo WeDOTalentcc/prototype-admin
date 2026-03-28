@@ -160,7 +160,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -171,7 +171,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -181,7 +181,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
         </div>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Carregando incidentes...</span>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">Carregando incidentes...</span>
         </div>
       </div>
     )
@@ -190,7 +190,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -201,7 +201,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -223,7 +223,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
         {internalTabs.map((tab) => {
           const isActive = isTabActive(tab.href)
           const Icon = tab.icon
@@ -235,9 +235,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 isActive
                   ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
               )}
-              style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
             >
               <Icon className="w-4 h-4" />
               {tab.name}
@@ -251,8 +250,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Incidentes Abertos</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{openIncidents}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Incidentes Abertos</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{openIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {openIncidents > 0 ? (
                     <>
@@ -284,8 +283,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Resolvidos</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{resolvedIncidents}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Resolvidos</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{resolvedIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <CheckCircle2 className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Últimos 30 dias</span>
@@ -302,8 +301,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Integrações Saudáveis</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Integrações Saudáveis</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {integrationsLoading ? '-' : `${healthyIntegrations}/${integrations.length}`}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -322,8 +321,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Uptime Médio</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Uptime Médio</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {integrationsLoading || integrations.length === 0 ? '-' : `${(integrations.reduce((acc, i) => acc + i.uptime, 0) / integrations.length).toFixed(1)}%`}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -342,19 +341,14 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Incidentes Recentes
             </CardTitle>
             <div className="flex items-center gap-2">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="text-sm px-3 py-1.5 rounded-md border"
-                style={{ 
-                  backgroundColor: 'var(--eleven-bg-card)',
-                  borderColor: 'var(--eleven-border-subtle)',
-                  color: 'var(--eleven-text-primary)'
-                }}
+                className="text-sm px-3 py-1.5 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100"
               >
                 <option value="all">Todos</option>
                 <option value="open">Abertos</option>
@@ -368,11 +362,11 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           {filteredIncidents.length > 0 ? (
             <div className="space-y-3">
               {filteredIncidents.map((incident) => (
-                <div key={incident.id} className="p-4 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                <div key={incident.id} className="p-4 rounded-md border border-gray-200 dark:border-gray-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{incident.title}</h4>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-100">{incident.title}</h4>
                         <Badge className={severityColors[incident.severity]}>
                           {incident.severity}
                         </Badge>
@@ -382,8 +376,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       </div>
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <Clock className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             Início: {formatDateTime(incident.startedAt)}
                           </span>
                         </div>
@@ -398,7 +392,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       </div>
                       {incident.affectedServices.length > 0 && (
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Serviços afetados:</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">Serviços afetados:</span>
                           {incident.affectedServices.map((service, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">{service}</Badge>
                           ))}
@@ -412,7 +406,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           ) : (
             <div className="text-center py-6">
               <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum incidente encontrado</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum incidente encontrado</p>
             </div>
           )}
         </CardContent>
@@ -420,7 +414,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+          <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
             Status das Integrações
           </CardTitle>
         </CardHeader>
@@ -428,7 +422,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           {integrationsLoading ? (
             <div className="flex items-center justify-center py-6">
               <LoadingSpinner size="md" />
-              <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
                 Carregando integrações...
               </span>
             </div>
@@ -437,8 +431,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
               {integrations.map((integration) => (
                 <div 
                   key={integration.id} 
-                  className="p-4 rounded-md border flex items-center justify-between"
-                  style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                  className="p-4 rounded-md border flex items-center justify-between border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center gap-3">
                     {integration.status === 'up' ? (
@@ -449,15 +442,15 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       <Wifi className="w-5 h-5 text-status-warning" />
                     )}
                     <div>
-                      <p className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{integration.name}</p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>{integration.type}</p>
+                      <p className="font-medium text-sm text-gray-800 dark:text-gray-100">{integration.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{integration.type}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <Badge variant={integration.status === 'up' ? 'success' : integration.status === 'down' ? 'destructive' : 'warning'}>
                       {integration.status === 'up' ? 'Online' : integration.status === 'down' ? 'Offline' : 'Degradado'}
                     </Badge>
-                    <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                       {integration.uptime}% uptime
                     </p>
                   </div>
@@ -467,7 +460,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           ) : (
             <div className="text-center py-6">
               <Server className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Nenhuma integração configurada
               </p>
             </div>

@@ -8,10 +8,10 @@ export function BriefingsSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100" >
           Briefings LIA
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-secondary)' }}>
+        <p className="text-sm mb-4 text-gray-500 dark:text-gray-400" >
           Templates de briefings automáticos da LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -23,14 +23,14 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Briefing Diário</CardTitle>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     Resumo matinal das atividades
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm text-gray-500 dark:text-gray-400" >
                 Atualização automática com novos candidatos, entrevistas agendadas e tarefas pendentes do dia.
               </p>
               <div className="flex items-center gap-2 mt-3">
@@ -52,14 +52,14 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Resumo de Fim de Dia</CardTitle>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     Consolidação das atividades do dia
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm text-gray-500 dark:text-gray-400" >
                 Relatório consolidado com candidatos processados, feedbacks recebidos e próximos passos.
               </p>
               <div className="flex items-center gap-2 mt-3">
@@ -76,10 +76,10 @@ export function BriefingsSection() {
       </div>
       
       <div>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100" >
           Pareceres LIA
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-secondary)' }}>
+        <p className="text-sm mb-4 text-gray-500 dark:text-gray-400" >
           Estrutura dos pareceres gerados pela LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -91,14 +91,14 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Resumido</CardTitle>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     Análise rápida do candidato
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm text-gray-500 dark:text-gray-400" >
                 Parecer conciso com pontos-chave, score de aderência e recomendação principal.
               </p>
               <div className="flex items-center gap-2 mt-3">
@@ -120,14 +120,14 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Completo</CardTitle>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     Análise detalhada do candidato
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm text-gray-500 dark:text-gray-400" >
                 Parecer detalhado com análise técnica, comportamental, cultural e histórico profissional.
               </p>
               <div className="flex items-center gap-2 mt-3">

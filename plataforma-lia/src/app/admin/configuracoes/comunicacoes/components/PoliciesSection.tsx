@@ -91,10 +91,10 @@ export function PoliciesSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
             Políticas Globais de Comunicação ({policies.length})
           </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
             Configure regras e limites para comunicações na plataforma
           </p>
         </div>
@@ -122,17 +122,17 @@ export function PoliciesSection({
       {policiesLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando políticas...
           </span>
         </div>
       ) : policies.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12">
-          <Shield className="w-12 h-12 mb-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <Shield className="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"  />
+          <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400" >
             Nenhuma política configurada
           </p>
-          <p className="text-xs mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mb-4 text-gray-400 dark:text-gray-500" >
             Crie políticas para controlar rate limits, blacklists e filtros
           </p>
           <Button
@@ -174,14 +174,14 @@ export function PoliciesSection({
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Nome</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Nome</label>
                     <Input
                       value={editingPolicy.name}
                       onChange={(e) => setEditingPolicy({ ...editingPolicy, name: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Tipo</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Tipo</label>
                     <select
                       className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                       value={editingPolicy.type}
@@ -195,14 +195,14 @@ export function PoliciesSection({
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Descrição</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Descrição</label>
                   <Input
                     value={editingPolicy.description}
                     onChange={(e) => setEditingPolicy({ ...editingPolicy, description: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                     Valor {editingPolicy.type === 'rate_limit' && '(limite numérico)'}
                     {(editingPolicy.type === 'blacklist' || editingPolicy.type === 'whitelist') && '(lista separada por vírgulas)'}
                   </label>
@@ -249,14 +249,14 @@ export function PoliciesSection({
                           value: { ...editingPolicy.value, enabled: checked }
                         })}
                       />
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {editingPolicy.value.enabled ? 'Ativo' : 'Inativo'}
                       </span>
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Escopo</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Escopo</label>
                   <select
                     className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                     value={editingPolicy.scope}
@@ -276,7 +276,7 @@ export function PoliciesSection({
                 <Badge className={`text-xs ${policyTypeLabels[type]?.color || 'bg-gray-100 text-gray-600'}`}>
                   {policyTypeLabels[type]?.label || type}
                 </Badge>
-                <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <span className="text-xs text-gray-400 dark:text-gray-500" >
                   ({typePolicies.length} {typePolicies.length === 1 ? 'política' : 'políticas'})
                 </span>
               </div>
@@ -287,8 +287,8 @@ export function PoliciesSection({
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <Shield className="w-4 h-4" style={{ color: policy.isActive ? 'var(--gray-950)' : 'var(--eleven-text-tertiary)' }} />
-                            <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <Shield className={`w-4 h-4 ${policy.isActive ? 'text-gray-950' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                               {policy.name}
                             </h4>
                             <Badge 
@@ -302,10 +302,10 @@ export function PoliciesSection({
                               )}
                             </Badge>
                           </div>
-                          <p className="text-xs mb-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs mb-2 text-gray-400 dark:text-gray-500" >
                             {policy.description}
                           </p>
-                          <div className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <div className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                             {formatPolicyValue(policy.value, policy.type)}
                           </div>
                         </div>
@@ -350,7 +350,7 @@ export function PoliciesSection({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Nome *</label>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Nome *</label>
                 <Input
                   value={newPolicy.name}
                   onChange={(e) => setNewPolicy({ ...newPolicy, name: e.target.value })}
@@ -359,7 +359,7 @@ export function PoliciesSection({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Tipo</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Tipo</label>
                   <select
                     className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                     value={newPolicy.policy_type}
@@ -389,7 +389,7 @@ export function PoliciesSection({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Escopo</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Escopo</label>
                   <select
                     className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                     value={newPolicy.scope}
@@ -409,7 +409,7 @@ export function PoliciesSection({
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                   Valor {newPolicy.policy_type === 'rate_limit' && '(limite e período)'}
                   {(newPolicy.policy_type === 'blacklist' || newPolicy.policy_type === 'whitelist') && '(itens separados por vírgulas)'}
                 </label>
@@ -456,14 +456,14 @@ export function PoliciesSection({
                         value: { ...newPolicy.value, enabled: checked }
                       })}
                     />
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <span className="text-sm text-gray-500 dark:text-gray-400" >
                       {newPolicy.value.enabled ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
                 )}
               </div>
               <div>
-                <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Descrição</label>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Descrição</label>
                 <Textarea
                   value={newPolicy.description}
                   onChange={(e) => setNewPolicy({ ...newPolicy, description: e.target.value })}

@@ -183,11 +183,11 @@ const JobGroup = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   
   return (
-    <div className="border rounded-md overflow-hidden" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+    <div className="border rounded-md overflow-hidden" className="border-gray-200 dark:border-gray-700">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-        style={{ backgroundColor: 'var(--eleven-bg-message)' }}
+        className="bg-gray-100 dark:bg-gray-800"
       >
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -213,7 +213,7 @@ const JobGroup = ({
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="p-4 space-y-3 border-t" className="border-gray-200 dark:border-gray-700">
           {group.candidates.map((candidate) => (
             <CandidateCard
               key={candidate.id}

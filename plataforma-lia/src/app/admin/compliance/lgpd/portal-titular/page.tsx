@@ -292,15 +292,12 @@ export default function PortalTitularPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Portal Self-Service (Art. 18)
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Portal para exercício de direitos dos titulares de dados
               </p>
             </div>
@@ -327,10 +324,10 @@ export default function PortalTitularPage() {
                   <FileSearch className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {loading ? '-' : stats?.totalRequests || 0}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>DSRs Recebidos</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >DSRs Recebidos</p>
                 </div>
               </div>
             </CardContent>
@@ -343,10 +340,10 @@ export default function PortalTitularPage() {
                   <Loader2 className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {loading ? '-' : (stats?.pendingRequests || 0) + (stats?.inProgressRequests || 0)}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Em Andamento</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Em Andamento</p>
                 </div>
               </div>
             </CardContent>
@@ -359,10 +356,10 @@ export default function PortalTitularPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {loading ? '-' : stats?.completedRequests || 0}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Concluídos</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Concluídos</p>
                 </div>
               </div>
             </CardContent>
@@ -375,10 +372,10 @@ export default function PortalTitularPage() {
                   <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {loading ? '-' : `${stats?.avgResponseTime?.toFixed(1) || 0} dias`}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Tempo Médio</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Tempo Médio</p>
                 </div>
               </div>
             </CardContent>
@@ -409,7 +406,7 @@ export default function PortalTitularPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                       Solicitações de Direitos (DSRs)
                     </CardTitle>
                     <CardDescription>
@@ -463,7 +460,7 @@ export default function PortalTitularPage() {
                 ) : requests.length === 0 ? (
                   <div className="text-center py-12">
                     <FileSearch className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-sm text-gray-400 dark:text-gray-500" >
                       Nenhuma solicitação encontrada
                     </p>
                   </div>
@@ -491,17 +488,17 @@ export default function PortalTitularPage() {
                                   <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                                     <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                   </div>
-                                  <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{typeInfo.label}</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-100" >{typeInfo.label}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div>
-                                  <p style={{ color: 'var(--eleven-text-primary)' }}>{request.requesterName}</p>
-                                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>{request.requesterEmail}</p>
+                                  <p className="text-gray-800 dark:text-gray-100" >{request.requesterName}</p>
+                                  <p className="text-xs text-gray-400 dark:text-gray-500" >{request.requesterEmail}</p>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <span style={{ color: 'var(--eleven-text-secondary)' }}>
+                                <span className="text-gray-500 dark:text-gray-400" >
                                   {new Date(request.createdAt).toLocaleDateString('pt-BR')}
                                 </span>
                               </TableCell>
@@ -555,7 +552,7 @@ export default function PortalTitularPage() {
                     
                     {totalPages > 1 && (
                       <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                        <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-sm text-gray-400 dark:text-gray-500" >
                           Página {currentPage} de {totalPages}
                         </p>
                         <div className="flex gap-2">
@@ -587,7 +584,7 @@ export default function PortalTitularPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                       Direitos Suportados
                     </CardTitle>
                     <CardDescription>
@@ -613,17 +610,17 @@ export default function PortalTitularPage() {
                     return (
                       <div 
                         key={direito.id}
-                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
-                        style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}
+                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors bg-gray-100 dark:bg-gray-800"
+                        
                       >
                         <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                           <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                             {direito.right}
                           </p>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500" >
                             {direito.description}
                           </p>
                         </div>
@@ -639,7 +636,7 @@ export default function PortalTitularPage() {
           <div className="space-y-6">
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader>
-                <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Settings className="w-4 h-4" />
                   Configuração do Portal
                 </CardTitle>
@@ -658,12 +655,12 @@ export default function PortalTitularPage() {
                       {copied ? <Check className="w-4 h-4 text-status-success" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     URL onde o portal será acessível publicamente
                   </p>
                 </div>
 
-                <div className="pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700" >
                   <Button className="w-full" variant="outline" asChild>
                     <Link href="/privacidade" target="_blank">
                       <ExternalLink className="w-4 h-4 mr-2" />
@@ -676,28 +673,28 @@ export default function PortalTitularPage() {
 
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader>
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Métricas de Desempenho
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Taxa de Conclusão</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                    <span className="text-sm text-gray-500 dark:text-gray-400" >Taxa de Conclusão</span>
                     <span className="font-semibold text-status-success">
                       {stats && stats.totalRequests > 0 
                         ? `${Math.round((stats.completedRequests / stats.totalRequests) * 100)}%`
                         : '0%'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>SLA Compliance</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                    <span className="text-sm text-gray-500 dark:text-gray-400" >SLA Compliance</span>
                     <span className={`font-semibold ${(stats?.slaComplianceRate || 0) >= 90 ? 'text-status-success' : (stats?.slaComplianceRate || 0) >= 70 ? 'text-status-warning' : 'text-status-error'}`}>
                       {stats?.slaComplianceRate?.toFixed(0) || 0}%
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Atrasados</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                    <span className="text-sm text-gray-500 dark:text-gray-400" >Atrasados</span>
                     <span className={`font-semibold ${(stats?.overdueRequests || 0) === 0 ? 'text-status-success' : 'text-status-error'}`}>
                       {stats?.overdueRequests || 0}
                     </span>
@@ -708,37 +705,37 @@ export default function PortalTitularPage() {
 
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader>
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Por Tipo de Solicitação
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
                     <div className="flex items-center gap-2">
                       <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Acesso</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >Acesso</span>
                     </div>
                     <Badge variant="outline">{accessCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
                     <div className="flex items-center gap-2">
                       <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Retificação</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >Retificação</span>
                     </div>
                     <Badge variant="outline">{correctionCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
                     <div className="flex items-center gap-2">
                       <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Exclusão</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >Exclusão</span>
                     </div>
                     <Badge variant="outline">{deletionCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
                     <div className="flex items-center gap-2">
                       <ArrowRightLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Portabilidade</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >Portabilidade</span>
                     </div>
                     <Badge variant="outline">{portabilityCount}</Badge>
                   </div>
@@ -751,10 +748,10 @@ export default function PortalTitularPage() {
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                       Prazo Legal: 15 Dias
                     </p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <p className="text-xs mt-1 text-gray-500 dark:text-gray-400" >
                       As solicitações devem ser atendidas em até 15 dias contados da data do requerimento 
                       do titular, conforme Art. 18, §3º da LGPD.
                     </p>

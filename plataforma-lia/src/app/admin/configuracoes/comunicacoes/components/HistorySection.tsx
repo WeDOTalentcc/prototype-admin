@@ -113,10 +113,10 @@ export function HistorySection({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
             Histórico de Comunicações
           </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
             Visualize todas as comunicações enviadas pela plataforma
           </p>
         </div>
@@ -133,7 +133,7 @@ export function HistorySection({
       {historyLoading && communicationLogs.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando histórico...
           </span>
         </div>
@@ -144,12 +144,12 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Total</p>
-                <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-xs text-gray-500 dark:text-gray-400" >Total</p>
+                <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                   {historyStats.total.toLocaleString('pt-BR')}
                 </p>
               </div>
-              <Send className="w-8 h-8" style={{ color: 'var(--eleven-text-tertiary)' }} />
+              <Send className="w-8 h-8 text-gray-400 dark:text-gray-500"  />
             </div>
           </CardContent>
         </Card>
@@ -157,7 +157,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Entregues</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400" >Entregues</p>
                 <p className="text-2xl font-semibold text-status-success">
                   {historyStats.delivered.toLocaleString('pt-BR')}
                 </p>
@@ -170,7 +170,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Falhas</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400" >Falhas</p>
                 <p className="text-2xl font-semibold text-status-error">
                   {historyStats.failed.toLocaleString('pt-BR')}
                 </p>
@@ -183,7 +183,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Taxa Sucesso</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400" >Taxa Sucesso</p>
                 <p className="text-2xl font-semibold" style={{ color: successRate >= 90 ? 'var(--status-success)' : successRate >= 70 ? 'var(--status-warning)' : 'var(--status-error)' }}>
                   {successRate}%
                 </p>
@@ -200,7 +200,7 @@ export function HistorySection({
             <CardTitle className="text-base">Comunicações Recentes</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"  />
                 <Input
                   placeholder="Buscar por destinatário ou assunto..."
                   value={historySearch}
@@ -246,10 +246,10 @@ export function HistorySection({
           {filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Send className="w-12 h-12 text-gray-300 mb-4" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Nenhuma comunicação encontrada
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                 Ajuste os filtros ou aguarde novas comunicações
               </p>
             </div>
@@ -258,14 +258,14 @@ export function HistorySection({
               {filteredLogs.map(log => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-gray-200 dark:border-gray-700"
+                  
                 >
                   <div className="flex items-center gap-3">
                     {getChannelIcon(log.channel)}
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {log.recipientName}
                         </span>
                         {getStatusBadge(log.status)}
@@ -273,18 +273,18 @@ export function HistorySection({
                           <Badge variant="outline" className="text-xs">Inbound</Badge>
                         )}
                       </div>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500" >
                         {log.subject || log.templateName || log.communicationType || 'Sem assunto'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     {log.jobTitle && (
-                      <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-xs text-gray-500 dark:text-gray-400" >
                         {log.jobTitle}
                       </span>
                     )}
-                    <span className="text-xs flex items-center gap-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <span className="text-xs flex items-center gap-1 text-gray-400 dark:text-gray-500" >
                       <Clock className="w-3 h-3" />
                       {new Date(log.timestamp).toLocaleString('pt-BR', {
                         day: '2-digit',
@@ -300,7 +300,7 @@ export function HistorySection({
           )}
           
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" >
               <Button
                 size="sm"
                 variant="outline"
@@ -309,7 +309,7 @@ export function HistorySection({
               >
                 Anterior
               </Button>
-              <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <span className="text-sm text-gray-500 dark:text-gray-400" >
                 Página {historyPage} de {totalPages}
               </span>
               <Button

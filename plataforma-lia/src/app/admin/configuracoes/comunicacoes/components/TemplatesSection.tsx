@@ -160,23 +160,23 @@ export function TemplatesSection({
       {templatesLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando templates...
           </span>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
               Templates Disponíveis ({filteredTemplates.length})
             </h3>
             {filteredTemplates.length === 0 ? (
               <Card className="flex flex-col items-center justify-center py-12">
-                <FileText className="w-12 h-12 mb-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                <p className="text-sm font-medium mb-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <FileText className="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"  />
+                <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400" >
                   Nenhum template encontrado
                 </p>
-                <p className="text-xs mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mb-4 text-gray-400 dark:text-gray-500" >
                   Crie um novo template para começar
                 </p>
                 <Button
@@ -202,7 +202,7 @@ export function TemplatesSection({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                             {template.name}
                           </h4>
                           <Badge className={`text-xs ${categoryLabels[template.category]?.color || categoryLabels.system.color}`}>
@@ -210,11 +210,11 @@ export function TemplatesSection({
                           </Badge>
                         </div>
                         {template.subject && (
-                          <p className="text-xs mb-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs mb-2 text-gray-400 dark:text-gray-500" >
                             {template.subject}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500" >
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
                             {template.usedByCompanies} empresas
@@ -266,14 +266,14 @@ export function TemplatesSection({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Nome</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Nome</label>
                     <Input
                       value={editingTemplate.name}
                       onChange={(e) => setEditingTemplate({ ...editingTemplate, name: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Categoria</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Categoria</label>
                     <select
                       className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                       value={editingTemplate.category}
@@ -286,7 +286,7 @@ export function TemplatesSection({
                   </div>
                   {editingTemplate.channel === 'email' && (
                     <div>
-                      <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Assunto</label>
+                      <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Assunto</label>
                       <Input
                         value={editingTemplate.subject}
                         onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })}
@@ -294,7 +294,7 @@ export function TemplatesSection({
                     </div>
                   )}
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Corpo da Mensagem</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Corpo da Mensagem</label>
                     <Textarea
                       value={editingTemplate.body}
                       onChange={(e) => setEditingTemplate({ ...editingTemplate, body: e.target.value })}
@@ -302,7 +302,7 @@ export function TemplatesSection({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                       Variáveis (separadas por vírgula)
                     </label>
                     <Input
@@ -361,15 +361,15 @@ export function TemplatesSection({
                   </div>
                   {selectedTemplate.subject && (
                     <div>
-                      <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Assunto</label>
-                      <p className="text-sm mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Assunto</label>
+                      <p className="text-sm mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-100" >
                         {selectedTemplate.subject}
                       </p>
                     </div>
                   )}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Corpo da Mensagem</label>
+                      <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Corpo da Mensagem</label>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -380,12 +380,12 @@ export function TemplatesSection({
                         {showHtmlView ? 'Ver Texto' : 'Ver HTML'}
                       </Button>
                     </div>
-                    <pre className="text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded whitespace-pre-wrap max-h-96 overflow-y-auto" style={{ color: 'var(--eleven-text-primary)', fontFamily: 'inherit' }}>
+                    <pre className="text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded whitespace-pre-wrap max-h-96 overflow-y-auto text-gray-800 dark:text-gray-100" style={{fontFamily: 'inherit'}}>
                       {showHtmlView ? selectedTemplate.body : stripHtmlToText(selectedTemplate.body)}
                     </pre>
                   </div>
                   <div>
-                    <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Variáveis Disponíveis</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Variáveis Disponíveis</label>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {selectedTemplate.variables.length > 0 ? (
                         selectedTemplate.variables.map(v => (
@@ -394,7 +394,7 @@ export function TemplatesSection({
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >
                           Nenhuma variável definida
                         </span>
                       )}
@@ -404,7 +404,7 @@ export function TemplatesSection({
               </Card>
             ) : (
               <Card className="flex items-center justify-center h-64">
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500" >
                   Selecione um template para visualizar
                 </p>
               </Card>

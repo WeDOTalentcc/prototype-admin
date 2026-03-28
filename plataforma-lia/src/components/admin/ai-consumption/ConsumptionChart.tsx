@@ -18,9 +18,9 @@ export function ConsumptionChart({
   const maxTokens = Math.max(...data.map(d => d.tokens), 1)
 
   return (
-    <Card className="" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+    <Card className="border-gray-200 dark:border-gray-700">
       <CardHeader>
-        <CardTitle className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+        <CardTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
           {title}
         </CardTitle>
       </CardHeader>
@@ -39,7 +39,7 @@ export function ConsumptionChart({
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-2 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-500">
           <span>30 dias atrás</span>
           <span>Hoje</span>
         </div>

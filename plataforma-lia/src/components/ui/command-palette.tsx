@@ -105,9 +105,9 @@ export function CommandPalette({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-2xl p-0 gap-0 overflow-hidden"
-        style={{ backgroundColor: 'var(--eleven-bg-main)' }}
+        className="bg-gray-50 dark:bg-gray-900"
       >
-        <div className="flex items-center px-4 py-3 border-b" style={{ borderColor: 'var(--eleven-border)' }}>
+        <div className="flex items-center px-4 py-3 border-b" className="border-gray-300 dark:border-gray-600">
           <Search className="w-4 h-4 mr-3 text-gray-600 dark:text-gray-400" />
           <Input
             ref={inputRef}
@@ -117,14 +117,14 @@ export function CommandPalette({
             className="border-0 focus-visible:ring-0 text-base"
             style={{ 
               backgroundColor: 'transparent',
-              color: 'var(--eleven-text-primary)'
+              color: 'rgb(31 41 55)'
             }}
             autoFocus
           />
           <kbd className="ml-2 px-2 py-1 text-xs rounded" style={{ 
-            backgroundColor: 'var(--eleven-bg-card)',
-            color: 'var(--eleven-text-tertiary)',
-            border: '1px solid var(--eleven-border)'
+            backgroundColor: 'rgb(255 255 255)',
+            color: 'rgb(156 163 175)',
+            border: '1px solid rgb(209 213 219)'
           }}>
             ESC
           </kbd>
@@ -133,7 +133,7 @@ export function CommandPalette({
         <div className="max-h-[400px] overflow-y-auto">
           {Object.entries(groupedCommands).map(([category, items]) => (
             <div key={category}>
-              <div className="px-4 py-2 text-xs font-semibold" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <div className="px-4 py-2 text-xs font-semibold" className="text-gray-400 dark:text-gray-500">
                 {getCategoryLabel(category as CommandItem['category'])}
               </div>
               {items.map((cmd, index) => {
@@ -150,8 +150,8 @@ export function CommandPalette({
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
                     className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-left"
                     style={{
-                      backgroundColor: isSelected ? 'var(--eleven-bg-hover)' : 'transparent',
-                      color: 'var(--eleven-text-primary)'
+                      backgroundColor: isSelected ? 'rgb(243 244 246)' : 'transparent',
+                      color: 'rgb(31 41 55)'
                     }}
                   >
                     <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">
@@ -160,16 +160,16 @@ export function CommandPalette({
                     <div className="flex-1 min-w-0">
                       <div className="font-medium">{cmd.label}</div>
                       {cmd.description && (
-                        <div className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <div className="text-sm" className="text-gray-500 dark:text-gray-400">
                           {cmd.description}
                         </div>
                       )}
                     </div>
                     {cmd.shortcut && (
                       <kbd className="px-2 py-1 text-xs rounded flex-shrink-0" style={{ 
-                        backgroundColor: 'var(--eleven-bg-card)',
-                        color: 'var(--eleven-text-tertiary)',
-                        border: '1px solid var(--eleven-border)'
+                        backgroundColor: 'rgb(255 255 255)',
+                        color: 'rgb(156 163 175)',
+                        border: '1px solid rgb(209 213 219)'
                       }}>
                         {cmd.shortcut}
                       </kbd>
@@ -181,15 +181,15 @@ export function CommandPalette({
           ))}
 
           {filteredCommands.length === 0 && (
-            <div className="px-4 py-8 text-center" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <div className="px-4 py-8 text-center" className="text-gray-400 dark:text-gray-500">
               Nenhum comando encontrado para "{query}"
             </div>
           )}
         </div>
 
         <div className="px-4 py-2 border-t text-xs flex items-center justify-between" style={{ 
-          borderColor: 'var(--eleven-border)',
-          color: 'var(--eleven-text-tertiary)'
+          borderColor: 'rgb(209 213 219)',
+          color: 'rgb(156 163 175)'
         }}>
           <span>Use ↑↓ para navegar, Enter para selecionar</span>
           <span>ESC para fechar</span>

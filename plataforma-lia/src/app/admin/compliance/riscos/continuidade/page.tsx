@@ -164,15 +164,12 @@ export default function ContinuidadePage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Continuidade de Negócios
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 PCN/PRD, RTO/RPO e planos de recuperação
               </p>
             </div>
@@ -202,7 +199,7 @@ export default function ContinuidadePage() {
                     Em implementação
                   </Badge>
                 </div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-sm text-gray-500 dark:text-gray-400" >
                   A Resolução BCB 498/2025 exige plano de continuidade de negócios com definição clara de RTO/RPO 
                   e testes periódicos de recuperação de desastres. Mantenha os planos atualizados e realize 
                   testes de DR trimestralmente.
@@ -221,11 +218,11 @@ export default function ContinuidadePage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{objectives.rtoTarget}</p>
+                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{objectives.rtoTarget}</p>
                     <Badge variant="outline" className="text-xs">RTO</Badge>
                   </div>
-                  <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Recovery Time Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded" style={{ backgroundColor: 'var(--eleven-bg-subtle)', color: 'var(--eleven-text-secondary)' }}>
+                  <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Time Objective</p>
+                  <p className="text-xs mt-2 p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Tempo máximo aceitável de indisponibilidade do sistema
                   </p>
@@ -242,11 +239,11 @@ export default function ContinuidadePage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{objectives.rpoTarget}</p>
+                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{objectives.rpoTarget}</p>
                     <Badge variant="outline" className="text-xs">RPO</Badge>
                   </div>
-                  <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>Recovery Point Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded" style={{ backgroundColor: 'var(--eleven-bg-subtle)', color: 'var(--eleven-text-secondary)' }}>
+                  <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Point Objective</p>
+                  <p className="text-xs mt-2 p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Perda máxima de dados aceitável em caso de falha
                   </p>
@@ -264,10 +261,10 @@ export default function ContinuidadePage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >
                     {new Date(objectives.lastTest).toLocaleDateString('pt-BR')}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Último Teste DR</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Último Teste DR</p>
                 </div>
               </div>
             </CardContent>
@@ -280,8 +277,8 @@ export default function ContinuidadePage() {
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{daysUntilTest > 0 ? `${daysUntilTest} dias` : 'Hoje'}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Próximo Teste Agendado</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{daysUntilTest > 0 ? `${daysUntilTest} dias` : 'Hoje'}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Próximo Teste Agendado</p>
                 </div>
               </div>
             </CardContent>
@@ -293,7 +290,7 @@ export default function ContinuidadePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Server className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Sistemas Críticos - RTO/RPO
                 </CardTitle>
               </div>
@@ -324,7 +321,7 @@ export default function ContinuidadePage() {
                           <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                             <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                           </div>
-                          <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="font-medium text-gray-800 dark:text-gray-100" >
                             {system.name}
                           </span>
                         </div>
@@ -340,12 +337,12 @@ export default function ContinuidadePage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {system.lastBackup}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {new Date(system.lastTest).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
@@ -366,7 +363,7 @@ export default function ContinuidadePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Histórico de Testes de DR
                   </CardTitle>
                 </div>
@@ -380,18 +377,15 @@ export default function ContinuidadePage() {
                 {drTests.map((test) => (
                   <div 
                     key={test.id}
-                    className="p-4 rounded-md border"
-                    style={{ 
-                      backgroundColor: 'var(--eleven-bg-card)',
-                      borderColor: 'var(--eleven-border-subtle)'
-                    }}
+                    className="p-4 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+                    
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {test.type}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >
                           {new Date(test.date).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
@@ -399,15 +393,15 @@ export default function ContinuidadePage() {
                     </div>
                     <div className="flex items-center gap-4 mb-2">
                       <div className="text-xs">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>RTO: </span>
+                        <span className="text-gray-400 dark:text-gray-500" >RTO: </span>
                         <Badge variant="outline" className="font-mono text-micro">{test.rtoAchieved}</Badge>
                       </div>
                       <div className="text-xs">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>RPO: </span>
+                        <span className="text-gray-400 dark:text-gray-500" >RPO: </span>
                         <Badge variant="outline" className="font-mono text-micro">{test.rpoAchieved}</Badge>
                       </div>
                     </div>
-                    <p className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--eleven-bg-subtle)', color: 'var(--eleven-text-secondary)' }}>
+                    <p className="text-xs p-2 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
                       {test.notes}
                     </p>
                   </div>
@@ -420,7 +414,7 @@ export default function ContinuidadePage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Planos de Continuidade
                 </CardTitle>
               </div>
@@ -430,22 +424,19 @@ export default function ContinuidadePage() {
                 {continuityPlans.map((plan) => (
                   <div 
                     key={plan.id}
-                    className="p-4 rounded-md border"
-                    style={{ 
-                      backgroundColor: 'var(--eleven-bg-card)',
-                      borderColor: 'var(--eleven-border-subtle)'
-                    }}
+                    className="p-4 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+                    
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {plan.name}
                         </span>
                       </div>
                       {getStatusBadge(plan.status)}
                     </div>
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500" >
                       <span>Versão: {plan.version}</span>
                       <span>Atualizado: {new Date(plan.lastUpdate).toLocaleDateString('pt-BR')}</span>
                       <span>Owner: {plan.owner}</span>

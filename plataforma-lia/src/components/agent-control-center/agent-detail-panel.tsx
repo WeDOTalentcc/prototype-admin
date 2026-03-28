@@ -114,23 +114,22 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md z-50 overflow-hidden flex flex-col"
-            style={{ backgroundColor: 'var(--eleven-bg-card)' }}
+            className="fixed right-0 top-0 h-full w-full max-w-md z-50 overflow-hidden flex flex-col bg-white dark:bg-gray-950"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{agent.icon}</span>
                 <div>
-                  <h3 className="font-semibold text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-100">
                     {agent.name}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span 
+                    <span
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)' }}
                     />
-                    <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
                     </span>
                   </div>
@@ -142,32 +141,32 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3 p-4 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="grid grid-cols-3 gap-3 p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="text-center">
                 <div className="text-xl font-bold text-gray-900 dark:text-gray-50">{agent.actions_today}</div>
-                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ações Hoje</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500">Ações Hoje</div>
               </div>
               <div className="text-center">
-                <div 
+                <div
                   className="text-xl font-bold"
                   style={{ color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                 >
                   {agent.progress}%
                 </div>
-                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Progresso</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500">Progresso</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-xl font-bold text-gray-900 dark:text-gray-50">{agent.daily_goal}</span>
                 </div>
-                <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Meta Diária</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500">Meta Diária</div>
               </div>
             </div>
 
             {/* Trend Chart */}
-            <div className="p-4 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   Tendência 24h
                 </span>
                 <div className="flex items-center gap-1">
@@ -178,9 +177,10 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   ) : (
                     <Minus className="w-3 h-3 text-gray-600" />
                   )}
-                  <span 
+                  <span
                     className="text-xs"
-                    style={{ color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : 'var(--eleven-text-tertiary)' }}
+                    style={{ color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : undefined }}
+                  className={agent.delta === 0 ? 'text-gray-400 dark:text-gray-500' : ''}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
@@ -192,7 +192,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
               {[
                 { id: 'activity', label: 'Atividades', icon: Activity },
                 { id: 'health', label: 'Saúde', icon: Target },
@@ -201,9 +201,9 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors"
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-gray-500 dark:text-gray-400' : ''}`}
                   style={{
-                    color: activeTab === tab.id ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
+                    color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
                     backgroundColor: activeTab === tab.id ? 'rgb(229 231 235 / 0.2)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'
                   }}
@@ -220,20 +220,19 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {activeTab === 'activity' && (
                 <div className="p-4 space-y-3">
                   {isLoading ? (
-                    <div className="flex items-center justify-center py-8" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="flex items-center justify-center py-8 text-gray-400 dark:text-gray-500">
                       <Clock className="w-4 h-4 animate-spin mr-2" />
                       Carregando...
                     </div>
                   ) : activities.length === 0 ? (
-                    <div className="text-center py-8" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="text-center py-8 text-gray-400 dark:text-gray-500">
                       Nenhuma atividade recente
                     </div>
                   ) : (
                     activities.map(activity => (
-                      <div 
+                      <div
                         key={activity.id}
-                        className="flex items-start gap-3 p-3 rounded-md"
-                        style={{ backgroundColor: 'var(--eleven-bg-message)' }}
+                        className="flex items-start gap-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800"
                       >
                         <div className="flex-shrink-0 mt-0.5">
                           {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -243,14 +242,14 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
                               {activity.title}
                             </span>
-                            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               {formatTimeAgo(activity.started_at)}
                             </span>
                           </div>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {activity.description}
                           </p>
                         </div>
@@ -265,20 +264,19 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <div className="p-4 space-y-4">
                   {/* Health Score Circle */}
                   <div className="flex flex-col items-center py-4">
-                    <div 
+                    <div
                       className="relative w-24 h-24 rounded-full flex items-center justify-center"
-                      style={{ 
-                        background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, var(--eleven-border-subtle) 0)`
+                      style={{
+                        background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, rgb(229 231 235) 0)`
                       }}
                     >
-                      <div 
-                        className="w-20 h-20 rounded-full flex flex-col items-center justify-center"
-                        style={{ backgroundColor: 'var(--eleven-bg-card)' }}
+                      <div
+                        className="w-20 h-20 rounded-full flex flex-col items-center justify-center bg-white dark:bg-gray-950"
                       >
                         <span className="text-2xl font-bold" style={{ color: getHealthTierColor(healthScore.tier) }}>
                           {healthScore.score}
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           de 100
                         </span>
                       </div>
@@ -297,7 +295,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
                   {/* Score Drivers */}
                   <div>
-                    <h4 className="text-xs font-medium mb-3" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <h4 className="text-xs font-medium mb-3 text-gray-800 dark:text-gray-100">
                       Fatores de Score
                     </h4>
                     <div className="space-y-2">
@@ -305,7 +303,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <div key={i} className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {driver.name}
                               </span>
                               <div className="flex items-center gap-1">
@@ -317,10 +315,10 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                                 </span>
                               </div>
                             </div>
-                            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--eleven-border-subtle)' }}>
-                              <div 
+                            <div className="h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                              <div
                                 className="h-full rounded-full"
-                                style={{ 
+                                style={{
                                   width: `${Math.min(driver.value, 100)}%`,
                                   backgroundColor: getImpactColor(driver.impact)
                                 }}
@@ -335,18 +333,18 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   {/* Recommendations */}
                   {healthScore.recommendations.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-100">
                         <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                         Recomendações
                       </h4>
                       <div className="space-y-2">
                         {healthScore.recommendations.map((rec, i) => (
-                          <div 
+                          <div
                             key={i}
                             className="p-3 rounded-md flex items-start gap-2 bg-gray-200/20"
                           >
                             <ChevronRight className="w-3 h-3 mt-0.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                            <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {rec}
                             </span>
                           </div>
@@ -360,19 +358,19 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="p-4 space-y-4">
-                  <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                    <h4 className="text-xs font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <div className="p-4 rounded-md bg-gray-100 dark:bg-gray-800">
+                    <h4 className="text-xs font-medium mb-2 text-gray-800 dark:text-gray-100">
                       Configurações do Agente
                     </h4>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
-                  <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                    <h4 className="text-xs font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <div className="p-4 rounded-md bg-gray-100 dark:bg-gray-800">
+                    <h4 className="text-xs font-medium mb-2 text-gray-800 dark:text-gray-100">
                       Integrações
                     </h4>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Em breve: Conecte APIs externas e configure webhooks.
                     </p>
                   </div>
@@ -381,13 +379,12 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1 text-xs"
-                  style={{ borderColor: 'var(--eleven-border)' }}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs border-gray-300 dark:border-gray-600"
                 >
                   Ver Logs Completos
                 </Button>

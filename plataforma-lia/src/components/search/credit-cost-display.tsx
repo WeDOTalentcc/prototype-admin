@@ -72,7 +72,7 @@ export function CreditCostDisplay({
   }
 
   return (
-    <div className={`rounded-md border p-4 ${costBgColor} ${className}`} style={{ borderColor: "var(--eleven-border)" }}>
+    <div className={`rounded-md border p-4 ${costBgColor} ${className}`} className="border-gray-300 dark:border-gray-600">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Coins className="w-5 h-5 text-gray-700" />
@@ -129,7 +129,7 @@ export function CreditCostDisplay({
             </div>
           )}
 
-          <div className="border-t pt-2 mt-2" style={{ borderColor: "var(--eleven-border)" }}>
+          <div className="border-t pt-2 mt-2" className="border-gray-300 dark:border-gray-600">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />

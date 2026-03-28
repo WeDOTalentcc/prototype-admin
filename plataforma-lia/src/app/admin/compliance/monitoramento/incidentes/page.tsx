@@ -221,15 +221,12 @@ export default function IncidentesPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Gestão de Incidentes (PRI)
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Plano de Resposta a Incidentes e registro de ocorrências
               </p>
             </div>
@@ -243,7 +240,7 @@ export default function IncidentesPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle style={{ color: 'var(--eleven-text-primary)' }}>Registrar Novo Incidente</DialogTitle>
+                <DialogTitle className="text-gray-800 dark:text-gray-100" >Registrar Novo Incidente</DialogTitle>
                 <DialogDescription>
                   Preencha as informações do incidente para iniciar o processo de resposta.
                 </DialogDescription>
@@ -370,10 +367,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Incidentes Abertos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -393,10 +390,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Alta Severidade
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {criticalIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -416,10 +413,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Resolvidos (30 dias)
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {resolvedIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -438,7 +435,7 @@ export default function IncidentesPage() {
 
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
               Workflow de Resposta a Incidentes (PRI)
             </CardTitle>
           </CardHeader>
@@ -458,15 +455,15 @@ export default function IncidentesPage() {
                       <Badge variant="outline" className="mb-1 text-xs">
                         {step.phase}
                       </Badge>
-                      <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                         {step.name}
                       </span>
-                      <span className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                         {step.description}
                       </span>
                     </div>
                     {idx < responseWorkflow.length - 1 && (
-                      <ArrowRight className="w-5 h-5 flex-shrink-0 mx-2" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <ArrowRight className="w-5 h-5 flex-shrink-0 mx-2 text-gray-400 dark:text-gray-500"  />
                     )}
                   </React.Fragment>
                 )
@@ -480,12 +477,12 @@ export default function IncidentesPage() {
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Histórico de Incidentes
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                       <Input
                         placeholder="Buscar incidentes..."
                         value={searchTerm}
@@ -526,7 +523,7 @@ export default function IncidentesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                               {incident.title}
                             </span>
                           </TableCell>
@@ -557,12 +554,12 @@ export default function IncidentesPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400" >
                               {incident.assignee}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400" >
                               {new Date(incident.startedAt).toLocaleString('pt-BR')}
                             </span>
                           </TableCell>
@@ -596,7 +593,7 @@ export default function IncidentesPage() {
 
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 SLAs por Severidade
               </CardTitle>
             </CardHeader>
@@ -607,13 +604,13 @@ export default function IncidentesPage() {
                   return (
                     <div 
                       key={idx}
-                      className="p-3 rounded-md border"
-                      style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                      className="p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                      
                     >
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${severityConfig.dot}`} />
-                          <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                             {severityConfig.label}
                           </span>
                         </div>
@@ -621,7 +618,7 @@ export default function IncidentesPage() {
                           {sla.sla}
                         </Badge>
                       </div>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500" >
                         {sla.description}
                       </p>
                     </div>
@@ -632,7 +629,7 @@ export default function IncidentesPage() {
                 className="mt-4 p-3 rounded-md"
                 style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
               >
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500" >
                   Os prazos são contados a partir da data de conhecimento do incidente pela organização, conforme Art. 48 da LGPD.
                 </p>
               </div>

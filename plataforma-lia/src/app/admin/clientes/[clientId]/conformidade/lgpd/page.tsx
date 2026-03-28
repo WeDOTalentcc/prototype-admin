@@ -101,7 +101,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -112,7 +112,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -122,7 +122,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
         </div>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Carregando dados LGPD...</span>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">Carregando dados LGPD...</span>
         </div>
       </div>
     )
@@ -131,7 +131,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -142,7 +142,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -164,7 +164,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
         {internalTabs.map((tab) => {
           const isActive = isTabActive(tab.href)
           const Icon = tab.icon
@@ -176,9 +176,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 isActive
                   ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
               )}
-              style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
             >
               <Icon className="w-4 h-4" />
               {tab.name}
@@ -192,8 +191,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Consentimentos</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{stats?.totalConsents || 0}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Consentimentos</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{stats?.totalConsents || 0}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <UserCheck className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">{stats?.activeConsents || 0} ativos</span>
@@ -210,8 +209,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>DSRs Pendentes</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{stats?.pendingDSRs || 0}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">DSRs Pendentes</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{stats?.pendingDSRs || 0}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <Clock className="w-3 h-3 text-status-warning" />
                   <span className="text-xs text-status-warning">Aguardando resposta</span>
@@ -228,8 +227,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Taxa Consentimento</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{(stats?.consentComplianceRate || 0).toFixed(0)}%</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Taxa Consentimento</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{(stats?.consentComplianceRate || 0).toFixed(0)}%</p>
                 <Progress value={stats?.consentComplianceRate || 0} className="h-2 mt-2 w-24" />
               </div>
               <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
@@ -243,8 +242,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Incidentes LGPD</p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{totalBreaches}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Incidentes LGPD</p>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{totalBreaches}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {breaches.filter(b => b.status !== 'closed').length > 0 ? (
                     <>
@@ -270,7 +269,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
       {dpo && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Encarregado de Dados (DPO)
             </CardTitle>
           </CardHeader>
@@ -280,18 +279,18 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 <UserCheck className="w-6 h-6 text-wedo-purple dark:text-wedo-purple" />
               </div>
               <div className="flex-1">
-                <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{dpo.name}</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{dpo.name}</p>
                 <div className="flex items-center gap-4 mt-1">
                   <div className="flex items-center gap-1">
-                    <Mail className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>{dpo.email}</span>
+                    <Mail className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{dpo.email}</span>
                   </div>
                   {dpo.phone && (
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>{dpo.phone}</span>
+                    <span className="text-sm text-gray-400 dark:text-gray-500">{dpo.phone}</span>
                   )}
                 </div>
                 {dpo.registrationDate && (
-                  <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
                     Registrado em {formatDate(dpo.registrationDate)}
                   </p>
                 )}
@@ -307,7 +306,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Solicitações de Titulares (DSR)
             </CardTitle>
           </CardHeader>
@@ -317,14 +316,14 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 {decisions.slice(0, 5).map((decision) => {
                   const TypeIcon = dsrTypeIcons[decision.decisionType] || FileText
                   return (
-                    <div key={decision.id} className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+                    <div key={decision.id} className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-gray-900">
                       <div className="flex items-center gap-3">
-                        <TypeIcon className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                        <TypeIcon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                         <div>
-                          <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                             {decision.candidateName || 'Titular'}
                           </p>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             {dsrTypeLabels[decision.decisionType] || decision.decisionType} - {formatDate(decision.createdAt)}
                           </p>
                         </div>
@@ -339,7 +338,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
             ) : (
               <div className="text-center py-6">
                 <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhuma solicitação registrada</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Nenhuma solicitação registrada</p>
               </div>
             )}
           </CardContent>
@@ -347,7 +346,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Retenção de Dados
             </CardTitle>
           </CardHeader>
@@ -355,8 +354,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Conformidade de Retenção</span>
-                  <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Conformidade de Retenção</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {(stats?.dataRetentionCompliance || 0).toFixed(0)}%
                   </span>
                 </div>
@@ -375,9 +374,9 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
               </div>
 
               {stats?.nextRetentionReview && (
-                <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                  <Calendar className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                  <span className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <div className="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <span className="text-sm text-gray-400 dark:text-gray-500">
                     Próxima revisão: {formatDate(stats.nextRetentionReview)}
                   </span>
                 </div>
@@ -390,7 +389,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
       {breaches.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Incidentes de Dados
             </CardTitle>
           </CardHeader>
@@ -398,23 +397,23 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Incidente</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Severidade</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Data</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Status</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Incidente</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Severidade</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Data</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {breaches.slice(0, 5).map((breach) => (
-                    <tr key={breach.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{breach.title}</td>
+                    <tr key={breach.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+                      <td className="py-3 px-2 text-sm text-gray-800 dark:text-gray-100">{breach.title}</td>
                       <td className="py-3 px-2">
                         <Badge variant={breach.severity === 'critical' || breach.severity === 'high' ? 'destructive' : breach.severity === 'medium' ? 'warning' : 'default'}>
                           {breach.severity}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>{formatDate(breach.detectedAt)}</td>
+                      <td className="py-3 px-2 text-sm text-gray-400 dark:text-gray-500">{formatDate(breach.detectedAt)}</td>
                       <td className="py-3 px-2">
                         <Badge variant={breach.status === 'closed' ? 'success' : breach.status === 'investigating' ? 'warning' : 'destructive'}>
                           {breach.status === 'closed' ? 'Fechado' : breach.status === 'investigating' ? 'Investigando' : 'Aberto'}

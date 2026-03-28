@@ -41,22 +41,22 @@ export function SearchPreviewCard({
     <Card 
       className="border overflow-hidden"
       style={{ 
-        backgroundColor: "var(--eleven-bg-card)",
-        borderColor: "var(--eleven-border)"
+        backgroundColor: "rgb(255 255 255)",
+        borderColor: "rgb(209 213 219)"
       }}
     >
       <CardContent className="p-0">
         <div 
           className="px-4 py-3 border-b flex items-center gap-2"
           style={{ 
-            backgroundColor: "var(--eleven-sepia-light)",
-            borderColor: "var(--eleven-border)"
+            backgroundColor: "rgb(250 250 249)",
+            borderColor: "rgb(209 213 219)"
           }}
         >
           <Search className="w-4 h-4 text-gray-700" />
           <span 
             className="text-sm font-medium"
-            style={{ color: "var(--eleven-text-primary)" }}
+            className="text-gray-800 dark:text-gray-100"
           >
             Preview da Busca
           </span>
@@ -68,9 +68,9 @@ export function SearchPreviewCard({
         <div className="p-4 space-y-4">
           <p 
             className="text-sm"
-            style={{ color: "var(--eleven-text-secondary)" }}
+            className="text-gray-500 dark:text-gray-400"
           >
-            Busca: <span className="font-medium" style={{ color: "var(--eleven-text-primary)" }}>"{data.query}"</span>
+            Busca: <span className="font-medium" className="text-gray-800 dark:text-gray-100">"{data.query}"</span>
           </p>
 
           <div className="grid gap-3">
@@ -88,13 +88,13 @@ export function SearchPreviewCard({
                 !hasLocalResults && !data.isSearchingLocal && "opacity-50 cursor-not-allowed"
               )}
               style={{ 
-                backgroundColor: selectedOption === "local" ? "rgb(249, 250, 251)" : "var(--eleven-bg-main)",
-                borderColor: selectedOption === "local" ? "rgb(209, 213, 219)" : "var(--eleven-border)"
+                backgroundColor: selectedOption === "local" ? "rgb(249, 250, 251)" : "rgb(249 250 251)",
+                borderColor: selectedOption === "local" ? "rgb(209, 213, 219)" : "rgb(209 213 219)"
               }}
             >
               <div 
                 className="p-2 rounded-md shrink-0"
-                style={{ backgroundColor: "var(--eleven-sepia-mint)" }}
+                style={{ backgroundColor: "rgb(240 253 244)" }}
               >
                 <Database className="w-4 h-4 text-gray-700" />
               </div>
@@ -102,7 +102,7 @@ export function SearchPreviewCard({
                 <div className="flex items-center justify-between gap-2">
                   <span 
                     className="text-sm font-medium"
-                    style={{ color: "var(--eleven-text-primary)" }}
+                    className="text-gray-800 dark:text-gray-100"
                   >
                     Banco Proprietário
                   </span>
@@ -122,7 +122,7 @@ export function SearchPreviewCard({
                 </div>
                 <p 
                   className="text-xs mt-1"
-                  style={{ color: "var(--eleven-text-tertiary)" }}
+                  className="text-gray-400 dark:text-gray-500"
                 >
                   Candidatos já cadastrados na sua base - sem custo
                 </p>
@@ -140,13 +140,13 @@ export function SearchPreviewCard({
                 !hasPearchResults && !data.isEstimatingPearch && "opacity-50 cursor-not-allowed"
               )}
               style={{ 
-                backgroundColor: selectedOption === "hybrid" ? "rgb(249, 250, 251)" : "var(--eleven-bg-main)",
-                borderColor: selectedOption === "hybrid" ? "rgb(209, 213, 219)" : "var(--eleven-border)"
+                backgroundColor: selectedOption === "hybrid" ? "rgb(249, 250, 251)" : "rgb(249 250 251)",
+                borderColor: selectedOption === "hybrid" ? "rgb(209, 213, 219)" : "rgb(209 213 219)"
               }}
             >
               <div 
                 className="p-2 rounded-md shrink-0"
-                style={{ backgroundColor: "var(--eleven-sepia-light)" }}
+                style={{ backgroundColor: "rgb(250 250 249)" }}
               >
                 <Globe className="w-4 h-4 text-gray-700" />
               </div>
@@ -154,7 +154,7 @@ export function SearchPreviewCard({
                 <div className="flex items-center justify-between gap-2">
                   <span 
                     className="text-sm font-medium"
-                    style={{ color: "var(--eleven-text-primary)" }}
+                    className="text-gray-800 dark:text-gray-100"
                   >
                     Busca Híbrida (Local + Global)
                   </span>
@@ -174,7 +174,7 @@ export function SearchPreviewCard({
                 </div>
                 <p 
                   className="text-xs mt-1"
-                  style={{ color: "var(--eleven-text-tertiary)" }}
+                  className="text-gray-400 dark:text-gray-500"
                 >
                   Inclui acesso a 800M+ perfis do banco global
                 </p>
@@ -198,8 +198,8 @@ export function SearchPreviewCard({
             <div 
               className="p-3 rounded-md text-sm"
               style={{ 
-                backgroundColor: "var(--eleven-sepia-mint)",
-                color: "var(--eleven-text-primary)"
+                backgroundColor: "rgb(240 253 244)",
+                color: "rgb(31 41 55)"
               }}
             >
               <div className="flex items-center justify-between mb-2">
@@ -208,7 +208,7 @@ export function SearchPreviewCard({
                   {data.pearchCredits} créditos
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+              <div className="flex items-center justify-between text-xs" className="text-gray-500 dark:text-gray-400">
                 <span>Saldo após busca:</span>
                 <span>{Math.max(0, availableCredits - data.pearchCredits)} créditos</span>
               </div>
@@ -222,8 +222,8 @@ export function SearchPreviewCard({
               onClick={onCancel}
               className="flex-1"
               style={{ 
-                color: "var(--eleven-text-secondary)",
-                borderColor: "var(--eleven-border)"
+                color: "rgb(107 114 128)",
+                borderColor: "rgb(209 213 219)"
               }}
             >
               <X className="w-4 h-4 mr-1" />
@@ -255,8 +255,8 @@ export function SearchPreviewCard({
                 disabled
                 className="flex-1"
                 style={{ 
-                  backgroundColor: "var(--eleven-bg-tertiary)",
-                  color: "var(--eleven-text-secondary)"
+                  backgroundColor: "rgb(243 244 246)",
+                  color: "rgb(107 114 128)"
                 }}
               >
                 Selecione uma opção

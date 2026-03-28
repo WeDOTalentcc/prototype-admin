@@ -124,15 +124,12 @@ export default function TransferenciasPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Transferências Internacionais
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Gestão de transferências internacionais de dados pessoais
               </p>
             </div>
@@ -207,10 +204,10 @@ export default function TransferenciasPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                   Aviso sobre Adequação de Países (Art. 33 LGPD)
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-xs mt-1 text-gray-500 dark:text-gray-400" >
                   Transferências para países sem decisão de adequação da ANPD exigem mecanismos adicionais 
                   de proteção: Cláusulas Contratuais Padrão (SCCs), Binding Corporate Rules (BCRs), 
                   ou consentimento específico e destacado do titular.
@@ -228,8 +225,8 @@ export default function TransferenciasPage() {
                   <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{transfers.length}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total de Transferências</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{transfers.length}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Total de Transferências</p>
                 </div>
               </div>
             </CardContent>
@@ -242,8 +239,8 @@ export default function TransferenciasPage() {
                   <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{compliantTransfers}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Conformes</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{compliantTransfers}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Conformes</p>
                 </div>
               </div>
             </CardContent>
@@ -256,8 +253,8 @@ export default function TransferenciasPage() {
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{pendingReviews}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Revisões Pendentes</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{pendingReviews}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Revisões Pendentes</p>
                 </div>
               </div>
             </CardContent>
@@ -270,8 +267,8 @@ export default function TransferenciasPage() {
                   <Database className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{uniqueCountries}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Países de Destino</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{uniqueCountries}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Países de Destino</p>
                 </div>
               </div>
             </CardContent>
@@ -281,11 +278,11 @@ export default function TransferenciasPage() {
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 Lista de Transferências Internacionais
               </CardTitle>
               <div className="relative w-72">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                 <Input
                   placeholder="Buscar por país, destinatário..."
                   value={searchTerm}
@@ -316,7 +313,7 @@ export default function TransferenciasPage() {
                         <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                           <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         </div>
-                        <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{transfer.country}</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-100" >{transfer.country}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -335,13 +332,13 @@ export default function TransferenciasPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >Nenhum</span>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Shield className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <Shield className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {transfer.safeguards}
                         </span>
                       </div>
@@ -384,7 +381,7 @@ export default function TransferenciasPage() {
 
         <Card className="mt-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader>
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
               Países com Decisão de Adequação
             </CardTitle>
             <CardDescription>

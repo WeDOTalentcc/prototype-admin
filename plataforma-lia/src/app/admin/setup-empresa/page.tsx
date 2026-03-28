@@ -240,10 +240,10 @@ function BenefitsContent({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100" >
             Benefícios da Empresa
           </h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm mt-1 text-gray-500 dark:text-gray-400" >
             Configure os benefícios oferecidos aos colaboradores
           </p>
         </div>
@@ -285,10 +285,10 @@ function BenefitsContent({
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Gift className="w-12 h-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+            <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100" >
               Nenhum benefício cadastrado
             </h3>
-            <p className="text-sm text-center mb-4" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <p className="text-sm text-center mb-4 text-gray-500 dark:text-gray-400" >
               Comece importando uma planilha ou adicionando benefícios manualmente
             </p>
             <div className="flex gap-2">
@@ -326,7 +326,7 @@ function BenefitsContent({
                 >
                   <div className="flex items-center gap-3">
                     <CategoryIcon className={`w-5 h-5 ${category.color}`} />
-                    <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <span className="font-medium text-gray-800 dark:text-gray-100" >
                       {category.name}
                     </span>
                     <Badge variant="secondary" className="text-xs">
@@ -341,18 +341,18 @@ function BenefitsContent({
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                  <div className="border-t border-gray-200 dark:border-gray-700" >
                     {categoryBenefits.map(benefit => (
                       <div 
                         key={benefit.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b last:border-b-0"
-                        style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b last:border-b-0 border-gray-200 dark:border-gray-700"
+                        
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <GripVertical className="w-4 h-4 text-gray-300 cursor-grab" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                              <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                                 {benefit.name}
                               </span>
                               {benefit.is_highlighted && (
@@ -367,16 +367,16 @@ function BenefitsContent({
                               )}
                             </div>
                             <div className="flex items-center gap-4 mt-1">
-                              <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <span className="text-xs text-gray-400 dark:text-gray-500" >
                                 {formatBenefitValue(benefit)}
                               </span>
-                              <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <span className="text-xs text-gray-400 dark:text-gray-500" >
                                 {benefit.seniority_levels?.includes("all") 
                                   ? "Todos os níveis" 
                                   : benefit.seniority_levels?.map(l => SENIORITY_LEVELS.find(s => s.id === l)?.name).join(", ") || "Todos os níveis"}
                               </span>
                               {benefit.waiting_period_days > 0 && (
-                                <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                <span className="text-xs text-gray-400 dark:text-gray-500" >
                                   Carência: {WAITING_PERIODS.find(w => w.id === benefit.waiting_period_days)?.name || `${benefit.waiting_period_days} dias`}
                                 </span>
                               )}
@@ -930,12 +930,12 @@ function SetupEmpresaContent() {
       <div className="p-8" suppressHydrationWarning>
         <div className="mb-8">
           <h1
-            className="text-3xl font-semibold mb-2"
-            style={{ color: 'var(--eleven-text-primary)' }}
+            className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+            
           >
             Setup Empresa
           </h1>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400" >
             Configure as informações da empresa, departamentos, benefícios e cultura organizacional
           </p>
         </div>
@@ -950,12 +950,12 @@ function SetupEmpresaContent() {
     <div className="p-8">
       <div className="mb-8">
         <h1
-          className="text-3xl font-semibold mb-2"
-          style={{ color: 'var(--eleven-text-primary)' }}
+          className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+          
         >
           Setup Empresa
         </h1>
-        <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+        <p className="text-sm text-gray-500 dark:text-gray-400" >
           Configure as informações da empresa, departamentos, benefícios e cultura organizacional
         </p>
       </div>
@@ -1249,7 +1249,7 @@ function SetupEmpresaContent() {
                 {!evpData ? (
                   <div className="text-center py-8">
                     <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <p className="text-sm mb-4 text-gray-500 dark:text-gray-400" >
                       Nenhuma análise EVP gerada ainda. Enriqueça o perfil com LinkedIn/Glassdoor ou clique para gerar manualmente.
                     </p>
                     <Button
@@ -1273,28 +1273,28 @@ function SetupEmpresaContent() {
                 ) : (
                   <div className="space-y-6">
                     <div className="bg-gradient-to-r from-gray-100 dark:from-gray-800 to-blue-50 dark:from-gray-900 dark:from-gray-50/20 dark:to-blue-900/20 rounded-md p-4 border border border-gray-300">
-                      <p className="text-lg font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-lg font-medium text-gray-800 dark:text-gray-100" >
                         "{evpData.statement}"
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h4 className="font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                         <Building2 className="w-4 h-4 text-gray-700" />
                         Pilares do EVP
                       </h4>
                       <div className="grid gap-3">
                         {evpData.pillars.map((pillar, idx) => (
-                          <div key={idx} className="bg-white dark:bg-gray-800 border rounded-md p-4" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                          <div key={idx} className="bg-white dark:bg-gray-800 border rounded-md p-4 border-gray-200 dark:border-gray-700" >
                             <div className="flex items-start gap-3">
                               <Badge className="shrink-0 bg-gray-900" style={{ color: 'white' }}>
                                 {pillar.name}
                               </Badge>
                               <div className="flex-1">
-                                <p className="text-sm mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                                <p className="text-sm mb-2 text-gray-800 dark:text-gray-100" >
                                   {pillar.description}
                                 </p>
-                                <p className="text-xs italic" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                <p className="text-xs italic text-gray-400 dark:text-gray-500" >
                                   Evidência: {pillar.evidence}
                                 </p>
                               </div>
@@ -1305,7 +1305,7 @@ function SetupEmpresaContent() {
                     </div>
 
                     <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h4 className="font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                         <Heart className="w-4 h-4 text-gray-700" />
                         Tom de Comunicação
                       </h4>
@@ -1319,17 +1319,17 @@ function SetupEmpresaContent() {
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4">
-                      <h4 className="font-medium mb-2 flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h4 className="font-medium mb-2 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                         <Users className="w-4 h-4 text-gray-700" />
                         Promessa ao Candidato
                       </h4>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <p className="text-sm text-gray-500 dark:text-gray-400" >
                         {evpData.candidate_promise}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                      <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700" >
+                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500" >
                         <span>Fontes: {evpData.sources.join(', ')}</span>
                         <span>•</span>
                         <span>Gerado em: {new Date(evpData.generated_at).toLocaleDateString('pt-BR')}</span>

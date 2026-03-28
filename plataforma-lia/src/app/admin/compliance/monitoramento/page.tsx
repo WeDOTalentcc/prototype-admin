@@ -170,15 +170,12 @@ export default function MonitoramentoPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Monitoramento & SOC
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Centro de operações de segurança e monitoramento contínuo
             </p>
           </div>
@@ -189,10 +186,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Sistemas Monitorados
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {systemOverview.systemsMonitored}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -212,10 +209,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Incidentes Abertos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {systemOverview.openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -235,10 +232,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Alertas (últimas 24h)
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {systemOverview.alerts24h}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -256,10 +253,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Uptime Médio
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {systemOverview.avgUptime}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -281,7 +278,7 @@ export default function MonitoramentoPage() {
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <Server className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Status dos Serviços Principais
               </CardTitle>
@@ -298,13 +295,13 @@ export default function MonitoramentoPage() {
                 return (
                   <div 
                     key={service.name}
-                    className="p-4 rounded-md border"
-                    style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                    className="p-4 rounded-md border border-gray-200 dark:border-gray-700"
+                    
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <ServiceIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {service.name}
                         </span>
                       </div>
@@ -314,13 +311,13 @@ export default function MonitoramentoPage() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Uptime</span>
-                        <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{service.uptime}%</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >Uptime</span>
+                        <span className="text-xs font-medium text-gray-800 dark:text-gray-100" >{service.uptime}%</span>
                       </div>
                       <Progress value={service.uptime} className="h-1.5" />
                       <div className="flex items-center justify-between">
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Latência</span>
-                        <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{service.latency}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >Latência</span>
+                        <span className="text-xs font-medium text-gray-800 dark:text-gray-100" >{service.latency}</span>
                       </div>
                     </div>
                   </div>
@@ -334,7 +331,7 @@ export default function MonitoramentoPage() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   Últimos Alertas
                 </CardTitle>
@@ -353,8 +350,8 @@ export default function MonitoramentoPage() {
                   return (
                     <div 
                       key={alert.id}
-                      className="flex items-center justify-between p-3 rounded-md border"
-                      style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                      className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                      
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${severityConfig.dot} ${alert.severity === 'high' || alert.severity === 'critical' ? 'animate-pulse' : ''}`} />
@@ -363,11 +360,11 @@ export default function MonitoramentoPage() {
                             <Badge variant="outline" className="font-mono text-xs">
                               {alert.id}
                             </Badge>
-                            <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                               {alert.title}
                             </span>
                           </div>
-                          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                             {new Date(alert.createdAt).toLocaleString('pt-BR')}
                           </p>
                         </div>
@@ -385,7 +382,7 @@ export default function MonitoramentoPage() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Status das Integrações
                 </CardTitle>
                 <a 
@@ -403,8 +400,8 @@ export default function MonitoramentoPage() {
                 {integrationStatus.map((integration) => (
                   <div 
                     key={integration.name}
-                    className="flex items-center justify-between p-3 rounded-md border"
-                    style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                    className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                    
                   >
                     <div className="flex items-center gap-3">
                       {integration.status === 'connected' ? (
@@ -413,11 +410,11 @@ export default function MonitoramentoPage() {
                         <WifiOff className="w-4 h-4 text-status-warning" />
                       )}
                       <div>
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {integration.name}
                         </span>
                         {integration.lastSync && (
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500" >
                             Última sincronização: {new Date(integration.lastSync).toLocaleString('pt-BR')}
                           </p>
                         )}
@@ -456,12 +453,12 @@ export default function MonitoramentoPage() {
                       >
                         <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>
-                      <ArrowRight className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <ArrowRight className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
                     </div>
-                    <h3 className="font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <h3 className="font-medium mb-1 text-gray-800 dark:text-gray-100" >
                       {page.name}
                     </h3>
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-sm text-gray-400 dark:text-gray-500" >
                       {page.description}
                     </p>
                   </CardContent>
@@ -470,12 +467,9 @@ export default function MonitoramentoPage() {
             )
           })}
           <Card 
-            className="h-full border-dashed border-2"
-            style={{ 
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-              borderColor: 'var(--eleven-border-subtle)',
-              backgroundColor: 'rgba(96, 190, 209, 0.02)'
-            }}
+            className="h-full border-dashed border-2 border-gray-200 dark:border-gray-700"
+            style={{boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+              backgroundColor: 'rgba(96, 190, 209, 0.02)'}}
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -485,12 +479,12 @@ export default function MonitoramentoPage() {
                 >
                   <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>
-                <ExternalLink className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
               </div>
-              <h3 className="font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+              <h3 className="font-medium mb-1 text-gray-800 dark:text-gray-100" >
                 Log Streaming (SIEM)
               </h3>
-              <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm mb-4 text-gray-400 dark:text-gray-500" >
                 Configure streaming de logs para Datadog, Splunk, S3 e outros diretamente no WorkOS Dashboard.
               </p>
               <a

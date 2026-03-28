@@ -138,15 +138,11 @@ export default function AuditoriaPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
             >
               Sala de Auditoria
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Central de recursos para auditores internos e externos
             </p>
           </div>

@@ -8,17 +8,16 @@ import Link from "next/link"
 
 export default function AccessPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: 'var(--eleven-bg-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center p-8 bg-gray-900 dark:bg-white">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
           <h1
-            className="text-4xl font-bold mb-3"
-            style={{ color: 'var(--eleven-text-primary)' }}
+            className="text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100"
           >
             WedoTalent
           </h1>
-          <p className="text-lg" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-lg text-gray-500 dark:text-gray-400">
             Selecione sua área de acesso
           </p>
         </div>
@@ -37,12 +36,11 @@ export default function AccessPage() {
                 {/* Title */}
                 <div>
                   <h2
-                    className="text-2xl font-semibold mb-2"
-                    style={{ color: 'var(--eleven-text-primary)' }}
+                    className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
                   >
                     WedoTalent
                   </h2>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Plataforma de Recrutamento
                   </p>
                 </div>
@@ -52,10 +50,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Assistente LIA
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         Busca inteligente de candidatos
                       </p>
                     </div>
@@ -64,10 +62,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Building className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Gestão de Vagas
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         Funil de talentos e pipeline
                       </p>
                     </div>
@@ -76,10 +74,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <ArrowRight className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Análise de Dados
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         KPIs e indicadores estratégicos
                       </p>
                     </div>
@@ -109,12 +107,11 @@ export default function AccessPage() {
                 {/* Title */}
                 <div>
                   <h2
-                    className="text-2xl font-semibold mb-2"
-                    style={{ color: 'var(--eleven-text-primary)' }}
+                    className="text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
                   >
                     Admin Portal
                   </h2>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Gestão SaaS e Configurações
                   </p>
                 </div>
@@ -124,10 +121,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Building className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Gestão de Clientes
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         Organizações, usuários e acesso
                       </p>
                     </div>
@@ -136,10 +133,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Zap className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Configurações
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         Integrações, APIs e limites
                       </p>
                     </div>
@@ -148,10 +145,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <ArrowRight className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Métricas SaaS
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         MRR, ARR, consumo e analytics
                       </p>
                     </div>
@@ -172,7 +169,7 @@ export default function AccessPage() {
 
         {/* Footer */}
         <div className="text-center mt-12">
-          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
             Powered by LIA (Learning Intelligence Assistant) • WedoTalent © 2024
           </p>
         </div>

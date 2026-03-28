@@ -29,9 +29,9 @@ export function AgentBreakdown({
   agents,
 }: AgentBreakdownProps) {
   return (
-    <Card className="" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+    <Card className="border-gray-200 dark:border-gray-700">
       <CardHeader>
-        <CardTitle className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+        <CardTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
           {title}
         </CardTitle>
       </CardHeader>
@@ -43,22 +43,22 @@ export function AgentBreakdown({
               <div key={agent.agent}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                    <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                       {agent.label}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                       {(agent.tokens / 1000).toFixed(0)}K
                     </span>
-                    <span className="text-xs ml-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <span className="text-xs ml-2 text-gray-400 dark:text-gray-500">
                       ({agent.percentage}%)
                     </span>
                   </div>
                 </div>
                 <Progress value={agent.percentage} className="h-2" />
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                   {agent.calls.toLocaleString('pt-BR')} chamadas
                 </p>
               </div>

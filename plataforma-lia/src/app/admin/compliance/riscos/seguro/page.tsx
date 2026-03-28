@@ -372,7 +372,7 @@ export default function SeguroCiberneticoPage() {
       <div className="p-6 flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-3">
           <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-          <span style={{ color: 'var(--eleven-text-secondary)' }}>Carregando dados do seguro...</span>
+          <span className="text-gray-500 dark:text-gray-400" >Carregando dados do seguro...</span>
         </div>
       </div>
     )
@@ -391,15 +391,12 @@ export default function SeguroCiberneticoPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Seguro Cibernético BCB 498
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Gestão de apólice e conformidade com Resolução BCB 498/2025
               </p>
             </div>
@@ -428,8 +425,8 @@ export default function SeguroCiberneticoPage() {
                 >
                   <AlertTriangle className={`w-5 h-5 ${style.icon}`} />
                   <div className="flex-1">
-                    <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{alert.title}</p>
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>{alert.message}</p>
+                    <p className="font-medium text-gray-800 dark:text-gray-100" >{alert.title}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400" >{alert.message}</p>
                   </div>
                   {alert.dueDate && (
                     <Badge variant="outline">{new Date(alert.dueDate).toLocaleDateString('pt-BR')}</Badge>
@@ -478,8 +475,8 @@ export default function SeguroCiberneticoPage() {
                   <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Status da Apólice</p>
-                  <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Status da Apólice</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100" >
                     {activePolicy ? 'Ativa' : 'Sem apólice ativa'}
                   </p>
                 </div>
@@ -494,9 +491,8 @@ export default function SeguroCiberneticoPage() {
                   <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Dias até Vencimento</p>
-                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : ''}`}
-                     style={!isExpiringSoon && !isExpired ? { color: 'var(--eleven-text-primary)' } : {}}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Dias até Vencimento</p>
+                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-gray-800 dark:text-gray-100'}`}>
                     {isExpired ? 'Expirado' : daysRemaining > 0 ? `${daysRemaining} dias` : 'N/A'}
                   </p>
                 </div>
@@ -511,7 +507,7 @@ export default function SeguroCiberneticoPage() {
                   <DollarSign className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Valor Coberto</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Valor Coberto</p>
                   <p className="font-medium text-status-success">
                     {activePolicy ? formatCurrency(activePolicy.coverage) : 'R$ 0,00'}
                   </p>
@@ -527,8 +523,8 @@ export default function SeguroCiberneticoPage() {
                   <FileCheck className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Conformidade BCB</p>
-                  <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Conformidade BCB</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100" >
                     {coveredCount}/{displayChecklist.length} ({compliancePercentage}%)
                   </p>
                 </div>
@@ -544,7 +540,7 @@ export default function SeguroCiberneticoPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                       Dados da Apólice Ativa
                     </CardTitle>
                   </div>
@@ -559,58 +555,57 @@ export default function SeguroCiberneticoPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Seguradora</p>
-                        <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{activePolicy.insurer}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >Seguradora</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-100" >{activePolicy.insurer}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Número da Apólice</p>
-                        <p className="font-mono font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{activePolicy.policyNumber}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >Número da Apólice</p>
+                        <p className="font-mono font-medium text-gray-800 dark:text-gray-100" >{activePolicy.policyNumber}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <DollarSign className="w-5 h-5 text-status-success mt-0.5" />
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Valor de Cobertura</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >Valor de Cobertura</p>
                         <p className="font-medium text-status-success text-lg">{formatCurrency(activePolicy.coverage)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Franquia</p>
-                        <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{formatCurrency(activePolicy.deductible)}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >Franquia</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-100" >{formatCurrency(activePolicy.deductible)}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Vigência</p>
-                        <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >Vigência</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-100" >
                           {new Date(activePolicy.startDate).toLocaleDateString('pt-BR')} a {new Date(activePolicy.endDate).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
+                    <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Tempo restante</span>
+                          <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                          <span className="text-xs text-gray-400 dark:text-gray-500" >Tempo restante</span>
                         </div>
-                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : ''}`} 
-                              style={!isExpiringSoon && !isExpired ? { color: 'var(--eleven-text-primary)' } : {}}>
+                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-gray-800 dark:text-gray-100'}`}>
                           {isExpired ? 'Expirado' : `${daysRemaining} dias`}
                         </span>
                       </div>
@@ -627,7 +622,7 @@ export default function SeguroCiberneticoPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Documentos
                   </CardTitle>
                 </div>
@@ -645,14 +640,14 @@ export default function SeguroCiberneticoPage() {
                   {documents.map((doc) => (
                     <div 
                       key={doc.id}
-                      className="p-3 rounded-md flex items-center justify-between"
-                      style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}
+                      className="p-3 rounded-md flex items-center justify-between bg-gray-50 dark:bg-gray-900"
+                      
                     >
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         <div>
-                          <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{doc.filename}</p>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >{doc.filename}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500" >
                             {new Date(doc.uploadedAt).toLocaleDateString('pt-BR')} • {doc.documentType}
                           </p>
                         </div>
@@ -664,7 +659,7 @@ export default function SeguroCiberneticoPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
                   Nenhum documento anexado
                 </div>
               )}
@@ -678,7 +673,7 @@ export default function SeguroCiberneticoPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldPlus className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Coberturas Incluídas
                   </CardTitle>
                 </div>
@@ -696,14 +691,14 @@ export default function SeguroCiberneticoPage() {
                   {coverages.map((coverage) => (
                     <div 
                       key={coverage.id}
-                      className="p-3 rounded-md"
-                      style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}
+                      className="p-3 rounded-md bg-gray-50 dark:bg-gray-900"
+                      
                     >
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5" />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                               {coverage.name}
                             </span>
                             {coverage.bcbArticle && (
@@ -711,7 +706,7 @@ export default function SeguroCiberneticoPage() {
                             )}
                           </div>
                           {coverage.description && (
-                            <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                               {coverage.description}
                             </p>
                           )}
@@ -726,7 +721,7 @@ export default function SeguroCiberneticoPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
                   Nenhuma cobertura cadastrada
                 </div>
               )}
@@ -737,13 +732,13 @@ export default function SeguroCiberneticoPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Checklist BCB 498/2025
                 </CardTitle>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <Progress value={compliancePercentage} className="flex-1 h-2" />
-                <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                   {compliancePercentage}%
                 </span>
               </div>
@@ -753,8 +748,8 @@ export default function SeguroCiberneticoPage() {
                 {displayChecklist.map((item, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-md"
-                    style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}
+                    className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-gray-900"
+                    
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -763,7 +758,7 @@ export default function SeguroCiberneticoPage() {
                         ) : (
                           <XCircle className="w-4 h-4 text-status-error" />
                         )}
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm text-gray-800 dark:text-gray-100" >
                           {item.name}
                         </span>
                       </div>
@@ -787,7 +782,7 @@ export default function SeguroCiberneticoPage() {
               </div>
 
               <div className="mt-4 p-3 rounded-md border-l-4 border-l-gray-300" style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500" >
                   <strong>Resolução BCB 498/2025</strong> - Dispõe sobre a política de segurança cibernética e sobre os requisitos para a contratação de serviços de processamento e armazenamento de dados e de computação em nuvem.
                 </p>
               </div>
@@ -800,7 +795,7 @@ export default function SeguroCiberneticoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <History className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Histórico de Apólices
                 </CardTitle>
               </div>
@@ -828,7 +823,7 @@ export default function SeguroCiberneticoPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-gray-800 dark:text-gray-100" >
                           {policy.insurer}
                         </span>
                       </TableCell>
@@ -838,7 +833,7 @@ export default function SeguroCiberneticoPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {new Date(policy.startDate).toLocaleDateString('pt-BR')} - {new Date(policy.endDate).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
@@ -860,7 +855,7 @@ export default function SeguroCiberneticoPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
                 Nenhuma apólice cadastrada
               </div>
             )}
@@ -872,7 +867,7 @@ export default function SeguroCiberneticoPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Histórico de Sinistros
                 </CardTitle>
               </div>
@@ -908,12 +903,12 @@ export default function SeguroCiberneticoPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {new Date(claim.incidentDate).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm text-gray-800 dark:text-gray-100" >
                           {claim.description.length > 50 ? `${claim.description.substring(0, 50)}...` : claim.description}
                         </span>
                       </TableCell>
@@ -923,7 +918,7 @@ export default function SeguroCiberneticoPage() {
                             {formatCurrency(claim.claimAmount)}
                           </span>
                         ) : (
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>-</span>
+                          <span className="text-sm text-gray-400 dark:text-gray-500" >-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -934,7 +929,7 @@ export default function SeguroCiberneticoPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
                 Nenhum sinistro registrado
               </div>
             )}

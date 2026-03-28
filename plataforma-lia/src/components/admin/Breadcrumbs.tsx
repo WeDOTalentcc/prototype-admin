@@ -35,24 +35,21 @@ export function Breadcrumbs({
         return (
           <React.Fragment key={index}>
             {index > 0 && (
-              <ChevronRight 
-                className="w-4 h-4 shrink-0" 
-                style={{ color: 'var(--eleven-text-tertiary)' }} 
+              <ChevronRight
+                className="w-4 h-4 shrink-0 text-gray-400 dark:text-gray-500"
               />
             )}
-            
+
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors shrink-0"
-                style={{ color: 'var(--eleven-text-tertiary)' }}
+                className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors shrink-0 text-gray-400 dark:text-gray-500"
               >
                 {item.label}
               </Link>
             ) : (
-              <span 
-                className="shrink-0"
-                style={{ color: isLast ? 'var(--eleven-text-primary)' : 'var(--eleven-text-tertiary)' }}
+              <span
+                className={`shrink-0 ${isLast ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}
               >
                 {item.label}
               </span>

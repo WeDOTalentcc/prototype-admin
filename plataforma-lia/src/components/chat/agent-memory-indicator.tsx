@@ -99,12 +99,12 @@ export function AgentMemoryIndicator({
           gap: "10px",
           padding: "5px 10px",
           borderRadius: "6px",
-          border: "1px solid var(--eleven-border-subtle, var(--gray-200))",
-          backgroundColor: "var(--eleven-bg-card, var(--gray-50))",
+          border: "1px solid rgb(229 231 235)",
+          backgroundColor: "rgb(249 250 251)",
           cursor: "pointer",
           fontFamily: "Inter, sans-serif",
           fontSize: "12px",
-          color: "var(--eleven-text-secondary, var(--gray-500))",
+          color: "rgb(107 114 128)",
           userSelect: "none",
           transition: "background-color 0.15s",
         }}
@@ -116,7 +116,7 @@ export function AgentMemoryIndicator({
 
         <span
           style={{
-            color: "var(--eleven-text-primary, var(--gray-900))",
+            color: "rgb(31 41 55)",
             fontWeight: 500,
             whiteSpace: "nowrap",
           }}
@@ -185,13 +185,13 @@ export function AgentMemoryIndicator({
                 marginTop: 4,
                 padding: "12px 14px",
                 borderRadius: 6,
-                border: "1px solid var(--eleven-border-subtle, var(--gray-200))",
-                backgroundColor: "var(--eleven-bg-card, var(--gray-50))",
+                border: "1px solid rgb(229 231 235)",
+                backgroundColor: "rgb(249 250 251)",
                 maxHeight: 280,
                 overflowY: "auto",
                 fontFamily: "Inter, sans-serif",
                 fontSize: 12,
-                color: "var(--eleven-text-primary, var(--gray-900))",
+                color: "rgb(31 41 55)",
               }}
             >
               <div

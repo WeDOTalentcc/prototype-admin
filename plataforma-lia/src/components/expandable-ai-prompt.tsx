@@ -2962,7 +2962,7 @@ export function ExpandableAIPrompt({
                               </span>
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-[300px] p-3" style={{ backgroundColor: 'white', border: '1px solid var(--eleven-border)' }}>
+                          <TooltipContent side="bottom" className="max-w-[300px] p-3" className="max-w-[300px] p-3 border-gray-300 dark:border-gray-600">
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -2979,14 +2979,14 @@ export function ExpandableAIPrompt({
                                 </span>
                               </div>
                               <div>
-                                <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                                <span className="font-medium text-sm" className="text-gray-800 dark:text-gray-100">
                                   Assistente de Busca Inteligente
                                 </span>
                               </div>
-                              <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                              <p className="text-xs" className="text-gray-500 dark:text-gray-400">
                                 Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
                               </p>
-                              <ul className="text-xs space-y-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                              <ul className="text-xs space-y-1" className="text-gray-500 dark:text-gray-400">
                                 <li className="flex items-start gap-1.5">
                                   <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-600" />
                                   <span>Indica critérios faltantes</span>
@@ -3000,7 +3000,7 @@ export function ExpandableAIPrompt({
                                   <span>Alerta sobre buscas muito amplas ou restritivas</span>
                                 </li>
                               </ul>
-                              <p className="text-micro pt-1 border-t" style={{ color: 'var(--eleven-text-secondary)', borderColor: 'var(--eleven-border)' }}>
+                              <p className="text-micro pt-1 border-t text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600">
                                 {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
                               </p>
                             </div>
@@ -3036,12 +3036,12 @@ export function ExpandableAIPrompt({
                     
                     {/* Análise de Qualidade da Busca */}
                     {naturalSearchValue && searchAnalysis && (
-                      <div className="space-y-2 pt-2 mt-2 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
+                      <div className="space-y-2 pt-2 mt-2 border-t" className="border-gray-300 dark:border-gray-600">
                         {/* Barra de completude */}
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                              <span className="text-xs font-medium" className="text-gray-500 dark:text-gray-400">
                                 Qualidade da busca
                               </span>
                               <span 
@@ -3057,7 +3057,7 @@ export function ExpandableAIPrompt({
                                 {searchAnalysis.completeness_score}%
                               </span>
                             </div>
-                            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-tertiary)' }}>
+                            <div className="h-1.5 rounded-full overflow-hidden" className="bg-gray-100 dark:bg-gray-800">
                               <div 
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{ 
@@ -3088,12 +3088,11 @@ export function ExpandableAIPrompt({
                             {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
                               <div 
                                 key={index}
-                                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
-                                style={{ 
-                                  backgroundColor: alert.severity === 'warning' 
-                                    ? 'rgba(245, 158, 11, 0.08)' 
+                                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-gray-400"
+                                style={{
+                                  backgroundColor: alert.severity === 'warning'
+                                    ? 'rgba(245, 158, 11, 0.08)'
                                     : 'rgba(96, 190, 209, 0.08)',
-                                  color: 'var(--eleven-text-secondary)'
                                 }}
                               >
                                 {alert.severity === 'warning' ? (

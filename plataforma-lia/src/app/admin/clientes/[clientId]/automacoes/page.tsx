@@ -130,13 +130,12 @@ export default function ClientAutomacoesPage({
           <div className="flex items-center gap-3 mb-2">
             <Zap className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Automações
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Regras automáticas de comunicação e ações
           </p>
         </div>
@@ -171,7 +170,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
               {loading ? '-' : automations.length}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Total de Automações
             </p>
           </CardContent>
@@ -181,7 +180,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-status-success">
               {loading ? '-' : activeCount}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Ativas
             </p>
           </CardContent>
@@ -191,7 +190,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {loading ? '-' : totalExecutions}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Execuções
             </p>
           </CardContent>
@@ -201,7 +200,7 @@ export default function ClientAutomacoesPage({
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
             Carregando automações...
           </span>
         </div>
@@ -223,10 +222,10 @@ export default function ClientAutomacoesPage({
         <Card>
           <CardContent className="p-12 text-center">
             <Zap className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-200 mb-4" />
-            <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Nenhuma automação configurada
             </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
               Clique em "Nova Automação" para criar a primeira.
             </p>
           </CardContent>
@@ -246,8 +245,7 @@ export default function ClientAutomacoesPage({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 
-                        className="font-medium"
-                        style={{ color: 'var(--eleven-text-primary)' }}
+                        className="font-medium text-gray-800 dark:text-gray-100"
                       >
                         {automation.name}
                       </h3>
@@ -256,17 +254,16 @@ export default function ClientAutomacoesPage({
                       </Badge>
                     </div>
                     <p 
-                      className="text-sm"
-                      style={{ color: 'var(--eleven-text-tertiary)' }}
+                      className="text-sm text-gray-400 dark:text-gray-500"
                     >
                       {automation.description}
                     </p>
                   </div>
                   <div className="text-right mr-4">
-                    <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                       {automation.trigger_count || 0}
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       execuções
                     </p>
                   </div>

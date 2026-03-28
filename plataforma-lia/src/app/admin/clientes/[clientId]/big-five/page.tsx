@@ -184,13 +184,12 @@ export default function ClientBigFivePage({
           <div className="flex items-center gap-3 mb-2">
             <Brain className="w-6 h-6 text-wedo-purple" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Configuração Big Five
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Avaliação de personalidade e perfil comportamental para o cliente {clientId}
           </p>
         </div>
@@ -216,7 +215,7 @@ export default function ClientBigFivePage({
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+          <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Configurações Gerais
           </CardTitle>
@@ -225,10 +224,10 @@ export default function ClientBigFivePage({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-gray-800/50">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                   Big Five Ativo
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                   Habilitar avaliação de personalidade
                 </p>
               </div>
@@ -240,7 +239,7 @@ export default function ClientBigFivePage({
 
             <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-800/50">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                   Threshold de Match
                 </p>
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-50">{matchThreshold}%</span>
@@ -252,13 +251,13 @@ export default function ClientBigFivePage({
                 max={100}
                 step={5}
               />
-              <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
                 Mínimo para considerar compatível
               </p>
             </div>
 
             <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-800/50">
-              <p className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100">
                 Modo de Avaliação
               </p>
               <Select value={evaluationMode} onValueChange={(v) => setEvaluationMode(v as 'suggestive' | 'eliminatory')}>
@@ -280,7 +279,7 @@ export default function ClientBigFivePage({
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
                 {evaluationMode === 'suggestive' 
                   ? 'Score aparece como sugestão' 
                   : 'Candidatos abaixo do threshold são filtrados'}
@@ -293,7 +292,7 @@ export default function ClientBigFivePage({
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100">
               <BarChart3 className="w-4 h-4 text-wedo-purple" />
               Perfis por Cargo
             </CardTitle>
@@ -328,10 +327,10 @@ export default function ClientBigFivePage({
                         <Icon className="w-5 h-5" style={{ color: trait.color }} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {trait.fullName}
                         </h4>
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs mt-1 line-clamp-2 text-gray-400 dark:text-gray-500">
                           {trait.description}
                         </p>
                       </div>
@@ -340,7 +339,7 @@ export default function ClientBigFivePage({
                     <div className="space-y-4">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Peso/Importância
                           </span>
                           <span className="text-xs font-semibold" style={{ color: trait.color }}>
@@ -358,7 +357,7 @@ export default function ClientBigFivePage({
                       
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Valor Ideal
                           </span>
                           <span className="text-xs font-semibold" style={{ color: trait.color }}>
@@ -386,7 +385,7 @@ export default function ClientBigFivePage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100">
                 <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Preview: Visualização do Candidato
               </CardTitle>
@@ -395,10 +394,10 @@ export default function ClientBigFivePage({
               <div className="p-4 rounded-md bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <div className="text-center mb-4">
                   <Brain className="w-10 h-10 mx-auto text-wedo-purple mb-2" />
-                  <h4 className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     Avaliação de Perfil Comportamental
                   </h4>
-                  <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                     Responda às perguntas para identificar seu perfil
                   </p>
                 </div>
@@ -406,7 +405,7 @@ export default function ClientBigFivePage({
                 <div className="space-y-3 mt-4">
                   <div className="p-3 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Exemplo de pergunta:</p>
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-sm text-gray-800 dark:text-gray-100">
                       "Costumo buscar novas experiências e ideias criativas no meu trabalho"
                     </p>
                     <div className="flex items-center gap-2 mt-3">
@@ -435,7 +434,7 @@ export default function ClientBigFivePage({
 
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100">
                 <BarChart3 className="w-4 h-4 text-wedo-purple" />
                 Preview: Resultado de Análise
               </CardTitle>
@@ -448,10 +447,10 @@ export default function ClientBigFivePage({
                       <CheckCircle2 className="w-6 h-6 text-status-success" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         Match de Personalidade
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         Compatibilidade com o perfil do cargo
                       </p>
                     </div>
@@ -481,11 +480,11 @@ export default function ClientBigFivePage({
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
                               {trait.name}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
                                 Ideal: {idealValue}%
                               </span>
                               <span className="text-xs font-semibold" style={{ color: trait.color }}>

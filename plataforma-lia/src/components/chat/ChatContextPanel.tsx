@@ -31,17 +31,17 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
   if (!contextData || !isPanelOpen) return null
 
   return (
-      <div className="w-2/5 p-4 flex transition-all duration-300 overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+      <div className="w-2/5 p-4 flex transition-all duration-300 overflow-hidden bg-gray-50 dark:bg-gray-900">
         {/* Card Container com bordas suaves e arredondadas */}
-        <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
+        <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col bg-white dark:bg-gray-950">
           {/* Header sem linha divisória */}
-          <CardHeader className="p-6 border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
+          <CardHeader className="p-6 border-0 bg-white dark:bg-gray-950">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   {contextData.title}
                 </h3>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Powered by LIA Intelligence
                 </p>
               </div>
@@ -63,14 +63,14 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           >
           {contextData.type === "compensation-package" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <DollarSign className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-950 dark:text-gray-50">Pacote de Compensação</span>
                     </div>
-                    <Badge variant="outline" style={{ borderColor: 'var(--eleven-border-subtle)', color: 'var(--eleven-text-secondary)' }}>
+                    <Badge variant="outline" className="border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
                       Inteligência de Mercado
                     </Badge>
                   </CardTitle>
@@ -78,34 +78,34 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Highlight Card */}
-                    <div className="p-5 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-light)' }}>
+                    <div className="p-5 rounded-md bg-stone-50 dark:bg-stone-900/20">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Recomendação LIA - Target</p>
-                          <p className="text-xl font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Recomendação LIA - Target</p>
+                          <p className="text-xl font-bold text-gray-800 dark:text-gray-100">
                             {contextData.data.recommended_package.base_salary.target}
                           </p>
                         </div>
-                        <Badge style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>
+                        <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
                           Percentil 90
                         </Badge>
                       </div>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {contextData.data.recommended_package.total_compensation.positioning}
                       </p>
                     </div>
 
                     {/* Benchmarking Grid */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                      <div className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Mediana de Mercado</h4>
-                        <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           {contextData.data.market_analysis.salary_research.market_median}
                         </p>
                       </div>
-                      <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                      <div className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Faixa Recomendada</h4>
-                        <p className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
                           {contextData.data.recommended_package.base_salary.min} - {contextData.data.recommended_package.base_salary.max}
                         </p>
                       </div>
@@ -116,9 +116,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Pacote de Benefícios</h4>
                       <div className="grid grid-cols-2 gap-2">
                         {Object.entries(contextData.data.recommended_package.benefits_package).map(([key, benefit]: [string, any], index) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                          <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                             <span className="text-sm font-medium capitalize">{key.replace('_', ' ')}</span>
-                            <span className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{benefit.estimated_value}</span>
+                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{benefit.estimated_value}</span>
                           </div>
                         ))}
                       </div>
@@ -129,22 +129,22 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Benchmarking Competitivo</h4>
                       <div className="space-y-2">
                         {contextData.data.market_analysis.benchmarking_companies.map((company: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                          <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div>
-                              <h5 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{company.company}</h5>
-                              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>{company.notes}</p>
+                              <h5 className="font-medium text-gray-800 dark:text-gray-100">{company.company}</h5>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{company.notes}</p>
                             </div>
-                            <Badge variant="outline" style={{ borderColor: 'var(--eleven-border-subtle)' }}>{company.range}</Badge>
+                            <Badge variant="outline" className="border-gray-200 dark:border-gray-700">{company.range}</Badge>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     {/* Total Compensation */}
-                    <div className="p-4 rounded-md border-2" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                    <div className="p-4 rounded-md border-2 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between">
-                        <span className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>Compensação Total Anual</span>
-                        <span className="text-xl font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-base font-semibold text-gray-800 dark:text-gray-100">Compensação Total Anual</span>
+                        <span className="text-xl font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.recommended_package.total_compensation.total_annual}
                         </span>
                       </div>
@@ -152,15 +152,15 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar Valores
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Pacote
                       </Button>
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Download className="w-4 h-4 mr-2" />
                         Exportar
                       </Button>
@@ -173,8 +173,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "org-structure-analysis" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3">
                     <Network className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Análise da Estrutura Organizacional</span>
@@ -183,15 +183,15 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Highlight Card - Missing Layer */}
-                    <div className="p-5 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}>
-                      <h5 className="text-lg font-bold mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                      <h5 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100">
                         {contextData.data.current_structure.missing_layer.role}
                       </h5>
-                      <p className="text-sm mb-3" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <p className="text-sm mb-3 text-gray-500 dark:text-gray-400">
                         {contextData.data.current_structure.missing_layer.purpose}
                       </p>
-                      <div className="p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                        <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <div className="p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {contextData.data.current_structure.missing_layer.impact}
                         </p>
                       </div>
@@ -199,42 +199,42 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Company Overview Grid */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                      <div className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Visão Geral da Empresa</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Porte:</span>
-                            <span className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">Porte:</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100">
                               {contextData.data.company_overview.size}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Setor:</span>
-                            <span className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">Setor:</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100">
                               {contextData.data.company_overview.industry}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Time Tech Atual:</span>
-                            <span className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">Time Tech Atual:</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100">
                               {contextData.data.company_overview.current_tech_team} pessoas
                             </span>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                      <div className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Projeção de Crescimento</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>6 meses:</span>
-                            <span className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">6 meses:</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100">
                               {contextData.data.growth_projection.projected_6months} pessoas
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>12 meses:</span>
-                            <span className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">12 meses:</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100">
                               {contextData.data.growth_projection.projected_12months} pessoas
                             </span>
                           </div>
@@ -244,11 +244,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Estrutura
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Análise
                       </Button>
@@ -261,8 +261,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "role-scope-definition" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3">
                     <Target className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Definição do Escopo da Posição</span>
@@ -271,9 +271,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Highlight - Main Focus */}
-                    <div className="p-5 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-gold)' }}>
-                      <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-secondary)' }}>Foco Principal</h4>
-                      <p className="text-base font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <div className="p-5 rounded-md bg-yellow-50 dark:bg-yellow-900/20">
+                      <h4 className="text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Foco Principal</h4>
+                      <p className="text-base font-bold text-gray-800 dark:text-gray-100">
                         {contextData.data.role_focus}
                       </p>
                     </div>
@@ -283,9 +283,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Responsabilidades Principais</h4>
                       <div className="space-y-2">
                         {contextData.data.key_responsibilities.map((responsibility: string, index: number) => (
-                          <div key={index} className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-mint)' }}>
-                            <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{responsibility}</span>
+                          <div key={index} className="flex items-start space-x-3 p-3 rounded-md bg-green-50 dark:bg-green-900/20">
+                            <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
+                            <span className="text-sm text-gray-800 dark:text-gray-100">{responsibility}</span>
                           </div>
                         ))}
                       </div>
@@ -293,11 +293,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Escopo
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Definição
                       </Button>
@@ -310,8 +310,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "work-arrangement" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Clock className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Modelo de Trabalho Híbrido</span>
@@ -361,8 +361,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "final-job-description" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <FileText className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Job Description Completo</span>
@@ -370,10 +370,10 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-salmon)' }}>
-                      <h3 className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.header.title}</h3>
-                      <p style={{ color: 'var(--eleven-text-secondary)' }}>{contextData.data.header.company} • {contextData.data.header.location}</p>
-                      <p className="text-sm mt-2" style={{ color: 'var(--eleven-text-secondary)' }}>{contextData.data.header.salary_range}</p>
+                    <div className="p-4 rounded-md bg-pink-50 dark:bg-pink-900/20">
+                      <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{contextData.data.header.title}</h3>
+                      <p className="text-gray-500 dark:text-gray-400">{contextData.data.header.company} • {contextData.data.header.location}</p>
+                      <p className="text-sm mt-2 text-gray-500 dark:text-gray-400">{contextData.data.header.salary_range}</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
@@ -416,7 +416,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Pacote de Compensação</h4>
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                          <p className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                             {contextData.data.compensation_highlights.total_package.split(' ')[1]}
                           </p>
                           <p className="text-xs text-gray-600">Total Anual</p>
@@ -439,14 +439,14 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "job-publishing" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Globe className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-950 dark:text-gray-50">Publicação Multi-Canal</span>
                     </div>
-                    <Badge style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>
+                    <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
                       {contextData.data.ats_integration.status}
                     </Badge>
                   </CardTitle>
@@ -454,17 +454,17 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* ATS Integration Highlight */}
-                    <div className="p-5 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}>
+                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Sistema ATS Integrado</p>
-                          <h4 className="text-base font-bold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sistema ATS Integrado</p>
+                          <h4 className="text-base font-bold mt-1 text-gray-800 dark:text-gray-100">
                             {contextData.data.ats_integration.system}
                           </h4>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Job ID</p>
-                          <p className="text-sm font-mono font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Job ID</p>
+                          <p className="text-sm font-mono font-semibold text-gray-800 dark:text-gray-100">
                             {contextData.data.ats_integration.job_id}
                           </p>
                         </div>
@@ -476,14 +476,14 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Canais de Publicação</h4>
                       <div className="space-y-2">
                         {contextData.data.publication_channels.map((channel: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                          <div key={index} className="flex items-center justify-between p-4 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div className="flex-1">
-                              <h5 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{channel.platform}</h5>
-                              <p className="text-sm mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                              <h5 className="font-medium text-gray-800 dark:text-gray-100">{channel.platform}</h5>
+                              <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
                                 {channel.reach} • {channel.budget}
                               </p>
                             </div>
-                            <Badge variant="outline" style={{ borderColor: 'var(--eleven-border-subtle)', color: 'var(--eleven-text-primary)' }}>
+                            <Badge variant="outline" className="border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100">
                               {channel.status}
                             </Badge>
                           </div>
@@ -496,9 +496,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Metas de Sucesso</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {Object.entries(contextData.data.success_metrics.targets).map(([key, value]: [string, any], index) => (
-                          <div key={index} className="text-center p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
-                            <p className="text-lg font-bold" style={{ color: 'var(--eleven-text-primary)' }}>{String(value)}</p>
-                            <p className="text-xs mt-1 capitalize" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <div key={index} className="text-center p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                            <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{String(value)}</p>
+                            <p className="text-xs mt-1 capitalize text-gray-500 dark:text-gray-400">
                               {key.replace('_', ' ')}
                             </p>
                           </div>
@@ -508,11 +508,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Canais
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Publicar Vaga
                       </Button>
@@ -525,8 +525,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "sourcing-progress" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3">
                     <TrendingUp className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Progress do Sourcing - Tempo Real</span>
@@ -536,29 +536,29 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                   <div className="space-y-6">
                     {/* Metrics Grid */}
                     <div className="grid grid-cols-4 gap-3">
-                      <div className="text-center p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-light)' }}>
-                        <p className="text-lg font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <div className="text-center p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                        <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.applications_received}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>Aplicações</p>
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Aplicações</p>
                       </div>
-                      <div className="text-center p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-mint)' }}>
-                        <p className="text-lg font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <div className="text-center p-4 rounded-md bg-green-50 dark:bg-green-900/20">
+                        <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.active_sourcing_reached}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>Sourcing Ativo</p>
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Sourcing Ativo</p>
                       </div>
-                      <div className="text-center p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-coral)' }}>
-                        <p className="text-lg font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <div className="text-center p-4 rounded-md bg-red-100 dark:bg-red-900/20">
+                        <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.response_rate}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>Taxa Resposta</p>
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Taxa Resposta</p>
                       </div>
-                      <div className="text-center p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}>
-                        <p className="text-lg font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <div className="text-center p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                        <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.realtime_metrics.avg_candidate_score}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>Score Médio</p>
+                        <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Score Médio</p>
                       </div>
                     </div>
 
@@ -567,24 +567,24 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Candidatos Top Performance</h4>
                       <div className="space-y-2">
                         {contextData.data.top_candidates.map((candidate: any, index: number) => (
-                          <div key={index} className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                          <div key={index} className="p-4 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div className="flex items-center justify-between mb-3">
                               <div>
-                                <h5 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{candidate.name}</h5>
-                                <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>{candidate.current_role}</p>
+                                <h5 className="font-medium text-gray-800 dark:text-gray-100">{candidate.name}</h5>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.current_role}</p>
                               </div>
-                              <Badge style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>
+                              <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
                                 Score: {candidate.score}
                               </Badge>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-2">
                               {candidate.highlights.map((highlight: string, i: number) => (
-                                <Badge key={i} variant="outline" className="text-xs" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                                <Badge key={i} variant="outline" className="text-xs border-gray-200 dark:border-gray-700">
                                   {highlight}
                                 </Badge>
                               ))}
                             </div>
-                            <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
                               Status: {candidate.status}
                             </p>
                           </div>
@@ -594,11 +594,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Eye className="w-4 h-4 mr-2" />
                         Ver Pipeline Completo
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Convidar Candidatos
                       </Button>
@@ -611,8 +611,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "interview-management" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Calendar className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Gestão de Entrevistas</span>
@@ -632,11 +632,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             </div>
                             <Badge 
                               variant="outline" 
-                              style={{ 
-                                backgroundColor: interview.status === 'Confirmed' ? 'var(--eleven-sepia-mint)' : 'var(--eleven-sepia-gold)',
-                                borderColor: 'var(--eleven-border-subtle)',
-                                color: 'var(--eleven-text-primary)'
-                              }}
+                              style={{ backgroundColor: interview.status === 'Confirmed' ? 'rgb(240 253 244)' : 'rgb(254 252 232)', borderColor: 'rgb(229 231 235)' }}
                             >
                               {interview.status}
                             </Badge>
@@ -668,8 +664,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "final-selection" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <UserCheck className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Seleção Final</span>
@@ -677,25 +673,25 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-mint)' }}>
-                      <h4 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Candidato Selecionado: Carlos Mendonça</h4>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Score Final: 94/100 • Cultural Fit: Excelente</p>
+                    <div className="p-4 rounded-md bg-green-50 dark:bg-green-900/20">
+                      <h4 className="font-medium text-gray-800 dark:text-gray-100">Candidato Selecionado: Carlos Mendonça</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Score Final: 94/100 • Cultural Fit: Excelente</p>
                     </div>
 
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Processo de Finalização</h4>
                       <div className="space-y-3 font-open-sans">
-                        <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                        <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Referências Profissionais</span>
-                          <Badge style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>Concluído</Badge>
+                          <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">Concluído</Badge>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                        <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Background Check</span>
-                          <Badge style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>Aprovado</Badge>
+                          <Badge className="bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">Aprovado</Badge>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                        <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                           <span className="text-sm font-medium">Proposta Salarial</span>
-                          <Badge style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>Aceita</Badge>
+                          <Badge className="bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">Aceita</Badge>
                         </div>
                       </div>
                     </div>
@@ -709,18 +705,18 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         </div>
                         <div>
                           <p className="text-xs text-gray-600 mb-1">Salário Negociado:</p>
-                          <p className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>R$ 47.500</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-100">R$ 47.500</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Botões de Ação */}
                     <div className="flex gap-3 pt-4">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Revisar Proposta
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Seleção
                       </Button>
@@ -733,8 +729,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "onboarding-plan" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Workflow className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Plano de Onboarding</span>
@@ -742,24 +738,24 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-5 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}>
-                      <h4 className="text-base font-bold mb-2" style={{ color: 'var(--eleven-text-primary)' }}>Programa de 90 Dias</h4>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Integração estratégica e cultural personalizada</p>
+                    <div className="p-5 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                      <h4 className="text-base font-bold mb-2 text-gray-800 dark:text-gray-100">Programa de 90 Dias</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Integração estratégica e cultural personalizada</p>
                     </div>
 
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Primeiros 30 Dias</h4>
                       <div className="space-y-2">
-                        <div className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                        <div className="flex items-start space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                           <span className="text-sm">Imersão na cultura e processos da empresa</span>
                         </div>
-                        <div className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                        <div className="flex items-start space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                           <span className="text-sm">Reuniões 1:1 com stakeholders principais</span>
                         </div>
-                        <div className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                        <div className="flex items-start space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                           <span className="text-sm">Análise do estado atual da infraestrutura TI</span>
                         </div>
                       </div>
@@ -768,12 +764,12 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">60-90 Dias</h4>
                       <div className="space-y-2">
-                        <div className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                        <div className="flex items-start space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                           <span className="text-sm">Apresentação do plano estratégico de transformação digital</span>
                         </div>
-                        <div className="flex items-start space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                        <div className="flex items-start space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                           <span className="text-sm">Início das primeiras iniciativas de melhoria</span>
                         </div>
                       </div>
@@ -781,15 +777,15 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Botões de Ação */}
                     <div className="flex gap-3 pt-4">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Editar Cronograma
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Plano
                       </Button>
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Download className="w-4 h-4 mr-2" />
                         Exportar PDF
                       </Button>
@@ -802,8 +798,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "performance-management" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Target className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Gestão de Performance</span>
@@ -811,9 +807,9 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-gold)' }}>
-                      <h4 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Framework de Avaliação Anual</h4>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>OKRs + 360-feedback + desenvolvimento contínuo</p>
+                    <div className="p-4 rounded-md bg-yellow-50 dark:bg-yellow-900/20">
+                      <h4 className="font-medium text-gray-800 dark:text-gray-100">Framework de Avaliação Anual</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">OKRs + 360-feedback + desenvolvimento contínuo</p>
                     </div>
 
                     <div>
@@ -854,11 +850,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Botões de Ação */}
                     <div className="flex gap-3 pt-4">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar OKRs
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-gold)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-yellow-50 dark:bg-yellow-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar Framework
                       </Button>
@@ -871,8 +867,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "journey-summary" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Award className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">Relatório Executivo Final</span>
@@ -880,8 +876,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-blue)' }}>
-                      <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--eleven-text-primary)' }}>Sumário Executivo</h3>
+                    <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                      <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100">Sumário Executivo</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs text-gray-600 mb-1">Posição:</p>
@@ -889,7 +885,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         </div>
                         <div>
                           <p className="text-xs text-gray-600 mb-1">ROI Projetado:</p>
-                          <p className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="font-semibold text-gray-800 dark:text-gray-100">
                             {contextData.data.executive_summary.roi_projection}
                           </p>
                         </div>
@@ -899,7 +895,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         </div>
                         <div>
                           <p className="text-xs text-gray-600 mb-1">Probabilidade Sucesso:</p>
-                          <p className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="font-semibold text-gray-800 dark:text-gray-100">
                             {contextData.data.executive_summary.success_probability}
                           </p>
                         </div>
@@ -964,8 +960,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
           {contextData.type === "predictive-insights" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                     <span className="text-gray-950 dark:text-gray-50">Inteligência Preditiva</span>
@@ -973,8 +969,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-coral)' }}>
-                      <h4 className="font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>Base de Análise</h4>
+                    <div className="p-4 rounded-md bg-red-100 dark:bg-red-900/20">
+                      <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-100">Base de Análise</h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
  <span className="text-wedo-cyan-dark dark:text-gray-300">Processos Históricos:</span>
@@ -1005,7 +1001,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                               </div>
                               <div>
                                 <span className="text-gray-600">Predição:</span>
-                                <p className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{prediction.predicted_improvement}</p>
+                                <p className="font-semibold text-gray-800 dark:text-gray-100">{prediction.predicted_improvement}</p>
                               </div>
                             </div>
                             <div>
@@ -1013,7 +1009,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                               <ul className="mt-1 space-y-1">
                                 {prediction.actions.slice(0, 2).map((action: string, i: number) => (
                                   <li key={i} className="flex items-start space-x-2 text-xs">
-                                    <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-text-secondary)' }}></div>
+                                    <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0 bg-gray-500 dark:bg-gray-400"></div>
                                     <span>{action}</span>
                                   </li>
                                 ))}
@@ -1028,8 +1024,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Roadmap de Implementação</h4>
                       <div className="space-y-2">
                         {Object.entries(contextData.data.implementation_roadmap).map(([phase, description]: [string, any], index) => (
-                          <div key={index} className="flex items-center space-x-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                          <div key={index} className="flex items-center space-x-3 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                               {index + 1}
                             </div>
                             <span className="text-sm">{description}</span>
@@ -1046,8 +1042,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Painel de Carta Oferta */}
           {contextData.type === "offer-letter" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center justify-between font-open-sans">
                     <div className="flex items-center space-x-3">
                       <FileText className="w-5 h-5 text-gray-600" />
@@ -1058,32 +1054,32 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6 font-open-sans">
                     {/* Informações do Candidato */}
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-light)' }}>
-                      <h4 className="font-medium mb-3" style={{ color: 'var(--eleven-text-primary)' }}>Candidato</h4>
+                    <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
+                      <h4 className="font-medium mb-3 text-gray-800 dark:text-gray-100">Candidato</h4>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Nome:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.candidate_info.name}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Nome:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.candidate_info.name}</p>
                         </div>
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Email:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.candidate_info.email}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Email:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.candidate_info.email}</p>
                         </div>
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Telefone:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.candidate_info.phone}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Telefone:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.candidate_info.phone}</p>
                         </div>
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Empresa Atual:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.candidate_info.current_company}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Empresa Atual:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.candidate_info.current_company}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Template da Carta Oferta */}
-                    <div className="p-6 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-card)', borderColor: 'var(--eleven-border-subtle)' }}>
+                    <div className="p-6 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700">
                       <div className="prose prose-sm max-w-none">
-                        <pre className="whitespace-pre-wrap font-open-sans text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <pre className="whitespace-pre-wrap font-open-sans text-sm text-gray-800 dark:text-gray-100">
                           {contextData.data.letter_template}
                         </pre>
                       </div>
@@ -1091,11 +1087,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Botões de Ação */}
                     <div className="flex gap-3 pt-4">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Revisar e Editar
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-mint)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-green-50 dark:bg-green-900/20 text-gray-800 dark:text-gray-100">
                         <Send className="w-4 h-4 mr-2" />
                         Enviar para Candidato
                       </Button>
@@ -1109,8 +1105,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Painel de Agendamento de Entrevistas */}
           {contextData.type === "interview-scheduling" && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Calendar className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1123,20 +1119,20 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Candidatos Selecionados</h4>
                       <div className="space-y-3">
                         {contextData.data.candidates_to_schedule.map((candidate: any, index: number) => (
-                          <div key={index} className="p-4 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-message)', borderColor: 'var(--eleven-border-subtle)' }}>
+                          <div key={index} className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h5 className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{candidate.name}</h5>
-                                <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Score: {candidate.score}/100</p>
+                                <h5 className="font-medium text-gray-800 dark:text-gray-100">{candidate.name}</h5>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Score: {candidate.score}/100</p>
                               </div>
-                              <Badge style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                              <Badge className="bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                                 {candidate.interview_type}
                               </Badge>
                             </div>
-                            <div className="flex gap-2 text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <div className="flex gap-2 text-xs text-gray-500 dark:text-gray-400">
                               <span>Preferências:</span>
                               {candidate.preferred_times.map((time: string, i: number) => (
-                                <span key={i} className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>{time}</span>
+                                <span key={i} className="px-2 py-1 rounded bg-white dark:bg-gray-950">{time}</span>
                               ))}
                             </div>
                           </div>
@@ -1150,7 +1146,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div className="space-y-4">
                         {Object.entries(contextData.data.available_slots).map(([date, slots]: [string, any], index) => (
                           <div key={index}>
-                            <h5 className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>{date}</h5>
+                            <h5 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100">{date}</h5>
                             <div className="grid grid-cols-3 gap-2">
                               {slots.map((slot: any, i: number) => (
                                 <button
@@ -1158,13 +1154,13 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                   disabled={!slot.available}
                                   className={`p-2 rounded text-xs transition-all ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
                                   style={{
-                                    backgroundColor: slot.available ? 'var(--eleven-sepia-mint)' : 'var(--eleven-bg-message)',
-                                    color: 'var(--eleven-text-primary)',
-                                    border: `1px solid ${slot.available ? 'var(--eleven-border-subtle)' : 'var(--eleven-border-light)'}`
+                                    backgroundColor: slot.available ? 'rgb(240 253 244)' : 'rgb(243 244 246)',
+                                    color: 'inherit',
+                                    border: `1px solid ${slot.available ? 'rgb(229 231 235)' : 'rgb(243 244 246)'}`
                                   }}
                                 >
                                   {slot.time}
-                                  <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>{slot.duration}</div>
+                                  <div className="text-xs text-gray-400 dark:text-gray-500">{slot.duration}</div>
                                 </button>
                               ))}
                             </div>
@@ -1174,26 +1170,26 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     </div>
 
                     {/* Informações Adicionais */}
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-light)' }}>
+                    <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Entrevistador:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.interviewer}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Entrevistador:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.interviewer}</p>
                         </div>
                         <div>
-                          <span style={{ color: 'var(--eleven-text-secondary)' }}>Integração:</span>
-                          <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{contextData.data.calendar_integration}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Integração:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{contextData.data.calendar_integration}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Botões de Ação */}
                     <div className="flex gap-3 pt-4">
-                      <Button className="flex-1 border border-gray-200" style={{ backgroundColor: 'var(--eleven-bg-card)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 border border-gray-200 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100">
                         <Edit className="w-4 h-4 mr-2" />
                         Ajustar Horários
                       </Button>
-                      <Button className="flex-1" style={{ backgroundColor: 'var(--eleven-sepia-blue)', color: 'var(--eleven-text-primary)' }}>
+                      <Button className="flex-1 bg-blue-50 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Confirmar Agendamentos
                       </Button>
@@ -1209,8 +1205,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Job Creation Frames - Technical Matrix */}
           {contextData.type === "technical-matrix" && contextData.data && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Target className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1219,7 +1215,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)', color: 'var(--eleven-text-primary)' }}>
+                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         {contextData.data}
                       </pre>
                     </div>
@@ -1232,8 +1228,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Job Creation Frames - Timeline */}
           {contextData.type === "timeline" && contextData.data && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <CalendarDays className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1242,7 +1238,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)', color: 'var(--eleven-text-primary)' }}>
+                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         {contextData.data}
                       </pre>
                     </div>
@@ -1255,8 +1251,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Job Creation Frames - Interview Flow */}
           {contextData.type === "interview-flow" && contextData.data && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Workflow className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1265,7 +1261,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)', color: 'var(--eleven-text-primary)' }}>
+                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         {contextData.data}
                       </pre>
                     </div>
@@ -1278,8 +1274,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Job Creation Frames - Org Chart */}
           {contextData.type === "org-chart" && contextData.data && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Network className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1288,7 +1284,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-message)', color: 'var(--eleven-text-primary)' }}>
+                      <pre className="whitespace-pre-wrap font-mono text-sm p-4 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
                         {contextData.data}
                       </pre>
                     </div>
@@ -1301,8 +1297,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           {/* Job Creation Progress */}
           {contextData.type === "job-creation-progress" && contextData.data && (
             <div className="space-y-6 font-open-sans">
-              <Card className="border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
-                <CardHeader style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+              <Card className="border-0 bg-white dark:bg-gray-950">
+                <CardHeader className="bg-gray-100 dark:bg-gray-800">
                   <CardTitle className="flex items-center space-x-3 font-open-sans">
                     <Briefcase className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-950 dark:text-gray-50">{contextData.title}</span>
@@ -1311,16 +1307,16 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     {/* Progress Overview */}
-                    <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-sepia-light)' }}>
+                    <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           Progresso da Criação
                         </span>
-                        <span className="text-sm font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
                           {contextData.data.completion_percentage}%
                         </span>
                       </div>
-                      <div className="w-full h-2 rounded-full" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                      <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800">
                         <div 
                           className="h-full rounded-full transition-all duration-500 bg-gray-700" style={{ width: `${contextData.data.completion_percentage}%` }}
                         />
@@ -1332,13 +1328,13 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Status dos Campos</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {contextData.data.collected_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--eleven-sepia-mint)' }}>
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-green-50 dark:bg-green-900/20">
                             <CheckCircle className="w-4 h-4 text-status-success" />
                             <span className="text-sm">{field}</span>
                           </div>
                         ))}
                         {contextData.data.pending_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded bg-gray-100 dark:bg-gray-800">
                             <Clock className="w-4 h-4 text-gray-600" />
                             <span className="text-sm text-gray-600">{field}</span>
                           </div>
@@ -1348,14 +1344,14 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Next Steps */}
                     {contextData.data.next_panel && (
-                      <div className="p-4 rounded-md border-2 border-gray-400" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
+                      <div className="p-4 rounded-md border-2 border-gray-400 bg-white dark:bg-gray-950">
                         <div className="flex items-start gap-3">
                           <ArrowUpDown className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                           <div>
-                            <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <h4 className="text-sm font-semibold mb-1 text-gray-800 dark:text-gray-100">
                               Próximo Passo
                             </h4>
-                            <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               {contextData.data.next_panel}
                             </p>
                           </div>

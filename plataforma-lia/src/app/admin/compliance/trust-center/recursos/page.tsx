@@ -93,15 +93,12 @@ export default function RecursosPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Recursos Downloadáveis
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Documentos, políticas e materiais de compliance
             </p>
           </div>
@@ -113,11 +110,8 @@ export default function RecursosPage() {
             return (
               <div 
                 key={resource.id}
-                className="rounded-md border p-4 hover:transition-shadow"
-                style={{ 
-                  backgroundColor: 'var(--eleven-bg-card)',
-                  borderColor: 'var(--eleven-border-subtle)'
-                }}
+                className="rounded-md border p-4 hover:transition-shadow bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+                
               >
                 <div className="flex items-start gap-4">
                   <div 
@@ -131,20 +125,17 @@ export default function RecursosPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h3 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                         {resource.name}
                       </h3>
                       <span 
-                        className="px-1.5 py-0.5 rounded text-xs font-medium"
-                        style={{ 
-                          backgroundColor: 'var(--eleven-bg-subtle)',
-                          color: 'var(--eleven-text-tertiary)'
-                        }}
+                        className="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500"
+                        
                       >
                         {resource.type}
                       </span>
                     </div>
-                    <p className="text-xs mb-3" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
                       {resource.description}
                     </p>
                     {resource.downloadable ? (
@@ -185,10 +176,10 @@ export default function RecursosPage() {
           <div className="flex items-start gap-3">
             <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--status-warning)' }} />
             <div>
-              <h4 className="font-medium text-sm mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+              <h4 className="font-medium text-sm mb-1 text-gray-800 dark:text-gray-100" >
                 Documentos com Acesso Restrito
               </h4>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm text-gray-500 dark:text-gray-400" >
                 Alguns documentos requerem solicitação prévia e são disponibilizados apenas para clientes e parceiros após assinatura de NDA. 
                 Para solicitar acesso, entre em contato com <span className="text-gray-700">compliance@lia.ai</span>
               </p>

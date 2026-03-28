@@ -266,15 +266,12 @@ export default function ConsentimentosPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Gestão de Consentimentos
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Ciclo de vida de consentimentos de titulares
               </p>
             </div>
@@ -300,10 +297,10 @@ export default function ConsentimentosPage() {
                   <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {isLoading ? '...' : `${Math.round(taxaConsentimento)}%`}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Taxa de Consentimento</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Taxa de Consentimento</p>
                 </div>
               </div>
             </CardContent>
@@ -316,10 +313,10 @@ export default function ConsentimentosPage() {
                   <CheckSquare className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {isLoading ? '...' : totalActive.toLocaleString('pt-BR')}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Consentimentos Ativos</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Consentimentos Ativos</p>
                 </div>
               </div>
             </CardContent>
@@ -332,10 +329,10 @@ export default function ConsentimentosPage() {
                   <RefreshCw className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {isLoading ? '...' : totalPending}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Pendentes de Renovação</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Pendentes de Renovação</p>
                 </div>
               </div>
             </CardContent>
@@ -348,10 +345,10 @@ export default function ConsentimentosPage() {
                   <XCircle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {isLoading ? '...' : totalExpired}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Expirados</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Expirados</p>
                 </div>
               </div>
             </CardContent>
@@ -364,10 +361,10 @@ export default function ConsentimentosPage() {
                   <Ban className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
                     {isLoading ? '...' : totalRevoked}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Revogados</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Revogados</p>
                 </div>
               </div>
             </CardContent>
@@ -394,12 +391,12 @@ export default function ConsentimentosPage() {
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Versões de Termos de Consentimento
                   </CardTitle>
                   <div className="flex items-center gap-3">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                       <Input
                         placeholder="Buscar termo..."
                         value={searchTerm}
@@ -426,12 +423,12 @@ export default function ConsentimentosPage() {
                 {isLoadingVersions ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-                    <span className="ml-2" style={{ color: 'var(--eleven-text-secondary)' }}>Carregando...</span>
+                    <span className="ml-2 text-gray-500 dark:text-gray-400" >Carregando...</span>
                   </div>
                 ) : filteredVersions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <AlertCircle className="w-12 h-12 text-gray-300 mb-4" />
-                    <p style={{ color: 'var(--eleven-text-secondary)' }}>Nenhuma versão de termo encontrada</p>
+                    <p className="text-gray-500 dark:text-gray-400" >Nenhuma versão de termo encontrada</p>
                     <Button variant="outline" className="mt-4" onClick={() => setIsCreateVersionModalOpen(true)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Criar Primeira Versão
@@ -460,7 +457,7 @@ export default function ConsentimentosPage() {
                               <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                               </div>
-                              <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                              <span className="font-medium text-gray-800 dark:text-gray-100" >
                                 {CONSENT_TYPE_LABELS[version.consentType] || version.consentType}
                               </span>
                             </div>
@@ -471,7 +468,7 @@ export default function ConsentimentosPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span style={{ color: 'var(--eleven-text-secondary)' }}>{version.title}</span>
+                            <span className="text-gray-500 dark:text-gray-400" >{version.title}</span>
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
@@ -489,7 +486,7 @@ export default function ConsentimentosPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-gray-500 dark:text-gray-400" >
                               {new Date(version.createdAt).toLocaleDateString('pt-BR')}
                             </span>
                           </TableCell>
@@ -536,14 +533,14 @@ export default function ConsentimentosPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                       Eventos de Consentimento
                     </CardTitle>
                     <CardDescription>Registro de concessões, revogações e expirações</CardDescription>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                       <Input
                         placeholder="Buscar titular..."
                         value={searchTerm}
@@ -581,12 +578,12 @@ export default function ConsentimentosPage() {
                 {isLoadingEvents ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-                    <span className="ml-2" style={{ color: 'var(--eleven-text-secondary)' }}>Carregando...</span>
+                    <span className="ml-2 text-gray-500 dark:text-gray-400" >Carregando...</span>
                   </div>
                 ) : filteredEvents.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <AlertCircle className="w-12 h-12 text-gray-300 mb-4" />
-                    <p style={{ color: 'var(--eleven-text-secondary)' }}>Nenhum evento de consentimento encontrado</p>
+                    <p className="text-gray-500 dark:text-gray-400" >Nenhum evento de consentimento encontrado</p>
                   </div>
                 ) : (
                   <Table>
@@ -606,12 +603,12 @@ export default function ConsentimentosPage() {
                       {filteredEvents.map((event) => (
                         <TableRow key={event.id} className="hover:bg-gray-50">
                           <TableCell>
-                            <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-gray-800 dark:text-gray-100" >
                               {event.subjectName || event.subjectIdentifier}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-gray-500 dark:text-gray-400" >
                               {event.subjectEmail || '-'}
                             </span>
                           </TableCell>
@@ -625,7 +622,7 @@ export default function ConsentimentosPage() {
                           </TableCell>
                           <TableCell>{getEventStatusBadge(event.eventType)}</TableCell>
                           <TableCell>
-                            <span style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-gray-500 dark:text-gray-400" >
                               {new Date(event.createdAt).toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: '2-digit',
@@ -636,7 +633,7 @@ export default function ConsentimentosPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <div className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <div className="text-xs text-gray-400 dark:text-gray-500" >
                               <div>{event.ipAddress || '-'}</div>
                               <div className="truncate max-w-32">{event.userAgent || '-'}</div>
                             </div>
@@ -678,7 +675,7 @@ export default function ConsentimentosPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
                 <CardHeader>
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Taxa de Consentimento por Tipo
                   </CardTitle>
                 </CardHeader>
@@ -692,15 +689,15 @@ export default function ConsentimentosPage() {
                       {Object.entries(stats.byType).map(([type, data]) => (
                         <div key={type} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                               {CONSENT_TYPE_LABELS[type] || type}
                             </span>
-                            <span className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100" >
                               {Math.round(data.rate)}%
                             </span>
                           </div>
                           <Progress value={data.rate} className="h-2" />
-                          <div className="flex items-center justify-between text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500" >
                             <span>{data.active} ativos</span>
                             <span>{data.pending} pendentes</span>
                             <span>{data.revoked} revogados</span>
@@ -711,7 +708,7 @@ export default function ConsentimentosPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8">
                       <AlertCircle className="w-10 h-10 text-gray-300 mb-3" />
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <p className="text-sm text-gray-500 dark:text-gray-400" >
                         Nenhuma estatística disponível
                       </p>
                     </div>
@@ -721,7 +718,7 @@ export default function ConsentimentosPage() {
 
               <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
                 <CardHeader>
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Atividade Recente
                   </CardTitle>
                 </CardHeader>
@@ -735,7 +732,7 @@ export default function ConsentimentosPage() {
                       <div className="flex items-center justify-between p-3 rounded-md bg-status-success/10">
                         <div className="flex items-center gap-3">
                           <CheckSquare className="w-5 h-5 text-status-success" />
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm text-gray-800 dark:text-gray-100" >
                             Consentimentos Hoje
                           </span>
                         </div>
@@ -746,7 +743,7 @@ export default function ConsentimentosPage() {
                       <div className="flex items-center justify-between p-3 rounded-md bg-wedo-purple/10">
                         <div className="flex items-center gap-3">
                           <Ban className="w-5 h-5 text-wedo-purple" />
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm text-gray-800 dark:text-gray-100" >
                             Revogações Hoje
                           </span>
                         </div>
@@ -757,7 +754,7 @@ export default function ConsentimentosPage() {
                       <div className="flex items-center justify-between p-3 rounded-md bg-status-warning/10">
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 text-status-warning" />
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm text-gray-800 dark:text-gray-100" >
                             Expirando Esta Semana
                           </span>
                         </div>
@@ -772,25 +769,25 @@ export default function ConsentimentosPage() {
 
               <Card className="md:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
                 <CardHeader>
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Resumo Geral
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-3xl font-bold text-gray-800 dark:text-gray-100" >
                         {stats?.totalVersions || 0}
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-sm text-gray-400 dark:text-gray-500" >
                         Versões de Termos
                       </p>
                     </div>
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-3xl font-bold text-gray-800 dark:text-gray-100" >
                         {stats?.totalConsents || 0}
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-sm text-gray-400 dark:text-gray-500" >
                         Total de Consentimentos
                       </p>
                     </div>
@@ -798,7 +795,7 @@ export default function ConsentimentosPage() {
                       <p className="text-3xl font-bold text-status-success">
                         {stats?.activeVersions || 0}
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-sm text-gray-400 dark:text-gray-500" >
                         Versões Ativas
                       </p>
                     </div>
@@ -806,7 +803,7 @@ export default function ConsentimentosPage() {
                       <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
                         {Math.round(stats?.consentRate || 0)}%
                       </p>
-                      <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-sm text-gray-400 dark:text-gray-500" >
                         Taxa de Aceite
                       </p>
                     </div>
@@ -941,17 +938,17 @@ export default function ConsentimentosPage() {
               <div className="space-y-4">
                 {subjectHistory.currentConsents.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <h4 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
                       Consentimentos Atuais
                     </h4>
                     <div className="space-y-2">
                       {subjectHistory.currentConsents.map((consent, index) => (
                         <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-50">
                           <div>
-                            <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-gray-800 dark:text-gray-100" >
                               {CONSENT_TYPE_LABELS[consent.consentType] || consent.consentType}
                             </span>
-                            <span className="text-xs ml-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs ml-2 text-gray-400 dark:text-gray-500" >
                               v{consent.version}
                             </span>
                           </div>
@@ -965,7 +962,7 @@ export default function ConsentimentosPage() {
                             }>
                               {consent.status === 'active' ? 'Ativo' : consent.status === 'revoked' ? 'Revogado' : 'Expirado'}
                             </Badge>
-                            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs text-gray-400 dark:text-gray-500" >
                               até {new Date(consent.expiresAt).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
@@ -976,7 +973,7 @@ export default function ConsentimentosPage() {
                 )}
                 
                 <div>
-                  <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <h4 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
                     Histórico de Eventos
                   </h4>
                   <div className="space-y-2">
@@ -985,15 +982,15 @@ export default function ConsentimentosPage() {
                         <div className="flex items-center gap-3">
                           {getEventStatusBadge(event.eventType)}
                           <div>
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="text-sm text-gray-800 dark:text-gray-100" >
                               {CONSENT_TYPE_LABELS[event.consentType] || event.consentType}
                             </span>
-                            <span className="text-xs ml-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs ml-2 text-gray-400 dark:text-gray-500" >
                               v{event.version}
                             </span>
                           </div>
                         </div>
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >
                           {new Date(event.createdAt).toLocaleDateString('pt-BR', {
                             day: '2-digit',
                             month: '2-digit',

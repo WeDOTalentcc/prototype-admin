@@ -124,33 +124,27 @@ export default function ClientLayout({
   const status = client?.status ? (statusConfig[client.status] || statusConfig.pending_setup) : statusConfig.pending_setup
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div 
-        className="border-b"
-        style={{ 
-          backgroundColor: 'var(--eleven-bg-card)',
-          borderColor: 'var(--eleven-border-subtle)'
-        }}
+        className="border-b bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 py-3 text-sm">
             <Link 
               href="/admin"
-              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors"
-              style={{ color: 'var(--eleven-text-tertiary)' }}
+              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors text-gray-400 dark:text-gray-500"
             >
               Admin
             </Link>
-            <ChevronRight className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <Link 
               href="/admin/clientes"
-              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors"
-              style={{ color: 'var(--eleven-text-tertiary)' }}
+              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors text-gray-400 dark:text-gray-500"
             >
               Clientes
             </Link>
-            <ChevronRight className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
-            <span style={{ color: 'var(--eleven-text-primary)' }}>
+            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <span className="text-gray-800 dark:text-gray-100">
               {loading ? '...' : (client?.name || 'Cliente')}
             </span>
           </nav>
@@ -183,28 +177,19 @@ export default function ClientLayout({
                     <img
                       src={client.logo_url}
                       alt={client.name}
-                      className="w-14 h-14 rounded-md object-cover border"
-                      style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                      className="w-14 h-14 rounded-md object-cover border border-gray-200 dark:border-gray-700"
                     />
                   ) : (
                     <div 
-                      className="w-14 h-14 rounded-md flex items-center justify-center border"
-                      style={{ 
-                        backgroundColor: 'var(--eleven-bg-main)',
-                        borderColor: 'var(--eleven-border-subtle)'
-                      }}
+                      className="w-14 h-14 rounded-md flex items-center justify-center border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                     >
-                      <Building2 className="w-7 h-7" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                      <Building2 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
                     </div>
                   )}
                   <div>
                     <div className="flex items-center gap-3">
                       <h1 
-                        className="text-xl font-semibold"
-                        style={{ 
-                          color: 'var(--eleven-text-primary)',
-                          
-                        }}
+                        className="text-xl font-semibold text-gray-800 dark:text-gray-100"
                       >
                         {client.name}
                       </h1>
@@ -212,7 +197,7 @@ export default function ClientLayout({
                     </div>
                     <div className="flex items-center gap-4 mt-1">
                       {client.trade_name && (
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {client.trade_name}
                         </span>
                       )}
@@ -222,7 +207,7 @@ export default function ClientLayout({
                         </Badge>
                       )}
                       {client.primary_email && (
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">
                           {client.primary_email}
                         </span>
                       )}
@@ -245,9 +230,8 @@ export default function ClientLayout({
                     "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                     isActive
                       ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                      : "border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
                   )}
-                  style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.name}

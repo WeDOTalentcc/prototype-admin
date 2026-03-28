@@ -97,7 +97,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -108,7 +108,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -118,7 +118,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
         </div>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Carregando controles...</span>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">Carregando controles...</span>
         </div>
       </div>
     )
@@ -127,7 +127,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -138,7 +138,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                style={{ color: 'var(--eleven-text-secondary)' }}
+                className="text-gray-500 dark:text-gray-400"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -160,7 +160,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b pb-px -mb-px" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
         {internalTabs.map((tab) => {
           const isActive = isTabActive(tab.href)
           const Icon = tab.icon
@@ -172,9 +172,8 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 isActive
                   ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
               )}
-              style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
             >
               <Icon className="w-4 h-4" />
               {tab.name}
@@ -192,10 +191,10 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h3 className="font-semibold text-base text-gray-800 dark:text-gray-100">
                         {frameworkName}
                       </h3>
-                      <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
                         {stats.totalControls} controles totais
                       </p>
                     </div>
@@ -230,7 +229,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Controles de Compliance
             </CardTitle>
             <Button variant="outline" size="sm">
@@ -244,20 +243,20 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Código</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Controle</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Framework</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Status</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Última Verificação</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Responsável</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Código</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Controle</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Framework</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Status</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Última Verificação</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Responsável</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayControls.map((control) => (
-                    <tr key={control.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                      <td className="py-3 px-2 text-sm font-mono" style={{ color: 'var(--eleven-text-primary)' }}>{control.code}</td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{control.name}</td>
+                    <tr key={control.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+                      <td className="py-3 px-2 text-sm font-mono text-gray-800 dark:text-gray-100">{control.code}</td>
+                      <td className="py-3 px-2 text-sm text-gray-800 dark:text-gray-100">{control.name}</td>
                       <td className="py-3 px-2">
                         <Badge variant="outline" className="text-xs">{control.framework}</Badge>
                       </td>
@@ -269,8 +268,8 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                           {statusLabels[control.status] || control.status}
                         </span>
                       </td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>{formatDate(control.lastChecked)}</td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>{control.owner || '-'}</td>
+                      <td className="py-3 px-2 text-sm text-gray-400 dark:text-gray-500">{formatDate(control.lastChecked)}</td>
+                      <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400">{control.owner || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -279,7 +278,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
           ) : (
             <div className="text-center py-6">
               <Shield className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum controle encontrado</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum controle encontrado</p>
             </div>
           )}
         </CardContent>
@@ -288,7 +287,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
       {soxControls.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Controles SOX
             </CardTitle>
           </CardHeader>
@@ -296,19 +295,19 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Código</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Descrição</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Seção</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Resultado</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Último Teste</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Código</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Descrição</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Seção</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Resultado</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-gray-400 dark:text-gray-500">Último Teste</th>
                   </tr>
                 </thead>
                 <tbody>
                   {soxControls.slice(0, 10).map((sox) => (
-                    <tr key={sox.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                      <td className="py-3 px-2 text-sm font-mono" style={{ color: 'var(--eleven-text-primary)' }}>{sox.controlId}</td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{sox.description}</td>
+                    <tr key={sox.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+                      <td className="py-3 px-2 text-sm font-mono text-gray-800 dark:text-gray-100">{sox.controlId}</td>
+                      <td className="py-3 px-2 text-sm text-gray-800 dark:text-gray-100">{sox.description}</td>
                       <td className="py-3 px-2">
                         <Badge variant="outline" className="text-xs">{sox.section}</Badge>
                       </td>
@@ -317,7 +316,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                           {sox.testResult === 'pass' ? 'Aprovado' : sox.testResult === 'fail' ? 'Reprovado' : 'Pendente'}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>{formatDate(sox.lastTestedAt)}</td>
+                      <td className="py-3 px-2 text-sm text-gray-400 dark:text-gray-500">{formatDate(sox.lastTestedAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -330,7 +329,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
       {dashboard && dashboard.upcomingReviews > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Próximas Revisões Agendadas
             </CardTitle>
           </CardHeader>

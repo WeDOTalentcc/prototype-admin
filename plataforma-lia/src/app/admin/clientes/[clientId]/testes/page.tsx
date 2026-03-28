@@ -208,7 +208,7 @@ export default function ClientTestesPage({
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-600 dark:text-gray-400" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Carregando testes técnicos...
           </p>
         </div>
@@ -221,7 +221,7 @@ export default function ClientTestesPage({
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-status-error" />
-          <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
             Erro ao carregar testes técnicos
           </p>
           <Button onClick={refetch} variant="outline" size="sm">
@@ -240,13 +240,12 @@ export default function ClientTestesPage({
           <div className="flex items-center gap-3 mb-2">
             <FileCode className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Testes Técnicos
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Biblioteca de testes e avaliações técnicas para este cliente
           </p>
         </div>
@@ -274,10 +273,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Total de Testes
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {totalTests}
                 </p>
               </div>
@@ -285,7 +284,7 @@ export default function ClientTestesPage({
                 <FileCode className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
               {enabledTests} habilitados para uso
             </p>
           </CardContent>
@@ -295,10 +294,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Testes Realizados
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {totalTestsTaken.toLocaleString()}
                 </p>
               </div>
@@ -317,10 +316,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Taxa de Conclusão
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {avgCompletionRate.toFixed(0)}%
                 </p>
               </div>
@@ -328,7 +327,7 @@ export default function ClientTestesPage({
                 <CheckCircle2 className="w-5 h-5 text-status-success" />
               </div>
             </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
               Média geral de conclusão
             </p>
           </CardContent>
@@ -338,10 +337,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Testes Ativos
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {activeTests}
                 </p>
               </div>
@@ -349,7 +348,7 @@ export default function ClientTestesPage({
                 <Target className="w-5 h-5 text-gray-900 dark:text-gray-50" />
               </div>
             </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-xs mt-2 text-gray-400 dark:text-gray-500">
               {stats?.draftTests ?? tests.filter(t => t.status === 'draft').length} em rascunho
             </p>
           </CardContent>
@@ -362,8 +361,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <Code2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Coding</p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Coding</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {codingTests.total} testes ({codingTests.enabled} ativos)
                 </p>
               </div>
@@ -375,8 +374,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <Brain className="w-5 h-5 text-wedo-purple" />
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Lógica</p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Lógica</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {logicTests.total} testes ({logicTests.enabled} ativos)
                 </p>
               </div>
@@ -388,8 +387,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <FileSpreadsheet className="w-5 h-5 text-status-warning" />
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Específico</p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Específico</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {domainTests.total} testes ({domainTests.enabled} ativos)
                 </p>
               </div>
@@ -401,8 +400,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 text-status-success" />
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Personalidade</p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Personalidade</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {personalityTests.total} testes ({personalityTests.enabled} ativos)
                 </p>
               </div>
@@ -414,7 +413,7 @@ export default function ClientTestesPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Biblioteca de Testes
             </CardTitle>
             <div className="flex items-center gap-3">
@@ -482,7 +481,7 @@ export default function ClientTestesPage({
               {filteredTests.length === 0 ? (
                 <div className="text-center py-8">
                   <FileCode className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
                     {tests.length === 0 
                       ? 'Nenhum teste configurado para este cliente'
                       : 'Nenhum teste encontrado com os filtros aplicados'
@@ -518,7 +517,7 @@ export default function ClientTestesPage({
                       className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors ${
                         !test.enabled ? 'opacity-60' : ''
                       }`}
-                      style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                      className="border-gray-200 dark:border-gray-700"
                     >
                       <div className={`w-10 h-10 rounded-md ${category.bgColor} flex items-center justify-center shrink-0`}>
                         <CategoryIcon className={`w-5 h-5 ${category.color}`} />
@@ -527,8 +526,7 @@ export default function ClientTestesPage({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p 
-                            className="font-medium truncate"
-                            style={{ color: 'var(--eleven-text-primary)' }}
+                            className="font-medium truncate text-gray-800 dark:text-gray-100"
                           >
                             {test.name}
                           </p>
@@ -538,7 +536,7 @@ export default function ClientTestesPage({
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {test.duration} min
@@ -557,10 +555,10 @@ export default function ClientTestesPage({
 
                       <div className="flex items-center gap-6">
                         <div className="text-center min-w-[70px]">
-                          <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                             {test.testsTaken}
                           </p>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             realizados
                           </p>
                         </div>
@@ -568,10 +566,10 @@ export default function ClientTestesPage({
                         {test.testsTaken > 0 && (
                           <>
                             <div className="text-center min-w-[60px]">
-                              <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                              <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                                 {test.avgScore > 0 ? `${test.avgScore}%` : '-'}
                               </p>
-                              <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <p className="text-xs text-gray-400 dark:text-gray-500">
                                 média
                               </p>
                             </div>
@@ -579,7 +577,7 @@ export default function ClientTestesPage({
                               <p className="text-lg font-semibold text-status-success">
                                 {test.completionRate}%
                               </p>
-                              <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <p className="text-xs text-gray-400 dark:text-gray-500">
                                 conclusão
                               </p>
                             </div>
@@ -591,7 +589,7 @@ export default function ClientTestesPage({
                         </Badge>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {test.enabled ? 'Habilitado' : 'Desabilitado'}
                           </span>
                           {isToggling ? (
@@ -655,7 +653,7 @@ export default function ClientTestesPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Testes Mais Utilizados
             </CardTitle>
           </CardHeader>
@@ -674,8 +672,7 @@ export default function ClientTestesPage({
                       className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     >
                       <span 
-                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium"
-                        style={{ color: 'var(--eleven-text-tertiary)' }}
+                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-400 dark:text-gray-500"
                       >
                         {index + 1}
                       </span>
@@ -683,18 +680,18 @@ export default function ClientTestesPage({
                         <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {test.name}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           Último uso: {formatDate(test.lastUsed)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                           {test.testsTaken}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           aplicações
                         </p>
                       </div>
@@ -702,7 +699,7 @@ export default function ClientTestesPage({
                   )
                 })}
               {tests.filter(t => t.testsTaken > 0).length === 0 && (
-                <p className="text-center text-sm py-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-center text-sm py-4 text-gray-400 dark:text-gray-500">
                   Nenhum teste realizado ainda
                 </p>
               )}
@@ -712,7 +709,7 @@ export default function ClientTestesPage({
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Desempenho por Categoria
             </CardTitle>
           </CardHeader>
@@ -735,17 +732,17 @@ export default function ClientTestesPage({
                         <div className={`w-8 h-8 rounded-md ${config.bgColor} flex items-center justify-center`}>
                           <Icon className={`w-4 h-4 ${config.color}`} />
                         </div>
-                        <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {config.label}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         {avgScore > 0 && (
-                          <span style={{ color: 'var(--eleven-text-tertiary)' }}>
-                            Média: <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{avgScore.toFixed(0)}%</span>
+                          <span className="text-gray-400 dark:text-gray-500">
+                            Média: <span className="font-medium text-gray-800 dark:text-gray-100">{avgScore.toFixed(0)}%</span>
                           </span>
                         )}
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-gray-400 dark:text-gray-500">
                           Conclusão: <span className="font-medium text-status-success">{avgCompletion.toFixed(0)}%</span>
                         </span>
                       </div>

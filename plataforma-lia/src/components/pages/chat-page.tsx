@@ -3150,16 +3150,16 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
 
   return (
-    <div className="flex overflow-hidden flex-1" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+    <div className="flex overflow-hidden flex-1" style={{ backgroundColor: 'rgb(249 250 251)' }}>
       {/* Main Chat Area */}
       <div className={`flex flex-col transition-all duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-bg-main)', borderBottom: '1px solid var(--eleven-border-subtle)' }}>
+        <div className="py-3 px-6 flex-shrink-0" style={{ backgroundColor: 'rgb(249 250 251)', borderBottom: '1px solid rgb(229 231 235)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
               <div>
-                <h1 className="text-base font-semibold " style={{ color: 'var(--eleven-text-primary)' }}>
+                <h1 className="text-base font-semibold " style={{ color: 'rgb(31 41 55)' }}>
                   Chat {chatId} - {chatTitle}
                 </h1>
                 <p className="text-xs font-open-sans text-gray-500">
@@ -3192,9 +3192,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   placeholder="Buscar na conversa..."
                   className="w-full px-3 py-2 rounded-md text-sm focus:outline-none"
                   style={{ 
-                    border: '1px solid var(--eleven-border-subtle)',
-                    backgroundColor: 'var(--eleven-bg-card)',
-                    color: 'var(--eleven-text-primary)'
+                    border: '1px solid rgb(229 231 235)',
+                    backgroundColor: 'rgb(255 255 255)',
+                    color: 'rgb(31 41 55)'
                   }}
                   autoFocus
                 />
@@ -3214,11 +3214,11 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           {/* Tabs de Navegação */}
           <div className="mt-2">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "conversa" | "controle")}>
-              <TabsList className="bg-transparent p-0 h-auto gap-4" style={{ borderBottom: '1px solid var(--eleven-border-subtle)' }}>
+              <TabsList className="bg-transparent p-0 h-auto gap-4" style={{ borderBottom: '1px solid rgb(229 231 235)' }}>
                 <TabsTrigger 
                   value="conversa" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{ color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)' }}
+                  style={{ color: activeTab === 'conversa' ? 'var(--gray-950)' : 'rgb(107 114 128)' }}
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Conversa
@@ -3226,7 +3226,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 <TabsTrigger 
                   value="controle" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{ color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)' }}
+                  style={{ color: activeTab === 'controle' ? 'var(--gray-950)' : 'rgb(107 114 128)' }}
                 >
                   <Cpu className="w-4 h-4 mr-2" />
                   Centro de Controle
@@ -3258,10 +3258,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
             <div className={`text-left pt-8 ${messagesContainerClass}`}>
               <div className="mb-8">
                 <LIAIcon size="xl" className="mb-4" />
-                <h2 className="text-3xl font-semibold mb-3" style={{ color: 'var(--eleven-text-primary)' }}>
+                <h2 className="text-3xl font-semibold mb-3" style={{ color: 'rgb(31 41 55)' }}>
                   Oi, eu sou a <span className="text-gray-700">LIA</span>.
                 </h2>
-                <p className="text-base mb-8" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-base mb-8" style={{ color: 'rgb(107 114 128)' }}>
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                 </p>
                 
@@ -3284,9 +3284,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                     <div className="flex-shrink-0 pt-4">
                       <LIAIcon size="md" />
                     </div>
-                    <div className="rounded-md p-5 flex-1" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                    <div className="rounded-md p-5 flex-1" style={{ backgroundColor: 'rgb(243 244 246)' }}>
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium lia-name -ml-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-medium lia-name -ml-1" style={{ color: 'rgb(31 41 55)' }}>
                           Lia
                         </span>
                         <Badge variant="secondary" className="text-xs border-0">
@@ -3328,10 +3328,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 <div className="flex-shrink-0 pt-4">
                   <LIAIcon size="md" />
                 </div>
-                <div className="rounded-md p-5 flex-1" style={{ backgroundColor: 'var(--eleven-bg-message)' }}>
+                <div className="rounded-md p-5 flex-1" style={{ backgroundColor: 'rgb(243 244 246)' }}>
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                    <span className="text-sm" style={{ color: 'rgb(107 114 128)' }}>
                       LIA está digitando...
                     </span>
                   </div>
@@ -3351,8 +3351,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 className="rounded-full"
                 size="sm"
                 style={{ 
-                  backgroundColor: 'var(--eleven-text-primary)',
-                  color: 'var(--eleven-bg-card)'
+                  backgroundColor: 'rgb(31 41 55)',
+                  color: 'rgb(255 255 255)'
                 }}
               >
                 <ChevronDown className="w-4 h-4 mr-1" />
@@ -3363,7 +3363,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         </div>
 
         {/* Input Card - Estilo Manus - ajusta largura baseado no painel */}
-        <div className="p-6 flex-shrink-0" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+        <div className="p-6 flex-shrink-0" style={{ backgroundColor: 'rgb(249 250 251)' }}>
           <div className={inputContainerClass}>
             {/* Context Pills - Versão simplificada */}
             {contextData && contextData.data?.totalCount > 0 && (
@@ -3397,7 +3397,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 activeFiltersCount={getActiveFiltersCount()}
               />
             ) : (
-              <div className="rounded-md p-5 space-y-4" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
+              <div className="rounded-md p-5 space-y-4" style={{ backgroundColor: 'rgb(255 255 255)' }}>
                 
                 {/* Sugestões Rápidas - Combinadas (Quick Actions + Respostas Rápidas) */}
                 {/* Quick Action Chips só aparecem quando há resultados de busca com candidatos */}
@@ -3449,7 +3449,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
                 {/* Attached Files Preview */}
                 {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2" style={{ backgroundColor: 'var(--eleven-bg-tertiary)' }}>
+                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2" style={{ backgroundColor: 'rgb(243 244 246)' }}>
                     {attachedFiles.map((file, index) => {
                       const fileSizeKB = (file.size / 1024).toFixed(0)
                       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
@@ -3460,22 +3460,22 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                           key={index}
                           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
                           style={{ 
-                            backgroundColor: 'var(--eleven-bg-card)',
-                            border: '1px solid var(--eleven-border)'
+                            backgroundColor: 'rgb(255 255 255)',
+                            border: '1px solid rgb(209 213 219)'
                           }}
                         >
                           <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                          <span className="max-w-[150px] truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="max-w-[150px] truncate" style={{ color: 'rgb(31 41 55)' }}>
                             {file.name}
                           </span>
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs" style={{ color: 'rgb(156 163 175)' }}>
                             ({sizeDisplay})
                           </span>
                           <button
                             onClick={() => handleRemoveFile(index)}
                             className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
                           >
-                            <X className="w-3 h-3" style={{ color: 'var(--eleven-text-secondary)' }} />
+                            <X className="w-3 h-3" style={{ color: 'rgb(107 114 128)' }} />
                           </button>
                         </div>
                       )
@@ -3512,7 +3512,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                         <span className="text-sm font-medium text-gray-700">
                           Áudio gravado ({recordingTime}s)
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-xs" style={{ color: 'rgb(107 114 128)' }}>
                           Pronto para enviar junto com sua mensagem
                         </span>
                       </div>
@@ -3554,7 +3554,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                         <span className="text-sm font-medium text-status-success">
                           Arquivo analisado: {fileAnalysisContext.filename}
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <span className="text-xs" style={{ color: 'rgb(107 114 128)' }}>
                           A análise será enviada junto com sua próxima mensagem
                         </span>
                       </div>
@@ -3576,15 +3576,15 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 {/* Indicador de ação pendente (ciclo fechado multi-turno) */}
                 {activePendingAction && (
                   <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35]"
-                    style={{ color: 'var(--eleven-text-secondary)' }}
+                    style={{ color: 'rgb(107 114 128)' }}
                   >
                     <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse shrink-0" />
                     <span>
-                      Ação em andamento: <strong style={{ color: 'var(--eleven-text-primary)' }}>{activePendingAction.intent.replace(/_/g, " ")}</strong>
+                      Ação em andamento: <strong style={{ color: 'rgb(31 41 55)' }}>{activePendingAction.intent.replace(/_/g, " ")}</strong>
                     </span>
                     <button
                       className="ml-auto text-xs hover:opacity-80 transition-opacity"
-                      style={{ color: 'var(--eleven-text-tertiary)' }}
+                      style={{ color: 'rgb(156 163 175)' }}
                       onClick={() => handleSendMessage("cancelar")}
                       type="button"
                     >
@@ -3602,7 +3602,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ backgroundColor: 'var(--gray-50)', color: 'var(--eleven-text-primary)' }}
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ backgroundColor: 'var(--gray-50)', color: 'rgb(31 41 55)' }}
                       rows={1}
                     />
                   </div>
@@ -3614,7 +3614,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       size="sm" 
                       onClick={activateSmartSearch}
                       className="transition-all duration-200 hover:scale-105"
-                      style={{ color: 'var(--eleven-text-secondary)' }}
+                      style={{ color: 'rgb(107 114 128)' }}
                       title="Busca avançada de candidatos"
                     >
                       <Search className="w-4 h-4" />
@@ -3646,8 +3646,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       size="sm"
                       className="transition-all duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
                       style={{ 
-                        backgroundColor: 'var(--eleven-text-primary)',
-                        color: 'var(--eleven-bg-card)'
+                        backgroundColor: 'rgb(31 41 55)',
+                        color: 'rgb(255 255 255)'
                       }}
                       title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                     >

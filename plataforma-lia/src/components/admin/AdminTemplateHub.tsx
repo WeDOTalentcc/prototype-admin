@@ -344,10 +344,10 @@ export function AdminTemplateHub() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
           Templates de Sistema
         </h2>
-        <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
           Gerencie templates automáticos, alertas e notificações internas
         </p>
       </div>

@@ -152,7 +152,7 @@ export default function ClientSetupPage({
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Carregando setup...
           </p>
         </div>
@@ -192,13 +192,12 @@ export default function ClientSetupPage({
           <div className="flex items-center gap-3 mb-2">
             <Settings className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Setup da Empresa
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Configuração inicial e perfil do cliente
           </p>
         </div>
@@ -230,7 +229,7 @@ export default function ClientSetupPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Progresso Geral do Setup
             </CardTitle>
             <span className="text-sm font-medium text-gray-900 dark:text-gray-50">{overallProgress}%</span>
@@ -239,7 +238,7 @@ export default function ClientSetupPage({
         <CardContent>
           <Progress value={overallProgress} className="h-2" />
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               {completedSections} de {sections.length} seções completas
             </span>
           </div>
@@ -262,22 +261,20 @@ export default function ClientSetupPage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium"
-                        style={{ color: 'var(--eleven-text-primary)' }}
+                        className="font-medium text-gray-800 dark:text-gray-100"
                       >
                         {section.title}
                       </h3>
                       {getStatusBadge(section.status)}
                     </div>
                     <p 
-                      className="text-sm mb-2"
-                      style={{ color: 'var(--eleven-text-tertiary)' }}
+                      className="text-sm mb-2 text-gray-400 dark:text-gray-500"
                     >
                       {section.description}
                     </p>
                     <div className="flex items-center gap-3">
                       <Progress value={section.progress} className="h-1.5 flex-1" />
-                      <span className="text-xs tabular-nums" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs tabular-nums text-gray-400 dark:text-gray-500">
                         {section.progress}%
                       </span>
                     </div>

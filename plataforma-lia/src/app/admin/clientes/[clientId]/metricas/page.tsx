@@ -186,13 +186,12 @@ export default function ClientMetricasPage({
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Métricas
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Indicadores de performance e analytics
           </p>
         </div>
@@ -246,10 +245,10 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           MRR (Receita Mensal)
                         </p>
-                        <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                           R$ {saasMetrics.revenue.mrr.toLocaleString('pt-BR')}
                         </p>
                         <div className="flex items-center gap-1 text-xs text-status-success">
@@ -268,13 +267,13 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           ARR (Receita Anual)
                         </p>
-                        <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                           R$ {saasMetrics.revenue.arr.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           Plano: {saasMetrics.revenue.planName}
                         </p>
                       </div>
@@ -289,13 +288,13 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           LTV Estimado
                         </p>
-                        <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                           R$ {saasMetrics.revenue.ltv.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           {saasMetrics.revenue.ltvMonths} meses projetados
                         </p>
                       </div>
@@ -310,13 +309,13 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           CAC (Custo Aquisição)
                         </p>
-                        <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                           R$ {saasMetrics.acquisition.cac.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
                           Payback: {saasMetrics.acquisition.paybackMonths} meses
                         </p>
                       </div>
@@ -331,7 +330,7 @@ export default function ClientMetricasPage({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <Card className="lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
                       <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       Uso vs Contrato
                     </CardTitle>
@@ -339,8 +338,8 @@ export default function ClientMetricasPage({
                   <CardContent className="space-y-4">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>Créditos IA</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-gray-500 dark:text-gray-400">Créditos IA</span>
+                        <span className="text-gray-800 dark:text-gray-100">
                           {saasMetrics.usage.aiCreditsUsed.toLocaleString()} / {saasMetrics.usage.aiCreditsLimit.toLocaleString()}
                         </span>
                       </div>
@@ -348,8 +347,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>Usuários Ativos</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-gray-500 dark:text-gray-400">Usuários Ativos</span>
+                        <span className="text-gray-800 dark:text-gray-100">
                           {saasMetrics.usage.usersActive} / {saasMetrics.usage.usersLimit}
                         </span>
                       </div>
@@ -357,8 +356,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>Vagas Ativas</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-gray-500 dark:text-gray-400">Vagas Ativas</span>
+                        <span className="text-gray-800 dark:text-gray-100">
                           {saasMetrics.usage.jobsActive} / {saasMetrics.usage.jobsLimit}
                         </span>
                       </div>
@@ -366,8 +365,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>Storage</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-gray-500 dark:text-gray-400">Storage</span>
+                        <span className="text-gray-800 dark:text-gray-100">
                           {(saasMetrics.usage.storageUsedMB / 1024).toFixed(1)} GB / {(saasMetrics.usage.storageLimitMB / 1024).toFixed(1)} GB
                         </span>
                       </div>
@@ -378,7 +377,7 @@ export default function ClientMetricasPage({
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
                       {saasMetrics.health.churnRisk === 'low' ? (
                         <CheckCircle className="w-4 h-4 text-status-success" />
                       ) : (
@@ -390,11 +389,11 @@ export default function ClientMetricasPage({
                   <CardContent className="space-y-4">
                     <div className="text-center">
                       <p className="text-4xl font-bold text-gray-900 dark:text-gray-50">{saasMetrics.health.healthScore}</p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Health Score</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Health Score</p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>Risco de Churn</span>
+                        <span className="text-gray-400 dark:text-gray-500">Risco de Churn</span>
                         <Badge className={
                           saasMetrics.health.churnRisk === 'low' ? 'bg-status-success/15 text-status-success' :
                           saasMetrics.health.churnRisk === 'medium' ? 'bg-status-warning/15 text-status-warning' :
@@ -405,20 +404,20 @@ export default function ClientMetricasPage({
                         </Badge>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>Último Login</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-gray-400 dark:text-gray-500">Último Login</span>
+                        <span className="text-gray-800 dark:text-gray-100">
                           {saasMetrics.health.lastLoginDays === 0 ? 'Hoje' : 
                            saasMetrics.health.lastLoginDays === 1 ? 'Ontem' : 
                            `${saasMetrics.health.lastLoginDays} dias`}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>NPS Score</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>{saasMetrics.health.npsScore}/10</span>
+                        <span className="text-gray-400 dark:text-gray-500">NPS Score</span>
+                        <span className="text-gray-800 dark:text-gray-100">{saasMetrics.health.npsScore}/10</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: 'var(--eleven-text-tertiary)' }}>Tickets Suporte</span>
-                        <span style={{ color: 'var(--eleven-text-primary)' }}>{saasMetrics.health.supportTickets} abertos</span>
+                        <span className="text-gray-400 dark:text-gray-500">Tickets Suporte</span>
+                        <span className="text-gray-800 dark:text-gray-100">{saasMetrics.health.supportTickets} abertos</span>
                       </div>
                     </div>
                   </CardContent>
@@ -427,7 +426,7 @@ export default function ClientMetricasPage({
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
                     <Receipt className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                     Histórico de Pagamentos
                   </CardTitle>
@@ -437,22 +436,22 @@ export default function ClientMetricasPage({
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Data</th>
-                          <th className="text-left py-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Valor</th>
-                          <th className="text-left py-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Método</th>
-                          <th className="text-left py-2 text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>Status</th>
+                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Data</th>
+                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Valor</th>
+                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Método</th>
+                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {saasMetrics.payments.map((payment) => (
                           <tr key={payment.id} className="border-b border-gray-100 dark:border-gray-800">
-                            <td className="py-3 text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <td className="py-3 text-sm text-gray-800 dark:text-gray-100">
                               {new Date(payment.date).toLocaleDateString('pt-BR')}
                             </td>
-                            <td className="py-3 text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <td className="py-3 text-sm font-medium text-gray-800 dark:text-gray-100">
                               R$ {payment.amount.toLocaleString('pt-BR')}
                             </td>
-                            <td className="py-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <td className="py-3 text-sm text-gray-500 dark:text-gray-400">
                               {payment.method}
                             </td>
                             <td className="py-3">
@@ -478,24 +477,24 @@ export default function ClientMetricasPage({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Contrato Início</p>
-                    <p className="text-lg font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Contrato Início</p>
+                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {new Date(saasMetrics.revenue.contractStart).toLocaleDateString('pt-BR')}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Contrato Fim</p>
-                    <p className="text-lg font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Contrato Fim</p>
+                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {new Date(saasMetrics.revenue.contractEnd).toLocaleDateString('pt-BR')}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Origem</p>
-                    <p className="text-lg font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Origem</p>
+                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {saasMetrics.acquisition.referralSource}
                     </p>
                   </CardContent>
@@ -511,10 +510,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Vagas Ativas
                     </p>
-                    <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {metrics.trends.vacancies.value}
                     </p>
                     <TrendIndicator change={metrics.trends.vacancies.change} trend={metrics.trends.vacancies.trend} />
@@ -530,10 +529,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Candidatos no Pipeline
                     </p>
-                    <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {metrics.trends.candidates.value}
                     </p>
                     <TrendIndicator change={metrics.trends.candidates.change} trend={metrics.trends.candidates.trend} />
@@ -549,10 +548,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Tempo Médio de Contratação
                     </p>
-                    <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {metrics.trends.timeToHire.value}
                       <span className="text-sm font-normal ml-1">dias</span>
                     </p>
@@ -569,10 +568,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Taxa de Conversão
                     </p>
-                    <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                       {metrics.trends.conversion.value}%
                     </p>
                     <TrendIndicator change={metrics.trends.conversion.change} trend={metrics.trends.conversion.trend} />
@@ -587,7 +586,7 @@ export default function ClientMetricasPage({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base text-gray-800 dark:text-gray-100">
                 Funil de Recrutamento
               </CardTitle>
             </CardHeader>
@@ -598,8 +597,7 @@ export default function ClientMetricasPage({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span 
-                          className="text-sm font-medium"
-                          style={{ color: 'var(--eleven-text-primary)' }}
+                          className="text-sm font-medium text-gray-800 dark:text-gray-100"
                         >
                           {stage.stage}
                         </span>
@@ -608,8 +606,7 @@ export default function ClientMetricasPage({
                         </Badge>
                       </div>
                       <span 
-                        className="text-sm"
-                        style={{ color: 'var(--eleven-text-tertiary)' }}
+                        className="text-sm text-gray-400 dark:text-gray-500"
                       >
                         {stage.percentage}%
                       </span>
@@ -624,7 +621,7 @@ export default function ClientMetricasPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base text-gray-800 dark:text-gray-100">
                   Triagens Completadas
                 </CardTitle>
               </CardHeader>
@@ -633,7 +630,7 @@ export default function ClientMetricasPage({
                   <p className="text-4xl font-semibold text-gray-900 dark:text-gray-50">
                     {metrics.overview.screeningsCompleted}
                   </p>
-                  <p className="text-sm mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
                     nos últimos 30 dias
                   </p>
                 </div>
@@ -642,7 +639,7 @@ export default function ClientMetricasPage({
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base text-gray-800 dark:text-gray-100">
                   Entrevistas Agendadas
                 </CardTitle>
               </CardHeader>
@@ -651,7 +648,7 @@ export default function ClientMetricasPage({
                   <p className="text-4xl font-semibold text-wedo-purple">
                     {metrics.overview.interviewsScheduled}
                   </p>
-                  <p className="text-sm mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
                     nos últimos 30 dias
                   </p>
                 </div>

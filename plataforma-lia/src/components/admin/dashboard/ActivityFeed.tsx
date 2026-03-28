@@ -48,10 +48,10 @@ export function ActivityFeed({
             <div key={index} className="flex items-start gap-3 text-sm">
               <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor}`} />
               <div>
-                <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="font-medium text-gray-800 dark:text-gray-100">
                   {activity.title}
                 </p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   {activity.subtitle}
                   {activity.timestamp && ` • ${activity.timestamp}`}
                 </p>

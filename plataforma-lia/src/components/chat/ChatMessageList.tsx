@@ -100,27 +100,18 @@ export function ChatMessageList({
 
               {/* Message content */}
               <div
-                className="rounded-md p-5 flex-1"
-                style={{
-                  backgroundColor:
-                    message.sender === "user"
-                      ? "var(--eleven-bg-card)"
-                      : "var(--eleven-bg-message)",
-                  color: "var(--eleven-text-primary)",
-                }}
+                className={`rounded-md p-5 flex-1 text-gray-800 dark:text-gray-100 ${message.sender === "user" ? "bg-white dark:bg-gray-950" : "bg-gray-100 dark:bg-gray-800"}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium text-gray-800 dark:text-gray-100 ${
                       message.sender === "lia" ? "lia-name -ml-1" : ""
                     }`}
-                    style={{ color: "var(--eleven-text-primary)" }}
                   >
                     {message.sender === "lia" ? "Lia" : "Ana Silva"}
                   </span>
                   <span
-                    className="text-xs"
-                    style={{ color: "var(--eleven-text-tertiary)" }}
+                    className="text-xs text-gray-400 dark:text-gray-500"
                   >
                     {getRelativeTime(message.timestamp)}
                   </span>
@@ -136,12 +127,11 @@ export function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className={`text-sm leading-relaxed ${
+                      className={`text-sm leading-relaxed text-gray-800 dark:text-gray-100 ${
                         message.sender === "user"
                           ? "font-open-sans"
                           : "font-['Open_Sans',sans-serif] lia-markdown-content"
                       }`}
-                      style={{ color: "var(--eleven-text-primary)" }}
                       dangerouslySetInnerHTML={{
                         __html: onHighlightSearchTerm(
                           message.content,
@@ -436,29 +426,22 @@ export function ChatMessageList({
                 {/* Approval Block */}
                 {message.needsApproval && message.approvalRequest && (
                   <div
-                    className="mt-4 p-5 rounded-md"
-                    style={{ backgroundColor: "var(--eleven-sepia-light)" }}
+                    className="mt-4 p-5 rounded-md bg-stone-50 dark:bg-stone-900/20"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">
                         <Clock
-                          className="w-4 h-4"
-                          style={{ color: "var(--eleven-text-secondary)" }}
+                          className="w-4 h-4 text-gray-500 dark:text-gray-400"
                         />
                         <h4
-                          className="font-medium text-base"
-                          style={{ color: "var(--eleven-text-primary)" }}
+                          className="font-medium text-base text-gray-800 dark:text-gray-100"
                         >
                           {message.approvalRequest.title}
                         </h4>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-xs border-0"
-                        style={{
-                          backgroundColor: "var(--eleven-bg-card)",
-                          color: "var(--eleven-text-secondary)",
-                        }}
+                        className="text-xs border-0 bg-white dark:bg-gray-950 text-gray-500 dark:text-gray-400"
                       >
                         {message.approvalStatus === "pending"
                           ? "Aguardando"
@@ -466,14 +449,12 @@ export function ChatMessageList({
                       </Badge>
                     </div>
                     <p
-                      className="text-sm mb-3"
-                      style={{ color: "var(--eleven-text-secondary)" }}
+                      className="text-sm mb-3 text-gray-500 dark:text-gray-400"
                     >
                       {message.approvalRequest.description}
                     </p>
                     <p
-                      className="text-xs mb-4"
-                      style={{ color: "var(--eleven-text-tertiary)" }}
+                      className="text-xs mb-4 text-gray-400 dark:text-gray-500"
                     >
                       👤 {message.approvalRequest.manager}
                     </p>
@@ -484,14 +465,11 @@ export function ChatMessageList({
                           key={idx}
                           className="flex justify-between text-sm py-1.5"
                         >
-                          <span
-                            style={{ color: "var(--eleven-text-secondary)" }}
-                          >
+                          <span className="text-gray-500 dark:text-gray-400">
                             {item.label}:
                           </span>
                           <span
-                            className="font-medium"
-                            style={{ color: "var(--eleven-text-primary)" }}
+                            className="font-medium text-gray-800 dark:text-gray-100"
                           >
                             {item.value}
                           </span>
@@ -585,14 +563,12 @@ export function ChatMessageList({
               <LIAIcon size="md" />
             </div>
             <div
-              className="rounded-md p-5 flex-1"
-              style={{ backgroundColor: "var(--eleven-bg-message)" }}
+              className="rounded-md p-5 flex-1 bg-gray-100 dark:bg-gray-800"
             >
               <div className="flex items-center space-x-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span
-                  className="text-sm"
-                  style={{ color: "var(--eleven-text-secondary)" }}
+                  className="text-sm text-gray-500 dark:text-gray-400"
                 >
                   LIA está digitando...
                 </span>

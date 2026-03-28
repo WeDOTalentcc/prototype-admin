@@ -65,31 +65,31 @@ function getStatusBadge(status: string) {
 
 function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-xs font-semibold mb-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
             DESCRIÇÃO
           </h4>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {control.controlDescription || 'Sem descrição disponível.'}
           </p>
         </div>
         <div>
-          <h4 className="text-xs font-semibold mb-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
             ORIENTAÇÃO DE IMPLEMENTAÇÃO
           </h4>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {control.implementationGuidance || 'Sem orientação disponível.'}
           </p>
         </div>
       </div>
       {control.evidenceRequirements && control.evidenceRequirements.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-xs font-semibold mb-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
             REQUISITOS DE EVIDÊNCIA
           </h4>
-          <ul className="list-disc list-inside text-sm space-y-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <ul className="list-disc list-inside text-sm space-y-1 text-gray-500 dark:text-gray-400">
             {control.evidenceRequirements.map((req, idx) => (
               <li key={idx}>{req}</li>
             ))}
@@ -97,22 +97,22 @@ function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
         </div>
       )}
       {companyControl && (
-        <div className="mt-4 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+        <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                 Responsável:
               </span>
-              <span className="text-sm ml-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <span className="text-sm ml-2 text-gray-800 dark:text-gray-100">
                 {companyControl.ownerName || 'Não atribuído'}
               </span>
             </div>
             {companyControl.nextReviewDate && (
               <div>
-                <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                   Próxima Revisão:
                 </span>
-                <span className="text-sm ml-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                <span className="text-sm ml-2 text-gray-800 dark:text-gray-100">
                   {new Date(companyControl.nextReviewDate).toLocaleDateString('pt-BR')}
                 </span>
               </div>
@@ -120,10 +120,10 @@ function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
           </div>
           {companyControl.notes && (
             <div className="mt-2">
-              <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                 Notas:
               </span>
-              <p className="text-sm mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
                 {companyControl.notes}
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function SOC2Page() {
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
             Carregando controles SOC 2...
           </span>
         </div>
@@ -241,15 +241,11 @@ export default function SOC2Page() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
               >
                 Controles SOC 2 Type II
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Trust Service Criteria - Segurança, Disponibilidade, Confidencialidade
               </p>
             </div>
@@ -266,11 +262,11 @@ export default function SOC2Page() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant="info" className="text-micro">{tsc.id}</Badge>
-                  <span className="text-xs font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <span className="text-xs font-medium truncate text-gray-800 dark:text-gray-100">
                     {tsc.name}
                   </span>
                 </div>
-                <p className="text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-micro text-gray-400 dark:text-gray-500">
                   {tsc.description}
                 </p>
               </CardContent>
@@ -282,10 +278,10 @@ export default function SOC2Page() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                   Progresso de Conformidade
                 </span>
-                <span className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                   {Math.round(stats.compliancePercentage)}%
                 </span>
               </div>
@@ -293,30 +289,30 @@ export default function SOC2Page() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-status-success" />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {stats.implemented + stats.verified} Implementados
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-status-warning" />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {stats.inProgress} Em Progresso
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {stats.notStarted} Não Iniciados
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {stats.notApplicable} N/A
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                     Total: {stats.totalControls} controles
                   </span>
                 </div>
@@ -364,7 +360,7 @@ export default function SOC2Page() {
               </Select>
             </div>
 
-            <div className="rounded-md border overflow-hidden" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="rounded-md border overflow-hidden border-gray-200 dark:border-gray-700">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50 dark:bg-gray-800/50">
@@ -393,10 +389,10 @@ export default function SOC2Page() {
                                 <ChevronRight className="w-4 h-4 text-gray-400" />
                               )}
                             </TableCell>
-                            <TableCell className="font-mono text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <TableCell className="font-mono text-xs text-gray-400 dark:text-gray-500">
                               {control.controlId}
                             </TableCell>
-                            <TableCell style={{ color: 'var(--eleven-text-primary)' }}>
+                            <TableCell className="text-gray-800 dark:text-gray-100">
                               {control.controlName}
                             </TableCell>
                             <TableCell>
@@ -421,7 +417,7 @@ export default function SOC2Page() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        <p style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-gray-400 dark:text-gray-500">
                           {controls.length === 0 
                             ? 'Nenhum controle SOC 2 configurado.' 
                             : 'Nenhum controle encontrado com os filtros aplicados.'
@@ -434,7 +430,7 @@ export default function SOC2Page() {
               </Table>
             </div>
 
-            <div className="mt-3 text-xs text-right" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <div className="mt-3 text-xs text-right text-gray-400 dark:text-gray-500">
               Exibindo {filteredControls.length} de {controls.length} controles
             </div>
           </CardContent>

@@ -334,12 +334,12 @@ export default function OnboardingClientesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-2xl font-semibold mb-1"
-            style={{ color: 'var(--eleven-text-primary)' }}
+            className="text-2xl font-semibold mb-1 text-gray-800 dark:text-gray-100"
+            
           >
             Onboarding de Clientes
           </h1>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400" >
             Status consolidado de todos os clientes
           </p>
         </div>

@@ -196,13 +196,13 @@ function AdminSidebar({
         "flex flex-col border-r transition-all duration-300",
         sidebarCollapsed ? "w-16" : "w-64"
       )}
-      style={{ borderColor: 'var(--eleven-border-subtle)', backgroundColor: 'var(--eleven-bg-card)' }}
+      className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950" 
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" >
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-gray-900 dark:text-gray-50" />
-            <span className="font-semibold text-lg" style={{ color: 'var(--eleven-text-primary)' }}>
+            <span className="font-semibold text-lg text-gray-800 dark:text-gray-100" >
               WedoTalent Admin
             </span>
           </div>
@@ -212,18 +212,15 @@ function AdminSidebar({
 
       {activeClient && !sidebarCollapsed && (
         <div 
-          className="mx-2 mt-3 p-3 rounded-md border"
-          style={{ 
-            backgroundColor: 'var(--eleven-bg-secondary)', 
-            borderColor: 'var(--eleven-border-subtle)' 
-          }}
+          className="mx-2 mt-3 p-3 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          
         >
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                 Cliente Ativo
               </p>
-              <p className="text-sm font-semibold truncate mt-0.5" style={{ color: 'var(--eleven-text-primary)' }}>
+              <p className="text-sm font-semibold truncate mt-0.5 text-gray-800 dark:text-gray-100" >
                 {activeClient.name}
               </p>
             </div>
@@ -245,16 +242,14 @@ function AdminSidebar({
           <div key={group.label}>
             {group.label === "Compliance & Segurança" && (
               <div 
-                className="my-3 mx-3 border-t" 
-                style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                className="my-3 mx-3 border-t border-gray-200 dark:border-gray-700" 
+                
               />
             )}
             {!sidebarCollapsed && (
               <p 
-                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider"
-                style={{ 
-                  color: 'var(--eleven-text-tertiary)' 
-                }}
+                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500"
+                
               >
                 {group.label}
               </p>
@@ -272,9 +267,8 @@ function AdminSidebar({
                       "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                       isActive
                         ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 font-semibold"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
                     )}
-                    style={!isActive ? { color: 'var(--eleven-text-secondary)' } : {}}
                     title={sidebarCollapsed ? item.name : undefined}
                   >
                     <Icon 
@@ -294,7 +288,7 @@ function AdminSidebar({
         ))}
       </nav>
 
-      <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="p-2 border-t border-gray-200 dark:border-gray-700" >
         <Button
           variant="ghost"
           size="sm"
@@ -312,7 +306,7 @@ function AdminSidebar({
         </Button>
       </div>
 
-      <div className="p-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700" >
         {!sidebarCollapsed ? (
           <div className="flex items-center gap-3">
             <Avatar className="w-8 h-8">
@@ -320,10 +314,10 @@ function AdminSidebar({
               <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-xs">AD</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+              <p className="text-sm font-medium truncate text-gray-800 dark:text-gray-100" >
                 Admin WedoTalent
               </p>
-              <p className="text-xs truncate" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-xs truncate text-gray-400 dark:text-gray-500" >
                 admin@wedotalent.com
               </p>
             </div>
@@ -359,7 +353,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900" >
       <AdminSidebar 
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
@@ -368,19 +362,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1 flex flex-col overflow-hidden">
         <header 
-          className="flex items-center justify-between h-16 px-6 border-b shrink-0"
-          style={{ 
-            borderColor: 'var(--eleven-border-subtle)', 
-            backgroundColor: 'var(--eleven-bg-card)' 
-          }}
+          className="flex items-center justify-between h-16 px-6 border-b shrink-0 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950"
+          
         >
           <div className="flex items-center gap-4">
             <ClientSelector />
           </div>
           <div className="flex items-center gap-2">
             <span 
-              className="text-sm"
-              style={{ color: 'var(--eleven-text-tertiary)' }}
+              className="text-sm text-gray-400 dark:text-gray-500"
+              
             >
               Painel Administrativo
             </span>

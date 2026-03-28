@@ -257,11 +257,11 @@ export default function ClientFaturamentoPage({
           <div>
             <div className="flex items-center gap-3 mb-2">
               <CreditCard className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                 Faturamento
               </h2>
             </div>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Histórico de faturas e informações de cobrança
             </p>
           </div>
@@ -277,10 +277,10 @@ export default function ClientFaturamentoPage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-100">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
           {error}
         </p>
         <Button variant="outline" onClick={fetchBillingData}>
@@ -301,11 +301,11 @@ export default function ClientFaturamentoPage({
         <div>
           <div className="flex items-center gap-3 mb-2">
             <CreditCard className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
               Faturamento
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Histórico de faturas e informações de cobrança
           </p>
         </div>
@@ -325,8 +325,8 @@ export default function ClientFaturamentoPage({
                 <DollarSign className="w-5 h-5 text-status-success" />
               </div>
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>MRR</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">MRR</p>
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   {formatCurrency(billingData.subscription.mrr)}
                 </p>
               </div>
@@ -340,8 +340,8 @@ export default function ClientFaturamentoPage({
                 <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Próximo Vencimento</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Próximo Vencimento</p>
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   {formatDate(billingData.subscription.next_billing_date)}
                 </p>
               </div>
@@ -355,8 +355,8 @@ export default function ClientFaturamentoPage({
                 <TrendingUp className="w-5 h-5 text-wedo-purple" />
               </div>
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>LTV Estimado</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">LTV Estimado</p>
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   {formatCurrency(billingData.summary.ltv_estimated)}
                 </p>
               </div>
@@ -370,8 +370,8 @@ export default function ClientFaturamentoPage({
                 <FileText className="w-5 h-5 text-status-warning" />
               </div>
               <div>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total Faturas</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Total Faturas</p>
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   {billingData.summary.invoices_count}
                 </p>
               </div>
@@ -384,7 +384,7 @@ export default function ClientFaturamentoPage({
         <Card className="lg:col-span-2 border-gray-100">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
                 Detalhes do Plano
               </CardTitle>
               <Badge variant={subscriptionStatus.variant}>{subscriptionStatus.label}</Badge>
@@ -393,34 +393,34 @@ export default function ClientFaturamentoPage({
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Plano
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Package className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
                     {billingData.subscription.plan_name}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Ciclo
                 </p>
-                <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                   {billingData.subscription.billing_cycle === 'monthly' ? 'Mensal' : 'Anual'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Cliente Desde
                 </p>
-                <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                   {formatDate(billingData.subscription.started_at)}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Total Pago
                 </p>
                 <p className="text-sm font-medium mt-1 text-status-success">
@@ -428,7 +428,7 @@ export default function ClientFaturamentoPage({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -462,7 +462,7 @@ export default function ClientFaturamentoPage({
 
         <Card className="border-gray-100">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Métodos de Pagamento
             </CardTitle>
           </CardHeader>
@@ -471,8 +471,8 @@ export default function ClientFaturamentoPage({
               {billingData.payment_methods.map((method) => (
                 <div 
                   key={method.id}
-                  className="flex items-center justify-between p-3 rounded-md border"
-                  style={{ borderColor: method.is_default ? 'var(--gray-950)' : 'var(--eleven-border-subtle)' }}
+                  className={`flex items-center justify-between p-3 rounded-md border ${!method.is_default ? 'border-gray-200 dark:border-gray-700' : ''}`}
+                  style={method.is_default ? { borderColor: 'var(--gray-950)' } : undefined}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
@@ -487,15 +487,15 @@ export default function ClientFaturamentoPage({
                     <div>
                       {method.type === 'credit_card' ? (
                         <>
-                          <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                             {method.brand} •••• {method.last_four}
                           </p>
-                          <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             Expira em {method.expires_at}
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                           {method.type === 'pix' ? 'PIX' : 'Boleto'}
                         </p>
                       )}
@@ -516,7 +516,7 @@ export default function ClientFaturamentoPage({
 
       <Card className="border-gray-100">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+          <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
             Histórico de Faturas
           </CardTitle>
         </CardHeader>
@@ -529,19 +529,18 @@ export default function ClientFaturamentoPage({
               return (
                 <div 
                   key={invoice.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       <FileText className="w-5 h-5 text-gray-500" />
                     </div>
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="font-medium text-gray-800 dark:text-gray-100">
                         {invoice.description}
                       </p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-sm text-gray-400 dark:text-gray-500">
                           {formatDate(invoice.date)}
                         </p>
                         {invoice.status === 'overdue' && (
@@ -553,7 +552,7 @@ export default function ClientFaturamentoPage({
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <p className="font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="font-semibold text-gray-800 dark:text-gray-100">
                       {formatCurrency(invoice.amount)}
                     </p>
                     <Badge variant={statusInfo.variant} className="flex items-center gap-1">

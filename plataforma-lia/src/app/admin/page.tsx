@@ -197,12 +197,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-3xl font-semibold mb-2"
-            style={{ color: 'var(--eleven-text-primary)' }}
+            className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+            
           >
             Dashboard Administrativo
           </h1>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400" >
             Visão geral da plataforma WedoTalent • {isLoading ? 'Carregando...' : 'Atualizado em tempo real'}
           </p>
         </div>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6" style={{ backgroundColor: 'var(--eleven-surface-1, white)' }}>
+        <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserPlus className="w-5 h-5" style={{ color: "#16a34a" }} />
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'var(--eleven-surface-1, white)' }}>
+        <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5" style={{ color: "var(--status-warning)" }} />
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6" style={{ backgroundColor: 'var(--eleven-surface-1, white)' }}>
+        <Card className="p-6 bg-white dark:bg-gray-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserMinus className="w-5 h-5" style={{ color: "#dc2626" }} />

@@ -242,15 +242,12 @@ export default function AlertasPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Alertas Proativos
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Monitoramento e gestão de alertas do sistema
             </p>
           </div>
@@ -261,10 +258,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Total de Alertas
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {alerts.length}
                   </p>
                 </div>
@@ -279,10 +276,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Novos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {newAlerts}
                   </p>
                 </div>
@@ -297,10 +294,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Alta Severidade
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {highSeverityAlerts}
                   </p>
                 </div>
@@ -315,10 +312,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Canais Ativos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {channels.filter(c => c.enabled).length}/{channels.length}
                   </p>
                 </div>
@@ -335,7 +332,7 @@ export default function AlertasPage() {
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Lista de Alertas
                   </CardTitle>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -410,10 +407,10 @@ export default function AlertasPage() {
                           </TableCell>
                           <TableCell>
                             <div className="max-w-[250px]">
-                              <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                              <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                                 {alert.title}
                               </span>
-                              <p className="text-xs truncate" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                              <p className="text-xs truncate text-gray-400 dark:text-gray-500" >
                                 {alert.message}
                               </p>
                             </div>
@@ -425,7 +422,7 @@ export default function AlertasPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <span className="text-sm text-gray-500 dark:text-gray-400" >
                               {new Date(alert.createdAt).toLocaleString('pt-BR')}
                             </span>
                           </TableCell>
@@ -469,7 +466,7 @@ export default function AlertasPage() {
                 </Table>
                 {filteredAlerts.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-sm text-gray-400 dark:text-gray-500" >
                       Nenhum alerta encontrado com os filtros selecionados.
                     </p>
                   </div>
@@ -481,7 +478,7 @@ export default function AlertasPage() {
           <div className="space-y-6">
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   Canais de Notificação
                 </CardTitle>
@@ -493,8 +490,8 @@ export default function AlertasPage() {
                     return (
                       <div 
                         key={channel.id}
-                        className="flex items-center justify-between p-3 rounded-md border"
-                        style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                        className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                        
                       >
                         <div className="flex items-center gap-3">
                           <div 
@@ -504,10 +501,10 @@ export default function AlertasPage() {
                             <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'text-gray-400'}`} />
                           </div>
                           <div>
-                            <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                               {channel.name}
                             </span>
-                            <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <p className="text-xs text-gray-400 dark:text-gray-500" >
                               {channel.description}
                             </p>
                           </div>
@@ -525,7 +522,7 @@ export default function AlertasPage() {
 
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                   Alertas por Tipo
                 </CardTitle>
               </CardHeader>
@@ -538,9 +535,8 @@ export default function AlertasPage() {
                     return (
                       <div 
                         key={type}
-                        className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                        className={`flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer ${typeFilter === type ? 'bg-gray-50 dark:bg-gray-900' : ''}`}
                         onClick={() => setTypeFilter(type)}
-                        style={{ backgroundColor: typeFilter === type ? 'var(--eleven-bg-subtle)' : 'transparent' }}
                       >
                         <div className="flex items-center gap-2">
                           <div 
@@ -549,7 +545,7 @@ export default function AlertasPage() {
                           >
                             <TypeIcon className={`w-3 h-3 ${typeConfig.iconColor}`} />
                           </div>
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <span className="text-sm text-gray-500 dark:text-gray-400" >
                             {typeConfig.label}
                           </span>
                         </div>

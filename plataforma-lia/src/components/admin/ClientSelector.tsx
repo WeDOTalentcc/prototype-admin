@@ -79,12 +79,7 @@ export function ClientSelector() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[280px] justify-between"
-          style={{
-            backgroundColor: 'var(--eleven-bg-card)',
-            borderColor: 'var(--eleven-border-subtle)',
-            color: 'var(--eleven-text-primary)',
-          }}
+          className="w-[280px] justify-between bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100"
         >
           {selectedClient ? (
             <div className="flex items-center gap-2 truncate">

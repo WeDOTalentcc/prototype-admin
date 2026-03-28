@@ -1635,8 +1635,8 @@ export function SmartSearchInput({
             size="sm"
             className="h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
             style={{ 
-              backgroundColor: canSubmit() ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
-              color: canSubmit() ? "white" : "var(--eleven-text-secondary)"
+              backgroundColor: canSubmit() ? "var(--gray-950)" : "rgb(243 244 246)",
+              color: canSubmit() ? "white" : "rgb(107 114 128)"
             }}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -1999,8 +1999,8 @@ export function SmartSearchInput({
                   size="sm"
                   className="absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
                   style={{ 
-                    backgroundColor: canSubmit() ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
-                    color: canSubmit() ? "white" : "var(--eleven-text-secondary)",
+                    backgroundColor: canSubmit() ? "var(--gray-950)" : "rgb(243 244 246)",
+                    color: canSubmit() ? "white" : "rgb(107 114 128)",
                     zIndex: 10
                   }}
                 >
@@ -2238,7 +2238,7 @@ export function SmartSearchInput({
                     <TooltipContent 
                       side="bottom" 
                       className="max-w-[300px] p-3"
-                      style={{ backgroundColor: "white", border: "1px solid var(--eleven-border)" }}
+                      className="bg-white border-gray-300 dark:border-gray-600"
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -2256,7 +2256,7 @@ export function SmartSearchInput({
                           </span>
                         </div>
                         <div>
-                          <span className="font-medium text-sm" style={{ color: "var(--eleven-text-primary)" }}>
+                          <span className="font-medium text-sm" className="text-gray-800 dark:text-gray-100">
                             Assistente de Busca Inteligente
                           </span>
                         </div>
@@ -2277,7 +2277,7 @@ export function SmartSearchInput({
                             <span>Alerta sobre buscas muito amplas ou restritivas</span>
                           </li>
                         </ul>
-                        <p className="text-micro pt-1 border-t text-gray-500" style={{ borderColor: "var(--eleven-border)" }}>
+                        <p className="text-micro pt-1 border-t text-gray-500" className="border-gray-300 dark:border-gray-600">
                           {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
                         </p>
                       </div>
@@ -2304,7 +2304,7 @@ export function SmartSearchInput({
 
               {/* Assistente de Busca - Barra de completude e alertas */}
               {value && searchAnalysis && (
-                <div className="space-y-2 pt-2 border-t" style={{ borderColor: "var(--eleven-border)" }}>
+                <div className="space-y-2 pt-2 border-t" className="border-gray-300 dark:border-gray-600">
                   {/* Barra de completude */}
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
@@ -2327,7 +2327,7 @@ export function SmartSearchInput({
                       </div>
                       <div 
                         className="h-1.5 rounded-full overflow-hidden"
-                        style={{ backgroundColor: "var(--eleven-bg-tertiary)" }}
+                        className="bg-gray-100 dark:bg-gray-800"
                       >
                         <div 
                           className="h-full rounded-full transition-all duration-500"
@@ -2366,7 +2366,7 @@ export function SmartSearchInput({
                             backgroundColor: alert.severity === "warning" 
                               ? "rgba(245, 158, 11, 0.08)" 
                               : "rgba(96, 190, 209, 0.08)",
-                            color: "var(--eleven-text-secondary)"
+                            color: "rgb(107 114 128)"
                           }}
                         >
                           {alert.severity === "warning" ? (
@@ -2589,7 +2589,7 @@ export function SmartSearchInput({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                      <span className="text-xs font-medium" style={{ color: "var(--eleven-text-primary)" }}>
+                      <span className="text-xs font-medium" className="text-gray-800 dark:text-gray-100">
                         Perfil Ideal sugerido pela LIA
                       </span>
                     </div>
@@ -3390,7 +3390,7 @@ export function SmartSearchInput({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5 text-gray-700" />
-                      <span className="text-xs font-medium" style={{ color: "var(--eleven-text-primary)" }}>
+                      <span className="text-xs font-medium" className="text-gray-800 dark:text-gray-100">
                         Preview do prompt de busca
                       </span>
                     </div>
@@ -3402,9 +3402,9 @@ export function SmartSearchInput({
                     placeholder="O prompt será gerado a partir da descrição da vaga..."
                     className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 min-h-[60px]"
                     style={{ 
-                      border: "1px solid var(--eleven-border)",
+                      border: "1px solid rgb(209 213 219)",
                       backgroundColor: "var(--gray-50)",
-                      color: "var(--eleven-text-primary)"
+                      color: "rgb(31 41 55)"
                     }}
                     rows={2}
                   />
@@ -3618,15 +3618,15 @@ export function SmartSearchInput({
               )}
               
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>Operadores:</span>
+                <span className="text-xs" className="text-gray-500 dark:text-gray-400">Operadores:</span>
                 {["AND", "OR", "NOT", "(", ")"].map((op) => (
                   <button
                     key={op}
                     onClick={() => onChange(value + (value ? " " : "") + op + " ")}
                     className="px-2 py-0.5 rounded text-xs font-mono hover:bg-gray-100 transition-colors"
                     style={{ 
-                      backgroundColor: "var(--eleven-bg-tertiary)",
-                      color: "var(--eleven-text-secondary)"
+                      backgroundColor: "rgb(243 244 246)",
+                      color: "rgb(107 114 128)"
                     }}
                   >
                     {op}
@@ -3697,7 +3697,7 @@ export function SmartSearchInput({
       {mode === "natural" && filledCount === 0 && value.length > 0 && (
         <p 
           className="text-xs px-1"
-          style={{ color: "var(--eleven-text-secondary)" }}
+          className="text-gray-500 dark:text-gray-400"
         >
           Dica: Inclua cargo, localização e skills para melhores resultados
         </p>

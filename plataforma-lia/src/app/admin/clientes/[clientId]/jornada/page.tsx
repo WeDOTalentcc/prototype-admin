@@ -89,7 +89,7 @@ export default function ClientJornadaPage({
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Carregando jornada...
           </p>
         </div>
@@ -104,13 +104,12 @@ export default function ClientJornadaPage({
           <div className="flex items-center gap-3 mb-2">
             <Workflow className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Jornada de Recrutamento
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Pipeline e etapas do processo seletivo
           </p>
         </div>
@@ -159,7 +158,7 @@ export default function ClientJornadaPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Pipeline de Etapas
             </CardTitle>
             <Badge variant="outline">
@@ -173,19 +172,18 @@ export default function ClientJornadaPage({
               <React.Fragment key={stage.id}>
                 <div 
                   className={`flex flex-col items-center gap-2 px-4 py-3 rounded-md border min-w-[120px] ${
-                    stage.isActive 
-                      ? 'bg-white dark:bg-gray-900' 
-                      : 'bg-gray-50 dark:bg-gray-800 opacity-50'
+                    stage.isActive
+                      ? 'bg-white dark:bg-gray-900'
+                      : 'bg-gray-50 dark:bg-gray-800 opacity-50 border-gray-200 dark:border-gray-700'
                   }`}
-                  style={{ borderColor: stage.isActive ? stage.color : 'var(--eleven-border-subtle)' }}
+                  style={{ borderColor: stage.isActive ? stage.color : undefined }}
                 >
                   <div 
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: stage.color }}
                   />
                   <span 
-                    className="text-sm font-medium text-center"
-                    style={{ color: 'var(--eleven-text-primary)' }}
+                    className="text-sm font-medium text-center text-gray-800 dark:text-gray-100"
                   >
                     {stage.name}
                   </span>
@@ -196,7 +194,7 @@ export default function ClientJornadaPage({
                   )}
                 </div>
                 {index < stages.length - 1 && (
-                  <ArrowRight className="w-5 h-5 shrink-0" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                  <ArrowRight className="w-5 h-5 shrink-0 text-gray-400 dark:text-gray-500" />
                 )}
               </React.Fragment>
             ))}
@@ -208,7 +206,7 @@ export default function ClientJornadaPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-gray-900 dark:text-gray-50">{activeStages.length}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Etapas Ativas
             </p>
           </CardContent>
@@ -218,7 +216,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-status-success">
               {stages.filter(s => s.automations?.emailFeedback).length}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Com Email Automático
             </p>
           </CardContent>
@@ -228,7 +226,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {stages.filter(s => s.automations?.whatsappNotification).length}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Com WhatsApp Automático
             </p>
           </CardContent>

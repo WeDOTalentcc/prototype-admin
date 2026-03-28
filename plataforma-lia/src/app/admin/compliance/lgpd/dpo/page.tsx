@@ -103,15 +103,12 @@ export default function DPOPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Registro de DPOs
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Encarregados de Proteção de Dados (Data Protection Officers)
               </p>
             </div>
@@ -221,8 +218,8 @@ export default function DPOPage() {
                   <UserCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{dpos.length}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total de DPOs</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{dpos.length}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Total de DPOs</p>
                 </div>
               </div>
             </CardContent>
@@ -235,8 +232,8 @@ export default function DPOPage() {
                   <UserCheck className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{activeDPOs}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>DPOs Ativos</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{activeDPOs}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >DPOs Ativos</p>
                 </div>
               </div>
             </CardContent>
@@ -249,10 +246,10 @@ export default function DPOPage() {
                   <Star className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-semibold truncate text-gray-800 dark:text-gray-100" >
                     {primaryDPO?.name || 'Não definido'}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>DPO Principal</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >DPO Principal</p>
                 </div>
               </div>
             </CardContent>
@@ -262,11 +259,11 @@ export default function DPOPage() {
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 Lista de DPOs Cadastrados
               </CardTitle>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                 <Input
                   placeholder="Buscar DPO..."
                   value={searchTerm}
@@ -299,7 +296,7 @@ export default function DPOPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{dpo.name}</span>
+                            <span className="font-medium text-gray-800 dark:text-gray-100" >{dpo.name}</span>
                             {dpo.isPrimary && (
  <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 text-micro px-1.5 py-0">
                                 <Star className="w-3 h-3 mr-0.5" />
@@ -312,26 +309,26 @@ export default function DPOPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Building2 className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>{dpo.company}</span>
+                        <Building2 className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-gray-500 dark:text-gray-400" >{dpo.company}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>{dpo.email}</span>
+                        <Mail className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-gray-500 dark:text-gray-400" >{dpo.email}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Phone className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>{dpo.phone}</span>
+                        <Phone className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-gray-500 dark:text-gray-400" >{dpo.phone}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-gray-500 dark:text-gray-400" >
                           {new Date(dpo.since).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
@@ -359,8 +356,8 @@ export default function DPOPage() {
 
             {filteredDPOs.length === 0 && (
               <div className="text-center py-8">
-                <UserCheck className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <UserCheck className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500"  />
+                <p className="text-sm text-gray-400 dark:text-gray-500" >
                   Nenhum DPO encontrado
                 </p>
               </div>

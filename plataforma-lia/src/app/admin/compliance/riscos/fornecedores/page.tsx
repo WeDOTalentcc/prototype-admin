@@ -173,15 +173,12 @@ export default function FornecedoresPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Due Diligence Supply Chain
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Avaliação de riscos de fornecedores e terceiros
               </p>
             </div>
@@ -205,7 +202,7 @@ export default function FornecedoresPage() {
                     Obrigatório
                   </Badge>
                 </div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-sm text-gray-500 dark:text-gray-400" >
                   A Resolução BCB 498/2025 exige due diligence para todos os fornecedores de serviços de processamento 
                   e armazenamento de dados em nuvem. Todos os fornecedores críticos devem ser avaliados quanto a 
                   certificações de segurança, políticas de privacidade e conformidade regulatória.
@@ -223,8 +220,8 @@ export default function FornecedoresPage() {
                   <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{totalVendors}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{totalVendors}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Total</p>
                 </div>
               </div>
             </CardContent>
@@ -237,8 +234,8 @@ export default function FornecedoresPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{approvedVendors}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Aprovados</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{approvedVendors}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Aprovados</p>
                 </div>
               </div>
             </CardContent>
@@ -251,8 +248,8 @@ export default function FornecedoresPage() {
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{highCriticalityVendors}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Alta Criticidade</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{highCriticalityVendors}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Alta Criticidade</p>
                 </div>
               </div>
             </CardContent>
@@ -265,8 +262,8 @@ export default function FornecedoresPage() {
                   <Award className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{scoreAVendors}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Score A</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{scoreAVendors}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Score A</p>
                 </div>
               </div>
             </CardContent>
@@ -279,8 +276,8 @@ export default function FornecedoresPage() {
                   <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{scoreBVendors}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Score B</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{scoreBVendors}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Score B</p>
                 </div>
               </div>
             </CardContent>
@@ -290,12 +287,12 @@ export default function FornecedoresPage() {
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 Lista de Fornecedores Avaliados
               </CardTitle>
               <div className="flex items-center gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                   <Input
                     placeholder="Buscar fornecedores..."
                     value={searchTerm}
@@ -338,7 +335,7 @@ export default function FornecedoresPage() {
                             <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
                               <Building2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                             </div>
-                            <span className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <span className="font-medium text-gray-800 dark:text-gray-100" >
                               {vendor.name}
                             </span>
                           </div>
@@ -360,16 +357,16 @@ export default function FornecedoresPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                            <span className="text-sm text-gray-500 dark:text-gray-400" >
                               {new Date(vendor.lastAssessment).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                            <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                            <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                            <span className="text-sm text-gray-500 dark:text-gray-400" >
                               {new Date(vendor.nextAssessment).toLocaleDateString('pt-BR')}
                             </span>
                           </div>

@@ -451,7 +451,7 @@ export default function HealthCheckPage() {
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
             Carregando Health Check...
           </span>
         </div>
@@ -472,15 +472,11 @@ export default function HealthCheckPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
               >
                 Compliance Health Check
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Verificação consolidada de requisitos de conformidade
               </p>
             </div>
@@ -518,7 +514,7 @@ export default function HealthCheckPage() {
                     >
                       {fw.icon}
                     </div>
-                    <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                       {fw.name}
                     </span>
                   </div>
@@ -532,7 +528,7 @@ export default function HealthCheckPage() {
                   </div>
                   <Progress value={fw.compliancePercentage} className="h-1.5 mt-2" />
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <div className="grid grid-cols-2 gap-1 text-micro text-gray-400 dark:text-gray-500">
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-status-success" />
                     <span>{fw.implemented} impl.</span>
@@ -603,7 +599,7 @@ export default function HealthCheckPage() {
               </Select>
             </div>
 
-            <div className="rounded-md border overflow-hidden" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="rounded-md border overflow-hidden border-gray-200 dark:border-gray-700">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50 dark:bg-gray-800/50">
@@ -635,18 +631,18 @@ export default function HealthCheckPage() {
                             onCheckedChange={() => toggleItemSelection(item.id)}
                           />
                         </TableCell>
-                        <TableCell className="font-mono text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <TableCell className="font-mono text-xs text-gray-400 dark:text-gray-500">
                           {item.reqId}
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                            <p className="text-sm text-gray-800 dark:text-gray-100">
                               {item.requirement}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="lilac" className="text-micro">{FRAMEWORK_NAMES[item.framework] || item.framework}</Badge>
                               {item.comment && (
-                                <span className="text-micro flex items-center gap-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                <span className="text-micro flex items-center gap-1 text-gray-400 dark:text-gray-500">
                                   <MessageSquare className="w-3 h-3" />
                                   Comentário
                                 </span>
@@ -658,12 +654,12 @@ export default function HealthCheckPage() {
                           {getStatusBadge(item.status)}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {item.evidence || '-'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {item.lastVerification 
                               ? new Date(item.lastVerification).toLocaleDateString('pt-BR')
                               : '-'
@@ -685,7 +681,7 @@ export default function HealthCheckPage() {
                               </span>
                             </a>
                           ) : (
-                            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               -
                             </span>
                           )}
@@ -715,7 +711,7 @@ export default function HealthCheckPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        <p style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-gray-400 dark:text-gray-500">
                           {items.length === 0 
                             ? 'Nenhum requisito cadastrado. Clique em "Seed Data" para carregar dados de demonstração.'
                             : 'Nenhum requisito encontrado com os filtros aplicados.'
@@ -729,7 +725,7 @@ export default function HealthCheckPage() {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
                 {selectedItems.size > 0 && (
                   <span className="mr-4">{selectedItems.size} selecionado(s)</span>
                 )}
@@ -742,7 +738,7 @@ export default function HealthCheckPage() {
         <Dialog open={isVerifyModalOpen} onOpenChange={setIsVerifyModalOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+              <DialogTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
                 Verificar Requisito
               </DialogTitle>
               <DialogDescription>
@@ -770,23 +766,23 @@ export default function HealthCheckPage() {
                 />
               </div>
               {selectedItem && (
-                <div className="p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
+                <div className="p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span style={{ color: 'var(--eleven-text-tertiary)' }}>Framework:</span>
-                      <p style={{ color: 'var(--eleven-text-primary)' }}>{FRAMEWORK_NAMES[selectedItem.framework]}</p>
+                      <span className="text-gray-400 dark:text-gray-500">Framework:</span>
+                      <p className="text-gray-800 dark:text-gray-100">{FRAMEWORK_NAMES[selectedItem.framework]}</p>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--eleven-text-tertiary)' }}>Status Atual:</span>
+                      <span className="text-gray-400 dark:text-gray-500">Status Atual:</span>
                       <div className="mt-1">{getStatusBadge(selectedItem.status)}</div>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--eleven-text-tertiary)' }}>Evidência:</span>
-                      <p style={{ color: 'var(--eleven-text-primary)' }}>{selectedItem.evidence || 'Não anexada'}</p>
+                      <span className="text-gray-400 dark:text-gray-500">Evidência:</span>
+                      <p className="text-gray-800 dark:text-gray-100">{selectedItem.evidence || 'Não anexada'}</p>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--eleven-text-tertiary)' }}>Última Verificação:</span>
-                      <p style={{ color: 'var(--eleven-text-primary)' }}>
+                      <span className="text-gray-400 dark:text-gray-500">Última Verificação:</span>
+                      <p className="text-gray-800 dark:text-gray-100">
                         {selectedItem.lastVerification 
                           ? new Date(selectedItem.lastVerification).toLocaleDateString('pt-BR')
                           : 'Nunca verificado'
@@ -795,8 +791,8 @@ export default function HealthCheckPage() {
                     </div>
                   </div>
                   {selectedItem.referenceUrl && (
-                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
-                      <span style={{ color: 'var(--eleven-text-tertiary)' }}>Legislação de Referência:</span>
+                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                      <span className="text-gray-400 dark:text-gray-500">Legislação de Referência:</span>
                       <a
                         href={selectedItem.referenceUrl}
                         target="_blank"
@@ -809,8 +805,8 @@ export default function HealthCheckPage() {
                     </div>
                   )}
                   {selectedItem.checklistItems && selectedItem.checklistItems.length > 0 && (
-                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
-                      <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                      <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                         Lista de Verificação ({selectedItem.checklistItems.filter(i => i.completed).length}/{selectedItem.checklistItems.length})
                       </span>
                       <div className="mt-2 space-y-2">
@@ -820,9 +816,8 @@ export default function HealthCheckPage() {
                               checked={checkItem.completed}
                               className="mt-0.5"
                             />
-                            <span 
-                              className={`text-xs ${checkItem.completed ? 'line-through' : ''}`}
-                              style={{ color: checkItem.completed ? 'var(--eleven-text-tertiary)' : 'var(--eleven-text-primary)' }}
+                            <span
+                              className={`text-xs ${checkItem.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}
                             >
                               {checkItem.text}
                             </span>
@@ -832,13 +827,12 @@ export default function HealthCheckPage() {
                     </div>
                   )}
                   {selectedItem.evidenceDetails && (
-                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
-                      <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                      <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                         Documentação Requerida:
                       </span>
                       <pre 
-                        className="mt-2 text-xs whitespace-pre-wrap"
-                        style={{ color: 'var(--eleven-text-secondary)', fontFamily: 'inherit' }}
+                        className="mt-2 text-xs whitespace-pre-wrap text-gray-500 dark:text-gray-400" style={{ fontFamily: 'inherit' }}
                       >
                         {selectedItem.evidenceDetails}
                       </pre>

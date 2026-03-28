@@ -205,7 +205,7 @@ export default function ComplianceDashboardPage() {
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500" >
             Carregando dados de compliance...
           </span>
         </div>
@@ -226,15 +226,12 @@ export default function ComplianceDashboardPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Dashboard de Compliance Global
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Visão consolidada de conformidade, riscos e controles
               </p>
             </div>
@@ -250,10 +247,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Total de Controles
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {totalControls}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -267,7 +264,7 @@ export default function ComplianceDashboardPage() {
               </div>
               <div className="mt-3">
                 <Progress value={(implementedControls / totalControls) * 100} className="h-1.5" />
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                   {Math.round((implementedControls / totalControls) * 100)}% de cobertura
                 </p>
               </div>
@@ -278,10 +275,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     LGPD Compliance
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {lgpdStatus}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -308,10 +305,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Auditorias de Bias
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {biasAlertCount} alertas
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -329,7 +326,7 @@ export default function ComplianceDashboardPage() {
               </div>
               {latestBiasAudit && (
                 <div className="mt-3">
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >
                     Última auditoria: {new Date(latestBiasAudit.auditDate).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
@@ -341,15 +338,15 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Próximas Revisões
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {upcomingReviews}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Clock className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                    <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Próximos 30 dias</span>
+                    <Clock className="w-3 h-3 text-gray-400 dark:text-gray-500"  />
+                    <span className="text-xs text-gray-400 dark:text-gray-500" >Próximos 30 dias</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
@@ -368,7 +365,7 @@ export default function ComplianceDashboardPage() {
         </div>
 
         <div>
-          <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--eleven-text-primary)' }}>
+          <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-100" >
             Conformidade por Framework
           </h2>
           {displayFrameworks.length > 0 ? (
@@ -377,13 +374,12 @@ export default function ComplianceDashboardPage() {
                 <Card key={fw.key} style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                         {fw.name}
                       </h3>
                       <Badge 
                         variant={fw.status === 'active' ? (fw.progress >= 70 ? 'success' : 'warning') : 'default'}
-                        className="text-micro"
-                        style={fw.status === 'implementing' ? { backgroundColor: 'var(--eleven-bg-secondary)', color: 'var(--eleven-text-tertiary)' } : undefined}
+                        className={`text-micro ${fw.status === 'implementing' ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500' : ''}`}
                       >
                         {fw.status === 'active' ? `${Math.round(fw.progress)}%` : 'Em impl.'}
                       </Badge>
@@ -393,7 +389,7 @@ export default function ComplianceDashboardPage() {
                       className="h-2 mb-2" 
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500" >
                         {fw.controls > 0 ? `${fw.implemented}/${fw.controls} controles` : 'Configurando...'}
                       </p>
                       {fw.status === 'active' && (
@@ -413,10 +409,10 @@ export default function ComplianceDashboardPage() {
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardContent className="p-6 text-center">
                 <FileCheck className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500" >
                   Nenhum framework configurado ainda
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                   Configure seus frameworks de compliance para começar
                 </p>
               </CardContent>
@@ -444,7 +440,7 @@ export default function ComplianceDashboardPage() {
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 Alertas Recentes
               </CardTitle>
               <Button variant="ghost" size="sm" asChild>
@@ -461,15 +457,15 @@ export default function ComplianceDashboardPage() {
                 {alerts.slice(0, 5).map((alert) => (
                   <div 
                     key={alert.id}
-                    className="flex items-center gap-3 p-3 rounded-md transition-colors hover:opacity-90"
-                    style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}
+                    className="flex items-center gap-3 p-3 rounded-md transition-colors hover:opacity-90 bg-gray-100 dark:bg-gray-800"
+                    
                   >
                     {getAlertIcon(alert)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <p className="text-sm font-medium truncate text-gray-800 dark:text-gray-100" >
                         {alert.title}
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <p className="text-xs text-gray-400 dark:text-gray-500" >
                         {formatTimeAgo(alert.timestamp)} • {alert.type === 'compliance' ? 'Compliance' : alert.type === 'bias' ? 'Bias' : 'LGPD'}
                       </p>
                     </div>
@@ -496,7 +492,7 @@ export default function ComplianceDashboardPage() {
             ) : (
               <div className="text-center py-6">
                 <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500" >
                   Nenhum alerta encontrado
                 </p>
               </div>

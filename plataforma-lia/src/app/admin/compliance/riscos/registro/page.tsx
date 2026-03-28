@@ -241,15 +241,12 @@ export default function RiskRegisterPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                
               >
                 Risk Register (ISMS)
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500" >
                 Registro de riscos do Sistema de Gestão de Segurança da Informação
               </p>
             </div>
@@ -268,7 +265,7 @@ export default function RiskRegisterPage() {
                 <p className="font-medium text-sm text-status-error">
                   Gap de Compliance - ISO 27001
                 </p>
-                <p className="text-sm mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <p className="text-sm mt-1 text-gray-500 dark:text-gray-400" >
                   O registro de riscos é um requisito crítico da norma ISO 27001. Mantenha este registro 
                   atualizado com avaliações periódicas de probabilidade e impacto para garantir conformidade 
                   com o Sistema de Gestão de Segurança da Informação (SGSI).
@@ -286,8 +283,8 @@ export default function RiskRegisterPage() {
                   <FileWarning className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{risks.length}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total de Riscos</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{risks.length}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Total de Riscos</p>
                 </div>
               </div>
             </CardContent>
@@ -300,8 +297,8 @@ export default function RiskRegisterPage() {
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{criticalCount}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Riscos Críticos</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{criticalCount}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Riscos Críticos</p>
                 </div>
               </div>
             </CardContent>
@@ -314,8 +311,8 @@ export default function RiskRegisterPage() {
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{inTreatmentCount}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Em Tratamento</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{inTreatmentCount}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Em Tratamento</p>
                 </div>
               </div>
             </CardContent>
@@ -328,8 +325,8 @@ export default function RiskRegisterPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{closedCount}</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Fechados</p>
+                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >{closedCount}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Fechados</p>
                 </div>
               </div>
             </CardContent>
@@ -339,12 +336,12 @@ export default function RiskRegisterPage() {
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                 Registro de Riscos
               </CardTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
                   <Input
                     placeholder="Buscar riscos..."
                     value={searchTerm}
@@ -413,7 +410,7 @@ export default function RiskRegisterPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm text-gray-800 dark:text-gray-100" >
                             {risk.description}
                           </span>
                         </TableCell>
@@ -453,12 +450,12 @@ export default function RiskRegisterPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                             {risk.owner}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <div className="flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500" >
                             <Calendar className="w-3 h-3" />
                             {new Date(risk.identifiedDate).toLocaleDateString('pt-BR')}
                           </div>

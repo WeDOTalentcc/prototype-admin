@@ -179,15 +179,12 @@ export default function DashboardSegurancaPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Dashboard de Segurança
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Monitoramento em tempo real • Atualizado há 2 minutos
             </p>
           </div>
@@ -198,10 +195,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Total de Eventos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {securityMetrics.totalEvents.toLocaleString('pt-BR')}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -220,10 +217,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Alertas Críticos Ativos
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {securityMetrics.criticalAlerts}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -242,10 +239,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Tempo Médio de Resposta
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {securityMetrics.avgResponseTime}ms
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -265,10 +262,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-sm text-gray-400 dark:text-gray-500" >
                     Score de Segurança
                   </p>
-                  <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
                     {securityMetrics.securityScore}/100
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -299,7 +296,7 @@ export default function DashboardSegurancaPage() {
                   <KeyRound className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
                     Autenticação Empresarial (WorkOS)
                   </CardTitle>
                   <CardDescription className="mt-1">
@@ -320,32 +317,32 @@ export default function DashboardSegurancaPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>SSO</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ativo</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >SSO</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Ativo</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>SCIM</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ativo</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >SCIM</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Ativo</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>MFA</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Habilitado</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >MFA</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Habilitado</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
                 <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Sessões</p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Gerenciadas via WorkOS</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >Sessões</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500" >Gerenciadas via WorkOS</p>
                 </div>
               </div>
             </div>
@@ -355,7 +352,7 @@ export default function DashboardSegurancaPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Eventos por Dia (Últimos 7 dias)
               </CardTitle>
@@ -370,31 +367,31 @@ export default function DashboardSegurancaPage() {
                       <div style={{ height: `${(item.high / item.count) * 100}%`, backgroundColor: 'var(--status-warning)' }} />
                       <div style={{ height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)' }} />
                     </div>
-                    <span className="text-xs font-medium mt-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <span className="text-xs font-medium mt-2 text-gray-800 dark:text-gray-100" >
                       {item.count}
                     </span>
-                    <span className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <span className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
                       {item.day}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+              <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700" >
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-error)' }} />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Crítico</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500" >Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Alto</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500" >Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Médio</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500" >Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-success)' }} />
-                  <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Baixo</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500" >Baixo</span>
                 </div>
               </div>
             </CardContent>
@@ -402,7 +399,7 @@ export default function DashboardSegurancaPage() {
 
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Distribuição por Severidade
               </CardTitle>
@@ -414,15 +411,15 @@ export default function DashboardSegurancaPage() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
-                        <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                           {item.severity}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-sm text-gray-400 dark:text-gray-500" >
                           {item.count}
                         </span>
-                        <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                           {item.percentage}%
                         </span>
                       </div>
@@ -440,7 +437,7 @@ export default function DashboardSegurancaPage() {
                 className="mt-4 p-3 rounded-md"
                 style={{ backgroundColor: 'rgba(229, 231, 235, 0.2)' }}
               >
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500" >
                   Total: {totalSeverityCount.toLocaleString('pt-BR')} eventos nos últimos 7 dias
                 </p>
               </div>
@@ -451,7 +448,7 @@ export default function DashboardSegurancaPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                 <AlertTriangle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Top 5 Tipos de Eventos
               </CardTitle>
@@ -461,8 +458,8 @@ export default function DashboardSegurancaPage() {
                 {topEventTypes.map((event, idx) => (
                   <div 
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors"
-                    style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors border-gray-200 dark:border-gray-700"
+                    
                   >
                     <div className="flex items-center gap-3">
                       <div 
@@ -471,12 +468,12 @@ export default function DashboardSegurancaPage() {
                       >
                         {idx + 1}
                       </div>
-                      <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                         {event.type}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100" >
                         {event.count}
                       </span>
                       <div className={`flex items-center gap-1 ${event.trend > 0 ? 'text-status-error' : 'text-status-success'}`}>
@@ -497,7 +494,7 @@ export default function DashboardSegurancaPage() {
           <Card className="lg:col-span-2" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
                   <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   Eventos Recentes
                 </CardTitle>
@@ -525,7 +522,7 @@ export default function DashboardSegurancaPage() {
                     return (
                       <TableRow key={event.id} className="hover:bg-gray-50">
                         <TableCell>
-                          <span className="text-xs font-mono" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <span className="text-xs font-mono text-gray-500 dark:text-gray-400" >
                             {new Date(event.timestamp).toLocaleString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
@@ -535,7 +532,7 @@ export default function DashboardSegurancaPage() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
                             {event.type}
                           </span>
                         </TableCell>
@@ -545,7 +542,7 @@ export default function DashboardSegurancaPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell max-w-[200px]">
-                          <span className="text-xs truncate block" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs truncate block text-gray-400 dark:text-gray-500" >
                             {event.description}
                           </span>
                         </TableCell>

@@ -62,8 +62,8 @@ function MetricCard({
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle
-          className="text-sm font-medium"
-          style={{ color: "var(--eleven-text-secondary)" }}
+          className="text-sm font-medium text-gray-500 dark:text-gray-400"
+          
         >
           {title}
         </CardTitle>
@@ -83,8 +83,8 @@ function MetricCard({
       </CardHeader>
       <CardContent>
         <div
-          className="text-2xl font-bold"
-          style={{ color: "var(--eleven-text-primary)" }}
+          className="text-2xl font-bold text-gray-800 dark:text-gray-100"
+          
         >
           {value}
         </div>
@@ -107,16 +107,16 @@ function MetricCard({
             )}
             {trendLabel && (
               <span
-                className="text-xs"
-                style={{ color: "var(--eleven-text-tertiary)" }}
+                className="text-xs text-gray-400 dark:text-gray-500"
+                
               >
                 {trendLabel}
               </span>
             )}
             {subtitle && !trend && (
               <span
-                className="text-xs"
-                style={{ color: "var(--eleven-text-tertiary)" }}
+                className="text-xs text-gray-400 dark:text-gray-500"
+                
               >
                 {subtitle}
               </span>

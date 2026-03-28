@@ -46,10 +46,10 @@ export function MatrixSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
             Matriz de Comunicações
           </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
             Configure todos os triggers de comunicação do sistema por módulo
           </p>
         </div>
@@ -109,17 +109,17 @@ export function MatrixSection({
       {matrixLoading && matrixModules.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando matriz...
           </span>
         </div>
       ) : matrixModules.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12">
-          <Grid3X3 className="w-12 h-12 mb-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <Grid3X3 className="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"  />
+          <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400" >
             Nenhuma configuração encontrada
           </p>
-          <p className="text-xs mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mb-4 text-gray-400 dark:text-gray-500" >
             Popule a matriz com os dados padrão para começar
           </p>
           <Button
@@ -155,7 +155,7 @@ export function MatrixSection({
                           <span>{modLabel.emoji}</span>
                           {modLabel.label}
                         </CardTitle>
-                        <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <p className="text-xs text-gray-400 dark:text-gray-500" >
                           {mod.description || `${mod.totalEntries} triggers configurados`}
                         </p>
                       </div>
@@ -175,12 +175,12 @@ export function MatrixSection({
                         <div
                           key={entry.id}
  className={`p-4 rounded-md border transition-all ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-gray-800/50 opacity-60'}`}
-                          style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                          className="border-gray-200 dark:border-gray-700" 
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <h4 className="font-medium text-sm truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                                <h4 className="font-medium text-sm truncate text-gray-800 dark:text-gray-100" >
                                   {entry.triggerName.replace(/_/g, ' ')}
                                 </h4>
                                 <Badge className={`text-xs ${recipientInfo.color}`}>
@@ -204,13 +204,13 @@ export function MatrixSection({
                                 )}
                               </div>
                               {entry.triggerDescription && (
-                                <p className="text-xs mb-3" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
                                   {entry.triggerDescription}
                                 </p>
                               )}
                               
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                                   Canais:
                                 </span>
                                 {allChannels.map(channel => {
@@ -231,7 +231,7 @@ export function MatrixSection({
 
                               {entry.templateId && (
                                 <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                                  <span className="text-xs text-gray-400 dark:text-gray-500" >
                                     Template:
                                   </span>
                                   <Badge variant="outline" className="text-xs">

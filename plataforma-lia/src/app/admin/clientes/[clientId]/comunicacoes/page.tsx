@@ -143,13 +143,12 @@ export default function ClientComunicacoesPage({
           <div className="flex items-center gap-3 mb-2">
             <MessageSquare className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Comunicações
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Configurações de comunicação do cliente
           </p>
         </div>
@@ -183,7 +182,7 @@ export default function ClientComunicacoesPage({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base text-gray-800 dark:text-gray-100">
                 Templates de Comunicação
               </CardTitle>
             </div>
@@ -215,14 +214,14 @@ export default function ClientComunicacoesPage({
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-              <span className="ml-2 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="ml-2 text-sm text-gray-400 dark:text-gray-500">
                 Carregando templates...
               </span>
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Nenhum template encontrado para este canal
               </p>
             </div>
@@ -231,15 +230,13 @@ export default function ClientComunicacoesPage({
               {filteredTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="p-4 border rounded-md hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
-                  style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}
+                  className="p-4 border rounded-md hover:border-gray-900 dark:hover:border-gray-50 transition-colors bg-gray-100 dark:bg-gray-800"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 
-                          className="font-medium"
-                          style={{ color: 'var(--eleven-text-primary)' }}
+                          className="font-medium text-gray-800 dark:text-gray-100"
                         >
                           {template.name}
                         </h4>
@@ -262,7 +259,7 @@ export default function ClientComunicacoesPage({
                         )}
                       </div>
                       {template.subject && (
-                        <p className="text-sm mb-2" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <p className="text-sm mb-2 text-gray-500 dark:text-gray-400">
                           {template.subject}
                         </p>
                       )}
@@ -281,7 +278,7 @@ export default function ClientComunicacoesPage({
                         >
                           {template.is_active ? 'Ativo' : 'Inativo'}
                         </Badge>
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           v{template.version}
                         </span>
                       </div>
@@ -317,14 +314,12 @@ export default function ClientComunicacoesPage({
               </CardHeader>
               <CardContent>
                 <h3 
-                  className="font-medium mb-1"
-                  style={{ color: 'var(--eleven-text-primary)' }}
+                  className="font-medium mb-1 text-gray-800 dark:text-gray-100"
                 >
                   {module.title}
                 </h3>
                 <p 
-                  className="text-sm mb-3"
-                  style={{ color: 'var(--eleven-text-tertiary)' }}
+                  className="text-sm mb-3 text-gray-400 dark:text-gray-500"
                 >
                   {module.description}
                 </p>
@@ -340,17 +335,17 @@ export default function ClientComunicacoesPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+          <CardTitle className="text-base text-gray-800 dark:text-gray-100">
             Histórico de Comunicações
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Activity className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               O histórico de comunicações será exibido aqui
             </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
               Filtrado por Company ID: {clientId}
             </p>
           </div>

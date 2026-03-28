@@ -107,7 +107,7 @@ export default function ControlesPage() {
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
             Carregando biblioteca de controles...
           </span>
         </div>
@@ -128,15 +128,11 @@ export default function ControlesPage() {
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold"
-                style={{ 
-                  color: 'var(--eleven-text-primary)',
-                  
-                }}
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
               >
                 Biblioteca de Controles
               </h1>
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Controles de segurança e conformidade por framework
               </p>
             </div>
@@ -151,18 +147,18 @@ export default function ControlesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
                   Visão Geral de Conformidade
                 </h2>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Status consolidado de todos os frameworks
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
                   {Math.round(overallPercentage)}%
                 </p>
-                <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Conformidade Global
                 </p>
               </div>
@@ -172,10 +168,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-status-success" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {totalImplemented}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     Implementados
                   </p>
                 </div>
@@ -183,10 +179,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-status-warning" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.inProgress, 0)}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     Em Progresso
                   </p>
                 </div>
@@ -194,10 +190,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-wedo-orange" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.notStarted, 0)}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     Não Iniciados
                   </p>
                 </div>
@@ -205,10 +201,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <XCircle className="w-4 h-4 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.notApplicable, 0)}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     N/A
                   </p>
                 </div>
@@ -218,7 +214,7 @@ export default function ControlesPage() {
         </Card>
 
         <div>
-          <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--eleven-text-primary)' }}>
+          <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-100">
             Frameworks de Compliance
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -238,19 +234,19 @@ export default function ControlesPage() {
                       </div>
                       {getStatusBadge(framework.stats)}
                     </div>
-                    <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-100">
                       {framework.name}
                     </h3>
-                    <p className="text-xs mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs mb-4 text-gray-400 dark:text-gray-500">
                       {framework.description}
                     </p>
                     {framework.stats ? (
                       <>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {framework.stats.implemented + framework.stats.verified} / {framework.stats.totalControls} controles
                           </span>
-                          <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                          <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
                             {Math.round(framework.stats.compliancePercentage)}%
                           </span>
                         </div>
@@ -261,7 +257,7 @@ export default function ControlesPage() {
                       </>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           Nenhum controle configurado
                         </span>
                       </div>
@@ -291,10 +287,10 @@ export default function ControlesPage() {
                     </div>
                     <Badge variant="info">Cross-Framework</Badge>
                   </div>
-                  <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-100">
                     Mapa de Cobertura
                   </h3>
-                  <p className="text-xs mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs mb-4 text-gray-400 dark:text-gray-500">
                     Análise de gaps e sobreposição entre frameworks
                   </p>
                   <div className="flex-1" />
@@ -311,37 +307,37 @@ export default function ControlesPage() {
 
         <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <CardContent className="p-6">
-            <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--eleven-text-primary)' }}>
+            <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-100">
               Legenda de Status
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-status-success" />
-                <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Implementado / Verificado
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-status-warning" />
-                <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Em Progresso
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-orange" />
-                <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Não Iniciado
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-gray-300" />
-                <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Não Aplicável
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-gray-700 dark:bg-gray-300" />
-                <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Verificado
                 </span>
               </div>

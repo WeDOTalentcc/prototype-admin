@@ -58,7 +58,7 @@ export default function ConsumoIAPage() {
   if (!summary) {
     return (
       <div className="p-6">
-        <p style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum dado disponível</p>
+        <p className="text-gray-400 dark:text-gray-500">Nenhum dado disponível</p>
       </div>
     )
   }
@@ -66,10 +66,10 @@ export default function ConsumoIAPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Consumo de IA
         </h2>
-        <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
           Acompanhe o uso de tokens e créditos de IA deste cliente
         </p>
       </div>

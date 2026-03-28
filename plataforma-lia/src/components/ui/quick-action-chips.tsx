@@ -43,7 +43,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
             onClick={action.onClick}
             className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-all duration-200 ${getVariantStyles(action.variant)}`}
             style={{
-              borderColor: 'var(--eleven-border)'
+              borderColor: 'rgb(209 213 219)'
             }}
           >
             <Icon className="w-3.5 h-3.5" />

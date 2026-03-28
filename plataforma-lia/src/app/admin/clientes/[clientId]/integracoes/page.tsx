@@ -150,7 +150,7 @@ export default function ClientIntegracoesPage({
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Carregando integrações...
           </p>
         </div>
@@ -165,13 +165,12 @@ export default function ClientIntegracoesPage({
           <div className="flex items-center gap-3 mb-2">
             <Plug className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Integrações
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Conexões com sistemas externos
           </p>
         </div>
@@ -225,7 +224,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{connectedCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Conectadas
             </p>
           </CardContent>
@@ -233,7 +232,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Pendentes
             </p>
           </CardContent>
@@ -241,7 +240,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-error">{disconnectedCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Desconectadas
             </p>
           </CardContent>
@@ -252,10 +251,10 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-8 text-center">
             <Plug className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <p className="text-lg font-medium text-gray-800 dark:text-gray-100">
               Nenhuma integração configurada
             </p>
-            <p className="text-sm mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
               Este cliente ainda não possui integrações configuradas.
             </p>
           </CardContent>
@@ -275,22 +274,19 @@ export default function ClientIntegracoesPage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium"
-                        style={{ color: 'var(--eleven-text-primary)' }}
+                        className="font-medium text-gray-800 dark:text-gray-100"
                       >
                         {getIntegrationLabel(integration.name)}
                       </h3>
                       {getStatusBadge(integration.status)}
                     </div>
                     <p 
-                      className="text-sm"
-                      style={{ color: 'var(--eleven-text-tertiary)' }}
+                      className="text-sm text-gray-400 dark:text-gray-500"
                     >
                       {getIntegrationDescription(integration)}
                     </p>
                     <p 
-                      className="text-xs mt-1"
-                      style={{ color: 'var(--eleven-text-tertiary)' }}
+                      className="text-xs mt-1 text-gray-400 dark:text-gray-500"
                     >
                       Última sincronização: {formatDate(integration.last_sync)}
                     </p>

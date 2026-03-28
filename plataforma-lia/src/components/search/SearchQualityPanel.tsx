@@ -25,19 +25,19 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
     score >= 60 ? 'var(--status-success)' : score >= 40 ? 'var(--status-warning)' : 'var(--status-error)'
 
   return (
-    <div className="space-y-2 pt-2 mt-2 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
+    <div className="space-y-2 pt-2 mt-2 border-t" className="border-gray-300 dark:border-gray-600">
       {/* Barra de completude */}
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <span className="text-xs font-medium" className="text-gray-500 dark:text-gray-400">
               Qualidade da busca
             </span>
             <span className="text-xs font-bold" style={{ color: scoreColor }}>
               {score}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-tertiary)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" className="bg-gray-100 dark:bg-gray-800">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${score}%`, backgroundColor: scoreColor }}
@@ -67,7 +67,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
                   alert.severity === 'warning'
                     ? 'rgb(245 158 11 / 0.08)'
                     : 'rgb(96 190 209 / 0.08)',
-                color: 'var(--eleven-text-secondary)',
+                color: 'rgb(107 114 128)',
               }}
             >
               {alert.severity === 'warning' ? (

@@ -242,10 +242,10 @@ export default function ClientOverviewPage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
+        <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-100">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+        <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
           {error}
         </p>
         <Button variant="outline" onClick={fetchClient}>
@@ -263,12 +263,11 @@ export default function ClientOverviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h2 
-            className="text-lg font-semibold"
-            style={{ color: 'var(--eleven-text-primary)' }}
+            className="text-lg font-semibold text-gray-800 dark:text-gray-100"
           >
             Visão Geral
           </h2>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Dashboard de métricas e atividades do cliente
           </p>
         </div>
@@ -310,12 +309,12 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Usuários Ativos
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {metrics.active_users}
-                  <span className="text-sm font-normal" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <span className="text-sm font-normal text-gray-400 dark:text-gray-500">
                     /{client?.user_limit || metrics.total_users}
                   </span>
                 </p>
@@ -335,10 +334,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Vagas Abertas
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {metrics.open_vacancies}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -357,10 +356,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Candidatos
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {metrics.total_candidates}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -379,12 +378,12 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   Créditos IA
                 </p>
-                <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
                   {metrics.ai_credits_used.toLocaleString()}
-                  <span className="text-sm font-normal" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <span className="text-sm font-normal text-gray-400 dark:text-gray-500">
                     /{metrics.ai_credits_limit.toLocaleString()}
                   </span>
                 </p>
@@ -401,14 +400,14 @@ export default function ClientOverviewPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Informações do Contrato
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Status
                 </p>
                 <div className="mt-1">
@@ -416,68 +415,68 @@ export default function ClientOverviewPage({
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Plano
                 </p>
-                <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                   {client?.plan_id || 'Starter'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Início do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                   {client?.contract_start_date ? formatDate(client.contract_start_date) : '-'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Fim do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                   {client?.contract_end_date ? formatDate(client.contract_end_date) : '-'}
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                     CNPJ
                   </p>
-                  <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                     {client?.cnpj || '-'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                     Email
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Mail className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <Mail className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-800 dark:text-gray-100">
                       {client?.primary_email || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                     Telefone
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <Phone className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-800 dark:text-gray-100">
                       {client?.primary_phone || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
                     Limite Usuários
                   </p>
-                  <p className="text-sm font-medium mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
                     {client?.user_limit || '-'}
                   </p>
                 </div>
@@ -489,7 +488,7 @@ export default function ClientOverviewPage({
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
                 Progresso Onboarding
               </CardTitle>
               <span className="text-sm font-medium text-gray-900 dark:text-gray-50">{Math.round(onboardingPercent)}%</span>
@@ -511,9 +510,8 @@ export default function ClientOverviewPage({
                       <Clock className="w-3 h-3 text-gray-400" />
                     )}
                   </div>
-                  <span 
-                    className={`text-sm ${step.completed ? 'line-through' : ''}`}
-                    style={{ color: step.completed ? 'var(--eleven-text-tertiary)' : 'var(--eleven-text-primary)' }}
+                  <span
+                    className={`text-sm ${step.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}
                   >
                     {step.label}
                   </span>
@@ -527,7 +525,7 @@ export default function ClientOverviewPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
               Atividades Recentes
             </CardTitle>
             <Button variant="ghost" size="sm">
@@ -543,20 +541,20 @@ export default function ClientOverviewPage({
               return (
                 <div key={activity.id} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
+                    <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                    <p className="text-sm text-gray-800 dark:text-gray-100">
                       {activity.description}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
                         {formatDateTime(activity.timestamp)}
                       </span>
                       {activity.user && (
                         <>
-                          <span style={{ color: 'var(--eleven-text-tertiary)' }}>•</span>
-                          <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                          <span className="text-gray-400 dark:text-gray-500">•</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {activity.user}
                           </span>
                         </>

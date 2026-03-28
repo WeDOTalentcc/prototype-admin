@@ -52,10 +52,10 @@ export function QuickActions({
                   style={{ color: action.iconColor }}
                 />
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {action.title}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     {action.subtitle}
                   </p>
                 </div>

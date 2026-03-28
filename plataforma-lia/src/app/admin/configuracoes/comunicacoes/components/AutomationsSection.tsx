@@ -68,10 +68,10 @@ export function AutomationsSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
             Catálogo de Automações ({automations.length})
           </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
             Configure automações para disparar comunicações automaticamente
           </p>
         </div>
@@ -94,17 +94,17 @@ export function AutomationsSection({
       {automationsLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando automações...
           </span>
         </div>
       ) : automations.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Zap className="w-12 h-12 text-gray-300 mb-4" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500" >
             Nenhuma automação encontrada
           </p>
-          <p className="text-xs mt-1 mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 mb-4 text-gray-400 dark:text-gray-500" >
             Crie automações padrão para começar
           </p>
           <Button
@@ -136,19 +136,18 @@ export function AutomationsSection({
                         className="w-8 h-8 rounded-md flex items-center justify-center"
                         style={{ backgroundColor: automation.isActive ? 'rgba(249, 115, 22, 0.1)' : 'rgba(156, 163, 175, 0.1)' }}
                       >
-                        <IconComponent 
-                          className="w-4 h-4" 
-                          style={{ color: automation.isActive ? 'var(--status-warning)' : 'var(--eleven-text-tertiary)' }} 
+                        <IconComponent
+                          className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'text-gray-400 dark:text-gray-500'}`}
                         />
                       </div>
                       <div>
-                        <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {automation.name}
                         </h4>
                       </div>
                     </div>
                     
-                    <p className="text-xs mb-3" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
                       {automation.description}
                     </p>
                     
@@ -162,7 +161,7 @@ export function AutomationsSection({
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500" >
                       <span className="flex items-center gap-1">
                         <Play className="w-3 h-3" />
                         {automation.triggerCount.toLocaleString('pt-BR')} disparos
@@ -195,10 +194,10 @@ export function AutomationsSection({
                 </div>
 
                 {selectedAutomation?.id === automation.id && (
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" >
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                           Condições de Disparo
                         </label>
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -207,7 +206,7 @@ export function AutomationsSection({
                               {condition}
                             </Badge>
                           )) || (
-                            <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs text-gray-400 dark:text-gray-500" >
                               Nenhuma condição definida
                             </span>
                           )}
@@ -216,7 +215,7 @@ export function AutomationsSection({
                       
                       {automation.templateId && (
                         <div>
-                          <label className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
                             Template Vinculado
                           </label>
                           <Badge variant="outline" className="text-xs mt-1">

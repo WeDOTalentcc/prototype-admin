@@ -290,19 +290,18 @@ export function DailyBriefingCard({
   if (!briefing) return null
 
   return (
-    <Card 
-      className="border-0 overflow-hidden"
-      style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}
+    <Card
+      className="border-0 overflow-hidden bg-gray-100 dark:bg-gray-800"
     >
       <CardHeader className="pb-3 pt-4 px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {getGreetingIcon()}
             <div>
-              <CardTitle className="text-base font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+              <CardTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
                 {getGreeting()}, {displayName}!
               </CardTitle>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--eleven-text-secondary)' }}>
+              <p className="text-sm mt-0.5 text-gray-500 dark:text-gray-400">
                 Seu resumo do dia - {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
@@ -315,7 +314,7 @@ export function DailyBriefingCard({
               disabled={refreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--eleven-text-secondary)' }} />
+              <RefreshCw className={`w-4 h-4 text-gray-500 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -324,9 +323,9 @@ export function DailyBriefingCard({
               className="h-8 w-8 p-0"
             >
               {expanded ? (
-                <ChevronUp className="w-4 h-4" style={{ color: 'var(--eleven-text-secondary)' }} />
+                <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               ) : (
-                <ChevronDown className="w-4 h-4" style={{ color: 'var(--eleven-text-secondary)' }} />
+                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               )}
             </Button>
           </div>

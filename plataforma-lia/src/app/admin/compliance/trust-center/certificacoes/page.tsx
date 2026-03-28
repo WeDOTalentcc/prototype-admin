@@ -70,53 +70,44 @@ export default function CertificacoesPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Lista de Certificações
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Certificações obtidas e em andamento
             </p>
           </div>
         </div>
         
         <div 
-          className="rounded-md border overflow-hidden"
-          style={{ 
-            backgroundColor: 'var(--eleven-bg-card)',
-            borderColor: 'var(--eleven-border-subtle)'
-          }}
+          className="rounded-md border overflow-hidden bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+          
         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr 
-                  className="border-b"
-                  style={{ 
-                    backgroundColor: 'var(--eleven-bg-subtle)',
-                    borderColor: 'var(--eleven-border-subtle)'
-                  }}
+                  className="border-b bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                  
                 >
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Certificação
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Data de Emissão
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Data de Validade
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Organismo Certificador
                   </th>
-                  <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Ação
                   </th>
                 </tr>
@@ -125,16 +116,12 @@ export default function CertificacoesPage() {
                 {certifications.map((cert, index) => (
                   <tr 
                     key={cert.id}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                    style={{ 
-                      borderColor: 'var(--eleven-border-subtle)',
-                      backgroundColor: index % 2 === 0 ? 'transparent' : 'var(--eleven-bg-subtle)'
-                    }}
+                    className={`border-b hover:bg-gray-50 transition-colors border-gray-200 dark:border-gray-700 ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-gray-900' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <BadgeCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {cert.name}
                         </span>
                       </div>
@@ -143,17 +130,17 @@ export default function CertificacoesPage() {
                       {getStatusBadge(cert.status)}
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {formatDate(cert.issued)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {formatDate(cert.expires)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {cert.issuer}
                       </span>
                     </td>
@@ -167,7 +154,7 @@ export default function CertificacoesPage() {
                           Download
                         </button>
                       ) : (
-                        <span className="text-xs italic" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs italic text-gray-400 dark:text-gray-500" >
                           Documento interno
                         </span>
                       )}
@@ -186,7 +173,7 @@ export default function CertificacoesPage() {
             borderColor: 'rgba(96, 190, 209, 0.2)'
           }}
         >
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400" >
             <strong>Nota:</strong> Para solicitar cópias oficiais de certificados ou relatórios de auditoria, entre em contato com nossa equipe de compliance através do email <span className="text-gray-700">compliance@lia.ai</span>
           </p>
         </div>

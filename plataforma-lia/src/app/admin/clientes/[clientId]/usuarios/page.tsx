@@ -75,7 +75,7 @@ function TableSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
+        <div key={i} className="flex items-center gap-4 p-3 rounded-md border border-gray-200 dark:border-gray-700">
           <Skeleton className="w-10 h-10 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -368,13 +368,12 @@ export default function ClientUsuariosPage({
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             <h2 
-              className="text-lg font-semibold"
-              style={{ color: 'var(--eleven-text-primary)' }}
+              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
             >
               Usuários
             </h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Gestão de usuários e permissões do cliente
           </p>
         </div>
@@ -424,10 +423,10 @@ export default function ClientUsuariosPage({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+            <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
               {users.length}
             </p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Total de Usuários
             </p>
           </CardContent>
@@ -435,7 +434,7 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Ativos
             </p>
           </CardContent>
@@ -443,7 +442,7 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Pendentes
             </p>
           </CardContent>
@@ -451,7 +450,7 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-gray-400">{inactiveCount}</p>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               Inativos
             </p>
           </CardContent>
@@ -461,7 +460,7 @@ export default function ClientUsuariosPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-base" style={{ color: 'var(--eleven-text-primary)' }}>
+            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
               Lista de Usuários
             </CardTitle>
             <div className="flex items-center gap-3">
@@ -509,7 +508,7 @@ export default function ClientUsuariosPage({
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-8">
               <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' 
                   ? 'Nenhum usuário encontrado com os filtros aplicados' 
                   : 'Nenhum usuário cadastrado'}
@@ -525,8 +524,7 @@ export default function ClientUsuariosPage({
                 return (
                   <div 
                     key={user.id}
-                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
-                    style={{ borderColor: 'var(--eleven-border-subtle)' }}
+                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-gray-200 dark:border-gray-700"
                   >
                     <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -536,8 +534,7 @@ export default function ClientUsuariosPage({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p 
-                          className="font-medium truncate"
-                          style={{ color: 'var(--eleven-text-primary)' }}
+                          className="font-medium truncate text-gray-800 dark:text-gray-100"
                         >
                           {user.name}
                         </p>
@@ -545,8 +542,7 @@ export default function ClientUsuariosPage({
                       <div className="flex items-center gap-2 mt-0.5">
                         <Mail className="w-3 h-3 text-gray-400" />
                         <p 
-                          className="text-sm truncate"
-                          style={{ color: 'var(--eleven-text-tertiary)' }}
+                          className="text-sm truncate text-gray-400 dark:text-gray-500"
                         >
                           {user.email}
                         </p>
@@ -568,14 +564,12 @@ export default function ClientUsuariosPage({
                       )}
                       <div className="text-right min-w-[100px]">
                         <p 
-                          className="text-xs"
-                          style={{ color: 'var(--eleven-text-tertiary)' }}
+                          className="text-xs text-gray-400 dark:text-gray-500"
                         >
                           Último acesso
                         </p>
                         <p 
-                          className="text-xs"
-                          style={{ color: 'var(--eleven-text-secondary)' }}
+                          className="text-xs text-gray-500 dark:text-gray-400"
                         >
                           {formatDateTime(user.lastLogin)}
                         </p>

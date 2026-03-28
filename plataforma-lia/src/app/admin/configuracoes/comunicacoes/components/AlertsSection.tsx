@@ -39,10 +39,10 @@ export function AlertsSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
             Alertas Técnicos de Comunicação
           </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
             Configure alertas para monitorar a saúde das comunicações e integrações
           </p>
         </div>
@@ -80,14 +80,14 @@ export function AlertsSection({
       {technicalAlertsLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
             Carregando alertas técnicos...
           </span>
         </div>
       ) : technicalAlerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Bell className="w-12 h-12 text-gray-300 mb-4" />
-          <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+          <p className="text-sm text-gray-400 dark:text-gray-500" >
             Nenhum alerta técnico configurado
           </p>
         </div>
@@ -99,8 +99,8 @@ export function AlertsSection({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className="w-4 h-4" style={{ color: alert.enabled ? 'var(--status-warning)' : 'var(--eleven-text-tertiary)' }} />
-                      <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                      <AlertTriangle className={`w-4 h-4 ${alert.enabled ? 'text-status-warning' : 'text-gray-400 dark:text-gray-500'}`} />
+                      <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                         {alert.name}
                       </h4>
                       <Badge className={`text-xs ${severityColors[alert.severity]}`}>
@@ -109,13 +109,13 @@ export function AlertsSection({
                          alert.severity === 'high' ? 'Alta' : 'Crítica'}
                       </Badge>
                     </div>
-                    <p className="text-xs mb-3" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
                       {alert.description}
                     </p>
                     
                     {alert.threshold !== undefined && (
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Limite:</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >Limite:</span>
                         <Input
                           type="number"
                           value={alert.threshold}
@@ -123,14 +123,14 @@ export function AlertsSection({
                           className="w-20 h-7 text-xs"
                           min={0}
                         />
-                        <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                        <span className="text-xs text-gray-400 dark:text-gray-500" >
                           {alert.thresholdUnit}
                         </span>
                       </div>
                     )}
                     
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>Canais:</span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >Canais:</span>
                       {(['email', 'slack', 'webhook'] as const).map(channel => (
                         <Badge
                           key={channel}
@@ -157,7 +157,7 @@ export function AlertsSection({
                       checked={alert.enabled}
                       onCheckedChange={() => handleToggleAlert(alert.id)}
                     />
-                    <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                    <span className="text-xs text-gray-400 dark:text-gray-500" >
                       {alert.enabled ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>

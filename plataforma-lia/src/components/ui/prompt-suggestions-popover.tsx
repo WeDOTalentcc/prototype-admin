@@ -246,8 +246,8 @@ export function PromptSuggestionsPopover({
       <PopoverContent 
         className="w-80 p-0 border"
         style={{ 
-          backgroundColor: 'var(--eleven-bg-card)',
-          borderColor: 'var(--eleven-border)'
+          backgroundColor: 'rgb(255 255 255)',
+          borderColor: 'rgb(209 213 219)'
         }}
         align="start"
         sideOffset={8}
@@ -256,7 +256,7 @@ export function PromptSuggestionsPopover({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <h3 className="text-xs font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
+              <h3 className="text-xs font-semibold" className="text-gray-800 dark:text-gray-100">
                 Ações Sugeridas
               </h3>
             </div>
@@ -319,7 +319,7 @@ export function PromptSuggestionsPopover({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <h4 className="text-xs font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <h4 className="text-xs font-medium truncate" className="text-gray-800 dark:text-gray-100">
                           {suggestion.title}
                         </h4>
                         <ChevronRight className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />

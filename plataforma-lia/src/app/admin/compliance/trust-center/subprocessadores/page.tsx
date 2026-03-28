@@ -71,53 +71,44 @@ export default function SubprocessadoresPage() {
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold"
-              style={{ 
-                color: 'var(--eleven-text-primary)',
-                
-              }}
+              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              
             >
               Subprocessadores
             </h1>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
+            <p className="text-sm text-gray-400 dark:text-gray-500" >
               Lista de subprocessadores e terceiros autorizados
             </p>
           </div>
         </div>
         
         <div 
-          className="rounded-md border overflow-hidden"
-          style={{ 
-            backgroundColor: 'var(--eleven-bg-card)',
-            borderColor: 'var(--eleven-border-subtle)'
-          }}
+          className="rounded-md border overflow-hidden bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+          
         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr 
-                  className="border-b"
-                  style={{ 
-                    backgroundColor: 'var(--eleven-bg-subtle)',
-                    borderColor: 'var(--eleven-border-subtle)'
-                  }}
+                  className="border-b bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                  
                 >
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Subprocessador
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Tipo de Serviço
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     País/Região
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Dados Processados
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Avaliação de Risco
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
                     Última Revisão
                   </th>
                 </tr>
@@ -126,16 +117,12 @@ export default function SubprocessadoresPage() {
                 {subprocessors.map((sub, index) => (
                   <tr 
                     key={sub.id}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                    style={{ 
-                      borderColor: 'var(--eleven-border-subtle)',
-                      backgroundColor: index % 2 === 0 ? 'transparent' : 'var(--eleven-bg-subtle)'
-                    }}
+                    className={`border-b hover:bg-gray-50 transition-colors border-gray-200 dark:border-gray-700 ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-gray-900' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
                           {sub.name}
                         </span>
                       </div>
@@ -152,14 +139,14 @@ export default function SubprocessadoresPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5" style={{ color: 'var(--eleven-text-tertiary)' }} />
-                        <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                        <Globe className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500"  />
+                        <span className="text-sm text-gray-500 dark:text-gray-400" >
                           {sub.country}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {sub.dataTypes}
                       </span>
                     </td>
@@ -167,7 +154,7 @@ export default function SubprocessadoresPage() {
                       {getRiskBadge(sub.risk)}
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+                      <span className="text-sm text-gray-500 dark:text-gray-400" >
                         {formatDate(sub.lastReview)}
                       </span>
                     </td>
@@ -185,7 +172,7 @@ export default function SubprocessadoresPage() {
             borderColor: 'rgba(96, 190, 209, 0.2)'
           }}
         >
-          <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+          <p className="text-sm text-gray-500 dark:text-gray-400" >
             <strong>Transparência:</strong> Todos os subprocessadores passam por avaliação de segurança e possuem acordos de processamento de dados (DPA) assinados. Notificamos nossos clientes sobre qualquer alteração nesta lista com antecedência mínima de 30 dias.
           </p>
         </div>
