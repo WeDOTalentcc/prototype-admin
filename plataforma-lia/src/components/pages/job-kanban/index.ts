@@ -4,7 +4,16 @@ export { KanbanColumnRenderer } from "./KanbanColumnRenderer"
 export { KanbanColumn } from "./KanbanColumn"
 export { KanbanCard } from "./KanbanCard"
 export { MoveConfirmationModal } from "./MoveConfirmationModal"
+export { AddColumnPopover } from "./AddColumnPopover"
+export { KanbanColumnConfigPanel } from "./KanbanColumnConfigPanel"
+export { KanbanFiltersPanel } from "./KanbanFiltersPanel"
+export { TestHistoryModal } from "./TestHistoryModal"
 export { useKanbanState } from "./hooks/useKanbanState"
+export { useKanbanBulkActions } from "./hooks/useKanbanBulkActions"
+export { useKanbanCandidateDecisions } from "./hooks/useKanbanCandidateDecisions"
+export { useKanbanDragDrop } from "./hooks/useKanbanDragDrop"
+export { useKanbanJobEditing } from "./hooks/useKanbanJobEditing"
+export { useKanbanLIAHandlers } from "./hooks/useKanbanLIAHandlers"
 export type {
   KanbanCandidate,
   KanbanStage,

@@ -445,7 +445,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Save comment if any
     if (ctx.calibrationComment) {
-      console.log(`Comment for ${currentCandidate.name}: ${ctx.calibrationComment}`)
       ctx.setCalibrationComment('')
     }
     
@@ -543,7 +542,6 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Save comment if any
     if (ctx.calibrationComment) {
-      console.log(`Rejection reason for ${currentCandidate.name}: ${ctx.calibrationComment}`)
       ctx.setCalibrationComment('')
     }
     

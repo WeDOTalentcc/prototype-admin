@@ -151,8 +151,7 @@ export function EditArchetypeModal({
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border border-gray-200">
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: "rgba(96, 190, 209, 0.15)" }}
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-cyan/15"
           >
             <Target className="w-5 h-5 text-gray-700" />
           </div>
@@ -564,11 +563,7 @@ export function EditArchetypeModal({
                     }}
                     disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
                     className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                    style={{
-                      backgroundColor:
-                        editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "var(--gray-100)",
-                      color: editArchetypeSkills.length > 0 ? "var(--gray-950)" : "var(--gray-400)",
-                    }}
+                    className={editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-gray-950" : "bg-gray-100 text-gray-400"}
                     title="Buscar skills similares com IA"
                   >
                     {isFindingSimilarSkills ? (
@@ -658,11 +653,7 @@ export function EditArchetypeModal({
                             "px-1.5 py-0.5 rounded-full text-micro transition-all cursor-pointer text-wedo-cyan-dark",
                             isSelected ? "ring-2 ring-gray-900/20" : ""
                           )}
-                          style={{
-                            backgroundColor: isSelected
-                              ? "rgba(96, 190, 209, 0.25)"
-                              : "rgba(96, 190, 209, 0.15)",
-                          }}
+                          className={isSelected ? "bg-wedo-cyan/25" : "bg-wedo-cyan/15"}
                         >
                           {skill}
                         </button>
@@ -886,11 +877,7 @@ export function EditArchetypeModal({
                             "px-1.5 py-0.5 rounded-full text-micro transition-all cursor-pointer text-wedo-cyan-dark",
                             isSelected ? "ring-2 ring-gray-900/20" : ""
                           )}
-                          style={{
-                            backgroundColor: isSelected
-                              ? "rgba(96, 190, 209, 0.25)"
-                              : "rgba(96, 190, 209, 0.15)",
-                          }}
+                          className={isSelected ? "bg-wedo-cyan/25" : "bg-wedo-cyan/15"}
                         >
                           {tag}
                         </button>

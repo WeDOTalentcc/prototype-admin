@@ -220,8 +220,7 @@ export function SearchModeArchetypes({
                         </span>
                         {arch.is_default && (
                           <span
-                            className="text-micro px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium"
-                            style={{ backgroundColor: "rgba(96,190,209,0.15)" }}
+                            className="text-micro px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium bg-wedo-cyan/15"
                           >
                             Padrão
                           </span>
@@ -456,14 +455,6 @@ export function SearchModeArchetypes({
                     backgroundColor: "var(--lia-bg-primary)",
                     color: "var(--gray-950)",
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "var(--gray-300)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "var(--gray-200)"
-                    e.currentTarget.style.boxShadow = "none"
-                  }}
                   rows={2}
                 />
                 {onSearchSourceChange && (
@@ -505,14 +496,6 @@ export function SearchModeArchetypes({
                 style={{
                   backgroundColor: "var(--lia-bg-primary)",
                   color: "var(--gray-950)",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--gray-300)"
-                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--gray-200)"
-                  e.currentTarget.style.boxShadow = "none"
                 }}
                 rows={2}
                 disabled={!selectedArchetype}
