@@ -138,9 +138,9 @@ export const CommandExecution = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
-          status === "executing" ? 'bg-gray-500 animate-pulse' :
+          status === "executing" ? 'bg-gray-500 dark:bg-gray-400 animate-pulse' :
           status === "completed" ? 'bg-gray-700 dark:bg-gray-300' :
-          'bg-gray-600'
+          'bg-gray-600 dark:bg-gray-400'
         }`} />
         <span className="text-gray-800 dark:text-gray-200 text-xs">Executando comando:</span>
       </div>
@@ -283,7 +283,7 @@ export const CompletionMessage = ({
                   <span className="text-sm text-gray-800 dark:text-gray-200 group-hover:text-gray-950 dark:group-hover:text-gray-50">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-gray-600 group-hover:text-gray-700 ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 ml-auto" />
                 </button>
               )
             })}

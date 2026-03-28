@@ -463,15 +463,15 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
     <div
       className={cn(
         'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-[var(--gray-50)] dark:bg-[var(--gray-700)]',
-        'border border-[var(--gray-200)] dark:border-[var(--gray-600)]',
+        'bg-gray-50 dark:bg-gray-700',
+        'border border-gray-200 dark:border-gray-600',
         className
       )}
 
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
-      <Icon className="w-2 h-2 flex-shrink-0 text-[var(--gray-500)] dark:text-[var(--gray-400)]" />
-      <span className="text-micro text-[var(--gray-600)] dark:text-[var(--gray-300)] font-medium">
+      <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+      <span className="text-micro text-gray-600 dark:text-gray-300 font-medium">
         {label}
       </span>
     </div>
@@ -492,14 +492,13 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
     <div
       className={cn(
         'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-[var(--gray-100)] dark:bg-[var(--gray-600)]',
-        'border border-[var(--gray-300)] dark:border-[var(--gray-500)]',
+        'bg-gray-100 dark:bg-gray-600',
+        'border border-gray-300 dark:border-gray-500',
         className
       )}
-
     >
-      <AlertCircle className="w-2 h-2 flex-shrink-0 text-[var(--gray-500)] dark:text-[var(--gray-300)]" />
-      <span className="text-micro text-[var(--gray-600)] dark:text-[var(--gray-200)] font-semibold">
+      <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-300" />
+      <span className="text-micro text-gray-600 dark:text-gray-200 font-semibold">
         {displayText}
       </span>
     </div>
@@ -553,7 +552,7 @@ export interface OriginBadgeProps {
 const originConfig: Record<string, { label: string; bg: string; border: string; text: string; icon: React.ElementType }> = {
   web: { label: 'Web', bg: 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15', border: 'border-wedo-cyan/30', text: 'text-wedo-cyan-dark dark:text-wedo-cyan', icon: Globe },
   whatsapp: { label: 'WhatsApp', bg: 'bg-wedo-green/15 dark:bg-wedo-green/20', border: 'border-wedo-green/30', text: 'text-wedo-green', icon: MessageCircle },
-  sourcing: { label: 'Busca', bg: 'bg-[var(--gray-50)] dark:bg-[var(--gray-700)]', border: 'border-[var(--gray-200)] dark:border-[var(--gray-600)]', text: 'text-[var(--gray-700)] dark:text-[var(--gray-300)]', icon: Search },
+  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-gray-700', border: 'border-gray-200 dark:border-gray-600', text: 'text-gray-700 dark:text-gray-300', icon: Search },
   ats: { label: 'ATS', bg: 'bg-wedo-purple/15 dark:bg-wedo-purple/20', border: 'border-wedo-purple/30', text: 'text-wedo-purple', icon: Briefcase },
 }
 
