@@ -151,7 +151,7 @@ export default function AjudaPage() {
                       key={skill} 
                       variant="outline" 
                       className="text-xs"
-                      style={{borderColor: '#E5737340', backgroundColor: '#E5737310', color: '#C62828'}}
+                      style={{borderColor: 'rgba(229, 115, 115, 0.25)', backgroundColor: 'rgba(229, 115, 115, 0.06)', color: 'var(--status-error)'}}
                     >
                       {skill}
                     </Badge>
