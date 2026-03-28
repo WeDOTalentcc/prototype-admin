@@ -7,7 +7,7 @@ export interface CandidatesActionsContext {
   candidates: Candidate[]
   setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
   activeTab: string
-  setActiveTab: React.Dispatch<React.SetStateAction<any>>
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>
   viewingList: { id: string; name: string; color?: string } | null
   setViewingList: React.Dispatch<React.SetStateAction<{ id: string; name: string; color?: string } | null>>
   candidateListsForModal: Array<{ id: string; name: string; color?: string }>
@@ -324,7 +324,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       setPendingTabChange(newTab)
       setShowUnsavedWarningModal(true)
     } else {
-      setActiveTab(newTab as any)
+      setActiveTab(newTab)
     }
   }
 
@@ -415,7 +415,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       setShowSearchResults(false)
       setShowUnsavedWarningModal(false)
       if (ctx.pendingTabChange) {
-        setActiveTab(ctx.pendingTabChange as any)
+        setActiveTab(ctx.pendingTabChange!)
         setPendingTabChange(null)
       }
 
@@ -438,7 +438,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     setShowSearchResults(false)
     setShowUnsavedWarningModal(false)
     if (ctx.pendingTabChange) {
-      setActiveTab(ctx.pendingTabChange as any)
+      setActiveTab(ctx.pendingTabChange!)
       setPendingTabChange(null)
     }
   }

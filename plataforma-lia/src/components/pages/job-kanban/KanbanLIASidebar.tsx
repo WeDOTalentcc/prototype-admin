@@ -191,11 +191,11 @@ export function KanbanLIASidebar({
             {showLiaSuggestionsPanel && (
               <div className="space-y-1.5 mt-2 max-h-[200px] overflow-y-auto">
                 {computedSuggestions.map((suggestion, idx) => {
-                  const borderColor = suggestion.type === 'stale_candidate' ? 'border-l-amber-400' : suggestion.type === 'high_score' ? 'border-l-emerald-400' : 'border-l-red-400'
+                  const borderColor = suggestion.type === 'stale_candidate' ? 'border-l-status-warning' : suggestion.type === 'high_score' ? 'border-l-status-success' : 'border-l-status-error'
                   const IconComponent = suggestion.type === 'stale_candidate' ? Clock : suggestion.type === 'high_score' ? TrendingUp : AlertTriangle
                   const iconColor = suggestion.type === 'stale_candidate' ? 'text-status-warning' : suggestion.type === 'high_score' ? 'text-status-success' : 'text-status-error'
                   return (
-                    <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-white rounded-r-lg px-2.5 py-2 border border-gray-100`}>
+                    <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-white rounded-md px-2.5 py-2 border border-gray-100`}>
                       <div className="flex items-start gap-2">
                         <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
                         <div className="flex-1 min-w-0">

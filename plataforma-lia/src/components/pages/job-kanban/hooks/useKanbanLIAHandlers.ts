@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
+import type React from "react"
 import { useToast } from "@/hooks/use-toast"
 import { callKanbanAssistant, callOrchestratedJobChat } from "@/lib/api/kanban-assistant"
 import { isClearChatCommand } from "@/lib/chat-commands"

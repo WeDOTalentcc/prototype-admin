@@ -28,7 +28,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
     toast,
   } = ctx
 
-  const handleCVDrop = async (e: React.DragEvent) => {
+  const handleCVDrop = async (e: DragEvent) => {
     e.preventDefault()
     setIsDroppingCV(false)
 
@@ -132,12 +132,12 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
     }
   }
 
-  const handleCVDragOver = (e: React.DragEvent) => {
+  const handleCVDragOver = (e: DragEvent) => {
     e.preventDefault()
     setIsDroppingCV(true)
   }
 
-  const handleCVDragLeave = (e: React.DragEvent) => {
+  const handleCVDragLeave = (e: DragEvent) => {
     e.preventDefault()
     setIsDroppingCV(false)
   }

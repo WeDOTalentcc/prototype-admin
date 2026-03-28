@@ -688,7 +688,7 @@ export function InlineChatPanel({
       {chatMode !== "job-creation" && (
         <div
           className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-status-warning transition-colors group-hover:opacity-100 opacity-0"
-          style={{ backgroundColor: "rgba(245, 158, 11, 0.3)" }}
+          className="bg-amber-400/30"
           onMouseDown={(e) => {
             e.preventDefault()
             onSetIsResizingLIA(true)

@@ -53,25 +53,27 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
         setBulkActionType(actionId as BulkActionType)
         setShowBulkActionModal(true)
         break
-      case 'request_data':
+      case 'request_data': {
         const selectedForDataRequest = allTableCandidates.filter(c => selectedCandidates.has(c.id))
         if (selectedForDataRequest.length > 0) {
           setDataRequestModalCandidate(selectedForDataRequest[0])
           setShowDataRequestModal(true)
         }
         break
+      }
       case 'send_message':
         setUnifiedModalType('email')
         setUnifiedModalCandidate(null)
         setUnifiedModalOpen(true)
         break
-      case 'wsi_screening':
+      case 'wsi_screening': {
         const selectedForWSI = allTableCandidates.filter(c => selectedCandidates.has(c.id))
         if (selectedForWSI.length > 0) {
           setWsiInviteCandidate(selectedForWSI[0])
           setShowWSIInviteModal(true)
         }
         break
+      }
       case 'share_search':
         setShowShareGestorModal(true)
         break

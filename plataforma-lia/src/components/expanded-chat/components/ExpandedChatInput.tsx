@@ -109,7 +109,7 @@ export function ExpandedChatInput({
     <div className="px-4 py-4 flex-shrink-0 bg-white dark:bg-gray-950 mt-auto">
       <div className="flex justify-center">
         <div className="w-full max-w-lg">
-          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[24px]">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full">
             <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
             </div>

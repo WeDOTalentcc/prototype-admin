@@ -172,7 +172,7 @@ export function KanbanFiltersPanel({
             </button>
             <button
               onClick={onClose}
-              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800"
+              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-900 hover:bg-gray-800"
             >
               Aplicar
             </button>

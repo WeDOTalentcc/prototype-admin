@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
+import type React from "react"
 import { useToast } from "@/hooks/use-toast"
 import { liaApi } from "@/services/lia-api"
 
@@ -156,14 +157,15 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     }
   }, [toast, setDynamicStages])
 
-  const handleInlineMoveLeft = useCallback(async (stageId: string) => {
+  const handleInlineMove = useCallback(async (stageId: string, direction: -1 | 1) => {
     setDynamicStages(prev => {
       const idx = prev.findIndex(s => s.id === stageId)
-      if (idx <= 0) return prev
+      const targetIdx = idx + direction
+      if (idx < 0 || targetIdx < 0 || targetIdx >= prev.length) return prev
       const newStages = [...prev]
       const temp = newStages[idx]
-      newStages[idx] = newStages[idx - 1]
-      newStages[idx - 1] = temp
+      newStages[idx] = newStages[targetIdx]
+      newStages[targetIdx] = temp
       const reordered = newStages.map((s, i) => ({ ...s, order: i }))
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
       fetch(`${baseUrl}/api/v1/recruitment-stages/stages/reorder`, {
@@ -175,24 +177,8 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     })
   }, [setDynamicStages])
 
-  const handleInlineMoveRight = useCallback(async (stageId: string) => {
-    setDynamicStages(prev => {
-      const idx = prev.findIndex(s => s.id === stageId)
-      if (idx < 0 || idx >= prev.length - 1) return prev
-      const newStages = [...prev]
-      const temp = newStages[idx]
-      newStages[idx] = newStages[idx + 1]
-      newStages[idx + 1] = temp
-      const reordered = newStages.map((s, i) => ({ ...s, order: i }))
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      fetch(`${baseUrl}/api/v1/recruitment-stages/stages/reorder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stages: reordered.map(s => ({ stage_id: s.id, new_order: s.order })) }),
-      }).catch(() => {})
-      return reordered
-    })
-  }, [setDynamicStages])
+  const handleInlineMoveLeft = useCallback((stageId: string) => handleInlineMove(stageId, -1), [handleInlineMove])
+  const handleInlineMoveRight = useCallback((stageId: string) => handleInlineMove(stageId, 1), [handleInlineMove])
 
   const handleInlineUpdateSLA = useCallback(async (stageId: string, slaHours: number) => {
     try {

@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-import { flushSync } from "react-dom"
 import {
   searchCandidates as searchCandidatesHybrid,
 } from "@/lib/api/candidate-search"
@@ -188,12 +187,9 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     if (ctx.pendingSourceChange) {
       const newSource = ctx.pendingSourceChange
 
-      // Use flushSync to ensure state is committed before executing search
-      flushSync(() => {
-        setSearchSource(newSource)
-        setPendingSourceChange(null)
-        setShowSourceChangeModal(false)
-      })
+      setSearchSource(newSource)
+      setPendingSourceChange(null)
+      setShowSourceChangeModal(false)
 
       // Now execute search with updated state
       if (lastSearchQuery && hasSearched) {
@@ -241,16 +237,13 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
   const confirmContactFilterChange = () => {
     const filterType = ctx.pendingContactFilter
 
-    // Use flushSync to ensure state is committed before executing search
-    flushSync(() => {
-      if (filterType === 'email') {
-        setPearchSearchOptions(prev => ({ ...prev, requireEmails: true }))
-      } else if (filterType === 'phone') {
-        setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: true }))
-      }
-      setPendingContactFilter(null)
-      setShowContactFilterModal(false)
-    })
+    if (filterType === 'email') {
+      setPearchSearchOptions(prev => ({ ...prev, requireEmails: true }))
+    } else if (filterType === 'phone') {
+      setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: true }))
+    }
+    setPendingContactFilter(null)
+    setShowContactFilterModal(false)
 
     // Now execute search with updated state - respect previous Pearch usage
     if (lastSearchQuery && hasSearched) {

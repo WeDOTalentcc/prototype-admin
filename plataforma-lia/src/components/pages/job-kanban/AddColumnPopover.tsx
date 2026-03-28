@@ -246,7 +246,7 @@ export function AddColumnPopover({
                   key={cat.name}
                   disabled={isAddingColumn}
                   onClick={() => handleAddCatalog(cat)}
-                  className="flex items-center gap-2 p-2 rounded-sm border border-gray-200 dark:border-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
                   <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{cat.name}</span>

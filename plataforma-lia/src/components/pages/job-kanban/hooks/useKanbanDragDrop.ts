@@ -37,19 +37,17 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
     job,
   } = ctx
 
-  const handleDragStart = (e: React.DragEvent, candidate: any, fromColumn: string) => {
+  const handleDragStart = (e: DragEvent, candidate: any, fromColumn: string) => {
     setDraggedCandidate({ ...candidate, fromColumn })
-    e.dataTransfer.effectAllowed = 'move'
-    e.currentTarget.classList.add('opacity-50')
+    e.dataTransfer!.effectAllowed = 'move'
   }
 
-  const handleDragEnd = (e: React.DragEvent) => {
-    e.currentTarget.classList.remove('opacity-50')
+  const handleDragEnd = (_e: DragEvent) => {
     setDraggedCandidate(null)
     setDragOverColumn(null)
   }
 
-  const handleDragOver = (e: React.DragEvent, column: string) => {
+  const handleDragOver = (e: DragEvent, column: string) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     setDragOverColumn(column)
@@ -99,7 +97,7 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
 
   const stagesRequiringConfirmation = ['hired', 'rejected', 'offer_declined']
 
-  const handleDrop = async (e: React.DragEvent, toColumn: string) => {
+  const handleDrop = async (e: DragEvent, toColumn: string) => {
     e.preventDefault()
 
     if (!draggedCandidate) return
