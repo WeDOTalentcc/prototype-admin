@@ -160,7 +160,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             current_company: emailCandidate.currentCompany || emailCandidate.current_company || '',
             location_city: emailCandidate.location?.split(',')[0]?.trim() || emailCandidate.location_city || '',
             location_state: emailCandidate.location?.split(',')[1]?.trim() || emailCandidate.location_state || '',
-          } as any}
+          } as Record<string, unknown>}
           onSuccess={() => {
             setShowEmailModal(false)
             setEmailCandidate(null)
@@ -255,7 +255,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         jobId={currentJob.id?.toString()}
         screeningQuestions={
           currentJob.screening_questions && currentJob.screening_questions.length > 0
-            ? currentJob.screening_questions.map((q: any, idx: number) => ({
+            ? currentJob.screening_questions.map((q: Record<string, unknown>, idx: number) => ({
                 id: q.id || `q-${idx}`,
                 question: q.question || q.text || q,
                 category: q.category || q.type || 'Triagem',
@@ -807,9 +807,9 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             isFinal: s.isFinal,
             isHired: s.isHired,
             isRejection: s.isRejection,
-            icon: (s as any).icon || '',
-            stageCategory: (s as any).stageCategory || 'active',
-            allowedTransitions: (s as any).allowedTransitions || []
+            icon: (s as Record<string, unknown>).icon || '',
+            stageCategory: (s as Record<string, unknown>).stageCategory || 'active',
+            allowedTransitions: (s as Record<string, unknown>).allowedTransitions || []
           }))}
           jobTitle={job?.title}
           onExecute={handleBulkActionExecute}
@@ -829,8 +829,8 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           }]}
           candidates={Object.entries(candidatesData)
             .filter(([stageId]) => !['hired', 'rejected', 'offer_declined'].includes(stageId))
-            .flatMap(([stageId, cands]: [string, any[]]) =>
-              (cands as any[]).map((c: any) => ({
+            .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
+              (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
                 id: String(c.id),
                 name: c.name || 'Candidato',
                 email: c.email,
@@ -841,7 +841,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             )}
           mode={jobStatusModalMode}
           onStatusChange={(_jobIds, newStatus) => {
-            setJobEditForm((prev: any) => ({ ...prev, status: newStatus }))
+            setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: newStatus }))
             toast({ title: newStatus === 'Paralisada' ? 'Vaga pausada com sucesso' : 'Vaga reativada com sucesso' })
             setShowJobStatusModal(false)
           }}
@@ -850,14 +850,14 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
 
       {/* CloseVacancyModal — Fechar Vaga com notificações (T4) */}
       {showCloseVacancyModal && (() => {
-        const hiredList: any[] = candidatesData.hired || []
+        const hiredList: Record<string, unknown>[] = candidatesData.hired || []
         const hiredCandidate = hiredList[0]
           ? { id: String(hiredList[0].id), name: hiredList[0].name || 'Candidato', email: hiredList[0].email, phone: hiredList[0].phone }
           : { id: '', name: '—', email: undefined as string | undefined, phone: undefined as string | undefined }
         const otherCandidates = Object.entries(candidatesData)
           .filter(([stageId]) => stageId !== 'hired')
-          .flatMap(([stageId, cands]: [string, any[]]) =>
-            (cands as any[]).map((c: any) => ({
+          .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
+            (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
               id: String(c.id),
               name: c.name || 'Candidato',
               email: c.email,
@@ -877,7 +877,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             hiredCandidate={hiredCandidate}
             otherCandidates={otherCandidates}
             onConfirm={async () => {
-              setJobEditForm((prev: any) => ({ ...prev, status: 'Encerrada' }))
+              setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
               toast({ title: 'Vaga encerrada com sucesso' })
               setShowCloseVacancyModal(false)
             }}
