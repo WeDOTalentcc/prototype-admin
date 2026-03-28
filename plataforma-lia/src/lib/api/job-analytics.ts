@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 export interface CommandTemplate {
   id: string;
   name: string;
@@ -10,8 +9,8 @@ export interface AnalyticsResponse {
   command: string;
   agent_used: string;
   response: string;
-  data: BackendRecord;
-  charts: Array<{type: string; title: string; data: BackendRecord}>;
+  data: Record<string, unknown>;
+  charts: Array<{type: string; title: string; data: Record<string, unknown>}>;
   suggestions: string[];
   metadata: {execution_time_ms: number};
   success?: boolean;
@@ -41,7 +40,7 @@ export async function getAvailableCommands(): Promise<CommandTemplate[]> {
   return data.commands;
 }
 
-export async function executeCommand(commandId: string, context: Record<string, any>): Promise<AnalyticsResponse> {
+export async function executeCommand(commandId: string, context: Record<string, unknown>): Promise<AnalyticsResponse> {
   const res = await fetch('/api/backend-proxy/job-analytics?action=execute', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -50,7 +49,7 @@ export async function executeCommand(commandId: string, context: Record<string, 
   return handleResponse<AnalyticsResponse>(res);
 }
 
-export async function naturalQuery(query: string, context: Record<string, any>): Promise<AnalyticsResponse> {
+export async function naturalQuery(query: string, context: Record<string, unknown>): Promise<AnalyticsResponse> {
   const res = await fetch('/api/backend-proxy/job-analytics?action=natural-query', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},

@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -15,8 +14,8 @@ export interface SearchHistoryItem {
   source: SearchSource
   timestamp: string
   resultsCount?: number
-  entities?: Record<string, any>
-  metadata?: Record<string, any>
+  entities?: Record<string, unknown>
+  metadata?: Record<string, unknown>
 }
 
 export interface SavedSearch {
@@ -26,9 +25,9 @@ export interface SavedSearch {
   query: string
   mode: SearchMode
   source: SearchSource
-  filters?: Record<string, any>
-  entities?: Record<string, any>
-  metadata?: Record<string, any>
+  filters?: Record<string, unknown>
+  entities?: Record<string, unknown>
+  metadata?: Record<string, unknown>
   isFavorite: boolean
   usageCount: number
   lastUsed?: string
@@ -184,7 +183,7 @@ export function useTalentFunnel() {
         limit: validIds.length,
         offset: 0
       })
-      const items = result.candidates || (result as BackendRecord).items as typeof result.candidates || []
+      const items = result.candidates || (result as Record<string, unknown>).items as typeof result.candidates || []
       setFavoriteCandidatesData(items)
     } catch (error) {
     } finally {

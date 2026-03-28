@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
@@ -66,7 +65,7 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
 
       try {
         const result = await liaApi.getCandidates(params)
-        setCandidates(result.candidates || (result as BackendRecord).items as typeof result.candidates || [])
+        setCandidates(result.candidates || (result as Record<string, unknown>).items as typeof result.candidates || [])
         setTotal(result.total ?? 0)
       } catch (err) {
         if ((err as Error)?.name !== "AbortError") {

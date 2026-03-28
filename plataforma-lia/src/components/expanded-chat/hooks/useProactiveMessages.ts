@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -9,11 +8,11 @@ import type { BasicInfoFields } from '../ExpandedChatContext'
 export interface UseProactiveMessagesOptions {
   currentStage: WizardStage
   salaryInfo: { minSalary: string; maxSalary: string; benefits: Array<{ enabled: boolean }> }
-  technicalSkills: Array<BackendRecord>
+  technicalSkills: Array<Record<string, unknown>>
   behavioralCompetencies: Array<{ enabled: boolean; name?: string }>
   wsiCandidates: Array<{ selected?: boolean; type?: string }>
-  approvedCandidates: Array<BackendRecord>
-  rejectedCandidates: Array<BackendRecord>
+  approvedCandidates: Array<Record<string, unknown>>
+  rejectedCandidates: Array<Record<string, unknown>>
   calibrationComplete: boolean
   messages: Message[]
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>

@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 "use client"
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
@@ -86,7 +85,7 @@ export interface ArchetypeData {
   description?: string
   department?: string
   hired_candidate?: { name: string }
-  criteria?: BackendRecord
+  criteria?: Record<string, unknown>
 }
 
 export interface SimilarProfile {
@@ -485,7 +484,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
       if (res.ok) {
         const data = await res.json()
         const items = data.items || []
-        const suggestions: AutocompleteSuggestion[] = items.map((item: BackendRecord) => ({
+        const suggestions: AutocompleteSuggestion[] = items.map((item: Record<string, unknown>) => ({
           text: item.text,
           category: item.category,
           icon: item.icon,
@@ -548,7 +547,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
   }, [parsedEntities])
 
   const buildSearchSpec = useCallback(() => {
-    const spec: BackendRecord = {}
+    const spec: Record<string, unknown> = {}
     if (parsedEntities.job_title) spec.job_title = parsedEntities.job_title
     if (parsedEntities.location) spec.location = parsedEntities.location
     if (parsedEntities.seniority) spec.seniority = parsedEntities.seniority
@@ -628,7 +627,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
           toast({ title: "Erro ao criar arquétipo", description: error.detail || error.error || "Não foi possível criar o arquétipo.", variant: "destructive" })
         }
       } else {
-        const payload: BackendRecord = { description, name: generatedName, emoji: "🎯" }
+        const payload: Record<string, unknown> = { description, name: generatedName, emoji: "🎯" }
         const res = await fetch('/api/backend-proxy/search/archetypes/from-description/', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
         })

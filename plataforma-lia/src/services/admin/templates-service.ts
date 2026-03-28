@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface DefaultTemplate {
@@ -74,7 +73,7 @@ export interface VariablesListResponse {
 
 export { ApiClientError }
 
-function mapBackendTemplate(data: BackendRecord): DefaultTemplate {
+function mapBackendTemplate(data: Record<string, unknown>): DefaultTemplate {
   return {
     id: data.id,
     name: data.name,
@@ -89,7 +88,7 @@ function mapBackendTemplate(data: BackendRecord): DefaultTemplate {
   }
 }
 
-function mapBackendVariable(data: BackendRecord): TemplateVariable {
+function mapBackendVariable(data: Record<string, unknown>): TemplateVariable {
   return {
     key: data.key,
     label: data.label,
@@ -156,7 +155,7 @@ class TemplatesService {
   }
 
   async updateTemplate(id: string, templateData: UpdateTemplateData): Promise<DefaultTemplate> {
-    const payload: Record<string, any> = {}
+    const payload: Record<string, unknown> = {}
     if (templateData.name !== undefined) payload.name = templateData.name
     if (templateData.category !== undefined) payload.category = templateData.category
     if (templateData.subject !== undefined) payload.subject = templateData.subject

@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface Client {
@@ -71,7 +70,7 @@ export interface UpdateClientData {
 
 export { ApiClientError }
 
-function mapBackendClientToClient(bc: BackendRecord): Client {
+function mapBackendClientToClient(bc: Record<string, unknown>): Client {
   return {
     id: bc.id,
     name: bc.name,

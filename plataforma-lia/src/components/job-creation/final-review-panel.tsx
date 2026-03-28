@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -57,14 +56,14 @@ export interface JobData {
   department?: string
   salary_range?: { min: number; max: number; currency: string }
   benefits?: (string | CompanyBenefit)[]
-  technical_requirements?: BackendRecord[]
-  behavioral_competencies?: BackendRecord[]
+  technical_requirements?: Record<string, unknown>[]
+  behavioral_competencies?: Record<string, unknown>[]
   work_model?: string
   location?: string
   employment_type?: string
   description?: string
   requirements?: string[]
-  languages?: BackendRecord[]
+  languages?: Record<string, unknown>[]
   manager?: string
   deadline?: string
   [key: string]: unknown
@@ -132,7 +131,7 @@ function formatFieldValue(fieldKey: string, value: unknown): string {
   
   if (fieldKey === "benefits" && Array.isArray(value)) {
     if (value.length === 0) return "-"
-    return value.map((b: unknown) => typeof b === 'string' ? b : (b as BackendRecord).name).join(", ")
+    return value.map((b: unknown) => typeof b === 'string' ? b : (b as Record<string, unknown>).name).join(", ")
   }
   
   if (Array.isArray(value)) {

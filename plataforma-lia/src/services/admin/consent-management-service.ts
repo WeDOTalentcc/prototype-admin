@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export type ConsentType = 
@@ -47,7 +46,7 @@ export interface ConsentEvent {
   revokedAt?: string
   ipAddress?: string
   userAgent?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   createdAt: string
 }
 
@@ -136,7 +135,7 @@ export interface RegisterConsentEventData {
   eventType: ConsentEventType
   ipAddress?: string
   userAgent?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface RevokeConsentData {
@@ -147,7 +146,7 @@ export interface RevokeConsentData {
 
 export { ApiClientError }
 
-function mapBackendVersion(data: BackendRecord): ConsentVersion {
+function mapBackendVersion(data: Record<string, unknown>): ConsentVersion {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -169,7 +168,7 @@ function mapBackendVersion(data: BackendRecord): ConsentVersion {
   }
 }
 
-function mapBackendEvent(data: BackendRecord): ConsentEvent {
+function mapBackendEvent(data: Record<string, unknown>): ConsentEvent {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -190,10 +189,10 @@ function mapBackendEvent(data: BackendRecord): ConsentEvent {
   }
 }
 
-function mapBackendStats(data: BackendRecord): ConsentStats {
-  const byType: Record<string, any> = {}
+function mapBackendStats(data: Record<string, unknown>): ConsentStats {
+  const byType: Record<string, unknown> = {}
   if (data.by_type) {
-    for (const [key, value] of Object.entries(data.by_type as Record<string, any>)) {
+    for (const [key, value] of Object.entries(data.by_type as Record<string, unknown>)) {
       byType[key] = {
         active: value.active || 0,
         pending: value.pending || 0,
@@ -222,13 +221,13 @@ function mapBackendStats(data: BackendRecord): ConsentStats {
   }
 }
 
-function mapBackendSubjectHistory(data: BackendRecord): SubjectHistory {
+function mapBackendSubjectHistory(data: Record<string, unknown>): SubjectHistory {
   return {
     subjectIdentifier: data.subject_identifier,
     subjectName: data.subject_name,
     subjectEmail: data.subject_email,
     events: (data.events || []).map(mapBackendEvent),
-    currentConsents: (data.current_consents || []).map((c: BackendRecord) => ({
+    currentConsents: (data.current_consents || []).map((c: Record<string, unknown>) => ({
       consentType: c.consent_type,
       version: c.version,
       grantedAt: c.granted_at,

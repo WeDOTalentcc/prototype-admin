@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientError } from './api-client'
 
 export interface DashboardKPIs {
@@ -66,7 +65,7 @@ export async function getDashboardSummary(startDate?: Date, endDate?: Date): Pro
     const queryString = params.toString()
     const endpoint = queryString ? `/clients/dashboard-summary?${queryString}` : '/clients/dashboard-summary'
     
-    const response = await apiClient.get<{ success: boolean; data: BackendRecord }>(endpoint, {
+    const response = await apiClient.get<{ success: boolean; data: Record<string, unknown> }>(endpoint, {
       clientId: 'admin',
       userRole: 'admin'
     })
@@ -88,20 +87,20 @@ export async function getDashboardSummary(startDate?: Date, endDate?: Date): Pro
         arr: data.kpis?.arr ?? 0,
         churnRate: data.kpis?.churn_rate ?? 0
       },
-      newClients: (data.new_clients || []).map((c: BackendRecord) => ({
+      newClients: (data.new_clients || []).map((c: Record<string, unknown>) => ({
         id: c.id,
         name: c.name,
         plan: c.plan,
         createdAt: c.created_at
       })),
-      trialClients: (data.trial_clients || []).map((c: BackendRecord) => ({
+      trialClients: (data.trial_clients || []).map((c: Record<string, unknown>) => ({
         id: c.id,
         name: c.name,
         plan: c.plan,
         trialEndDate: c.trial_end_date,
         daysRemaining: c.days_remaining
       })),
-      churnedClients: (data.churned_clients || []).map((c: BackendRecord) => ({
+      churnedClients: (data.churned_clients || []).map((c: Record<string, unknown>) => ({
         id: c.id,
         name: c.name,
         plan: c.plan,

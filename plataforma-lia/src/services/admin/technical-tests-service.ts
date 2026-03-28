@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export type TestCategory = 'coding' | 'logic' | 'domain' | 'personality'
@@ -107,7 +106,7 @@ export interface TestFilters {
 
 export { ApiClientError }
 
-function mapBackendTest(data: BackendRecord): TechnicalTest {
+function mapBackendTest(data: Record<string, unknown>): TechnicalTest {
   return {
     id: data.id,
     name: data.name,
@@ -125,7 +124,7 @@ function mapBackendTest(data: BackendRecord): TechnicalTest {
   }
 }
 
-function mapBackendClientTest(data: BackendRecord): ClientTest {
+function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
   return {
     id: data.id,
     clientId: data.client_id ?? data.clientId,
@@ -143,7 +142,7 @@ function mapBackendClientTest(data: BackendRecord): ClientTest {
   }
 }
 
-function mapBackendStats(data: BackendRecord): ClientTestStats {
+function mapBackendStats(data: Record<string, unknown>): ClientTestStats {
   return {
     totalTests: data.total_tests ?? data.totalTests ?? 0,
     enabledTests: data.enabled_tests ?? data.enabledTests ?? 0,
@@ -241,7 +240,7 @@ class TechnicalTestsService {
 
   async updateTest(id: string, data: UpdateTestData): Promise<TechnicalTest | null> {
     try {
-      const payload: Record<string, any> = {}
+      const payload: Record<string, unknown> = {}
       if (data.name !== undefined) payload.name = data.name
       if (data.description !== undefined) payload.description = data.description
       if (data.category !== undefined) payload.category = data.category
@@ -299,7 +298,7 @@ class TechnicalTestsService {
     config: ClientTestConfig
   ): Promise<ClientTest | null> {
     try {
-      const payload: Record<string, any> = {}
+      const payload: Record<string, unknown> = {}
       if (config.enabled !== undefined) payload.enabled = config.enabled
       if (config.customPassingScore !== undefined) payload.custom_passing_score = config.customPassingScore
       if (config.customDuration !== undefined) payload.custom_duration = config.customDuration

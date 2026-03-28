@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface DPORegistry {
@@ -100,7 +99,7 @@ export interface AutomatedDecisionListParams {
 
 export { ApiClientError }
 
-function mapBackendDpo(data: BackendRecord): DPORegistry {
+function mapBackendDpo(data: Record<string, unknown>): DPORegistry {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -115,7 +114,7 @@ function mapBackendDpo(data: BackendRecord): DPORegistry {
   }
 }
 
-function mapBackendBreach(data: BackendRecord): BreachNotification {
+function mapBackendBreach(data: Record<string, unknown>): BreachNotification {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -137,7 +136,7 @@ function mapBackendBreach(data: BackendRecord): BreachNotification {
   }
 }
 
-function mapBackendDecision(data: BackendRecord): AutomatedDecision {
+function mapBackendDecision(data: Record<string, unknown>): AutomatedDecision {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -155,7 +154,7 @@ function mapBackendDecision(data: BackendRecord): AutomatedDecision {
   }
 }
 
-function mapBackendStats(data: BackendRecord): LGPDStats {
+function mapBackendStats(data: Record<string, unknown>): LGPDStats {
   return {
     dpoRegistered: data.dpo_registered,
     dpoActive: data.dpo_active,

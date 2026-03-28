@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 /**
  * Tests — useShortList hook (F4)
  *
@@ -93,7 +92,7 @@ describe("useShortList", () => {
     const { result } = renderHook(() => useShortList("company-001", "job-001"))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    let newList: BackendRecord
+    let newList: Record<string, unknown>
     await act(async () => {
       newList = await result.current.createShortList("job-001", "Short List Principal")
     })

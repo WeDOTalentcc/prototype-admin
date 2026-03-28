@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 /**
  * useFastTrack hook - Detects similar jobs and enables Fast Track job creation
  * 
@@ -210,7 +209,7 @@ export function useFastTrack(options: FastTrackOptions) {
         if (typeof skill === 'string') {
           skillName = skill
         } else if (skill && typeof skill === 'object') {
-          skillName = (skill as BackendRecord).name as string || (skill as BackendRecord).technology as string || String(skill)
+          skillName = (skill as Record<string, unknown>).name as string || (skill as Record<string, unknown>).technology as string || String(skill)
         } else {
           skillName = String(skill)
         }
@@ -273,13 +272,13 @@ export function useFastTrack(options: FastTrackOptions) {
         type: q.type || 'open',
         required: q.required !== false,
         options: q.options,
-        competencyValidated: (q as BackendRecord).competency_validated as boolean || q.competencyValidated,
+        competencyValidated: (q as Record<string, unknown>).competency_validated as boolean || q.competencyValidated,
       }))
       
       const gestorName = job.manager || job.gestor || ''
       const skillNamesForCriteria = skillsList.map(s => {
         if (typeof s === 'string') return s
-        if (s && typeof s === 'object') return (s as BackendRecord).name as string || (s as BackendRecord).technology as string || String(s)
+        if (s && typeof s === 'object') return (s as Record<string, unknown>).name as string || (s as Record<string, unknown>).technology as string || String(s)
         return String(s)
       })
       const behavioralNamesForCriteria = behavioralList.map(c => typeof c === 'string' ? c : c.name)

@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
 
 export interface InsurancePolicy {
@@ -178,7 +177,7 @@ export interface CreateClaimInput {
 
 export { ApiClientError }
 
-function mapBackendPolicy(data: BackendRecord): InsurancePolicy {
+function mapBackendPolicy(data: Record<string, unknown>): InsurancePolicy {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -196,7 +195,7 @@ function mapBackendPolicy(data: BackendRecord): InsurancePolicy {
   }
 }
 
-function mapBackendCoverage(data: BackendRecord): InsuranceCoverage {
+function mapBackendCoverage(data: Record<string, unknown>): InsuranceCoverage {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -211,7 +210,7 @@ function mapBackendCoverage(data: BackendRecord): InsuranceCoverage {
   }
 }
 
-function mapBackendDocument(data: BackendRecord): InsuranceDocument {
+function mapBackendDocument(data: Record<string, unknown>): InsuranceDocument {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -225,7 +224,7 @@ function mapBackendDocument(data: BackendRecord): InsuranceDocument {
   }
 }
 
-function mapBackendClaim(data: BackendRecord): InsuranceClaim {
+function mapBackendClaim(data: Record<string, unknown>): InsuranceClaim {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -242,7 +241,7 @@ function mapBackendClaim(data: BackendRecord): InsuranceClaim {
   }
 }
 
-function mapBackendAlert(data: BackendRecord): InsuranceAlert {
+function mapBackendAlert(data: Record<string, unknown>): InsuranceAlert {
   return {
     id: data.id,
     type: data.type,
@@ -255,7 +254,7 @@ function mapBackendAlert(data: BackendRecord): InsuranceAlert {
   }
 }
 
-function mapBackendDashboard(data: BackendRecord): InsuranceDashboard {
+function mapBackendDashboard(data: Record<string, unknown>): InsuranceDashboard {
   return {
     activePolicy: data.active_policy ? mapBackendPolicy(data.active_policy) : undefined,
     daysUntilExpiry: data.days_until_expiry ?? -1,
@@ -267,7 +266,7 @@ function mapBackendDashboard(data: BackendRecord): InsuranceDashboard {
   }
 }
 
-function mapBackendChecklistItem(data: BackendRecord): BCBCoverageChecklistItem {
+function mapBackendChecklistItem(data: Record<string, unknown>): BCBCoverageChecklistItem {
   return {
     coverageType: data.coverage_type,
     name: data.name,

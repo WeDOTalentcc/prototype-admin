@@ -1,4 +1,3 @@
-import type { BackendRecord } from '@/types/api'
 import { apiClient, ApiClientError } from './api-client'
 
 export type PolicyCategory = 'data_retention' | 'ai_usage' | 'security' | 'compliance'
@@ -51,7 +50,7 @@ export interface UpdatePolicyRequest {
   change_reason?: string
 }
 
-function mapBackendPolicy(data: BackendRecord): Policy {
+function mapBackendPolicy(data: Record<string, unknown>): Policy {
   return {
     id: data.id,
     name: data.name,
@@ -69,7 +68,7 @@ function mapBackendPolicy(data: BackendRecord): Policy {
   }
 }
 
-function mapBackendHistoryEntry(data: BackendRecord): PolicyHistoryEntry {
+function mapBackendHistoryEntry(data: Record<string, unknown>): PolicyHistoryEntry {
   return {
     id: data.id,
     policyId: data.policy_id || data.policyId,
