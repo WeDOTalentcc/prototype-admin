@@ -1,6 +1,6 @@
 import { Version3Client } from 'jira.js';
 
-let connectionSettings: any;
+let connectionSettings: Record<string, unknown> | null;
 let cachedCloudId: string | null = null;
 
 interface JiraAuth {
@@ -75,7 +75,7 @@ async function getAccessToken(): Promise<JiraAuth> {
   }
   
   const resources = await resourcesResp.json();
-  const targetResource = resources.find((r: any) => r.url === hostName) || resources[0];
+  const targetResource = resources.find((r: Record<string, unknown>) => r.url === hostName) || resources[0];
   
   if (!targetResource?.id) {
     throw new Error('No accessible Jira cloud found');
@@ -164,7 +164,7 @@ export class JiraService {
       const params = projectKey ? `?projectKeyOrId=${projectKey}&type=kanban` : '?type=kanban';
       const response = await agileApiRequest(`/board${params}`);
 
-      return (response.values || []).map((board: any) => ({
+      return (response.values || []).map((board: Record<string, unknown>) => ({
         id: board.id,
         name: board.name,
         type: board.type,
@@ -179,10 +179,10 @@ export class JiraService {
     try {
       const response = await agileApiRequest(`/board/${boardId}/configuration`);
       
-      return (response.columnConfig?.columns || []).map((col: any) => ({
+      return (response.columnConfig?.columns || []).map((col: Record<string, unknown>) => ({
         id: col.name,
         name: col.name,
-        statusIds: col.statuses?.map((s: any) => s.id) || [],
+        statusIds: ((col.statuses as Array<{ id: string }>) || []).map(s => s.id),
       }));
     } catch (error) {
       throw error;
@@ -208,8 +208,8 @@ export class JiraService {
         assignee: issue.fields?.assignee?.displayName,
         updatedAt: issue.fields?.updated || new Date().toISOString(),
       };
-    } catch (error: any) {
-      if (error.status === 404) {
+    } catch (error) {
+      if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
         return null;
       }
       throw error;
@@ -240,14 +240,20 @@ export class JiraService {
         fields: ['summary', 'status', 'assignee', 'updated'],
       });
 
-      return (response.issues || []).map((issue: any) => ({
-        issueKey: issue.key,
-        summary: issue.fields?.summary || '',
-        status: issue.fields?.status?.name || 'Unknown',
-        statusCategory: issue.fields?.status?.statusCategory?.key || 'todo',
-        assignee: issue.fields?.assignee?.displayName,
-        updatedAt: issue.fields?.updated || new Date().toISOString(),
-      }));
+      return (response.issues || []).map((issue: Record<string, unknown>) => {
+        const fields = issue.fields as Record<string, unknown> | undefined
+        const status = fields?.status as Record<string, unknown> | undefined
+        const assignee = fields?.assignee as Record<string, unknown> | undefined
+        const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
+        return {
+          issueKey: issue.key as string,
+          summary: (fields?.summary as string) || '',
+          status: (status?.name as string) || 'Unknown',
+          statusCategory: (statusCategory?.key as string) || 'todo',
+          assignee: assignee?.displayName as string | undefined,
+          updatedAt: (fields?.updated as string) || new Date().toISOString(),
+        }
+      });
     } catch (error) {
       throw error;
     }
@@ -349,7 +355,7 @@ export class JiraService {
       }
       
       const data = await response.json();
-      return (data.values || []).map((project: any) => ({
+      return (data.values || []).map((project: Record<string, unknown>) => ({
         id: project.id,
         key: project.key,
         name: project.name,
@@ -367,7 +373,7 @@ export class JiraService {
   }): Promise<{ success: boolean }> {
     const { accessToken, apiBaseUrl } = await getAccessToken();
     
-    const fields: Record<string, any> = {};
+    const fields: Record<string, unknown> = {};
 
     if (params.summary) {
       fields.summary = params.summary;
@@ -412,7 +418,7 @@ export class JiraService {
       }
       
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       throw error;
     }
   }
@@ -427,13 +433,18 @@ export class JiraService {
         fields: ['summary', 'status', 'description', 'updated'],
       });
 
-      return (response.issues || []).map((issue: any) => ({
-        issueKey: issue.key,
-        summary: issue.fields?.summary || '',
-        status: issue.fields?.status?.name || 'Unknown',
-        statusCategory: issue.fields?.status?.statusCategory?.key || 'todo',
-        updatedAt: issue.fields?.updated || new Date().toISOString(),
-      }));
+      return (response.issues || []).map((issue: Record<string, unknown>) => {
+        const fields = issue.fields as Record<string, unknown> | undefined
+        const status = fields?.status as Record<string, unknown> | undefined
+        const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
+        return {
+          issueKey: issue.key as string,
+          summary: (fields?.summary as string) || '',
+          status: (status?.name as string) || 'Unknown',
+          statusCategory: (statusCategory?.key as string) || 'todo',
+          updatedAt: (fields?.updated as string) || new Date().toISOString(),
+        }
+      });
     } catch (error) {
       throw error;
     }
@@ -448,11 +459,11 @@ export class JiraService {
     priority?: string;
     storyPoints?: number;
     epicKey?: string;
-    customFields?: Record<string, any>;
+    customFields?: Record<string, unknown>;
   }): Promise<{ issueKey: string; issueId: string; success: boolean }> {
     const { accessToken, apiBaseUrl } = await getAccessToken();
     
-    const fields: Record<string, any> = {
+    const fields: Record<string, unknown> = {
       project: { key: params.projectKey },
       summary: params.summary,
       description: {
@@ -511,7 +522,7 @@ export class JiraService {
         issueId: data.id || '',
         success: true,
       };
-    } catch (error: any) {
+    } catch (error) {
       throw error;
     }
   }
@@ -536,10 +547,10 @@ export class JiraService {
         const result = await this.createIssue(issue);
         created.push({ issueKey: result.issueKey, summary: issue.summary });
         await new Promise(resolve => setTimeout(resolve, 200));
-      } catch (error: any) {
+      } catch (error) {
         failed.push({ 
           summary: issue.summary, 
-          error: error.message || 'Unknown error' 
+          error: error instanceof Error ? error.message : 'Unknown error' 
         });
       }
     }

@@ -85,7 +85,7 @@ export interface ArchetypeData {
   description?: string
   department?: string
   hired_candidate?: { name: string }
-  criteria?: any
+  criteria?: Record<string, unknown>
 }
 
 export interface SimilarProfile {
@@ -484,7 +484,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
       if (res.ok) {
         const data = await res.json()
         const items = data.items || []
-        const suggestions: AutocompleteSuggestion[] = items.map((item: any) => ({
+        const suggestions: AutocompleteSuggestion[] = items.map((item: Record<string, unknown>) => ({
           text: item.text,
           category: item.category,
           icon: item.icon,
@@ -653,10 +653,10 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     e.stopPropagation()
     setEditingArchetype(arch)
     setEditArchetypeName(arch.name || "")
-    const query = (arch as any).query || arch.criteria?.query || ""
-    setEditArchetypeQuery(query)
+    const query = (arch as ArchetypeData & { query?: string }).query || arch.criteria?.query || ""
+    setEditArchetypeQuery(query as string)
     setEditArchetypeDescription(arch.description || "")
-    const emoji = (arch as any).emoji || arch.criteria?.emoji || "🎯"
+    const emoji = (arch as ArchetypeData & { emoji?: string }).emoji || arch.criteria?.emoji || "🎯"
     setEditArchetypeEmoji(emoji)
     const tags: string[] = []
     const criteria = arch.criteria || {}
@@ -1051,7 +1051,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
       (parsedEntities && Object.values(parsedEntities).some(v => v && (Array.isArray(v) ? v.length > 0 : true)))
   }, [naturalSearchValue, parsedEntities])
 
-  const handleArchetypeSaved = (newArchetype: any) => {
+  const handleArchetypeSaved = (newArchetype: ArchetypeData) => {
     setArchetypes(prev => [...prev, newArchetype])
     toast({ title: "Arquétipo salvo", description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.` })
   }

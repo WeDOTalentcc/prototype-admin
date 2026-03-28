@@ -73,7 +73,7 @@ export interface VariablesListResponse {
 
 export { ApiClientError }
 
-function mapBackendTemplate(data: any): DefaultTemplate {
+function mapBackendTemplate(data: Record<string, unknown>): DefaultTemplate {
   return {
     id: data.id,
     name: data.name,
@@ -88,7 +88,7 @@ function mapBackendTemplate(data: any): DefaultTemplate {
   }
 }
 
-function mapBackendVariable(data: any): TemplateVariable {
+function mapBackendVariable(data: Record<string, unknown>): TemplateVariable {
   return {
     key: data.key,
     label: data.label,

@@ -1,8 +1,27 @@
 // Serviço de integrações para envio de webhooks Slack/Teams
 
+type WebhookData = Record<string, unknown>
+
+interface SlackBlock {
+  type: string
+  text: { type: string; text: string }
+}
+
+interface SlackMessage {
+  text: string
+  blocks: SlackBlock[]
+}
+
+interface TeamsMessage {
+  "@type": string
+  "@context": string
+  text: string
+  themeColor: string
+}
+
 interface WebhookPayload {
   event: string
-  data: any
+  data: WebhookData
   timestamp: string
   source: 'lia-platform'
 }
@@ -20,8 +39,7 @@ interface Integration {
 class IntegrationsService {
   private integrations: Integration[] = []
 
-  // Simular envio de webhook
-  async sendWebhook(integrationId: string, event: string, data: any): Promise<boolean> {
+  async sendWebhook(integrationId: string, event: string, data: WebhookData): Promise<boolean> {
     const integration = this.integrations.find(i => i.id === integrationId)
 
     if (!integration || !integration.active || !integration.events.includes(event)) {
@@ -35,25 +53,12 @@ class IntegrationsService {
       source: 'lia-platform'
     }
 
+    void payload
+
     try {
-      // Simular chamada HTTP para webhook
-
-      // Em produção, seria algo como:
-      // const response = await fetch(integration.webhookUrl, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(this.formatMessage(integration, event, data))
-      // })
-
-      // Simular delay de rede
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Simular 95% de sucesso
       const success = Math.random() > 0.05
-
-      if (success) {
-      } else {
-      }
 
       return success
     } catch (error) {
@@ -61,8 +66,7 @@ class IntegrationsService {
     }
   }
 
-  // Formatar mensagem baseada no template e tipo de integração
-  private formatMessage(integration: Integration, event: string, data: any): any {
+  private formatMessage(integration: Integration, event: string, data: WebhookData): SlackMessage | TeamsMessage | { text: string } {
     const template = integration.templates[event] || this.getDefaultTemplate(event)
 
     switch (integration.type) {
@@ -75,8 +79,7 @@ class IntegrationsService {
     }
   }
 
-  // Formato para Slack
-  private formatSlackMessage(template: string, data: any) {
+  private formatSlackMessage(template: string, data: WebhookData): SlackMessage {
     return {
       text: this.interpolateTemplate(template, data),
       blocks: [
@@ -91,8 +94,7 @@ class IntegrationsService {
     }
   }
 
-  // Formato para Teams
-  private formatTeamsMessage(template: string, data: any) {
+  private formatTeamsMessage(template: string, data: WebhookData): TeamsMessage {
     return {
       "@type": "MessageCard",
       "@context": "http://schema.org/extensions",
@@ -101,14 +103,12 @@ class IntegrationsService {
     }
   }
 
-  // Interpolação de variáveis no template
-  private interpolateTemplate(template: string, data: any): string {
+  private interpolateTemplate(template: string, data: WebhookData): string {
     return template.replace(/\{(\w+)\}/g, (match, key) => {
-      return data[key] || match
+      return String(data[key] ?? match)
     })
   }
 
-  // Templates padrão para cada evento
   private getDefaultTemplate(event: string): string {
     const templates = {
       novo_candidato: "🎯 Novo candidato: {candidate_name} se candidatou para {job_title}",
@@ -123,8 +123,7 @@ class IntegrationsService {
     return templates[event as keyof typeof templates] || "Evento: {event}"
   }
 
-  // Eventos específicos da plataforma
-  async notifyNewCandidate(candidateData: any) {
+  async notifyNewCandidate(candidateData: WebhookData) {
     const activeIntegrations = this.integrations.filter(i =>
       i.active && i.events.includes('novo_candidato')
     )
@@ -138,7 +137,7 @@ class IntegrationsService {
     return results
   }
 
-  async notifyApproval(approvalData: any) {
+  async notifyApproval(approvalData: WebhookData) {
     const activeIntegrations = this.integrations.filter(i =>
       i.active && i.events.includes('aprovacao')
     )
@@ -152,7 +151,7 @@ class IntegrationsService {
     return results
   }
 
-  async notifyBatchApproval(batchData: any) {
+  async notifyBatchApproval(batchData: WebhookData) {
     const activeIntegrations = this.integrations.filter(i =>
       i.active && i.events.includes('aprovacao_lote')
     )
@@ -166,7 +165,7 @@ class IntegrationsService {
     return results
   }
 
-  async notifyNewNote(noteData: any) {
+  async notifyNewNote(noteData: WebhookData) {
     const activeIntegrations = this.integrations.filter(i =>
       i.active && i.events.includes('nova_nota')
     )
@@ -180,7 +179,7 @@ class IntegrationsService {
     return results
   }
 
-  async notifyMention(mentionData: any) {
+  async notifyMention(mentionData: WebhookData) {
     const activeIntegrations = this.integrations.filter(i =>
       i.active && i.events.includes('mencao')
     )
@@ -194,7 +193,6 @@ class IntegrationsService {
     return results
   }
 
-  // Gerenciamento de integrações
   addIntegration(integration: Integration) {
     this.integrations.push(integration)
   }
@@ -218,7 +216,6 @@ class IntegrationsService {
     return this.integrations.filter(i => i.active)
   }
 
-  // Teste de conectividade
   async testIntegration(integrationId: string): Promise<boolean> {
     return this.sendWebhook(integrationId, 'test', {
       test: true,
@@ -227,10 +224,8 @@ class IntegrationsService {
   }
 }
 
-// Singleton instance
 export const integrationsService = new IntegrationsService()
 
-// Inicializar com integrações de exemplo
 integrationsService.addIntegration({
   id: 'slack-recruiting',
   name: 'Canal #recrutamento',

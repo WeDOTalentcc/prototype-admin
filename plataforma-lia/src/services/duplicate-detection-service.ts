@@ -71,7 +71,7 @@ export class DuplicateDetectionService {
       if (response.ok) {
         const data = await response.json()
         const candidatesList = Array.isArray(data) ? data : (data.candidates || data.items || [])
-        this.candidates = candidatesList.map((c: any) => ({
+        this.candidates = candidatesList.map((c: Record<string, unknown>) => ({
           id: c.id,
           name: c.name || c.full_name || '',
           email: c.email,

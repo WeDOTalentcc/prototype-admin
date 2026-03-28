@@ -106,7 +106,7 @@ export interface TestFilters {
 
 export { ApiClientError }
 
-function mapBackendTest(data: any): TechnicalTest {
+function mapBackendTest(data: Record<string, unknown>): TechnicalTest {
   return {
     id: data.id,
     name: data.name,
@@ -124,7 +124,7 @@ function mapBackendTest(data: any): TechnicalTest {
   }
 }
 
-function mapBackendClientTest(data: any): ClientTest {
+function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
   return {
     id: data.id,
     clientId: data.client_id ?? data.clientId,
@@ -142,7 +142,7 @@ function mapBackendClientTest(data: any): ClientTest {
   }
 }
 
-function mapBackendStats(data: any): ClientTestStats {
+function mapBackendStats(data: Record<string, unknown>): ClientTestStats {
   return {
     totalTests: data.total_tests ?? data.totalTests ?? 0,
     enabledTests: data.enabled_tests ?? data.enabledTests ?? 0,

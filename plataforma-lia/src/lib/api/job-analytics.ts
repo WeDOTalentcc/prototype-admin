@@ -9,8 +9,8 @@ export interface AnalyticsResponse {
   command: string;
   agent_used: string;
   response: string;
-  data: Record<string, any>;
-  charts: Array<{type: string; title: string; data: any}>;
+  data: Record<string, unknown>;
+  charts: Array<{type: string; title: string; data: Record<string, unknown>}>;
   suggestions: string[];
   metadata: {execution_time_ms: number};
   success?: boolean;

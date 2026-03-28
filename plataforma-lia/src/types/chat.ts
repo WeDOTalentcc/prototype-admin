@@ -1,17 +1,15 @@
 "use client"
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export interface Message {
   id: number
   sender: "lia" | "user"
   content: string
   timestamp: string
   type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion"
-  actions?: Array<{ label: string; icon?: any; variant?: "default" | "outline" | "secondary" }>
-  data?: any
+  actions?: Array<{ label: string; icon?: React.ComponentType<{ className?: string }>; variant?: "default" | "outline" | "secondary" }>
+  data?: Record<string, unknown>
   step?: string
-  contextData?: any
+  contextData?: Record<string, unknown>
   needsApproval?: boolean
   approvalStatus?: "pending" | "approved" | "rejected"
   approvalRequest?: {
@@ -28,7 +26,7 @@ export interface Message {
     label: string
     status: "pending" | "processing" | "completed" | "error"
     details?: string
-    icon?: any
+    icon?: React.ComponentType<{ className?: string }>
   }>
   currentStep?: string
   command?: {
@@ -102,5 +100,5 @@ export interface ContextPanelData {
     | "job-creation-progress"
     | "pipeline-report"
   title: string
-  data: any
+  data: Record<string, unknown>
 }

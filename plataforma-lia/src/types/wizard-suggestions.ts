@@ -6,11 +6,11 @@ export type DataSource =
   | 'curated_templates';
 
 export interface Suggestion {
-  value: any;
+  value: unknown;
   source: DataSource;
   confidence: number;
   explanation: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface FieldSuggestionResponse {

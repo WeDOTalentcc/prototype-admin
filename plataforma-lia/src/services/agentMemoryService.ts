@@ -2,13 +2,13 @@ export interface AgentMemoryState {
   session_id: string;
   domain: string;
   current_stage: string | null;
-  collected_fields: Record<string, any>;
+  collected_fields: Record<string, unknown>;
   iteration_count: number;
   agent_notes: string | null;
-  pending_actions: any[];
-  accepted_suggestions: any[];
-  rejected_suggestions: any[];
-  parecer_data: Record<string, any>;
+  pending_actions: Record<string, unknown>[];
+  accepted_suggestions: Record<string, unknown>[];
+  rejected_suggestions: Record<string, unknown>[];
+  parecer_data: Record<string, unknown>;
   last_intent: string | null;
   last_confidence: number | null;
   updated_at: string | null;

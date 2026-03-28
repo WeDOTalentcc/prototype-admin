@@ -146,7 +146,7 @@ export interface RevokeConsentData {
 
 export { ApiClientError }
 
-function mapBackendVersion(data: any): ConsentVersion {
+function mapBackendVersion(data: Record<string, unknown>): ConsentVersion {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -168,7 +168,7 @@ function mapBackendVersion(data: any): ConsentVersion {
   }
 }
 
-function mapBackendEvent(data: any): ConsentEvent {
+function mapBackendEvent(data: Record<string, unknown>): ConsentEvent {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -189,7 +189,7 @@ function mapBackendEvent(data: any): ConsentEvent {
   }
 }
 
-function mapBackendStats(data: any): ConsentStats {
+function mapBackendStats(data: Record<string, unknown>): ConsentStats {
   const byType: Record<string, any> = {}
   if (data.by_type) {
     for (const [key, value] of Object.entries(data.by_type as Record<string, any>)) {
@@ -221,13 +221,13 @@ function mapBackendStats(data: any): ConsentStats {
   }
 }
 
-function mapBackendSubjectHistory(data: any): SubjectHistory {
+function mapBackendSubjectHistory(data: Record<string, unknown>): SubjectHistory {
   return {
     subjectIdentifier: data.subject_identifier,
     subjectName: data.subject_name,
     subjectEmail: data.subject_email,
     events: (data.events || []).map(mapBackendEvent),
-    currentConsents: (data.current_consents || []).map((c: any) => ({
+    currentConsents: (data.current_consents || []).map((c: Record<string, unknown>) => ({
       consentType: c.consent_type,
       version: c.version,
       grantedAt: c.granted_at,

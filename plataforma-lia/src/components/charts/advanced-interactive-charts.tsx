@@ -14,7 +14,8 @@ import {
   Tooltip,
   Legend,
   Filler,
-  ChartOptions
+  ChartOptions,
+  ChartData
 } from 'chart.js'
 import { Line, Bar, Pie, Radar, Chart } from 'react-chartjs-2'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -127,12 +128,12 @@ const COLORS = {
 interface AdvancedChartProps {
   type: 'line' | 'area' | 'bar' | 'pie' | 'scatter' | 'radar' | 'funnel' | 'treemap' | 'composed'
   title: string
-  data: any[]
+  data: Record<string, unknown>[]
   dataKeys: string[]
   height?: number
   showControls?: boolean
   drillDownEnabled?: boolean
-  onDataPointClick?: (data: any) => void
+  onDataPointClick?: (data: Record<string, unknown>) => void
 }
 
 export function AdvancedInteractiveChart({
@@ -178,13 +179,13 @@ export function AdvancedInteractiveChart({
       // Se temos 1 dataKey, é o valor e usamos name/stage como label
       const valueKey = dataKeys.length > 1 ? dataKeys[1] : dataKeys[0]
       const labels = dataKeys.length > 1 
-        ? data.map((item: any) => item[labelKey])
-        : data.map((item: any) => item.name || item.stage || item.category)
+        ? data.map((item: Record<string, unknown>) => item[labelKey])
+        : data.map((item: Record<string, unknown>) => item.name || item.stage || item.category)
       
       return {
         labels,
         datasets: [{
-          data: data.map((item: any) => item[valueKey]),
+          data: data.map((item: Record<string, unknown>) => item[valueKey]),
           backgroundColor: COLORS.rainbow,
           borderColor: 'var(--lia-bg-primary)',
           borderWidth: 2,
@@ -195,7 +196,7 @@ export function AdvancedInteractiveChart({
     if (type === 'radar') {
       return {
         labels: dataKeys.slice(1),
-        datasets: data.map((item: any, index: number) => ({
+        datasets: data.map((item: Record<string, unknown>, index: number) => ({
           label: item[labelKey],
           data: dataKeys.slice(1).map(key => item[key]),
           backgroundColor: COLORS.primary[index % COLORS.primary.length] + '33',
@@ -212,10 +213,10 @@ export function AdvancedInteractiveChart({
     if (type === 'funnel') {
       // Funnel como horizontal bar chart
       return {
-        labels: data.map((item: any) => item[labelKey]),
+        labels: data.map((item: Record<string, unknown>) => item[labelKey]),
         datasets: [{
           label: dataKeys[1],
-          data: data.map((item: any) => item[dataKeys[1]]),
+          data: data.map((item: Record<string, unknown>) => item[dataKeys[1]]),
           backgroundColor: COLORS.rainbow,
           borderRadius: 4,
         }]
@@ -225,7 +226,7 @@ export function AdvancedInteractiveChart({
     // Detectar automaticamente o campo de label baseado no que existe nos dados
     const getLabelValue = () => {
       if (!data || data.length === 0) return []
-      return data.map((item: any) => item[labelKey] || item.month || item.stage || item.name || item.quarter || '')
+      return data.map((item: Record<string, unknown>) => item[labelKey] || item.month || item.stage || item.name || item.quarter || '')
     }
     
     const labels = getLabelValue()
@@ -239,7 +240,7 @@ export function AdvancedInteractiveChart({
           {
             type: 'bar' as const,
             label: valuableKeys[0],
-            data: data.map((item: any) => item[valuableKeys[0]]),
+            data: data.map((item: Record<string, unknown>) => item[valuableKeys[0]]),
             backgroundColor: COLORS.tertiary[0] + 'CC',
             borderColor: COLORS.tertiary[0],
             yAxisID: 'y',
@@ -248,7 +249,7 @@ export function AdvancedInteractiveChart({
           {
             type: 'line' as const,
             label: valuableKeys[1],
-            data: data.map((item: any) => item[valuableKeys[1]]),
+            data: data.map((item: Record<string, unknown>) => item[valuableKeys[1]]),
             backgroundColor: COLORS.primary[0],
             borderColor: COLORS.primary[0],
             borderWidth: 3,
@@ -269,7 +270,7 @@ export function AdvancedInteractiveChart({
 
       const baseConfig = {
         label: key,
-        data: data.map((item: any) => item[key]),
+        data: data.map((item: Record<string, unknown>) => item[key]),
         backgroundColor: colorArray[index % colorArray.length] + (type === 'area' ? '99' : 'CC'),
         borderColor: colorArray[index % colorArray.length],
         borderWidth: type === 'line' ? 3 : 2,
@@ -325,7 +326,7 @@ export function AdvancedInteractiveChart({
           }
         },
       },
-      onClick: handleClick as any,
+      onClick: handleClick as unknown as () => void,
       animation: {
         duration: chartConfig.animationDuration,
       },
@@ -339,7 +340,7 @@ export function AdvancedInteractiveChart({
           tooltip: {
             ...baseOptions.plugins?.tooltip,
             callbacks: {
-              label: (context: any) => {
+              label: (context: { label?: string; parsed?: { y?: number }; raw?: number; formattedValue?: string }) => {
                 const label = context.label || ''
                 const value = context.parsed || 0
                 const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
@@ -446,20 +447,20 @@ export function AdvancedInteractiveChart({
     switch (type) {
       case 'line':
       case 'area':
-        return <Line ref={chartRef} data={chartData as any} options={options} />
+        return <Line ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'bar':
       case 'funnel':
-        return <Bar ref={chartRef} data={chartData as any} options={options} />
+        return <Bar ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'pie':
-        return <Pie ref={chartRef} data={chartData as any} options={options} />
+        return <Pie ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'radar':
-        return <Radar ref={chartRef} data={chartData as any} options={options} />
+        return <Radar ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'composed':
-        return <Chart ref={chartRef} type='bar' data={chartData as any} options={options} />
+        return <Chart ref={chartRef} type='bar' data={chartData as ChartData} options={options} />
       
       case 'treemap':
       case 'scatter':

@@ -7,12 +7,12 @@ import type { BasicInfoFields } from '../ExpandedChatContext'
 
 export interface UseProactiveMessagesOptions {
   currentStage: WizardStage
-  salaryInfo: { minSalary: string; maxSalary: string; benefits: any[] }
-  technicalSkills: any[]
-  behavioralCompetencies: any[]
-  wsiCandidates: any[]
-  approvedCandidates: any[]
-  rejectedCandidates: any[]
+  salaryInfo: { minSalary: string; maxSalary: string; benefits: Array<{ enabled: boolean }> }
+  technicalSkills: Array<Record<string, unknown>>
+  behavioralCompetencies: Array<{ enabled: boolean; name?: string }>
+  wsiCandidates: Array<{ selected?: boolean; type?: string }>
+  approvedCandidates: Array<Record<string, unknown>>
+  rejectedCandidates: Array<Record<string, unknown>>
   calibrationComplete: boolean
   messages: Message[]
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
@@ -177,7 +177,7 @@ Quer que eu avance para a etapa de **Enriquecimento da Vaga**, onde vou analisar
     if (currentStage !== 'competencies' || competenciesStageCompletionShown) return
 
     const enabledTechnical = technicalSkills.length
-    const enabledBehavioral = behavioralCompetencies.filter((c: any) => c.enabled).length
+    const enabledBehavioral = behavioralCompetencies.filter(c => c.enabled).length
 
     const hasMinimumCompetencies = enabledTechnical >= 3 && enabledBehavioral >= 3
 
@@ -218,16 +218,16 @@ Quer que eu avance para a etapa de **Perguntas WSI**, ou prefere ajustar algo an
     }
     if (currentStage !== 'wsi-questions' || wsiQuestionsStageCompletionShown) return
 
-    const selectedQuestions = wsiCandidates.filter((q: any) => q.selected).length
+    const selectedQuestions = wsiCandidates.filter(q => q.selected).length
     if (selectedQuestions < 3) return
 
     wsiQuestionsProactiveTimerRef.current = setTimeout(() => {
       if (currentStage !== 'wsi-questions' || wsiQuestionsStageCompletionShown) return
-      const selectedTypes = wsiCandidates.filter((q: any) => q.selected)
-      const yesNoCount = selectedTypes.filter((q: any) => q.type === 'yes-no').length
-      const multipleChoiceCount = selectedTypes.filter((q: any) => q.type === 'multiple-choice').length
-      const openCount = selectedTypes.filter((q: any) => q.type === 'open').length
-      const numericCount = selectedTypes.filter((q: any) => q.type === 'numeric').length
+      const selectedTypes = wsiCandidates.filter(q => q.selected)
+      const yesNoCount = selectedTypes.filter(q => q.type === 'yes-no').length
+      const multipleChoiceCount = selectedTypes.filter(q => q.type === 'multiple-choice').length
+      const openCount = selectedTypes.filter(q => q.type === 'open').length
+      const numericCount = selectedTypes.filter(q => q.type === 'numeric').length
 
       const typesSummary: string[] = []
       if (yesNoCount > 0) typesSummary.push(`${yesNoCount} sim/não`)
@@ -248,7 +248,7 @@ Essas perguntas serão usadas para avaliar candidatos automaticamente.
 
 Quer que eu avance para a **Revisão Final**, ou prefere ajustar as perguntas?`,
         timestamp: new Date(),
-        awaitingStageConfirmation: 'review-publish' as any,
+        awaitingStageConfirmation: 'review-publish' as WizardStage,
       }
       setMessages(prev => [...prev, proactiveMessage])
       setWsiQuestionsStageCompletionShown(true)
@@ -291,7 +291,7 @@ Com base nas suas preferências, estou refinando o perfil ideal de candidato.
 
 Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avaliando mais candidatos?`,
         timestamp: new Date(),
-        awaitingStageConfirmation: 'calibration-complete' as any,
+        awaitingStageConfirmation: 'calibration-complete' as WizardStage,
       }
       setMessages(prev => [...prev, proactiveMessage])
       setCalibrationStageCompletionShown(true)

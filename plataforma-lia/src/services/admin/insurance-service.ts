@@ -177,7 +177,7 @@ export interface CreateClaimInput {
 
 export { ApiClientError }
 
-function mapBackendPolicy(data: any): InsurancePolicy {
+function mapBackendPolicy(data: Record<string, unknown>): InsurancePolicy {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -195,7 +195,7 @@ function mapBackendPolicy(data: any): InsurancePolicy {
   }
 }
 
-function mapBackendCoverage(data: any): InsuranceCoverage {
+function mapBackendCoverage(data: Record<string, unknown>): InsuranceCoverage {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -210,7 +210,7 @@ function mapBackendCoverage(data: any): InsuranceCoverage {
   }
 }
 
-function mapBackendDocument(data: any): InsuranceDocument {
+function mapBackendDocument(data: Record<string, unknown>): InsuranceDocument {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -224,7 +224,7 @@ function mapBackendDocument(data: any): InsuranceDocument {
   }
 }
 
-function mapBackendClaim(data: any): InsuranceClaim {
+function mapBackendClaim(data: Record<string, unknown>): InsuranceClaim {
   return {
     id: data.id,
     policyId: data.policy_id,
@@ -241,7 +241,7 @@ function mapBackendClaim(data: any): InsuranceClaim {
   }
 }
 
-function mapBackendAlert(data: any): InsuranceAlert {
+function mapBackendAlert(data: Record<string, unknown>): InsuranceAlert {
   return {
     id: data.id,
     type: data.type,
@@ -254,7 +254,7 @@ function mapBackendAlert(data: any): InsuranceAlert {
   }
 }
 
-function mapBackendDashboard(data: any): InsuranceDashboard {
+function mapBackendDashboard(data: Record<string, unknown>): InsuranceDashboard {
   return {
     activePolicy: data.active_policy ? mapBackendPolicy(data.active_policy) : undefined,
     daysUntilExpiry: data.days_until_expiry ?? -1,
@@ -266,7 +266,7 @@ function mapBackendDashboard(data: any): InsuranceDashboard {
   }
 }
 
-function mapBackendChecklistItem(data: any): BCBCoverageChecklistItem {
+function mapBackendChecklistItem(data: Record<string, unknown>): BCBCoverageChecklistItem {
   return {
     coverageType: data.coverage_type,
     name: data.name,
@@ -411,7 +411,7 @@ class InsuranceService {
     policyId: string,
     input: UpdatePolicyInput
   ): Promise<InsurancePolicy> {
-    const payload: any = {}
+    const payload: Record<string, string | number | undefined> = {}
     if (input.policyNumber !== undefined) payload.policy_number = input.policyNumber
     if (input.insurer !== undefined) payload.insurer = input.insurer
     if (input.coverage !== undefined) payload.coverage = input.coverage

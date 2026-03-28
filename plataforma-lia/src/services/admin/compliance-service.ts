@@ -40,7 +40,7 @@ export interface ComplianceAudit {
   auditStartDate?: string
   auditEndDate?: string
   scopeDescription?: string
-  findings?: any
+  findings?: Record<string, unknown>[]
   status: string
   createdAt: string
   updatedAt: string
@@ -129,7 +129,7 @@ export interface CompanyControlListParams {
 
 export { ApiClientError }
 
-function mapBackendControlLibrary(data: any): ControlLibrary {
+function mapBackendControlLibrary(data: Record<string, unknown>): ControlLibrary {
   return {
     id: data.id,
     framework: data.framework,
@@ -145,7 +145,7 @@ function mapBackendControlLibrary(data: any): ControlLibrary {
   }
 }
 
-function mapBackendCompanyControl(data: any): CompanyControl {
+function mapBackendCompanyControl(data: Record<string, unknown>): CompanyControl {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -163,7 +163,7 @@ function mapBackendCompanyControl(data: any): CompanyControl {
   }
 }
 
-function mapBackendAudit(data: any): ComplianceAudit {
+function mapBackendAudit(data: Record<string, unknown>): ComplianceAudit {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -181,7 +181,7 @@ function mapBackendAudit(data: any): ComplianceAudit {
   }
 }
 
-function mapBackendSOXControl(data: any): SOXControl {
+function mapBackendSOXControl(data: Record<string, unknown>): SOXControl {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -200,7 +200,7 @@ function mapBackendSOXControl(data: any): SOXControl {
   }
 }
 
-function mapBackendDashboard(data: any): ComplianceDashboard {
+function mapBackendDashboard(data: Record<string, unknown>): ComplianceDashboard {
   const byFramework: Record<string, FrameworkStats> = {}
   if (data.by_framework) {
     for (const [key, value] of Object.entries(data.by_framework as Record<string, any>)) {

@@ -116,7 +116,7 @@ export interface TrackingResult {
 
 export { ApiClientError }
 
-function mapBackendRequest(data: any): DataSubjectRequest {
+function mapBackendRequest(data: Record<string, unknown>): DataSubjectRequest {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -150,7 +150,7 @@ function mapBackendRequest(data: any): DataSubjectRequest {
   }
 }
 
-function mapBackendStats(data: any): DataSubjectRequestStats {
+function mapBackendStats(data: Record<string, unknown>): DataSubjectRequestStats {
   return {
     totalRequests: data.total_requests || 0,
     pendingRequests: data.pending_requests || 0,
@@ -165,7 +165,7 @@ function mapBackendStats(data: any): DataSubjectRequestStats {
   }
 }
 
-function mapBackendTracking(data: any): TrackingResult {
+function mapBackendTracking(data: Record<string, unknown>): TrackingResult {
   return {
     id: data.id,
     status: data.status,

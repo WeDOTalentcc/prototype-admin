@@ -9,7 +9,7 @@ import {
 export interface SettingsTab {
   id: string
   name: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   description: string
   category: string
 }

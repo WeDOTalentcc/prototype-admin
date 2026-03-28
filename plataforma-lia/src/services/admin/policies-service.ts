@@ -50,7 +50,7 @@ export interface UpdatePolicyRequest {
   change_reason?: string
 }
 
-function mapBackendPolicy(data: any): Policy {
+function mapBackendPolicy(data: Record<string, unknown>): Policy {
   return {
     id: data.id,
     name: data.name,
@@ -68,7 +68,7 @@ function mapBackendPolicy(data: any): Policy {
   }
 }
 
-function mapBackendHistoryEntry(data: any): PolicyHistoryEntry {
+function mapBackendHistoryEntry(data: Record<string, unknown>): PolicyHistoryEntry {
   return {
     id: data.id,
     policyId: data.policy_id || data.policyId,

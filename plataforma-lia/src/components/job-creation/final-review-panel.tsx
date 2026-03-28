@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 
 export interface FieldSuggestion {
-  value: any
+  value: unknown
   source: "company_history" | "company_defaults" | "market_benchmark"
   confidence: number
   explanation: string
@@ -36,7 +36,7 @@ export interface FieldDetail {
   category: string
   label: string
   status: "filled" | "missing" | "toggled_off"
-  value: any
+  value: unknown
 }
 
 export interface CompletenessResult {
@@ -56,23 +56,23 @@ export interface JobData {
   department?: string
   salary_range?: { min: number; max: number; currency: string }
   benefits?: (string | CompanyBenefit)[]
-  technical_requirements?: any[]
-  behavioral_competencies?: any[]
+  technical_requirements?: Record<string, unknown>[]
+  behavioral_competencies?: Record<string, unknown>[]
   work_model?: string
   location?: string
   employment_type?: string
   description?: string
   requirements?: string[]
-  languages?: any[]
+  languages?: Record<string, unknown>[]
   manager?: string
   deadline?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface FinalReviewPanelProps {
   jobData: JobData
   completenessResult: CompletenessResult
-  onFieldEdit: (field: string, value: any) => void
+  onFieldEdit: (field: string, value: unknown) => void
   onPublish: () => void
   isPublishing?: boolean
   companyId?: string
@@ -121,17 +121,17 @@ function getFieldLabel(fieldKey: string, fieldDetails?: Record<string, FieldDeta
   return FIELD_LABELS[fieldKey] || fieldKey
 }
 
-function formatFieldValue(fieldKey: string, value: any): string {
+function formatFieldValue(fieldKey: string, value: unknown): string {
   if (value === null || value === undefined) return "-"
   
   if (fieldKey === "salary_range" && typeof value === "object") {
-    const { min, max, currency } = value
+    const { min, max, currency } = value as { min?: number; max?: number; currency?: string }
     return `${currency || "R$"} ${min?.toLocaleString()} - ${max?.toLocaleString()}`
   }
   
   if (fieldKey === "benefits" && Array.isArray(value)) {
     if (value.length === 0) return "-"
-    return value.map((b: any) => typeof b === 'string' ? b : b.name).join(", ")
+    return value.map((b: unknown) => typeof b === 'string' ? b : (b as Record<string, unknown>).name).join(", ")
   }
   
   if (Array.isArray(value)) {
@@ -159,8 +159,8 @@ function MissingFieldCard({
   fieldKey: string
   label: string
   suggestion?: FieldSuggestion
-  onUseSuggestion: (value: any) => void
-  onManualEdit: (value: any) => void
+  onUseSuggestion: (value: unknown) => void
+  onManualEdit: (value: unknown) => void
 }) {
   const [manualValue, setManualValue] = useState("")
   const [showInput, setShowInput] = useState(false)
@@ -244,7 +244,7 @@ function FilledFieldCard({
 }: {
   fieldKey: string
   label: string
-  value: any
+  value: unknown
 }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
@@ -289,11 +289,11 @@ export function FinalReviewPanel({
     }))
   }
 
-  const handleUseSuggestion = (fieldKey: string, value: any) => {
+  const handleUseSuggestion = (fieldKey: string, value: unknown) => {
     onFieldEdit(fieldKey, value)
   }
 
-  const handleManualEdit = (fieldKey: string, value: any) => {
+  const handleManualEdit = (fieldKey: string, value: unknown) => {
     onFieldEdit(fieldKey, value)
   }
 

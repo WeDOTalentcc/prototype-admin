@@ -70,7 +70,7 @@ export interface UpdateClientData {
 
 export { ApiClientError }
 
-function mapBackendClientToClient(bc: any): Client {
+function mapBackendClientToClient(bc: Record<string, unknown>): Client {
   return {
     id: bc.id,
     name: bc.name,

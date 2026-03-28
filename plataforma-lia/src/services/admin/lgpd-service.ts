@@ -99,7 +99,7 @@ export interface AutomatedDecisionListParams {
 
 export { ApiClientError }
 
-function mapBackendDpo(data: any): DPORegistry {
+function mapBackendDpo(data: Record<string, unknown>): DPORegistry {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -114,7 +114,7 @@ function mapBackendDpo(data: any): DPORegistry {
   }
 }
 
-function mapBackendBreach(data: any): BreachNotification {
+function mapBackendBreach(data: Record<string, unknown>): BreachNotification {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -136,7 +136,7 @@ function mapBackendBreach(data: any): BreachNotification {
   }
 }
 
-function mapBackendDecision(data: any): AutomatedDecision {
+function mapBackendDecision(data: Record<string, unknown>): AutomatedDecision {
   return {
     id: data.id,
     companyId: data.company_id,
@@ -154,7 +154,7 @@ function mapBackendDecision(data: any): AutomatedDecision {
   }
 }
 
-function mapBackendStats(data: any): LGPDStats {
+function mapBackendStats(data: Record<string, unknown>): LGPDStats {
   return {
     dpoRegistered: data.dpo_registered,
     dpoActive: data.dpo_active,

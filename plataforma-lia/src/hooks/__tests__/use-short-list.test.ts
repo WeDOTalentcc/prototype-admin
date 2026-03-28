@@ -92,7 +92,7 @@ describe("useShortList", () => {
     const { result } = renderHook(() => useShortList("company-001", "job-001"))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    let newList: any
+    let newList: Record<string, unknown>
     await act(async () => {
       newList = await result.current.createShortList("job-001", "Short List Principal")
     })

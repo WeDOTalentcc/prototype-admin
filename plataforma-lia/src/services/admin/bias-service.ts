@@ -63,7 +63,7 @@ export interface BiasAuditListParams {
 
 export { ApiClientError }
 
-function mapBackendBiasResult(data: any): BiasResult {
+function mapBackendBiasResult(data: Record<string, unknown>): BiasResult {
   return {
     category: data.category || '',
     status: data.status || 'clear',
@@ -73,7 +73,7 @@ function mapBackendBiasResult(data: any): BiasResult {
   }
 }
 
-function mapBackendBiasAudit(data: any): BiasAuditReport {
+function mapBackendBiasAudit(data: Record<string, unknown>): BiasAuditReport {
   const biasResults: Record<string, BiasResult> = {}
   if (data.bias_results) {
     for (const [key, value] of Object.entries(data.bias_results as Record<string, any>)) {
@@ -105,7 +105,7 @@ function mapBackendBiasAudit(data: any): BiasAuditReport {
   }
 }
 
-function mapBackendSummary(data: any): BiasAuditSummary {
+function mapBackendSummary(data: Record<string, unknown>): BiasAuditSummary {
   return {
     totalAudits: data.total_audits || 0,
     latestAuditDate: data.latest_audit_date,

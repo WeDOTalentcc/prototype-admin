@@ -22,7 +22,7 @@ const mockGetCandidates = vi.fn()
 
 vi.mock("@/services/lia-api", () => ({
   liaApi: {
-    getCandidates: (...args: any[]) => mockGetCandidates(...args),
+    getCandidates: (...args: unknown[]) => mockGetCandidates(...args),
   },
 }))
 

@@ -1,4 +1,4 @@
-export function formatFieldValue(value: any): string {
+export function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined) return "Nao definido"
   if (typeof value === 'boolean') return value ? "Sim" : "Nao"
   if (Array.isArray(value)) {

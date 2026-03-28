@@ -24,7 +24,7 @@ export interface JobBenefit extends CompanyBenefit {
   enabled: boolean
 }
 
-export function toCompanyBenefit(input: string | { name: string; category?: string; [key: string]: any }): CompanyBenefit {
+export function toCompanyBenefit(input: string | { name: string; category?: string; [key: string]: unknown }): CompanyBenefit {
   if (typeof input === 'string') {
     return {
       name: input,

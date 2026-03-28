@@ -14,6 +14,7 @@ import {
   Legend,
   Filler,
   ChartOptions,
+  ChartData,
   InteractionItem
 } from 'chart.js'
 import { Line, Bar, Pie, Chart } from 'react-chartjs-2'
@@ -85,12 +86,12 @@ const COLORS = [
 
 interface InteractiveChartProps {
   title: string
-  data: any[]
+  data: Record<string, unknown>[]
   type: 'line' | 'area' | 'bar' | 'pie' | 'composed'
   dataKeys: string[]
   period: 'monthly' | 'quarterly' | 'yearly'
   onPeriodChange?: (period: 'monthly' | 'quarterly' | 'yearly') => void
-  onDrillDown?: (dataPoint: any) => void
+  onDrillDown?: (dataPoint: Record<string, unknown>) => void
   showControls?: boolean
   height?: number
 }
@@ -132,9 +133,9 @@ export function InteractiveChart({
       // Para pie, dataKeys[0] é o campo de dados (ex: 'value', 'count')
       const valueKey = dataKeys[0]
       return {
-        labels: data.map((item: any) => item.name || item.stage || item.month),
+        labels: data.map((item: Record<string, unknown>) => item.name || item.stage || item.month),
         datasets: [{
-          data: data.map((item: any) => item[valueKey]),
+          data: data.map((item: Record<string, unknown>) => item[valueKey]),
           backgroundColor: data.map((_, index) => COLORS[index % COLORS.length]),
           borderColor: 'white',
           borderWidth: 2,
@@ -163,7 +164,7 @@ export function InteractiveChart({
     }
     
     const labelField = getLabelField()
-    const labels = data.map((item: any) => item[labelField])
+    const labels = data.map((item: Record<string, unknown>) => item[labelField])
     
     // Para composed: primeiro dataset é bar, segundo é line
     if (type === 'composed') {
@@ -173,7 +174,7 @@ export function InteractiveChart({
           {
             type: 'bar' as const,
             label: dataKeys[0],
-            data: data.map((item: any) => item[dataKeys[0]]),
+            data: data.map((item: Record<string, unknown>) => item[dataKeys[0]]),
             backgroundColor: COLORS[0] + 'CC',
             borderColor: COLORS[0],
             yAxisID: 'y',
@@ -181,7 +182,7 @@ export function InteractiveChart({
           {
             type: 'line' as const,
             label: dataKeys[1],
-            data: data.map((item: any) => item[dataKeys[1]]),
+            data: data.map((item: Record<string, unknown>) => item[dataKeys[1]]),
             backgroundColor: COLORS[1],
             borderColor: COLORS[1],
             borderWidth: 3,
@@ -196,7 +197,7 @@ export function InteractiveChart({
     const datasets = dataKeys.map((key, index) => {
       const baseConfig = {
         label: key,
-        data: data.map((item: any) => item[key]),
+        data: data.map((item: Record<string, unknown>) => item[key]),
         backgroundColor: COLORS[index % COLORS.length],
         borderColor: COLORS[index % COLORS.length],
         borderWidth: highlightedSeries === key ? 3 : 2,
@@ -251,7 +252,7 @@ export function InteractiveChart({
           }
         },
       },
-      onClick: handleClick as any,
+      onClick: handleClick as unknown as () => void,
     }
 
     if (type === 'pie') {
@@ -262,7 +263,7 @@ export function InteractiveChart({
           tooltip: {
             ...baseOptions.plugins?.tooltip,
             callbacks: {
-              label: (context: any) => {
+              label: (context: { label?: string; parsed?: { y?: number }; raw?: number; formattedValue?: string }) => {
                 const label = context.label || ''
                 const value = context.parsed || 0
                 const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
@@ -323,16 +324,16 @@ export function InteractiveChart({
     switch (type) {
       case 'line':
       case 'area':
-        return <Line ref={chartRef} data={chartData as any} options={options} />
+        return <Line ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'bar':
-        return <Bar ref={chartRef} data={chartData as any} options={options} />
+        return <Bar ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'pie':
-        return <Pie ref={chartRef} data={chartData as any} options={options} />
+        return <Pie ref={chartRef} data={chartData as ChartData} options={options} />
       
       case 'composed':
-        return <Chart ref={chartRef} type='bar' data={chartData as any} options={options} />
+        return <Chart ref={chartRef} type='bar' data={chartData as ChartData} options={options} />
       
       default:
         return <div>Gráfico não disponível</div>
@@ -437,7 +438,7 @@ export function ConversionFunnelChart() {
     { stage: 'Contratações', count: 89, percentage: 3.1, color: 'var(--status-success)' }
   ]
 
-  const handleDrillDown = (dataPoint: any) => {
+  const handleDrillDown = (dataPoint: Record<string, unknown>) => {
     // Implementar navegação para detalhes
   }
 

@@ -14,10 +14,10 @@ import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/scr
 import { getDemoActivities } from "@/data/demo-activities"
 
 interface CandidateActivitiesTabProps {
-  candidate: any
+  candidate: Record<string, unknown>
   jobId?: string
   onShowLiaModal: () => void
-  onOpenTriagemDetails?: (candidate: any) => void
+  onOpenTriagemDetails?: (candidate: Record<string, unknown>) => void
   onSetScreeningModalData: (data: {
     type: 'audio' | 'video'
     title: string
@@ -28,11 +28,11 @@ interface CandidateActivitiesTabProps {
     highlights?: string[]
   } | null) => void
   onSetScreeningModalOpen: (open: boolean) => void
-  onSetDiscModalData: (data: any) => void
+  onSetDiscModalData: (data: Record<string, unknown>) => void
   onSetDiscModalOpen: (open: boolean) => void
-  onSetBigFiveModalCandidate: (candidate: any) => void
+  onSetBigFiveModalCandidate: (candidate: Record<string, unknown>) => void
   onSetBigFiveModalOpen: (open: boolean) => void
-  onSetSelectedFile: (file: any) => void
+  onSetSelectedFile: (file: Record<string, unknown>) => void
   onSetPreviewType: (type: 'pdf' | 'image' | 'video' | 'audio' | null) => void
   onSetShowPreview: (show: boolean) => void
 }
@@ -70,9 +70,9 @@ export function CandidateActivitiesTab({
   const [periodFilter, setPeriodFilter] = useState<'7days' | '30days' | '3months' | 'all'>('all')
 
   const useDemoData = process.env.NEXT_PUBLIC_USE_DEMO_DATA !== 'false'
-  const activities: any[] = useDemoData ? getDemoActivities() : []
+  const activities: Record<string, unknown>[] = useDemoData ? getDemoActivities() : []
 
-  const filterByPeriod = (activity: any) => {
+  const filterByPeriod = (activity: Record<string, unknown>) => {
     if (periodFilter === 'all') return true
     const now = new Date()
     const activityDate = new Date(activity.timestamp)
@@ -96,7 +96,7 @@ export function CandidateActivitiesTab({
   })
 
 
-  const renderExpandedDetails = (activity: any) => {
+  const renderExpandedDetails = (activity: Record<string, unknown>) => {
     return (
       <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
         {activity.type === 'email-sent' && (
@@ -194,7 +194,7 @@ export function CandidateActivitiesTab({
                 <div className="mb-3">
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
                   <div className="space-y-1">
-                    {activity.details.interviewers.map((int: any, i: number) => (
+                    {activity.details.interviewers.map((int: Record<string, unknown>, i: number) => (
                       <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md">
                         <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
                           {typeof int === 'string' ? int.charAt(0) : int.name?.charAt(0)}
@@ -340,7 +340,7 @@ export function CandidateActivitiesTab({
                   size="sm"
                   className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                   onClick={() => {
-                    const questions: ScreeningQuestion[] = activity.details.questions?.map((q: any) => ({
+                    const questions: ScreeningQuestion[] = activity.details.questions?.map((q: Record<string, unknown>) => ({
                       id: q.id,
                       question: q.question,
                       duration: q.duration,
@@ -348,7 +348,7 @@ export function CandidateActivitiesTab({
                       timestamp: q.timestamp || `${q.id}:00`,
                       analysis: q.analysis
                     })) || []
-                    const transcription: TranscriptionSegment[] = activity.details.questions?.map((q: any, idx: number) => ({
+                    const transcription: TranscriptionSegment[] = activity.details.questions?.map((q: Record<string, unknown>, idx: number) => ({
                       timestamp: q.timestamp || `${idx}:00`,
                       speaker: 'Candidato' as const,
                       text: q.transcription
@@ -412,7 +412,7 @@ export function CandidateActivitiesTab({
                 <div className="mb-3">
                   <p className={`${textStyles.labelSmall} mb-2`}>📊 Performance por Categoria</p>
                   <div className="space-y-1.5">
-                    {activity.details.categories.map((cat: any, i: number) => (
+                    {activity.details.categories.map((cat: Record<string, unknown>, i: number) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className={`${textStyles.caption} w-28 truncate`}>{cat.name}</span>
                         <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
@@ -459,7 +459,7 @@ export function CandidateActivitiesTab({
               </div>
               {activity.details.benefits && (
                 <div className="flex flex-wrap gap-1">
-                  {activity.details.benefits.map((b: any, i: number) => (
+                  {activity.details.benefits.map((b: Record<string, unknown>, i: number) => (
                     <Badge key={i} variant="outline" className="text-micro px-1.5 py-0">
                       {typeof b === 'object' ? b.name : b}
                     </Badge>
@@ -486,7 +486,7 @@ export function CandidateActivitiesTab({
               </div>
               {activity.details.criteriaScores && (
                 <div className="space-y-1.5 mb-3">
-                  {activity.details.criteriaScores.slice(0, 4).map((c: any, i: number) => (
+                  {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => (
                     <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md border border-gray-100 dark:border-gray-700">
                       <span className="text-gray-800 dark:text-gray-200">{c.criteria}</span>
                       <Badge className={`text-micro px-1.5 ${c.score >= 80 ? badgeStyles.success : c.score >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
@@ -599,7 +599,7 @@ export function CandidateActivitiesTab({
                   size="sm"
                   className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                   onClick={() => {
-                    const questions: ScreeningQuestion[] = activity.details.questions?.map((q: any) => ({
+                    const questions: ScreeningQuestion[] = activity.details.questions?.map((q: Record<string, unknown>) => ({
                       id: q.id,
                       question: q.question,
                       duration: q.duration,
@@ -607,7 +607,7 @@ export function CandidateActivitiesTab({
                       timestamp: q.timestamp || `${q.id}:00`,
                       analysis: q.analysis
                     })) || []
-                    const transcription: TranscriptionSegment[] = activity.details.questions?.map((q: any, idx: number) => ({
+                    const transcription: TranscriptionSegment[] = activity.details.questions?.map((q: Record<string, unknown>, idx: number) => ({
                       timestamp: q.timestamp || `${idx}:00`,
                       speaker: 'Candidato' as const,
                       text: q.transcription
@@ -792,7 +792,7 @@ export function CandidateActivitiesTab({
               <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
                 <p className={`${textStyles.bodySmall} mb-1`}>Questões Técnicas</p>
                 <div className="space-y-1">
-                  {activity.details.technicalQuestions.map((q: any, i: number) => (
+                  {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
                     <div key={i} className="flex items-center justify-between">
                       <span className={textStyles.bodySmall}>{q.question}</span>
                       <Badge className="text-xs px-1 py-0">{q.score}/10</Badge>
@@ -818,7 +818,7 @@ export function CandidateActivitiesTab({
             <div className="bg-white dark:bg-gray-800 p-2 rounded-md max-h-48 overflow-y-auto">
               <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
               <div className="space-y-2">
-                {activity.details.conversation.map((msg: any, i: number) => (
+                {activity.details.conversation.map((msg: Record<string, unknown>, i: number) => (
                   <div key={i} className={`flex ${msg.sender === 'LIA' ? 'justify-start' : 'justify-end'}`}>
                     <div className={`max-w-[70%] px-2 py-1 rounded-md ${msg.sender === 'LIA' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-800'}`}>
                       <p className="text-xs">{msg.message}</p>
@@ -917,7 +917,7 @@ export function CandidateActivitiesTab({
     )
   }
 
-  const renderActivityCard = (activity: any, isTimeline: boolean) => {
+  const renderActivityCard = (activity: Record<string, unknown>, isTimeline: boolean) => {
     const ActivityIcon = activity.icon
     const isExpanded = expandedActivity === activity.id
 

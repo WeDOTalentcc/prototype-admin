@@ -79,7 +79,7 @@ export function useShortList(companyId: string, jobId?: string): UseShortListRet
       const params = new URLSearchParams({ company_id: companyId })
       if (jobId) params.set("job_id", jobId)
       const data = await apiFetch(`/api/backend-proxy/short-lists?${params}`)
-      setShortLists((data as any[]).map(toShortList))
+      setShortLists((data as Record<string, unknown>[]).map(toShortList))
     } catch (err) {
       setError((err as Error).message)
     } finally {
