@@ -1118,7 +1118,8 @@
       "Bash(grep -rl \"#[0-9a-fA-F]\\\\{3,6\\\\}\" components --include=\"*.tsx\")",
       "Bash(for dir:*)",
       "Bash(do echo:*)",
-      "Bash(sort -k2 done)"
+      "Bash(sort -k2 done)",
+      "Bash(grep -r \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\" --exclude-dir=node_modules --exclude-dir=.next)"
     ]
   }
 }

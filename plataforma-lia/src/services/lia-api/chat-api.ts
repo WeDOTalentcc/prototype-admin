@@ -1,0 +1,215 @@
+import { BACKEND_URL, getAuthHeaders, getAuthHeadersForFormData } from './base'
+import type {
+  ChatMessage,
+  ChatResponse,
+  Conversation,
+  OrchestratorProcessRequest,
+  OrchestratorProcessResponse,
+  InterpretMessageRequest,
+  InterpretMessageResponse,
+  ConversationalRequest,
+  ConversationalResponse,
+  WizardOrchestratorRequest,
+  WizardOrchestratorResponse,
+} from './types'
+
+export async function sendMessage(data: ChatMessage): Promise<ChatResponse> {
+  const hasFiles = (data.attachments && data.attachments.length > 0) || data.audio
+
+  if (hasFiles) {
+    const formData = new FormData()
+    formData.append('content', data.content)
+    if (data.user_id) formData.append('user_id', data.user_id)
+    if (data.conversation_id) formData.append('conversation_id', data.conversation_id)
+
+    if (data.attachments) {
+      data.attachments.forEach((file) => {
+        formData.append(`attachments`, file, file.name)
+      })
+    }
+
+    if (data.audio) {
+      formData.append('audio', data.audio, 'recording.webm')
+    }
+
+    const response = await fetch(`${BACKEND_URL}/chat/with-attachments`, {
+      method: 'POST',
+      headers: getAuthHeadersForFormData(),
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }))
+      throw new Error(error.detail || 'Failed to send message with attachments')
+    }
+
+    return response.json()
+  }
+
+  const response = await fetch(`${BACKEND_URL}/chat`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      content: data.content,
+      user_id: data.user_id,
+      conversation_id: data.conversation_id
+    }),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: response.statusText }))
+    throw new Error(error.detail || 'Failed to send message')
+  }
+
+  return response.json()
+}
+
+export async function getConversations(userId: string): Promise<Conversation[]> {
+  const response = await fetch(`${BACKEND_URL}/chat/?user_id=${userId}`, {
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch conversations: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+export async function getConversationHistory(conversationId: string): Promise<Record<string, unknown>[]> {
+  const response = await fetch(`${BACKEND_URL}/chat/?conversation_id=${conversationId}`, {
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch conversation history: ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return data.messages || []
+}
+
+export async function orchestratorProcess(request: OrchestratorProcessRequest): Promise<OrchestratorProcessResponse> {
+  const response = await fetch(`${BACKEND_URL}/orchestrator/process`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: response.statusText }))
+    return {
+      success: false,
+      error: error.detail || 'Orchestrator process failed',
+    }
+  }
+
+  return response.json()
+}
+
+export async function interpretMessage(request: InterpretMessageRequest): Promise<InterpretMessageResponse> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/lia/job-wizard/interpret`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      return {
+        action: 'other',
+        confidence: 0.5,
+        should_advance: false,
+        clarification_needed: false,
+        lia_response: 'Não consegui interpretar a mensagem. Pode reformular?'
+      }
+    }
+
+    return await response.json()
+  } catch {
+    return {
+      action: 'other',
+      confidence: 0.5,
+      should_advance: false,
+      clarification_needed: false,
+      lia_response: 'Ocorreu um erro. Por favor, tente novamente.'
+    }
+  }
+}
+
+export async function getConversationalResponse(request: ConversationalRequest): Promise<ConversationalResponse> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/lia/conversational`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      return {
+        response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
+        understood_intent: "fallback",
+        can_help: true
+      }
+    }
+
+    return await response.json()
+  } catch {
+    return {
+      response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
+      understood_intent: "fallback",
+      can_help: true
+    }
+  }
+}
+
+export async function orchestrateWizardMessage(request: WizardOrchestratorRequest): Promise<WizardOrchestratorResponse> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/wizard/smart-orchestrate/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: request.message,
+        current_stage: request.current_stage,
+        collected_data: request.collected_data,
+        conversation_history: request.conversation_history || [],
+        conversation_id: request.conversation_id,
+        company_id: request.company_id,
+        user_id: request.user_id
+      }),
+    })
+
+    if (!response.ok) {
+      return {
+        success: false,
+        lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
+        detected_criteria: {},
+        auto_transition: false,
+        tool_results: [],
+        confidence: 0.3,
+        reasoning_steps: [],
+        error: `HTTP ${response.status}`
+      }
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
+      detected_criteria: {},
+      auto_transition: false,
+      tool_results: [],
+      confidence: 0.3,
+      reasoning_steps: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
