@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export type ConsentType = 
   | 'personal_data'
@@ -147,93 +148,102 @@ export interface RevokeConsentData {
 export { ApiClientError }
 
 function mapBackendVersion(data: Record<string, unknown>): ConsentVersion {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    consentType: data.consent_type,
-    version: data.version,
-    title: data.title,
-    content: data.content,
-    summary: data.summary,
-    isActive: data.is_active,
-    isCurrent: data.is_current,
-    validityMonths: data.validity_months || 12,
-    createdBy: data.created_by,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    activeConsentsCount: data.active_consents_count,
-    pendingRenewalCount: data.pending_renewal_count,
-    expiredCount: data.expired_count,
-    revokedCount: data.revoked_count,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    consentType: d.str('consent_type') as ConsentType,
+    version: d.str('version'),
+    title: d.str('title'),
+    content: d.str('content'),
+    summary: d.str('summary') || undefined,
+    isActive: d.bool('is_active'),
+    isCurrent: d.bool('is_current'),
+    validityMonths: d.num('validity_months', 12),
+    createdBy: d.str('created_by') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
+    activeConsentsCount: d.num('active_consents_count') || undefined,
+    pendingRenewalCount: d.num('pending_renewal_count') || undefined,
+    expiredCount: d.num('expired_count') || undefined,
+    revokedCount: d.num('revoked_count') || undefined,
   }
 }
 
 function mapBackendEvent(data: Record<string, unknown>): ConsentEvent {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    versionId: data.version_id,
-    subjectIdentifier: data.subject_identifier,
-    subjectName: data.subject_name,
-    subjectEmail: data.subject_email,
-    eventType: data.event_type,
-    consentType: data.consent_type,
-    version: data.version,
-    grantedAt: data.granted_at,
-    expiresAt: data.expires_at,
-    revokedAt: data.revoked_at,
-    ipAddress: data.ip_address,
-    userAgent: data.user_agent,
-    metadata: data.metadata,
-    createdAt: data.created_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    versionId: d.str('version_id'),
+    subjectIdentifier: d.str('subject_identifier'),
+    subjectName: d.str('subject_name') || undefined,
+    subjectEmail: d.str('subject_email') || undefined,
+    eventType: d.str('event_type') as ConsentEventType,
+    consentType: d.str('consent_type') as ConsentType,
+    version: d.str('version'),
+    grantedAt: d.str('granted_at') || undefined,
+    expiresAt: d.str('expires_at') || undefined,
+    revokedAt: d.str('revoked_at') || undefined,
+    ipAddress: d.str('ip_address') || undefined,
+    userAgent: d.str('user_agent') || undefined,
+    metadata: d.raw('metadata') as Record<string, unknown> | undefined,
+    createdAt: d.str('created_at'),
   }
 }
 
 function mapBackendStats(data: Record<string, unknown>): ConsentStats {
-  const byType: Record<string, unknown> = {}
-  if (data.by_type) {
-    for (const [key, value] of Object.entries(data.by_type as Record<string, unknown>)) {
+  const d = safeData(data)
+  const byType: ConsentStats['byType'] = {}
+  if (d.raw('by_type')) {
+    for (const [key, value] of Object.entries(d.rec('by_type'))) {
+      const v = safeData(value as Record<string, unknown>)
       byType[key] = {
-        active: value.active || 0,
-        pending: value.pending || 0,
-        expired: value.expired || 0,
-        revoked: value.revoked || 0,
-        rate: value.rate || 0,
+        active: v.num('active'),
+        pending: v.num('pending'),
+        expired: v.num('expired'),
+        revoked: v.num('revoked'),
+        rate: v.num('rate'),
       }
     }
   }
 
+  const ra = safeData(d.rec('recent_activity'))
   return {
-    totalVersions: data.total_versions || 0,
-    activeVersions: data.active_versions || 0,
-    totalConsents: data.total_consents || 0,
-    activeConsents: data.active_consents || 0,
-    pendingRenewal: data.pending_renewal || 0,
-    expired: data.expired || 0,
-    revoked: data.revoked || 0,
-    consentRate: data.consent_rate || 0,
+    totalVersions: d.num('total_versions'),
+    activeVersions: d.num('active_versions'),
+    totalConsents: d.num('total_consents'),
+    activeConsents: d.num('active_consents'),
+    pendingRenewal: d.num('pending_renewal'),
+    expired: d.num('expired'),
+    revoked: d.num('revoked'),
+    consentRate: d.num('consent_rate'),
     byType,
     recentActivity: {
-      grantsToday: data.recent_activity?.grants_today || 0,
-      revokesToday: data.recent_activity?.revokes_today || 0,
-      expiringThisWeek: data.recent_activity?.expiring_this_week || 0,
+      grantsToday: ra.num('grants_today'),
+      revokesToday: ra.num('revokes_today'),
+      expiringThisWeek: ra.num('expiring_this_week'),
     },
   }
 }
 
 function mapBackendSubjectHistory(data: Record<string, unknown>): SubjectHistory {
+  const d = safeData(data)
   return {
-    subjectIdentifier: data.subject_identifier,
-    subjectName: data.subject_name,
-    subjectEmail: data.subject_email,
-    events: (data.events || []).map(mapBackendEvent),
-    currentConsents: (data.current_consents || []).map((c: Record<string, unknown>) => ({
-      consentType: c.consent_type,
-      version: c.version,
-      grantedAt: c.granted_at,
-      expiresAt: c.expires_at,
-      status: c.status,
-    })),
+    subjectIdentifier: d.str('subject_identifier'),
+    subjectName: d.str('subject_name') || undefined,
+    subjectEmail: d.str('subject_email') || undefined,
+    events: d.arr<Record<string, unknown>>('events').map(mapBackendEvent),
+    currentConsents: d.arr<Record<string, unknown>>('current_consents').map((c: Record<string, unknown>) => {
+      const cd = safeData(c)
+      return {
+        consentType: cd.str('consent_type') as ConsentType,
+        version: cd.str('version'),
+        grantedAt: cd.str('granted_at'),
+        expiresAt: cd.str('expires_at'),
+        status: cd.str('status') as 'active' | 'expired' | 'revoked',
+      }
+    }),
   }
 }
 

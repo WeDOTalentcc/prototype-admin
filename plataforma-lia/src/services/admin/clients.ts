@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface Client {
   id: string
@@ -71,21 +72,22 @@ export interface UpdateClientData {
 export { ApiClientError }
 
 function mapBackendClientToClient(bc: Record<string, unknown>): Client {
+  const d = safeData(bc)
   return {
-    id: bc.id,
-    name: bc.name,
-    tradeName: bc.trade_name,
-    cnpj: bc.cnpj,
-    status: bc.status,
-    planId: bc.plan_id,
-    logoUrl: bc.logo_url,
-    email: bc.primary_email,
-    phone: bc.primary_phone,
-    address: bc.address ? JSON.stringify(bc.address) : undefined,
-    createdAt: bc.created_at,
-    updatedAt: bc.updated_at,
-    usersCount: bc.users_count || 0,
-    activeJobsCount: bc.active_jobs_count || 0,
+    id: d.str('id'),
+    name: d.str('name'),
+    tradeName: d.str('trade_name') || undefined,
+    cnpj: d.str('cnpj') || undefined,
+    status: d.str('status', 'active'),
+    planId: d.str('plan_id') || undefined,
+    logoUrl: d.str('logo_url') || undefined,
+    email: d.str('primary_email') || undefined,
+    phone: d.str('primary_phone') || undefined,
+    address: d.raw('address') ? JSON.stringify(d.raw('address')) : undefined,
+    createdAt: d.str('created_at') || undefined,
+    updatedAt: d.str('updated_at') || undefined,
+    usersCount: d.num('users_count'),
+    activeJobsCount: d.num('active_jobs_count'),
   }
 }
 

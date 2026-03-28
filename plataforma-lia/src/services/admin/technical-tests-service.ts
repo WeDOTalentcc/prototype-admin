@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export type TestCategory = 'coding' | 'logic' | 'domain' | 'personality'
 export type TestStatus = 'active' | 'draft' | 'archived'
@@ -107,66 +108,70 @@ export interface TestFilters {
 export { ApiClientError }
 
 function mapBackendTest(data: Record<string, unknown>): TechnicalTest {
+  const d = safeData(data)
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    category: data.category,
-    subcategory: data.subcategory,
-    duration: data.duration,
-    difficulty: data.difficulty,
-    status: data.status,
-    passingScore: data.passing_score ?? data.passingScore ?? 0,
-    totalQuestions: data.total_questions ?? data.totalQuestions,
-    isActive: data.is_active ?? data.isActive ?? true,
-    createdAt: data.created_at ?? data.createdAt,
-    updatedAt: data.updated_at ?? data.updatedAt,
+    id: d.str('id'),
+    name: d.str('name'),
+    description: d.str('description') || undefined,
+    category: (d.str('category') || 'coding') as TestCategory,
+    subcategory: d.str('subcategory') || undefined,
+    duration: d.num('duration'),
+    difficulty: (d.str('difficulty') || 'medium') as TestDifficulty,
+    status: (d.str('status') || 'active') as TestStatus,
+    passingScore: d.num('passing_score') || d.num('passingScore'),
+    totalQuestions: d.num('total_questions') || d.num('totalQuestions') || undefined,
+    isActive: d.raw('is_active') != null ? d.bool('is_active') : d.raw('isActive') != null ? d.bool('isActive') : true,
+    createdAt: d.str('created_at') || d.str('createdAt'),
+    updatedAt: d.str('updated_at') || d.str('updatedAt'),
   }
 }
 
 function mapBackendClientTest(data: Record<string, unknown>): ClientTest {
+  const d = safeData(data)
   return {
-    id: data.id,
-    clientId: data.client_id ?? data.clientId,
-    testId: data.test_id ?? data.testId,
-    enabled: data.enabled ?? false,
-    customPassingScore: data.custom_passing_score ?? data.customPassingScore,
-    customDuration: data.custom_duration ?? data.customDuration,
-    testsTaken: data.tests_taken ?? data.testsTaken ?? 0,
-    avgScore: data.avg_score ?? data.avgScore ?? 0,
-    completionRate: data.completion_rate ?? data.completionRate ?? 0,
-    lastUsed: data.last_used ?? data.lastUsed,
-    test: data.test ? mapBackendTest(data.test) : data.test,
-    createdAt: data.created_at ?? data.createdAt,
-    updatedAt: data.updated_at ?? data.updatedAt,
+    id: d.str('id'),
+    clientId: d.str('client_id') || d.str('clientId'),
+    testId: d.str('test_id') || d.str('testId'),
+    enabled: d.raw('enabled') != null ? d.bool('enabled') : false,
+    customPassingScore: d.num('custom_passing_score') || d.num('customPassingScore') || undefined,
+    customDuration: d.num('custom_duration') || d.num('customDuration') || undefined,
+    testsTaken: d.num('tests_taken') || d.num('testsTaken'),
+    avgScore: d.num('avg_score') || d.num('avgScore'),
+    completionRate: d.num('completion_rate') || d.num('completionRate'),
+    lastUsed: d.str('last_used') || d.str('lastUsed') || undefined,
+    test: d.raw('test') ? mapBackendTest(d.rec('test')) : ({} as TechnicalTest),
+    createdAt: d.str('created_at') || d.str('createdAt'),
+    updatedAt: d.str('updated_at') || d.str('updatedAt'),
   }
 }
 
 function mapBackendStats(data: Record<string, unknown>): ClientTestStats {
+  const d = safeData(data)
+  const bc = (d.raw('by_category') || d.raw('byCategory') || {}) as Record<string, Record<string, number>>
   return {
-    totalTests: data.total_tests ?? data.totalTests ?? 0,
-    enabledTests: data.enabled_tests ?? data.enabledTests ?? 0,
-    activeTests: data.active_tests ?? data.activeTests ?? 0,
-    draftTests: data.draft_tests ?? data.draftTests ?? 0,
-    totalTestsTaken: data.total_tests_taken ?? data.totalTestsTaken ?? 0,
-    avgCompletionRate: data.avg_completion_rate ?? data.avgCompletionRate ?? 0,
-    testsTakenThisWeek: data.tests_taken_this_week ?? data.testsTakenThisWeek ?? 0,
+    totalTests: d.num('total_tests') || d.num('totalTests'),
+    enabledTests: d.num('enabled_tests') || d.num('enabledTests'),
+    activeTests: d.num('active_tests') || d.num('activeTests'),
+    draftTests: d.num('draft_tests') || d.num('draftTests'),
+    totalTestsTaken: d.num('total_tests_taken') || d.num('totalTestsTaken'),
+    avgCompletionRate: d.num('avg_completion_rate') || d.num('avgCompletionRate'),
+    testsTakenThisWeek: d.num('tests_taken_this_week') || d.num('testsTakenThisWeek'),
     byCategory: {
       coding: {
-        total: data.by_category?.coding?.total ?? data.byCategory?.coding?.total ?? 0,
-        enabled: data.by_category?.coding?.enabled ?? data.byCategory?.coding?.enabled ?? 0,
+        total: bc.coding?.total ?? 0,
+        enabled: bc.coding?.enabled ?? 0,
       },
       logic: {
-        total: data.by_category?.logic?.total ?? data.byCategory?.logic?.total ?? 0,
-        enabled: data.by_category?.logic?.enabled ?? data.byCategory?.logic?.enabled ?? 0,
+        total: bc.logic?.total ?? 0,
+        enabled: bc.logic?.enabled ?? 0,
       },
       domain: {
-        total: data.by_category?.domain?.total ?? data.byCategory?.domain?.total ?? 0,
-        enabled: data.by_category?.domain?.enabled ?? data.byCategory?.domain?.enabled ?? 0,
+        total: bc.domain?.total ?? 0,
+        enabled: bc.domain?.enabled ?? 0,
       },
       personality: {
-        total: data.by_category?.personality?.total ?? data.byCategory?.personality?.total ?? 0,
-        enabled: data.by_category?.personality?.enabled ?? data.byCategory?.personality?.enabled ?? 0,
+        total: bc.personality?.total ?? 0,
+        enabled: bc.personality?.enabled ?? 0,
       },
     },
   }

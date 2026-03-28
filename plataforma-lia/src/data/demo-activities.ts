@@ -31,6 +31,7 @@ export interface Activity {
   iconColor: string
   title: string
   author: string
+  authorRole?: string
   date: string
   timestamp: Date
   summary: string
@@ -39,6 +40,7 @@ export interface Activity {
   score?: number
   statusLabel?: string
   status?: 'approved' | 'completed' | 'in-progress' | 'rejected' | 'pending'
+  platform?: string
   details?: ActivityDetail
 }
 

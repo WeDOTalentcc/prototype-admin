@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface ControlLibrary {
   id: string
@@ -130,101 +131,107 @@ export interface CompanyControlListParams {
 export { ApiClientError }
 
 function mapBackendControlLibrary(data: Record<string, unknown>): ControlLibrary {
+  const d = safeData(data)
   return {
-    id: data.id,
-    framework: data.framework,
-    controlId: data.control_id,
-    controlName: data.control_name,
-    controlDescription: data.control_description,
-    controlCategory: data.control_category,
-    domain: data.domain,
-    isMandatory: data.is_mandatory,
-    implementationGuidance: data.implementation_guidance,
-    evidenceRequirements: data.evidence_requirements || [],
-    relatedControls: data.related_controls || [],
+    id: d.str('id'),
+    framework: d.str('framework'),
+    controlId: d.str('control_id'),
+    controlName: d.str('control_name'),
+    controlDescription: d.str('control_description'),
+    controlCategory: d.str('control_category') || undefined,
+    domain: d.str('domain') || undefined,
+    isMandatory: d.bool('is_mandatory'),
+    implementationGuidance: d.str('implementation_guidance') || undefined,
+    evidenceRequirements: d.arr<string>('evidence_requirements'),
+    relatedControls: d.arr<string>('related_controls'),
   }
 }
 
 function mapBackendCompanyControl(data: Record<string, unknown>): CompanyControl {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    controlLibraryId: data.control_library_id,
-    status: data.status,
-    ownerName: data.owner_name,
-    ownerEmail: data.owner_email,
-    notes: data.notes,
-    evidenceFiles: data.evidence_files || [],
-    lastReviewedAt: data.last_reviewed_at,
-    nextReviewDate: data.next_review_date,
-    control: data.control ? mapBackendControlLibrary(data.control) : undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    controlLibraryId: d.str('control_library_id'),
+    status: d.str('status') as CompanyControl['status'],
+    ownerName: d.str('owner_name') || undefined,
+    ownerEmail: d.str('owner_email') || undefined,
+    notes: d.str('notes') || undefined,
+    evidenceFiles: d.arr<{ filename: string; url: string; uploadedAt: string }>('evidence_files'),
+    lastReviewedAt: d.str('last_reviewed_at') || undefined,
+    nextReviewDate: d.str('next_review_date') || undefined,
+    control: d.raw('control') ? mapBackendControlLibrary(d.rec('control')) : undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendAudit(data: Record<string, unknown>): ComplianceAudit {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    framework: data.framework,
-    auditType: data.audit_type,
-    auditorOrganization: data.auditor_organization,
-    auditorName: data.auditor_name,
-    auditStartDate: data.audit_start_date,
-    auditEndDate: data.audit_end_date,
-    scopeDescription: data.scope_description,
-    findings: data.findings,
-    status: data.status,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    framework: d.str('framework'),
+    auditType: d.str('audit_type'),
+    auditorOrganization: d.str('auditor_organization') || undefined,
+    auditorName: d.str('auditor_name') || undefined,
+    auditStartDate: d.str('audit_start_date') || undefined,
+    auditEndDate: d.str('audit_end_date') || undefined,
+    scopeDescription: d.str('scope_description') || undefined,
+    findings: d.arr<Record<string, unknown>>('findings') || undefined,
+    status: d.str('status'),
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendSOXControl(data: Record<string, unknown>): SOXControl {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    section: data.section,
-    controlId: data.control_id,
-    controlName: data.control_name,
-    description: data.description,
-    controlType: data.control_type,
-    frequency: data.frequency,
-    testResult: data.test_result,
-    testDate: data.test_date,
-    testerName: data.tester_name,
-    notes: data.notes,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    section: d.str('section'),
+    controlId: d.str('control_id'),
+    controlName: d.str('control_name'),
+    description: d.str('description'),
+    controlType: d.str('control_type'),
+    frequency: d.str('frequency'),
+    testResult: d.str('test_result') as SOXControl['testResult'],
+    testDate: d.str('test_date') || undefined,
+    testerName: d.str('tester_name') || undefined,
+    notes: d.str('notes') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendDashboard(data: Record<string, unknown>): ComplianceDashboard {
+  const d = safeData(data)
   const byFramework: Record<string, FrameworkStats> = {}
-  if (data.by_framework) {
-    for (const [key, value] of Object.entries(data.by_framework as Record<string, unknown>)) {
+  if (d.raw('by_framework')) {
+    for (const [key, value] of Object.entries(d.rec('by_framework'))) {
+      const v = safeData(value as Record<string, unknown>)
       byFramework[key] = {
-        totalControls: value.total_controls || 0,
-        implemented: value.implemented || 0,
-        inProgress: value.in_progress || 0,
-        notStarted: value.not_started || 0,
-        verified: value.verified || 0,
-        notApplicable: value.not_applicable || 0,
-        compliancePercentage: value.compliance_percentage || 0,
+        totalControls: v.num('total_controls'),
+        implemented: v.num('implemented'),
+        inProgress: v.num('in_progress'),
+        notStarted: v.num('not_started'),
+        verified: v.num('verified'),
+        notApplicable: v.num('not_applicable'),
+        compliancePercentage: v.num('compliance_percentage'),
       }
     }
   }
 
   return {
     byFramework,
-    totalControls: data.total_controls || 0,
-    totalImplemented: data.total_implemented || 0,
-    overallCompliancePercentage: data.overall_compliance_percentage || 0,
-    upcomingReviews: data.upcoming_reviews || 0,
-    overdueReviews: data.overdue_reviews || 0,
-    recentAudits: (data.recent_audits || []).map(mapBackendAudit),
-    soxSummary: data.sox_summary,
+    totalControls: d.num('total_controls'),
+    totalImplemented: d.num('total_implemented'),
+    overallCompliancePercentage: d.num('overall_compliance_percentage'),
+    upcomingReviews: d.num('upcoming_reviews'),
+    overdueReviews: d.num('overdue_reviews'),
+    recentAudits: d.arr<Record<string, unknown>>('recent_audits').map(mapBackendAudit),
+    soxSummary: d.raw('sox_summary') as Record<string, number> | undefined,
   }
 }
 

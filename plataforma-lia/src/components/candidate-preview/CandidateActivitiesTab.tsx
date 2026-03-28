@@ -11,7 +11,7 @@ import {
   Eye, Video, Target, Briefcase, ThumbsUp, ThumbsDown
 } from "lucide-react"
 import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { getDemoActivities } from "@/data/demo-activities"
+import { getDemoActivities, Activity as ActivityData } from "@/data/demo-activities"
 
 interface CandidateActivitiesTabProps {
   candidate: Record<string, unknown>
@@ -70,9 +70,9 @@ export function CandidateActivitiesTab({
   const [periodFilter, setPeriodFilter] = useState<'7days' | '30days' | '3months' | 'all'>('all')
 
   const useDemoData = process.env.NEXT_PUBLIC_USE_DEMO_DATA !== 'false'
-  const activities: Record<string, unknown>[] = useDemoData ? getDemoActivities() : []
+  const activities: ActivityData[] = useDemoData ? getDemoActivities() : []
 
-  const filterByPeriod = (activity: Record<string, unknown>) => {
+  const filterByPeriod = (activity: ActivityData) => {
     if (periodFilter === 'all') return true
     const now = new Date()
     const activityDate = new Date(activity.timestamp)
@@ -96,7 +96,7 @@ export function CandidateActivitiesTab({
   })
 
 
-  const renderExpandedDetails = (activity: Record<string, unknown>) => {
+  const renderExpandedDetails = (activity: ActivityData & { details: NonNullable<ActivityData['details']> }) => {
     return (
       <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
         {activity.type === 'email-sent' && (
@@ -194,13 +194,13 @@ export function CandidateActivitiesTab({
                 <div className="mb-3">
                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
                   <div className="space-y-1">
-                    {activity.details.interviewers.map((int: Record<string, unknown>, i: number) => (
+                    {activity.details.interviewers.map((int: Record<string, unknown> | string, i: number) => (
                       <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md">
                         <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
-                          {typeof int === 'string' ? int.charAt(0) : int.name?.charAt(0)}
+                          {typeof int === 'string' ? int.charAt(0) : String(int.name ?? '').charAt(0)}
                         </div>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{typeof int === 'string' ? int : int.name}</span>
-                        {typeof int !== 'string' && int.role && <span className="text-gray-500 dark:text-gray-400">- {int.role}</span>}
+                        <span className="font-medium text-gray-800 dark:text-gray-200">{typeof int === 'string' ? int : String(int.name ?? '')}</span>
+                        {typeof int !== 'string' && int.role ? <span className="text-gray-500 dark:text-gray-400">- {String(int.role)}</span> : null}
                       </div>
                     ))}
                   </div>
@@ -390,8 +390,8 @@ export function CandidateActivitiesTab({
               <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
                 <Code className="w-3 h-3 text-status-warning" />
                 {activity.details.testName}
-                <Badge className={`ml-2 ${activity.score >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
-                  {activity.score >= 70 ? 'Aprovado' : 'Atenção'}
+                <Badge className={`ml-2 ${(activity.score ?? 0) >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
+                  {(activity.score ?? 0) >= 70 ? 'Aprovado' : 'Atenção'}
                 </Badge>
               </h5>
               <div className="grid grid-cols-3 gap-2 mb-3">
@@ -403,8 +403,8 @@ export function CandidateActivitiesTab({
                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
                   <p className={textStyles.caption}>Tempo</p>
                 </div>
-                <div className={`text-center p-2 rounded-md border ${activity.score >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : activity.score >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
-                  <p className={`text-base font-bold ${activity.score >= 80 ? 'text-status-success dark:text-status-success' : activity.score >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
+                <div className={`text-center p-2 rounded-md border ${(activity.score ?? 0) >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : (activity.score ?? 0) >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
+                  <p className={`text-base font-bold ${(activity.score ?? 0) >= 80 ? 'text-status-success dark:text-status-success' : (activity.score ?? 0) >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
                   <p className={textStyles.caption}>Score</p>
                 </div>
               </div>
@@ -412,18 +412,21 @@ export function CandidateActivitiesTab({
                 <div className="mb-3">
                   <p className={`${textStyles.labelSmall} mb-2`}>📊 Performance por Categoria</p>
                   <div className="space-y-1.5">
-                    {activity.details.categories.map((cat: Record<string, unknown>, i: number) => (
+                    {activity.details.categories.map((cat: Record<string, unknown>, i: number) => {
+                      const catScore = Number(cat.score ?? 0)
+                      return (
                       <div key={i} className="flex items-center gap-2">
-                        <span className={`${textStyles.caption} w-28 truncate`}>{cat.name}</span>
+                        <span className={`${textStyles.caption} w-28 truncate`}>{String(cat.name ?? '')}</span>
                         <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${cat.score >= 80 ? 'bg-status-success' : cat.score >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
-                            style={{width: `${cat.score}%`}}
+                            className={`h-full rounded-full ${catScore >= 80 ? 'bg-status-success' : catScore >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
+                            style={{width: `${catScore}%`}}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{cat.score}%</span>
+                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{catScore}%</span>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -459,9 +462,9 @@ export function CandidateActivitiesTab({
               </div>
               {activity.details.benefits && (
                 <div className="flex flex-wrap gap-1">
-                  {activity.details.benefits.map((b: Record<string, unknown>, i: number) => (
+                  {activity.details.benefits.map((b: Record<string, unknown> | string, i: number) => (
                     <Badge key={i} variant="outline" className="text-micro px-1.5 py-0">
-                      {typeof b === 'object' ? b.name : b}
+                      {typeof b === 'object' ? String(b.name ?? '') : String(b)}
                     </Badge>
                   ))}
                 </div>
@@ -486,14 +489,17 @@ export function CandidateActivitiesTab({
               </div>
               {activity.details.criteriaScores && (
                 <div className="space-y-1.5 mb-3">
-                  {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => (
+                  {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => {
+                    const cScore = Number(c.score ?? 0)
+                    return (
                     <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md border border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-800 dark:text-gray-200">{c.criteria}</span>
-                      <Badge className={`text-micro px-1.5 ${c.score >= 80 ? badgeStyles.success : c.score >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
-                        {c.score}%
+                      <span className="text-gray-800 dark:text-gray-200">{String(c.criteria ?? '')}</span>
+                      <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
+                        {cScore}%
                       </Badge>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
               <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700">
@@ -794,8 +800,8 @@ export function CandidateActivitiesTab({
                 <div className="space-y-1">
                   {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
                     <div key={i} className="flex items-center justify-between">
-                      <span className={textStyles.bodySmall}>{q.question}</span>
-                      <Badge className="text-xs px-1 py-0">{q.score}/10</Badge>
+                      <span className={textStyles.bodySmall}>{String(q.question ?? '')}</span>
+                      <Badge className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Badge>
                     </div>
                   ))}
                 </div>
@@ -819,10 +825,10 @@ export function CandidateActivitiesTab({
               <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
               <div className="space-y-2">
                 {activity.details.conversation.map((msg: Record<string, unknown>, i: number) => (
-                  <div key={i} className={`flex ${msg.sender === 'LIA' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[70%] px-2 py-1 rounded-md ${msg.sender === 'LIA' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-800'}`}>
-                      <p className="text-xs">{msg.message}</p>
-                      <span className="text-xs opacity-70">{msg.time}</span>
+                  <div key={i} className={`flex ${String(msg.sender) === 'LIA' ? 'justify-start' : 'justify-end'}`}>
+                    <div className={`max-w-[70%] px-2 py-1 rounded-md ${String(msg.sender) === 'LIA' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-800'}`}>
+                      <p className="text-xs">{String(msg.message ?? '')}</p>
+                      <span className="text-xs opacity-70">{String(msg.time ?? '')}</span>
                     </div>
                   </div>
                 ))}
@@ -917,7 +923,7 @@ export function CandidateActivitiesTab({
     )
   }
 
-  const renderActivityCard = (activity: Record<string, unknown>, isTimeline: boolean) => {
+  const renderActivityCard = (activity: ActivityData, isTimeline: boolean) => {
     const ActivityIcon = activity.icon
     const isExpanded = expandedActivity === activity.id
 
@@ -976,7 +982,7 @@ export function CandidateActivitiesTab({
                 </div>
               </div>
             </div>
-            {isExpanded && activity.details && renderExpandedDetails(activity)}
+            {isExpanded && activity.details && renderExpandedDetails(activity as ActivityData & { details: NonNullable<ActivityData['details']> })}
           </div>
         </div>
       )
@@ -1032,7 +1038,7 @@ export function CandidateActivitiesTab({
             </div>
           </div>
         </div>
-        {isExpanded && activity.details && renderExpandedDetails(activity)}
+        {isExpanded && activity.details && renderExpandedDetails(activity as ActivityData & { details: NonNullable<ActivityData['details']> })}
       </div>
     )
   }
@@ -1192,7 +1198,7 @@ export function CandidateActivitiesTab({
               <div className="relative flex items-center mt-6">
                 <div className="absolute left-4 w-4 h-4 bg-wedo-green rounded-full z-10"></div>
                 <span className="ml-12 text-xs text-gray-800 dark:text-gray-200">
-                  Início do processo • {candidate.name} adicionado ao banco de talentos
+                  Início do processo • {String(candidate.name ?? '')} adicionado ao banco de talentos
                 </span>
               </div>
             )}

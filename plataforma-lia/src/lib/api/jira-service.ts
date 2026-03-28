@@ -1,6 +1,19 @@
 import { Version3Client } from 'jira.js';
 
-let connectionSettings: Record<string, unknown> | null;
+interface JiraConnectionSettings {
+  settings?: {
+    expires_at?: string;
+    access_token?: string;
+    site_url?: string;
+    oauth?: {
+      credentials?: {
+        access_token?: string;
+      };
+    };
+  };
+}
+
+let connectionSettings: JiraConnectionSettings | null = null;
 let cachedCloudId: string | null = null;
 
 interface JiraAuth {
@@ -18,10 +31,10 @@ async function getAccessToken(): Promise<JiraAuth> {
   const hasValidToken = connectionSettings && expiresAt > now + 60000 && cachedCloudId;
   
   if (hasValidToken) {
-    const accessToken = connectionSettings.settings.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+    const accessToken = connectionSettings!.settings!.access_token || connectionSettings!.settings?.oauth?.credentials?.access_token;
     return {
-      accessToken,
-      hostName: connectionSettings.settings.site_url,
+      accessToken: accessToken || '',
+      hostName: connectionSettings!.settings!.site_url || '',
       cloudId: cachedCloudId!,
       apiBaseUrl: `https://api.atlassian.com/ex/jira/${cachedCloudId}`,
     };
@@ -49,14 +62,14 @@ async function getAccessToken(): Promise<JiraAuth> {
         'X_REPLIT_TOKEN': xReplitToken
       }
     }
-  ).then(res => res.json()).then(data => data.items?.[0]);
+  ).then(res => res.json()).then(data => data.items?.[0] as JiraConnectionSettings | undefined) || null;
 
   if (!connectionSettings) {
     throw new Error('Jira not connected - no connection settings found');
   }
 
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-  const hostName = connectionSettings?.settings?.site_url;
+  const accessToken = connectionSettings.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+  const hostName = connectionSettings.settings?.site_url;
 
   if (!accessToken || !hostName) {
     throw new Error('Jira not connected - missing access token or site URL');
@@ -165,10 +178,10 @@ export class JiraService {
       const response = await agileApiRequest(`/board${params}`);
 
       return (response.values || []).map((board: Record<string, unknown>) => ({
-        id: board.id,
-        name: board.name,
-        type: board.type,
-        projectKey: board.location?.projectKey || '',
+        id: board.id as number,
+        name: board.name as string,
+        type: board.type as string,
+        projectKey: ((board.location as Record<string, unknown> | undefined)?.projectKey as string) || '',
       }));
     } catch (error) {
       throw error;
@@ -180,8 +193,8 @@ export class JiraService {
       const response = await agileApiRequest(`/board/${boardId}/configuration`);
       
       return (response.columnConfig?.columns || []).map((col: Record<string, unknown>) => ({
-        id: col.name,
-        name: col.name,
+        id: col.name as string,
+        name: col.name as string,
         statusIds: ((col.statuses as Array<{ id: string }>) || []).map(s => s.id),
       }));
     } catch (error) {
@@ -198,15 +211,19 @@ export class JiraService {
         fields: ['summary', 'status', 'assignee', 'updated', 'sprint'],
       });
 
-      const statusCategory = issue.fields?.status?.statusCategory?.key as 'todo' | 'indeterminate' | 'done';
+      const fields = issue.fields as Record<string, unknown> | undefined;
+      const statusField = fields?.status as Record<string, unknown> | undefined;
+      const assigneeField = fields?.assignee as Record<string, unknown> | undefined;
+      const statusCategoryField = statusField?.statusCategory as Record<string, unknown> | undefined;
+      const statusCategory = (statusCategoryField?.key as string) as 'todo' | 'indeterminate' | 'done';
       
       return {
         issueKey: issue.key || issueKey,
-        summary: issue.fields?.summary || '',
-        status: issue.fields?.status?.name || 'Unknown',
+        summary: (fields?.summary as string) || '',
+        status: (statusField?.name as string) || 'Unknown',
         statusCategory: statusCategory || 'todo',
-        assignee: issue.fields?.assignee?.displayName,
-        updatedAt: issue.fields?.updated || new Date().toISOString(),
+        assignee: assigneeField?.displayName as string | undefined,
+        updatedAt: (fields?.updated as string) || new Date().toISOString(),
       };
     } catch (error) {
       if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
@@ -240,16 +257,16 @@ export class JiraService {
         fields: ['summary', 'status', 'assignee', 'updated'],
       });
 
-      return (response.issues || []).map((issue: Record<string, unknown>) => {
+      return (response.issues || []).map((issue) => {
         const fields = issue.fields as Record<string, unknown> | undefined
         const status = fields?.status as Record<string, unknown> | undefined
         const assignee = fields?.assignee as Record<string, unknown> | undefined
         const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
         return {
-          issueKey: issue.key as string,
+          issueKey: (issue.key as string) || '',
           summary: (fields?.summary as string) || '',
           status: (status?.name as string) || 'Unknown',
-          statusCategory: (statusCategory?.key as string) || 'todo',
+          statusCategory: ((statusCategory?.key as string) || 'todo') as 'todo' | 'indeterminate' | 'done',
           assignee: assignee?.displayName as string | undefined,
           updatedAt: (fields?.updated as string) || new Date().toISOString(),
         }
@@ -356,9 +373,9 @@ export class JiraService {
       
       const data = await response.json();
       return (data.values || []).map((project: Record<string, unknown>) => ({
-        id: project.id,
-        key: project.key,
-        name: project.name,
+        id: project.id as string,
+        key: project.key as string,
+        name: project.name as string,
       }));
     } catch (error) {
       throw error;
@@ -433,15 +450,15 @@ export class JiraService {
         fields: ['summary', 'status', 'description', 'updated'],
       });
 
-      return (response.issues || []).map((issue: Record<string, unknown>) => {
+      return (response.issues || []).map((issue) => {
         const fields = issue.fields as Record<string, unknown> | undefined
         const status = fields?.status as Record<string, unknown> | undefined
         const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
         return {
-          issueKey: issue.key as string,
+          issueKey: (issue.key as string) || '',
           summary: (fields?.summary as string) || '',
           status: (status?.name as string) || 'Unknown',
-          statusCategory: (statusCategory?.key as string) || 'todo',
+          statusCategory: ((statusCategory?.key as string) || 'todo') as 'todo' | 'indeterminate' | 'done',
           updatedAt: (fields?.updated as string) || new Date().toISOString(),
         }
       });

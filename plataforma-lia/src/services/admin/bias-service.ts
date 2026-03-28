@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface BiasResult {
   category: string
@@ -64,60 +65,63 @@ export interface BiasAuditListParams {
 export { ApiClientError }
 
 function mapBackendBiasResult(data: Record<string, unknown>): BiasResult {
+  const d = safeData(data)
   return {
-    category: data.category || '',
-    status: data.status || 'clear',
-    score: data.score,
-    details: data.details,
-    recommendation: data.recommendation,
+    category: d.str('category'),
+    status: d.str('status', 'clear') as BiasResult['status'],
+    score: d.num('score'),
+    details: d.str('details'),
+    recommendation: d.str('recommendation'),
   }
 }
 
 function mapBackendBiasAudit(data: Record<string, unknown>): BiasAuditReport {
+  const d = safeData(data)
   const biasResults: Record<string, BiasResult> = {}
-  if (data.bias_results) {
-    for (const [key, value] of Object.entries(data.bias_results as Record<string, unknown>)) {
-      biasResults[key] = mapBackendBiasResult(value)
-    }
+  const rawBiasResults = d.rec('bias_results')
+  for (const [key, value] of Object.entries(rawBiasResults)) {
+    biasResults[key] = mapBackendBiasResult(value as Record<string, unknown>)
   }
 
   return {
-    id: data.id,
-    companyId: data.company_id,
-    auditType: data.audit_type,
-    auditDate: data.audit_date,
-    sampleSize: data.sample_size,
-    auditor: data.auditor,
-    auditorName: data.auditor_name,
-    auditorOrganization: data.auditor_organization,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    auditType: d.str('audit_type'),
+    auditDate: d.str('audit_date'),
+    sampleSize: d.num('sample_size'),
+    auditor: d.str('auditor'),
+    auditorName: d.str('auditor_name') || undefined,
+    auditorOrganization: d.str('auditor_organization') || undefined,
     biasResults,
-    overallScore: data.overall_score,
-    clearCount: data.clear_count || 0,
-    considerCount: data.consider_count || 0,
-    concernCount: data.concern_count || 0,
-    complianceFrameworks: data.compliance_frameworks || [],
-    reportUrl: data.report_url,
-    notes: data.notes,
-    recommendations: data.recommendations || [],
-    isPublic: data.is_public || false,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    overallScore: d.num('overall_score') || undefined,
+    clearCount: d.num('clear_count'),
+    considerCount: d.num('consider_count'),
+    concernCount: d.num('concern_count'),
+    complianceFrameworks: d.arr<string>('compliance_frameworks'),
+    reportUrl: d.str('report_url') || undefined,
+    notes: d.str('notes') || undefined,
+    recommendations: d.arr<string>('recommendations'),
+    isPublic: d.bool('is_public'),
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendSummary(data: Record<string, unknown>): BiasAuditSummary {
+  const d = safeData(data)
+  const byStatusRec = safeData(d.rec('by_status'))
   return {
-    totalAudits: data.total_audits || 0,
-    latestAuditDate: data.latest_audit_date,
-    latestOverallScore: data.latest_overall_score,
-    byAuditType: data.by_audit_type || {},
+    totalAudits: d.num('total_audits'),
+    latestAuditDate: d.str('latest_audit_date') || undefined,
+    latestOverallScore: d.num('latest_overall_score') || undefined,
+    byAuditType: d.rec('by_audit_type') as Record<string, number>,
     byStatus: {
-      clear: data.by_status?.clear || 0,
-      consider: data.by_status?.consider || 0,
-      concern: data.by_status?.concern || 0,
+      clear: byStatusRec.num('clear'),
+      consider: byStatusRec.num('consider'),
+      concern: byStatusRec.num('concern'),
     },
-    complianceCoverage: data.compliance_coverage || [],
-    publicAuditsCount: data.public_audits_count || 0,
+    complianceCoverage: d.arr<string>('compliance_coverage'),
+    publicAuditsCount: d.num('public_audits_count'),
   }
 }
 

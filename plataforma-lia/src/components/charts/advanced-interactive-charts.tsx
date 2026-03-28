@@ -340,11 +340,11 @@ export function AdvancedInteractiveChart({
           tooltip: {
             ...baseOptions.plugins?.tooltip,
             callbacks: {
-              label: (context: { label?: string; parsed?: { y?: number }; raw?: number; formattedValue?: string }) => {
+              label: (context: { label?: string; raw?: number; dataset: { label: string; data?: number[] }; parsed: { y: number } }) => {
                 const label = context.label || ''
-                const value = context.parsed || 0
-                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
-                const percentage = ((value / total) * 100).toFixed(0)
+                const value = context.raw || 0
+                const total = (context.dataset?.data || []).reduce((a: number, b: number) => a + b, 0)
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : '0'
                 return `${label}: ${value} (${percentage}%)`
               }
             }
@@ -447,20 +447,20 @@ export function AdvancedInteractiveChart({
     switch (type) {
       case 'line':
       case 'area':
-        return <Line ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Line ref={chartRef} data={chartData as ChartData<'line'>} options={options} />
       
       case 'bar':
       case 'funnel':
-        return <Bar ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Bar ref={chartRef} data={chartData as ChartData<'bar'>} options={options} />
       
       case 'pie':
-        return <Pie ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Pie ref={chartRef} data={chartData as ChartData<'pie'>} options={options} />
       
       case 'radar':
-        return <Radar ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Radar ref={chartRef} data={chartData as ChartData<'radar'>} options={options} />
       
       case 'composed':
-        return <Chart ref={chartRef} type='bar' data={chartData as ChartData} options={options} />
+        return <Chart ref={chartRef} type='bar' data={chartData as ChartData<'bar'>} options={options} />
       
       case 'treemap':
       case 'scatter':

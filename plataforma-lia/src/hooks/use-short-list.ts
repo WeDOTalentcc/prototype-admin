@@ -53,13 +53,13 @@ async function apiFetch(url: string, options?: RequestInit) {
 
 function toShortList(raw: Record<string, unknown>): ShortList {
   return {
-    id: raw.id,
-    jobId: raw.job_id,
-    name: raw.name,
-    description: raw.description ?? undefined,
-    createdBy: raw.created_by,
-    createdAt: raw.created_at,
-    candidateCount: raw.candidate_count ?? 0,
+    id: String(raw.id ?? ''),
+    jobId: String(raw.job_id ?? ''),
+    name: String(raw.name ?? ''),
+    description: raw.description != null ? String(raw.description) : undefined,
+    createdBy: String(raw.created_by ?? ''),
+    createdAt: String(raw.created_at ?? ''),
+    candidateCount: typeof raw.candidate_count === 'number' ? raw.candidate_count : 0,
   }
 }
 

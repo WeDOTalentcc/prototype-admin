@@ -43,7 +43,7 @@ ChartJS.register(
 
 // Dados mock para os gráficos
 const generateTimeSeriesData = (months: number, baseTrend: 'up' | 'down' | 'stable' = 'up') => {
-  const data = []
+  const data: { month: string; value: number; hires: number; interviews: number; applications: number; timeToFill: number; nps: number; conversion: number }[] = []
   const baseValue = 100
 
   for (let i = 0; i < months; i++) {
@@ -263,11 +263,11 @@ export function InteractiveChart({
           tooltip: {
             ...baseOptions.plugins?.tooltip,
             callbacks: {
-              label: (context: { label?: string; parsed?: { y?: number }; raw?: number; formattedValue?: string }) => {
+              label: (context: { label?: string; raw?: number; dataset: { label: string; data?: number[] }; parsed: { y: number } }) => {
                 const label = context.label || ''
-                const value = context.parsed || 0
-                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
-                const percentage = ((value / total) * 100).toFixed(0)
+                const value = context.raw || 0
+                const total = (context.dataset?.data || []).reduce((a: number, b: number) => a + b, 0)
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : '0'
                 return `${label}: ${value} (${percentage}%)`
               }
             }
@@ -324,16 +324,16 @@ export function InteractiveChart({
     switch (type) {
       case 'line':
       case 'area':
-        return <Line ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Line ref={chartRef} data={chartData as ChartData<'line'>} options={options} />
       
       case 'bar':
-        return <Bar ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Bar ref={chartRef} data={chartData as ChartData<'bar'>} options={options} />
       
       case 'pie':
-        return <Pie ref={chartRef} data={chartData as ChartData} options={options} />
+        return <Pie ref={chartRef} data={chartData as ChartData<'pie'>} options={options} />
       
       case 'composed':
-        return <Chart ref={chartRef} type='bar' data={chartData as ChartData} options={options} />
+        return <Chart ref={chartRef} type='bar' data={chartData as ChartData<'bar'>} options={options} />
       
       default:
         return <div>Gráfico não disponível</div>

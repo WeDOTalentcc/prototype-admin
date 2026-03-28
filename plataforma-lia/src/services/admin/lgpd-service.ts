@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface DPORegistry {
   id: string
@@ -100,71 +101,75 @@ export interface AutomatedDecisionListParams {
 export { ApiClientError }
 
 function mapBackendDpo(data: Record<string, unknown>): DPORegistry {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    dpoName: data.dpo_name,
-    dpoEmail: data.dpo_email,
-    dpoPhone: data.dpo_phone,
-    appointmentDate: data.appointment_date,
-    publicContactUrl: data.public_contact_url,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    dpoName: d.str('dpo_name'),
+    dpoEmail: d.str('dpo_email'),
+    dpoPhone: d.str('dpo_phone') || undefined,
+    appointmentDate: d.str('appointment_date') || undefined,
+    publicContactUrl: d.str('public_contact_url') || undefined,
+    isActive: d.bool('is_active'),
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendBreach(data: Record<string, unknown>): BreachNotification {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    breachDetectedAt: data.breach_detected_at,
-    breachDescription: data.breach_description,
-    affectedDataTypes: data.affected_data_types || [],
-    affectedCount: data.affected_count,
-    severity: data.severity,
-    status: data.status,
-    notificationSentToAnpd: data.notification_sent_to_anpd,
-    anpdNotificationAt: data.anpd_notification_at,
-    notificationSentToSubjects: data.notification_sent_to_subjects,
-    subjectsNotificationAt: data.subjects_notification_at,
-    remediationActions: data.remediation_actions,
-    resolvedAt: data.resolved_at,
-    hoursUntilDeadline: data.hours_until_deadline,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    breachDetectedAt: d.str('breach_detected_at'),
+    breachDescription: d.str('breach_description'),
+    affectedDataTypes: d.arr<string>('affected_data_types'),
+    affectedCount: d.num('affected_count') || undefined,
+    severity: d.str('severity', 'low') as BreachNotification['severity'],
+    status: d.str('status', 'detected') as BreachNotification['status'],
+    notificationSentToAnpd: d.bool('notification_sent_to_anpd'),
+    anpdNotificationAt: d.str('anpd_notification_at') || undefined,
+    notificationSentToSubjects: d.bool('notification_sent_to_subjects'),
+    subjectsNotificationAt: d.str('subjects_notification_at') || undefined,
+    remediationActions: d.str('remediation_actions') || undefined,
+    resolvedAt: d.str('resolved_at') || undefined,
+    hoursUntilDeadline: d.num('hours_until_deadline') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendDecision(data: Record<string, unknown>): AutomatedDecision {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    candidateId: data.candidate_id,
-    candidateName: data.candidate_name,
-    decisionType: data.decision_type,
-    agentType: data.agent_type,
-    decision: data.decision,
-    confidence: data.confidence,
-    explanation: data.explanation,
-    humanReviewRequested: data.human_review_requested,
-    humanReviewCompletedAt: data.human_review_completed_at,
-    humanReviewResult: data.human_review_result,
-    createdAt: data.created_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    candidateId: d.str('candidate_id') || undefined,
+    candidateName: d.str('candidate_name') || undefined,
+    decisionType: d.str('decision_type'),
+    agentType: d.str('agent_type'),
+    decision: d.str('decision'),
+    confidence: d.num('confidence'),
+    explanation: d.str('explanation'),
+    humanReviewRequested: d.bool('human_review_requested'),
+    humanReviewCompletedAt: d.str('human_review_completed_at') || undefined,
+    humanReviewResult: d.str('human_review_result') || undefined,
+    createdAt: d.str('created_at'),
   }
 }
 
 function mapBackendStats(data: Record<string, unknown>): LGPDStats {
+  const d = safeData(data)
   return {
-    dpoRegistered: data.dpo_registered,
-    dpoActive: data.dpo_active,
-    totalBreaches: data.total_breaches,
-    openBreaches: data.open_breaches,
-    breachesPendingAnpd: data.breaches_pending_anpd,
-    breachesDeadlineExceeded: data.breaches_deadline_exceeded,
-    totalAutomatedDecisions: data.total_automated_decisions,
-    pendingHumanReviews: data.pending_human_reviews,
-    completedHumanReviews: data.completed_human_reviews,
+    dpoRegistered: d.bool('dpo_registered'),
+    dpoActive: d.bool('dpo_active'),
+    totalBreaches: d.num('total_breaches'),
+    openBreaches: d.num('open_breaches'),
+    breachesPendingAnpd: d.num('breaches_pending_anpd'),
+    breachesDeadlineExceeded: d.num('breaches_deadline_exceeded'),
+    totalAutomatedDecisions: d.num('total_automated_decisions'),
+    pendingHumanReviews: d.num('pending_human_reviews'),
+    completedHumanReviews: d.num('completed_human_reviews'),
   }
 }
 

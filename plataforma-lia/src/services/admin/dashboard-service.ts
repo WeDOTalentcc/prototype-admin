@@ -1,4 +1,5 @@
 import { apiClient, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface DashboardKPIs {
   totalClients: number
@@ -75,38 +76,49 @@ export async function getDashboardSummary(startDate?: Date, endDate?: Date): Pro
     }
 
     const data = response.data
+    const dd = safeData(data)
+    const kpisRec = safeData(dd.rec('kpis'))
 
     return {
       kpis: {
-        totalClients: data.kpis?.total_clients ?? 0,
-        activeClients: data.kpis?.active_clients ?? 0,
-        trialClients: data.kpis?.trial_clients ?? 0,
-        churnedClients: data.kpis?.churned_clients ?? 0,
-        newClientsPeriod: data.kpis?.new_clients_period ?? 0,
-        mrr: data.kpis?.mrr ?? 0,
-        arr: data.kpis?.arr ?? 0,
-        churnRate: data.kpis?.churn_rate ?? 0
+        totalClients: kpisRec.num('total_clients'),
+        activeClients: kpisRec.num('active_clients'),
+        trialClients: kpisRec.num('trial_clients'),
+        churnedClients: kpisRec.num('churned_clients'),
+        newClientsPeriod: kpisRec.num('new_clients_period'),
+        mrr: kpisRec.num('mrr'),
+        arr: kpisRec.num('arr'),
+        churnRate: kpisRec.num('churn_rate')
       },
-      newClients: (data.new_clients || []).map((c: Record<string, unknown>) => ({
-        id: c.id,
-        name: c.name,
-        plan: c.plan,
-        createdAt: c.created_at
-      })),
-      trialClients: (data.trial_clients || []).map((c: Record<string, unknown>) => ({
-        id: c.id,
-        name: c.name,
-        plan: c.plan,
-        trialEndDate: c.trial_end_date,
-        daysRemaining: c.days_remaining
-      })),
-      churnedClients: (data.churned_clients || []).map((c: Record<string, unknown>) => ({
-        id: c.id,
-        name: c.name,
-        plan: c.plan,
-        churnedAt: c.churned_at,
-        reason: c.reason
-      }))
+      newClients: dd.arr<Record<string, unknown>>('new_clients').map((c: Record<string, unknown>) => {
+        const cd = safeData(c)
+        return {
+          id: cd.str('id'),
+          name: cd.str('name'),
+          plan: cd.str('plan'),
+          createdAt: cd.str('created_at')
+        }
+      }),
+      trialClients: dd.arr<Record<string, unknown>>('trial_clients').map((c: Record<string, unknown>) => {
+        const cd = safeData(c)
+        return {
+          id: cd.str('id'),
+          name: cd.str('name'),
+          plan: cd.str('plan'),
+          trialEndDate: cd.str('trial_end_date'),
+          daysRemaining: cd.num('days_remaining')
+        }
+      }),
+      churnedClients: dd.arr<Record<string, unknown>>('churned_clients').map((c: Record<string, unknown>) => {
+        const cd = safeData(c)
+        return {
+          id: cd.str('id'),
+          name: cd.str('name'),
+          plan: cd.str('plan'),
+          churnedAt: cd.str('churned_at'),
+          reason: cd.str('reason')
+        }
+      })
     }
   } catch (error) {
     if (error instanceof ApiClientError) {

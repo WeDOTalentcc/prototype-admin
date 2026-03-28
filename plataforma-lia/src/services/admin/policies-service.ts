@@ -1,4 +1,5 @@
 import { apiClient, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export type PolicyCategory = 'data_retention' | 'ai_usage' | 'security' | 'compliance'
 export type PolicyValueType = 'number' | 'boolean' | 'string' | 'select'
@@ -51,34 +52,36 @@ export interface UpdatePolicyRequest {
 }
 
 function mapBackendPolicy(data: Record<string, unknown>): Policy {
+  const d = safeData(data)
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    category: data.category,
-    valueType: data.value_type || data.valueType,
-    value: data.current_value ?? data.value,
-    options: data.options,
-    unit: data.unit,
-    minValue: data.min_value ?? data.minValue,
-    maxValue: data.max_value ?? data.maxValue,
-    updatedAt: data.updated_at || data.updatedAt,
-    updatedBy: data.updated_by || data.updatedBy,
-    isActive: data.is_active ?? data.isActive ?? true,
+    id: d.str('id'),
+    name: d.str('name'),
+    description: d.str('description'),
+    category: (d.str('category') || d.str('category')) as PolicyCategory,
+    valueType: (d.str('value_type') || d.str('valueType')) as PolicyValueType,
+    value: (d.raw('current_value') ?? d.raw('value') ?? '') as string | number | boolean,
+    options: d.arr<string>('options').length > 0 ? d.arr<string>('options') : undefined,
+    unit: d.str('unit') || undefined,
+    minValue: d.num('min_value') || d.num('minValue') || undefined,
+    maxValue: d.num('max_value') || d.num('maxValue') || undefined,
+    updatedAt: d.str('updated_at') || d.str('updatedAt'),
+    updatedBy: d.str('updated_by') || d.str('updatedBy'),
+    isActive: data.is_active != null ? d.bool('is_active') : data.isActive != null ? d.bool('isActive') : true,
   }
 }
 
 function mapBackendHistoryEntry(data: Record<string, unknown>): PolicyHistoryEntry {
+  const d = safeData(data)
   return {
-    id: data.id,
-    policyId: data.policy_id || data.policyId,
-    policyName: data.policy_name || data.policyName,
-    previousValue: data.previous_value || data.previousValue,
-    newValue: data.new_value || data.newValue,
-    changedBy: data.changed_by || data.changedBy,
-    changedAt: data.changed_at || data.changedAt,
-    changeType: data.change_type || data.changeType,
-    reason: data.reason,
+    id: d.str('id'),
+    policyId: d.str('policy_id') || d.str('policyId'),
+    policyName: d.str('policy_name') || d.str('policyName'),
+    previousValue: d.str('previous_value') || d.str('previousValue'),
+    newValue: d.str('new_value') || d.str('newValue'),
+    changedBy: d.str('changed_by') || d.str('changedBy'),
+    changedAt: d.str('changed_at') || d.str('changedAt'),
+    changeType: (d.str('change_type') || d.str('changeType')) as PolicyHistoryEntry['changeType'],
+    reason: d.str('reason') || undefined,
   }
 }
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { safeData } from '@/lib/safe-data'
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,6 +26,9 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
   if (!isOpen || !job) return null
 
+  const j = safeData(job)
+  const c = candidate ? safeData(candidate) : null
+
   const copyToClipboard = (text: string, section: string) => {
     navigator.clipboard.writeText(text)
     setCopiedSection(section)
@@ -46,7 +50,6 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
     const savedQuestions = job?.screening_questions || job?.screeningQuestions
     
     if (savedQuestions && Array.isArray(savedQuestions) && savedQuestions.length > 0) {
-      // Agrupar perguntas salvas por categoria
       const technicalQuestions = savedQuestions.filter((q: Record<string, unknown>) => 
         q.category === 'technical' || q.type === 'micro_case' || q.type === 'situacional'
       )
@@ -54,13 +57,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
         q.category === 'behavioral' || q.type === 'autodeclaracao_contexto'
       )
       const otherQuestions = savedQuestions.filter((q: Record<string, unknown>) => 
-        !['technical', 'behavioral'].includes(q.category) && 
-        !['micro_case', 'situacional', 'autodeclaracao_contexto'].includes(q.type)
+        !['technical', 'behavioral'].includes(q.category as string) && 
+        !['micro_case', 'situacional', 'autodeclaracao_contexto'].includes(q.type as string)
       )
       
-      const result = []
+      const result: { category: string; questions: unknown[]; purpose: string; isWSI?: boolean }[] = []
       
-      // Sempre incluir perguntas de apresentação
       result.push({
         category: "Apresentação Pessoal",
         questions: [
@@ -104,7 +106,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       result.push({
         category: "Expectativas e Logística",
         questions: [
-          `Esta vaga é ${job?.work_model || job?.workModel || 'híbrida'} em ${job?.location}. Como você se sente em relação a isso?`,
+          `Esta vaga é ${j.str('work_model') || j.str('workModel') || 'híbrida'} em ${j.str('location')}. Como você se sente em relação a isso?`,
           "Qual sua expectativa salarial para esta posição?",
           "Quando você poderia começar, caso seja selecionado?",
           "Tem alguma dúvida sobre a vaga ou empresa?"
@@ -115,7 +117,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       return result
     }
     
-    // Fallback: perguntas genéricas se não houver perguntas salvas
+    const jobRequirements = j.arr<string>('requirements')
     return [
       {
         category: "Apresentação Pessoal",
@@ -128,9 +130,9 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       },
       {
         category: "Experiência Técnica",
-        questions: job?.requirements?.slice(0, 3).map((req: string) =>
+        questions: jobRequirements.length > 0 ? jobRequirements.slice(0, 3).map((req: string) =>
           `Fale sobre sua experiência com ${req}`
-        ) || [
+        ) : [
           "Descreva um projeto desafiador que você trabalhou recentemente",
           "Como você se mantém atualizado com as tecnologias da área?",
           "Qual foi sua maior conquista profissional?"
@@ -149,7 +151,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       {
         category: "Expectativas e Logística",
         questions: [
-          `Esta vaga é ${job?.work_model || job?.workModel || 'híbrida'} em ${job?.location}. Como você se sente em relação a isso?`,
+          `Esta vaga é ${j.str('work_model') || j.str('workModel') || 'híbrida'} em ${j.str('location')}. Como você se sente em relação a isso?`,
           "Qual sua expectativa salarial para esta posição?",
           "Quando você poderia começar, caso seja selecionado?",
           "Tem alguma dúvida sobre a vaga ou empresa?"
@@ -179,12 +181,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
     ]
   }
 
+  const jobBenefits = j.arr<string>('benefits')
   const jobPresentation = {
     company: "Nossa empresa é líder em inovação tecnológica, focada em criar soluções que impactam positivamente a vida das pessoas.",
-    role: job?.description || "Buscamos um profissional que se junte ao nosso time para contribuir com projetos desafiadores e de grande impacto.",
+    role: j.str('description') || "Buscamos um profissional que se junte ao nosso time para contribuir com projetos desafiadores e de grande impacto.",
     team: "Você fará parte de uma equipe multidisciplinar, colaborativa e sempre em busca da excelência.",
     growth: "Oferecemos um ambiente de crescimento contínuo, com oportunidades de desenvolvimento e aprendizado.",
-    benefits: job?.benefits || [
+    benefits: jobBenefits.length > 0 ? jobBenefits : [
       "Salário competitivo",
       "Benefícios completos",
       "Ambiente colaborativo",
@@ -198,12 +201,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
       rejected: "Feedback construtivo em até 48h"
     },
     approvedTemplate: {
-      subject: `Próximos passos - ${job?.title}`,
-      message: `Olá {NOME},\n\nFicamos muito satisfeitos com nossa conversa sobre a posição de ${job?.title}!\n\nSeu perfil está alinhado com o que buscamos e gostaríamos de dar continuidade ao processo.\n\nPróximo passo: [DEFINIR PRÓXIMA ETAPA]\n\nEm breve entraremos em contato para agendar.\n\nParabéns e até logo!\n\nEquipe de Recrutamento`
+      subject: `Próximos passos - ${j.str('title')}`,
+      message: `Olá {NOME},\n\nFicamos muito satisfeitos com nossa conversa sobre a posição de ${j.str('title')}!\n\nSeu perfil está alinhado com o que buscamos e gostaríamos de dar continuidade ao processo.\n\nPróximo passo: [DEFINIR PRÓXIMA ETAPA]\n\nEm breve entraremos em contato para agendar.\n\nParabéns e até logo!\n\nEquipe de Recrutamento`
     },
     rejectedTemplate: {
-      subject: `Feedback sobre processo seletivo - ${job?.title}`,
-      message: `Olá {NOME},\n\nObrigado pelo seu interesse na posição de ${job?.title} e pelo tempo dedicado em nossa conversa.\n\nApós análise cuidadosa, decidimos seguir com candidatos cujo perfil está mais alinhado com as necessidades específicas desta vaga no momento.\n\n✨ Pontos fortes identificados:\n{PONTOS_FORTES}\n\n🎯 Áreas de desenvolvimento sugeridas:\n{AREAS_DESENVOLVIMENTO}\n\nSeu perfil ficará em nosso radar para futuras oportunidades que possam ser um match ainda melhor!\n\nDesejamos muito sucesso em sua jornada profissional.\n\nCom carinho,\nEquipe de Recrutamento`
+      subject: `Feedback sobre processo seletivo - ${j.str('title')}`,
+      message: `Olá {NOME},\n\nObrigado pelo seu interesse na posição de ${j.str('title')} e pelo tempo dedicado em nossa conversa.\n\nApós análise cuidadosa, decidimos seguir com candidatos cujo perfil está mais alinhado com as necessidades específicas desta vaga no momento.\n\n✨ Pontos fortes identificados:\n{PONTOS_FORTES}\n\n🎯 Áreas de desenvolvimento sugeridas:\n{AREAS_DESENVOLVIMENTO}\n\nSeu perfil ficará em nosso radar para futuras oportunidades que possam ser um match ainda melhor!\n\nDesejamos muito sucesso em sua jornada profissional.\n\nCom carinho,\nEquipe de Recrutamento`
     },
     feedbackGuidelines: [
       "Seja sempre construtivo e respeitoso",
@@ -229,7 +232,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 Roteiro de Triagem LIA
               </h3>
               <p className="text-sm text-gray-800 dark:text-gray-200">
-                Guia completo para triagem da vaga: {job?.title}
+                Guia completo para triagem da vaga: {j.str('title')}
               </p>
             </div>
           </div>
@@ -274,18 +277,18 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-800 dark:text-gray-200">Nível:</span>
-                  <Badge variant="outline">{job?.level}</Badge>
+                  <Badge variant="outline">{j.str('level')}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-800 dark:text-gray-200">Modalidade:</span>
-                  <Badge variant="outline">{job?.workModel}</Badge>
+                  <Badge variant="outline">{j.str('workModel')}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-800 dark:text-gray-200">Urgência:</span>
                   <div className="flex items-center gap-1">
                     {Array.from({length: 5}).map((_, i) => (
                       <div key={i} className={`w-2 h-2 rounded-full ${
-                        i < (job?.urgencyLevel || 3) ? 'bg-status-error' : 'bg-gray-300'
+                        i < (j.num('urgencyLevel', 3)) ? 'bg-status-error' : 'bg-gray-300'
                       }`} />
                     ))}
                   </div>
@@ -382,12 +385,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <div>
                   <h5 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-3">Checklist de Requisitos Essenciais</h5>
                   <div className="space-y-2">
-                    {job?.requirements?.map((requirement: string, index: number) => (
+                    {j.arr<string>('requirements').length > 0 ? j.arr<string>('requirements').map((requirement: string, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                         <input type="checkbox" className="rounded-md" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">{requirement}</span>
                       </div>
-                    )) || (
+                    )) : (
                       <div className="text-sm text-gray-600">Nenhum requisito específico definido</div>
                     )}
                   </div>
@@ -480,7 +483,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(
-                        `Olá ${candidate?.name || '[Nome]'}! Como está? Muito obrigado pelo interesse na nossa vaga de ${job?.title}.\n\nSou [SEU NOME] da equipe de recrutamento. Esta é uma conversa inicial para nos conhecermos melhor e eu te contar mais sobre a oportunidade.\n\nTem cerca de 20-30 minutos para conversarmos? Perfeito!`,
+                        `Olá ${c?.str('name') || '[Nome]'}! Como está? Muito obrigado pelo interesse na nossa vaga de ${j.str('title')}.\n\nSou [SEU NOME] da equipe de recrutamento. Esta é uma conversa inicial para nos conhecermos melhor e eu te contar mais sobre a oportunidade.\n\nTem cerca de 20-30 minutos para conversarmos? Perfeito!`,
                         'opening'
                       )}
                       className="gap-2"
@@ -492,7 +495,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                       <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
-                        "Olá <strong>{candidate?.name || '[Nome]'}</strong>! Como está? Muito obrigado pelo interesse na nossa vaga de <strong>{job?.title}</strong>.
+                        "Olá <strong>{c?.str('name') || '[Nome]'}</strong>! Como está? Muito obrigado pelo interesse na nossa vaga de <strong>{j.str('title')}</strong>.
                         <br /><br />
                         Sou <strong>[SEU NOME]</strong> da equipe de recrutamento. Esta é uma conversa inicial para nos conhecermos melhor e eu te contar mais sobre a oportunidade.
                         <br /><br />
@@ -547,13 +550,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                             <strong>Objetivo:</strong> {section.purpose}
                           </div>
                           <div className="space-y-2">
-                            {section.questions.map((question: string, questionIndex: number) => (
+                            {section.questions.map((question: unknown, questionIndex: number) => (
                               <div key={questionIndex} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
                                 <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold flex-shrink-0">
                                   {questionIndex + 1}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm text-gray-800 dark:text-gray-200">{question}</p>
+                                  <p className="text-sm text-gray-800 dark:text-gray-200">{String(question)}</p>
                                   <textarea
                                     placeholder="Anotações da resposta..."
                                     className="w-full mt-2 p-2 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-gray-50 dark:bg-gray-800"
@@ -707,22 +710,22 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <div className="text-center p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
                         <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
  <div className="text-sm font-medium text-gray-600">Local</div>
- <div className="text-xs text-gray-600">{job?.location}</div>
+ <div className="text-xs text-gray-600">{j.str('location')}</div>
                       </div>
                       <div className="text-center p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                         <Globe className="w-5 h-5 text-status-success mx-auto mb-1" />
                         <div className="text-sm font-medium text-status-success dark:text-status-success">Modalidade</div>
-                        <div className="text-xs text-status-success dark:text-status-success">{job?.workModel}</div>
+                        <div className="text-xs text-status-success dark:text-status-success">{j.str('workModel')}</div>
                       </div>
                       <div className="text-center p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
                         <Award className="w-5 h-5 text-wedo-purple mx-auto mb-1" />
                         <div className="text-sm font-medium text-wedo-purple dark:text-wedo-purple">Nível</div>
-                        <div className="text-xs text-wedo-purple dark:text-wedo-purple">{job?.level}</div>
+                        <div className="text-xs text-wedo-purple dark:text-wedo-purple">{j.str('level')}</div>
                       </div>
                       <div className="text-center p-3 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md">
                         <DollarSign className="w-5 h-5 text-wedo-orange mx-auto mb-1" />
                         <div className="text-sm font-medium text-wedo-orange dark:text-wedo-orange">Salário</div>
-                        <div className="text-xs text-wedo-orange dark:text-wedo-orange">{job?.salary}</div>
+                        <div className="text-xs text-wedo-orange dark:text-wedo-orange">{j.str('salary')}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -759,7 +762,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(
-                        `Deixe eu te contar um pouco sobre nós e sobre esta oportunidade.\n\n${jobPresentation.company}\n\nPara esta posição de ${job?.title}, ${jobPresentation.role}\n\n${jobPresentation.team}\n\n${jobPresentation.growth}\n\nO que mais te chama atenção nesta oportunidade?`,
+                        `Deixe eu te contar um pouco sobre nós e sobre esta oportunidade.\n\n${jobPresentation.company}\n\nPara esta posição de ${j.str('title')}, ${jobPresentation.role}\n\n${jobPresentation.team}\n\n${jobPresentation.growth}\n\nO que mais te chama atenção nesta oportunidade?`,
                         'presentation-script'
                       )}
                       className="gap-2"
@@ -775,7 +778,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         <br /><br />
                         <strong>{jobPresentation.company}</strong>
                         <br /><br />
-                        Para esta posição de <strong>{job?.title}</strong>, {jobPresentation.role}
+                        Para esta posição de <strong>{j.str('title')}</strong>, {jobPresentation.role}
                         <br /><br />
                         <strong>{jobPresentation.team}</strong>
                         <br /><br />
@@ -1107,7 +1110,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="bg-status-success/15 text-status-success">
-                Roteiro Personalizado para {job?.title}
+                Roteiro Personalizado para {j.str('title')}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 Gerado pela LIA

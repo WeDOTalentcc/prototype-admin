@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface DefaultTemplate {
   id: string
@@ -74,25 +75,27 @@ export interface VariablesListResponse {
 export { ApiClientError }
 
 function mapBackendTemplate(data: Record<string, unknown>): DefaultTemplate {
+  const d = safeData(data)
   return {
-    id: data.id,
-    name: data.name,
-    category: data.category,
-    subject: data.subject,
-    body: data.body,
-    variables: data.variables || [],
-    status: data.status,
-    usedByClients: data.used_by_clients || data.usedByClients || 0,
-    createdAt: data.created_at || data.createdAt,
-    updatedAt: data.updated_at || data.updatedAt,
+    id: d.str('id'),
+    name: d.str('name'),
+    category: d.str('category') as DefaultTemplate['category'],
+    subject: d.str('subject') || undefined,
+    body: d.str('body'),
+    variables: d.arr<string>('variables'),
+    status: d.str('status', 'draft') as DefaultTemplate['status'],
+    usedByClients: d.num('used_by_clients') || d.num('usedByClients'),
+    createdAt: d.str('created_at') || d.str('createdAt'),
+    updatedAt: d.str('updated_at') || d.str('updatedAt'),
   }
 }
 
 function mapBackendVariable(data: Record<string, unknown>): TemplateVariable {
+  const d = safeData(data)
   return {
-    key: data.key,
-    label: data.label,
-    description: data.description,
+    key: d.str('key'),
+    label: d.str('label'),
+    description: d.str('description'),
   }
 }
 

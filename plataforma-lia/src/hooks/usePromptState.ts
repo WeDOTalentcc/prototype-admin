@@ -192,7 +192,6 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
   const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({
     ppiOptions: {},
     general: {},
-    locations: {},
     job: {},
     company: {},
     skills: {},
@@ -555,7 +554,8 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     if (parsedEntities.company) spec.company = parsedEntities.company
     if (parsedEntities.years_experience) spec.years_experience = parsedEntities.years_experience
     if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills
-    if (advancedFilters.locations?.locations && advancedFilters.locations.locations.length > 0) spec.locations = advancedFilters.locations.locations
+    const filtersRec = advancedFilters as Record<string, Record<string, unknown>>
+    if (filtersRec.locations?.locations && Array.isArray(filtersRec.locations.locations) && (filtersRec.locations.locations as unknown[]).length > 0) spec.locations = filtersRec.locations.locations as string[]
     if (advancedFilters.job?.titles && advancedFilters.job.titles.length > 0) spec.job_titles = advancedFilters.job.titles
     if (advancedFilters.job?.levels && advancedFilters.job.levels.length > 0) spec.seniority_levels = advancedFilters.job.levels
     if (advancedFilters.skills?.skillItems && advancedFilters.skills.skillItems.length > 0) spec.required_skills = advancedFilters.skills.skillItems.map(s => s.name)
@@ -657,13 +657,13 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     setEditArchetypeQuery(query as string)
     setEditArchetypeDescription(arch.description || "")
     const emoji = (arch as ArchetypeData & { emoji?: string }).emoji || arch.criteria?.emoji || "🎯"
-    setEditArchetypeEmoji(emoji)
+    setEditArchetypeEmoji(String(emoji))
     const tags: string[] = []
     const criteria = arch.criteria || {}
-    if (criteria.job_title) tags.push(criteria.job_title)
-    if (criteria.location) tags.push(criteria.location)
-    if (criteria.seniority) tags.push(criteria.seniority)
-    if (criteria.industry) tags.push(criteria.industry)
+    if (criteria.job_title) tags.push(String(criteria.job_title))
+    if (criteria.location) tags.push(String(criteria.location))
+    if (criteria.seniority) tags.push(String(criteria.seniority))
+    if (criteria.industry) tags.push(String(criteria.industry))
     if (criteria.skills && Array.isArray(criteria.skills)) tags.push(...criteria.skills)
     setEditArchetypeTags(tags)
     setNewTagInput("")

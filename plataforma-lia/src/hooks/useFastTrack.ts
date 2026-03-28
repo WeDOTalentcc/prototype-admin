@@ -272,7 +272,7 @@ export function useFastTrack(options: FastTrackOptions) {
         type: q.type || 'open',
         required: q.required !== false,
         options: q.options,
-        competencyValidated: (q as Record<string, unknown>).competency_validated as boolean || q.competencyValidated,
+        competencyValidated: (((q as unknown as Record<string, unknown>).competency_validated as string) || (typeof q.competencyValidated === 'string' ? q.competencyValidated : undefined)) as string | undefined,
       }))
       
       const gestorName = job.manager || job.gestor || ''

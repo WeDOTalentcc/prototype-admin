@@ -72,14 +72,14 @@ export class DuplicateDetectionService {
         const data = await response.json()
         const candidatesList = Array.isArray(data) ? data : (data.candidates || data.items || [])
         this.candidates = candidatesList.map((c: Record<string, unknown>) => ({
-          id: c.id,
-          name: c.name || c.full_name || '',
-          email: c.email,
-          phone: c.phone,
-          linkedin_url: c.linkedin_url,
-          current_title: c.current_title,
-          current_company: c.current_company,
-          location_city: c.location_city
+          id: String(c.id || ''),
+          name: String(c.name || c.full_name || ''),
+          email: c.email != null ? String(c.email) : undefined,
+          phone: c.phone != null ? String(c.phone) : undefined,
+          linkedin_url: c.linkedin_url != null ? String(c.linkedin_url) : undefined,
+          current_title: c.current_title != null ? String(c.current_title) : undefined,
+          current_company: c.current_company != null ? String(c.current_company) : undefined,
+          location_city: c.location_city != null ? String(c.location_city) : undefined
         }))
         this.lastFetchTime = Date.now()
       }

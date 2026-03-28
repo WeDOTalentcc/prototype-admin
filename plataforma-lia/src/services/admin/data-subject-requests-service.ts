@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export type DataSubjectRequestType = 
   | 'access'
@@ -117,63 +118,66 @@ export interface TrackingResult {
 export { ApiClientError }
 
 function mapBackendRequest(data: Record<string, unknown>): DataSubjectRequest {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    requestType: data.request_type,
-    status: data.status,
-    requesterName: data.requester_name,
-    requesterEmail: data.requester_email,
-    requesterCpf: data.requester_cpf,
-    requesterPhone: data.requester_phone,
-    description: data.description,
-    assignedTo: data.assigned_to,
-    assignedToName: data.assigned_to_name,
-    identityVerified: data.identity_verified || false,
-    identityVerifiedAt: data.identity_verified_at,
-    identityVerifiedBy: data.identity_verified_by,
-    processedAt: data.processed_at,
-    processedBy: data.processed_by,
-    completedAt: data.completed_at,
-    completedBy: data.completed_by,
-    rejectedAt: data.rejected_at,
-    rejectedBy: data.rejected_by,
-    rejectionReason: data.rejection_reason,
-    response: data.response,
-    responseAttachments: data.response_attachments || [],
-    deadlineAt: data.deadline_at,
-    daysUntilDeadline: data.days_until_deadline,
-    isOverdue: data.is_overdue,
-    slaStatus: data.sla_status,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    requestType: d.str('request_type') as DataSubjectRequestType,
+    status: d.str('status') as DataSubjectRequestStatus,
+    requesterName: d.str('requester_name'),
+    requesterEmail: d.str('requester_email'),
+    requesterCpf: d.str('requester_cpf') || undefined,
+    requesterPhone: d.str('requester_phone') || undefined,
+    description: d.str('description') || undefined,
+    assignedTo: d.str('assigned_to') || undefined,
+    assignedToName: d.str('assigned_to_name') || undefined,
+    identityVerified: d.bool('identity_verified'),
+    identityVerifiedAt: d.str('identity_verified_at') || undefined,
+    identityVerifiedBy: d.str('identity_verified_by') || undefined,
+    processedAt: d.str('processed_at') || undefined,
+    processedBy: d.str('processed_by') || undefined,
+    completedAt: d.str('completed_at') || undefined,
+    completedBy: d.str('completed_by') || undefined,
+    rejectedAt: d.str('rejected_at') || undefined,
+    rejectedBy: d.str('rejected_by') || undefined,
+    rejectionReason: d.str('rejection_reason') || undefined,
+    response: d.str('response') || undefined,
+    responseAttachments: d.arr<string>('response_attachments') || undefined,
+    deadlineAt: d.str('deadline_at'),
+    daysUntilDeadline: d.num('days_until_deadline') || undefined,
+    isOverdue: d.bool('is_overdue') || undefined,
+    slaStatus: (d.str('sla_status') || undefined) as DataSubjectRequest['slaStatus'],
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendStats(data: Record<string, unknown>): DataSubjectRequestStats {
+  const d = safeData(data)
   return {
-    totalRequests: data.total_requests || 0,
-    pendingRequests: data.pending_requests || 0,
-    inProgressRequests: data.in_progress_requests || 0,
-    completedRequests: data.completed_requests || 0,
-    rejectedRequests: data.rejected_requests || 0,
-    overdueRequests: data.overdue_requests || 0,
-    avgResponseTime: data.avg_response_time || 0,
-    slaComplianceRate: data.sla_compliance_rate || 0,
-    byType: data.by_type || {},
-    byStatus: data.by_status || {},
+    totalRequests: d.num('total_requests'),
+    pendingRequests: d.num('pending_requests'),
+    inProgressRequests: d.num('in_progress_requests'),
+    completedRequests: d.num('completed_requests'),
+    rejectedRequests: d.num('rejected_requests'),
+    overdueRequests: d.num('overdue_requests'),
+    avgResponseTime: d.num('avg_response_time'),
+    slaComplianceRate: d.num('sla_compliance_rate'),
+    byType: d.rec('by_type') as Record<string, number>,
+    byStatus: d.rec('by_status') as Record<string, number>,
   }
 }
 
 function mapBackendTracking(data: Record<string, unknown>): TrackingResult {
+  const d = safeData(data)
   return {
-    id: data.id,
-    status: data.status,
-    requestType: data.request_type,
-    createdAt: data.created_at,
-    deadlineAt: data.deadline_at,
-    completedAt: data.completed_at,
-    response: data.response,
+    id: d.str('id'),
+    status: d.str('status') as DataSubjectRequestStatus,
+    requestType: d.str('request_type') as DataSubjectRequestType,
+    createdAt: d.str('created_at'),
+    deadlineAt: d.str('deadline_at'),
+    completedAt: d.str('completed_at') || undefined,
+    response: d.str('response') || undefined,
   }
 }
 

@@ -1,4 +1,5 @@
 import { apiClient, ApiClientOptions, ApiClientError } from './api-client'
+import { safeData } from '@/lib/safe-data'
 
 export interface InsurancePolicy {
   id: string
@@ -178,104 +179,111 @@ export interface CreateClaimInput {
 export { ApiClientError }
 
 function mapBackendPolicy(data: Record<string, unknown>): InsurancePolicy {
+  const d = safeData(data)
   return {
-    id: data.id,
-    companyId: data.company_id,
-    policyNumber: data.policy_number,
-    insurer: data.insurer,
-    coverage: data.coverage,
-    deductible: data.deductible,
-    startDate: data.start_date,
-    endDate: data.end_date,
-    status: data.status,
-    policyType: data.policy_type || 'cyber',
-    notes: data.notes,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    companyId: d.str('company_id'),
+    policyNumber: d.str('policy_number'),
+    insurer: d.str('insurer'),
+    coverage: d.num('coverage'),
+    deductible: d.num('deductible'),
+    startDate: d.str('start_date'),
+    endDate: d.str('end_date'),
+    status: d.str('status') as InsurancePolicy['status'],
+    policyType: d.str('policy_type') || 'cyber',
+    notes: d.str('notes') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendCoverage(data: Record<string, unknown>): InsuranceCoverage {
+  const d = safeData(data)
   return {
-    id: data.id,
-    policyId: data.policy_id,
-    coverageType: data.coverage_type,
-    name: data.name,
-    description: data.description,
-    coverageLimit: data.coverage_limit,
-    isActive: data.is_active,
-    bcbArticle: data.bcb_article,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    policyId: d.str('policy_id'),
+    coverageType: d.str('coverage_type'),
+    name: d.str('name'),
+    description: d.str('description') || undefined,
+    coverageLimit: d.num('coverage_limit') || undefined,
+    isActive: d.bool('is_active'),
+    bcbArticle: d.str('bcb_article') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendDocument(data: Record<string, unknown>): InsuranceDocument {
+  const d = safeData(data)
   return {
-    id: data.id,
-    policyId: data.policy_id,
-    filename: data.filename,
-    fileType: data.file_type,
-    fileSize: data.file_size,
-    documentType: data.document_type,
-    uploadedAt: data.uploaded_at,
-    uploadedBy: data.uploaded_by,
-    url: data.url,
+    id: d.str('id'),
+    policyId: d.str('policy_id'),
+    filename: d.str('filename'),
+    fileType: d.str('file_type'),
+    fileSize: d.num('file_size') || undefined,
+    documentType: d.str('document_type'),
+    uploadedAt: d.str('uploaded_at'),
+    uploadedBy: d.str('uploaded_by') || undefined,
+    url: d.str('url') || undefined,
   }
 }
 
 function mapBackendClaim(data: Record<string, unknown>): InsuranceClaim {
+  const d = safeData(data)
   return {
-    id: data.id,
-    policyId: data.policy_id,
-    claimNumber: data.claim_number,
-    incidentDate: data.incident_date,
-    reportedDate: data.reported_date,
-    description: data.description,
-    claimAmount: data.claim_amount,
-    status: data.status,
-    resolution: data.resolution,
-    resolvedAt: data.resolved_at,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: d.str('id'),
+    policyId: d.str('policy_id'),
+    claimNumber: d.str('claim_number'),
+    incidentDate: d.str('incident_date'),
+    reportedDate: d.str('reported_date'),
+    description: d.str('description'),
+    claimAmount: d.num('claim_amount') || undefined,
+    status: d.str('status') as InsuranceClaim['status'],
+    resolution: d.str('resolution') || undefined,
+    resolvedAt: d.str('resolved_at') || undefined,
+    createdAt: d.str('created_at'),
+    updatedAt: d.str('updated_at'),
   }
 }
 
 function mapBackendAlert(data: Record<string, unknown>): InsuranceAlert {
+  const d = safeData(data)
   return {
-    id: data.id,
-    type: data.type,
-    severity: data.severity,
-    title: data.title,
-    message: data.message,
-    dueDate: data.due_date,
-    isRead: data.is_read,
-    createdAt: data.created_at,
+    id: d.str('id'),
+    type: d.str('type') as InsuranceAlert['type'],
+    severity: d.str('severity') as InsuranceAlert['severity'],
+    title: d.str('title'),
+    message: d.str('message'),
+    dueDate: d.str('due_date') || undefined,
+    isRead: d.bool('is_read'),
+    createdAt: d.str('created_at'),
   }
 }
 
 function mapBackendDashboard(data: Record<string, unknown>): InsuranceDashboard {
+  const d = safeData(data)
   return {
-    activePolicy: data.active_policy ? mapBackendPolicy(data.active_policy) : undefined,
-    daysUntilExpiry: data.days_until_expiry ?? -1,
-    totalCoverage: data.total_coverage ?? 0,
-    totalClaims: data.total_claims ?? 0,
-    openClaims: data.open_claims ?? 0,
-    coverageGaps: data.coverage_gaps || [],
-    complianceScore: data.compliance_score ?? 0,
+    activePolicy: d.raw('active_policy') ? mapBackendPolicy(d.rec('active_policy')) : undefined,
+    daysUntilExpiry: d.num('days_until_expiry', -1),
+    totalCoverage: d.num('total_coverage'),
+    totalClaims: d.num('total_claims'),
+    openClaims: d.num('open_claims'),
+    coverageGaps: d.arr<string>('coverage_gaps'),
+    complianceScore: d.num('compliance_score'),
   }
 }
 
 function mapBackendChecklistItem(data: Record<string, unknown>): BCBCoverageChecklistItem {
+  const d = safeData(data)
   return {
-    coverageType: data.coverage_type,
-    name: data.name,
-    description: data.description,
-    bcbArticle: data.bcb_article,
-    isMandatory: data.is_mandatory,
-    isCovered: data.is_covered,
-    coverageId: data.coverage_id,
-    policyId: data.policy_id,
+    coverageType: d.str('coverage_type'),
+    name: d.str('name'),
+    description: d.str('description'),
+    bcbArticle: d.str('bcb_article'),
+    isMandatory: d.bool('is_mandatory'),
+    isCovered: d.bool('is_covered'),
+    coverageId: d.str('coverage_id') || undefined,
+    policyId: d.str('policy_id') || undefined,
   }
 }
 
