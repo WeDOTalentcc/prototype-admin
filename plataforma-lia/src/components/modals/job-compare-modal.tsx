@@ -900,7 +900,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                               style={{ width: "100%" }}
                             />
                           </div>
-                          <span className={`text-xs font-semibold w-[80px] text-right ${jobColor.text}`}>
+                          <span className={`text-xs font-semibold w-20 text-right ${jobColor.text}`}>
                             {total} (100%)
                           </span>
                         </div>
@@ -913,7 +913,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                               style={{ width: `${Math.max(screeningPct, 0)}%` }}
                             />
                           </div>
-                          <span className={`text-xs font-medium w-[80px] text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-20 text-right text-gray-700`}>
                             {screening} ({screeningPct.toFixed(0)}%)
                           </span>
                         </div>
@@ -926,7 +926,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                               style={{ width: `${Math.max(approvedPct, 0)}%` }}
                             />
                           </div>
-                          <span className={`text-xs font-medium w-[80px] text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-20 text-right text-gray-700`}>
                             {approved} ({approvedPct.toFixed(0)}%)
                           </span>
                         </div>

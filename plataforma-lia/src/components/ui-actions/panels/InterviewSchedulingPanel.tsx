@@ -410,8 +410,7 @@ export function InterviewSchedulingPanel({
           {MOCK_INTERVIEWERS.map((interviewer) => (
             <div
               key={interviewer.id}
-              className="flex items-center gap-3 p-2 rounded transition-colors dark:hover:bg-gray-700"
-              style={{ cursor: 'pointer' }}
+              className="flex items-center gap-3 p-2 rounded cursor-pointer transition-colors dark:hover:bg-gray-700"
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >

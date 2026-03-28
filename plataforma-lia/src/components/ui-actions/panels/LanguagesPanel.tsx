@@ -137,7 +137,6 @@ export function LanguagesPanel({
                     <tr 
                       key={lang.id} 
                       className="transition-colors dark:hover:bg-gray-700"
-                      style={{ '--hover-bg': 'var(--lia-interactive-hover)' } as React.CSSProperties}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -372,10 +371,9 @@ function LanguageAutocomplete({
         <div
           ref={suggestionsRef}
           className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md max-h-48 overflow-auto dark:bg-gray-800 dark:border-gray-700"
-          style={{ 
-            backgroundColor: 'var(--lia-bg-primary)', 
-            border: '1px solid var(--lia-border-subtle)',
-            boxShadow: 'none'
+          style={{
+            backgroundColor: 'var(--lia-bg-primary)',
+            border: '1px solid var(--lia-border-subtle)'
           }}
         >
           {availableLanguages.slice(0, 10).map((lang, index) => (

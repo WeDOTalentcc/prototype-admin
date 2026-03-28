@@ -197,10 +197,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 color: 'var(--gray-800)'
               }}
             >
-              <div 
-                className="p-1.5 rounded-md"
-                className="bg-gray-900/[0.08]"
-              >
+              <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               Tarefas Sugeridas
@@ -284,10 +281,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             cursor: isDragging ? 'grabbing' : 'grab'
           }}
         >
-          <div 
-            className="p-1 rounded-md mr-2"
-            className="bg-gray-900/[0.08]"
-          >
+          <div className="p-1 rounded-md mr-2 bg-gray-900/[0.08]">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
@@ -302,38 +296,30 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
       )}
 
       {isExpanded && (
-        <Card 
+        <Card
           ref={cardRef}
-          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none"
+          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-gray-200 bg-gray-50"
           style={{
             top: `${position.top}px`,
             right: `${position.right}px`,
-            backgroundColor: 'var(--gray-50)',
-            border: '1px solid var(--gray-200)',
-            borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)'
           }}
         >
           {/* Header - Draggable */}
-          <div 
-            className="px-4 py-3 flex items-center justify-between border-b"
+          <div
+            className="px-4 py-3 flex items-center justify-between border-b rounded-t-md"
             onMouseDown={handleMouseDown}
-            style={{ 
-              backgroundColor: 'var(--gray-50)', 
+            style={{
+              backgroundColor: 'var(--gray-50)',
               borderColor: 'var(--gray-200)',
               cursor: isDragging ? 'grabbing' : 'grab',
-              borderRadius: '16px 16px 0 0'
             }}
           >
             <div className="flex items-center gap-2">
               <Move className="w-3 h-3 text-gray-300" />
-              <div 
-                className="p-1.5 rounded-md"
-                className="bg-gray-900/[0.08]"
-              >
+              <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
-              <h3 
+              <h3
                 className="text-sm font-semibold"
                 style={{ 
                   color: 'var(--gray-800)'

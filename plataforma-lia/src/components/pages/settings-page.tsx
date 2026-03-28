@@ -2797,7 +2797,7 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
                           : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 opacity-60"
                       )}
                     >
-                      <div className="flex items-center gap-3 min-w-[40px]">
+                      <div className="flex items-center gap-3 min-w-10">
                         <span className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
                           {stage.order}
                         </span>

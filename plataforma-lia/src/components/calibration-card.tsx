@@ -201,7 +201,7 @@ export function CalibrationCard({
               {candidate.location && (
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  <span className="truncate max-w-[80px]">{candidate.location}</span>
+                  <span className="truncate max-w-20">{candidate.location}</span>
                 </div>
               )}
               {candidate.years_experience > 0 && (

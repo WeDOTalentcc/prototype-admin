@@ -2947,7 +2947,7 @@ export function ExpandableAIPrompt({
                             {tag.filled && tag.value && (
                               <>
                                 <span style={{ opacity: 0.5 }}>·</span>
-                                <span className="max-w-[80px] truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                                <span className="max-w-20 truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
                               </>
                             )}
                           </div>

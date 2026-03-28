@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from "react"
 import {
   Brain, Loader2, CheckCircle, Star, ChevronRight,
-  FileText, Database, Search, Zap, Clock, Play,
-  Award, TrendingUp, Target, MessageSquare, ArrowRight, Calendar
+  FileText, Search, Target, ArrowRight, Calendar
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,8 +21,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3"
-      style={{ animation: 'fadeInUp 0.3s ease-out' }}
+      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full">
         <Brain className="w-4 h-4 text-wedo-cyan animate-pulse" />
@@ -59,8 +57,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-gray-800 rounded-md p-4 mb-3 border border-gray-200 dark:border-gray-700"
-      style={{ animation: 'fadeInUp 0.3s ease-out' }}
+      className="bg-gray-100 dark:bg-gray-800 rounded-md p-4 mb-3 border border-gray-200 dark:border-gray-700 animate-fade-in-up"
     >
       <div className="space-y-3">
         {steps.map((step, index) => {
@@ -137,8 +134,7 @@ export const CommandExecution = ({
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-3 font-mono text-sm border border-gray-200 dark:border-gray-700"
-      style={{ animation: 'scaleInDelayed 0.2s ease-out' }}
+      className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-3 font-mono text-sm border border-gray-200 dark:border-gray-700 animate-scale-in-delayed"
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
@@ -181,8 +177,7 @@ export const FileCreationIndicator = ({
 }) => {
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3"
-      style={{ animation: 'fadeInUp 0.3s ease-out' }}
+      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full">
         {status === "creating" ? (
@@ -234,8 +229,7 @@ export const CompletionMessage = ({
 
   return (
     <div
-      className="space-y-3"
-      style={{ animation: 'fadeInUp 0.3s ease-out' }}
+      className="space-y-3 animate-fade-in-up"
     >
       {/* Completion Message */}
       <div className="flex items-start gap-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
@@ -326,8 +320,7 @@ export const ProgressiveDisclosure = ({
 
       {isExpanded && (
         <div
-          className="overflow-hidden"
-          style={{ animation: 'slideInUp 0.3s ease-out' }}
+          className="overflow-hidden animate-slide-in-up"
         >
           <div className="p-4 border-l-2 border-gray-300 dark:border-gray-600 ml-6 mt-2">
             {children}

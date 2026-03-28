@@ -130,10 +130,9 @@ const DraggableDialogContent = React.forwardRef<
           }}
           {...props}
         >
-          <div 
-            className="absolute inset-x-0 top-0 h-12 cursor-move rounded-t-lg"
+          <div
+            className="absolute inset-x-0 top-0 h-12 cursor-move rounded-t-lg z-[1]"
             onMouseDown={handleMouseDown}
-            style={{ zIndex: 1 }}
           />
           {children}
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 z-10" data-dialog-close>

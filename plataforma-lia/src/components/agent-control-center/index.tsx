@@ -124,7 +124,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   if (!globalMetrics || agents.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2" style={{ color: 'var(--eleven-text-secondary)' }}>
+        <div className="flex items-center gap-2 text-[var(--eleven-text-secondary)]">
           <RefreshCcw className="w-5 h-5 animate-spin" />
           <span>Carregando Centro de Controle...</span>
         </div>
@@ -133,22 +133,22 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   }
 
   return (
-    <div className={`flex-1 overflow-y-auto p-6 ${className}`} style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
+    <div className={`flex-1 overflow-y-auto p-6 bg-[var(--eleven-bg-main)] ${className}`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold mb-1 flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
+            <h2 className="text-xl font-semibold mb-1 flex items-center gap-2 text-[var(--eleven-text-primary)]">
               <Brain className="w-5 h-5 text-wedo-cyan" />
               Centro de Controle IA
             </h2>
-            <p className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>
+            <p className="text-sm text-[var(--eleven-text-secondary)]">
               Monitore seus agentes especializados em tempo real
             </p>
           </div>
           <div className="flex items-center gap-3">
             {lastUpdated && (
-              <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
+              <span className="text-xs text-[var(--eleven-text-tertiary)]">
                 Atualizado {formatTimeAgo(lastUpdated.toISOString())}
               </span>
             )}
@@ -157,8 +157,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               size="sm"
               onClick={fetchData}
               disabled={isLoading}
-              className="text-xs"
-              style={{ borderColor: 'var(--eleven-border)' }}
+              className="text-xs border-[var(--eleven-border)]"
             >
               <RefreshCcw className={`w-3 h-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
@@ -203,13 +202,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
         {/* Proactive Alerts */}
         {proactiveAlerts.length > 0 && (
-          <div className="mb-6 p-4 rounded-md border" style={{ 
-            backgroundColor: 'rgba(245, 158, 11, 0.05)', 
-            borderColor: 'rgba(245, 158, 11, 0.3)' 
-          }}>
+          <div className="mb-6 p-4 rounded-md border bg-status-warning/5 border-status-warning/30">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-status-warning" />
-              <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
+              <span className="text-sm font-medium text-[var(--eleven-text-primary)]">
                 Atenção Necessária
               </span>
             </div>

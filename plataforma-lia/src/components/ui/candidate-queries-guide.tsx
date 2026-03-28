@@ -27,7 +27,6 @@ export interface CandidateQueryExample {
 interface CandidateQueriesGuideProps {
   onSelectQuery?: (query: string) => void
   className?: string
-  currentQuery?: string
 }
 
 const CATEGORY_INFO = {
@@ -103,10 +102,9 @@ const CANDIDATE_QUERY_EXAMPLES: CandidateQueryExample[] = [
   { id: 'c30', icon: TrendingUp, question: 'Ranking de candidatos por adequação', category: 'comparacao' }
 ]
 
-export function CandidateQueriesGuide({ 
-  onSelectQuery, 
-  className,
-  currentQuery
+export function CandidateQueriesGuide({
+  onSelectQuery,
+  className
 }: CandidateQueriesGuideProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
@@ -134,15 +132,13 @@ export function CandidateQueriesGuide({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all font-medium",
             "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50",
             isOpen && "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50",
             className
           )}
-          style={{ 
-            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)',
-            
-            fontWeight: 500
+          style={{
+            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)'
           }}
         >
           <Lightbulb className="w-3.5 h-3.5" />
@@ -153,10 +149,9 @@ export function CandidateQueriesGuide({
         className="w-[420px] p-0 border-0" 
         align="start" 
         sideOffset={8}
-        style={{ 
+        style={{
           backgroundColor: 'var(--gray-50)',
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+          borderRadius: '8px',
           border: '1px solid var(--gray-200)'
         }}
       >
@@ -179,9 +174,10 @@ export function CandidateQueriesGuide({
               autoFocus
             />
             {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm('')} 
+              <button
+                onClick={() => setSearchTerm('')}
                 className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                aria-label="Limpar busca"
               >
                 <X className="w-3.5 h-3.5 text-gray-400" />
               </button>
@@ -227,31 +223,17 @@ export function CandidateQueriesGuide({
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
                 className="w-full px-4 py-3 text-left transition-all rounded-md group flex items-start gap-3"
-                style={{ 
+                style={{
                   backgroundColor: 'var(--gray-50)',
                   border: '1px solid var(--gray-100)'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
-                  e.currentTarget.style.borderColor = 'var(--gray-200)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
-                  e.currentTarget.style.borderColor = 'var(--gray-200)'
-                }}
               >
-                <div 
-                  className="p-2 rounded-md flex-shrink-0"
-                  className="bg-gray-900/[0.08]"
-                >
+                <div className="p-2 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
                   <query.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
-                <span 
+                <span
                   className="text-sm leading-relaxed pt-1"
-                  style={{ 
-                    
-                    color: 'var(--gray-600)'
-                  }}
+                  style={{ color: 'var(--gray-600)' }}
                 >
                   {query.question}
                 </span>
@@ -266,12 +248,9 @@ export function CandidateQueriesGuide({
                 >
                   <Search className="w-5 h-5 text-gray-300" />
                 </div>
-                <p 
+                <p
                   className="text-sm"
-                  style={{ 
-                    
-                    color: 'var(--gray-400)'
-                  }}
+                  style={{ color: 'var(--gray-400)' }}
                 >
                   Nenhuma consulta encontrada
                 </p>
@@ -281,18 +260,15 @@ export function CandidateQueriesGuide({
         </ScrollArea>
 
         <div 
-          className="px-5 py-3 border-t rounded-b-2xl"
+          className="px-5 py-3 border-t rounded-b-md"
           style={{ 
             borderColor: 'var(--gray-200)',
             backgroundColor: 'var(--gray-50)'
           }}
         >
-          <p 
+          <p
             className="text-xs text-center"
-            style={{ 
-              
-              color: 'var(--gray-400)'
-            }}
+            style={{ color: 'var(--gray-400)' }}
           >
             Clique para inserir no prompt
           </p>

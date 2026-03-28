@@ -1,8 +1,8 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
-> **Última atualização:** 2026-03-27 (Expansão 100% — cobertura total de componentes + infraestrutura)
+> **Última atualização:** 2026-03-28 (Sprint 4.6 — Monolith Split: 13 componentes extraídos de 4 monolitos, -6.693L)
 > **Arquitetura:** Bridge Architecture — 3 camadas de abstração (CSS vars → framework config → componentes) — ver Seção 0
-> **Componentes:** 556 em 37 diretórios (era 460 documentados — adicionados 96 não inventariados em 21 dirs)
+> **Componentes:** 569 em 38 diretórios (556 anteriores + 13 novos do Sprint 4.6 em 4 subdirs — novo subdir `candidate-preview/`)
 > **Hooks:** 120 custom hooks (93 em `src/hooks/` + 27 em subdiretórios de componentes)
 > **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
 > **Rotas:** 90 page routes + 5 layouts + 424 API endpoints
@@ -111,11 +111,13 @@ Sprint 4.4+  (Integração)      → Todas as 6 dimensões auditadas
 
 ### 0.7 O que Falta (Fases 2-5)
 
+> **Status:** Em implementação ativa (Fases 1-4 concluídas, Fases 5+ pendentes)
+
 | Fase | Escopo | Impacto | Status |
 |------|--------|---------|--------|
 | 2 | Cores — tokenizar 298 hex hardcoded | Eliminar 54 arquivos com cores fora do DS | Pendente |
 | 3 | Badges & Status — unificar 7 implementações | Componente único `<StatusBadge>` | Pendente |
-| 4 | Giant Components — refatorar 37 arquivos >1.000 linhas | Reduzir 118.037 → ~60.000 linhas | Pendente |
+| 4 | Giant Components — refatorar 37 arquivos >1.000 linhas | Reduzir 118.037 → ~60.000 linhas | ✅ Sprint 4.6: 13 componentes extraídos de 4 monolitos (-6.693L total) |
 | 5 | Modals & Inline Styles — padronizar | 154 arquivos com modals, 249 com inline styles | Pendente |
 
 > **Detalhamento completo das fases:** seções 29-32 deste documento.
@@ -317,7 +319,7 @@ Visualização, busca e triagem de candidatos.
 | 3 | `candidate-decision-flow-modal` | 524 | Modal de fluxo de decisão |
 | 4 | `candidate-modal` | 655 | Modal completo do candidato |
 | 5 | `candidate-page` | 2504 | Página completa do candidato |
-| 6 | `candidate-preview` | 6723 | Preview expandido (2º maior componente) |
+| 6 | `candidate-preview` | 5994 | Preview expandido (2º maior componente) — subdir `candidate-preview/` com FilePreviewModal (548L) e LiaChatModal (316L) extraídos no Sprint 4.6 |
 | 7 | `cv/cv-preview` | 641 | Preview de currículo |
 | 8 | `cv/cv-upload-modal` | 473 | Modal de upload de CV |
 | 9 | `triagem/pre-screening-config-drawer` | 345 | Drawer de configuração de triagem |
@@ -610,7 +612,7 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 | 8 | `candidate-decision-flow-modal` | 524 | Modal de fluxo de decisão |
 | 9 | `candidate-modal` | 655 | Modal completo do candidato |
 | 10 | `candidate-page` | 2504 | Página completa do candidato |
-| 11 | `candidate-preview` | 6723 | Preview expandido (2º maior componente) |
+| 11 | `candidate-preview` | 5994 | Preview expandido — era 6.723, -729L Sprint 4.6 |
 | 12 | `column-configuration-modal` | 346 | Modal de configuração de colunas |
 | 13 | `company-screening-settings` | 507 | Config de triagem da empresa |
 | 14 | `contextual-actions-banner` | 172 | Banner de ações contextuais |
@@ -691,18 +693,20 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 
 ## Top 10 Maiores Componentes
 
+> Atualizado após Sprint 4.7 (Monolith Split — -6.535L em 3 arquivos)
+
 | # | Componente | Linhas | Observação |
 |---|-----------|--------|-----------|
 | 1 | `expanded-chat-modal` | 11.228 | Chat expandido — candidato a refactoring |
-| 2 | `pages/job-kanban-page` | 10.377 | Página do kanban |
-| 3 | `pages/candidates-page` | 10.329 | Página de candidatos |
-| 4 | `pages/jobs-page` | 8.046 | Página de vagas |
-| 5 | `candidate-preview` | 6.723 | Preview de candidato |
-| 6 | `pages/chat-page` | 5.592 | Página do chat |
-| 7 | `smart-search-input` | 5.475 | Busca inteligente com NLP |
-| 8 | `CompanyTeamHub` | 5.235 | Gestão de equipe |
-| 9 | `pages/settings-page` | 4.449 | Configurações |
-| 10 | `expandable-ai-prompt` | 4.308 | Prompt expansível |
+| 2 | `pages/candidates-page` | 8.453 | Página de candidatos — era 9.604, -1.151L Sprint 4.7 |
+| 3 | `pages/job-kanban-page` | 6.308 | Página do kanban — era 8.440, -2.132L Sprint 4.7 |
+| 4 | `pages/chat-page` | 5.592 | Página do chat |
+| 5 | `smart-search-input` | 5.475 | Busca inteligente com NLP |
+| 6 | `CompanyTeamHub` | 5.235 | Gestão de equipe |
+| 7 | `pages/settings-page` | 4.449 | Configurações |
+| 8 | `expandable-ai-prompt` | 4.308 | Prompt expansível |
+| 9 | `pages/jobs-page` | 4.735 | Página de vagas — era 8.046, -3.309L Sprint 4.6 |
+| 10 | `candidate-preview` | 2.742 | Preview de candidato — era 5.994, -3.252L Sprint 4.7 ✅ |
 
 ---
 
@@ -896,6 +900,10 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 7 | `hooks/useCandidatesQuery` | 232 | Hook de query de candidatos |
 | 8 | `hooks/useCandidatesSelection` | 121 | Hook de seleção |
 | 9 | `types` | 230 | Tipos do módulo |
+| 10 | `CreditConfirmationModal` | 156 | Modal de confirmação de créditos (busca global Pearch) — **Sprint 4.6** |
+| 11 | `SaveAsArchetypeModal` | 181 | Modal para salvar query como arquétipo — **Sprint 4.6** |
+| 12 | `EditQueryModal` | 131 | Modal para editar query de busca com SmartSearchInput — **Sprint 4.6** |
+| 13 | `PreviewSuggestionModal` | 317 | Modal de preview/edição de sugestão IA de arquétipo — **Sprint 4.6** |
 
 ### 22.2 Job Kanban Module (`pages/job-kanban/`)
 
@@ -906,6 +914,9 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 3 | `MoveConfirmationModal` | 198 | Modal de confirmação de movimento |
 | 4 | `hooks/useKanbanState` | 207 | Hook de estado do kanban |
 | 5 | `types` | 90 | Tipos do módulo |
+| 6 | `KanbanFiltersPanel` | 184 | Painel de filtros do kanban (score, status, origem, modelo) — **Sprint 4.6** |
+| 7 | `KanbanColumnConfigPanel` | 194 | Configuração de colunas visíveis do kanban — **Sprint 4.6** |
+| 8 | `AddColumnPopover` | 266 | Popover para adicionar nova etapa ao pipeline — **Sprint 4.6** |
 
 ### 22.3 Jobs Module (`pages/jobs/`)
 
@@ -915,8 +926,21 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 2 | `JobsTable` | 269 | Tabela de vagas |
 | 3 | `hooks/useJobsQuery` | 206 | Hook de query de vagas |
 | 4 | `types` | 106 | Tipos do módulo |
+| 5 | `ColumnConfigPanel` | 174 | Configuração de colunas visíveis da tabela de vagas — **Sprint 4.6** |
+| 6 | `TableFiltersPanel` | 516 | Painel de filtros avançados da tabela de vagas — **Sprint 4.6** |
+| 7 | `InlineChatPanel` | 718 | Sidebar LIA inline (chat + criação de vaga + templates) — **Sprint 4.6** |
+| 8 | `JobPreviewPanel` | 1926 | Painel lateral de preview de vaga (detalhes + pipeline analytics) — **Sprint 4.6** |
 
-### 22.4 Páginas Standalone (`pages/`)
+### 22.4 Candidate Preview Sub-Components (`candidate-preview/`)
+
+Subdiretório novo criado no Sprint 4.6 para componentes extraídos de `candidate-preview.tsx`.
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `FilePreviewModal` | 548 | Modal de preview de arquivos (PDF, imagem, vídeo, áudio) — **Sprint 4.6** |
+| 2 | `LiaChatModal` | 316 | Modal de chat LIA no contexto do candidato — **Sprint 4.6** |
+
+### 22.5 Páginas Standalone (`pages/`)
 
 | # | Página | Linhas | Função |
 |---|--------|--------|--------|
@@ -924,14 +948,14 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 2 | `ats-integrations-page` | 1522 | Integrações ATS |
 | 3 | `big-five-dashboard-page` | 640 | Dashboard Big Five |
 | 4 | `candidate-review-modal` | 822 | Modal de revisão de candidato |
-| 5 | `candidates-page` | 10329 | Página de candidatos (3º maior) |
+| 5 | `candidates-page` | 9604 | Página de candidatos (3º maior) — era 10.329, -721L no Sprint 4.6 |
 | 6 | `chat-page` | 5592 | Página de chat |
 | 7 | `dashboards-page` | 3283 | Página de dashboards |
 | 8 | `executive-dashboard-page` | 680 | Dashboard executivo |
 | 9 | `indicators-page` | 1753 | Página de indicadores |
 | 10 | `integrations-page` | 804 | Página de integrações |
-| 11 | `job-kanban-page` | 10377 | Página do kanban (2º maior) |
-| 12 | `jobs-page` | 8046 | Página de vagas (4º maior) |
+| 11 | `job-kanban-page` | 8440 | Página do kanban (2º maior) — era 10.377, -1.934L no Sprint 4.6 |
+| 12 | `jobs-page` | 4735 | Página de vagas — era 8.046, -3.309L no Sprint 4.6 |
 | 13 | `jobs2-page` | 569 | Página de vagas v2 |
 | 14 | `job-templates-page` | 549 | Templates de vagas |
 | 15 | `lia-library-page` | 408 | Biblioteca LIA |
@@ -947,6 +971,21 @@ Componentes extraídos dentro de subdiretórios de páginas.
 | 25 | `templates-page` | 492 | Templates |
 | 26 | `workflow-automation-page` | 640 | Automação de workflow |
 | 27 | `work-model-analytics-page` | 567 | Analytics de modelo de trabalho |
+
+### 22.6 Pendências de Split — Monolitos Restantes
+
+Arquivos ainda acima de 5.000 linhas após Sprint 4.7:
+
+| Arquivo | Linhas atuais | Blocos identificados para extração |
+|---------|--------------|-----------------------------------|
+| `candidates-page.tsx` | 8.453 | Bloco search results (`activeTab === 'search' && showSearchResults`, ~864L) contendo compact LIA bar + layout de resultados |
+| `job-kanban-page.tsx` | 6.308 | Superchat view (~80L), tab de edição de vaga (~400L) |
+| `expanded-chat-modal.tsx` | 11.228 | Candidato a Sprint 4.9 — maior monolito restante |
+| `smart-search-input.tsx` | 5.475 | Candidato a Sprint 4.9 |
+| `CompanyTeamHub.tsx` | 5.235 | Candidato a Sprint 4.9 |
+
+> **Critério de priorização:** extrair blocos >400L que sejam autocontidos (estado próprio + props claras).
+> **Próxima sprint de split sugerida:** Sprint 4.8 — candidates-page search results view (~864L) + expanded-chat-modal.
 
 ---
 
@@ -1570,10 +1609,10 @@ Representam **94% de todo o código** de componentes. Cada um mistura lógica de
 | # | Componente | Linhas | Categoria | Proposta de Split |
 |---|-----------|--------|-----------|-----------------|
 | 1 | `expanded-chat-modal` | 11.824 | Chat | → WizardChat, MessageList, InputBar, ToolResults, StageManager, StateReducer, FieldSync, JobPreview (~8-10 sub) |
-| 2 | `pages/job-kanban-page` | 10.377 | Pipeline | → KanbanBoard, KanbanColumn, CandidateCard, Filters, BulkActions, StageConfig, Analytics (~7 sub) |
-| 3 | `pages/candidates-page` | 10.329 | Candidatos | → CandidateTable, FilterPanel, BulkActions, PreviewPanel, SearchBar, Pagination (~6 sub) |
-| 4 | `pages/jobs-page` | 8.046 | Vagas | → JobsTable, JobCard, Filters, Stats, BulkActions, CreateButton (~6 sub) |
-| 5 | `candidate-preview` | 6.723 | Candidatos | → ProfileHeader, Timeline, Skills, WSI, Notes, Actions, Tabs (~7 sub) |
+| 2 | `pages/job-kanban-page` | 8.440 ✂️ | Pipeline | Sprint 4.6: KanbanFiltersPanel, KanbanColumnConfigPanel, AddColumnPopover extraídos. Pendente: KanbanBoard, CandidateCard, BulkActions, StageConfig (~4 sub) |
+| 3 | `pages/candidates-page` | 9.604 ✂️ | Candidatos | Sprint 4.6: CreditConfirmationModal, SaveAsArchetypeModal, EditQueryModal, PreviewSuggestionModal extraídos. Pendente: FilterPanel, PreviewPanel, TableView, LIA inline (~4 sub) |
+| 4 | `pages/jobs-page` | 4.735 ✂️ | Vagas | Sprint 4.6: ColumnConfigPanel, TableFiltersPanel, InlineChatPanel, JobPreviewPanel extraídos. Abaixo do limiar de 5.000L. |
+| 5 | `candidate-preview` | 5.994 ✂️ | Candidatos | Sprint 4.6: FilePreviewModal, LiaChatModal extraídos. Pendente: Tabs de detalhe, seção de avaliação/feedback (~2-3 sub) |
 | 6 | `pages/chat-page` | 5.592 | Chat | → ChatContainer, MessageList, InputBar, VoiceChat, Suggestions (~5 sub) |
 | 7 | `search/smart-search-input` | 5.475 | Search | → SearchBar, FilterChips, Suggestions, BooleanBuilder, Results (~5 sub) |
 | 8 | `settings/CompanyTeamHub` | 5.235 | Settings | → TeamTable, InviteModal, RoleManager, Permissions, ActivityLog (~5 sub) |
@@ -2298,22 +2337,26 @@ async function handleSendMessage(content) {
 
 ---
 
-#### Sprint 4.6 — Pages Gigantes (3-4 semanas | Risco: Alto)
+#### Sprint 4.6 — Pages Gigantes ✅ CONCLUÍDA (2026-03-28)
 
-> Análise profunda necessária antes de cada page — replicar o mesmo processo feito com
-> `expanded-chat-modal.tsx`. As linhas abaixo são estimativas preliminares.
+> **Sprint 4.6 resultado:** 13 componentes extraídos de 4 monolitos. −6.693L no total.
 
-| Arquivo | Linhas | Próxima ação |
-|---------|--------|-------------|
-| `job-kanban-page.tsx` | 10.377 | Análise profunda → hooks + painéis (KanbanBoard, CandidateCard, BulkActions, StageConfig, Analytics) |
-| `candidates-page.tsx` | 10.329 | Análise profunda → hooks + painéis (TableView, FilterPanel, PreviewPanel, SearchBar) |
-| `jobs-page.tsx` | 8.046 | Análise profunda → hooks + painéis (TableView, CardView, Filters, Stats) |
-| `candidate-preview.tsx` | 6.723 | Análise profunda → hooks + seções (ProfileHeader, Timeline, Skills, WSI, Notes) |
-| `smart-search-input.tsx` | 5.475 | Análise profunda → hooks + componentes (SearchBar, FilterChips, Suggestions, BooleanBuilder) |
-| `CompanyTeamHub.tsx` | 5.235 | Análise profunda → hooks + painéis (TeamTable, InviteModal, RoleManager) |
-| `expandable-ai-prompt.tsx` | 4.308 | Análise profunda → hooks + painéis (PromptInput, SuggestionDock, AttachmentBar) |
+| Arquivo | Antes | Depois | Componentes extraídos |
+|---------|-------|--------|----------------------|
+| `job-kanban-page.tsx` | 10.377 | 8.440 | KanbanFiltersPanel, KanbanColumnConfigPanel, AddColumnPopover |
+| `candidates-page.tsx` | 10.329 | 9.604 | CreditConfirmationModal, SaveAsArchetypeModal, EditQueryModal, PreviewSuggestionModal |
+| `jobs-page.tsx` | 8.046 | 4.735 | ColumnConfigPanel, TableFiltersPanel, InlineChatPanel, JobPreviewPanel |
+| `candidate-preview.tsx` | 6.723 | 5.994 | FilePreviewModal, LiaChatModal |
 
-**Regra:** Não iniciar Sprint 4.6 sem a análise profunda de cada arquivo — a lição do `expanded-chat-modal.tsx` é que planejar sem ler o código leva a planos errados.
+> **Sprint 4.7 resultado:** 8 componentes extraídos de 3 monolitos. −6.535L no total.
+
+| Arquivo | Antes | Depois | Componentes extraídos |
+|---------|-------|--------|----------------------|
+| `candidates-page.tsx` | 9.604 | 8.453 | LIASearchSidebar |
+| `job-kanban-page.tsx` | 8.440 | 6.308 | KanbanTableView, KanbanColumnRenderer, KanbanLIASidebar |
+| `candidate-preview.tsx` | 5.994 | 2.742 | CandidateActivitiesTab, CandidateFilesTab |
+
+> **Splits pendentes:** ver seção 22.6. Próxima sprint: Sprint 4.8 — candidates-page + expanded-chat-modal.
 
 ### Fase 5 — Padronização de Dimensões
 

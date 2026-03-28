@@ -503,7 +503,7 @@ export default function IncidentesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px]">ID</TableHead>
+                      <TableHead className="w-20">ID</TableHead>
                       <TableHead>Título</TableHead>
                       <TableHead>Severidade</TableHead>
                       <TableHead>Status</TableHead>

@@ -695,7 +695,7 @@ export default function HealthCheckPage() {
                               title={item.referenceLabel || 'Ver legislação'}
                             >
                               <ExternalLink className="w-3 h-3" />
-                              <span className="truncate max-w-[80px]">
+                              <span className="truncate max-w-20">
                                 {item.referenceLabel || 'Link'}
                               </span>
                             </a>

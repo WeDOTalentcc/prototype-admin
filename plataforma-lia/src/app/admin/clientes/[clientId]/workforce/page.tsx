@@ -524,7 +524,7 @@ export default function ClientWorkforcePage({
                               value={row.planned > 0 ? (row.filled / row.planned) * 100 : 0} 
                               className="h-2 flex-1" 
                             />
-                            <span className="text-xs min-w-[40px]" style={{ color: 'var(--eleven-text-tertiary)' }}>
+                            <span className="text-xs min-w-10" style={{ color: 'var(--eleven-text-tertiary)' }}>
                               {row.planned > 0 ? Math.round((row.filled / row.planned) * 100) : 0}%
                             </span>
                           </div>

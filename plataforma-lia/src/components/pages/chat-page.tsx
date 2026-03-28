@@ -3162,7 +3162,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
     return (
       <div className="w-2/5 p-4 flex transition-all duration-300 overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
         {/* Card Container com bordas suaves e arredondadas */}
-        <Card className="w-full border-0 rounded-3xl overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
+        <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
           {/* Header sem linha divisória */}
           <CardHeader className="p-6 border-0" style={{ backgroundColor: 'var(--eleven-bg-card)' }}>
             <div className="flex items-center justify-between">
@@ -3187,11 +3187,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
           {/* Content Area com scroll suave e altura flexível */}
           <CardContent
-            className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500"
-            style={{
-              scrollBehavior: 'smooth',
-              minHeight: 0
-            }}
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500"
+            style={{ scrollBehavior: 'smooth' }}
           >
           {contextData.type === "compensation-package" && (
             <div className="space-y-6 font-open-sans">
@@ -4215,7 +4212,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                     {/* Template da Carta Oferta */}
                     <div className="p-6 rounded-md border" style={{ backgroundColor: 'var(--eleven-bg-card)', borderColor: 'var(--eleven-border-subtle)' }}>
                       <div className="prose prose-sm max-w-none">
-                        <pre className="whitespace-pre-wrap font-open-sans text-sm" style={{ color: 'var(--eleven-text-primary)', fontFamily: 'var(--font-open-sans)' }}>
+                        <pre className="whitespace-pre-wrap font-open-sans text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                           {contextData.data.letter_template}
                         </pre>
                       </div>
@@ -4613,13 +4610,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         {/* Messages com altura flexível e scroll */}
         <div
           ref={messagesContainerRef}
-          className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-all duration-300 ${chatContainerClass} ${
+          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-all duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
-          style={{
-            scrollBehavior: 'smooth',
-            minHeight: 0
-          }}
+          style={{ scrollBehavior: 'smooth' }}
           onScroll={checkNewMessageIndicator}
         >
           {/* Empty state with PromptSuggestionsDock */}

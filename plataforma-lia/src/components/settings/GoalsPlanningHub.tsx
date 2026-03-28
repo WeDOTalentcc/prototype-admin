@@ -914,7 +914,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                             <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-gray-700 dark:text-gray-300`}>Salário Mín.</th>
                             <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-gray-700 dark:text-gray-300`}>Salário Máx.</th>
                             {monthLabels.map((month, idx) => (
-                              <th key={idx} className={`text-center p-2 min-w-[40px] ${textStyles.captionBold} text-gray-700 dark:text-gray-300`}>{month}</th>
+                              <th key={idx} className={`text-center p-2 min-w-10 ${textStyles.captionBold} text-gray-700 dark:text-gray-300`}>{month}</th>
                             ))}
                             <th className={`text-center p-2 min-w-[50px] font-semibold text-gray-900 dark:text-gray-50`}>Total</th>
                             <th className="w-8 p-2"></th>

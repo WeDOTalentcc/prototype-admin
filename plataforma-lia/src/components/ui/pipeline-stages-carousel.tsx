@@ -105,10 +105,10 @@ export function PipelineStagesCarousel({
 
       <div
         ref={scrollContainerRef}
-        className="overflow-x-auto scrollbar-hide scroll-smooth px-2"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="overflow-x-auto [scrollbar-width:none] scroll-smooth px-2"
+        style={{ msOverflowStyle: 'none' }}
       >
-        <div className="flex items-center gap-2 py-1" style={{ minWidth: 'max-content' }}>
+        <div className="flex items-center gap-2 py-1 min-w-max">
           {stages.map((stage, index) => {
             const displayName = stage.displayName || stage.name
             const isSelected = selectedStages.includes(stage.id) || selectedStages.includes(stage.name) || selectedStages.includes(displayName)

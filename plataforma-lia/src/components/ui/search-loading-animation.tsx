@@ -50,14 +50,12 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
       <div className="flex items-center gap-3 mb-3">
         <div className="relative flex items-center justify-center w-12 h-12">
           <div 
-            className="ping-animation absolute w-10 h-10 rounded-full"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.4)' }}
+            className="ping-animation absolute w-10 h-10 rounded-full bg-wedo-cyan/40"
           />
           <div 
-            className="pulse-animation relative w-10 h-10 rounded-full flex items-center justify-center z-10"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}
+            className="pulse-animation relative w-10 h-10 rounded-full flex items-center justify-center z-10 bg-wedo-cyan/20"
           >
-            <Search className="w-5 h-5 text-gray-700" />
+            <Search className="w-5 h-5 text-gray-700 dark:text-gray-300" />
           </div>
         </div>
         <div className="text-left">

@@ -187,7 +187,7 @@ export function MessageFeedback({
                   value={correction}
                   onChange={(e) => setCorrection(e.target.value)}
                   placeholder="Qual seria a resposta correta ou mais adequada?"
-                  className="min-h-[80px] text-xs"
+                  className="min-h-20 text-xs"
                 />
                 <div className="flex justify-end gap-2">
                   <Button

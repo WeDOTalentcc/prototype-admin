@@ -125,7 +125,7 @@ const MenuItem = React.memo(({
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-[40px]",
+          "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
           isLocked
             ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
             : "hover:bg-gray-50 dark:hover:bg-gray-800",
@@ -181,7 +181,7 @@ const MenuItem = React.memo(({
                   }
                 }}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-[40px]",
+                  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
                   subIsLocked
                     ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800",
@@ -291,7 +291,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-[32px] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />

@@ -1808,7 +1808,7 @@ export function SmartSearchInput({
                 {ghostTextSuffix && !showAutocomplete && (
                   <div 
                     ref={ghostOverlayRef}
-                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-[56px] overflow-hidden"
+                    className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-14 overflow-hidden"
                     style={{ 
                       
                       whiteSpace: 'pre-wrap',
@@ -1833,7 +1833,7 @@ export function SmartSearchInput({
                     }
                   }}
                   placeholder={getPlaceholder()}
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border relative"
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border relative"
                   style={{ 
                     backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "var(--white)",
                     color: "var(--gray-950)",
@@ -2223,7 +2223,7 @@ export function SmartSearchInput({
                       {tag.filled && tag.value && (
                         <>
                           <span style={{ opacity: 0.5 }}>·</span>
-                          <span className="max-w-[80px] truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                          <span className="max-w-20 truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
                         </>
                       )}
                     </div>
@@ -2850,7 +2850,7 @@ export function SmartSearchInput({
                     value={similarSearchPrompt}
                     onChange={(e) => setSimilarSearchPrompt(e.target.value)}
                     placeholder="Edite o prompt de busca ou adicione perfis acima..."
-                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
+                    className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border"
                     style={{ 
                       backgroundColor: "var(--lia-bg-primary)",
                       color: "var(--gray-950)",
@@ -3453,7 +3453,7 @@ export function SmartSearchInput({
                   onKeyDown={handleKeyDown}
                   placeholder={getPlaceholder()}
                   className={cn(
-                    "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-[56px] transition-all border",
+                    "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-all border",
                     booleanError && "ring-2 ring-red-300"
                   )}
                   style={{ 
@@ -4196,7 +4196,7 @@ export function SmartSearchInput({
                         value={archetypeSearchPrompt}
                         onChange={(e) => setArchetypeSearchPrompt(e.target.value)}
                         placeholder={selectedArchetype ? `Buscar perfis similares a "${selectedArchetype.title}"...` : "Selecione um arquétipo acima para buscar..."}
-                        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
+                        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border"
                         style={{ 
                           backgroundColor: "var(--lia-bg-primary)",
                           color: "var(--gray-950)",

@@ -1761,7 +1761,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <Textarea
                       value={formData.targetAudience || ''}
                       onChange={(e) => updateField('targetAudience', e.target.value)}
-                      className="min-h-[80px] text-sm resize-none bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+                      className="min-h-20 text-sm resize-none bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
                       placeholder="Descreva o perfil ideal de candidato para esta vaga..."
                     />
                     

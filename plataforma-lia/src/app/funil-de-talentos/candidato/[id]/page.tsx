@@ -2555,13 +2555,8 @@ export default function CandidateProfilePage() {
             <AddCandidatesToVacancyModal
               isOpen={showAddToVacancyModal}
               onClose={() => setShowAddToVacancyModal(false)}
-              candidates={[{
-                id: candidate.id,
-                name: candidate.name,
-                email: candidate.email,
-                current_title: candidate.current_title,
-                avatar_url: candidate.avatar_url
-              }]}
+              candidateIds={[candidate.id]}
+              candidateNames={[candidate.name]}
             />
             
           </>

@@ -597,7 +597,7 @@ export default function GlobalPoliciesPage() {
                         className="flex-1"
                       />
                       {editingPolicy.unit && (
-                        <span className="text-sm text-gray-500 min-w-[80px]">
+                        <span className="text-sm text-gray-500 min-w-20">
                           {editingPolicy.unit}
                         </span>
                       )}

@@ -23,9 +23,9 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
       case 'primary':
  return 'text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100'
       case 'success':
-        return 'bg-status-success/10 text-status-success border-status-success/30/30 hover:bg-status-success/20'
+        return 'bg-status-success/10 text-status-success border-status-success/30 hover:bg-status-success/20'
       case 'warning':
-        return 'bg-status-warning/10 text-status-warning border-status-warning/30/30 hover:bg-status-warning/20'
+        return 'bg-status-warning/10 text-status-warning border-status-warning/30 hover:bg-status-warning/20'
       default:
         return 'hover:bg-gray-100 dark:hover:bg-gray-800'
     }
@@ -41,7 +41,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
             variant="outline"
             size="sm"
             onClick={action.onClick}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-full text-sm font-medium transition-all duration-200 ${getVariantStyles(action.variant)}`}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-all duration-200 ${getVariantStyles(action.variant)}`}
             style={{
               borderColor: 'var(--eleven-border)'
             }}

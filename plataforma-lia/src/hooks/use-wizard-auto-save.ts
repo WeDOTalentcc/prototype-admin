@@ -19,7 +19,7 @@ interface TechnicalSkill {
   name: string
   level: 'Básico' | 'Intermediário' | 'Avançado'
   required: boolean
-  category: 'language' | 'framework' | 'database' | 'tool'
+  category: 'language' | 'framework' | 'database' | 'tool' | 'general'
   weight: number
   weightJustification?: string
   isWeightInferred?: boolean

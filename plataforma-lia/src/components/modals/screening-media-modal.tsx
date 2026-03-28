@@ -228,7 +228,7 @@ export function ScreeningMediaModal({
                       className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-gray-900 dark:accent-gray-50"
                     />
                   </div>
-                  <span className={`${textStyles.bodySmall} text-gray-600 min-w-[80px] text-right`}>
+                  <span className={`${textStyles.bodySmall} text-gray-600 min-w-20 text-right`}>
                     {formatTime(currentTime)} / {duration}
                   </span>
                   <Button

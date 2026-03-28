@@ -213,7 +213,7 @@ export function RubricEvaluationCard({
               }}
             />
           </div>
-          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50 font-bold min-w-[40px]`}>
+          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50 font-bold min-w-10`}>
             {score}%
           </span>
           <Badge className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>

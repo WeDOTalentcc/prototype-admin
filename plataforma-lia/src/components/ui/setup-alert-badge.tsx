@@ -142,66 +142,73 @@ export function SetupAlertBadge() {
     return 'var(--status-warning)'
   }
 
+  // CSS custom property injetada no botão para uso nos filhos via var(--progress-color)
+  const progressCssVar = {
+    '--progress-color': getProgressColor(),
+  } as React.CSSProperties
+
   return (
     <button
       ref={badgeRef}
       onClick={handleClick}
-      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:transition-shadow duration-200 font-sans select-none"
-      style={{ 
-        fontFamily: 'var(--font-open-sans), Open Sans, sans-serif',
+      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-[var(--gray-800)] border border-[var(--gray-200)] dark:border-[var(--gray-700)] rounded-md transition-shadow duration-200 select-none"
+      style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        cursor: isDragging ? 'grabbing' : 'pointer'
+        cursor: isDragging ? 'grabbing' : 'pointer',
+        ...progressCssVar,
       }}
       title="Clique para completar o setup da empresa. Arraste para reposicionar."
     >
-      <div 
+      <div
         onMouseDown={handleMouseDown}
-        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded hover:bg-[var(--gray-100)] dark:hover:bg-[var(--gray-700)]"
         title="Arraste para mover"
       >
-        <GripVertical className="w-3 h-3 text-gray-400" />
+        <GripVertical className="w-3 h-3 text-[var(--gray-400)]" />
       </div>
       <div className="relative">
-        <div 
-          className="w-8 h-8 rounded-md flex items-center justify-center"
-          style={{ backgroundColor: `${getProgressColor()}20` }}
-        >
-          <AlertCircle 
-            className="w-4 h-4" 
-            style={{ color: getProgressColor() }}
+        {/* Fundo com 12% de opacidade — opacity no wrapper isolado evita afetar o ícone filho */}
+        <div className="w-8 h-8 rounded-md flex items-center justify-center relative">
+          <div
+            className="absolute inset-0 rounded-md opacity-[0.12]"
+            style={{ backgroundColor: 'var(--progress-color)' }}
+          />
+          <AlertCircle
+            className="w-4 h-4 relative z-10"
+            style={{ color: 'var(--progress-color)' }}
           />
         </div>
-        <div 
+        <div
           className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold text-white"
-          style={{ backgroundColor: getProgressColor() }}
+          style={{ backgroundColor: 'var(--progress-color)' }}
         >
           !
         </div>
       </div>
       <div className="flex flex-col items-start">
-        <span className="text-micro font-medium text-gray-500 dark:text-gray-400 leading-tight">
+        <span className="text-micro font-medium text-[var(--gray-500)] dark:text-[var(--gray-400)] leading-tight">
           Setup Incompleto
         </span>
         <div className="flex items-center gap-1.5">
-          <span 
+          <span
             className="text-xs font-semibold leading-tight"
-            style={{ color: getProgressColor() }}
+            style={{ color: 'var(--progress-color)' }}
           >
             {overallCompletion}%
           </span>
-          <div className="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div 
+          <div className="w-12 h-1 bg-[var(--gray-200)] dark:bg-[var(--gray-700)] rounded-full overflow-hidden">
+            <div
               className="h-full rounded-full transition-all duration-300"
-              style={{ 
+              style={{
                 width: `${overallCompletion}%`,
-                backgroundColor: getProgressColor()
+                backgroundColor: 'var(--progress-color)',
               }}
             />
           </div>
         </div>
       </div>
-      <Settings className="w-3 h-3 text-gray-400 ml-1" />
+      <Settings className="w-3 h-3 text-[var(--gray-400)] ml-1" />
     </button>
   )
 }

@@ -1444,7 +1444,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                               {MONTHS.map((month) => (
                                 <th 
                                   key={month.num} 
-                                  className="text-center p-2 min-w-[40px] text-gray-600 font-medium"
+                                  className="text-center p-2 min-w-10 text-gray-600 font-medium"
                                 >
                                   {month.short}
                                 </th>

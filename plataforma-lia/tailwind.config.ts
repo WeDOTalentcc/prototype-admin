@@ -99,6 +99,25 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
+      keyframes: {
+        'fade-in-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in-delayed': {
+          '0%':   { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-in-up': {
+          from: { opacity: '0', transform: 'translateY(16px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in-up':       'fade-in-up 0.3s ease-out',
+        'scale-in-delayed': 'scale-in-delayed 0.2s ease-out',
+        'slide-in-up':      'slide-in-up 0.3s ease-out',
+      },
       fontFamily: {
         'inter': ['var(--font-inter)', 'sans-serif'],
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
@@ -124,6 +143,34 @@ export default {
         xl: '1280px',
         '2xl': '1536px',
       },
+      },
+      // ──────────────────────────────────────────────
+      // LAYOUT TOKENS — Sprint 5A (Design System v4.2.1)
+      // Substituem valores arbitrários w-[Npx] / h-[Npx]
+      // ──────────────────────────────────────────────
+      width: {
+        'panel-sm': '300px',
+        'panel-md': '350px',
+        'panel-lg': '400px',
+        'panel-xl': '500px',
+        'sidebar-content': '200px',
+      },
+      height: {
+        'chart': '200px',
+        'panel-md': '300px',
+        'panel-lg': '400px',
+        'card-lg': '180px',
+      },
+      minWidth: {
+        'panel-sm': '300px',
+        'panel-md': '350px',
+      },
+      maxWidth: {
+        'panel-xl': '500px',
+        'panel-lg': '400px',
+      },
+      maxHeight: {
+        'panel-lg': '400px',
       },
     }
   },

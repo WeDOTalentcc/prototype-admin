@@ -602,7 +602,7 @@ export function WSITextScreeningModal({
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 placeholder="Digite a resposta do candidato..."
-                className="min-h-[80px] resize-none border-gray-100 focus:border-gray-400 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                className="min-h-20 resize-none border-gray-100 focus:border-gray-400 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                 disabled={isSubmitting}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.ctrlKey) {
