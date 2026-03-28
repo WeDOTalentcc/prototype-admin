@@ -1,0 +1,156 @@
+"use client"
+
+import { Zap, Mail, Phone, AlertCircle } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Switch } from "@/components/ui/switch"
+
+interface CreditEstimate {
+  total_estimated: number
+  breakdown: {
+    base: number
+    emails: number
+    phone_numbers: number
+  }
+}
+
+interface PearchSearchOptions {
+  searchType: string
+  limit: number
+  requireEmails: boolean
+  requirePhoneNumbers: boolean
+}
+
+interface CreditConfirmationModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  creditEstimate: CreditEstimate | null
+  pearchSearchOptions: PearchSearchOptions
+  onSearchOptionsChange: (options: PearchSearchOptions) => void
+  onCancel: () => void
+  onConfirm: () => void
+}
+
+export function CreditConfirmationModal({
+  open,
+  onOpenChange,
+  creditEstimate,
+  pearchSearchOptions,
+  onSearchOptionsChange,
+  onCancel,
+  onConfirm,
+}: CreditConfirmationModalProps) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">
+              <Zap className="w-4 h-4 text-gray-700 dark:text-gray-400" />
+            </div>
+            Confirmar Busca na Base Global
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-4">
+            <p className="text-sm text-gray-800 dark:text-gray-200">
+              Esta busca utilizará créditos da sua conta.
+            </p>
+
+            {creditEstimate && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-800 dark:text-gray-200">Tipo de busca:</span>
+                  <span className="font-medium capitalize">{pearchSearchOptions.searchType}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-800 dark:text-gray-200">Limite de resultados:</span>
+                  <span className="font-medium">{pearchSearchOptions.limit}</span>
+                </div>
+
+                {/* Filtros de Otimização de Créditos */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-2">
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Filtros de Contato</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      <span className="text-sm text-gray-800 dark:text-gray-200">Apenas com Email</span>
+                      <span className="text-xs text-gray-500">(+1 cr)</span>
+                    </div>
+                    <Switch
+                      checked={pearchSearchOptions.requireEmails}
+                      onCheckedChange={(checked) => onSearchOptionsChange({ ...pearchSearchOptions, requireEmails: checked })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-status-success" />
+                      <span className="text-sm text-gray-800 dark:text-gray-200">Apenas com Telefone</span>
+                      <span className="text-xs text-gray-500">(+1 cr)</span>
+                    </div>
+                    <Switch
+                      checked={pearchSearchOptions.requirePhoneNumbers}
+                      onCheckedChange={(checked) => onSearchOptionsChange({ ...pearchSearchOptions, requirePhoneNumbers: checked })}
+                    />
+                  </div>
+                  {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
+                    <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
+                      Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-800 dark:text-gray-200">Custo base:</span>
+                  <span className="font-medium">{creditEstimate.breakdown.base} créditos</span>
+                </div>
+                {creditEstimate.breakdown.emails > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-800 dark:text-gray-200">E-mails (+):</span>
+                    <span className="font-medium">{creditEstimate.breakdown.emails} créditos</span>
+                  </div>
+                )}
+                {creditEstimate.breakdown.phone_numbers > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-800 dark:text-gray-200">Telefones (+):</span>
+                    <span className="font-medium">{creditEstimate.breakdown.phone_numbers} créditos</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Total estimado:</span>
+                    <span className="text-base-ui font-semibold text-gray-700 dark:text-gray-200">
+                      {creditEstimate.total_estimated} créditos
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>O custo final pode variar dependendo dos resultados encontrados.</span>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="text-white bg-gray-900"
+          >
+            Confirmar Busca
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
