@@ -427,7 +427,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <LiaMetricsChart
                 data={generateTimeSeriesData(avgSkillsMatch)}
                 title=""
-                color="#9333ea"
+                color="var(--wedo-purple)"
               />
             </div>
           </CardContent>
@@ -689,7 +689,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <LiaMetricsChart
               data={generateTimeSeriesData(triageApprovalRate)}
               title="Taxa de Aprovação"
-              color="#8b5cf6"
+              color="var(--wedo-purple)"
               targetValue={60}
             />
             <LiaMetricsChart

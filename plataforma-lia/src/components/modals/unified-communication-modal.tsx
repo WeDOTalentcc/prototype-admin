@@ -833,7 +833,7 @@ export function UnifiedCommunicationModal({
 
               {/* Preview Card */}
               <div className={`rounded-md overflow-hidden ${
-                channel === 'whatsapp' ? 'bg-[#e5ddd5]' : 'bg-white border border-gray-200'
+                channel === 'whatsapp' ? 'bg-whatsapp-bg' : 'bg-white border border-gray-200'
               }`}>
                 {(channel === 'email' || channel === 'both') ? (
                   <div>
@@ -870,7 +870,7 @@ export function UnifiedCommunicationModal({
                   <div className="p-3">
                     {/* WhatsApp Chat Bubble */}
                     <div className="flex justify-end mb-2">
-                      <div className="bg-[#dcf8c6] rounded-md p-3 max-w-[85%]">
+                      <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                         <div 
                           className={`${textStyles.body} leading-relaxed whitespace-pre-wrap`}
                           dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-600">A mensagem aparecerá aqui...</span>' }}

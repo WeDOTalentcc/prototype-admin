@@ -700,7 +700,7 @@ export function ShareSearchModal({
                     </div>
                     <div className="flex justify-end">
                       <div className="max-w-[85%]">
-                        <div className="bg-[#DCF8C6] dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
+                        <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
                           <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                             {message ? renderPreview(message) : (
                               <span className="italic text-gray-500 text-micro">Mensagem...</span>
@@ -719,7 +719,7 @@ export function ShareSearchModal({
                 <div className="space-y-3">
                   <div className="flex justify-end">
                     <div className="max-w-[85%]">
-                      <div className="bg-[#DCF8C6] dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
+                      <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
                         <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                           {message ? renderPreview(message) : (
                             <span className="italic text-gray-500">

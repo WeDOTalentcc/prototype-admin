@@ -53,6 +53,14 @@ export default {
         'wedo-purple': '#9860D1',
         'wedo-magenta': '#D160AB',
         'wedo-coral': '#E16162',
+        // ──────────────────────────────────────────────
+        // TERCEIROS — cores de marca de integrações
+        // Usar APENAS em previews/simulações das plataformas
+        // ──────────────────────────────────────────────
+        'whatsapp-bg': '#E5DDD5',      // Fundo do chat WhatsApp
+        'whatsapp-bubble': '#DCF8C6',  // Bolha de mensagem enviada WhatsApp
+        'whatsapp-green': '#25D366',   // Verde do ícone WhatsApp
+        'wedo-blue': '#3B82F6',        // Azul informativo (legado)
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

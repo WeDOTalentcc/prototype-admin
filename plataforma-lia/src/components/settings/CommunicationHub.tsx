@@ -1093,9 +1093,9 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                         className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none font-mono"
                       />
                     ) : channelFilter === 'whatsapp' ? (
-                      <div className="rounded-md p-3 bg-[#e5ddd5]">
+                      <div className="rounded-md p-3 bg-whatsapp-bg">
                         <div className="flex justify-end">
-                          <div className="bg-[#dcf8c6] rounded-md p-3 max-w-[85%]">
+                          <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                             <div className="text-xs text-gray-950 dark:text-gray-50 whitespace-pre-wrap" >
                               {stripHtmlTags(selectedTemplate.body)}
                             </div>
