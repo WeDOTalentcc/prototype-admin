@@ -3,12 +3,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { 
-  Check, MapPin, Briefcase, Clock, Building2, Code, X, Search, 
-  FileText, Binary, Users, Upload, Filter, AlertCircle,
-  Globe, GraduationCap, DollarSign, Star, Target, ChevronRight,
-  User, Award, Loader2, GripVertical, Lightbulb, Linkedin, Info,
-  AlertTriangle, CheckCircle2, HelpCircle, Wand2, TrendingUp, Plus, Brain,
-  Pencil, Trash2, MoreHorizontal, Home, Zap, Mail, Phone, Table2,
+  MapPin, Briefcase, Clock, Building2, Code, X, Search, 
+  FileText, Binary, Users, Upload, 
+  Globe, Target, Loader2, Linkedin,
+  AlertTriangle, HelpCircle, Wand2, Brain,
+  Pencil, Trash2, Home, Zap, Mail, Phone,
   ChevronUp, ChevronDown, Tag
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -37,129 +36,28 @@ import { useSemanticSearch } from "@/hooks/useSemanticSearch"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { EditArchetypeModal } from "../EditArchetypeModal"
 import { SearchModeArchetypes } from "../SearchModeArchetypes"
-
-export interface ParsedEntities {
-  location?: string
-  job_title?: string
-  years_experience?: string
-  industry?: string
-  skills?: string[]
-  seniority?: string
-  company?: string
-}
-
-export type SearchSource = "local" | "global" | "hybrid"
-
-export interface SmartSearchInputProps {
-  value: string
-  onChange: (value: string) => void
-  onSubmit: (query: string, entities: ParsedEntities, mode?: SearchMode, metadata?: SearchMetadata) => void
-  onCancel: () => void
-  onOpenFilters?: () => void
-  onGoToResults?: () => void
-  isLoading?: boolean
-  placeholder?: string
-  className?: string
-  activeFiltersCount?: number
-  searchSource?: SearchSource
-  onSearchSourceChange?: (source: SearchSource) => void
-  requireEmails?: boolean
-  onRequireEmailsChange?: (value: boolean) => void
-  requirePhoneNumbers?: boolean
-  onRequirePhoneNumbersChange?: (value: boolean) => void
-}
-
-export type SearchMode = "natural" | "similar" | "jd" | "boolean" | "archetypes"
-
-export interface ArchetypeCandidate {
-  id: string
-  name: string
-  current_title?: string
-  years_experience?: number
-  skills?: string[]
-  hired_at?: string
-}
-
-export interface ArchetypeVacancy {
-  id: string
-  title: string
-  department?: string
-  closed_at?: string
-  hired_candidate?: ArchetypeCandidate
-}
-
-export interface SearchMetadata {
-  mode: SearchMode
-  booleanQuery?: string
-  jobDescription?: string
-  similarProfileUrl?: string
-  similarProfileUrls?: string[]
-  combinedProfile?: CombinedProfileSuggestion
-  archetypeVacancyId?: string
-  archetypeCandidateId?: string
-  archetypeProfile?: ArchetypeCandidate
-  filters?: Record<string, any>
-  searchText?: string
-}
-
-export interface CombinedProfileSuggestion {
-  keywords: string[]
-  title?: string
-  seniority?: string
-  skills_technical?: string[]
-  skills_soft?: string[]
-  industries?: string[]
-  location?: string
-  summary?: string
-}
-
-interface SearchTag {
-  key: keyof ParsedEntities
-  label: string
-  icon: React.ElementType
-  filled: boolean
-  value?: string
-}
-
-interface SearchAlert {
-  type: string
-  severity: "info" | "warning" | "error"
-  message: string
-  suggestion?: string
-  action_label?: string
-  action_value?: string
-}
-
-interface SearchAnalysis {
-  completeness_score: number
-  filled_criteria: string[]
-  missing_criteria: string[]
-  alerts: SearchAlert[]
-  enrichment_suggestions: Record<string, string[]>
-  next_recommended_action?: string
-}
-
-interface AutocompleteItem {
-  text: string
-  category: string
-  icon: string
-  description?: string
-  insert_text: string
-}
-
-interface AutocompleteResponse {
-  items: AutocompleteItem[]
-  context_hint?: string
-}
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
-
-// Sugestões cobrindo os 5 critérios: Location, Job Title, Experience, Industry, Skills
-const SEARCH_SUGGESTIONS = [
-  'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
-  'Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis'
-]
-
+import { SearchScopeControls } from "./SearchScopeControls"
+import { buildHighlightedText } from "./renderHighlightedText"
+import {
+  type ParsedEntities,
+  type SearchSource,
+  type SmartSearchInputProps,
+  type SearchMode,
+  type ArchetypeCandidate,
+  type ArchetypeVacancy,
+  type SearchMetadata,
+  type CombinedProfileSuggestion,
+  type SearchTag,
+  type SearchAlert,
+  type SearchAnalysis,
+  type AutocompleteItem,
+  type AutocompleteResponse,
+  API_BASE,
+  SEARCH_SUGGESTIONS,
+  MAX_SIMILAR_URLS,
+  MAX_CV_FILES,
+} from "./smartSearchConstants"
+export type { ParsedEntities, SearchSource, SmartSearchInputProps, SearchMode, ArchetypeCandidate, ArchetypeVacancy, SearchMetadata, CombinedProfileSuggestion }
 
 export function useSmartSearchCore(props: SmartSearchInputProps) {
   const {
@@ -305,8 +203,6 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
   const cvFileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const MAX_SIMILAR_URLS = 3
-  const MAX_CV_FILES = 2
 
   const { 
     suggestions: semanticSkillSuggestions, 
@@ -340,105 +236,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
   const filledCount = tags.filter(t => t.filled).length
 
   const renderHighlightedText = useCallback(() => {
-    if (!value || filledCount === 0) {
-      return null
-    }
-
-    let segments: { text: string; type: 'normal' | 'job_title' | 'location' | 'skills' | 'experience' | 'industry' }[] = []
-    let remainingText = value
-    const usedRanges: { start: number; end: number }[] = []
-
-    const entityMatches: { value: string; type: 'job_title' | 'location' | 'skills' | 'experience' | 'industry'; start: number; end: number }[] = []
-
-    if (entities.job_title) {
-      const idx = value.toLowerCase().indexOf(entities.job_title.toLowerCase())
-      if (idx !== -1) {
-        entityMatches.push({ value: entities.job_title, type: 'job_title', start: idx, end: idx + entities.job_title.length })
-      }
-    }
-    if (entities.location) {
-      const idx = value.toLowerCase().indexOf(entities.location.toLowerCase())
-      if (idx !== -1) {
-        entityMatches.push({ value: entities.location, type: 'location', start: idx, end: idx + entities.location.length })
-      }
-    }
-    if (entities.years_experience) {
-      const idx = value.toLowerCase().indexOf(entities.years_experience.toLowerCase())
-      if (idx !== -1) {
-        entityMatches.push({ value: entities.years_experience, type: 'experience', start: idx, end: idx + entities.years_experience.length })
-      }
-    }
-    if (entities.industry) {
-      const idx = value.toLowerCase().indexOf(entities.industry.toLowerCase())
-      if (idx !== -1) {
-        entityMatches.push({ value: entities.industry, type: 'industry', start: idx, end: idx + entities.industry.length })
-      }
-    }
-    if (entities.skills && entities.skills.length > 0) {
-      entities.skills.forEach(skill => {
-        const idx = value.toLowerCase().indexOf(skill.toLowerCase())
-        if (idx !== -1) {
-          entityMatches.push({ value: skill, type: 'skills', start: idx, end: idx + skill.length })
-        }
-      })
-    }
-
-    entityMatches.sort((a, b) => a.start - b.start)
-
-    let lastEnd = 0
-    entityMatches.forEach(match => {
-      const overlaps = usedRanges.some(r => 
-        (match.start >= r.start && match.start < r.end) || 
-        (match.end > r.start && match.end <= r.end)
-      )
-      if (!overlaps) {
-        if (match.start > lastEnd) {
-          segments.push({ text: value.substring(lastEnd, match.start), type: 'normal' })
-        }
-        segments.push({ text: value.substring(match.start, match.end), type: match.type })
-        usedRanges.push({ start: match.start, end: match.end })
-        lastEnd = match.end
-      }
-    })
-
-    if (lastEnd < value.length) {
-      segments.push({ text: value.substring(lastEnd), type: 'normal' })
-    }
-
-    if (segments.length === 0) {
-      segments = [{ text: value, type: 'normal' }]
-    }
-
-    const getHighlightStyle = (type: string) => {
-      switch (type) {
-        case 'job_title':
-          return { borderRadius: '3px', padding: '0 2px' }
-        case 'location':
-          return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)', borderRadius: '3px', padding: '0 2px' }
-        case 'skills':
-          return { backgroundColor: 'var(--gray-50)', color: 'var(--status-success)', borderRadius: '3px', padding: '0 2px' }
-        case 'experience':
-          return { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning)', borderRadius: '3px', padding: '0 2px' }
-        case 'industry':
-          return { backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: '3px', padding: '0 2px' }
-        default:
-          return {}
-      }
-    }
-
-    return (
-      <span className="whitespace-pre-wrap break-words">
-        {segments.map((seg, idx) => (
-          <span 
-            key={idx} 
-            style={seg.type !== 'normal' ? getHighlightStyle(seg.type) : {}}
-            className={seg.type !== 'normal' ? 'font-medium' : ''}
-          >
-            {seg.text}
-          </span>
-        ))}
-      </span>
-    )
+    return buildHighlightedText(value, entities, filledCount)
   }, [value, entities, filledCount])
 
   const parseQuery = useCallback(async (query: string) => {
@@ -1494,156 +1292,18 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     { key: "archetypes", label: "Arquétipos", icon: Target }
   ]
 
-  // Reusable SearchScopeControls component
-  const SearchScopeControls = ({ showSearchButton = false, onSearch }: { showSearchButton?: boolean; onSearch?: () => void }) => (
-    <div className="flex items-center gap-1 flex-shrink-0">
-      {/* Source selectors: Local, Hybrid, Global */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange?.('local'); }}
-              className={cn(
-                "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
-                searchSource === 'local' 
-                  ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                  : "hover:bg-gray-100"
-              , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
-              )}
-            >
-              <Home className="w-4 h-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="!animate-none !duration-0">
-            <p className="text-xs font-medium">Seu banco de talentos</p>
-            <p className="text-xs text-gray-300">Gratuito • Local</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      {showGlobalSearchOptions && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
-                className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
-                  searchSource === 'hybrid' 
-                    ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
-                    : "hover:bg-gray-100"
-                , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
-                )}
-              >
-                <Zap className="w-4 h-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="!animate-none !duration-0">
-              <p className="text-xs font-medium">Expanda sua busca</p>
-              <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-      
-      {showGlobalSearchOptions && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
-                className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
-                  searchSource === 'global' 
-                    ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
-                    : "hover:bg-gray-100"
-                , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
-                )}
-              >
-                <Globe className="w-4 h-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="!animate-none !duration-0">
-              <p className="text-xs font-medium">Alcance global</p>
-              <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-      
-      {/* Contact Filters: Email, Phone - Only show for global/hybrid searches */}
-      {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
-        <>
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
-                  className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
-                    requireEmails 
-                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                      : "hover:bg-gray-100"
-                  , requireEmails ? "text-wedo-green" : "text-gray-400"
-                  )}
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="!animate-none !duration-0">
-                <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
-                  className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
-                    requirePhoneNumbers 
-                      ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                      : "hover:bg-gray-100"
-                  , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
-                  )}
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="!animate-none !duration-0">
-                <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </>
-      )}
-      
-      {/* Search Button */}
-      {showSearchButton && onSearch && (
-        <>
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
-          <Button
-            onClick={onSearch}
-            disabled={!canSubmit() || isLoading}
-            size="sm"
-            className={cn("h-8 w-8 p-0 rounded-md transition-all hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
-        </>
-      )}
-    </div>
-  )
+  const scopeControlsProps = {
+    searchSource,
+    onSearchSourceChange,
+    handleSourceChange,
+    showGlobalSearchOptions,
+    onRequireEmailsChange,
+    onRequirePhoneNumbersChange,
+    requireEmails,
+    requirePhoneNumbers,
+    canSubmit,
+    isLoading: isLoading || false,
+  }
 
   const getPlaceholder = () => {
     switch (mode) {
@@ -1698,176 +1358,47 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
 
 
   return {
-    modes,
-    value,
-    MAX_CV_FILES,
-    MAX_SIMILAR_URLS,
-    activeFiltersCount,
-    addSimilarUrl,
-    aiSuggestedSkills,
-    aiSuggestedTags,
-    analyzeProfiles,
-    archetypeCreateMode,
-    archetypeDescription,
-    archetypeSearch,
-    archetypeSearchPrompt,
-    archetypeTab,
-    archetypeVacancies,
-    autocompleteEnabled,
-    autocompleteItems,
-    booleanError,
-    buildArchetypePrompt,
-    canSubmit,
-    className,
-    clearSelectedVacancy,
-    closeEditArchetype,
-    combinedSuggestions,
-    confirmSourceChange,
-    containerRef,
-    createArchetypeFromDescription,
-    cvFileInputRef,
-    deleteArchetype,
-    editArchetypeDescription,
-    editArchetypeEmoji,
-    editArchetypeEmploymentType,
-    editArchetypeExperienceMin,
-    editArchetypeIndustry,
-    editArchetypeLanguages,
-    editArchetypeLocation,
-    editArchetypeName,
-    editArchetypeQuery,
-    editArchetypeSeniority,
-    editArchetypeSkills,
-    editArchetypeTags,
-    editArchetypeWorkModel,
-    editingArchetype,
-    entities,
-    expandedArchetypeId,
-    fileInputRef,
-    filledCount,
-    filteredArchetypes,
-    formatDate,
-    getPlaceholder,
-    ghostOverlayRef,
-    ghostTextInfo,
-    ghostTextSuffix,
-    handleAcceptEnhancement,
-    handleAutocompleteSelect,
-    handleCvUpload,
-    handleDismissEnhancement,
-    handleFileUpload,
-    handleKeyDown,
-    handleSelectVacancy,
-    handleSourceChange,
-    handleSubmit,
-    hasMultipleSources,
-    industrySearchQuery,
-    isAnalyzingProfiles,
-    isCreatingArchetype,
-    isDeletingArchetype,
-    isFindingSimilarSkills,
-    isFindingSimilarTags,
-    isIndustryDropdownOpen,
-    isLoading,
-    isLoadingArchetypes,
-    isParsingEntities,
-    isSavingArchetype,
-    isSearchingJobs,
-    isSearchingVacancies,
-    jdContent,
-    jdSearchPrompt,
-    jdVacancyResults,
-    jdVacancySearch,
-    jobSearchQuery,
-    jobSearchResults,
-    mode,
-    newLanguageInput,
-    newSkillInput,
-    newTagInput,
-    onChange,
-    onGoToResults,
-    onOpenFilters,
-    onRequireEmailsChange,
-    onRequirePhoneNumbersChange,
-    onSearchSourceChange,
-    onSubmit,
-    openArchetypeFromJob,
-    openEditArchetype,
-    panelWidth,
-    pendingSourceChange,
-    placeholder,
-    removeCvFile,
-    removeSimilarUrl,
-    removeSuggestion,
-    requireEmails,
-    requirePhoneNumbers,
-    saveArchetype,
-    searchAnalysis,
-    searchJobsForArchetype,
-    searchSource,
-    selectedAiSkills,
-    selectedAiTags,
-    selectedArchetype,
-    selectedAutocompleteIndex,
-    selectedVacancy,
-    setAiSuggestedSkills,
-    setAiSuggestedTags,
-    setArchetypeCreateMode,
-    setArchetypeDescription,
-    setArchetypeSearch,
-    setArchetypeSearchPrompt,
-    setArchetypeTab,
-    setAutocompleteEnabled,
-    setAutocompleteItems,
-    setEditArchetypeDescription,
-    setEditArchetypeEmoji,
-    setEditArchetypeEmploymentType,
-    setEditArchetypeExperienceMin,
-    setEditArchetypeIndustry,
-    setEditArchetypeLanguages,
-    setEditArchetypeLocation,
-    setEditArchetypeName,
-    setEditArchetypeQuery,
-    setEditArchetypeSeniority,
-    setEditArchetypeSkills,
-    setEditArchetypeTags,
-    setEditArchetypeWorkModel,
-    setExpandedArchetypeId,
-    setIndustrySearchQuery,
-    setIsFindingSimilarSkills,
-    setIsFindingSimilarTags,
-    setIsIndustryDropdownOpen,
-    setJdContent,
-    setJdSearchPrompt,
-    setJdVacancySearch,
-    setJobSearchQuery,
-    setMode,
-    setNewLanguageInput,
-    setNewSkillInput,
-    setNewTagInput,
-    setPendingSourceChange,
-    setSelectedAiSkills,
-    setSelectedAiTags,
-    setSelectedArchetype,
-    setSelectedAutocompleteIndex,
-    setSelectedVacancy,
-    setShowAutocomplete,
-    setShowSkillSuggestions,
-    setShowSourceChangeModal,
-    setShowTagSuggestions,
-    setSimilarSearchPrompt,
-    showAutocomplete,
-    showCombinedSuggestions,
-    showGlobalSearchOptions,
-    showSkillSuggestions,
-    showSourceChangeModal,
-    showTagSuggestions,
-    showVacancyResults,
-    similarCvFiles,
-    similarSearchPrompt,
-    similarUrls,
-    tags,
-    textareaRef,
-    updateSimilarUrl,
+    modes, value, MAX_CV_FILES, MAX_SIMILAR_URLS, SearchScopeControls, scopeControlsProps,
+    activeFiltersCount, addSimilarUrl, aiSuggestedSkills, aiSuggestedTags, analyzeProfiles,
+    archetypeCreateMode, archetypeDescription, archetypeSearch, archetypeSearchPrompt,
+    archetypeTab, archetypeVacancies, autocompleteEnabled, autocompleteItems, booleanError,
+    buildArchetypePrompt, canSubmit, className, clearSelectedVacancy, closeEditArchetype,
+    combinedSuggestions, confirmSourceChange, containerRef, createArchetypeFromDescription,
+    cvFileInputRef, deleteArchetype, editArchetypeDescription, editArchetypeEmoji,
+    editArchetypeEmploymentType, editArchetypeExperienceMin, editArchetypeIndustry,
+    editArchetypeLanguages, editArchetypeLocation, editArchetypeName, editArchetypeQuery,
+    editArchetypeSeniority, editArchetypeSkills, editArchetypeTags, editArchetypeWorkModel,
+    editingArchetype, entities, expandedArchetypeId, fileInputRef, filledCount,
+    filteredArchetypes, formatDate, getPlaceholder, ghostOverlayRef, ghostTextInfo,
+    ghostTextSuffix, handleAcceptEnhancement, handleAutocompleteSelect, handleCvUpload,
+    handleDismissEnhancement, handleFileUpload, handleKeyDown, handleSelectVacancy,
+    handleSourceChange, handleSubmit, hasMultipleSources, industrySearchQuery,
+    isAnalyzingProfiles, isCreatingArchetype, isDeletingArchetype, isFindingSimilarSkills,
+    isFindingSimilarTags, isIndustryDropdownOpen, isLoading, isLoadingArchetypes,
+    isParsingEntities, isSavingArchetype, isSearchingJobs, isSearchingVacancies,
+    jdContent, jdSearchPrompt, jdVacancyResults, jdVacancySearch, jobSearchQuery,
+    jobSearchResults, mode, newLanguageInput, newSkillInput, newTagInput,
+    onChange, onGoToResults, onOpenFilters, onRequireEmailsChange, onRequirePhoneNumbersChange,
+    onSearchSourceChange, onSubmit, openArchetypeFromJob, openEditArchetype, panelWidth,
+    pendingSourceChange, placeholder, removeCvFile, removeSimilarUrl, removeSuggestion,
+    requireEmails, requirePhoneNumbers, saveArchetype, searchAnalysis, searchJobsForArchetype,
+    searchSource, selectedAiSkills, selectedAiTags, selectedArchetype, selectedAutocompleteIndex,
+    selectedVacancy, setAiSuggestedSkills, setAiSuggestedTags, setArchetypeCreateMode,
+    setArchetypeDescription, setArchetypeSearch, setArchetypeSearchPrompt, setArchetypeTab,
+    setAutocompleteEnabled, setAutocompleteItems, setEditArchetypeDescription,
+    setEditArchetypeEmoji, setEditArchetypeEmploymentType, setEditArchetypeExperienceMin,
+    setEditArchetypeIndustry, setEditArchetypeLanguages, setEditArchetypeLocation,
+    setEditArchetypeName, setEditArchetypeQuery, setEditArchetypeSeniority,
+    setEditArchetypeSkills, setEditArchetypeTags, setEditArchetypeWorkModel,
+    setExpandedArchetypeId, setIndustrySearchQuery, setIsFindingSimilarSkills,
+    setIsFindingSimilarTags, setIsIndustryDropdownOpen, setJdContent, setJdSearchPrompt,
+    setJdVacancySearch, setJobSearchQuery, setMode, setNewLanguageInput, setNewSkillInput,
+    setNewTagInput, setPendingSourceChange, setSelectedAiSkills, setSelectedAiTags,
+    setSelectedArchetype, setSelectedAutocompleteIndex, setSelectedVacancy,
+    setShowAutocomplete, setShowSkillSuggestions, setShowSourceChangeModal,
+    setShowTagSuggestions, setSimilarSearchPrompt, showAutocomplete, showCombinedSuggestions,
+    showGlobalSearchOptions, showSkillSuggestions, showSourceChangeModal, showTagSuggestions,
+    showVacancyResults, similarCvFiles, similarSearchPrompt, similarUrls, tags,
+    textareaRef, updateSimilarUrl,
   }
 }

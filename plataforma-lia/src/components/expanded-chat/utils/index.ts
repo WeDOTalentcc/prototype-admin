@@ -35,6 +35,10 @@ export {
 } from './field-updater'
 
 export {
+  extractCriteriaFromTextPure,
+} from './criteria-extraction'
+
+export {
   SKILLS_CATALOG,
   ROLE_AREA_MAPPING,
   CORE_SKILLS_BY_ROLE,

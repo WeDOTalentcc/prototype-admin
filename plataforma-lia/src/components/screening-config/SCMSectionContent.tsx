@@ -22,6 +22,8 @@ import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import type { CustomQuestion } from './CustomQuestions'
 import { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
+import type { ScreeningQuestionItem } from './SCMScreeningTypes'
+import { SCMQuestionDetailView } from './SCMQuestionDetail'
 
 type SCMSectionContentProps = ReturnType<typeof useScreeningConfigManagerCore>
 
@@ -588,8 +590,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
     className="!mx-0 !mt-0"
     jobTitle={job.title}
     responsibilities={job.requirements || []}
-    technicalSkills={(job.technicalRequirements || []).map((r: any) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean)}
-    behavioralCompetencies={(job.behavioralCompetencies || []).map((c: any) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean)}
+    technicalSkills={(job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean)}
+    behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean)}
     seniority={job.level || job.seniority}
     department={job.department}
     description={job.description}
@@ -664,12 +666,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
       }
     }}
     isGenerating={isGeneratingWSI}
-    companyId={(job as any).companyId || 'default'}
-    companyName={(job as any).companyName || undefined}
+    companyId={(job as Record<string, unknown>).companyId as string || 'default'}
+    companyName={(job as Record<string, unknown>).companyName as string || undefined}
     companyDescription={undefined}
-    companyIndustry={(job as any).industry || undefined}
+    companyIndustry={(job as Record<string, unknown>).industry as string || undefined}
     benefits={job.benefits || []}
-    interviewStages={((job as any).interviewStages || []).map((s: any) => typeof s === 'string' ? s : s.stageName || s.name || '')}
+    interviewStages={((job as Record<string, unknown>).interviewStages as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => typeof s === 'string' ? s : (s.stageName || s.name || '') as string)}
     onUpdateJobDescription={async (jdText) => {
       if (!job) return
       const jobId = job.backendId || job.jobId || String(job.id)
@@ -699,14 +701,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400 flex-wrap mb-3">
             <span>Total: {job.screeningQuestions?.length || 0} perguntas WSI</span>
             <span>•</span>
-            <span>{(job.screeningQuestions || []).filter((q: any) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
+            <span>{(job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
             <span>•</span>
-            <span>{(job.screeningQuestions || []).filter((q: any) => q.type !== 'eliminatory' && !q.required).length} informativas</span>
+            <span>{(job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.type !== 'eliminatory' && !q.required).length} informativas</span>
           </div>
         </div>
         <div className="space-y-2">
           {WSI_BLOCKS.map((block) => {
-            const blockQuestions = (job.screeningQuestions || []).filter((q: any) => q.block_id === block.id)
+            const blockQuestions = (job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.block_id === block.id)
             const isAutomatic = !block.editable
             const block2Count = block.id === 2 ? (companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length : 0
             const totalBlockCount = block.id === 2 ? block2Count + blockQuestions.length : blockQuestions.length
@@ -760,7 +762,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 )}
                 {!isAutomatic && block.id !== 2 && blockQuestions.length > 0 && (
                   <div className="space-y-1 ml-7 mt-1.5">
-                    {blockQuestions.map((q: any, idx: number) => (
+                    {blockQuestions.map((q: ScreeningQuestionItem, idx: number) => (
                       <p key={q.id || idx} className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed truncate">
                         • {q.question || q.text}
                       </p>
@@ -1134,10 +1136,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           {WSI_BLOCKS.map((block) => {
             const isExpanded = expandedBlocks.includes(block.id)
             const allQuestions = job.screeningQuestions || []
-            const cat = (q: any) => (q.category || '').toLowerCase()
-            const typ = (q: any) => (q.type || '').toLowerCase()
+            const cat = (q: ScreeningQuestionItem) => (q.category || '').toLowerCase()
+            const typ = (q: ScreeningQuestionItem) => (q.type || '').toLowerCase()
 
-            const isBlock2 = (q: any) => {
+            const isBlock2 = (q: ScreeningQuestionItem) => {
               if (typ(q) === 'eliminatory' || q.required) return true
               if (cat(q).includes('elegib') || cat(q).includes('elimin')) return true
               if (cat(q).includes('fit') && cat(q).includes('básico')) return true
@@ -1145,16 +1147,16 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               if (cat(q).includes('experiência') || cat(q).includes('experiencia')) return true
               return false
             }
-            const isBlock3 = (q: any) => {
+            const isBlock3 = (q: ScreeningQuestionItem) => {
               if (isBlock2(q)) return false
               return cat(q).includes('tecn') || cat(q).includes('tech') || cat(q).includes('skill') || cat(q).includes('técnica') || typ(q).includes('tech')
             }
-            const isBlock4 = (q: any) => {
+            const isBlock4 = (q: ScreeningQuestionItem) => {
               if (isBlock2(q) || isBlock3(q)) return false
               return true
             }
 
-            const blockQuestions = allQuestions.filter((q: any) => {
+            const blockQuestions = allQuestions.filter((q: ScreeningQuestionItem) => {
               if (q.block_id !== undefined && q.block_id !== null) return q.block_id === block.id
               if (block.id === 2) return isBlock2(q)
               if (block.id === 3) return isBlock3(q)
@@ -1163,8 +1165,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             })
 
             const blockGenerated = generatedQuestions[block.id] || []
-            const acceptedCountForBlock = blockGenerated.filter((q: any) => acceptedQuestions.has(q.id)).length
-            const eliminatoryCount = blockQuestions.filter((q: any) => q.type === 'eliminatory' || q.required).length
+            const acceptedCountForBlock = blockGenerated.filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
+            const eliminatoryCount = blockQuestions.filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length
             const informativeCount = blockQuestions.length - eliminatoryCount
 
             return (
@@ -1257,7 +1259,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                           </div>
                         ) : block.id !== 2 || blockQuestions.length > 0 || blockGenerated.length > 0 ? (
                           <>
-                            {blockQuestions.map((item: any, idx: number) => {
+                            {blockQuestions.map((item: ScreeningQuestionItem, idx: number) => {
                               const isDeactivated = deactivatedQuestions.has(item.id)
                               const isDetailsExpanded = expandedQuestionDetails.has(item.id)
                               const complexity = getBloomComplexity(item.bloom_level || 3)
@@ -1265,69 +1267,19 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               return (
                                 <div key={item.id || idx} className={`p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md group hover:border-gray-300 dark:hover:border-gray-600 transition-colors ${isDeactivated ? 'opacity-50' : ''}`}>
                                   <div className="flex items-start gap-3">
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'Técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : 'bg-status-success/15 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30'}`}>
-                                          {item.category === 'behavioral' ? 'Comportamental' : item.category === 'technical' ? 'Técnica' : item.category === 'cultural' ? 'Cultural' : item.category || 'Geral'}
+                                    <SCMQuestionDetailView
+                                      item={item}
+                                      isDetailsExpanded={isDetailsExpanded}
+                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })}
+                                      helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
+                                    />
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                      {isDeactivated ? (
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
+                                      ) : (
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
+                                          <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                         </Badge>
-                                        {(item.type === 'eliminatory' || item.required) && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-error/10 text-status-error border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
-                                        )}
-                                        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
-                                          <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
-                                        </Badge>
-                                        {item.bloom_level && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30">
-                                            <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
-                                          </Badge>
-                                        )}
-                                        {item.dreyfus_level && item.block_id !== 2 && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
-                                            {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
-                                          </Badge>
-                                        )}
-                                        {item.big_five_trait && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
-                                            {getBigFiveLabelPTBR(item.big_five_trait)}
-                                          </Badge>
-                                        )}
-                                        {(item.weight || 0) >= 1.5 && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
-                                            <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
-                                          </Badge>
-                                        )}
-                                        {isDeactivated ? (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
-                                        ) : (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
-                                            <CheckCircle className="w-3 h-3 mr-1" />Aceita
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question}</p>
-                                      <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-gray-400">
-                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{estTime}</span>
-                                        {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
-                                        {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
-                                        <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
-                                      </div>
-                                      <button className="mt-1.5 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
-                                        {isDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
-                                      </button>
-                                      {isDetailsExpanded && (
-                                        <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-micro">
-                                          <div className="flex gap-4">
-                                            <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
-                                            <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
-                                            <div><span className="text-gray-400">Tipo:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
-                                          </div>
-                                          {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
-                                            <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
-                                          )}
-                                          {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric).length > 0 && (
-                                            <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
-                                          )}
-                                        </div>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1346,7 +1298,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               )
                             })}
 
-                            {blockGenerated.map((item: any, idx: number) => {
+                            {blockGenerated.map((item: ScreeningQuestionItem, idx: number) => {
                               const isAccepted = acceptedQuestions.has(item.id)
                               const genComplexity = getBloomComplexity(item.bloom_level || 3)
                               const genEstTime = getEstimatedTime(item.question_type || 'open')
@@ -1354,81 +1306,24 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               return (
                                 <div key={item.id || `gen-${idx}`} className={`p-3 rounded-md transition-colors ${isAccepted ? 'bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600' : 'bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600'}`}>
                                   <div className="flex items-start gap-3">
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
-                                          {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
-                                        </Badge>
-                                        {(item.type === 'eliminatory' || item.is_eliminatory) && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-error/10 text-status-error border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
-                                        )}
-                                        <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${genComplexity.color}`}>
-                                          <Gauge className="w-3 h-3 mr-0.5" />{genComplexity.label}
-                                        </Badge>
-                                        {item.bloom_level && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30">
-                                            <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
-                                          </Badge>
-                                        )}
-                                        {item.dreyfus_level && item.block_id !== 2 && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
-                                            {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
-                                          </Badge>
-                                        )}
-                                        {item.big_five_trait && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
-                                            {getBigFiveLabelPTBR(item.big_five_trait)}
-                                          </Badge>
-                                        )}
-                                        {(item.weight || 0) >= 1.5 && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
-                                            <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
-                                          </Badge>
-                                        )}
-                                        {isAccepted && (
-                                          <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
-                                            <CheckCircle className="w-3 h-3 mr-1" />Aceita
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question || item.text}</p>
-                                      <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-gray-400">
-                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{genEstTime}</span>
-                                        {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
-                                        {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
-                                        <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
-                                      </div>
-                                      <button className="mt-1.5 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next })}>
-                                        {genDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
-                                      </button>
-                                      {genDetailsExpanded && (
-                                        <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-micro">
-                                          <div className="flex gap-4 flex-wrap">
-                                            <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
-                                            <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
-                                            <div><span className="text-gray-400">Tipo:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
-                                          </div>
-                                          {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
-                                            <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
-                                          )}
-                                          {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric).length > 0 && (
-                                            <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
-                                          )}
-                                        </div>
-                                      )}
-                                    </div>
+                                    <SCMQuestionDetailView
+                                      item={item}
+                                      isDetailsExpanded={genDetailsExpanded}
+                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })}
+                                      helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
+                                    />
                                     <div className="flex items-center gap-1.5 shrink-0">
                                       {isAccepted ? (
                                         <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => {
                                           if (confirm('Remover pergunta aceita?')) {
                                             setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
-                                            setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))
+                                            setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))
                                           }
                                         }}>Remover</button>
                                       ) : (
                                         <>
                                           <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                          <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))}>Descartar</button>
+                                          <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
                                         </>
                                       )}
                                     </div>
@@ -1458,7 +1353,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         <div className="flex items-center gap-2">
           <Button size="sm" className="h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white" onClick={async () => {
             const existingCount = (job.screeningQuestions || []).length
-            const acceptedCount = Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).length
+            const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
             const totalQuestions = existingCount + acceptedCount
 
             if (totalQuestions === 0) {
@@ -1472,12 +1367,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
             try {
               const jobId = job.backendId || job.jobId || String(job.id)
-              const existingQuestions = (job.screeningQuestions || []).map((q: any) => ({
+              const existingQuestions = (job.screeningQuestions || []).map((q: ScreeningQuestionItem) => ({
                 id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id
               }))
-              const acceptedGenerated: any[] = []
-              Object.values(generatedQuestions).forEach((blockQs: any[]) => {
-                blockQs.forEach((q: any) => {
+              const acceptedGenerated: ScreeningQuestionItem[] = []
+              Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
+                blockQs.forEach((q: ScreeningQuestionItem) => {
                   if (acceptedQuestions.has(q.id)) {
                     acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id })
                   }
@@ -1492,7 +1387,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               if (response.ok) {
                 const newScreeningQuestions = [
                   ...(job.screeningQuestions || []),
-                  ...Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).map((q: any) => ({
+                  ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({
                     ...q, question: q.question || q.text, generated: undefined
                   }))
                 ]
@@ -1512,7 +1407,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           {(job.screeningStatus !== 'active') && (
             <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={async () => {
               const existingCount = (job.screeningQuestions || []).length
-              const acceptedCount = Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).length
+              const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
               const totalQuestions = existingCount + acceptedCount
 
               if (totalQuestions === 0) {
@@ -1526,12 +1421,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
               try {
                 const jobId = job.backendId || job.jobId || String(job.id)
-                const existingQuestions = (job.screeningQuestions || []).map((q: any) => ({
+                const existingQuestions = (job.screeningQuestions || []).map((q: ScreeningQuestionItem) => ({
                   id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id
                 }))
-                const acceptedGenerated: any[] = []
-                Object.values(generatedQuestions).forEach((blockQs: any[]) => {
-                  blockQs.forEach((q: any) => {
+                const acceptedGenerated: ScreeningQuestionItem[] = []
+                Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
+                  blockQs.forEach((q: ScreeningQuestionItem) => {
                     if (acceptedQuestions.has(q.id)) {
                       acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id })
                     }
@@ -1546,7 +1441,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 if (response.ok) {
                   const newScreeningQuestions = [
                     ...(job.screeningQuestions || []),
-                    ...Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).map((q: any) => ({
+                    ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({
                       ...q, question: q.question || q.text, generated: undefined
                     }))
                   ]

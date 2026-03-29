@@ -113,7 +113,7 @@ export function CandidateProfileTab({
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-4">
           {experiences.length > 0 ? (
-            experiences.map((exp: any, index: number) => {
+            experiences.map((exp, index: number) => {
               const title = exp.title || exp.position || exp.role || ''
               const company = exp.company || exp.company_name || ''
               const location = exp.location || ''
@@ -202,7 +202,7 @@ export function CandidateProfileTab({
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
           {education.length > 0 ? (
-            education.map((edu: any, index: number) => (
+            education.map((edu, index: number) => (
               <div key={index} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-gray-100' : ''}`}>
                 <div>
                   <h5 className="text-sm font-medium text-gray-800">
@@ -234,7 +234,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-2">
               {candidate.certifications.map((cert, idx) => {
-                const certName = typeof cert === 'string' ? cert : (cert as any).name || 'Certificação'
+                const certName = typeof cert === 'string' ? cert : (cert as Record<string, unknown>).name || 'Certificação'
                 return (
                   <Badge key={idx} variant="secondary" className="text-xs px-2 py-1">
                     {certName}
@@ -355,7 +355,7 @@ export function CandidateProfileTab({
             </p>
             {(candidate.address_street || candidate.address_district) && (
               <p className="text-xs text-gray-500 mt-0.5">
-                {[candidate.address_street, candidate.address_number, candidate.address_district, candidate.address_zip, (candidate as any).address_complement]
+                {[candidate.address_street, candidate.address_number, candidate.address_district, candidate.address_zip, candidate.address_complement]
                   .filter(Boolean).join(', ')}
               </p>
             )}
@@ -430,38 +430,38 @@ export function CandidateProfileTab({
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-2">
-            {((candidate as any).date_of_birth || (candidate as any).estimated_age) && (
+            {(candidate.date_of_birth || candidate.estimated_age) && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500 flex items-center gap-1">
                   <Cake className="w-3.5 h-3.5" />
                   Idade
                 </span>
                 <span className="text-sm font-medium text-gray-800">
-                  {calculateAge((candidate as any).date_of_birth) || (candidate as any).estimated_age} anos
-                  {(candidate as any).date_of_birth && (
+                  {calculateAge(candidate.date_of_birth) || candidate.estimated_age} anos
+                  {candidate.date_of_birth && (
                     <span className="text-xs text-gray-400 ml-1">
-                      ({formatDate((candidate as any).date_of_birth)})
+                      ({formatDate(candidate.date_of_birth)})
                     </span>
                   )}
                 </span>
               </div>
             )}
-            {(candidate as any).gender && (
+            {candidate.gender && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Gênero</span>
-                <span className="text-sm font-medium text-gray-800">{(candidate as any).gender}</span>
+                <span className="text-sm font-medium text-gray-800">{candidate.gender}</span>
               </div>
             )}
-            {(candidate as any).nationality && (
+            {candidate.nationality && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Nacionalidade</span>
-                <span className="text-sm font-medium text-gray-800">{(candidate as any).nationality}</span>
+                <span className="text-sm font-medium text-gray-800">{candidate.nationality}</span>
               </div>
             )}
-            {(candidate as any).marital_status && (
+            {candidate.marital_status && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Estado Civil</span>
-                <span className="text-sm font-medium text-gray-800">{(candidate as any).marital_status}</span>
+                <span className="text-sm font-medium text-gray-800">{candidate.marital_status}</span>
               </div>
             )}
           </CardContent>
@@ -475,36 +475,36 @@ export function CandidateProfileTab({
             <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
               <Linkedin className="w-4 h-4 text-[#0A66C2]" />
               LinkedIn Insights
-              {(candidate as any).pearch_profile_id && (
+              {candidate.pearch_profile_id && (
                 <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
-            {(candidate as any).headline && (
+            {candidate.headline && (
               <div>
-                <p className="text-sm text-gray-800 dark:text-gray-200 italic">"{(candidate as any).headline}"</p>
+                <p className="text-sm text-gray-800 dark:text-gray-200 italic">"{candidate.headline}"</p>
               </div>
             )}
 
             {/* Badges de Status */}
             <div className="flex flex-wrap gap-1.5">
-              {(candidate as any).is_open_to_work && (
+              {candidate.is_open_to_work && (
                 <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                   ✓ Open to Work
                 </Badge>
               )}
-              {(candidate as any).is_decision_maker && (
+              {candidate.is_decision_maker && (
                 <Badge className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                   👔 Decision Maker
                 </Badge>
               )}
-              {(candidate as any).is_top_universities && (
+              {candidate.is_top_universities && (
                 <Badge className="text-xs bg-status-warning/10 text-status-warning border-status-warning/30">
                   🎓 Top Universities
                 </Badge>
               )}
-              {(candidate as any).is_hiring && (
+              {candidate.is_hiring && (
                 <Badge className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">
                   📢 Hiring
                 </Badge>
@@ -512,20 +512,20 @@ export function CandidateProfileTab({
             </div>
 
             {/* Connections & Followers */}
-            {((candidate as any).linkedin_connections_count || (candidate as any).linkedin_followers_count) && (
+            {(candidate.linkedin_connections_count || candidate.linkedin_followers_count) && (
               <div className="flex gap-4 pt-2 border-t border-gray-100">
-                {(candidate as any).linkedin_connections_count && (
+                {candidate.linkedin_connections_count && (
                   <div className="text-center">
                     <p className="text-lg font-semibold text-gray-800">
-                      {(candidate as any).linkedin_connections_count.toLocaleString('pt-BR')}
+                      {candidate.linkedin_connections_count.toLocaleString('pt-BR')}
                     </p>
                     <p className="text-micro text-gray-500">Conexões</p>
                   </div>
                 )}
-                {(candidate as any).linkedin_followers_count && (
+                {candidate.linkedin_followers_count && (
                   <div className="text-center">
                     <p className="text-lg font-semibold text-gray-800">
-                      {(candidate as any).linkedin_followers_count.toLocaleString('pt-BR')}
+                      {candidate.linkedin_followers_count.toLocaleString('pt-BR')}
                     </p>
                     <p className="text-micro text-gray-500">Seguidores</p>
                   </div>
@@ -546,10 +546,10 @@ export function CandidateProfileTab({
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
-            {(candidate as any).resume_url && (
+            {candidate.resume_url && (
               <div>
                 <a 
-                  href={(candidate as any).resume_url} 
+                  href={candidate.resume_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-sm text-gray-800 dark:text-gray-200 transition-colors"
@@ -561,30 +561,30 @@ export function CandidateProfileTab({
               </div>
             )}
 
-            {(candidate as any).self_introduction && (
+            {candidate.self_introduction && (
               <div>
                 <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-1">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Apresentação Profissional
                 </h5>
                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md leading-relaxed">
-                  {(candidate as any).self_introduction.length > 300 
-                    ? `${(candidate as any).self_introduction.slice(0, 300)}...` 
-                    : (candidate as any).self_introduction}
+                  {candidate.self_introduction.length > 300 
+                    ? `${candidate.self_introduction.slice(0, 300)}...` 
+                    : candidate.self_introduction}
                 </p>
               </div>
             )}
 
-            {(candidate as any).cover_letter && (
+            {candidate.cover_letter && (
               <div>
                 <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-1">
                   <Mail className="w-3 h-3" />
                   Carta de Apresentação
                 </h5>
                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md leading-relaxed">
-                  {(candidate as any).cover_letter.length > 300 
-                    ? `${(candidate as any).cover_letter.slice(0, 300)}...` 
-                    : (candidate as any).cover_letter}
+                  {candidate.cover_letter.length > 300 
+                    ? `${candidate.cover_letter.slice(0, 300)}...` 
+                    : candidate.cover_letter}
                 </p>
               </div>
             )}
@@ -593,7 +593,7 @@ export function CandidateProfileTab({
       )}
 
       {/* Interests Card */}
-      {(candidate as any).interests && (candidate as any).interests.length > 0 && (
+      {candidate.interests && candidate.interests.length > 0 && (
         <Card className="border-gray-100">
           <CardHeader className="py-2.5 px-4">
             <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -603,7 +603,7 @@ export function CandidateProfileTab({
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
-              {((candidate as any).interests as string[]).map((interest: string, idx: number) => (
+              {(candidate.interests as string[]).map((interest: string, idx: number) => (
                 <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                   {interest}
                 </Badge>
