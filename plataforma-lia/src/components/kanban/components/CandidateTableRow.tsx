@@ -20,6 +20,7 @@ import {
 import { textStyles, buttonStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import { type UrgencyLevel } from '../utils/status-utils'
 import { CandidateBadges } from './CandidateBadges'
+import type { KanbanCandidate } from '../types'
 
 export interface CandidateTableRowAlert {
   type: 'urgent' | 'action' | 'warning'
@@ -29,15 +30,15 @@ export interface CandidateTableRowAlert {
 }
 
 export interface CandidateTableRowProps {
-  candidate: any
-  onCandidateClick: (candidate: any) => void
+  candidate: KanbanCandidate
+  onCandidateClick: (candidate: KanbanCandidate) => void
   isSelected?: boolean
   onToggleSelect?: (candidateId: string) => void
-  calculateRanking: (candidate: any) => number
-  getAlerts: (candidate: any) => CandidateTableRowAlert[]
+  calculateRanking: (candidate: KanbanCandidate) => number
+  getAlerts: (candidate: KanbanCandidate) => CandidateTableRowAlert[]
   getUrgency: (ranking: number) => UrgencyLevel
-  onViewBigFive?: (candidate: any) => void
-  onEmailCandidate?: (candidate: any) => void
+  onViewBigFive?: (candidate: KanbanCandidate) => void
+  onEmailCandidate?: (candidate: KanbanCandidate) => void
   viewedCandidateIds?: Set<string>
 }
 
@@ -205,7 +206,7 @@ export function CandidateTableRow({
             }}
             title="Clique para ver relatório completo"
           >
-            {Object.entries(candidate.bigFive || candidate.bigFiveScores || {}).slice(0, 3).map(([key, value]: [string, any], index) => (
+            {Object.entries(candidate.bigFive || {}).slice(0, 3).map(([key, value], index) => (
               <div
                 key={key}
                 className="flex flex-col items-center"

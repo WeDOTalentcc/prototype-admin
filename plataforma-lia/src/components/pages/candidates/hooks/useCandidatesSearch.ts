@@ -105,7 +105,7 @@ export interface CandidatesSearchContext {
     usePearch?: boolean
   ) => Promise<void>
   toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
-  user: any
+  user: { id?: string; email?: string; name?: string; [key: string]: unknown } | null
 }
 
 export function useCandidatesSearch(ctx: CandidatesSearchContext) {
@@ -373,7 +373,17 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             avatar: c.avatar_url || c.picture_url,
             // Mapeamento de experiências profissionais da Pearch
             experiences: c.experiences || [],
-            workHistory: (c.experiences || []).map((exp: any) => ({
+            workHistory: (c.experiences || []).map((exp: {
+              company_info?: { name?: string; location?: string }
+              company?: string
+              company_roles?: Array<{ title?: string; start_date?: string; end_date?: string; description?: string }>
+              title?: string
+              start_date?: string
+              end_date?: string
+              duration?: string
+              location?: string
+              description?: string
+            }) => ({
               company: exp.company_info?.name || exp.company || '',
               title: exp.company_roles?.[0]?.title || exp.title || '',
               startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
@@ -383,7 +393,13 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               description: exp.company_roles?.[0]?.description || exp.description || ''
             })),
             // Mapeamento de formação acadêmica da Pearch
-            education: (c.education || []).map((edu: any) => ({
+            education: (c.education || []).map((edu: {
+              school?: string
+              degree?: string
+              field_of_study?: string
+              start_date?: string
+              end_date?: string
+            }) => ({
               school: edu.school || '',
               degree: edu.degree || '',
               field_of_study: edu.field_of_study || '',

@@ -171,7 +171,7 @@ export function JDEvaluationPanel({
   const [aiBehavSuggestions, setAiBehavSuggestions] = useState<{name: string, key: string}[]>([])
   const [isLoadingTechSuggestions, setIsLoadingTechSuggestions] = useState(false)
   const [isLoadingBehavSuggestions, setIsLoadingBehavSuggestions] = useState(false)
-  const [generatedJD, setGeneratedJD] = useState<{full_description: string, sections: any, summary: string, tags: string[]} | null>(null)
+  const [generatedJD, setGeneratedJD] = useState<{full_description: string, sections: Record<string, string>, summary: string, tags: string[]} | null>(null)
   const [isGeneratingJD, setIsGeneratingJD] = useState(false)
   const [copiedJD, setCopiedJD] = useState(false)
   const [isSavingDefinitive, setIsSavingDefinitive] = useState(false)
@@ -259,7 +259,7 @@ export function JDEvaluationPanel({
       const data = await response.json()
       if (data.technical_skills && data.technical_skills.length > 0) {
         const filtered = data.technical_skills
-          .map((s: any) => ({ skill: s.skill, confidence: s.confidence }))
+          .map((s: {skill: string; confidence: number}) => ({ skill: s.skill, confidence: s.confidence }))
           .filter((s: {skill: string}) => !editTechSkills.includes(s.skill))
         setAiTechSuggestions(filtered)
       } else {
@@ -296,7 +296,7 @@ export function JDEvaluationPanel({
       const data = await response.json()
       if (data.behavioral_competencies && data.behavioral_competencies.length > 0) {
         const filtered = data.behavioral_competencies
-          .map((c: any) => ({ name: c.name, key: c.key }))
+          .map((c: {name: string; key: string}) => ({ name: c.name, key: c.key }))
           .filter((c: {name: string}) => !editBehavCompetencies.includes(c.name))
         setAiBehavSuggestions(filtered)
       } else {

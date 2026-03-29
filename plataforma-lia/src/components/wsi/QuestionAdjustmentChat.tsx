@@ -6,26 +6,39 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, Loader2, Brain, User, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface AdjustedQuestion {
+  id?: string
+  question?: string
+  category?: string
+  [key: string]: unknown
+}
+
+interface QuestionDiff {
+  type?: 'added' | 'removed' | 'modified'
+  question?: string
+  [key: string]: unknown
+}
+
 interface ChatMessage {
   id: string
   role: "user" | "assistant"
   content: string
   timestamp: Date
-  adjustedQuestions?: any[]
-  diff?: any[]
+  adjustedQuestions?: AdjustedQuestion[]
+  diff?: QuestionDiff[]
 }
 
 interface QuestionAdjustmentChatProps {
   jobId: string
   blockId: string
-  currentQuestions: any[]
+  currentQuestions: AdjustedQuestion[]
   jobContext?: {
     title?: string
     seniority?: string
     department?: string
     skills?: string[]
   }
-  onAdjustmentComplete?: (adjustedQuestions: any[], diff: any[], iterationCount?: number, maxIterations?: number) => void
+  onAdjustmentComplete?: (adjustedQuestions: AdjustedQuestion[], diff: QuestionDiff[], iterationCount?: number, maxIterations?: number) => void
   disabled?: boolean
   className?: string
 }

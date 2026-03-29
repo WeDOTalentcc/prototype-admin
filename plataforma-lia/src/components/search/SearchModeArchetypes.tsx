@@ -21,7 +21,7 @@ interface SearchModeArchetypesProps {
   archetypeSearch: string
   onArchetypeSearchChange: (v: string) => void
   isLoadingArchetypes: boolean
-  filteredArchetypes: any[]
+  filteredArchetypes: ArchetypeVacancy[]
   archetypeVacancies: ArchetypeVacancy[]
   selectedArchetype: ArchetypeVacancy | null
   onSelectArchetype: (arch: ArchetypeVacancy) => void
@@ -30,9 +30,9 @@ interface SearchModeArchetypesProps {
   isDeletingArchetype: string | null
   archetypeSearchPrompt: string
   onArchetypeSearchPromptChange: (v: string) => void
-  onOpenEditArchetype: (arch: any, e: React.MouseEvent) => void
+  onOpenEditArchetype: (arch: ArchetypeVacancy, e: React.MouseEvent) => void
   onDeleteArchetype: (archId: string, e: React.MouseEvent) => void
-  buildArchetypePrompt: (arch: any) => string
+  buildArchetypePrompt: (arch: ArchetypeVacancy) => string
   onSubmit: () => void
   isLoading: boolean
   searchSource?: SearchSource
@@ -56,9 +56,9 @@ interface SearchModeArchetypesProps {
     status: string
     created_at: string
     description: string | null
-    technical_requirements: any[] | null
+    technical_requirements: string[] | null
   }>
-  onOpenArchetypeFromJob: (job: any) => void
+  onOpenArchetypeFromJob: (job: { id: string; title: string; department: string | null; seniority_level: string | null; status: string; created_at: string; description: string | null; technical_requirements: string[] | null }) => void
   archetypeDescription: string
   onArchetypeDescriptionChange: (v: string) => void
   isCreatingArchetype: boolean
@@ -178,7 +178,7 @@ export function SearchModeArchetypes({
             </div>
           ) : (
             <div className="max-h-[280px] overflow-y-auto space-y-1">
-              {filteredArchetypes.map((arch: any) => {
+              {filteredArchetypes.map((arch) => {
                 const isExpanded = expandedArchetypeId === arch.id
                 return (
                   <div

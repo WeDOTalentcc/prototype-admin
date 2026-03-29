@@ -37,14 +37,14 @@ import {
 } from "@/components/tables"
 
 interface FavoritesTabProps {
-  candidates: any[]
+  candidates: TableCandidate[]
   pinnedCandidates: Set<string>
   favoriteCandidates: Set<string>
   favoriteNotes: Map<string, string>
   onTogglePin: (candidateId: string) => void
   onToggleFavorite: (candidateId: string, note?: string) => void
-  onCandidateClick: (candidate: any) => void
-  onLIAClick: (candidate: any) => void
+  onCandidateClick: (candidate: TableCandidate) => void
+  onLIAClick: (candidate: TableCandidate) => void
   onUpdateFavoriteNote?: (candidateId: string, note: string) => void
 }
 
@@ -63,9 +63,9 @@ export function FavoritesTab({
   const [sortConfig, setSortConfig] = useState<TableSortConfig>({ field: 'score', direction: 'desc' })
   const [searchTerm, setSearchTerm] = useState('')
   const [showNoteModal, setShowNoteModal] = useState(false)
-  const [selectedCandidateForNote, setSelectedCandidateForNote] = useState<any>(null)
+  const [selectedCandidateForNote, setSelectedCandidateForNote] = useState<TableCandidate | null>(null)
   const [noteText, setNoteText] = useState('')
-  const [viewingNote, setViewingNote] = useState<{candidate: any, note: string} | null>(null)
+  const [viewingNote, setViewingNote] = useState<{candidate: TableCandidate, note: string} | null>(null)
 
   const filteredCandidates = useMemo(() => {
     let result = candidates.filter(candidate => {
@@ -87,7 +87,7 @@ export function FavoritesTab({
     return result as TableCandidate[]
   }, [candidates, filterType, pinnedCandidates, favoriteCandidates, searchTerm])
 
-  const handleFavoriteClick = useCallback((candidate: any) => {
+  const handleFavoriteClick = useCallback((candidate: TableCandidate) => {
     if (favoriteCandidates.has(candidate.id)) {
       onToggleFavorite(candidate.id)
     } else {
@@ -106,7 +106,7 @@ export function FavoritesTab({
     }
   }
 
-  const handleViewNote = useCallback((candidate: any) => {
+  const handleViewNote = useCallback((candidate: TableCandidate) => {
     const note = favoriteNotes.get(candidate.id) || ''
     setViewingNote({ candidate, note })
   }, [favoriteNotes])

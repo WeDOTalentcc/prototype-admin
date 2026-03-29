@@ -91,6 +91,36 @@ interface FrameworkSummary {
   icon: React.ReactNode
 }
 
+// Raw shapes from backend API responses
+interface RawFrameworkFromAPI {
+  framework: string
+  compliance_percentage?: number
+  implemented?: number
+  partial?: number
+  pending?: number
+  not_applicable?: number
+  na?: number
+  total?: number
+}
+
+interface RawHealthCheckItemFromAPI {
+  id: string
+  req_id: string
+  requirement: string
+  framework: string
+  category: string
+  status: HealthCheckItem['status']
+  evidence?: string
+  evidence_details?: string | null
+  checklist_items?: ChecklistItem[]
+  last_verification?: string | null
+  comment?: string | null
+  next_review_date?: string | null
+  verified?: boolean
+  reference_url?: string | null
+  reference_label?: string | null
+}
+
 const API_BASE = '/api/backend-proxy/health-check/'
 
 const FRAMEWORK_ICONS: Record<string, React.ReactNode> = {
@@ -196,7 +226,7 @@ export default function HealthCheckPage() {
         if (summaryResponse.ok) {
           const summaryData = await summaryResponse.json()
           const frameworks = summaryData.by_framework || summaryData.frameworks || []
-          const mappedSummary: FrameworkSummary[] = frameworks.map((fw: any) => ({
+          const mappedSummary: FrameworkSummary[] = frameworks.map((fw: RawFrameworkFromAPI) => ({
             framework: fw.framework,
             name: FRAMEWORK_NAMES[fw.framework] || fw.framework,
             compliancePercentage: fw.compliance_percentage || 0,
@@ -228,7 +258,7 @@ export default function HealthCheckPage() {
         
         if (itemsResponse.ok) {
           const itemsData = await itemsResponse.json()
-          const mappedItems: HealthCheckItem[] = (itemsData.items || []).map((item: any) => ({
+          const mappedItems: HealthCheckItem[] = (itemsData.items || []).map((item: RawHealthCheckItemFromAPI) => ({
             id: item.id,
             reqId: item.req_id,
             requirement: item.requirement,
@@ -278,7 +308,7 @@ export default function HealthCheckPage() {
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json()
         const frameworks = summaryData.by_framework || summaryData.frameworks || []
-        const mappedSummary: FrameworkSummary[] = frameworks.map((fw: any) => ({
+        const mappedSummary: FrameworkSummary[] = frameworks.map((fw: RawFrameworkFromAPI) => ({
           framework: fw.framework,
           name: FRAMEWORK_NAMES[fw.framework] || fw.framework,
           compliancePercentage: fw.compliance_percentage || 0,
@@ -297,7 +327,7 @@ export default function HealthCheckPage() {
       const itemsResponse = await fetch(API_BASE, { redirect: 'follow' })
       if (itemsResponse.ok) {
         const itemsData = await itemsResponse.json()
-        const mappedItems: HealthCheckItem[] = (itemsData.items || []).map((item: any) => ({
+        const mappedItems: HealthCheckItem[] = (itemsData.items || []).map((item: RawHealthCheckItemFromAPI) => ({
           id: item.id,
           reqId: item.req_id,
           requirement: item.requirement,

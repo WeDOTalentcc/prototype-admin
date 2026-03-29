@@ -13,11 +13,19 @@ import {
   Send, Loader2, ArrowRight, Settings, Plus, Trash2
 } from "lucide-react"
 
+interface JobData {
+  title?: string
+  department?: string
+  seniority?: string
+  description?: string
+  [key: string]: unknown
+}
+
 interface LiaScreeningDialogueProps {
   isOpen: boolean
   onClose: () => void
-  jobData: any
-  onComplete: (screeningData: any) => void
+  jobData: JobData
+  onComplete: (screeningData: ScreeningData) => void
 }
 
 interface Message {
@@ -27,7 +35,7 @@ interface Message {
   timestamp: Date
   type?: 'text' | 'options' | 'confirmation'
   options?: string[]
-  data?: any
+  data?: Record<string, unknown>
 }
 
 interface ScreeningData {
@@ -139,7 +147,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const addMessage = (content: string, sender: 'user' | 'lia', type: 'text' | 'options' | 'confirmation' = 'text', options?: string[], data?: any) => {
+  const addMessage = (content: string, sender: 'user' | 'lia', type: 'text' | 'options' | 'confirmation' = 'text', options?: string[], data?: Record<string, unknown>) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       sender,

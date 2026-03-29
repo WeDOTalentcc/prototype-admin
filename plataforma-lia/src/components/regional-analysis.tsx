@@ -25,6 +25,17 @@ interface RegionData {
   cargosPopulares: string[]
 }
 
+interface RegionSummary {
+  regiao: string
+  estados: RegionData[]
+  totalCandidatos: number
+  remoto: number
+  hibrido: number
+  presencial: number
+  salarioMedio: number
+  crescimentoMedio: number
+}
+
 interface RegionalAnalysisProps {
   className?: string
 }
@@ -167,7 +178,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
   // Agrupar dados por região
   const regionSummary = useMemo(() => {
-    const summary: { [key: string]: any } = {}
+    const summary: { [key: string]: RegionSummary } = {}
 
     regionData.forEach(item => {
       if (!summary[item.regiao]) {
@@ -191,7 +202,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
     })
 
     // Calcular médias
-    Object.values(summary).forEach((region: any) => {
+    Object.values(summary).forEach((region) => {
       const totalSalario = region.estados.reduce((sum: number, estado: RegionData) =>
         sum + (estado.salarioMedio * estado.total), 0)
       region.salarioMedio = Math.round(totalSalario / region.totalCandidatos)
@@ -302,7 +313,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
         <CardContent>
           <div className="space-y-4">
-            {sortedData.map((item: any, index) => {
+            {sortedData.map((item, index) => {
               const isRegion = 'estados' in item
               const isExpanded = expandedRegions.has(item.regiao || item.estado)
               const percentages = getWorkModelPercentage(

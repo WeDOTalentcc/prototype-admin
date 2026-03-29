@@ -91,7 +91,7 @@ export interface CandidateSearchResultsViewProps {
   isSavingToBase: boolean
   // Cross-tab banner
   showCrossTabBanner: boolean
-  crossTabFilter: any
+  crossTabFilter: Record<string, unknown>
   clearCrossTabFilter: () => void
   // Viewing list banner
   viewingList: { id: string; name: string; color?: string } | null
@@ -180,9 +180,9 @@ export interface CandidateSearchResultsViewProps {
   setPearchResultsCount: (value: number) => void
   setDisplayedResultsCount: (value: number) => void
   onLIAChatMessage: (msg: string) => void
-  onQuickAction: (action: any) => void
-  onCalibrationLike: (candidate: any) => void
-  onCalibrationDislike: (candidate: any) => void
+  onQuickAction: (action: Record<string, unknown>) => void
+  onCalibrationLike: (candidate: CalibrationCandidate) => void
+  onCalibrationDislike: (candidate: CalibrationCandidate) => void
   setUserCollapsedLIA: (value: boolean) => void
   // Filters panel
   tableFilters: TableFilters

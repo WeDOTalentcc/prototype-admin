@@ -55,6 +55,15 @@ interface CandidateScore {
   retentionRisk: number
 }
 
+// Tipo mínimo para candidatos usados no scoring ML
+interface MLCandidate {
+  id?: string
+  name?: string
+  skills?: string[]
+  experience?: string
+  [key: string]: unknown
+}
+
 // Gerador de dados históricos realistas
 const generateHistoricalData = (): HistoricalDataPoint[] => {
   const data: HistoricalDataPoint[] = []
@@ -300,7 +309,7 @@ class RecruitmentMLEngine {
   }
 
   // Scoring de candidatos
-  scoreCandidates(candidates: any[]): CandidateScore[] {
+  scoreCandidates(candidates: MLCandidate[]): CandidateScore[] {
     return candidates.map(candidate => {
       // Algoritmo de scoring baseado em múltiplos fatores
       const experienceScore = this.calculateExperienceScore(candidate)
@@ -324,21 +333,21 @@ class RecruitmentMLEngine {
     })
   }
 
-  private calculateExperienceScore(candidate: any): number {
+  private calculateExperienceScore(candidate: MLCandidate): number {
     // Simulação de scoring de experiência
     const baseScore = 70
     const variation = Math.random() * 30
     return Math.min(baseScore + variation, 100)
   }
 
-  private calculateSkillsMatch(candidate: any): number {
+  private calculateSkillsMatch(candidate: MLCandidate): number {
     // Simulação de matching de skills
     const baseScore = 75
     const variation = Math.random() * 25
     return Math.min(baseScore + variation, 100)
   }
 
-  private calculateCulturalFit(candidate: any): number {
+  private calculateCulturalFit(candidate: MLCandidate): number {
     // Simulação de fit cultural
     const baseScore = 80
     const variation = Math.random() * 20
@@ -347,7 +356,7 @@ class RecruitmentMLEngine {
 }
 
 interface RecruitmentMLDashboardProps {
-  candidates?: any[]
+  candidates?: MLCandidate[]
   historicalData?: HistoricalDataPoint[]
 }
 
