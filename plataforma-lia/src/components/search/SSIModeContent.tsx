@@ -839,9 +839,8 @@ export function SSIModeContent(props: SSIModeContentProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border"
-        style={{backgroundColor: "var(--lia-bg-primary)",
-          color: "var(--gray-950)"}}
+        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border bg-lia-bg-primary"
+        style={{color: "var(--gray-950)"}}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
           e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"

@@ -1235,21 +1235,21 @@ export function IndicatorsPage() {
                       <span className="font-medium">47%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-wedo-magenta h-2 rounded-full" style={{width: '47%'}}></div>
+                      <div className="bg-wedo-magenta h-2 rounded-full w-[47%]"></div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span>Masculino</span>
                       <span className="font-medium">51%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full" style={{width: '51%'}}></div>
+                      <div className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full w-[51%]"></div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span>Não-binário</span>
                       <span className="font-medium">2%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-wedo-purple h-2 rounded-full" style={{width: '2%'}}></div>
+                      <div className="bg-wedo-purple h-2 rounded-full w-[2%]"></div>
                     </div>
                   </div>
                 </div>

@@ -363,7 +363,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             <span className="font-medium">{tag.label}</span>
             {tag.filled && tag.value && (
               <>
-                <span style={{opacity: 0.5}}>·</span>
+                <span className="opacity-50">·</span>
                 <span className="max-w-20 truncate font-normal" style={{opacity: 0.85}}>{tag.value}</span>
               </>
             )}

@@ -232,7 +232,7 @@ export function LIASearchSidebar({
 
           {/* ABA 1: IA NATURAL - Chat Format */}
           {activeSearchTab === 'ia-natural' && (
-            <div className="flex flex-col h-full" style={{minHeight: '400px'}}>
+            <div className="flex flex-col h-full min-h-[400px]">
               {/* Área de Chat - Histórico de Mensagens */}
               <div
                 ref={chatScrollRef}

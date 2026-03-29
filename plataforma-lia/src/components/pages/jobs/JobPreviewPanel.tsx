@@ -594,7 +594,7 @@ export function JobPreviewPanel({
                             <span className="text-xs text-gray-800 dark:text-gray-200 w-24">Pipeline LIA</span>
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1" style={{width: '100%'}}>
+                                <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1 w-full">
                                   <span className="text-xs text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
                                 </div>
                               </div>
@@ -1608,7 +1608,7 @@ export function JobPreviewPanel({
                               <span className="text-xs text-gray-800 dark:text-gray-200 w-20">Total</span>
                               <div className="flex-1 mx-2">
                                 <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1" style={{width: '100%'}}>
+                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1 w-full">
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.total}</span>
                                   </div>
                                 </div>
