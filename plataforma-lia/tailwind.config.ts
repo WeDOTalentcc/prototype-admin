@@ -116,7 +116,7 @@ export default {
         'wedo-orange': '#D19960',
         'wedo-purple': '#9860D1',
         'wedo-magenta': '#D160AB',
-        'wedo-coral': '#E16162',
+        'wedo-coral': '#E87575', /* coral suave — atualizado 2026-03-29, era #E16162 */
         // ──────────────────────────────────────────────
         // TERCEIROS — cores de marca de integrações
         // Usar APENAS em previews/simulações das plataformas

@@ -1484,6 +1484,7 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | **WeDo — Orange** | 5 | `--wedo-orange` (#D19960), `--wedo-orange-light`, `--wedo-orange-hover`, `--wedo-orange-alert`, `--wedo-orange-bg-10/15` |
 | **WeDo — Purple** | 4 | `--wedo-purple` (#9860D1), `--wedo-purple-light`, `--wedo-purple-hover`, `--wedo-purple-bg-10` |
 | **WeDo — Magenta** | 3 | `--wedo-magenta` (#D160AB), `--wedo-magenta-light`, `--wedo-magenta-hover` |
+| **WeDo — Coral** | 2 | `--wedo-primary-coral` (#E87575 light), `--wedo-coral` (#F09090 dark boost), `--wedo-coral-50`. ✅ Atualizado 2026-03-29 (era #E16162/#EF4444 — coral mais suave). Vue pendente: `#C74446` → `#E87575` na sprint de migração. |
 | **WeDo — Amber** | 3 | `--wedo-amber` (#F59E0B), `--wedo-amber-light`, `--wedo-amber-hover` (#D97706) |
 | **WeDo — Blue (legado)** | 3 | `--wedo-blue` (#3B82F6), `--wedo-blue-bg-10`, `--wedo-blue-bg-20` |
 | **WeDo — Text Classes** | 4 | `--wedo-text-title`, `--wedo-text-body`, `--wedo-text-secondary`, `--wedo-text-muted` |
@@ -1824,7 +1825,7 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 > - 1 uso ativo (`var(--eleven-text-primary)` em `.lia-conversation strong`) → migrado para `var(--lia-text-primary)`
 > - Tokens temáticos (`--eleven-card-*`, `--eleven-pastel-*`, `--eleven-sepia-*`) → movidos para `design-tokens.css` como `--lia-voice-*` (19 tokens)
 > - Classes CSS órfãs (`.eleven-dark-card`, `.eleven-badge-pastel`, `.eleven-icon-*` etc.) → removidas (usavam tokens indefinidos, zero uso em .tsx)
-> - `--wedo-coral` dark mode → comentário adicionado explicando a dualidade intencional (`#EF4444` dark vs `#E16162` tailwind config light)
+> - `--wedo-coral` coral atualizado para `#E87575` (light) / `#F09090` (dark) — 2026-03-29
 
 ### 28.12 Testes de Componentes
 

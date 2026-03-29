@@ -87,7 +87,7 @@
     --wedo-apoio-gold: #F4D06F;         /* Amarelo dourado */
 
     /* WeDoTalent - Paleta Primária (cores vibrantes) */
-    --wedo-primary-coral: #E16162;      /* Vermelho coral vibrante */
+    --wedo-primary-coral: #E87575;      /* Coral suave — atualizado 2026-03-29, era #E16162 */
     --wedo-primary-sky: #7FB3D5;        /* Azul celeste */
     --wedo-primary-yellow: #F5D547;     /* Amarelo vibrante */
     --wedo-primary-peach: #FFB5A7;      /* Rosa pêssego */
@@ -100,7 +100,7 @@
     --wedo-light-blue: #0EA5E9;     /* Azul claro apoio - mais contraste */
     --wedo-mint: #10B981;           /* Menta / success - mais saturado */
     --wedo-yellow: #F59E0B;         /* Amarelo / warning - mais contraste */
-    --wedo-coral: #EF4444;          /* Coral / danger - mais vibrante no dark (intencional: boost de contraste vs light #E16162 em tailwind.config.ts) */
+    --wedo-coral: #F09090;          /* Coral dark mode — boost proporcional (light #E87575 → dark #F09090), atualizado 2026-03-29 */
     --wedo-peach: #F97316;          /* Pêssego (apoio) - mais contraste */
 
     /* Subtle tints for backgrounds */
