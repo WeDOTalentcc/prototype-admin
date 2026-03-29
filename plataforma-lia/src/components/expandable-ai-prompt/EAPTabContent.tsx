@@ -1211,7 +1211,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               className="group relative p-3 rounded-md border border-gray-100 bg-white hover:border-gray-400 hover:transition-all cursor-pointer"
               onClick={() => {
                 setSelectedArquetipo(arch.id)
-                const query = (arch as any).query || arch.criteria?.query || arch.description || ""
+                const query = arch.query || arch.criteria?.query || arch.description || ""
                 if (query) {
                   onCommand(query, 'archetype_search')
                 }
@@ -1242,7 +1242,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
               <div className="flex items-start gap-2.5 pr-16">
                 <span className="text-lg flex-shrink-0">
-                  {(arch as any).emoji || "🎯"}
+                  {arch.emoji || "🎯"}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-800 truncate">

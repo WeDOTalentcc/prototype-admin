@@ -34,8 +34,10 @@ interface ArchetypeData {
   name: string
   description?: string
   department?: string
+  query?: string
+  emoji?: string
   hired_candidate?: { name: string }
-  criteria?: Record<string, unknown>
+  criteria?: Record<string, unknown> & { query?: string }
 }
 
 interface SimilarProfile {
