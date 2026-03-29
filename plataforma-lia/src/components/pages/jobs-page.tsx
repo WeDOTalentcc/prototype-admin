@@ -104,7 +104,7 @@ export function JobsPage(props: JobsPageProps) {
     isChatFullscreen, isLoadingJobMetrics, isLoadingJobs, isLoadingScreeningConfig, isResizingLIA, isTableCollapsed,
     jobFilters, jobMetrics, liaInlineLoading, liaInlineMessages, liaInlineMessagesEndRef, liaInputRef,
     liaPromptValue, liaWidth, navigationFilters, openGeneralChat, openJobCreationChat, orchestratorSuggestions,
-    previewJob, previewWidth, reactivateEndDate, reactivateScreeningJobs, renderCompactView, renderSkeletonLoading,
+    previewJob, previewWidth, reactivateEndDate, reactivateScreeningJobs,
     reportJob, resetColumnsToDefault, returnToGeneralChat, returnToLateralPrompt, saveColumnView, saveSearchAsTemplate,
     savedColumnViews, savedSearches, screeningConfig, searchTerm, selectAllJobs, selectedDaysFilter,
     selectedJob, selectedJobsForBatch, sendLiaInlineMessage, setActiveFilter, setActivePreviewTab, setBackendJobs,
@@ -118,9 +118,28 @@ export function JobsPage(props: JobsPageProps) {
     showInlineChat, showInsightsModal, showJobPreview, showPublishModal, showReactivateScreeningDialog, showReport,
     showScreeningChannelsModal, showScreeningSchedulingModal, showScreeningSettingsModal, showStatusModal, showTableFiltersPanel, showUnpublishModal,
     showWSITutorialModal, statusModalMode, toggleColumn, toggleJobFilter, toggleTableExpansion, updateScreeningConfig,
+    urgentJobs, favoriteJobs, pinnedJobs,
+    toggleJobSelection, toggleUrgentJob, toggleFavoriteJob, togglePinJob,
+    handleJobPreview, handleJobsSort,
+    hookToTableColumnMap, jobsColumnOrder, jobsColumnWidths,
+    jobsSortColumn, jobsSortDirection,
+    draggedJobColumnId, dragOverJobColumnId,
+    handleJobsColumnDragStart, handleJobsColumnDragOver, handleJobsColumnDragLeave, handleJobsColumnDrop, handleJobsColumnDragEnd,
+    startJobsColumnResize,
     userCollapsedLIA, visibleColumnIds,
     loadBackendJobs, router,
   } = useJobsPageCore(props)
+
+  const { statusOrder, groupedJobs } = useMemo(() => {
+    const order = [
+      'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta', 'Paralisada', 'Interna',
+      'Rascunho', 'Fechada (preenchida)', 'Fechada (expirada)', 'Cancelada', 'Concluída', 'Arquivada'
+    ] as const
+    const grouped: Record<string, Job[]> = {}
+    order.forEach(s => { grouped[s] = [] })
+    filteredJobs.forEach(job => { if (grouped[job.status]) grouped[job.status].push(job) })
+    return { statusOrder: order, groupedJobs: grouped }
+  }, [filteredJobs])
 
   if (!hasMounted) {
     return (
@@ -642,7 +661,14 @@ export function JobsPage(props: JobsPageProps) {
                   )}
                   
                   <div className="flex-1 overflow-y-auto">
-                    {isLoadingJobs ? renderSkeletonLoading() : filteredJobs.length === 0 ? (
+                    {isLoadingJobs ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Carregando vagas...</span>
+                        </div>
+                      </div>
+                    ) : filteredJobs.length === 0 ? (
                       <EmptyState
                         icon={<Briefcase />}
                         title="Nenhuma vaga cadastrada"
@@ -650,7 +676,41 @@ export function JobsPage(props: JobsPageProps) {
                         action={{ label:"Criar primeira vaga", onClick: () => setChatMode('job-creation') }}
                         className="h-64"
                       />
-                    ) : renderCompactView()}
+                    ) : (
+                      <JobsCompactTableView
+                        isLoading={isLoadingJobs}
+                        filteredJobs={filteredJobs}
+                        statusOrder={statusOrder}
+                        groupedJobs={groupedJobs}
+                        jobsColumnOrder={jobsColumnOrder}
+                        visibleColumnIds={visibleColumnIds}
+                        hookToTableColumnMap={hookToTableColumnMap}
+                        jobsColumnWidths={jobsColumnWidths}
+                        selectedJobsForBatch={selectedJobsForBatch}
+                        pinnedJobs={pinnedJobs}
+                        urgentJobs={urgentJobs}
+                        favoriteJobs={favoriteJobs}
+                        draggedJobColumnId={draggedJobColumnId}
+                        dragOverJobColumnId={dragOverJobColumnId}
+                        jobsSortColumn={jobsSortColumn}
+                        jobsSortDirection={jobsSortDirection}
+                        onSelectAll={selectAllJobs}
+                        onDeselectAll={deselectAllJobs}
+                        onToggleJobSelection={toggleJobSelection}
+                        onJobPreview={handleJobPreview}
+                        onJobClick={handleJobClick}
+                        onToggleUrgent={toggleUrgentJob}
+                        onTogglePin={togglePinJob}
+                        onToggleFavorite={toggleFavoriteJob}
+                        onSort={handleJobsSort}
+                        onColumnDragStart={handleJobsColumnDragStart}
+                        onColumnDragOver={handleJobsColumnDragOver}
+                        onColumnDragLeave={handleJobsColumnDragLeave}
+                        onColumnDrop={handleJobsColumnDrop}
+                        onColumnDragEnd={handleJobsColumnDragEnd}
+                        onColumnResize={startJobsColumnResize}
+                      />
+                    )}
                   </div>
                 </div>
               )}
