@@ -58,7 +58,7 @@ export function AiCreditsPage({ companyId }: Props) {
 
   if (balanceLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-gray-500">
+      <div className="flex h-64 items-center justify-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
         Carregando dados de consumo de IA...
       </div>
     )
@@ -86,8 +86,8 @@ export function AiCreditsPage({ companyId }: Props) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900">Consumo de IA</h1>
-          <p className="text-xs text-gray-500">Monitoramento de tokens e custos do período mensal</p>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Consumo de IA</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Monitoramento de tokens e custos do período mensal</p>
         </div>
         {balance && (
           <Badge variant={alertVariant} className="text-xs">
@@ -100,81 +100,81 @@ export function AiCreditsPage({ companyId }: Props) {
 
       {/* Cards de métricas */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <Zap className="h-3.5 w-3.5" />
               Tokens utilizados
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-gray-900">
+            <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {balance ? formatTokens(balance.current_usage) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
               de {balance ? formatTokens(balance.monthly_limit) : '—'} no mês
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <TrendingUp className="h-3.5 w-3.5" />
               Tokens restantes
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-gray-900">
+            <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {balance ? formatTokens(balance.remaining_tokens) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
               até {balance?.period_end ?? '—'}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <DollarSign className="h-3.5 w-3.5" />
               Custo estimado
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-gray-900">
+            <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {summary ? formatCost(summary.total_cost_cents) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">no período atual</p>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">no período atual</p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <Zap className="h-3.5 w-3.5" />
               Operações
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-gray-900">
+            <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {summary ? summary.total_operations.toLocaleString('pt-BR') : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">chamadas de IA</p>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">chamadas de IA</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Barra de progresso */}
       {balance && (
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-xs font-medium text-gray-500">
+            <CardTitle className="text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               Uso do limite mensal — {usagePct.toFixed(1)}%
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
               <div
                 className={`h-full rounded-full transition-all ${
                   usagePct >= 100
@@ -186,7 +186,7 @@ export function AiCreditsPage({ companyId }: Props) {
                 style={{width: `${Math.min(usagePct, 100)}%`}}
               />
             </div>
-            <div className="mt-1.5 flex justify-between text-xs text-gray-400">
+            <div className="mt-1.5 flex justify-between text-xs text-gray-400 dark:text-gray-500">
               <span>0</span>
               <span>{formatTokens(balance.monthly_limit)}</span>
             </div>
@@ -195,19 +195,19 @@ export function AiCreditsPage({ companyId }: Props) {
       )}
 
       {/* Gráfico de consumo diário */}
-      <Card className="border border-gray-200 shadow-none">
+      <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
         <CardHeader className="pb-2 pt-4">
-          <CardTitle className="text-xs font-medium text-gray-500">
+          <CardTitle className="text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
             Consumo diário — últimos 30 dias (tokens em K)
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
           {historyLoading ? (
-            <div className="flex h-48 items-center justify-center text-xs text-gray-400">
+            <div className="flex h-48 items-center justify-center text-xs text-gray-400 dark:text-gray-500">
               Carregando histórico...
             </div>
           ) : chartData.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-xs text-gray-400">
+            <div className="flex h-48 items-center justify-center text-xs text-gray-400 dark:text-gray-500">
               Sem dados de consumo no período
             </div>
           ) : (
@@ -242,14 +242,14 @@ export function AiCreditsPage({ companyId }: Props) {
 
       {/* Breakdown por agente */}
       {byAgent.length > 0 && (
-        <Card className="border border-gray-200 shadow-none">
+        <Card className="border border-gray-200 dark:border-gray-700 shadow-none">
           <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-xs font-medium text-gray-500">
+            <CardTitle className="text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">
               Consumo por agente
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {byAgent
                 .sort((a, b) => b.total_tokens - a.total_tokens)
                 .map((agent) => (
@@ -257,10 +257,10 @@ export function AiCreditsPage({ companyId }: Props) {
                     key={agent.agent_type}
                     className="flex items-center justify-between py-2.5 text-sm"
                   >
-                    <span className="font-medium capitalize text-gray-700">
+                    <span className="font-medium capitalize text-gray-700 dark:text-gray-300">
                       {agent.agent_type.replace('_', ' ')}
                     </span>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       <span>{formatTokens(agent.total_tokens)} tokens</span>
                       <span>{formatCost(agent.total_cost_cents)}</span>
                       <span>{agent.operation_count} ops</span>
