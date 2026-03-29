@@ -104,7 +104,7 @@ KPISlide.displayName = 'KPISlide'
 
 // Componente de departamento memoizado
 const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; efficiency: number; openPositions: number; avgDays: number }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-gray-800 border-2">
+  <Card key={index} className="bg-white dark:bg-gray-800 border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
         <h3 className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-2">
@@ -181,7 +181,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
   }, [alert.type])
 
   return (
-    <Card key={index} className={`border-2 ${getBgColor}`}>
+    <Card key={index} className={`border ${getBgColor}`}>
       <CardContent className="p-6 flex items-center gap-4">
         {getIcon}
         <div className="text-xl font-medium text-gray-950 dark:text-gray-50">

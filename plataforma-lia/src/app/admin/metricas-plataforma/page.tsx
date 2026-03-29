@@ -415,7 +415,7 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border-2 border-gray-300 dark:border-gray-600">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
                     <div>
                       <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Custo Total Mensal

@@ -354,7 +354,7 @@ export function CultureAnalyzer({
 
   if (status === "idle") {
     return (
-      <Card className="rounded-2xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6 text-center">
           <div 
             className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gray-900 dark:bg-gray-50"
@@ -392,7 +392,7 @@ export function CultureAnalyzer({
     const isLiaStep = (stepKey: string) => stepKey === "analyzing" || stepKey === "completed"
 
     return (
-      <Card className="rounded-2xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900 dark:bg-gray-50">
@@ -550,7 +550,7 @@ export function CultureAnalyzer({
           </AlertDialogContent>
         </AlertDialog>
 
-        <Card className="rounded-2xl border border-status-error/30 dark:border-status-error/30 bg-status-error/10/50 dark:bg-status-error/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-status-error/30 dark:border-status-error/30 bg-status-error/10/50 dark:bg-status-error/20 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
             <div className="w-14 h-14 rounded-2xl bg-status-error/15 dark:bg-status-error/50 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-7 h-7 text-status-error" />

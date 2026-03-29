@@ -298,7 +298,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   .filter(Boolean)
 
                 return (
-                  <div key={template.id} className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                  <div key={template.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                     <div 
                       className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors bg-gray-50/50"
                       onClick={() => toggleGoalCollapse(template.id)}

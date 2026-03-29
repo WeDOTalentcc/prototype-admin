@@ -62,7 +62,7 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl p-10 text-center">
+        <div className="w-full max-w-md bg-white rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
 
       <div className="w-full lg:w-1/2 bg-gray-50 flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl p-10">
+          <div className="w-full max-w-md bg-white rounded-xl p-10">
             <div className="text-center mb-6">
               <div className="lg:hidden flex items-center justify-center space-x-3 mb-4">
                 <div className="w-8 h-8 bg-black rounded-md flex items-center justify-center">

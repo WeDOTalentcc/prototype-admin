@@ -141,7 +141,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     </div>
 
                     {/* Total Compensation */}
-                    <div className="p-4 rounded-md border-2 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <div className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between">
                         <span className="text-base font-semibold text-gray-800 dark:text-gray-100">Compensação Total Anual</span>
                         <span className="text-xl font-bold text-gray-800 dark:text-gray-100">
@@ -1342,7 +1342,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
                     {/* Next Steps */}
                     {contextData.data.next_panel && (
-                      <div className="p-4 rounded-md border-2 border-gray-400 bg-white dark:bg-gray-950">
+                      <div className="p-4 rounded-md border border-gray-400 bg-white dark:bg-gray-950">
                         <div className="flex items-start gap-3">
                           <ArrowUpDown className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                           <div>

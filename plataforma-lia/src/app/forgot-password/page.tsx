@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl p-10">
+        <div className="bg-white rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
             <div className="w-10 h-10 bg-black rounded-md flex items-center justify-center">
               <WeDOLogo className="h-5 text-white" />

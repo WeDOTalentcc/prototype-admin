@@ -194,7 +194,7 @@ export function LIAProcessingCard({
 
   return (
     <div className={cn(
-      "rounded-2xl border transition-all",
+      "rounded-xl border transition-all",
       allCompleted 
         ? "border-status-success/30 dark:border-status-success/30 bg-status-success/10/50" 
         : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900",

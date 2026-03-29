@@ -479,7 +479,7 @@ export function LoginPage() {
         </div>
 
         {/* Mobile Login Form */}
-        <div className="bg-white rounded-2xl p-8">
+        <div className="bg-white rounded-xl p-8">
           <div className="text-center mb-5">
             <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Bem-vindo de volta!</h2>
             <p className="text-gray-800 dark:text-gray-200 text-base leading-relaxed">

@@ -225,7 +225,7 @@ export function AISearchToggle({
     return (
       <div className="w-full">
         {/* Versão expandida in-line */}
-        <div className="bg-status-success/10 dark:bg-status-success/20 rounded-2xl">
+        <div className="bg-status-success/10 dark:bg-status-success/20 rounded-xl">
 
           {/* Header compacto */}
           <div className="flex items-center justify-between p-4">
@@ -346,7 +346,7 @@ export function AISearchToggle({
   // Modal expansivo (mantém funcionalidade existente para outros contextos)
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
-      <div className="bg-status-success/10 dark:bg-status-success/20 rounded-2xl w-full max-w-4xl mx-4">
+      <div className="bg-status-success/10 dark:bg-status-success/20 rounded-xl w-full max-w-4xl mx-4">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6">

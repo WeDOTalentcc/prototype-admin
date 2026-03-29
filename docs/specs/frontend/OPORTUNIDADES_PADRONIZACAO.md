@@ -2144,3 +2144,110 @@ Sprint 1 (Foundation)
 | OPT-005 | text-[11px] hardcoded (6 ocorrências) | 2 | ✅ CONCLUÍDO | 2026-03-29 | Substituído por text-xs em agent-memory-indicator.tsx |
 | OPT-042 | 8 classes Apple-inspired coexistindo | 2 | ✅ CONCLUÍDO | 2026-03-29 | Bloco removido de globals.css (-46 linhas). Zero uso em tsx confirmado |
 | FONT-RDR | Blur/tremido nas fontes (fora do catálogo OPT) | - | ✅ CONCLUÍDO | 2026-03-29 | 3 causas corrigidas: openSans.className removido, --font-* hardcoded removidos, transition-duration:200ms removido do * selector |
+| OPT-012 | Três sistemas de badge paralelos | 3 | ✅ CONCLUÍDO | 2026-03-29 | SaturationBadge, CandidateBadges, certificacoes, subprocessadores migrados para <Badge variant> |
+| OPT-013 | LIACommandBadge/LIAFileBadge fora do badge.tsx | 3 | ⏸️ N/A | 2026-03-29 | Componentes têm lógica complexa (popover, API, estados) — mantidos, já usam <Badge> internamente |
+| OPT-014 | Badge ad-hoc para scores/compliance | 3 | ✅ CONCLUÍDO | 2026-03-29 | Migrado para Badge variant="danger/warning/success" em certificacoes e subprocessadores |
+| OPT-015 | setup-alert-badge.tsx uso único | 3 | ⏸️ MANTIDO | 2026-03-29 | Widget draggável com API fetch, drag state, localStorage — não é badge visual, mantido |
+| OPT-016 | CVA default=primary duplicado | 3 | ✅ VERIFICADO | 2026-03-29 | Já resolvido no Sprint 1. button.tsx limpo confirmado |
+| OPT-017 | lia-button-primary/secondary coexistindo | 3 | ✅ CONCLUÍDO | 2026-03-29 | 6 usos migrados para variant=primary/secondary. CSS removido de onboarding-styles.css |
+| OPT-018 | Botões tab customizados fora de Tabs | 3 | ⚠️ PARCIAL | 2026-03-29 | TODO comments adicionados em CandidateTabs.tsx e jobs-page.tsx. 42 complexos mantidos |
+| OPT-019 | rounded-md sem regra documentada | 3 | ✅ CONCLUÍDO | 2026-03-29 | Regra canônica documentada em tailwind.config.ts (cards=xl, inputs=lg, círculos=full) |
+| OPT-020 | rounded-2xl/3xl fora do sistema | 3 | ✅ CONCLUÍDO | 2026-03-29 | 52 ocorrências migradas para rounded-xl/lg. 20 skips intencionais (chat bubbles, ícones decorativos) |
+| OPT-021 | Três sistemas de border color | 3 + 8 | ⚠️ PARCIAL | 2026-03-29 | Sprint 3: border-[#hex]=0, 18 border-2 → border. Sprint 8: consolidação border-gray-* → border-lia-* (2.199 casos) pendente |
+
+---
+
+## MAPA COMPLETO OPT ↔ SPRINT
+
+> Gerado em: 2026-03-29 | Cobre todos os 58 OPTs identificados no diagnóstico
+> Referência cruzada entre oportunidades e plano de implementação (Sprints 1–10)
+
+### Sobre Bordas — distribuição por sprint
+
+| Camada | Sprint | OPTs | Escopo |
+|--------|--------|------|--------|
+| Estrutural (radius, hex, border-2) | Sprint 3 ✅ | OPT-019, 020, 021 parcial | Concluído |
+| Semântica (border-gray-* → border-lia-*, shadows) | Sprint 8 ⏳ | OPT-021 cont., 025, 026 | Pendente |
+| Dark mode de bordas | Sprint 4 ⏳ | OPT-057 | Pendente |
+
+### Tabela de cobertura completa
+
+| OPT | Categoria | Prioridade | Sprint | Status |
+|-----|-----------|-----------|--------|--------|
+| OPT-001 | TIPOGRAFIA | P1 | 1 | ✅ CONCLUÍDO |
+| OPT-002 | TIPOGRAFIA | P1 | 1 | ✅ CONCLUÍDO |
+| OPT-003 | TIPOGRAFIA | P2 | 2 | ✅ CONCLUÍDO |
+| OPT-004 | TIPOGRAFIA | P2 | 2 | ✅ CONCLUÍDO |
+| OPT-005 | TIPOGRAFIA | P3 | 2 | ✅ CONCLUÍDO |
+| OPT-006 | CORES | P1 | 8 | ⏳ PENDENTE |
+| OPT-007 | CORES | P1 | 5 | ✅ CONCLUÍDO (arquivado) |
+| OPT-008 | CORES | P2 | 1 | ⚠️ PARCIAL (email templates) |
+| OPT-009 | CORES | P2 | 8 | ⏳ PENDENTE |
+| OPT-010 | CORES | P2 | 8 | ⏳ PENDENTE |
+| OPT-011 | CORES/BOTÕES | P3 | 1 | ✅ CONCLUÍDO |
+| OPT-012 | BADGES | P1 | 3 | ✅ CONCLUÍDO |
+| OPT-013 | BADGES | P2 | 3 | ⏸️ MANTIDO (lógica complexa) |
+| OPT-014 | BADGES | P2 | 3 | ✅ CONCLUÍDO |
+| OPT-015 | BADGES | P3 | 3 | ⏸️ MANTIDO (widget draggável) |
+| OPT-016 | BOTÕES | P1 | 3 | ✅ VERIFICADO |
+| OPT-017 | BOTÕES | P2 | 3 | ✅ CONCLUÍDO |
+| OPT-018 | BOTÕES | P3 | 3 | ⚠️ PARCIAL (TODO comments adicionados) |
+| OPT-019 | BORDAS | P1 | 3 | ✅ CONCLUÍDO |
+| OPT-020 | BORDAS | P2 | 3 | ✅ CONCLUÍDO |
+| OPT-021 | BORDAS | P2 | 3 + 8 | ⚠️ PARCIAL (hex/border-2 ok; semântico = Sprint 8) |
+| OPT-022 | ESPAÇAMENTO | P2 | 8 | ⏳ PENDENTE |
+| OPT-023 | ESPAÇAMENTO | P2 | 8 | ⏳ PENDENTE |
+| OPT-024 | ESPAÇAMENTO | P3 | 8 | ⏳ PENDENTE |
+| OPT-025 | SOMBRAS | P2 | 8 | ⏳ PENDENTE |
+| OPT-026 | SOMBRAS | P3 | 8 | ⏳ PENDENTE |
+| OPT-027 | MOTION | P1 | 6 | ⏳ PENDENTE |
+| OPT-028 | MOTION | P2 | 6 | ⏳ PENDENTE |
+| OPT-029 | MOTION | P2 | 6 | ⏳ PENDENTE |
+| OPT-030 | MOTION | P3 | 6 | ⏳ PENDENTE |
+| OPT-031 | DARK MODE | P1 | 4 | ⏳ PENDENTE |
+| OPT-032 | DARK MODE | P1 | 4 | ⏳ PENDENTE |
+| OPT-033 | DARK MODE | P2 | 4 | ⏳ PENDENTE |
+| OPT-034 | DARK MODE | P3 | 4 | ⏳ PENDENTE |
+| OPT-035 | DUPLICADOS | P1 | 5 | ✅ CONCLUÍDO |
+| OPT-036 | DUPLICADOS | P1 | 5 | ✅ CONCLUÍDO |
+| OPT-037 | DUPLICADOS | P2 | 5 | ⚠️ PARCIAL |
+| OPT-038 | DUPLICADOS | P2 | 5 | ⏳ PENDENTE |
+| OPT-039 | DUPLICADOS | P3 | 5 | ✅ CONCLUÍDO (arquivado) |
+| OPT-040 | CSS vs TAILWIND | P1 | 7 | ⏳ PENDENTE |
+| OPT-041 | CSS vs TAILWIND | P2 | 7 | ⏳ PENDENTE |
+| OPT-042 | CSS vs TAILWIND | P3 | 2 | ✅ CONCLUÍDO |
+| OPT-043 | INLINE STYLES | P1 | 9 | ⏳ PENDENTE |
+| OPT-044 | INLINE STYLES | P2 | 9 | ⏳ PENDENTE |
+| OPT-045 | INLINE STYLES | P3 | 9 | ⏳ PENDENTE |
+| OPT-046 | REF MISTAS | P2 | 7 | ⏳ PENDENTE |
+| OPT-047 | REF MISTAS | P2 | 5 | ✅ CONCLUÍDO (arquivado com jobs2) |
+| OPT-048 | REF MISTAS | P3 | 7 | ⏳ PENDENTE |
+| OPT-049 | ÍCONES | P1 | 9 | ⏳ PENDENTE |
+| OPT-050 | ÍCONES | P2 | 9 | ⏳ PENDENTE |
+| OPT-051 | ÍCONES | P3 | 10 | ⏳ PENDENTE |
+| OPT-052 | OPACITY | P2 | 9 | ⏳ PENDENTE |
+| OPT-053 | OPACITY | P2 | 9 | ⏳ PENDENTE |
+| OPT-054 | OPACITY | P3 | 9 | ⏳ PENDENTE |
+| OPT-055 | BOTÕES | P2 | 3 | ⏳ PENDENTE (documentar h-10=40px como padrão em button.tsx) |
+| OPT-056 | ÍCONES | P2 | 9 | ⏳ PENDENTE |
+| OPT-057 | DARK MODE | P2 | 4 | ⏳ PENDENTE |
+| OPT-058 | CORES | P2 | 8 | ⏳ PENDENTE |
+
+### Cobertura por sprint
+
+| Sprint | OPTs cobertos | Concluídos | Parciais | Pendentes |
+|--------|--------------|-----------|---------|----------|
+| Sprint 1 | OPT-001,002,008,011 | 3 | 1 | 0 |
+| Sprint 2 | OPT-003,004,005,042 | 4 | 0 | 0 |
+| Sprint 3 | OPT-012,013,014,015,016,017,018,019,020,021,055 | 7 | 2 | 1 |
+| Sprint 4 | OPT-031,032,033,034,057 | 0 | 0 | 5 |
+| Sprint 5 | OPT-035,036,037,038,039,007,047 | 4 | 1 | 1 |
+| Sprint 6 | OPT-027,028,029,030 | 0 | 0 | 4 |
+| Sprint 7 | OPT-040,041,046,048 | 0 | 0 | 4 |
+| Sprint 8 | OPT-006,009,010,021cont,022,023,024,025,026,058 | 0 | 0 | 10 |
+| Sprint 9 | OPT-043,044,045,049,050,052,053,054,056 | 0 | 0 | 9 |
+| Sprint 10 | OPT-051 + governança | 0 | 0 | 1 |
+| **TOTAL** | **58** | **18** | **4** | **35** |
+
+> Progresso: 18/58 concluídos (31%) — Sprints 1, 2, 3, 5 parcialmente executados.
+> Próximo: Sprint 4 — Dark Mode (maior impacto visual).

@@ -185,7 +185,7 @@ export function CultureProfilePreview({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-2xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Target className="w-4 h-4" />
@@ -209,7 +209,7 @@ export function CultureProfilePreview({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Eye className="w-4 h-4" />
@@ -235,7 +235,7 @@ export function CultureProfilePreview({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Heart className="w-4 h-4" />
@@ -286,7 +286,7 @@ export function CultureProfilePreview({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-status-warning/30 dark:border-status-warning/30/30 bg-status-warning/10/50 dark:bg-status-warning/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-status-warning/30 dark:border-status-warning/30/30 bg-status-warning/10/50 dark:bg-status-warning/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-status-warning dark:text-status-warning flex items-center gap-2">
               <Award className="w-4 h-4" />
@@ -335,7 +335,7 @@ export function CultureProfilePreview({
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+      <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -386,7 +386,7 @@ export function CultureProfilePreview({
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <Compass className="w-4 h-4" />
@@ -449,7 +449,7 @@ export function CultureProfilePreview({
       </Card>
 
       {(editedProfile.industry || editedProfile.employee_count || editedProfile.headquarters || editedProfile.founded_year) && (
-        <Card className="rounded-2xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Building2 className="w-4 h-4" />
@@ -511,7 +511,7 @@ export function CultureProfilePreview({
       )}
 
       {(editedProfile.work_model || editedProfile.growth_opportunities || editedProfile.team_dynamics || editedProfile.leadership_style) && (
-        <Card className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
@@ -548,7 +548,7 @@ export function CultureProfilePreview({
       )}
 
       {(editedProfile.dei_initiatives || editedProfile.sustainability || editedProfile.social_impact) && (
-        <Card className="rounded-2xl border border-status-success/30 dark:border-status-success/30/30 bg-status-success/10/50 dark:bg-status-success/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-status-success/30 dark:border-status-success/30/30 bg-status-success/10/50 dark:bg-status-success/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-status-success dark:text-status-success flex items-center gap-2">
               <Leaf className="w-4 h-4" />
@@ -579,7 +579,7 @@ export function CultureProfilePreview({
       )}
 
       {((editedProfile.tech_stack && editedProfile.tech_stack.length > 0) || editedProfile.engineering_culture) && (
-        <Card className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
               <Code className="w-4 h-4" />

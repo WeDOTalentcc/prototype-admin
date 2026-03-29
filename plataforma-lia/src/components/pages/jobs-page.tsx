@@ -217,6 +217,7 @@ export function JobsPage(props: JobsPageProps) {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex items-center space-x-6 nav-tabs" aria-label="Tabs" role="tablist">
               {navigationFilters.map((filter) => (
+                {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
                 <button
                   key={filter.id}
                   onClick={() => {
@@ -264,7 +265,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
               <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
               {/* Container externo - Background branco como funil de talentos */}
-              <div className="rounded-2xl overflow-hidden bg-white border border-gray-200">
+              <div className="rounded-xl overflow-hidden bg-white border border-gray-200">
                 {/* Área de Tags - Linha superior */}
                 <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
                   <div className="flex flex-wrap items-center gap-2">

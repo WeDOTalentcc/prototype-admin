@@ -61,7 +61,7 @@ export function CalibrationProfileModal({
 
   return (
     <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl w-[95vw] max-w-[1200px] h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl w-[95vw] max-w-[1200px] h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">

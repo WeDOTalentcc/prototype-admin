@@ -11,7 +11,7 @@ interface ChartContainerProps {
 
 export function ChartContainer({ title, description, children, className = "" }: ChartContainerProps) {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 hover:transition-all duration-200 ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:transition-all duration-200 ${className}`}>
       <div className="mb-4">
         <h3 className="text-sm font-semibold font-sans text-gray-950 dark:text-gray-50">{title}</h3>
         {description && (
@@ -74,7 +74,7 @@ export function MetricCard({ title, value, trend, trendValue, icon, description 
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 hover:transition-all duration-200">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:transition-all duration-200">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <p className="text-xs text-gray-800 dark:text-gray-200 font-medium uppercase tracking-wide">

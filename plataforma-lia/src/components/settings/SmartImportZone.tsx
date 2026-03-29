@@ -325,7 +325,7 @@ export function SmartImportZone({
   )
 
   const renderUploadingState = () => (
-    <Card className="border-2 border-gray-300 dark:border-gray-600 rounded-md bg-gray-50/50 dark:bg-gray-800/30">
+    <Card className="border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50/50 dark:bg-gray-800/30">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-gray-800">
@@ -509,7 +509,7 @@ export function SmartImportZone({
   )
 
   const renderSuccessState = () => (
-    <Card className={`${cardStyles.default} border-2 border-status-success/30 dark:border-status-success/30 rounded-md bg-status-success/10/50 dark:bg-status-success/10`}>
+    <Card className={`${cardStyles.default} border border-status-success/30 dark:border-status-success/30 rounded-md bg-status-success/10/50 dark:bg-status-success/10`}>
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15 dark:bg-status-success/30">
@@ -536,7 +536,7 @@ export function SmartImportZone({
   )
 
   const renderErrorState = () => (
-    <Card className={`${cardStyles.default} border-2 border-status-error/30 dark:border-status-error/30 rounded-md bg-status-error/10/50 dark:bg-status-error/10`}>
+    <Card className={`${cardStyles.default} border border-status-error/30 dark:border-status-error/30 rounded-md bg-status-error/10/50 dark:bg-status-error/10`}>
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-error/15 dark:bg-status-error/30">

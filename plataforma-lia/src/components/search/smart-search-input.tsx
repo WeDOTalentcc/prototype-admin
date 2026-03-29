@@ -199,7 +199,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       style={{width: panelWidth}}
     >
       <div 
-        className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-[var(--lia-bg-primary)]"
+        className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-[var(--lia-bg-primary)]"
       >
         {/* Mode tabs - Estilo pill/tag elegante */}
         <div 

@@ -130,7 +130,7 @@ export function ProactiveAlertToast({
   return (
     <div
       className={cn(
-        "relative w-full max-w-md p-4 rounded-md border-2 backdrop-blur-md",
+        "relative w-full max-w-md p-4 rounded-md border backdrop-blur-md",
         severity.bg,
         severity.border,
         "transform transition-all duration-300 ease-out"

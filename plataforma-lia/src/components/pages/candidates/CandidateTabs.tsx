@@ -25,6 +25,7 @@ export function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsPro
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex items-center space-x-6 nav-tabs" aria-label="Tabs" role="tablist">
           {tabs.map((tab) => (
+            {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}

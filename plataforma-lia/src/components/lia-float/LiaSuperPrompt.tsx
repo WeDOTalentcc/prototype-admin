@@ -217,7 +217,7 @@ export function LiaSuperPrompt() {
           />
 
           <motion.div
-            className="relative flex flex-col overflow-hidden rounded-2xl border shadow-2xl bg-white dark:bg-gray-900"
+            className="relative flex flex-col overflow-hidden rounded-xl border shadow-2xl bg-white dark:bg-gray-900"
             style={{width: "95vw",
               height: "95vh",
               maxWidth: "1400px",

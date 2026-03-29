@@ -3,6 +3,7 @@
 import React from "react"
 import Link from "next/link"
 import { Building2, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const subprocessors = [
   { id: 1, name: 'Amazon Web Services', service: 'Cloud Infrastructure', country: 'EUA', dataTypes: 'Dados de candidatos, Logs', risk: 'low', lastReview: '2024-12-01' },
@@ -15,26 +16,11 @@ const subprocessors = [
 function getRiskBadge(risk: string) {
   switch (risk) {
     case 'low':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          Baixo
-        </span>
-      )
+      return <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3.5 h-3.5" />Baixo</Badge>
     case 'medium':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/15 text-status-warning">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          Médio
-        </span>
-      )
+      return <Badge variant="warning" className="gap-1"><AlertTriangle className="w-3.5 h-3.5" />Médio</Badge>
     case 'high':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-error/15 text-status-error">
-          <Shield className="w-3.5 h-3.5" />
-          Alto
-        </span>
-      )
+      return <Badge variant="danger" className="gap-1"><Shield className="w-3.5 h-3.5" />Alto</Badge>
     default:
       return null
   }

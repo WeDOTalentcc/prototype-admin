@@ -562,7 +562,7 @@ export default function CandidatePortalPage() {
           
           <div className="relative">
             {upload?.preview ? (
-              <div className="relative rounded-md overflow-hidden border-2 border-gray-200">
+              <div className="relative rounded-md overflow-hidden border border-gray-200">
                 <img
                   src={upload.preview}
                   alt="Preview"
@@ -580,7 +580,7 @@ export default function CandidatePortalPage() {
                 </div>
               </div>
             ) : upload?.file ? (
-              <div className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-md">
+              <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-md">
                 <FileText className="w-8 h-8 text-gray-400" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-700 truncate">
@@ -599,7 +599,7 @@ export default function CandidatePortalPage() {
                 </button>
               </div>
             ) : completedFile ? (
-              <div className="flex items-center gap-3 p-4 border-2 border-status-success/30 bg-status-success/10 rounded-md">
+              <div className="flex items-center gap-3 p-4 border border-status-success/30 bg-status-success/10 rounded-md">
                 <CheckCircle2 className="w-6 h-6 text-status-success" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-700 truncate">

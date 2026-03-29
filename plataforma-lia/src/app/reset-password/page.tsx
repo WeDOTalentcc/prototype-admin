@@ -63,7 +63,7 @@ function ResetPasswordContent() {
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl p-10 text-center">
+        <div className="w-full max-w-md bg-white rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-status-error" />
           </div>
@@ -84,7 +84,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl p-10 text-center">
+        <div className="w-full max-w-md bg-white rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
@@ -105,7 +105,7 @@ function ResetPasswordContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl p-10">
+        <div className="bg-white rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
             <div className="w-10 h-10 bg-black rounded-md flex items-center justify-center">
               <WeDOLogo className="h-5 text-white" />

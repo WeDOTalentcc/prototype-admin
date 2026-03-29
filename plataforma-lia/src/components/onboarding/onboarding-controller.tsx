@@ -381,16 +381,16 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
           >
             <Button
               onClick={onStartSetup}
-              className="lia-button-primary w-full sm:w-auto"
+              variant="primary" className="w-full sm:w-auto"
             >
               <Brain className="w-5 h-5 mr-2 text-wedo-cyan" />
               Começar Configuração
             </Button>
             
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={onSkip}
-              className="lia-button-secondary w-full sm:w-auto"
+              className="w-full sm:w-auto"
             >
               Fazer depois
             </Button>
@@ -506,7 +506,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
           >
             <Button
               onClick={onClose}
-              className="lia-button-primary text-lg px-10 py-5"
+              variant="primary" className="text-lg px-10 py-5"
             >
               Acessar Plataforma
               <ArrowRight className="w-5 h-5 ml-2" />

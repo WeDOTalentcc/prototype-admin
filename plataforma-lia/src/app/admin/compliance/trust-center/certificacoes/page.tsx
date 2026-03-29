@@ -3,6 +3,7 @@
 import React from "react"
 import Link from "next/link"
 import { BadgeCheck, Download, CheckCircle2, Clock, XCircle, ArrowLeft } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
 const certifications = [
@@ -14,26 +15,11 @@ const certifications = [
 function getStatusBadge(status: string) {
   switch (status) {
     case 'active':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          Ativo
-        </span>
-      )
+      return <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3.5 h-3.5" />Ativo</Badge>
     case 'renewing':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/15 text-status-warning">
-          <Clock className="w-3.5 h-3.5" />
-          Em Renovação
-        </span>
-      )
+      return <Badge variant="warning" className="gap-1"><Clock className="w-3.5 h-3.5" />Em Renovação</Badge>
     case 'expired':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-error/15 text-status-error">
-          <XCircle className="w-3.5 h-3.5" />
-          Expirado
-        </span>
-      )
+      return <Badge variant="danger" className="gap-1"><XCircle className="w-3.5 h-3.5" />Expirado</Badge>
     default:
       return null
   }

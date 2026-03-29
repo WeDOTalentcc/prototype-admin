@@ -243,15 +243,15 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
             <div className="space-y-4">
               <Button
                 onClick={() => window.location.reload()}
-                className="lia-button-primary w-full"
+                variant="primary" className="w-full"
               >
                 <RefreshCw className="w-5 h-5 mr-2" />
                 Tentar Novamente
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={onAccessDenied}
-                className="lia-button-secondary w-full"
+                className="w-full"
               >
                 Voltar
               </Button>
@@ -398,7 +398,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="text"
                     value={userData.name}
                     onChange={(e) => setUserData(prev => ({...prev, name: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                     placeholder="Seu nome completo"
                   />
                 </div>
@@ -412,7 +412,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="email"
                     value={userData.email}
                     onChange={(e) => setUserData(prev => ({...prev, email: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                     placeholder="seu.email@empresa.com"
                   />
                 </div>
@@ -426,7 +426,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="tel"
                     value={userData.phone}
                     onChange={(e) => setUserData(prev => ({...prev, phone: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -439,7 +439,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   <select
                     value={userData.role}
                     onChange={(e) => setUserData(prev => ({...prev, role: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                   >
                     <option value="Recrutador">Recrutador</option>
                     <option value="Coordenador de RH">Coordenador de RH</option>
@@ -459,7 +459,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                       type={showPassword ? "text" : "password"}
                       value={userData.password}
                       onChange={(e) => setUserData(prev => ({...prev, password: e.target.value}))}
-                      className="w-full px-6 py-4 pr-14 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                      className="w-full px-6 py-4 pr-14 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
@@ -481,7 +481,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="password"
                     value={userData.confirmPassword}
                     onChange={(e) => setUserData(prev => ({...prev, confirmPassword: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
                     placeholder="Confirme sua senha"
                   />
                 </div>
@@ -503,7 +503,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Error Message */}
                 {error && (
-                  <div className="p-6 lia-bg-salmon rounded-2xl border-2 border-status-error/30">
+                  <div className="p-6 lia-bg-salmon rounded-2xl border border-status-error/30">
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-5 h-5 lia-text-coral flex-shrink-0" />
                       <span className="lia-text-medium lia-text-coral lia-font-sans font-semibold">{error}</span>
@@ -516,7 +516,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   type="button"
                   onClick={handleRegister}
                   disabled={isLoading}
-                  className="lia-button-primary w-full text-xl py-6"
+                  variant="primary" className="w-full text-xl py-6"
                 >
                   {isLoading ? (
                     <Loader2 className="w-6 h-6 animate-spin mr-3" />

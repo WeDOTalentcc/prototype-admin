@@ -17,6 +17,7 @@ import {
   type LucideIcon
 } from 'lucide-react'
 import { cn } from '@/lib/design-tokens'
+import { Badge } from '@/components/ui/badge'
 import { getCandidateBadges } from '../utils/badge-utils'
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -34,12 +35,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'user-plus': UserPlus,
 }
 
-const COLOR_CLASSES: Record<string, string> = {
-  cyan: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  amber: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
-  red: 'bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
-  green: 'bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
-  gray: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+const COLOR_TO_VARIANT: Record<string, 'default' | 'secondary' | 'warning' | 'danger' | 'success'> = {
+  cyan: 'default',
+  amber: 'warning',
+  red: 'danger',
+  green: 'success',
+  gray: 'secondary',
 }
 
 interface CandidateBadgesProps {
@@ -70,17 +71,14 @@ export function CandidateBadges({
       {badges.map((badge, i) => {
         const IconComponent = ICON_MAP[badge.icon]
         return (
-          <span
+          <Badge
             key={i}
-            className={cn(
-              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
-              compact && "text-micro px-1 py-0",
-              COLOR_CLASSES[badge.color]
-            )}
+            variant={COLOR_TO_VARIANT[badge.color]}
+            className={cn("gap-1", compact && "px-1 py-0")}
           >
             {IconComponent && <IconComponent className={cn("w-3 h-3", compact && "w-2.5 h-2.5")} />}
             {badge.label}
-          </span>
+          </Badge>
         )
       })}
     </div>

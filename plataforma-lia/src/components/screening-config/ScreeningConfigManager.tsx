@@ -308,7 +308,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
           {showScreeningToggleConfirm && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 w-[380px] p-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 w-[380px] p-5 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                     {showScreeningToggleConfirm === 'activate'

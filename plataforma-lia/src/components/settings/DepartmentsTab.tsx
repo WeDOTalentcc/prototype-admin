@@ -266,7 +266,7 @@ export function DepartmentsTab({
         />
 
         {showDepartmentForm && isEditingDepartments && (
-          <Card className="border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+          <Card className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">
@@ -952,7 +952,7 @@ function ApproverSection({
         </CardHeader>
         <CardContent className="p-3 space-y-3">
           {(showApproverForm || editingApprover) && (
-            <Card className="border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md mb-3">
+            <Card className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? "Editar Aprovador" : "Novo Aprovador"}

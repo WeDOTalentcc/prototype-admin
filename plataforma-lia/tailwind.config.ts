@@ -167,6 +167,11 @@ export default {
         }
       },
       borderRadius: {
+        // WeDo DS canonical — 2026-03-29
+        // cards/modals: rounded-xl (12px)
+        // inputs/badges: rounded-lg (8px)
+        // interactive chips/pills: rounded-full
+        // DEFAULT Tailwind values preserved below
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'

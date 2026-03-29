@@ -29,7 +29,7 @@ export function JobsDashboardView({
     <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
         <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
-        <div className="rounded-2xl overflow-hidden bg-white border border-gray-200">
+        <div className="rounded-xl overflow-hidden bg-white border border-gray-200">
           <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
             <div className="flex flex-wrap items-center gap-2">
               <button

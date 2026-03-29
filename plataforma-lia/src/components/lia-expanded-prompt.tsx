@@ -108,7 +108,7 @@ export function LiaExpandedPrompt({
     <Card
       style={{borderColor: colors.borderColor,
         backgroundColor: colors.backgroundColor}}
-      className="border-2"
+      className="border"
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">

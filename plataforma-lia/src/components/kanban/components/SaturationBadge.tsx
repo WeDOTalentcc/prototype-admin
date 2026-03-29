@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { AlertTriangle, TrendingUp, Lightbulb, Clock, Users, Globe, Search, Settings } from 'lucide-react'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { toast } from 'sonner'
@@ -152,19 +153,19 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-status-error bg-status-error/10 border border-status-error/30 cursor-pointer" title="Pipeline Saturado">
+    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-md" title="Pipeline Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span className="text-status-error">|</span>
+      <span>|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
-    </span>
+    </Badge>
   ) : (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-status-warning bg-status-warning/10 border border-status-warning/30 cursor-pointer" title="Quase Saturado">
+    <Badge variant="warning" className="gap-1 cursor-pointer font-semibold rounded-md" title="Quase Saturado">
       <TrendingUp className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span className="text-status-warning">|</span>
+      <span>|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
-    </span>
+    </Badge>
   )
 
   return (
