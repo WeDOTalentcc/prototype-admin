@@ -874,7 +874,7 @@
           <div class="label">Concerns Identificados<br />(8 CRÍTICOS)</div>
         </div>
         <div class="stat-card">
-          <div class="num warn">13</div>
+          <div class="num warn">12</div>
           <div class="label">Componentes Hub v5</div>
         </div>
         <div class="stat-card">
@@ -4222,11 +4222,344 @@ Capacidades transversais LIA (LearningLoop, PersonalizationEngine, FairnessGuard
 </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- P6 — ANÁLISE COMPARATIVA COMPLETA                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div style="page-break-before:always;margin-top:48px;"></div>
+<div style="background:#1e3a5f;color:#fff;padding:14px 20px;border-radius:8px 8px 0 0;font-size:20px;font-weight:800;letter-spacing:.5px;">P6 — Analise Comparativa Completa: Pros, Contras, Recomendacoes &amp; Referencias de Mercado</div>
+<div style="background:#f8fafc;border:2px solid #1e3a5f;border-top:none;border-radius:0 0 8px 8px;padding:20px;">
+<div style="font-size:11px;color:#64748b;margin-bottom:16px;">Baseado em leitura direta de 820 arquivos v5 (GitHub 19/03/2026) + 1.259 arquivos LIA (lia-agent-system/) | Verificado contra codebase real em 29/03/2026</div>
+
+<!-- Section 1: Architecture -->
+<div style="background:#e8f4fd;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:10px;">1. Filosofia Arquitetural &amp; Orquestracao</div>
+<div style="display:flex;gap:12px;margin-bottom:10px;">
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>12 dominios especializados (job_management, cv_screening, sourcing, pipeline, interview_scheduling, analytics, communication, automation, ats_integration, recruiter_assistant, policy, hiring_policy)</li>
+<li>CascadedRouter 6 tiers: fast-path → regex → keyword → semantic → LLM → context</li>
+<li>Multi-tenancy nativa: tenant_budget + tenant_context + guardrails por empresa</li>
+<li>PromptRegistry versionado com rollback semantico por prompt</li>
+<li>66 tools no scope_config com controle de acesso por agente</li>
+</ul>
+</div>
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>ReAct autonomo com 73+ tools e selecao dinamica por LLM — maxima flexibilidade</li>
+<li>HubPlanner fast-path + CostLadder + LLM = routing otimizado por custo</li>
+<li>9 subagentes de sourcing (router, planner, search, detail, analytics, comparison, report, action, orchestrator)</li>
+<li>WorkflowOrchestrator com 6 nos (intent→plan→execute→validate→process→format)</li>
+<li>51 YAMLs de API = especificacao declarativa de endpoints ATS</li>
+</ul>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>CascadedRouter 6 tiers e complexo — debug de roteamento incorreto exige rastrear 6 camadas</li>
+<li>Sem agente autonomo ReAct — cada dominio resolve apenas seu escopo</li>
+<li>Prompts em .py (nao YAML) — mudanca de prompt = deploy de codigo</li>
+</ul>
+</div>
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>8 dominios vs 12 LIA — sem policy, hiring_policy, automation, ats_integration separado</li>
+<li>Sem multi-tenancy no agente — Rails gerencia isolamento, nao o agente</li>
+<li>CheckpointSaver instavel (nota 3/10) — entrevistas longas podem reiniciar</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 2: Fairness -->
+<div style="background:#f3e5f5;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;color:#6a1b9a;margin-bottom:10px;">2. Fairness, Compliance &amp; LGPD</div>
+<div style="display:flex;gap:12px;margin-bottom:10px;">
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>FairnessGuard 3 camadas OBRIGATORIO: pre-prompt + post-response + audit log</li>
+<li>LGPD compliance completo: consent_checker, dsr_export, lgpd_cleanup, granular_consent</li>
+<li>Four-Fifths Rule testado (test_four_fifths_rule.py) — padrao EEOC/OFCCP</li>
+<li>PII masking via Presidio + regex em prompts E logs</li>
+<li>Policy domain (Z5-02) para compliance configuravel por tenant</li>
+</ul>
+</div>
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>InjectionDetector + Sanitizer (security.py) com 20+ padroes de protecao — testado</li>
+<li>PIIMaskingFilter (pii_filter.py) com regex: CPF, email, phone — testado</li>
+<li>Fairness em 2 dominios: jobs/fairness.py + sourcing/fairness.py — testado</li>
+<li>FactChecker para verificar claims numericas (count, avg, score)</li>
+<li>Anti-hallucination testado: test_hallucination_prevention.py</li>
+</ul>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>FairnessGuard obrigatorio pode impactar latencia (+200ms por chamada)</li>
+<li>Sem red teaming adversarial da FairnessGuard</li>
+<li>Injection protection implicita (nao tao explicita quanto security.py do v5)</li>
+</ul>
+</div>
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Fairness opt-in (nao obrigatorio) — so em 2 dominios de 8</li>
+<li>Sem LGPD compliance — sem cleanup, sem DSR export, sem consent checker</li>
+<li>PII masking em logs mas NAO em prompts enviados ao LLM (Gemini recebe CPFs)</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 3: Memory & Learning -->
+<div style="background:#fff3e0;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;color:#e65100;margin-bottom:10px;">3. Memoria, Aprendizado &amp; Observabilidade</div>
+<div style="display:flex;gap:12px;margin-bottom:10px;">
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Learning loop COMPLETO: learning_loop → ab_testing → template_learning → finetuning_export → snapshot</li>
+<li>A/B testing de prompts com rollback via LearningSnapshotService (Z2-01)</li>
+<li>Drift detection: model_drift_service.py + drift_job.py (diario as 3h)</li>
+<li>OTEL + LangSmith + Prometheus (16 metricas, Sprint Z6-02)</li>
+<li>RAGAS para avaliacao de qualidade de RAG</li>
+<li>ai_consumption.py por tenant — permite cobranca por uso real</li>
+<li>agent_explainability.py + agent_health_alert_service.py</li>
+</ul>
+</div>
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>TenantMemoryStore com TTL + dedup + limite explicitos por memoria</li>
+<li>ConversationSession com domain_memories por dominio</li>
+<li>audit_callback.py como LangChain BaseCallbackHandler — automatico em qualquer grafo</li>
+<li>audit_writer.py → PostgreSQL (agent_executions table) — persistente</li>
+<li>react_observer.py — rastreia tool calls do ReAct com timing</li>
+<li>execution_tracker.py + thinking_message.py (feedback visual)</li>
+<li>SemanticCache Redis — evita chamadas LLM duplicadas</li>
+</ul>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>A/B testing com usuarios reais pode criar experiencias inconsistentes</li>
+<li>RAGAS mede qualidade de RAG mas NAO de raciocinio do agente</li>
+<li>Sem TTL em working_memory — dados de conversa sem expiracao automatica</li>
+</ul>
+</div>
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>SEM learning loop — sistema e igual no dia 1 e no dia 365</li>
+<li>SEM Prometheus/OTEL — impossivel alertas automaticos de latencia/erro</li>
+<li>SEM drift detection — nao detecta degradacao de qualidade</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 4: Resilience & LLMs -->
+<div style="background:#e0f2f1;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;color:#00695c;margin-bottom:10px;">4. Resiliencia, LLMs &amp; Processamento Assincrono</div>
+<div style="display:flex;gap:12px;margin-bottom:10px;">
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>25+ circuit breakers por servico/dominio</li>
+<li>DLQ (Dead Letter Queue) com Redis LIST — nenhuma task falha silenciosamente</li>
+<li>LLM multi-provider: Claude (Haiku/Sonnet/Opus) → Gemini → GPT-4o cascade</li>
+<li>7+ Celery beat jobs: drift, proactive alerts, LGPD cleanup, A/B eval, finetuning, learning loop, memory consolidation</li>
+<li>PostgresSaver estavel para LangGraph checkpointing</li>
+</ul>
+</div>
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>RabbitMQ como broker — ACK persistente, exchange routing, mais robusto que Redis</li>
+<li>Multi-instance workers com systemd: celery-sourcing@{1..N}, celery-evaluation@{1..N}</li>
+<li>ModelRouter inteligente: fast/default/heavy dentro do Gemini</li>
+<li>Scripts de diagnostico: analyze_rabbitmq.py, inspect_celery.py, detailed_consumers.py</li>
+<li>create_tracked_llm() integra tracking automaticamente</li>
+</ul>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Redis como broker pode ser gargalo sob alta carga (vs RabbitMQ)</li>
+<li>Sem rate limiting por LLM provider no factory</li>
+</ul>
+</div>
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Vendor lock-in 100% Gemini — se Google mudar preco/API, 100% do sistema impactado</li>
+<li>Sem DLQ — tasks que falham 3x desaparecem sem rastreamento</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 5: Tests -->
+<div style="background:#fce4ec;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;color:#880e4f;margin-bottom:10px;">5. Testes de IA</div>
+<div style="display:flex;gap:12px;margin-bottom:10px;">
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>313 arquivos de teste (4.600+ test cases)</li>
+<li>Golden dataset (golden_dataset.py) — pratica Google/Anthropic</li>
+<li>test_four_fifths_rule.py — tipo de teste que auditores externos pedem</li>
+<li>RAGAS para avaliacao de qualidade de respostas RAG</li>
+</ul>
+</div>
+<div style="flex:1;background:#e8f5e9;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">✅ PROS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>96 arquivos com 5 niveis de dificuldade (easy→very_hard→difficult)</li>
+<li>test_conversation_flow/ — testa cada parte de conversa longa (7 partes)</li>
+<li>Testes de seguranca (test_security.py) e PII (test_pii_filter.py)</li>
+<li>test_hallucination_prevention.py — anti-alucinacao testada</li>
+</ul>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS LIA</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Coverage gate 30% (pytest.ini) — enterprise fica em 60-80%</li>
+<li>Sem pipeline CI/CD para testes de LLM</li>
+</ul>
+</div>
+<div style="flex:1;background:#ffebee;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#c62828;margin-bottom:6px;">❌ CONTRAS v5</div>
+<ul style="font-size:11px;margin:0;padding-left:16px;line-height:1.6;">
+<li>Sem CI/CD documentado — possivelmente testes nao rodam automaticamente</li>
+<li>Sem golden dataset formal — evals/run_evals.py sem dataset de referencia</li>
+</ul>
+</div>
+</div>
+
+<!-- Recommendations -->
+<div style="background:#1565c0;color:#fff;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;margin-bottom:10px;">Recomendacoes Prioritarias</div>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+<div style="flex:1;background:#e3f2fd;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#0d47a1;margin-bottom:6px;">RECOMENDACOES LIA (10 itens, 2 fases)</div>
+<div style="font-size:11px;line-height:1.6;">
+<strong>ALTA PRIORIDADE:</strong><br>
+L-01: TTL em working_memory (90d + cleanup)<br>
+L-02: Relatorio fairness exportavel (PDF)<br>
+L-03: Red teaming FairnessGuard (dataset adversarial)<br>
+L-04: Cobertura testes 30% → 50%<br>
+L-05: Prompts .py → .yaml<br><br>
+<strong>MEDIO PRAZO:</strong><br>
+L-06: Agent Studio (/api/v1/agents/configure)<br>
+L-07: Criptografia PII (pgcrypto para CPF)<br>
+L-08: Avaliar LiteLLM vs llm_factory.py<br>
+L-09: Expandir RAGAS para agente<br>
+L-10: Migrar broker Redis → RabbitMQ
+</div>
+</div>
+<div style="flex:1;background:#e3f2fd;border-radius:6px;padding:10px;">
+<div style="font-weight:700;color:#0d47a1;margin-bottom:6px;">RECOMENDACOES v5 (14 itens, 3 fases)</div>
+<div style="font-size:11px;line-height:1.6;">
+<strong>FASE V-1 CRITICO (Sprint 1-2):</strong><br>
+V-01: Estabilizar PostgresSaver (pool+retry)<br>
+V-02: Multi-tenancy basico no Hub<br>
+V-03: Unificar fairness/ em shared/<br>
+V-04: PII masking em PROMPTS (nao so logs)<br>
+V-05: Resolver referencias pronominais<br><br>
+<strong>FASE V-2 ALTA (Sprint 3-4):</strong><br>
+V-06: Tool registry explicito por dominio<br>
+V-07: Anti-sycophancy em prompts<br>
+V-08: DLQ para RabbitMQ<br>
+V-09: Prometheus metrics<br>
+V-10: Feedback loop basico<br><br>
+<strong>FASE V-3 MEDIO (Sprint 5-8):</strong><br>
+V-11: Relatorio fairness exportavel<br>
+V-12: Golden dataset + DeepEval<br>
+V-13: Pipeline CI/CD<br>
+V-14: Agent Studio
+</div>
+</div>
+</div>
+
+<!-- Market References -->
+<div style="background:#4a148c;color:#fff;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;margin-bottom:10px;">Referencias de Mercado — HR Tech &amp; AI Agents (2025-2026)</div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;">
+<thead>
+<tr style="background:#ede7f6;">
+<th style="padding:6px 8px;border:1px solid #d1c4e9;text-align:left;font-weight:700;">Plataforma</th>
+<th style="padding:6px 8px;border:1px solid #d1c4e9;text-align:left;font-weight:700;">Relevancia para LIA/v5</th>
+<th style="padding:6px 8px;border:1px solid #d1c4e9;text-align:left;font-weight:700;">Referencia Arquitetural</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Eightfold AI</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Deep-learning talent matching, bias detection, skill taxonomy</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA FairnessGuard + learning loop se aproxima</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Phenom People</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Orchestration layer (CRM+ATS+AI), multi-tenant, personalization</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA CascadedRouter + multi-tenancy similar</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Paradox (Olivia)</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Conversational AI + scheduling automation, NLU em RH</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 SchedulingGraph + autonomous ReAct alinhado</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">HireVue</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Video interview AI + assessment, fairness audit exportavel</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA WSIInterviewGraph + bias audit alinhado</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Greenhouse</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Structured hiring, API-first, extensibilidade via webhooks</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 51 YAMLs de API + LIA ATS integration domain</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Ashby</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Analytics-driven ATS, metricas de pipeline, dashboard qualidade</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA analytics domain + ai_consumption por tenant</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">SmartRecruiters</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Multi-channel sourcing, marketplace AI add-ons, compliance global</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA sourcing + v5 9 subagentes se complementam</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Workday Recruit</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Enterprise multi-tenancy, compliance por jurisdicao, audit trail</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA tenant_budget + policy domain referencia</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Beamery</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">CRM talent + talent graphs, AI-driven talent pools</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 TenantMemoryStore + LIA long_term_memory</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">hireEZ</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">AI sourcing (Boolean Builder AI, diversity sourcing, outbound)</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 9 subagentes de sourcing = arquitetura similar</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Fetcher</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Automated outbound recruiting, AI email sequences</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 proactive/ detector + LIA communication domain</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">Juicebox (People.ai)</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">People search + AI enrichment, skill inference</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">v5 embedding_service + RAG hibrido alinhado</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;">SeekOut</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">Diversity recruiting + talent analytics, skills-based matching</td><td style="padding:5px 8px;border:1px solid #e2e8f0;">LIA FairnessGuard + analytics + talent intelligence</td></tr>
+</tbody>
+</table>
+
+<!-- Scorecard -->
+<div style="background:#1b5e20;color:#fff;padding:8px 12px;border-radius:6px;font-size:14px;font-weight:700;margin-bottom:10px;">Scorecard Resumido — LIA vs v5 por Dimensao</div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px;">
+<thead>
+<tr style="background:#e8f5e9;">
+<th style="padding:6px 8px;border:1px solid #c8e6c9;text-align:left;">Dimensao</th>
+<th style="padding:6px 8px;border:1px solid #c8e6c9;text-align:center;">LIA</th>
+<th style="padding:6px 8px;border:1px solid #c8e6c9;text-align:center;">v5</th>
+<th style="padding:6px 8px;border:1px solid #c8e6c9;text-align:center;">Vencedor</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Cobertura de dominios</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">12</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">8</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Multi-tenancy no agente</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Budget+guardrails</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Rails-only</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">LGPD compliance</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">4 servicos</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Inexistente</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">FairnessGuard</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">3 camadas obrig.</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">2 dom. opt-in</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Learning loop</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Ciclo completo</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">So feedback save</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">LLM multi-provider</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Claude+Gemini+GPT</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Gemini unico</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Observabilidade</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">OTEL+Prometheus</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Audit callback</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Testes de IA (volume)</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">313 arquivos</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">96 arquivos</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e8f5e9;font-weight:700;">LIA</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;background:#fff8e1;" colspan="4"></td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Broker mensageria</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Redis</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">RabbitMQ</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Agente autonomo ReAct</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Via dominios</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">73+ tools</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Sourcing granularidade</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">1 agente</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">9 subagentes</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Injection protection</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Implicita</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">20+ padroes</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Memoria TTL+dedup</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Sem TTL</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">TTL+dedup+limite</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr><td style="padding:5px 8px;border:1px solid #e2e8f0;">Testes de seguranca</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Nao especificos</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">test_security.py</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+<tr style="background:#f8fafc;"><td style="padding:5px 8px;border:1px solid #e2e8f0;">Testes conversa E2E</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">Nao</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">7 partes</td><td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;background:#e3f2fd;font-weight:700;">v5</td></tr>
+</tbody>
+</table>
+
+<div style="background:#f1f8e9;border:2px solid #1b5e20;border-radius:6px;padding:12px;font-size:12px;line-height:1.7;">
+<strong>RESUMO:</strong> LIA vence em 8 dimensoes (enterprise/compliance/observabilidade) | v5 vence em 7 dimensoes (autonomia/sourcing/seguranca/resiliencia broker)<br>
+<strong>Arquiteturas COMPLEMENTARES — convergencia maximiza valor</strong><br><br>
+<strong>CONCLUSAO ESTRATEGICA:</strong><br>
+LIA = plataforma enterprise (multi-tenancy, compliance, observabilidade, learning)<br>
+v5 = motor de execucao autonomo (ReAct, sourcing profundo, seguranca, broker robusto)<br>
+IDEAL: LIA como orquestrador + v5 como motor de execucao autonomo por dominio
+</div>
+</div>
+
       <div class="footer-note">
         Fonte: Diagnostico arquitetural completo (8.070 linhas) — leitura direta
         de codigo v5 via GitHub API (22/03/2026) + LIA via filesystem.<br />
         Todos os dados foram verificados por leitura de codigo real, nao por
-        documentacao.<br />
+        documentacao. Secao P6 verificada contra codebase em 29/03/2026.<br />
         <strong>"✅ auto"</strong> na coluna LIA da matriz = capacidade herdada
         automaticamente via <code>EnhancedAgentMixin._setup_enhanced()</code> —
         0 linhas de implementacao por agente.

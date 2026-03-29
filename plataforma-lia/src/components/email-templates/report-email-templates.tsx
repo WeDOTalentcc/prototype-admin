@@ -58,22 +58,22 @@ const emailTemplates: EmailTemplate[] = [
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
               <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #667eea;">
                 <div style="font-size: 28px; font-weight: bold; color: #667eea;">{{totalCandidates}}</div>
-                <div style="color: #666; font-size: 14px;">Total de Candidatos</div>
+                <div style="color: #6b7280; font-size: 14px;">Total de Candidatos</div>
               </div>
 
               <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #22c55e;">
                 <div style="font-size: 28px; font-weight: bold; color: #22c55e;">{{conversionRate}}%</div>
-                <div style="color: #666; font-size: 14px;">Taxa de Conversão</div>
+                <div style="color: #6b7280; font-size: 14px;">Taxa de Conversão</div>
               </div>
 
               <div style="background: #fef3f2; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #ef4444;">
                 <div style="font-size: 28px; font-weight: bold; color: #ef4444;">{{timeToHire}}</div>
-                <div style="color: #666; font-size: 14px;">Dias (Time to Hire)</div>
+                <div style="color: #6b7280; font-size: 14px;">Dias (Time to Hire)</div>
               </div>
 
               <div style="background: #fefbf3; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #f59e0b;">
                 <div style="font-size: 28px; font-weight: bold; color: #f59e0b;">{{npsScore}}%</div>
-                <div style="color: #666; font-size: 14px;">NPS Score</div>
+                <div style="color: #6b7280; font-size: 14px;">NPS Score</div>
               </div>
             </div>
           </div>

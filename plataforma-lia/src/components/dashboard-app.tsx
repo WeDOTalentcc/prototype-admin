@@ -15,7 +15,6 @@ import { DashboardsPage } from "@/components/pages/dashboards-page"
 import { IndicatorsPage } from "@/components/pages/indicators-page"
 import { CommunicationHub } from "@/components/settings/CommunicationHub"
 import { TemplatesPage } from "@/components/pages/templates-page"
-import { MockupShadcnVuePage } from "@/components/pages/mockup-shadcn-vue-page"
 import LiaLibraryPage from "@/components/pages/lia-library-page"
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
@@ -135,8 +134,6 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
         return <TasksPageMVP onNavigate={handleNavigate} />
       case "Configurações":
         return <SettingsPageEnhanced />
-      case "🔬 Mockup shadcn Vue":
-        return <MockupShadcnVuePage />
       default:
         return <CandidatesPage />
     }

@@ -2122,3 +2122,20 @@ Sprint 1 (Foundation)
 > Supersede os Sprints A-F (mantidos para referencia historica acima).
 > Proxima acao: confirmar gates de Sprint 3 (border-radius) e Sprint 5 (jobs2).
 > Execucao: sempre multi-agente + analise profunda pre/pos sprint.
+
+---
+
+## STATUS DE EXECUÇÃO
+
+> Última atualização: 2026-03-29
+
+| OPT | Descrição curta | Sprint | Status | Data | Observação |
+|-----|-----------------|--------|--------|------|------------|
+| OPT-001 | @import Google Fonts redundante | 1 | ✅ CONCLUÍDO | 2026-03-29 | Removido de globals.css e onboarding-styles.css |
+| OPT-002 | font-sidebar aponta para fonte inexistente | 1 | ✅ CONCLUÍDO | 2026-03-29 | Removido de tailwind.config.ts — zero uso em .tsx |
+| OPT-008 | Cores hex hardcoded | 1 | ⚠️ PARCIAL | 2026-03-29 | #666 → #6b7280 em email templates. CSS vars incompatíveis com clientes de email |
+| OPT-011 | CVA default=primary duplicados em button.tsx | 1 | ✅ CONCLUÍDO | 2026-03-29 | variant default removido, defaultVariants → primary |
+| OPT-035 | settings-page.tsx vs settings-page-enhanced.tsx | 5 | ✅ CONCLUÍDO | 2026-03-29 | settings-page.tsx (134L) arquivado em /pages/_archived/ |
+| OPT-036 | jobs-page.tsx vs jobs2-page.tsx | 5 | ✅ CONCLUÍDO | 2026-03-29 | jobs2-page.tsx (569L) arquivado em /pages/_archived/ |
+| OPT-037 | tasks-page.tsx vs tasks-page-mvp.tsx | 5 | ⚠️ PARCIAL | 2026-03-29 | tasks-mvp route arquivado. tasks-page.tsx mantido: settings-page-enhanced importa <TasksPage /> |
+| OPT-039 | mockup-shadcn-vue-page.tsx em /pages/ | 5 | ⏸️ BLOQUEADO | 2026-03-29 | dashboard-app.tsx ainda importa como rota ativa "🔬 Mockup shadcn Vue" |

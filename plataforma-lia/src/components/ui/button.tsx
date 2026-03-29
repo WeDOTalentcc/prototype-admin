@@ -9,7 +9,6 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         primary: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         destructive:
           "bg-status-error text-white hover:bg-status-error dark:bg-status-error dark:hover:bg-status-error focus:ring-2 focus:ring-red-600/20",
@@ -28,7 +27,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }

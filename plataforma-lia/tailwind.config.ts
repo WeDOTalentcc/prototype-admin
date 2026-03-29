@@ -197,7 +197,6 @@ export default {
         'source-serif-4': ['var(--font-source-serif-4)', 'serif'],
         'brand': ['var(--font-open-sans)', 'sans-serif'],
         'data': ['var(--font-inter)', 'sans-serif'],
-        'sidebar': ['var(--font-source-serif-4)', 'serif'],
       },
       container: {
       center: true,
