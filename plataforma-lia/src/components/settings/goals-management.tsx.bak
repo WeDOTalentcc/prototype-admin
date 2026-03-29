@@ -13,45 +13,314 @@ import {
   ChevronDown, ChevronRight, ChevronUp, User
 } from "lucide-react"
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
 import { typography, textStyles } from "@/lib/design-tokens"
 
-// Camada 1 (hook): Todo o estado e ações extraídas
-import {
-  useGoalsManagement,
-  goalTemplates,
-  MONTHS,
-  type GoalTemplate,
-  type UserGoal,
-  type MonthlyGoalValue,
-  type CustomGoalForm
-} from "./use-goals-management"
+interface GoalTemplate {
+  id: string
+  name: string
+  description: string
+  formula: string
+  category: 'recruitment' | 'quality' | 'efficiency' | 'satisfaction'
+  defaultTarget: number
+  unit: string
+  period: 'monthly' | 'quarterly' | 'yearly'
+  isActive: boolean
+}
+
+interface UserGoal {
+  id: string
+  userId: string
+  templateId: string
+  name: string
+  description: string
+  target: number
+  current: number
+  unit: string
+  period: 'monthly' | 'quarterly' | 'yearly'
+  startDate: string
+  endDate: string
+  status: 'pending' | 'in_progress' | 'achieved' | 'overdue'
+  progress: number
+  category: 'recruitment' | 'quality' | 'efficiency' | 'satisfaction'
+  isCustom: boolean
+}
+
+interface MonthlyGoalValue {
+  userId: string
+  templateId: string
+  month: number
+  year: number
+  target: number
+  current: number
+}
 
 interface GoalsManagementProps {
   users: any[]
   onGoalUpdate: (userId: string, goals: any) => void
 }
 
-// Componente puro (Camada 2): Célula editável
-function EditableCell({
-  value,
-  onChange,
+const MONTHS = [
+  { short: 'Jan', full: 'Janeiro', num: 1 },
+  { short: 'Fev', full: 'Fevereiro', num: 2 },
+  { short: 'Mar', full: 'Março', num: 3 },
+  { short: 'Abr', full: 'Abril', num: 4 },
+  { short: 'Mai', full: 'Maio', num: 5 },
+  { short: 'Jun', full: 'Junho', num: 6 },
+  { short: 'Jul', full: 'Julho', num: 7 },
+  { short: 'Ago', full: 'Agosto', num: 8 },
+  { short: 'Set', full: 'Setembro', num: 9 },
+  { short: 'Out', full: 'Outubro', num: 10 },
+  { short: 'Nov', full: 'Novembro', num: 11 },
+  { short: 'Dez', full: 'Dezembro', num: 12 },
+]
+
+const goalTemplates: GoalTemplate[] = [
+  {
+    id: 'hires-monthly',
+    name: 'Contratações (Placements)',
+    description: 'Número de contratações efetivadas no mês',
+    formula: 'Contagem de candidatos que mudaram para status "Contratado" no período',
+    category: 'recruitment',
+    defaultTarget: 5,
+    unit: 'contratações',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'interviews-monthly',
+    name: 'Entrevistas Realizadas',
+    description: 'Número total de entrevistas realizadas no período',
+    formula: 'Total de entrevistas agendadas e confirmadas como realizadas',
+    category: 'recruitment',
+    defaultTarget: 40,
+    unit: 'entrevistas',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'candidates-sourced',
+    name: 'Candidatos Sourced',
+    description: 'Número de candidatos prospectados ativamente',
+    formula: 'Candidatos adicionados manualmente ou via sourcing ativo (não aplicações)',
+    category: 'recruitment',
+    defaultTarget: 100,
+    unit: 'candidatos',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'screening-calls',
+    name: 'Triagens Realizadas',
+    description: 'Número de entrevistas de triagem (phone screening)',
+    formula: 'Ligações de triagem inicial registradas no sistema',
+    category: 'recruitment',
+    defaultTarget: 60,
+    unit: 'triagens',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'vacancies-closed',
+    name: 'Vagas Fechadas',
+    description: 'Número de vagas preenchidas e encerradas',
+    formula: 'Vagas com status alterado para "Fechada" ou "Preenchida"',
+    category: 'recruitment',
+    defaultTarget: 8,
+    unit: 'vagas',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'offers-sent',
+    name: 'Propostas Enviadas',
+    description: 'Número de ofertas de trabalho enviadas a candidatos',
+    formula: 'Candidatos que receberam proposta formal (status "Proposta Enviada")',
+    category: 'recruitment',
+    defaultTarget: 10,
+    unit: 'propostas',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'offers-accepted',
+    name: 'Propostas Aceitas',
+    description: 'Número de ofertas aceitas pelos candidatos',
+    formula: 'Propostas com status "Aceita" pelo candidato',
+    category: 'quality',
+    defaultTarget: 8,
+    unit: 'aceitas',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'offers-declined',
+    name: 'Propostas Recusadas',
+    description: 'Número de ofertas recusadas pelos candidatos',
+    formula: 'Propostas com status "Recusada" pelo candidato (quanto menor, melhor)',
+    category: 'quality',
+    defaultTarget: 2,
+    unit: 'recusadas',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'offer-acceptance-rate',
+    name: 'Taxa de Aceitação',
+    description: 'Percentual de ofertas aceitas pelos candidatos',
+    formula: '(Propostas Aceitas ÷ Total de Propostas) × 100',
+    category: 'quality',
+    defaultTarget: 85,
+    unit: '%',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'time-to-fill',
+    name: 'Time to Fill',
+    description: 'Tempo médio para preenchimento de vagas em dias',
+    formula: 'Média de dias entre abertura da vaga e aceite da proposta',
+    category: 'efficiency',
+    defaultTarget: 30,
+    unit: 'dias',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'time-to-hire',
+    name: 'Time to Hire',
+    description: 'Tempo médio desde primeira entrevista até contratação',
+    formula: 'Média de dias entre 1ª entrevista e início do candidato',
+    category: 'efficiency',
+    defaultTarget: 21,
+    unit: 'dias',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'conversion-rate',
+    name: 'Taxa de Conversão',
+    description: 'Percentual de candidatos convertidos em contratações',
+    formula: '(Contratações ÷ Total de Candidatos no Funil) × 100',
+    category: 'efficiency',
+    defaultTarget: 2.5,
+    unit: '%',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'candidate-response',
+    name: 'Taxa de Resposta',
+    description: 'Percentual de candidatos que respondem ao contato inicial',
+    formula: '(Candidatos que Responderam ÷ Candidatos Contatados) × 100',
+    category: 'efficiency',
+    defaultTarget: 75,
+    unit: '%',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'pipeline-velocity',
+    name: 'Velocidade do Pipeline',
+    description: 'Tempo médio para avançar candidato entre etapas',
+    formula: 'Média de dias que candidatos ficam em cada etapa do processo',
+    category: 'efficiency',
+    defaultTarget: 5,
+    unit: 'dias',
+    period: 'monthly',
+    isActive: true
+  },
+  {
+    id: 'quality-score',
+    name: 'Score de Qualidade',
+    description: 'Avaliação média da qualidade das contratações',
+    formula: 'Média das avaliações de desempenho (1-5) dos contratados após período de experiência',
+    category: 'quality',
+    defaultTarget: 4.0,
+    unit: 'pontos',
+    period: 'yearly',
+    isActive: true
+  },
+  {
+    id: 'retention-90days',
+    name: 'Retenção 90 Dias',
+    description: 'Percentual de contratados que permanecem após 90 dias',
+    formula: '(Contratados ativos após 90 dias ÷ Total Contratados) × 100',
+    category: 'quality',
+    defaultTarget: 90,
+    unit: '%',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'hiring-manager-satisfaction',
+    name: 'Satisfação do Gestor',
+    description: 'Avaliação do gestor sobre qualidade do candidato',
+    formula: 'Média das notas dadas pelos gestores (1-5) sobre candidatos apresentados',
+    category: 'quality',
+    defaultTarget: 4.5,
+    unit: 'pontos',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'nps-candidates',
+    name: 'NPS dos Candidatos',
+    description: 'Score de satisfação dos candidatos no processo',
+    formula: 'Pesquisa NPS pós-processo: % promotores - % detratores (escala -100 a 100)',
+    category: 'satisfaction',
+    defaultTarget: 85,
+    unit: 'pontos',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'nps-hiring-managers',
+    name: 'NPS dos Gestores',
+    description: 'Score de satisfação dos gestores com o processo',
+    formula: 'Pesquisa NPS com gestores: % promotores - % detratores (escala -100 a 100)',
+    category: 'satisfaction',
+    defaultTarget: 80,
+    unit: 'pontos',
+    period: 'quarterly',
+    isActive: true
+  },
+  {
+    id: 'candidate-experience',
+    name: 'Experiência do Candidato',
+    description: 'Avaliação da experiência do candidato no processo',
+    formula: 'Média das notas de feedback dos candidatos (1-5) sobre comunicação e processo',
+    category: 'satisfaction',
+    defaultTarget: 4.0,
+    unit: 'pontos',
+    period: 'monthly',
+    isActive: true
+  }
+]
+
+function EditableCell({ 
+  value, 
+  onChange, 
   disabled = false,
   placeholder = "-"
-}: {
+}: { 
   value: number | null
   onChange: (value: number) => void
   disabled?: boolean
   placeholder?: string
 }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [inputValue, setInputValue] = useState(value?.toString() || "")
+  const [inputValue, setInputValue] = useState(value?.toString() || '')
 
   const handleClick = () => {
     if (disabled) return
     setIsEditing(true)
-    setInputValue(value?.toString() || "")
+    setInputValue(value?.toString() || '')
   }
 
   const handleSave = () => {
@@ -61,10 +330,11 @@ function EditableCell({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSave()
-    else if (e.key === "Escape") {
+    if (e.key === 'Enter') {
+      handleSave()
+    } else if (e.key === 'Escape') {
       setIsEditing(false)
-      setInputValue(value?.toString() || "")
+      setInputValue(value?.toString() || '')
     }
   }
 
@@ -78,51 +348,905 @@ function EditableCell({
         onKeyDown={handleKeyDown}
         autoFocus
         min={0}
-        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded-md text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-[Open_Sans,sans-serif]"
+        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded-md text-center bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 font-['Open_Sans',sans-serif]"
       />
     )
   }
 
   const displayValue = value !== null && value !== undefined && value !== 0 ? value : placeholder
+
   return (
     <div
       onClick={handleClick}
-      className={}
+      className={`w-10 px-1 py-1 text-xs border border-gray-200 rounded-full text-center bg-white cursor-pointer hover:border-gray-300 transition-colors font-['Open_Sans',sans-serif] ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
     >
       {displayValue}
     </div>
   )
 }
 
-// Helpers de ícones e cores (Camada 2)
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case "recruitment": return <UserCheck className="w-3 h-3 text-gray-500" />
-    case "quality": return <Star className="w-3 h-3 text-gray-500" />
-    case "efficiency": return <Zap className="w-3 h-3 text-gray-500" />
-    case "satisfaction": return <Heart className="w-3 h-3 text-gray-500" />
-    default: return <Target className="w-3 h-3 text-gray-500" />
-  }
-}
+export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
+  const [selectedUser, setSelectedUser] = useState<any | null>(null)
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [showCustomGoal, setShowCustomGoal] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<UserGoal | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterPeriod, setFilterPeriod] = useState('all')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [savingTemplateId, setSavingTemplateId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [userGoalsMap, setUserGoalsMap] = useState<Record<string, { monthly: UserGoal[], quarterly: UserGoal[], yearly: UserGoal[] }>>({})
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set())
+  const [templateApplyMode, setTemplateApplyMode] = useState<'all' | 'selected'>('all')
+  const [deleteConfirmGoal, setDeleteConfirmGoal] = useState<UserGoal | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<GoalTemplate | null>(null)
+  const [templateOverrides, setTemplateOverrides] = useState<Record<string, Partial<GoalTemplate>>>({})
+  const [hiddenTemplates, setHiddenTemplates] = useState<Set<string>>(new Set())
 
-const getCategoryColor = (category: string) => {
-  switch (category) {
-    case "recruitment": return "bg-gray-100 text-gray-700 border-gray-300"
-    case "quality": return "bg-status-warning/10 text-status-warning border-status-warning/30"
-    case "efficiency": return "bg-status-success/10 text-status-success border-status-success/30"
-    case "satisfaction": return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700"
-    default: return "bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200"
-  }
-}
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [collapsedGoals, setCollapsedGoals] = useState<Set<string>>(new Set())
+  const [monthlyGoals, setMonthlyGoals] = useState<Record<string, MonthlyGoalValue[]>>({})
+  const [showApplyAllModal, setShowApplyAllModal] = useState<string | null>(null)
+  const [applyAllValue, setApplyAllValue] = useState<number>(0)
+  const [applyAllMonths, setApplyAllMonths] = useState(true)
+  const [applyAllUsers, setApplyAllUsers] = useState(true)
+  const [templateUsersMap, setTemplateUsersMap] = useState<Record<string, string[]>>({})
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "achieved": return "bg-status-success/15 text-status-success border-status-success/30"
-    case "in_progress": return "bg-status-warning/10 text-status-warning border-status-warning/30"
-    case "overdue": return "bg-status-error/15 text-status-error border-status-error/30"
-    default: return "bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200"
+  const [customGoalForm, setCustomGoalForm] = useState({
+    name: '',
+    description: '',
+    target: 0,
+    unit: '',
+    period: 'monthly' as const,
+    category: 'recruitment' as const,
+    startDate: '',
+    endDate: '',
+    userId: ''
+  })
+
+  const fetchUserGoals = useCallback(async (userId: string) => {
+    try {
+      const response = await fetch(`/api/backend-proxy/goals/by-user/${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setUserGoalsMap(prev => ({
+          ...prev,
+          [userId]: data
+        }))
+        return data
+      }
+    } catch (error) {
+    }
+    return { monthly: [], quarterly: [], yearly: [] }
+  }, [])
+
+  useEffect(() => {
+    const loadAllUserGoals = async () => {
+      setIsLoading(true)
+      try {
+        await Promise.all(users.map(user => fetchUserGoals(user.id)))
+      } catch (error) {
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (users.length > 0) {
+      loadAllUserGoals()
+    }
+  }, [users, fetchUserGoals])
+
+  useEffect(() => {
+    const newTemplateUsersMap: Record<string, string[]> = {}
+    
+    Object.entries(userGoalsMap).forEach(([userId, goals]) => {
+      const allGoals = [...(goals.monthly || []), ...(goals.quarterly || []), ...(goals.yearly || [])]
+      allGoals.forEach(goal => {
+        if (goal.templateId) {
+          if (!newTemplateUsersMap[goal.templateId]) {
+            newTemplateUsersMap[goal.templateId] = []
+          }
+          if (!newTemplateUsersMap[goal.templateId].includes(userId)) {
+            newTemplateUsersMap[goal.templateId].push(userId)
+          }
+        }
+      })
+    })
+    
+    setTemplateUsersMap(newTemplateUsersMap)
+  }, [userGoalsMap])
+
+  useEffect(() => {
+    const newMonthlyGoals: Record<string, MonthlyGoalValue[]> = {}
+    
+    Object.entries(userGoalsMap).forEach(([userId, goals]) => {
+      const allGoals = [...(goals.monthly || []), ...(goals.quarterly || []), ...(goals.yearly || [])]
+      
+      allGoals.forEach(goal => {
+        if (!goal.templateId) return
+        
+        const key = `${goal.templateId}-${userId}`
+        
+        if (!newMonthlyGoals[key]) {
+          newMonthlyGoals[key] = []
+        }
+        
+        const goalMetadata = (goal as any).goal_metadata
+        if (goalMetadata?.monthly_values && Array.isArray(goalMetadata.monthly_values)) {
+          goalMetadata.monthly_values.forEach((mv: any) => {
+            newMonthlyGoals[key].push({
+              userId,
+              templateId: goal.templateId,
+              month: mv.month,
+              year: mv.year,
+              target: mv.target || 0,
+              current: mv.current || 0
+            })
+          })
+        } else {
+          const startDate = goal.startDate ? new Date(goal.startDate) : new Date()
+          const goalYear = startDate.getFullYear()
+          const monthlyTarget = goal.target / 12
+          
+          for (let month = 1; month <= 12; month++) {
+            const existingEntry = newMonthlyGoals[key].find(
+              v => v.month === month && v.year === goalYear
+            )
+            if (!existingEntry) {
+              newMonthlyGoals[key].push({
+                userId,
+                templateId: goal.templateId,
+                month,
+                year: goalYear,
+                target: Math.round(monthlyTarget * 100) / 100,
+                current: 0
+              })
+            }
+          }
+        }
+      })
+    })
+    
+    setMonthlyGoals(newMonthlyGoals)
+  }, [userGoalsMap])
+
+  const findUserGoal = useCallback((userId: string, templateId: string): UserGoal | null => {
+    const userGoals = userGoalsMap[userId]
+    if (!userGoals) return null
+    
+    const allGoals = [...(userGoals.monthly || []), ...(userGoals.quarterly || []), ...(userGoals.yearly || [])]
+    return allGoals.find(g => g.templateId === templateId) || null
+  }, [userGoalsMap])
+
+  const getEffectiveTemplate = useCallback((template: GoalTemplate): GoalTemplate => {
+    const override = templateOverrides[template.id]
+    if (!override) return template
+    return { ...template, ...override }
+  }, [templateOverrides])
+
+  const filteredTemplates = useMemo(() => {
+    return goalTemplates
+      .filter(template => !hiddenTemplates.has(template.id))
+      .map(template => getEffectiveTemplate(template))
+      .filter(template => {
+        const matchesSearch = searchTerm === '' ||
+          template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          template.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+        const matchesCategory = filterCategory === 'all' || template.category === filterCategory
+        const matchesPeriod = filterPeriod === 'all' || template.period === filterPeriod
+
+        return matchesSearch && matchesCategory && matchesPeriod && template.isActive
+      })
+  }, [searchTerm, filterCategory, filterPeriod, hiddenTemplates, getEffectiveTemplate])
+
+  const activeTemplatesWithUsers = useMemo(() => {
+    return goalTemplates
+      .filter(t => t.isActive && !hiddenTemplates.has(t.id))
+      .map(template => ({
+        ...getEffectiveTemplate(template),
+        assignedUsers: templateUsersMap[template.id] || []
+      }))
+      .filter(t => t.assignedUsers.length > 0)
+  }, [hiddenTemplates, getEffectiveTemplate, templateUsersMap])
+
+  const goalStats = useMemo(() => {
+    const allGoals: UserGoal[] = []
+    Object.values(userGoalsMap).forEach(goals => {
+      allGoals.push(...(goals.monthly || []))
+      allGoals.push(...(goals.quarterly || []))
+      allGoals.push(...(goals.yearly || []))
+    })
+
+    return {
+      totalTemplates: goalTemplates.filter(t => t.isActive).length,
+      totalAssigned: allGoals.length,
+      achieved: allGoals.filter(g => g.status === 'achieved').length,
+      inProgress: allGoals.filter(g => g.status === 'in_progress').length,
+      overdue: allGoals.filter(g => g.status === 'overdue').length
+    }
+  }, [userGoalsMap])
+
+  const getMonthlyValue = useCallback((templateId: string, userId: string, month: number, year: number): number | null => {
+    const key = `${templateId}-${userId}`
+    const values = monthlyGoals[key] || []
+    const found = values.find(v => v.month === month && v.year === year)
+    return found ? found.target : null
+  }, [monthlyGoals])
+
+  const persistGoalToBackend = useCallback(async (
+    templateId: string, 
+    userId: string, 
+    updatedMonthlyValues: MonthlyGoalValue[]
+  ): Promise<boolean> => {
+    const existingGoal = findUserGoal(userId, templateId)
+    const template = goalTemplates.find(t => t.id === templateId)
+    
+    if (!template) return false
+    
+    const totalTarget = updatedMonthlyValues.reduce((sum, v) => sum + (v.target || 0), 0)
+    const totalCurrent = updatedMonthlyValues.reduce((sum, v) => sum + (v.current || 0), 0)
+    
+    const goalMetadata = {
+      monthly_values: updatedMonthlyValues.map(v => ({
+        month: v.month,
+        year: v.year,
+        target: v.target,
+        current: v.current
+      }))
+    }
+    
+    try {
+      if (existingGoal) {
+        const response = await fetch(`/api/backend-proxy/goals/${existingGoal.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: existingGoal.name,
+            description: existingGoal.description,
+            target: totalTarget,
+            current: totalCurrent,
+            unit: existingGoal.unit,
+            period: existingGoal.period,
+            category: existingGoal.category,
+            status: existingGoal.status,
+            goal_metadata: goalMetadata
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar meta')
+        }
+        
+        return true
+      } else {
+        const effectiveTemplate = getEffectiveTemplate(template)
+        const response = await fetch('/api/backend-proxy/goals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            template_id: templateId,
+            name: effectiveTemplate.name,
+            description: effectiveTemplate.description || '',
+            target: totalTarget,
+            current: totalCurrent,
+            unit: effectiveTemplate.unit || '',
+            period: effectiveTemplate.period,
+            category: effectiveTemplate.category,
+            start_date: new Date().toISOString(),
+            end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+            is_custom: false,
+            goal_metadata: goalMetadata
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Erro ao criar meta')
+        }
+        
+        await fetchUserGoals(userId)
+        return true
+      }
+    } catch (error) {
+      return false
+    }
+  }, [findUserGoal, getEffectiveTemplate, fetchUserGoals])
+
+  const setMonthlyValue = useCallback(async (templateId: string, userId: string, month: number, year: number, value: number) => {
+    const key = `${templateId}-${userId}`
+    
+    const previousValues = monthlyGoals[key] ? [...monthlyGoals[key]] : []
+    
+    const newValue: MonthlyGoalValue = {
+      userId,
+      templateId,
+      month,
+      year,
+      target: value,
+      current: 0
+    }
+    
+    const existing = monthlyGoals[key] || []
+    const idx = existing.findIndex(v => v.month === month && v.year === year)
+    
+    let updatedValues: MonthlyGoalValue[]
+    if (idx >= 0) {
+      updatedValues = [...existing]
+      updatedValues[idx] = { ...updatedValues[idx], target: value }
+    } else {
+      updatedValues = [...existing, newValue]
+    }
+    
+    setMonthlyGoals(prev => ({ ...prev, [key]: updatedValues }))
+    
+    try {
+      const success = await persistGoalToBackend(templateId, userId, updatedValues)
+      
+      if (!success) {
+        setMonthlyGoals(prev => ({ ...prev, [key]: previousValues }))
+        showError('Erro ao salvar meta. Valor revertido.')
+        return
+      }
+      
+      await fetchUserGoals(userId)
+    } catch (error) {
+      setMonthlyGoals(prev => ({ ...prev, [key]: previousValues }))
+      showError('Erro ao salvar meta. Valor revertido.')
+    }
+  }, [monthlyGoals, persistGoalToBackend, fetchUserGoals])
+
+  const calculateRowTotal = useCallback((templateId: string, userId: string, year: number): number => {
+    const key = `${templateId}-${userId}`
+    const values = monthlyGoals[key] || []
+    return values
+      .filter(v => v.year === year)
+      .reduce((sum, v) => sum + (v.target || 0), 0)
+  }, [monthlyGoals])
+
+  const calculateColumnTotal = useCallback((templateId: string, month: number, year: number, userIds: string[]): number => {
+    return userIds.reduce((sum, userId) => {
+      const value = getMonthlyValue(templateId, userId, month, year)
+      return sum + (value || 0)
+    }, 0)
+  }, [getMonthlyValue])
+
+  const calculateGrandTotal = useCallback((templateId: string, year: number, userIds: string[]): number => {
+    return userIds.reduce((sum, userId) => {
+      return sum + calculateRowTotal(templateId, userId, year)
+    }, 0)
+  }, [calculateRowTotal])
+
+  const applyValueToAll = useCallback(async (templateId: string, value: number, options: { allMonths: boolean, allUsers: boolean }) => {
+    const template = goalTemplates.find(t => t.id === templateId)
+    if (!template) return
+
+    const targetUsers = options.allUsers 
+      ? users.map(u => u.id)
+      : templateUsersMap[templateId] || []
+
+    const targetMonths = options.allMonths 
+      ? MONTHS.map(m => m.num)
+      : [new Date().getMonth() + 1]
+
+    const previousStates: Record<string, MonthlyGoalValue[]> = {}
+    const updatedGoals: Record<string, MonthlyGoalValue[]> = {}
+
+    targetUsers.forEach(userId => {
+      const key = `${templateId}-${userId}`
+      previousStates[key] = monthlyGoals[key] ? [...monthlyGoals[key]] : []
+      
+      const existing = monthlyGoals[key] || []
+      const updated = [...existing]
+      
+      targetMonths.forEach(month => {
+        const idx = updated.findIndex(v => v.month === month && v.year === selectedYear)
+        const newValue: MonthlyGoalValue = {
+          userId,
+          templateId,
+          month,
+          year: selectedYear,
+          target: value,
+          current: 0
+        }
+        
+        if (idx >= 0) {
+          updated[idx] = { ...updated[idx], target: value }
+        } else {
+          updated.push(newValue)
+        }
+      })
+      
+      updatedGoals[key] = updated
+    })
+
+    setMonthlyGoals(prev => ({ ...prev, ...updatedGoals }))
+
+    const results = await Promise.allSettled(
+      targetUsers.map(async userId => {
+        const key = `${templateId}-${userId}`
+        const success = await persistGoalToBackend(templateId, userId, updatedGoals[key])
+        if (!success) {
+          throw new Error('Failed to persist')
+        }
+        return { userId, success: true }
+      })
+    )
+
+    const successfulUserIds: string[] = []
+    const failedKeys: string[] = []
+
+    results.forEach((result, index) => {
+      const userId = targetUsers[index]
+      const key = `${templateId}-${userId}`
+
+      if (result.status === 'fulfilled' && result.value.success) {
+        successfulUserIds.push(userId)
+      } else {
+        failedKeys.push(key)
+      }
+    })
+
+    if (failedKeys.length > 0) {
+      setMonthlyGoals(prev => {
+        const reverted = { ...prev }
+        failedKeys.forEach(key => {
+          reverted[key] = previousStates[key]
+        })
+        return reverted
+      })
+      showError(`${failedKeys.length} usuário(s) não foram atualizados`)
+    }
+
+    if (successfulUserIds.length > 0) {
+      await Promise.all(successfulUserIds.map(userId => fetchUserGoals(userId)))
+      if (failedKeys.length === 0) {
+        showSuccess(`${successfulUserIds.length} meta(s) salva(s) com sucesso!`)
+      } else {
+        showSuccess(`${successfulUserIds.length} usuário(s) atualizado(s) com sucesso`)
+      }
+    }
+  }, [users, templateUsersMap, selectedYear, monthlyGoals, persistGoalToBackend, fetchUserGoals])
+
+  const toggleGoalCollapse = (templateId: string) => {
+    setCollapsedGoals(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(templateId)) {
+        newSet.delete(templateId)
+      } else {
+        newSet.add(templateId)
+      }
+      return newSet
+    })
   }
-}
+
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message)
+    setTimeout(() => setSuccessMessage(null), 3000)
+  }
+
+  const showError = (message: string) => {
+    setError(message)
+    setTimeout(() => setError(null), 5000)
+  }
+
+  const createGoalInBackend = async (goalData: any): Promise<UserGoal | null> => {
+    try {
+      const response = await fetch('/api/backend-proxy/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: goalData.userId,
+          template_id: goalData.templateId || null,
+          name: goalData.name,
+          description: goalData.description || '',
+          target: goalData.target,
+          current: goalData.current || 0,
+          unit: goalData.unit || '',
+          period: goalData.period,
+          category: goalData.category,
+          start_date: goalData.startDate ? new Date(goalData.startDate).toISOString() : null,
+          end_date: goalData.endDate ? new Date(goalData.endDate).toISOString() : null,
+          is_custom: goalData.isCustom || false
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao criar meta')
+      }
+
+      const createdGoal = await response.json()
+      return {
+        id: createdGoal.id,
+        userId: createdGoal.user_id,
+        templateId: createdGoal.template_id || '',
+        name: createdGoal.name,
+        description: createdGoal.description || '',
+        target: createdGoal.target,
+        current: createdGoal.current,
+        unit: createdGoal.unit || '',
+        period: createdGoal.period,
+        startDate: createdGoal.start_date,
+        endDate: createdGoal.end_date,
+        status: createdGoal.status,
+        progress: createdGoal.progress,
+        category: createdGoal.category,
+        isCustom: createdGoal.is_custom
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const updateGoalInBackend = async (goalId: string, updates: any): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/backend-proxy/goals/${goalId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: updates.name,
+          description: updates.description,
+          target: updates.target,
+          current: updates.current,
+          unit: updates.unit,
+          period: updates.period,
+          category: updates.category,
+          status: updates.status
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao atualizar meta')
+      }
+
+      return true
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const deleteGoalInBackend = async (goalId: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/backend-proxy/goals/${goalId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao deletar meta')
+      }
+
+      return true
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const calculateEndDate = (period: string) => {
+    const now = new Date()
+    const endDate = new Date(now)
+
+    switch (period) {
+      case 'monthly':
+        endDate.setMonth(endDate.getMonth() + 1)
+        break
+      case 'quarterly':
+        endDate.setMonth(endDate.getMonth() + 3)
+        break
+      case 'yearly':
+        endDate.setFullYear(endDate.getFullYear() + 1)
+        break
+    }
+
+    return endDate.toISOString().split('T')[0]
+  }
+
+  const isTemplateAppliedToUser = useCallback((templateId: string, userId: string): boolean => {
+    const userGoals = userGoalsMap[userId]
+    if (!userGoals) return false
+    const allGoals = [...(userGoals.monthly || []), ...(userGoals.quarterly || []), ...(userGoals.yearly || [])]
+    return allGoals.some(g => g.templateId === templateId)
+  }, [userGoalsMap])
+
+  const getAppliedTemplatesForUser = useCallback((userId: string): Set<string> => {
+    const userGoals = userGoalsMap[userId]
+    if (!userGoals) return new Set()
+    const allGoals = [...(userGoals.monthly || []), ...(userGoals.quarterly || []), ...(userGoals.yearly || [])]
+    return new Set(allGoals.filter(g => g.templateId).map(g => g.templateId))
+  }, [userGoalsMap])
+
+  const toggleTemplateSelection = (templateId: string) => {
+    setSelectedTemplateIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(templateId)) {
+        newSet.delete(templateId)
+      } else {
+        newSet.add(templateId)
+      }
+      return newSet
+    })
+  }
+
+  const handleApplyTemplate = async (template: GoalTemplate, targetUsers: any[]) => {
+    setIsSaving(true)
+    setSavingTemplateId(template.id)
+    setError(null)
+
+    try {
+      let appliedCount = 0
+      let skippedCount = 0
+
+      for (const user of targetUsers) {
+        if (isTemplateAppliedToUser(template.id, user.id)) {
+          skippedCount++
+          continue
+        }
+
+        const goalData = {
+          userId: user.id,
+          templateId: template.id,
+          name: template.name,
+          description: template.description,
+          target: template.defaultTarget,
+          current: 0,
+          unit: template.unit,
+          period: template.period,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: calculateEndDate(template.period),
+          category: template.category,
+          isCustom: false
+        }
+
+        await createGoalInBackend(goalData)
+        await fetchUserGoals(user.id)
+        appliedCount++
+      }
+
+      if (skippedCount > 0 && appliedCount === 0) {
+        showError(`"${template.name}" já está aplicado para todos os usuários selecionados`)
+      } else if (skippedCount > 0) {
+        showSuccess(`"${template.name}" aplicado para ${appliedCount} usuário(s). ${skippedCount} já tinham essa meta.`)
+      } else {
+        showSuccess(`"${template.name}" aplicado com sucesso para ${appliedCount} usuário(s)`)
+      }
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao aplicar template')
+    } finally {
+      setIsSaving(false)
+      setSavingTemplateId(null)
+    }
+  }
+
+  const handleApplySelectedTemplates = async () => {
+    if (selectedTemplateIds.size === 0) {
+      showError('Selecione pelo menos um template')
+      return
+    }
+
+    const targetUsers = templateApplyMode === 'selected' && selectedUser ? [selectedUser] : users
+    
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const goalsToCreate: any[] = []
+      let totalSkipped = 0
+
+      for (const templateId of selectedTemplateIds) {
+        const template = filteredTemplates.find(t => t.id === templateId) || goalTemplates.find(t => t.id === templateId)
+        if (!template) continue
+
+        for (const user of targetUsers) {
+          if (isTemplateAppliedToUser(template.id, user.id)) {
+            totalSkipped++
+            continue
+          }
+
+          goalsToCreate.push({
+            userId: user.id,
+            templateId: template.id,
+            name: template.name,
+            description: template.description,
+            target: template.defaultTarget,
+            current: 0,
+            unit: template.unit,
+            period: template.period,
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: calculateEndDate(template.period),
+            category: template.category,
+            isCustom: false
+          })
+        }
+      }
+
+      const results = await Promise.allSettled(
+        goalsToCreate.map(goalData => createGoalInBackend(goalData))
+      )
+
+      const totalApplied = results.filter(r => r.status === 'fulfilled').length
+      const totalFailed = results.filter(r => r.status === 'rejected').length
+
+      await Promise.all(targetUsers.map(u => fetchUserGoals(u.id)))
+
+      if (totalFailed > 0) {
+        showError(`${totalApplied} aplicada(s), ${totalFailed} falharam`)
+      } else if (totalSkipped > 0 && totalApplied === 0) {
+        showError('Todas as metas selecionadas já estavam aplicadas')
+      } else if (totalSkipped > 0) {
+        showSuccess(`${totalApplied} meta(s) aplicada(s). ${totalSkipped} duplicata(s) ignorada(s).`)
+      } else {
+        showSuccess(`${totalApplied} meta(s) aplicada(s) com sucesso!`)
+      }
+
+      setSelectedTemplateIds(new Set())
+      setShowTemplates(false)
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao aplicar templates')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCreateCustomGoal = async () => {
+    const targetUserId = customGoalForm.userId || selectedUser?.id
+    const isApplyToAll = targetUserId === '__all__'
+    
+    if (!targetUserId) {
+      showError('Selecione um usuário ou "Todos" para criar a meta')
+      return
+    }
+    
+    if (!customGoalForm.name) {
+      showError('O nome da meta é obrigatório')
+      return
+    }
+
+    if (customGoalForm.target <= 0) {
+      showError('A meta deve ter um valor maior que zero')
+      return
+    }
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const targetUsers = isApplyToAll ? users : [users.find(u => u.id === targetUserId)].filter(Boolean)
+      
+      for (const user of targetUsers) {
+        const goalData = {
+          userId: user.id,
+          templateId: '',
+          name: customGoalForm.name,
+          description: customGoalForm.description,
+          target: customGoalForm.target,
+          current: 0,
+          unit: customGoalForm.unit,
+          period: customGoalForm.period,
+          startDate: customGoalForm.startDate || new Date().toISOString().split('T')[0],
+          endDate: customGoalForm.endDate || calculateEndDate(customGoalForm.period),
+          category: customGoalForm.category,
+          isCustom: true
+        }
+
+        await createGoalInBackend(goalData)
+        await fetchUserGoals(user.id)
+      }
+
+      showSuccess(isApplyToAll 
+        ? `Meta "${customGoalForm.name}" criada para ${targetUsers.length} usuários!`
+        : 'Meta criada com sucesso!'
+      )
+      setShowCustomGoal(false)
+      setCustomGoalForm({
+        name: '',
+        description: '',
+        target: 0,
+        unit: '',
+        period: 'monthly',
+        category: 'recruitment',
+        startDate: '',
+        endDate: '',
+        userId: ''
+      })
+      setSelectedUser(null)
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao criar meta')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleUpdateGoal = async (goal: UserGoal, updates: Partial<UserGoal>) => {
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      await updateGoalInBackend(goal.id, { ...goal, ...updates })
+      await fetchUserGoals(goal.userId)
+
+      showSuccess('Meta atualizada com sucesso!')
+      setEditingGoal(null)
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao atualizar meta')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDeleteGoal = (goal: UserGoal) => {
+    setDeleteConfirmGoal(goal)
+  }
+
+  const confirmDeleteGoal = async () => {
+    if (!deleteConfirmGoal) return
+
+    setIsDeleting(true)
+    setError(null)
+
+    try {
+      await deleteGoalInBackend(deleteConfirmGoal.id)
+      await fetchUserGoals(deleteConfirmGoal.userId)
+
+      showSuccess('Meta excluída com sucesso!')
+      setDeleteConfirmGoal(null)
+    } catch (error: unknown) {
+      showError(error instanceof Error ? error.message : 'Erro ao excluir meta')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'recruitment': return <UserCheck className="w-3 h-3 text-gray-500" />
+      case 'quality': return <Star className="w-3 h-3 text-gray-500" />
+      case 'efficiency': return <Zap className="w-3 h-3 text-gray-500" />
+      case 'satisfaction': return <Heart className="w-3 h-3 text-gray-500" />
+      default: return <Target className="w-3 h-3 text-gray-500" />
+    }
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'recruitment': return 'bg-gray-100 text-gray-700 border-gray-300'
+      case 'quality': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'efficiency': return 'bg-status-success/10 text-status-success border-status-success/30'
+      case 'satisfaction': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'achieved': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'in_progress': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'overdue': return 'bg-status-error/15 text-status-error border-status-error/30'
+      case 'pending': return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+    }
+  }
+
+  const getUserById = (userId: string) => users.find(u => u.id === userId)
+
+  const handleAddUserToTemplate = async (templateId: string) => {
+    const template = goalTemplates.find(t => t.id === templateId)
+    if (!template) return
+
+    const availableUsers = users.filter(u => !isTemplateAppliedToUser(templateId, u.id))
+    if (availableUsers.length === 0) {
+      showError('Todos os usuários já possuem esta meta')
+      return
+    }
+
+    setSelectedUser(availableUsers[0])
+    await handleApplyTemplate(getEffectiveTemplate(template), [availableUsers[0]])
+  }
 
   return (
     <div className="space-y-6">

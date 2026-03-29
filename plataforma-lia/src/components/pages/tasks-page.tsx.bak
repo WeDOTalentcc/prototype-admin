@@ -1,12 +1,13 @@
 "use client"
 
-import React from "react"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import React, { useState, useMemo } from "react"
+import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
+
 import {
   CheckCircle2, Clock, AlertCircle, Calendar, ChevronLeft, ChevronRight,
   Plus, UserPlus, Upload, Search, Share2, Send, FileText, Users, Briefcase,
@@ -20,39 +21,1051 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActivityFeed } from "@/components/activity-feed"
 import { DailyBriefingCard } from "@/components/daily-briefing-card"
 
-// Camada 1 (hook): Estado e ações centralizadas
-import { useTasksCore } from "./use-tasks-core"
-// Camada 2 (helpers puros): Formatação e badges
-import {
-  getTaskPriorityStyle, getAlertSeverityStyle, getPriorityLabel, getSeverityLabel,
-  getTaskTypeIcon, getAlertIcon, getAlertStyle, getUrgencyBadge, getConversionRate,
-  getConversionStyle, getRequestStatusBadge, getRequestPriorityBadge, getWorkModelLabel
-} from "./task-helpers"
+// Interfaces
+interface Task {
+  id: string
+  title: string
+  description: string
+  type: 'minha' | 'ia' | 'entrevista' | 'email' | 'oferta'
+  status: 'pending' | 'completed' | 'cancelled'
+  dueDate: Date
+  priority: 'high' | 'medium' | 'low'
+  relatedTo?: string
+  color?: string
+}
+
+interface JobRequest {
+  id: string
+  requestId: string
+  title: string
+  department: string
+  requester: string
+  requesterEmail: string
+  requestDate: string
+  status: 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'in_review' | 'requires_changes' | 'published'
+  priority: 'critical' | 'high' | 'medium' | 'low'
+  headcount: number
+  estimatedSalary: string
+  workModel: 'remote' | 'hybrid' | 'onsite'
+  justification: string
+  approvers: {
+    name: string
+    role: string
+    status: 'pending' | 'approved' | 'rejected'
+    date?: string
+    comments?: string
+  }[]
+  attachments?: string[]
+  daysWaiting: number
+}
+
+interface JobWithAlert {
+  id: string
+  jobId: string
+  title: string
+  department: string
+  stage: string
+  totalCandidates: number
+  manager: string
+  managerEmail: string
+  openDate: string
+  daysOpen: number
+  urgencyLevel: 'critical' | 'urgent' | 'normal'
+  budget?: number
+  budgetUsed?: number
+  publishedLinkedIn: boolean
+  publishedWebsite: boolean
+  publishedIndeed?: boolean
+  stages: {
+    new: number
+    uncontacted: number
+    contacted: number
+    replied: number
+    phoneScreen: number
+    onsite: number
+    makeOffer: number
+    hired: number
+  }
+  alert: {
+    type: 'urgent' | 'warning' | 'info' | 'success'
+    message: string
+    action: string
+  }
+  liaPendencies: string[]
+}
+
+interface PendingTask {
+  id: string
+  title: string
+  description: string
+  type: 'feedback' | 'entrevista' | 'sourcing'
+  priority: 'high' | 'medium' | 'low'
+  dueDate: Date
+  relatedJob?: string
+  candidateName?: string
+  createdAt: Date
+}
+
+interface ActiveAlert {
+  id: string
+  title: string
+  description: string
+  severity: 'high' | 'medium' | 'low'
+  jobId: string
+  jobTitle: string
+  createdAt: Date
+  action: string
+}
 
 interface TasksPageProps {
   onNavigate?: (page: string) => void
 }
 
-// Camada 3 (componente com estado): Usa hook da Camada 1
 export function TasksPage({ onNavigate }: TasksPageProps = {}) {
-  const { state, actions } = useTasksCore(onNavigate)
-  const {
-    pendingTasks, activeAlerts, tasks, jobsWithAlerts, jobRequests, metrics,
-    filteredPendingTasks, filteredAndSortedJobs, filteredAndSortedRequests,
-    pendingTaskFilter, showJobFilters, jobSearchTerm, selectedDepartments,
-    selectedUrgencies, selectedPublications, jobSortBy, activeJobFiltersCount,
-    uniqueDepartments, showRequestFilters, requestSearchTerm, selectedRequestStatus,
-    selectedRequestDepartments, requestSortBy, activeRequestFiltersCount,
-    uniqueRequestDepartments, selectedActivity, showActivityModal
-  } = state
-  const {
-    setPendingTaskFilter, setShowJobFilters, setJobSearchTerm, setSelectedDepartments,
-    setSelectedUrgencies, setSelectedPublications, setJobSortBy, clearJobFilters,
-    setShowRequestFilters, setRequestSearchTerm, setSelectedRequestStatus,
-    setSelectedRequestDepartments, setRequestSortBy, clearRequestFilters,
-    setShowActivityModal, handleConfirmTask, handleRejectTask, handleAlertAction,
-    handleLIAAction, handleRequestAction, handleActivityClick
-  } = actions
+  const [currentPage, setCurrentPage] = useState("Tarefas")
+
+  // Estados para busca e filtros de vagas
+  const [jobSearchTerm, setJobSearchTerm] = useState("")
+  const [showJobFilters, setShowJobFilters] = useState(false)
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
+  const [selectedUrgencies, setSelectedUrgencies] = useState<string[]>([])
+  const [selectedPublications, setSelectedPublications] = useState<string[]>([])
+  const [jobSortBy, setJobSortBy] = useState<'daysOpen' | 'candidates' | 'urgency'>('urgency')
+
+  // Estados para requisições de vagas
+  const [requestSearchTerm, setRequestSearchTerm] = useState("")
+  const [showRequestFilters, setShowRequestFilters] = useState(false)
+  const [selectedRequestStatus, setSelectedRequestStatus] = useState<string[]>([])
+  const [selectedRequestDepartments, setSelectedRequestDepartments] = useState<string[]>([])
+  const [requestSortBy, setRequestSortBy] = useState<'date' | 'priority' | 'status'>('priority')
+
+  // Estados para modal de detalhes da atividade
+  const [selectedActivity, setSelectedActivity] = useState<any | null>(null)
+  const [showActivityModal, setShowActivityModal] = useState(false)
+
+  // Estados para o novo card de tarefas pendentes
+  const [pendingTaskFilter, setPendingTaskFilter] = useState<'all' | 'feedback' | 'entrevista' | 'sourcing'>('all')
+
+  // Mock data - Tarefas Pendentes (preparado para API /api/v1/tasks)
+  const pendingTasks: PendingTask[] = [
+    {
+      id: 'pt-1',
+      title: 'Feedback de Entrevista Técnica',
+      description: 'Avaliar candidato João Silva após entrevista de React',
+      type: 'feedback',
+      priority: 'high',
+      dueDate: new Date(2025, 10, 29, 14, 0),
+      relatedJob: 'UX Designer Sênior',
+      candidateName: 'João Silva',
+      createdAt: new Date(2025, 10, 28, 10, 0)
+    },
+    {
+      id: 'pt-2',
+      title: 'Agendar Entrevista Final',
+      description: 'Coordenar horário com gestor para candidato aprovado',
+      type: 'entrevista',
+      priority: 'medium',
+      dueDate: new Date(2025, 10, 30, 11, 0),
+      relatedJob: 'Desenvolvedor React Sênior',
+      candidateName: 'Maria Santos',
+      createdAt: new Date(2025, 10, 27, 16, 0)
+    },
+    {
+      id: 'pt-3',
+      title: 'Sourcing de Candidatos',
+      description: 'Buscar 10 perfis de Data Scientists no LinkedIn',
+      type: 'sourcing',
+      priority: 'medium',
+      dueDate: new Date(2025, 11, 1, 18, 0),
+      relatedJob: 'Data Scientist',
+      createdAt: new Date(2025, 10, 26, 9, 0)
+    },
+    {
+      id: 'pt-4',
+      title: 'Feedback de Fit Cultural',
+      description: 'Validar alinhamento de valores do candidato',
+      type: 'feedback',
+      priority: 'low',
+      dueDate: new Date(2025, 11, 2, 10, 0),
+      relatedJob: 'Gerente de Vendas',
+      candidateName: 'Carlos Oliveira',
+      createdAt: new Date(2025, 10, 25, 14, 0)
+    },
+    {
+      id: 'pt-5',
+      title: 'Confirmar Entrevista',
+      description: 'Reconfirmar disponibilidade do candidato',
+      type: 'entrevista',
+      priority: 'high',
+      dueDate: new Date(2025, 10, 29, 9, 0),
+      relatedJob: 'UX Designer Pleno',
+      candidateName: 'Ana Costa',
+      createdAt: new Date(2025, 10, 28, 8, 0)
+    }
+  ]
+
+  // Mock data - Alertas Ativos (preparado para API /api/v1/alerts)
+  const activeAlerts: ActiveAlert[] = [
+    {
+      id: 'alert-1',
+      title: 'Candidatos sem contato há 5+ dias',
+      description: '3 candidatos aguardando retorno na vaga de UX Designer',
+      severity: 'high',
+      jobId: 'WDT-2025-001',
+      jobTitle: 'UX Designer Sênior',
+      createdAt: new Date(2025, 10, 28, 8, 0),
+      action: 'Enviar follow-up automático'
+    },
+    {
+      id: 'alert-2',
+      title: 'Prazo de preenchimento próximo',
+      description: 'Vaga de React Sênior deve ser preenchida em 7 dias',
+      severity: 'medium',
+      jobId: 'WDT-2025-002',
+      jobTitle: 'Desenvolvedor React Sênior',
+      createdAt: new Date(2025, 10, 27, 14, 0),
+      action: 'Acelerar processo'
+    },
+    {
+      id: 'alert-3',
+      title: 'Taxa de conversão baixa',
+      description: 'Apenas 15% dos candidatos passam da triagem',
+      severity: 'medium',
+      jobId: 'WDT-2025-004',
+      jobTitle: 'Data Scientist',
+      createdAt: new Date(2025, 10, 26, 10, 0),
+      action: 'Revisar requisitos'
+    },
+    {
+      id: 'alert-4',
+      title: 'Feedback pendente do gestor',
+      description: 'Roberto Silva não respondeu avaliação há 3 dias',
+      severity: 'low',
+      jobId: 'WDT-2025-001',
+      jobTitle: 'UX Designer Sênior',
+      createdAt: new Date(2025, 10, 25, 16, 0),
+      action: 'Cobrar gestor'
+    }
+  ]
+
+  // Filtrar tarefas pendentes por tipo
+  const filteredPendingTasks = useMemo(() => {
+    if (pendingTaskFilter === 'all') return pendingTasks
+    return pendingTasks.filter(task => task.type === pendingTaskFilter)
+  }, [pendingTaskFilter])
+
+  // Função para confirmar tarefa
+  const handleConfirmTask = (task: PendingTask) => {
+    const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('liaPrompt', prompt)
+    }
+    if (onNavigate) {
+      onNavigate('Chat com LIA')
+    }
+  }
+
+  // Função para rejeitar tarefa
+  const handleRejectTask = (task: PendingTask) => {
+    const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('liaPrompt', prompt)
+    }
+    if (onNavigate) {
+      onNavigate('Chat com LIA')
+    }
+  }
+
+  // Função para ação de alerta
+  const handleAlertAction = (alert: ActiveAlert) => {
+    const prompt = `${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('liaPrompt', prompt)
+    }
+    if (onNavigate) {
+      onNavigate('Chat com LIA')
+    }
+  }
+
+  // Helper para obter cor de prioridade de tarefa
+  const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
+    switch (priority) {
+      case 'high':
+        return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
+      case 'medium':
+        return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
+      case 'low':
+        return { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }
+    }
+  }
+
+  // Helper para obter cor de severidade de alerta
+  const getAlertSeverityStyle = (severity: 'high' | 'medium' | 'low') => {
+    switch (severity) {
+      case 'high':
+        return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
+      case 'medium':
+        return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
+      case 'low':
+        return { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }
+    }
+  }
+
+  // Helper para obter label de prioridade
+  const getPriorityLabel = (priority: 'high' | 'medium' | 'low') => {
+    switch (priority) {
+      case 'high': return 'Alta'
+      case 'medium': return 'Média'
+      case 'low': return 'Baixa'
+    }
+  }
+
+  // Helper para obter label de severidade
+  const getSeverityLabel = (severity: 'high' | 'medium' | 'low') => {
+    switch (severity) {
+      case 'high': return 'Alto'
+      case 'medium': return 'Médio'
+      case 'low': return 'Baixo'
+    }
+  }
+
+  // Helper para obter ícone do tipo de tarefa
+  const getTaskTypeIcon = (type: 'feedback' | 'entrevista' | 'sourcing') => {
+    switch (type) {
+      case 'feedback': return <MessageSquare className="w-3.5 h-3.5" />
+      case 'entrevista': return <Calendar className="w-3.5 h-3.5" />
+      case 'sourcing': return <Search className="w-3.5 h-3.5" />
+    }
+  }
+
+  // Função para navegar ao Chat com LIA com prompt pré-construído
+  const handleLIAAction = (action: string, job: JobWithAlert) => {
+    let prompt = ''
+    switch (action) {
+      case 'kanban':
+        prompt = `Mostrar o kanban completo da vaga ${job.title} (${job.jobId}) com todos os ${job.totalCandidates} candidatos`
+        break
+      case 'report':
+        prompt = `Gerar relatório detalhado da vaga ${job.title} (${job.jobId}) incluindo métricas de conversão, tempo médio de resposta e análise de performance`
+        break
+      case 'share':
+        prompt = `Compartilhar a vaga ${job.title} (${job.jobId}) no LinkedIn, Site e Indeed com descrição otimizada`
+        break
+      case 'edit':
+        prompt = `Editar os requisitos e descrição da vaga ${job.title} (${job.jobId}) mantendo o alinhamento com as expectativas do gestor ${job.manager}`
+        break
+      case 'duplicate':
+        prompt = `Duplicar a vaga ${job.title} (${job.jobId}) criando uma nova posição similar para ${job.department}`
+        break
+      case 'cancel':
+        prompt = `Cancelar a vaga ${job.title} (${job.jobId}) e notificar todos os ${job.totalCandidates} candidatos e o gestor ${job.manager}`
+        break
+      default:
+        prompt = `Ajudar com a vaga ${job.title} (${job.jobId})`
+    }
+
+    // Armazenar o prompt no localStorage para ser recuperado pelo chat
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('liaPrompt', prompt)
+    }
+
+    // Navegar para o Chat com LIA
+    if (onNavigate) {
+      onNavigate('Chat com LIA')
+    } else {
+    }
+  }
+
+  // Mock data - métricas
+  const metrics = {
+    total: 8,
+    completed: 3,
+    pending: 4,
+    iaTasks: 1
+  }
+
+  // Mock data - tarefas expandido com mais detalhes
+  const tasks: Task[] = [
+    {
+      id: '1',
+      title: 'Entrevista Técnica - João Silva',
+      description: 'Frontend Developer • React + TypeScript',
+      type: 'entrevista',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 9, 0),
+      priority: 'high',
+      relatedTo: 'UX Designer Sênior',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '2',
+      title: 'Enviar Lembrete',
+      description: 'Entrevista João Silva - 09:00',
+      type: 'ia',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 8, 45),
+      priority: 'medium',
+      relatedTo: 'Lembrete automático',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '3',
+      title: 'Revisar CVs - Backend Dev',
+      description: '15 candidatos pendentes',
+      type: 'minha',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 10, 30),
+      priority: 'medium',
+      relatedTo: 'Triagem inicial',
+      color: 'border-l-gray-500'
+    },
+    {
+      id: '4',
+      title: 'Revisar Perfis',
+      description: '15 candidatos pendentes • Sugestão LIA',
+      type: 'ia',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 11, 0),
+      priority: 'medium',
+      relatedTo: 'Triagem rápida',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '5',
+      title: 'Autorizar Feedback - Ana Costa',
+      description: 'UX Designer • Processo finalizado',
+      type: 'minha',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 14, 0),
+      priority: 'high',
+      relatedTo: 'Aprovação necessária',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '6',
+      title: 'Publicar Vaga - UX Designer',
+      description: 'Área de Produto • Revisão final',
+      type: 'minha',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 15, 30),
+      priority: 'medium',
+      relatedTo: 'Publicação em 3 canais',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '7',
+      title: 'Aprovar Oferta',
+      description: 'Lucas Mendes - Backend • Sugestão LIA',
+      type: 'ia',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 16, 0),
+      priority: 'high',
+      relatedTo: 'Oferta R$ 12.000',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    },
+    {
+      id: '8',
+      title: 'Enviar Oferta - Lucas Mendes',
+      description: 'Backend Developer • Aprovado',
+      type: 'oferta',
+      status: 'pending',
+      dueDate: new Date(2025, 9, 11, 16, 30),
+      priority: 'high',
+      relatedTo: 'R$ 12.000',
+      color: 'border-l-gray-700 dark:border-l-gray-300'
+    }
+  ]
+
+  // Mock data - vagas ativas com alertas (ATUALIZADO com budget e publicações)
+  const jobsWithAlerts: JobWithAlert[] = [
+    {
+      id: '1',
+      jobId: 'WDT-2025-001',
+      title: 'UX Designer Sênior',
+      department: 'Design',
+      stage: 'Entrevistas',
+      totalCandidates: 45,
+      manager: 'Roberto Silva',
+      managerEmail: 'roberto.silva@sodexo.com',
+      openDate: '2025-03-01',
+      daysOpen: 28,
+      urgencyLevel: 'urgent',
+      budget: 25000,
+      budgetUsed: 18500,
+      publishedLinkedIn: true,
+      publishedWebsite: true,
+      publishedIndeed: true,
+      stages: {
+        new: 12,
+        uncontacted: 8,
+        contacted: 15,
+        replied: 10,
+        phoneScreen: 7,
+        onsite: 4,
+        makeOffer: 2,
+        hired: 0
+      },
+      alert: {
+        type: 'urgent',
+        message: '3 candidatos aguardando feedback há 5+ dias',
+        action: 'Enviar feedbacks'
+      },
+      liaPendencies: [
+        'Aprovar feedback de Ana Costa',
+        'Agendar entrevista com João Silva',
+        'Responder candidato Pedro Alves'
+      ]
+    },
+    {
+      id: '2',
+      jobId: 'WDT-2025-002',
+      title: 'Desenvolvedor React Sênior',
+      department: 'Tecnologia',
+      stage: 'Finalização',
+      totalCandidates: 68,
+      manager: 'Carlos Santos',
+      managerEmail: 'carlos.santos@sodexo.com',
+      openDate: '2025-02-15',
+      daysOpen: 42,
+      urgencyLevel: 'critical',
+      budget: 35000,
+      budgetUsed: 32000,
+      publishedLinkedIn: true,
+      publishedWebsite: false,
+      publishedIndeed: true,
+      stages: {
+        new: 5,
+        uncontacted: 2,
+        contacted: 8,
+        replied: 12,
+        phoneScreen: 10,
+        onsite: 6,
+        makeOffer: 3,
+        hired: 2
+      },
+      alert: {
+        type: 'success',
+        message: '2 ofertas aceitas - preparar onboarding',
+        action: 'Iniciar onboarding'
+      },
+      liaPendencies: [
+        'Preparar onboarding de Carlos M.',
+        'Negociar data de início'
+      ]
+    },
+    {
+      id: '3',
+      jobId: 'WDT-2025-004',
+      title: 'Data Scientist',
+      department: 'Tecnologia',
+      stage: 'Triagem',
+      totalCandidates: 52,
+      manager: 'Roberto Silva',
+      managerEmail: 'roberto.silva@sodexo.com',
+      openDate: '2025-02-20',
+      daysOpen: 15,
+      urgencyLevel: 'normal',
+      budget: 60000,
+      budgetUsed: 45000,
+      publishedLinkedIn: true,
+      publishedWebsite: true,
+      publishedIndeed: false,
+      stages: {
+        new: 23,
+        uncontacted: 15,
+        contacted: 8,
+        replied: 4,
+        phoneScreen: 2,
+        onsite: 0,
+        makeOffer: 0,
+        hired: 0
+      },
+      alert: {
+        type: 'warning',
+        message: 'Taxa de resposta baixa (26%) - revisar abordagem',
+        action: 'Otimizar outreach'
+      },
+      liaPendencies: [
+        'Finalizar triagem automática',
+        'Preparar teste prático'
+      ]
+    }
+  ]
+
+  // Mock data - requisições de vagas
+  const jobRequests: JobRequest[] = [
+    {
+      id: '1',
+      requestId: 'REQ-2025-045',
+      title: 'Desenvolvedor Full Stack Sênior',
+      department: 'Tecnologia',
+      requester: 'Carlos Mendes',
+      requesterEmail: 'carlos.mendes@sodexo.com',
+      requestDate: '2025-10-05',
+      status: 'pending_approval',
+      priority: 'critical',
+      headcount: 2,
+      estimatedSalary: 'R$ 12.000 - R$ 15.000',
+      workModel: 'hybrid',
+      justification: 'Expansão do time de produto para atender demanda de novos projetos estratégicos. Necessário expertise em React, Node.js e Cloud.',
+      approvers: [
+        { name: 'Roberto Silva', role: 'Diretor de Tecnologia', status: 'approved', date: '2025-10-06', comments: 'Aprovado. Projeto crítico.' },
+        { name: 'Ana Costa', role: 'VP de Operações', status: 'pending' },
+        { name: 'Pedro Souza', role: 'CFO', status: 'pending' }
+      ],
+      daysWaiting: 6
+    },
+    {
+      id: '2',
+      requestId: 'REQ-2025-046',
+      title: 'UX Designer Pleno',
+      department: 'Design',
+      requester: 'Juliana Oliveira',
+      requesterEmail: 'juliana.oliveira@sodexo.com',
+      requestDate: '2025-10-08',
+      status: 'in_review',
+      priority: 'high',
+      headcount: 1,
+      estimatedSalary: 'R$ 8.000 - R$ 10.000',
+      workModel: 'remote',
+      justification: 'Necessidade de reforço no time para redesign da plataforma mobile.',
+      approvers: [
+        { name: 'Roberto Silva', role: 'Head de Design', status: 'approved', date: '2025-10-09', comments: 'Aprovado com ressalvas sobre budget' },
+        { name: 'Ana Costa', role: 'VP de Operações', status: 'pending' }
+      ],
+      daysWaiting: 3
+    },
+    {
+      id: '3',
+      requestId: 'REQ-2025-047',
+      title: 'Analista de Marketing Digital',
+      department: 'Marketing',
+      requester: 'Marina Santos',
+      requesterEmail: 'marina.santos@sodexo.com',
+      requestDate: '2025-10-09',
+      status: 'requires_changes',
+      priority: 'medium',
+      headcount: 1,
+      estimatedSalary: 'R$ 6.000 - R$ 8.000',
+      workModel: 'hybrid',
+      justification: 'Reforço para campanhas de lançamento de novos produtos.',
+      approvers: [
+        { name: 'Paula Lima', role: 'Diretora de Marketing', status: 'rejected', date: '2025-10-10', comments: 'Solicito revisão do budget e escopo das atividades' }
+      ],
+      daysWaiting: 2
+    },
+    {
+      id: '4',
+      requestId: 'REQ-2025-048',
+      title: 'Gerente de Vendas - Região Sul',
+      department: 'Vendas',
+      requester: 'Fernando Costa',
+      requesterEmail: 'fernando.costa@sodexo.com',
+      requestDate: '2025-10-01',
+      status: 'approved',
+      priority: 'high',
+      headcount: 1,
+      estimatedSalary: 'R$ 15.000 - R$ 18.000',
+      workModel: 'hybrid',
+      justification: 'Expansão da operação comercial na região Sul. Posição crítica para atingir metas de Q4.',
+      approvers: [
+        { name: 'Ricardo Alves', role: 'VP de Vendas', status: 'approved', date: '2025-10-02', comments: 'Aprovado. Iniciar processo imediatamente.' },
+        { name: 'Pedro Souza', role: 'CFO', status: 'approved', date: '2025-10-03', comments: 'Budget aprovado' }
+      ],
+      daysWaiting: 10
+    },
+    {
+      id: '5',
+      requestId: 'REQ-2025-049',
+      title: 'Assistente Administrativo',
+      department: 'Operações',
+      requester: 'Carla Mendes',
+      requesterEmail: 'carla.mendes@sodexo.com',
+      requestDate: '2025-10-10',
+      status: 'draft',
+      priority: 'low',
+      headcount: 1,
+      estimatedSalary: 'R$ 3.500 - R$ 4.500',
+      workModel: 'onsite',
+      justification: 'Reposição de colaborador que será promovido internamente.',
+      approvers: [
+        { name: 'Ana Costa', role: 'VP de Operações', status: 'pending' }
+      ],
+      daysWaiting: 1
+    }
+  ]
+
+  // Função para filtrar e ordenar vagas
+  const filteredAndSortedJobs = useMemo(() => {
+    const filtered = jobsWithAlerts.filter(job => {
+      // Busca por texto
+      const searchLower = jobSearchTerm.toLowerCase()
+      const matchesSearch = jobSearchTerm === "" ||
+        job.title.toLowerCase().includes(searchLower) ||
+        job.jobId.toLowerCase().includes(searchLower) ||
+        job.manager.toLowerCase().includes(searchLower) ||
+        job.department.toLowerCase().includes(searchLower)
+
+      // Filtro por departamento
+      const matchesDepartment = selectedDepartments.length === 0 ||
+        selectedDepartments.includes(job.department)
+
+      // Filtro por urgência
+      const matchesUrgency = selectedUrgencies.length === 0 ||
+        selectedUrgencies.includes(job.urgencyLevel)
+
+      // Filtro por publicação
+      let matchesPublication = true
+      if (selectedPublications.length > 0) {
+        matchesPublication = selectedPublications.some(pub => {
+          if (pub === 'linkedin') return job.publishedLinkedIn
+          if (pub === 'site') return job.publishedWebsite
+          if (pub === 'indeed') return job.publishedIndeed
+          return false
+        })
+      }
+
+      return matchesSearch && matchesDepartment && matchesUrgency && matchesPublication
+    })
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      if (jobSortBy === 'daysOpen') {
+        return b.daysOpen - a.daysOpen
+      } else if (jobSortBy === 'candidates') {
+        return b.totalCandidates - a.totalCandidates
+      } else if (jobSortBy === 'urgency') {
+        const urgencyOrder = { critical: 3, urgent: 2, normal: 1 }
+        return urgencyOrder[b.urgencyLevel] - urgencyOrder[a.urgencyLevel]
+      }
+      return 0
+    })
+
+    return filtered
+  }, [jobsWithAlerts, jobSearchTerm, selectedDepartments, selectedUrgencies, selectedPublications, jobSortBy])
+
+  // Função para limpar todos os filtros de vagas
+  const clearJobFilters = () => {
+    setJobSearchTerm("")
+    setSelectedDepartments([])
+    setSelectedUrgencies([])
+    setSelectedPublications([])
+  }
+
+  // Contar filtros ativos
+  const activeJobFiltersCount = selectedDepartments.length + selectedUrgencies.length + selectedPublications.length
+
+  // Obter departamentos únicos
+  const uniqueDepartments = Array.from(new Set(jobsWithAlerts.map(job => job.department)))
+
+  // Função para filtrar e ordenar requisições de vagas
+  const filteredAndSortedRequests = useMemo(() => {
+    const filtered = jobRequests.filter(request => {
+      // Busca por texto
+      const searchLower = requestSearchTerm.toLowerCase()
+      const matchesSearch = requestSearchTerm === "" ||
+        request.title.toLowerCase().includes(searchLower) ||
+        request.requestId.toLowerCase().includes(searchLower) ||
+        request.requester.toLowerCase().includes(searchLower) ||
+        request.department.toLowerCase().includes(searchLower)
+
+      // Filtro por status
+      const matchesStatus = selectedRequestStatus.length === 0 ||
+        selectedRequestStatus.includes(request.status)
+
+      // Filtro por departamento
+      const matchesDepartment = selectedRequestDepartments.length === 0 ||
+        selectedRequestDepartments.includes(request.department)
+
+      return matchesSearch && matchesStatus && matchesDepartment
+    })
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      if (requestSortBy === 'date') {
+        return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
+      } else if (requestSortBy === 'priority') {
+        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
+        return priorityOrder[b.priority] - priorityOrder[a.priority]
+      } else if (requestSortBy === 'status') {
+        const statusOrder: Record<string, number> = {
+          requires_changes: 7,
+          pending_approval: 6,
+          in_review: 5,
+          approved: 4,
+          published: 3,
+          draft: 2,
+          rejected: 1
+        }
+        return (statusOrder[b.status] || 0) - (statusOrder[a.status] || 0)
+      }
+      return 0
+    })
+
+    return filtered
+  }, [jobRequests, requestSearchTerm, selectedRequestStatus, selectedRequestDepartments, requestSortBy])
+
+  // Função para limpar filtros de requisições
+  const clearRequestFilters = () => {
+    setRequestSearchTerm("")
+    setSelectedRequestStatus([])
+    setSelectedRequestDepartments([])
+  }
+
+  // Contar filtros ativos de requisições
+  const activeRequestFiltersCount = selectedRequestStatus.length + selectedRequestDepartments.length
+
+  // Obter departamentos únicos das requisições
+  const uniqueRequestDepartments = Array.from(new Set(jobRequests.map(req => req.department)))
+
+  // Funções auxiliares
+  const getAlertIcon = (type: string) => {
+    switch (type) {
+      case 'urgent': return <AlertTriangle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+      case 'warning': return <AlertCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+      case 'success': return <CheckCircle className="w-4 h-4" style={{color: 'var(--gray-800)'}} />
+      default: return <Info className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+    }
+  }
+
+  const getAlertColor = (type: string) => {
+    // Paleta sépia/pastel ElevenLabs
+    switch (type) {
+      case 'urgent': return 'border-0' // Aplicado via inline style
+      case 'warning': return 'border-0' // Aplicado via inline style
+      case 'success': return 'border-0' // Aplicado via inline style
+      default: return 'border-0' // Aplicado via inline style
+    }
+  }
+  
+  const getAlertStyle = (type: string) => {
+    switch (type) {
+      case 'urgent': return { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }
+      case 'warning': return { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }
+      case 'success': return { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }
+      default: return { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }
+    }
+  }
+
+  const getUrgencyColor = (urgency: string) => {
+    // Cores sépia/pastel
+    return '' // Aplicado via inline style
+  }
+
+  const getUrgencyBadge = (urgency: string, daysOpen: number) => {
+    if (urgency === 'critical') {
+      return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)'}}>🔴 Crítico</Badge>
+    }
+    if (urgency === 'urgent') {
+      return <Badge className="border-0 text-xs font-semibold" style={{backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)'}}>⚠ Urgente</Badge>
+    }
+    if (daysOpen > 30) {
+      return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)'}}>⏰ Atenção</Badge>
+    }
+    return <Badge className="border-0 text-xs" style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}>✓ Normal</Badge>
+  }
+
+  // Nova função para calcular taxa de conversão
+  const getConversionRate = (from: number, to: number) => {
+    if (from === 0) return 0
+    return Math.round((to / from) * 100)
+  }
+
+  // Nova função para determinar cor da taxa de conversão (sépia)
+  const getConversionColor = (rate: number) => {
+    if (rate >= 70) return 'font-semibold' // Verde menta via inline
+    if (rate >= 50) return 'font-medium' // Dourado via inline
+    return 'font-semibold' // Salmão via inline
+  }
+  
+  const getConversionStyle = (rate: number) => {
+    if (rate >= 70) return { color: 'var(--gray-800)' }
+    if (rate >= 50) return { color: 'var(--gray-800)' }
+    return { color: 'var(--gray-800)' }
+  }
+
+  // Funções helper para requisições de vagas (paleta sépia)
+  const getRequestStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return { label: 'Rascunho', color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '📝' }
+      case 'pending_approval':
+        return { label: 'Aguardando Aprovação', color: 'border-0 font-medium', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '⏳' }
+      case 'in_review':
+        return { label: 'Em Revisão', color: 'border-0 font-medium', style: { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }, icon: '👁️' }
+      case 'requires_changes':
+        return { label: 'Requer Alterações', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '✏️' }
+      case 'approved':
+        return { label: 'Aprovado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }, icon: '✅' }
+      case 'rejected':
+        return { label: 'Rejeitado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }, icon: '❌' }
+      case 'published':
+        return { label: 'Publicado', color: 'border-0 font-medium', style: { backgroundColor: 'var(--gray-950)', color: 'var(--gray-50)' }, icon: '🚀' }
+      default:
+        return { label: status, color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '•' }
+    }
+  }
+
+  const getRequestPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'critical':
+        return { label: 'Crítico', color: 'border-0 font-medium', style: { backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)' }, icon: '🔴' }
+      case 'high':
+        return { label: 'Alta', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)' }, icon: '🟠' }
+      case 'medium':
+        return { label: 'Média', color: 'border-0 font-medium', style: { backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)' }, icon: '🟡' }
+      case 'low':
+        return { label: 'Baixa', color: 'border-0', style: { backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)' }, icon: '🟢' }
+      default:
+        return { label: priority, color: 'border-0', style: { backgroundColor: 'var(--amber-50, #fffbeb)', color: 'var(--gray-500)' }, icon: '•' }
+    }
+  }
+
+  const getWorkModelLabel = (model: string) => {
+    switch (model) {
+      case 'remote': return { label: 'Remoto', icon: '🏠' }
+      case 'hybrid': return { label: 'Híbrido', icon: '🔄' }
+      case 'onsite': return { label: 'Presencial', icon: '🏢' }
+      default: return { label: model, icon: '•' }
+    }
+  }
+
+  // Helper function para obter background pastel dos cards de atividades (tons claros ElevenLabs)
+  const getTaskCardBackground = (taskType: Task['type']) => {
+    return 'var(--gray-100)'
+  }
+
+  // Helper function para obter cor do ícone baseado no tipo (tons mais escuros para contraste)
+  const getTaskIconBackground = (taskType: Task['type']) => {
+    switch (taskType) {
+      case 'entrevista':
+        return 'var(--status-success)'
+      case 'ia':
+      case 'email':
+      case 'oferta':
+        return 'var(--gray-400)'
+      default:
+        return 'var(--gray-400)'
+    }
+  }
+
+  // Função para abrir modal de detalhes da atividade
+  const handleActivityClick = (task: Task) => {
+    // Dados mockados de histórico completo da atividade
+    const activityDetails = {
+      ...task,
+      candidateName: task.title.includes('João Silva') ? 'João Silva' :
+                     task.title.includes('Ana Costa') ? 'Ana Costa' :
+                     task.title.includes('Lucas Mendes') ? 'Lucas Mendes' : 'Candidato',
+      candidateEmail: 'candidato@email.com',
+      candidatePhone: '+55 11 98765-4321',
+      jobTitle: task.relatedTo,
+      createdAt: new Date(2025, 9, 8, 14, 30),
+      createdBy: 'Ana Silva',
+      history: [
+        {
+          id: '1',
+          type: 'created',
+          user: 'Ana Silva',
+          date: new Date(2025, 9, 8, 14, 30),
+          description: 'Atividade criada',
+          icon: 'plus'
+        },
+        {
+          id: '2',
+          type: 'comment',
+          user: 'Roberto Silva',
+          date: new Date(2025, 9, 9, 10, 15),
+          description: 'Candidato aprovado na triagem inicial. Possui excelente experiência em React.',
+          icon: 'message'
+        },
+        {
+          id: '3',
+          type: 'status_change',
+          user: 'LIA',
+          date: new Date(2025, 9, 10, 8, 0),
+          description: 'Status alterado de "Triagem" para "Entrevista Agendada"',
+          icon: 'check'
+        },
+        {
+          id: '4',
+          type: 'reminder',
+          user: 'Sistema',
+          date: new Date(2025, 9, 10, 8, 45),
+          description: 'Lembrete automático enviado - Entrevista em 15 minutos',
+          icon: 'bell'
+        }
+      ],
+      attachments: [
+        { id: '1', name: 'CV_JoaoSilva.pdf', size: '245 KB', uploadedBy: 'João Silva', date: new Date(2025, 9, 5) },
+        { id: '2', name: 'Portfolio.pdf', size: '1.2 MB', uploadedBy: 'João Silva', date: new Date(2025, 9, 5) }
+      ],
+      comments: [
+        {
+          id: '1',
+          user: 'Ana Silva',
+          avatar: '/avatars/ana.jpg',
+          date: new Date(2025, 9, 9, 16, 30),
+          text: 'Candidato muito promissor. Experiência sólida em frontend e boas soft skills.'
+        },
+        {
+          id: '2',
+          user: 'Roberto Silva',
+          avatar: '/avatars/roberto.jpg',
+          date: new Date(2025, 9, 10, 8, 15),
+          text: 'Confirmar com o candidato se precisa de algum equipamento específico para a entrevista técnica.'
+        }
+      ],
+      nextSteps: [
+        'Realizar entrevista técnica',
+        'Avaliar fit cultural',
+        'Enviar feedback em até 24h'
+      ]
+    }
+
+    setSelectedActivity(activityDetails)
+    setShowActivityModal(true)
+  }
+
+  // Função para lidar com ações nas requisições
+  const handleRequestAction = (action: string, request: JobRequest) => {
+    let prompt = ''
+    switch (action) {
+      case 'approve':
+        prompt = `Aprovar a requisição ${request.requestId} - ${request.title} do departamento ${request.department} solicitada por ${request.requester}`
+        break
+      case 'reject':
+        prompt = `Rejeitar a requisição ${request.requestId} - ${request.title} e notificar ${request.requester} com justificativa`
+        break
+      case 'request_changes':
+        prompt = `Solicitar alterações na requisição ${request.requestId} - ${request.title} para ${request.requester}`
+        break
+      case 'send_approval':
+        prompt = `Enviar a requisição ${request.requestId} - ${request.title} para aprovação dos gestores`
+        break
+      case 'edit':
+        prompt = `Editar a requisição ${request.requestId} - ${request.title} incluindo justificativa, budget e requisitos`
+        break
+      case 'publish':
+        prompt = `Publicar a vaga ${request.title} (${request.requestId}) nas plataformas LinkedIn, Site e Indeed`
+        break
+      case 'view_details':
+        prompt = `Mostrar todos os detalhes da requisição ${request.requestId} - ${request.title} incluindo aprovadores e histórico`
+        break
+      default:
+        prompt = `Ajudar com a requisição ${request.requestId} - ${request.title}`
+    }
+
+    // Armazenar o prompt no localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('liaPrompt', prompt)
+    }
+
+    // Navegar para o Chat com LIA
+    if (onNavigate) {
+      onNavigate('Chat com LIA')
+    }
+  }
 
   return (
     <>
