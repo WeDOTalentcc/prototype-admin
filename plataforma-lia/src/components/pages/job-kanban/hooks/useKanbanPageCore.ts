@@ -239,6 +239,11 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     openTransition(candidates, fromStage, toStage)
   }, [openTransition])
 
+  // Estados para candidatesData (hoisted before useKanbanTransitions)
+  const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() => 
+    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages))
+  )
+
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
   const { handleUniversalTransitionConfirm } = useKanbanTransitions({
     candidatesData, setCandidatesData,
@@ -309,13 +314,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // Estados para drag and drop
   const [draggedCandidate, setDraggedCandidate] = useState<Record<string, unknown> | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
-  const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() => 
-    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages))
-  )
   const pendingNavigationRef = useRef<{ nav: { candidateId?: string; candidateName?: string; jobId?: string; jobTitle?: string; currentStage?: string; action?: string; openTransitionModal?: boolean }; prompt: string | null } | null>(null)
-
-  const [showDataRequestModal, setShowDataRequestModal] = useState(false)
-  const [dataRequestModalCandidate, setDataRequestModalCandidate] = useState<Record<string, unknown> | null>(null)
 
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set())
 

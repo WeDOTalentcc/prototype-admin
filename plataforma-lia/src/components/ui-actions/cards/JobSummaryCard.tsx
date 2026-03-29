@@ -4,11 +4,11 @@ import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  Building2, 
-  MapPin, 
-  Briefcase, 
-  DollarSign, 
+import {
+  Building2,
+  MapPin,
+  Briefcase,
+  DollarSign,
   Users,
   Clock,
   CheckCircle2,
@@ -64,17 +64,11 @@ export function JobSummaryCard({
   }
 
   const getStatusBadge = (status?: string) => {
-    const baseStyle = {
-      borderColor: 'var(--lia-border-default)',
-      backgroundColor: 'var(--lia-bg-primary)'
-    }
-    
     switch (status) {
       case "ativa":
         return (
-          <Badge 
-            className="border"
-            style={{...baseStyle, color: 'var(--lia-text-primary)'}}
+          <Badge
+            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-wedo-green mr-1.5" />
             Ativa
@@ -82,18 +76,16 @@ export function JobSummaryCard({
         )
       case "rascunho":
         return (
-          <Badge 
-            className="border"
-            style={{...baseStyle, color: 'var(--lia-text-secondary)'}}
+          <Badge
+            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
             Rascunho
           </Badge>
         )
       case "pausada":
         return (
-          <Badge 
-            className="border"
-            style={{...baseStyle, color: 'var(--lia-text-secondary)'}}
+          <Badge
+            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 mr-1.5" />
             Pausada
@@ -101,9 +93,8 @@ export function JobSummaryCard({
         )
       case "fechada":
         return (
-          <Badge 
-            className="border"
-            style={{...baseStyle, color: 'var(--lia-text-tertiary)'}}
+          <Badge
+            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-tertiary"
           >
             Fechada
           </Badge>
@@ -136,10 +127,9 @@ export function JobSummaryCard({
   }
 
   return (
-    <Card 
-      className="w-full max-w-md border-l-4 overflow-hidden"
-      style={{backgroundColor: 'var(--lia-bg-secondary)',
-        borderLeftColor: 'var(--lia-border-default)'}}
+    <Card
+      className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
+      style={{borderLeftColor: 'var(--lia-border-default)'}}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
@@ -157,9 +147,8 @@ export function JobSummaryCard({
             )}
           </div>
           {data.candidates_count !== undefined && (
-            <div 
-              className="text-center px-3 py-1 rounded-md"
-              style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+            <div
+              className="text-center px-3 py-1 rounded-md bg-lia-bg-tertiary"
             >
               <div className="text-lg font-bold text-wedo-purple">{data.candidates_count}</div>
               <div className="text-xs text-[var(--lia-text-tertiary)]">candidatos</div>
@@ -217,22 +206,18 @@ export function JobSummaryCard({
             </div>
             <div className="flex flex-wrap gap-1.5">
               {data.required_skills.slice(0, compact ? 3 : 5).map((skill, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="text-xs"
-                  style={{backgroundColor: 'var(--lia-bg-tertiary)', 
-                    color: 'var(--lia-text-secondary)'}}
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   {skill}
                 </Badge>
               ))}
               {data.required_skills.length > (compact ? 3 : 5) && (
-                <Badge 
-                  variant="outline" 
-                  className="text-xs"
-                  style={{borderColor: 'var(--lia-border-subtle)',
-                    color: 'var(--lia-text-tertiary)'}}
+                <Badge
+                  variant="outline"
+                  className="text-xs border-lia-border-subtle text-lia-text-tertiary"
                 >
                   +{data.required_skills.length - (compact ? 3 : 5)}
                 </Badge>
@@ -242,10 +227,8 @@ export function JobSummaryCard({
         )}
 
         {!compact && (
-          <div 
-            className="mt-4 pt-3 border-t flex items-center gap-4 text-xs"
-            style={{borderColor: 'var(--lia-border-subtle)',
-              color: 'var(--lia-text-tertiary)'}}
+          <div
+            className="mt-4 pt-3 border-t flex items-center gap-4 text-xs border-lia-border-subtle text-lia-text-tertiary"
           >
             {data.benefits_count !== undefined && (
               <div className="flex items-center gap-1">
@@ -263,16 +246,14 @@ export function JobSummaryCard({
         )}
 
         {(onEdit || onView || onPublish) && (
-          <div 
-            className="mt-4 pt-3 border-t flex items-center gap-2"
-            style={{borderColor: 'var(--lia-border-subtle)'}}
+          <div
+            className="mt-4 pt-3 border-t flex items-center gap-2 border-lia-border-subtle"
           >
             {onEdit && (
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="outline"
-                style={{borderColor: 'var(--lia-border-default)',
-                  color: 'var(--lia-text-primary)'}}
+                className="border-lia-border-default text-lia-text-primary"
                 onClick={onEdit}
               >
                 <Edit className="h-3.5 w-3.5 mr-1.5" />
@@ -280,7 +261,7 @@ export function JobSummaryCard({
               </Button>
             )}
             {onPublish && data.status === "rascunho" && (
-              <Button 
+              <Button
                 size="sm"
                 style={{backgroundColor: 'var(--lia-btn-primary-bg)',
                   color: 'var(--lia-btn-primary-text)'}}
@@ -290,11 +271,10 @@ export function JobSummaryCard({
               </Button>
             )}
             {onView && (
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="ghost"
-                className="ml-auto"
-                style={{color: 'var(--lia-text-secondary)'}}
+                className="ml-auto text-lia-text-secondary"
                 onClick={onView}
               >
                 Ver Detalhes

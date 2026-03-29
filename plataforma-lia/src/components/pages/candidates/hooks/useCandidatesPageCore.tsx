@@ -669,6 +669,7 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   const [isSavingToBase, setIsSavingToBase] = useState(false)
   const [isAddingToList, setIsAddingToList] = useState(false)
   const [showUnsavedWarningModal, setShowUnsavedWarningModal] = useState(false)
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [pendingTabChange, setPendingTabChange] = useState<string | null>(null)
   
   // Calcular candidatos Pearch não salvos nos resultados atuais
@@ -843,6 +844,14 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     toast({ title: "Busca salva", description: `${sortedCandidates.length} candidatos encontrados`, duration: 4000 })
   }
 
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({
+    work_models: [],
+    skills: [],
+    companies: [],
+    locations: [],
+    job_titles: [],
+  })
+
   // ── Filtros e ordenação — extraídos para useCandidatesFilterSort ──
   const {
     filteredCandidates,
@@ -857,7 +866,7 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     hasSearchResults,
     quickFilters,
     columnFilters,
-    advancedFilters: advancedFilters as Record<string, string[]>,
+    advancedFilters,
     tableFilters,
     sortBy,
     sortOrder,
@@ -1102,6 +1111,16 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     if (tableFilters.specificVacancyId) count++
     if (tableFilters.registrationDateFrom) count++
     if (tableFilters.registrationDateTo) count++
+    return count
+  }
+
+  const getActiveAdvancedFiltersCount = (): number => {
+    return Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0)
+  }
+
+  const getActiveSearchFiltersCount = (): number => {
+    let count = quickFilters.size
+    count += getActiveAdvancedFiltersCount()
     return count
   }
 

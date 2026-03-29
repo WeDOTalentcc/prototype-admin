@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
+import {
   Calendar,
   Clock,
   MapPin,
@@ -85,29 +85,25 @@ export function InterviewConfirmationCard({
   }
 
   return (
-    <Card 
-      className="w-full max-w-md border-l-4 overflow-hidden"
-      style={{backgroundColor: 'var(--lia-bg-secondary)',
-        borderLeftColor: 'var(--lia-border-default)'}}
+    <Card
+      className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
+      style={{borderLeftColor: 'var(--lia-border-default)'}}
     >
-      <div 
-        className="px-4 py-2 flex items-center gap-2"
-        style={{backgroundColor: 'var(--lia-text-primary)'}}
+      <div
+        className="px-4 py-2 flex items-center gap-2 bg-lia-text-primary"
       >
         <CheckCircle2 className="h-5 w-5 text-wedo-green" />
         <span className="font-medium text-[var(--lia-text-inverse)]">
           Entrevista Agendada!
         </span>
       </div>
-      
+
       <CardContent className="p-4">
         <div className="flex items-center gap-3 mb-4">
-          <Avatar className="h-10 w-10 border-2" style={{borderColor: 'var(--lia-bg-primary)'}}>
+          <Avatar className="h-10 w-10 border-2 border-lia-bg-primary">
             <AvatarImage src={data.candidate_avatar} alt={data.candidate_name} />
-            <AvatarFallback 
-              className="text-sm"
-              style={{backgroundColor: 'var(--lia-bg-tertiary)', 
-                color: 'var(--lia-text-primary)'}}
+            <AvatarFallback
+              className="text-sm bg-lia-bg-tertiary text-lia-text-primary"
             >
               {getInitials(data.candidate_name)}
             </AvatarFallback>
@@ -123,10 +119,8 @@ export function InterviewConfirmationCard({
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div 
-            className="p-3 rounded-md border"
-            style={{backgroundColor: 'var(--lia-bg-primary)',
-              borderColor: 'var(--lia-border-subtle)'}}
+          <div
+            className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
               <Calendar className="h-4 w-4" />
@@ -136,11 +130,9 @@ export function InterviewConfirmationCard({
               {data.date}
             </div>
           </div>
-          
-          <div 
-            className="p-3 rounded-md border"
-            style={{backgroundColor: 'var(--lia-bg-primary)',
-              borderColor: 'var(--lia-border-subtle)'}}
+
+          <div
+            className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
               <Clock className="h-4 w-4 text-gray-700 dark:text-gray-300" />
@@ -155,13 +147,11 @@ export function InterviewConfirmationCard({
           </div>
         </div>
 
-        <div 
-          className="p-3 rounded-md border mb-4"
-          style={{backgroundColor: 'var(--lia-bg-primary)',
-            borderColor: 'var(--lia-border-subtle)'}}
+        <div
+          className="p-3 rounded-md border mb-4 bg-lia-bg-primary border-lia-border-subtle"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span style={{color: 'var(--lia-text-secondary)'}}>{getTypeIcon(data.type)}</span>
+            <span className="text-lia-text-secondary">{getTypeIcon(data.type)}</span>
             <span className="text-sm font-medium text-[var(--lia-text-primary)]">
               {getTypeLabel(data.type)}
             </span>
@@ -173,7 +163,7 @@ export function InterviewConfirmationCard({
           )}
           {data.meeting_link && (
             <div className="flex items-center gap-2 mt-2">
-              <a 
+              <a
                 href={data.meeting_link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -183,11 +173,10 @@ export function InterviewConfirmationCard({
                 <ExternalLink className="h-3 w-3" />
               </a>
               {onCopyLink && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="ghost"
-                  className="h-6 px-2"
-                  style={{color: 'var(--lia-text-secondary)'}}
+                  className="h-6 px-2 text-lia-text-secondary"
                   onClick={onCopyLink}
                 >
                   <Copy className="h-3 w-3" />
@@ -205,17 +194,14 @@ export function InterviewConfirmationCard({
             </div>
             <div className="flex flex-wrap gap-2">
               {data.interviewers.map((interviewer, index) => (
-                <div 
+                <div
                   key={index}
-                  className="flex items-center gap-2 px-2 py-1 rounded-full"
-                  style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+                  className="flex items-center gap-2 px-2 py-1 rounded-full bg-lia-bg-tertiary"
                 >
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={interviewer.avatar} alt={interviewer.name} />
-                    <AvatarFallback 
-                      className="text-xs"
-                      style={{backgroundColor: 'var(--lia-bg-primary)', 
-                        color: 'var(--lia-text-secondary)'}}
+                    <AvatarFallback
+                      className="text-xs bg-lia-bg-primary text-lia-text-secondary"
                     >
                       {getInitials(interviewer.name)}
                     </AvatarFallback>
@@ -230,26 +216,22 @@ export function InterviewConfirmationCard({
         )}
 
         {data.notes && (
-          <div 
-            className="p-3 rounded-md border mb-4"
-            style={{backgroundColor: 'var(--lia-bg-tertiary)',
-              borderColor: 'var(--lia-border-subtle)'}}
+          <div
+            className="p-3 rounded-md border mb-4 bg-lia-bg-tertiary border-lia-border-subtle"
           >
             <div className="text-xs mb-1 text-gray-700 dark:text-gray-300">Notas para o candidato</div>
             <p className="text-sm text-[var(--lia-text-secondary)]">{data.notes}</p>
           </div>
         )}
 
-        <div 
-          className="flex items-center gap-2 pt-2 border-t"
-          style={{borderColor: 'var(--lia-border-subtle)'}}
+        <div
+          className="flex items-center gap-2 pt-2 border-t border-lia-border-subtle"
         >
           {onAddToCalendar && (
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
-              style={{borderColor: 'var(--lia-border-default)',
-                color: 'var(--lia-text-primary)'}}
+              className="border-lia-border-default text-lia-text-primary"
               onClick={onAddToCalendar}
             >
               <Calendar className="h-3.5 w-3.5 mr-1.5" />
@@ -257,10 +239,10 @@ export function InterviewConfirmationCard({
             </Button>
           )}
           {onSendReminder && (
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="ghost"
-              style={{color: 'var(--lia-text-secondary)'}}
+              className="text-lia-text-secondary"
               onClick={onSendReminder}
             >
               <Mail className="h-3.5 w-3.5 mr-1.5" />

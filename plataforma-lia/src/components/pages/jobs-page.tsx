@@ -1,51 +1,51 @@
 "use client"
 
-import React, { useState, useRef, useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
-import { Button } from "@/components/ui/button"
-import { WSITutorialModal } from "@/components/pages/jobs/WSITutorialModal"
-import { EmptyState } from "@/components/ui/empty-state"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { AISearchToggle } from "@/components/ai-search-toggle"
-import { IntelligenceNotifications } from "@/components/intelligence-notifications"
-import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from "lucide-react"
-import { JobKanbanPage } from "./job-kanban-page"
-import { JobReportModal } from "@/components/job-report-modal"
-import { JobActionsBar } from "@/components/job-actions-bar"
-import { JobCompareModal } from "@/components/modals/job-compare-modal"
-import { JobPublishModal } from "@/components/modals/job-publish-modal"
-import { JobUnpublishModal, type UnpublishData } from "@/components/modals/job-unpublish-modal"
-import { JobInsightsModal } from "@/components/modals/job-insights-modal"
-import { JobDuplicateModal } from "@/components/modals/job-duplicate-modal"
-import { JobStatusModal } from "@/components/modals/job-status-modal"
-import { JobAssignRecruiterModal } from "@/components/modals/job-assign-recruiter-modal"
-import { EditJobModal } from "@/components/modals/edit-job-modal"
-import { CreateJobModal } from "@/components/modals/create-job-modal"
-import { ActionResultCard } from "@/components/chat/action-result-card"
-import { ContextPill } from "@/components/ui/context-pill"
-import { QuickActionChips, type QuickAction } from "@/components/ui/quick-action-chips"
-import { PromptSuggestionsPopover } from "@/components/ui/prompt-suggestions-popover"
+import React, { useState, useRef, useEffect, useMemo } from"react"
+import { useRouter } from"next/navigation"
+import dynamic from"next/dynamic"
+import { Button } from"@/components/ui/button"
+import { WSITutorialModal } from"@/components/pages/jobs/WSITutorialModal"
+import { EmptyState } from"@/components/ui/empty-state"
+import { Card, CardContent } from"@/components/ui/card"
+import { Badge } from"@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { Input } from"@/components/ui/input"
+import { AISearchToggle } from"@/components/ai-search-toggle"
+import { IntelligenceNotifications } from"@/components/intelligence-notifications"
+import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from"lucide-react"
+import { JobKanbanPage } from"./job-kanban-page"
+import { JobReportModal } from"@/components/job-report-modal"
+import { JobActionsBar } from"@/components/job-actions-bar"
+import { JobCompareModal } from"@/components/modals/job-compare-modal"
+import { JobPublishModal } from"@/components/modals/job-publish-modal"
+import { JobUnpublishModal, type UnpublishData } from"@/components/modals/job-unpublish-modal"
+import { JobInsightsModal } from"@/components/modals/job-insights-modal"
+import { JobDuplicateModal } from"@/components/modals/job-duplicate-modal"
+import { JobStatusModal } from"@/components/modals/job-status-modal"
+import { JobAssignRecruiterModal } from"@/components/modals/job-assign-recruiter-modal"
+import { EditJobModal } from"@/components/modals/edit-job-modal"
+import { CreateJobModal } from"@/components/modals/create-job-modal"
+import { ActionResultCard } from"@/components/chat/action-result-card"
+import { ContextPill } from"@/components/ui/context-pill"
+import { QuickActionChips, type QuickAction } from"@/components/ui/quick-action-chips"
+import { PromptSuggestionsPopover } from"@/components/ui/prompt-suggestions-popover"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { LiaQueriesGuide } from "@/components/ui/lia-queries-guide"
-import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { toast } from "sonner"
-import { AudioRecordButton } from "@/components/ui/audio-record-button"
-import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from "@/components/screening-config"
-import type { ScreeningStatus } from "@/components/screening-config"
-import { QuestionAdjustmentChat, QuestionDiffView, AdjustmentCounter, JDEvaluationPanel } from "@/components/wsi"
+} from"@/components/ui/popover"
+import { LiaQueriesGuide } from"@/components/ui/lia-queries-guide"
+import { LiaVacancyQueriesGuide } from"@/components/ui/lia-vacancy-queries-guide"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import { Label } from"@/components/ui/label"
+import { Textarea } from"@/components/ui/textarea"
+import { Switch } from"@/components/ui/switch"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
+import { toast } from"sonner"
+import { AudioRecordButton } from"@/components/ui/audio-record-button"
+import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from"@/components/screening-config"
+import type { ScreeningStatus } from"@/components/screening-config"
+import { QuestionAdjustmentChat, QuestionDiffView, AdjustmentCounter, JDEvaluationPanel } from"@/components/wsi"
 import { 
   type Job, 
   type JobFilters, 
@@ -61,7 +61,7 @@ import {
   type GovernanceRules,
   type ViewMode,
   type PreviewTab
-} from "@/components/jobs"
+} from"@/components/jobs"
 import { 
   getStatusColor, 
   priorityColors, 
@@ -70,22 +70,22 @@ import {
   formatMessageWithVariables,
   getBloomComplexity,
   getEstimatedTime
-} from "@/components/jobs/jobsPageConstants"
-import { JobFiltersPanel } from "@/components/jobs/JobFilters"
-import { ColumnConfigPanel } from "@/components/pages/jobs/ColumnConfigPanel"
-import { TableFiltersPanel } from "@/components/pages/jobs/TableFiltersPanel"
-import { InlineChatPanel } from "@/components/pages/jobs/InlineChatPanel"
-import { JobPreviewPanel } from "@/components/pages/jobs/JobPreviewPanel"
-import { JobsCompactTableView } from "@/components/pages/jobs/JobsCompactTableView"
-import { JobsModalsSection } from "@/components/pages/jobs/JobsModalsSection"
-import { JobsDashboardView } from "@/components/pages/jobs/JobsDashboardView"
+} from"@/components/jobs/jobsPageConstants"
+import { JobFiltersPanel } from"@/components/jobs/JobFilters"
+import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
+import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
+import { InlineChatPanel } from"@/components/pages/jobs/InlineChatPanel"
+import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
+import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
+import { JobsModalsSection } from"@/components/pages/jobs/JobsModalsSection"
+import { JobsDashboardView } from"@/components/pages/jobs/JobsDashboardView"
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
-import { liaApi } from "@/services/lia-api"
-import { useJobsPageCore } from "./jobs/hooks/useJobsPageCore"
+import { liaApi } from"@/services/lia-api"
+import { useJobsPageCore } from"./jobs/hooks/useJobsPageCore"
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
-  onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
+  onAddRecentItem?: (item: { id: string; type:'vaga' |'chat' |'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
   pendingChatOpen?: { chatId: string; chatTitle: string } | null
   onChatOpened?: () => void
   pendingJobOpen?: { jobId: string; jobTitle: string } | null
@@ -148,7 +148,7 @@ export function JobsPage(props: JobsPageProps) {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
-      {chatMode === 'job-creation' && isChatFullscreen && showInlineChat && (
+      {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
         <div className="absolute inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col">
           <ExpandedChatModal
             isOpen={true}
@@ -169,7 +169,7 @@ export function JobsPage(props: JobsPageProps) {
       )}
       
       {/* Header Fixo - Título e Tabs (oculto em fullscreen) */}
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-gray-950 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-gray-950 ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
         {/* Header Principal - Padrão Funil de Talentos */}
         <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-3">
@@ -205,8 +205,8 @@ export function JobsPage(props: JobsPageProps) {
                   role="tab"
                   className={`group inline-flex items-center py-2 px-1 border-b-2 tab-button ${
                     activeFilter === filter.id
-                      ? 'border-gray-900 text-gray-950 dark:border-gray-100 dark:text-gray-50 font-semibold'
-                      : 'border-transparent text-gray-800 hover:text-gray-950 hover:border-gray-300 dark:text-gray-200 dark:hover:text-gray-600'
+                      ?'border-gray-900 text-gray-950 dark:border-gray-100 dark:text-gray-50 font-semibold'
+                      :'border-transparent text-gray-800 hover:text-gray-950 hover:border-gray-300 dark:text-gray-200 dark:hover:text-gray-600'
                   }`}
                 >
                   <span>{filter.label}</span>
@@ -215,8 +215,8 @@ export function JobsPage(props: JobsPageProps) {
                       variant="secondary"
                       className={`ml-2 text-xs ${
                         activeFilter === filter.id
-                          ? 'bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200 font-semibold'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          ?'bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200 font-semibold'
+                          :'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }`}
                     >
                       {isLoadingJobs ? (
@@ -236,9 +236,9 @@ export function JobsPage(props: JobsPageProps) {
       </div>
 
       {/* Área de Conteúdo Scrollável (oculto em fullscreen) */}
-      <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode === 'job-creation' && isChatFullscreen ? 'hidden' : ''}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2 ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
         {/* Dashboard Visão Geral - Prompt Centralizado */}
-        {activeFilter === 'visao-geral' && (
+        {activeFilter ==='visao-geral' && (
           <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
             {/* Container centralizado com título */}
             <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
@@ -314,7 +314,7 @@ export function JobsPage(props: JobsPageProps) {
                      
                       className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-gray-950 dark:text-gray-50"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && liaPromptValue.trim()) {
+                        if (e.key ==='Enter' && liaPromptValue.trim()) {
                           setActiveFilter('todas')
                           setTimeout(() => {
                             openGeneralChat(liaPromptValue.trim())
@@ -381,7 +381,7 @@ export function JobsPage(props: JobsPageProps) {
         )}
 
         {/* Conteúdo Principal - Lista de Vagas (quando não é visão geral) */}
-        {activeFilter !== 'visao-geral' && (
+        {activeFilter !=='visao-geral' && (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Toolbar Compacto - Prompt LIA + Controles - Padrão Funil de Talentos */}
           {/* Esconde o prompt compacto e botões quando qualquer chat expandido está ativo */}
@@ -396,20 +396,19 @@ export function JobsPage(props: JobsPageProps) {
                   placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
-                  style={{backgroundColor: "var(--lia-bg-primary)",
-                    color: "var(--gray-950)"}}
+                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border bg-lia-bg-primary"
+                  style={{color:"var(--gray-950)"}}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "var(--gray-800)"
-                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--gray-600-bg-12)"
+                    e.currentTarget.style.borderColor ="var(--gray-800)"
+                    e.currentTarget.style.boxShadow ="0 0 0 2px var(--gray-600-bg-12)"
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "var(--gray-200)"
-                    e.currentTarget.style.boxShadow = "none"
+                    e.currentTarget.style.borderColor ="var(--gray-200)"
+                    e.currentTarget.style.boxShadow ="none"
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && liaPromptValue.trim()) {
+                    if (e.key ==='Enter' && liaPromptValue.trim()) {
                       openGeneralChat(liaPromptValue.trim())
                       setLiaPromptValue('')
                     }
@@ -463,9 +462,9 @@ export function JobsPage(props: JobsPageProps) {
 
               {/* Botões de controle */}
               <Button
-                variant={showTableFiltersPanel ? "default" : "outline"}
+                variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ? 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900 text-white' : ''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900 text-white' :''}`}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
                 title="Filtrar resultados da tabela"
               >
@@ -479,9 +478,9 @@ export function JobsPage(props: JobsPageProps) {
               </Button>
 
               <Button
-                variant={showColumnConfig ? "default" : "outline"}
+                variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ? 'bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 text-white' : ''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 text-white' :''}`}
                 onClick={handleToggleColumnConfig}
                 title="Configurar colunas da tabela"
               >
@@ -491,8 +490,8 @@ export function JobsPage(props: JobsPageProps) {
                   variant="secondary"
                   className={`ml-1 text-xs ${
                     showColumnConfig
-                      ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900 font-bold'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                      ?'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900 font-bold'
+                      :'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                   }`}
                 >
                   6
@@ -505,7 +504,7 @@ export function JobsPage(props: JobsPageProps) {
           {/* Results Summary */}
           <div className="flex-shrink-0 flex items-center justify-between mb-2">
             <div className="text-xs text-gray-800 dark:text-gray-200 flex items-center gap-3">
-              {(searchTerm || selectedDaysFilter !== 'todas') && (
+              {(searchTerm || selectedDaysFilter !=='todas') && (
                 <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 font-medium">
                   filtros ativos
                 </Badge>
@@ -583,11 +582,11 @@ export function JobsPage(props: JobsPageProps) {
             />
 
             {/* Tabela de Vagas - Com suporte a contração e ocultação em fullscreen */}
-            {!(chatMode === 'job-creation' && isChatFullscreen) && (
+            {!(chatMode ==='job-creation' && isChatFullscreen) && (
             <div className={`h-full bg-white dark:bg-gray-800 rounded-md transition-all duration-300 min-w-0 overflow-hidden ${
               isTableCollapsed 
-                ? 'w-14 flex-shrink-0' 
-                : showJobPreview ? 'flex-1' : 'flex-1'
+                ?'w-14 flex-shrink-0' 
+                : showJobPreview ?'flex-1' :'flex-1'
             }`}>
               {isTableCollapsed ? (
                 /* Versão Contraída - Apenas ícone para expandir */
@@ -606,7 +605,7 @@ export function JobsPage(props: JobsPageProps) {
                   {/* Ícone da tabela */}
                   <div className="flex flex-col items-center gap-2 text-gray-800">
                     <Briefcase className="w-5 h-5" />
-                    <span className="text-xs font-medium writing-mode-vertical" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
+                    <span className="text-xs font-medium writing-mode-vertical" style={{writingMode:'vertical-rl', textOrientation:'mixed'}}>
                       Vagas ({filteredJobs.length})
                     </span>
                   </div>
@@ -648,7 +647,7 @@ export function JobsPage(props: JobsPageProps) {
                         icon={<Briefcase />}
                         title="Nenhuma vaga cadastrada"
                         description="Crie sua primeira vaga para começar a atrair candidatos."
-                        action={{ label: "Criar primeira vaga", onClick: () => setChatMode('job-creation') }}
+                        action={{ label:"Criar primeira vaga", onClick: () => setChatMode('job-creation') }}
                         className="h-64"
                       />
                     ) : renderCompactView()}
@@ -709,7 +708,7 @@ export function JobsPage(props: JobsPageProps) {
             code: job.jobId,
             title: job.title,
             status: job.status,
-            is_published: job.status === 'Ativa',
+            is_published: job.status ==='Ativa',
             published_channels: []
           }))}
           onPublish={async (jobIds, channels, options) => {
@@ -720,7 +719,7 @@ export function JobsPage(props: JobsPageProps) {
                 if (!job.backendId) continue
                 
                 await liaApi.updateJobVacancy(job.backendId, {
-                  status: 'Ativa',
+                  status:'Ativa',
                   published_website: channels.includes('portal')
                 })
                 
@@ -763,14 +762,14 @@ export function JobsPage(props: JobsPageProps) {
                 // Despublicar das plataformas
                 if (job.publishedLinkedIn) {
                   try {
-                    await liaApi.unpublishFromPlatform(job.backendId, 'linkedin')
+                    await liaApi.unpublishFromPlatform(job.backendId,'linkedin')
                   } catch (err) {
                   }
                 }
                 
                 if (job.publishedIndeed) {
                   try {
-                    await liaApi.unpublishFromPlatform(job.backendId, 'indeed')
+                    await liaApi.unpublishFromPlatform(job.backendId,'indeed')
                   } catch (err) {
                   }
                 }
@@ -780,7 +779,7 @@ export function JobsPage(props: JobsPageProps) {
                   try {
                     // Atualiza o status para Paralisada
                     await liaApi.updateJobVacancy(job.backendId, {
-                      status: 'Paralisada'
+                      status:'Paralisada'
                     } as Record<string, unknown>)
                   } catch (err) {
                   }
@@ -797,9 +796,9 @@ export function JobsPage(props: JobsPageProps) {
           }}
           onOpenCommunicationModal={(jobIds, templateCategory) => {
             const selectedJobsList = allJobs.filter(job => jobIds.includes(String(job.id)))
-            const jobTitles = selectedJobsList.map(j => j.title).join(', ')
+            const jobTitles = selectedJobsList.map(j => j.title).join(',')
             toast.info(
-              `Para notificar candidatos das vagas "${jobTitles}", acesse a página do Kanban de cada vaga e use o menu de comunicação.`,
+              `Para notificar candidatos das vagas"${jobTitles}", acesse a página do Kanban de cada vaga e use o menu de comunicação.`,
               { duration: 8000 }
             )
           }}
@@ -820,8 +819,8 @@ export function JobsPage(props: JobsPageProps) {
           onUnpublish={async (data: UnpublishData) => {
             try {
               const response = await fetch('/api/backend-proxy/job-boards/unpublish-complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method:'POST',
+                headers: {'Content-Type':'application/json' },
                 body: JSON.stringify({
                   job_ids: data.jobIds,
                   freeze_job: data.freezeJob,
@@ -864,7 +863,7 @@ export function JobsPage(props: JobsPageProps) {
             const job = allJobs.find(j => String(j.id) === jobId)
             if (job) {
               const queryParams = new URLSearchParams({
-                action: 'notify',
+                action:'notify',
                 template: params.template,
                 channel: params.channel,
                 candidates: params.candidateIds.join(',')
@@ -890,10 +889,10 @@ export function JobsPage(props: JobsPageProps) {
             const jobTitles = allJobs
               .filter(job => reportData.jobIds.includes(String(job.id)))
               .map(j => j.title)
-              .join(', ')
+              .join(',')
             const subject = encodeURIComponent(`Relatório de Insights - ${jobTitles}`)
-            const body = encodeURIComponent(`Segue relatório de insights das vagas selecionadas.\n\n${reportData.reportHtml.replace(/<[^>]*>/g, '')}`)
-            window.open(`mailto:?subject=${subject}&body=${body}`, '_blank')
+            const body = encodeURIComponent(`Segue relatório de insights das vagas selecionadas.\n\n${reportData.reportHtml.replace(/<[^>]*>/g,'')}`)
+            window.open(`mailto:?subject=${subject}&body=${body}`,'_blank')
             toast.success('Abrindo cliente de email...')
           }}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
@@ -937,8 +936,8 @@ export function JobsPage(props: JobsPageProps) {
                 return
               }
               
-              const includesCandidates = options.candidateOption !== 'none'
-              const candidateFilter = options.candidateOption === 'approved' ? 'approved' : (options.candidateOption === 'all' ? 'all' : null)
+              const includesCandidates = options.candidateOption !=='none'
+              const candidateFilter = options.candidateOption ==='approved' ?'approved' : (options.candidateOption ==='all' ?'all' : null)
               const selectedRecruiter = companyRecruiters.find(r => r.id === options.recruiterId)
               
               const result = await liaApi.duplicateJobVacancy(selectedJob.backendId, {
@@ -949,7 +948,7 @@ export function JobsPage(props: JobsPageProps) {
                   title: options.newTitle,
                   recruiter: selectedRecruiter?.name || selectedJob.recruiter,
                   recruiter_email: selectedRecruiter?.email || selectedJob.recruiterEmail,
-                  status: 'Rascunho',
+                  status:'Rascunho',
                   deadline_shortlist: options.deadlineShortlist,
                   deadline_screening: options.deadlineScreening,
                   deadline_closing: options.deadlineClosing
@@ -960,18 +959,18 @@ export function JobsPage(props: JobsPageProps) {
               const candidatesIncluded = result?.total_candidates_cloned || 0
               
               if (includesCandidates && candidatesIncluded > 0) {
-                toast.success(`Vaga "${options.newTitle}" criada com ${candidatesIncluded} candidato(s)!`)
-              } else if (options.candidateOption === 'none') {
-                toast.success(`Vaga "${options.newTitle}" criada! Inicie a busca de candidatos.`)
+                toast.success(`Vaga"${options.newTitle}" criada com ${candidatesIncluded} candidato(s)!`)
+              } else if (options.candidateOption ==='none') {
+                toast.success(`Vaga"${options.newTitle}" criada! Inicie a busca de candidatos.`)
               } else {
-                toast.success(`Vaga "${options.newTitle}" criada com sucesso!`)
+                toast.success(`Vaga"${options.newTitle}" criada com sucesso!`)
               }
               
               setShowDuplicateModal(false)
               deselectAllJobs()
               await loadBackendJobs()
               
-              if (options.candidateOption === 'none' && newJobId) {
+              if (options.candidateOption ==='none' && newJobId) {
                 router.push(`/jobs/${newJobId}?action=sourcing`)
               }
             } catch (error) {
@@ -993,7 +992,7 @@ export function JobsPage(props: JobsPageProps) {
             interviews_scheduled: job.funnel?.interview || 0,
             tests_scheduled: 0,
             approved_count: job.funnel?.hired || 0,
-            paused_since: job.status === 'Paralisada' ? job.createdAt : undefined
+            paused_since: job.status ==='Paralisada' ? job.createdAt : undefined
           }))}
           mode={statusModalMode}
           onPause={async (data) => {
@@ -1001,19 +1000,14 @@ export function JobsPage(props: JobsPageProps) {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
               const updatePromises = selectedJobs.map(job => {
                 if (job.backendId) {
-                  return liaApi.updateJobVacancyStatus(job.backendId, 'Paralisada')
+                  return liaApi.updateJobVacancyStatus(job.backendId,'Paralisada')
                 }
                 return Promise.resolve(null)
               })
               await Promise.all(updatePromises)
               
               if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
-                const channelMap: Record<string, string[]> = {
-                  'email': ['email'],
-                  'teams': ['teams'],
-                  'bell': ['bell'],
-                  'email_teams': ['email', 'teams'],
-                  'all': ['email', 'teams', 'bell']
+                const channelMap: Record<string, string[]> = {'email': ['email'],'teams': ['teams'],'bell': ['bell'],'email_teams': ['email','teams'],'all': ['email','teams','bell']
                 }
                 const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
                 
@@ -1028,7 +1022,7 @@ export function JobsPage(props: JobsPageProps) {
                 try {
                   await liaApi.sendRecruiterActionNotification({
                     recruiter_ids: recruiterIds,
-                    action: 'pause',
+                    action:'pause',
                     job_titles: selectedJobs.map(j => j.title),
                     job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
                     channels,
@@ -1045,15 +1039,15 @@ export function JobsPage(props: JobsPageProps) {
               // Update local state to reflect status change + auto-pause screening
               setBackendJobs(prev => prev.map(job => 
                 selectedJobsForBatch.has(job.id) 
-                  ? { ...job, status: 'Paralisada' as string, screeningStatus: job.screeningStatus === 'active' ? 'paused' : job.screeningStatus } 
+                  ? { ...job, status:'Paralisada' as string, screeningStatus: job.screeningStatus ==='active' ?'paused' : job.screeningStatus } 
                   : job
               ))
               
               // Auto-pause active screenings
               for (const job of selectedJobs) {
-                if (job.backendId && (job.screeningStatus === 'active')) {
+                if (job.backendId && (job.screeningStatus ==='active')) {
                   try {
-                    await liaApi.updateScreeningStatus(job.backendId, 'paused', { pause_reason: 'Vaga pausada automaticamente' })
+                    await liaApi.updateScreeningStatus(job.backendId,'paused', { pause_reason:'Vaga pausada automaticamente' })
                   } catch (err) {
                   }
                 }
@@ -1068,19 +1062,14 @@ export function JobsPage(props: JobsPageProps) {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
               const updatePromises = selectedJobs.map(job => {
                 if (job.backendId) {
-                  return liaApi.updateJobVacancyStatus(job.backendId, 'Ativa')
+                  return liaApi.updateJobVacancyStatus(job.backendId,'Ativa')
                 }
                 return Promise.resolve(null)
               })
               await Promise.all(updatePromises)
               
               if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
-                const channelMap: Record<string, string[]> = {
-                  'email': ['email'],
-                  'teams': ['teams'],
-                  'bell': ['bell'],
-                  'email_teams': ['email', 'teams'],
-                  'all': ['email', 'teams', 'bell']
+                const channelMap: Record<string, string[]> = {'email': ['email'],'teams': ['teams'],'bell': ['bell'],'email_teams': ['email','teams'],'all': ['email','teams','bell']
                 }
                 const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
                 
@@ -1095,7 +1084,7 @@ export function JobsPage(props: JobsPageProps) {
                 try {
                   await liaApi.sendRecruiterActionNotification({
                     recruiter_ids: recruiterIds,
-                    action: 'activate',
+                    action:'activate',
                     job_titles: selectedJobs.map(j => j.title),
                     job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
                     channels,
@@ -1107,12 +1096,12 @@ export function JobsPage(props: JobsPageProps) {
               // Update local state to reflect status change
               setBackendJobs(prev => prev.map(job => 
                 selectedJobsForBatch.has(job.id) 
-                  ? { ...job, status: 'Ativa' as string } 
+                  ? { ...job, status:'Ativa' as string } 
                   : job
               ))
               
               // Check if any reactivated jobs had paused screenings - ask to reactivate
-              const jobsWithPausedScreening = selectedJobs.filter(j => j.screeningStatus === 'paused' && j.screeningConfig)
+              const jobsWithPausedScreening = selectedJobs.filter(j => j.screeningStatus ==='paused' && j.screeningConfig)
               if (jobsWithPausedScreening.length > 0) {
                 setReactivateScreeningJobs(jobsWithPausedScreening)
                 setShowReactivateScreeningDialog(true)
@@ -1134,7 +1123,7 @@ export function JobsPage(props: JobsPageProps) {
                 candidateIds: params.candidateIds,
                 channel: params.channel,
                 jobId: jobId,
-                action: 'pause_notification'
+                action:'pause_notification'
               }))
               
               toast.success('Vaga pausada. O modal de comunicação será aberto para notificar candidatos.')
@@ -1181,10 +1170,10 @@ export function JobsPage(props: JobsPageProps) {
                 try {
                   await liaApi.sendRecruiterActionNotification({
                     recruiter_ids: [recruiterId],
-                    action: 'assign',
+                    action:'assign',
                     job_titles: selectedJobs.map(j => j.title),
                     job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
-                    channels: ['bell', 'email', 'teams'],
+                    channels: ['bell','email','teams'],
                   })
                 } catch (notifError) {
                 }
@@ -1223,7 +1212,7 @@ export function JobsPage(props: JobsPageProps) {
           onClose={() => setShowCreateJobModal(false)}
           onCreateWithWizard={() => {
             setShowCreateJobModal(false)
-            if (activeFilter === 'visao-geral') {
+            if (activeFilter ==='visao-geral') {
               setActiveFilter('todas')
               setTimeout(() => openJobCreationChat(), 100)
             } else {
@@ -1295,7 +1284,7 @@ export function JobsPage(props: JobsPageProps) {
               <div className="py-4 space-y-3">
                 <p className="text-xs text-gray-600 dark:text-gray-400">
                   {reactivateScreeningJobs.length === 1 
-                    ? `A vaga "${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
+                    ? `A vaga"${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
                     : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
                   }
                 </p>
@@ -1324,7 +1313,7 @@ export function JobsPage(props: JobsPageProps) {
                     for (const job of reactivateScreeningJobs) {
                       if (job.backendId) {
                         try {
-                          await liaApi.updateScreeningStatus(job.backendId, 'active', { 
+                          await liaApi.updateScreeningStatus(job.backendId,'active', { 
                             scheduled_end_date: reactivateEndDate || undefined 
                           })
                         } catch (err) {
@@ -1333,7 +1322,7 @@ export function JobsPage(props: JobsPageProps) {
                     }
                     setBackendJobs(prev => prev.map(j => 
                       reactivateScreeningJobs.some((rj: Record<string, unknown>) => rj.id === j.id) 
-                        ? { ...j, screeningStatus: 'active' as string } 
+                        ? { ...j, screeningStatus:'active' as string } 
                         : j
                     ))
                     toast.success(`Triagem reativada para ${reactivateScreeningJobs.length} vaga(s)!`)

@@ -87,7 +87,7 @@ function EditableCell({
   return (
     <div
       onClick={handleClick}
-      className={}
+      className="w-10 px-1 py-1 text-xs text-center cursor-pointer hover:bg-gray-100 rounded-md font-[Open_Sans,sans-serif]"
     >
       {displayValue}
     </div>

@@ -1070,11 +1070,10 @@ export function SSIModeContent(props: SSIModeContentProps) {
         onKeyDown={handleKeyDown}
         placeholder={getPlaceholder()}
         className={cn(
-          "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-all border",
+          "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-all border bg-lia-bg-primary",
           booleanError && "ring-2 ring-red-300"
         )}
         style={{borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
-          backgroundColor: "var(--lia-bg-primary)",
           color: "var(--gray-950)"}}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"

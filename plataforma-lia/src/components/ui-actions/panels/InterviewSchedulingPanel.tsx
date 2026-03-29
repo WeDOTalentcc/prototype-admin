@@ -205,7 +205,7 @@ export function InterviewSchedulingPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-3 dark:border-gray-700" style={{border: '1px solid var(--lia-border-subtle)'}}>
+          <div className="rounded-md p-3 dark:border-gray-700 border border-lia-border-subtle">
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="icon" className="dark:text-gray-300 dark:hover:bg-gray-700" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
@@ -217,10 +217,9 @@ export function InterviewSchedulingPanel({
             </div>
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
-                <div 
-                  key={day} 
-                  className="text-xs font-medium py-1 dark:text-gray-400"
-                  style={{color: 'var(--lia-text-tertiary)'}}
+                <div
+                  key={day}
+                  className="text-xs font-medium py-1 dark:text-gray-400 text-lia-text-tertiary"
                 >
                   {day}
                 </div>
@@ -267,9 +266,8 @@ export function InterviewSchedulingPanel({
               })}
             </div>
           </div>
-          <p 
-            className="text-xs mt-2 text-center capitalize dark:text-gray-400"
-            style={{color: 'var(--lia-text-tertiary)'}}
+          <p
+            className="text-xs mt-2 text-center capitalize dark:text-gray-400 text-lia-text-tertiary"
           >
             {formatDisplayDate(selectedDate)}
           </p>
@@ -421,7 +419,7 @@ export function InterviewSchedulingPanel({
             </div>
           ))}
           {selectedInterviewers.length > 0 && (
-            <div className="pt-2 mt-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
+            <div className="pt-2 mt-3 border-t border-lia-border-subtle">
               <p className="text-xs dark:text-gray-400 text-[var(--lia-text-tertiary)]">
                 {selectedInterviewers.length} entrevistador(es) selecionado(s)
               </p>
@@ -448,7 +446,7 @@ export function InterviewSchedulingPanel({
       </Card>
 
       {selectedTime && (
-        <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-default)'}}>
+        <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700 bg-lia-bg-secondary border-lia-border-default">
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
               <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 dark:text-gray-300 text-[var(--lia-text-secondary)]" />
@@ -458,25 +456,22 @@ export function InterviewSchedulingPanel({
                   {formatDisplayDate(selectedDate)} às {selectedTime}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge 
-                    variant="secondary" 
-                    className="text-xs border-0"
-                    style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
+                  <Badge
+                    variant="secondary"
+                    className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
                   </Badge>
-                  <Badge 
-                    variant="secondary" 
-                    className="text-xs border-0"
-                    style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
+                  <Badge
+                    variant="secondary"
+                    className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {INTERVIEW_TYPES.find((t) => t.value === interviewType)?.label}
                   </Badge>
                   {selectedInterviewers.length > 0 && (
-                    <Badge 
-                      variant="secondary" 
-                      className="text-xs border-0"
-                      style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-secondary)'}}
+                    <Badge
+                      variant="secondary"
+                      className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {selectedInterviewers.length} entrevistador(es)
                     </Badge>
