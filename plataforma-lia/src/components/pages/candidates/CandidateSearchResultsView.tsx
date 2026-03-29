@@ -300,6 +300,7 @@ export function CandidateSearchResultsView({
   setShowExpandedLIA,
   onAICommand,
   searchSortBy,
+  setSearchSortBy,
   sortedCandidates,
   selectAllCandidates,
   showTableFiltersPanel,
