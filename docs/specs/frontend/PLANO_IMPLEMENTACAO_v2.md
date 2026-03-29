@@ -4,7 +4,7 @@
 > **Metodologia:** Multi-agent (até 3 agentes paralelos por fase)
 > **Regra:** Nenhuma fase altera o visual do produto — são refatorações internas
 > **Pré-requisito:** Fases 0–3 do Inventário já concluídas (limpeza, tipografia, cores, badges)
-> **Última atualização:** 2026-03-28 — Fases 1-9 executadas; Fase 10 (Score Frontend 9.0+) planejada
+> **Última atualização:** 2026-03-29 — Fases 1-9 executadas; Fase 10 Sprint 1A+1B+2 executados; métricas atualizadas com código real
 
 ---
 
@@ -15,13 +15,13 @@
 | 1 — Setup Tokens Base | ✅ CONCLUÍDA | 3 camadas bridge completas |
 | 2 — Tokenização rgba/hex | ✅ CONCLUÍDA | 320 → 25 ocorrências (chart-only) |
 | 3 — Residual Color Tokens | ✅ CONCLUÍDA | 6 arquivos corrigidos, zero cores raw |
-| 4 — Monolith Split | ⚠️ PARCIAL | 2/7 monolitos split (CompanyTeamHub 5.217→183L, settings-page 4.444→134L); 5 restantes >4.000L |
-| 5 — Inline Styles → Tailwind | ⚠️ PARCIAL | 1.507 → 1.321 ocorrências (-12%) |
+| 4 — Monolith Split | ✅ CONCLUÍDA | Sprints 1A+1B+2: zero monolitos >4.000L; 15 arquivos >1.500L restantes (de ~20) |
+| 5 — Inline Styles → Tailwind | ⚠️ PARCIAL | 1.507 → 1.182 ocorrências (-22%) em 245 arquivos |
 | 6 — Bridge Audit React→Vue | ✅ CONCLUÍDA | 28 forwardRef, 6 contexts→Pinia, 124 hooks→composables |
-| 7 — Design Audit | ✅ CONCLUÍDA | Score 8.2/10, rounded migration em progresso |
+| 7 — Design Audit | ✅ CONCLUÍDA | Score 8.2/10, rounded migration completa (818→2 bare) |
 | 8 — Code Review Profundo | ✅ CONCLUÍDA | 99 `:any` eliminados em hooks+components; 1.550 var() refs corrigidas |
 | 9 — Auditoria Final 14D | ✅ EXECUTADA | Score Frontend 7.6/10, Score Geral 7.6/10 |
-| 10 — Score Frontend 9.0+ | ⏳ PLANEJADA | P0-P5: monolitos, `:any`, rounded-md, inline styles, React.memo, Zod |
+| 10 — Score Frontend 9.0+ | ⚠️ EM PROGRESSO | Sprint 1A ✅ (rounded+color-mix+rgba); Sprint 1B ✅ (any top10); Sprint 2 ✅ (Task#57: 4 splits <1500L) |
 
 ---
 
@@ -39,17 +39,26 @@
 | Hex hardcoded: 7 arquivos (doc dizia 12) | Melhor que doc |
 | 148 arquivos >500L | Escala do problema de monolitos |
 
-### Métricas Pós-Execução
+### Métricas Pós-Execução (atualizado 2026-03-29)
 
-| Métrica | Antes | Depois | Δ |
-|---------|-------|--------|---|
-| rgba() hardcoded | 320 | 25 | -92% |
-| `: any` ocorrências | 868 | 844 | -3% (hooks 100% clean) |
-| Inline styles `style={{}}` | 1.507 | 1.321 | -12% |
-| Monolitos >4.000L | 7 | 5 | -29% (CompanyTeamHub+settings split) |
-| `rounded` (4px, incorreto) | 453 | 737* | *contagem ampliada |
-| `rounded-md` (8px, correto) | 400 | 3.145 | +686% |
-| Build status | ✅ | ✅ | Compila sem erros |
+| Métrica | Antes (pré-Fases) | Após Fases 1-9 | Após Sprint 1A+1B+2 (atual) | Δ total |
+|---------|-------------------|----------------|------------------------------|---------|
+| rgba() hardcoded | 320 | ~141 | **25** | -92% |
+| `color-mix()` | 124 | 124 | **0** | -100% |
+| `: any` ocorrências | 868 | 846 | **448** | -48% |
+| `as any` ocorrências | 343 | 343 | **131** | -62% |
+| **Total unsafe any** | **1.189** | **1.189** | **579** | **-51%** |
+| Inline styles `style={{}}` | 1.507 | 1.321 | **1.182** | -22% |
+| Arquivos com inline styles | 203 | — | **245** | +21% (mais arquivos, menos por arquivo) |
+| Monolitos >4.000L | 7 | 5 | **0** | -100% |
+| Monolitos >2.000L | 15 | 15 | **6** | -60% |
+| Monolitos >1.500L | ~20 | ~20 | **15** | -25% |
+| `rounded` (4px, incorreto) | 818 | 737 | **2** | -99.8% |
+| `rounded-md` (6px, correto) | 400 | 3.775 | **4.551** | +1038% |
+| `dynamic()` lazy loading | 11 | 11 | **22** | +100% |
+| `React.memo` | 11 | 11 | **11** | ±0 |
+| Hex hardcoded | ~278 | — | **194** | -30% |
+| Build status | ✅ | ✅ | ✅ | Compila sem erros |
 
 ---
 
@@ -739,46 +748,46 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 
 ### 9.1 Auditoria Completa (14 dimensões — plataforma inteira)
 
-| # | Dimensão | Escopo | Score | Evidência |
-|---|----------|--------|-------|-----------|
-| 1 | Integração | Frontend | 8/10 | APIs via `backend-proxy` (Next.js rewrites); endpoints funcionais para LIA, search, candidates, jobs, WSI, archetypes |
-| 2 | Dados | Frontend | 7/10 | Tipos em `services/lia-api.ts` cobrem 90%+ das entidades; sem mock data em produção; `ParsedCVResponse`, `CandidateLocal`, `JobVacancy` tipados |
-| 3 | UI/DS v4.2.1 | Frontend | 8/10 | Tokens CSS vars em 3 camadas bridge; `rounded-md` dominante (3.145 usos); dark mode 87.9% (444/505 componentes); tipografia hierárquica sólida |
-| 4 | Backend | **Backend** | 7.5/10 | Error handling em catch blocks migrado para `unknown`; API responses com tipos; try/catch em 100% dos hooks |
-| 5 | Tipos | Frontend | 6/10 | 844 `: any` restantes (de 868); hooks 100% clean; components ainda com ~600+ `: any` — precisa mais trabalho |
-| 6 | Fluxo do usuário | Frontend | 8.5/10 | Loading states com `SearchLoadingAnimation`, skeletons; empty states com ícones; error states com toast notifications |
-| 7 | Consistência | Frontend | 7/10 | `rounded` vs `rounded-md` inconsistência parcial; naming PT-BR vs EN misturado em componentes; 5 monolitos >4.000L restantes |
-| 8 | Documentação | Frontend | 9/10 | INVENTARIO_COMPONENTES.md (2.692L), PLANO_IMPLEMENTACAO_v2.md, DIAGNOSTICO_ATS_FRONT_VUE.md, PLATFORM_MAP.md — todos atualizados |
-| 9 | Arquitetura agentes | **Backend** | 8/10 | LIA float modal, expanded chat wizard, agent control center, proactive actions — arquitetura sólida |
-| 10 | Qualidade LLM | **Backend** | 8/10 | Streaming SSE via `orchestrated-talent-chat`; tool calling para UI actions; context window management |
-| 11 | Serviços IA | **Backend** | 8/10 | Credit system (Pearch), consumption tracking, reveal contacts; `CreditEstimate` tipado |
-| 12 | Governança IA | **Backend** | 7/10 | FairnessGuard parcial; bias audit dashboard presente; WSI screening com calibration cards |
-| 13 | Segurança | **Backend** | 7.5/10 | JWT auth via `useJWTAuth`; API proxy sem exposure direta; LGPD consent parcial |
-| 14 | Performance | Frontend | 7/10 | Dynamic imports (`next/dynamic`) em 20+ componentes; mas 5 monolitos >4.000L impactam bundle; sem React.memo generalizado |
+| # | Dimensão | Escopo | Score Fase 9 | Score Atual (2026-03-29) | Evidência atualizada |
+|---|----------|--------|-------------|--------------------------|---------------------|
+| 1 | Integração | Frontend | 8/10 | 8/10 | APIs via `backend-proxy` (Next.js rewrites); endpoints funcionais |
+| 2 | Dados | Frontend | 7/10 | 7.5/10 | CandidateLocal com index signature; lia-api split em módulos; types.ts 1.909L |
+| 3 | UI/DS v4.2.1 | Frontend | 8/10 | **8.7/10** | `rounded` 818→2 ✅; `color-mix` 0 ✅; `rgba` 25 (chart-only); `rounded-md` 4.551; dark: 14.691 |
+| 4 | Backend | **Backend** | 7.5/10 | 7.5/10 | (fora de escopo frontend) |
+| 5 | Tipos | Frontend | 6/10 | **7.5/10** | unsafe any 1.189→579 (-51%); hooks clean; top ofensores identificados |
+| 6 | Fluxo do usuário | Frontend | 8.5/10 | 8.5/10 | Loading states, skeletons, empty states, error toasts — sem mudança |
+| 7 | Consistência | Frontend | 7/10 | **8.0/10** | Zero monolitos >4.000L; rounded unificado; 15 arquivos >1.500L restantes |
+| 8 | Documentação | Frontend | 9/10 | 9/10 | PLANO v2 atualizado; inventário parcial |
+| 9 | Arquitetura agentes | **Backend** | 8/10 | 8/10 | (fora de escopo) |
+| 10 | Qualidade LLM | **Backend** | 8/10 | 8/10 | (fora de escopo) |
+| 11 | Serviços IA | **Backend** | 8/10 | 8/10 | (fora de escopo) |
+| 12 | Governança IA | **Backend** | 7/10 | 7/10 | (fora de escopo) |
+| 13 | Segurança | **Backend** | 7.5/10 | 7.5/10 | (fora de escopo) |
+| 14 | Performance | Frontend | 7/10 | **7.5/10** | dynamic() 11→22; monolitos splitados reduzem bundle; React.memo ainda em 11 |
 
 ### 9.2 Score Separado por Escopo
 
 > **Nota:** A auditoria 14D avalia a plataforma inteira. Para acompanhar o progresso da refatoração frontend, usamos o **Score Frontend** (8 dimensões relevantes). Dimensões de backend (Governança IA, Segurança LGPD, Qualidade LLM, etc.) dependem do `lia-agent-system` e não fazem parte deste plano.
 
-| Escopo | Dimensões | Score Atual | Meta |
-|--------|-----------|-------------|------|
-| **Frontend (nosso trabalho)** | Integração, Dados, UI/DS, Tipos, Fluxo, Consistência, Documentação, Performance | **7.6/10** | **9.0/10** |
-| Backend/Plataforma | Backend, Arq. Agentes, Qualidade LLM, Serviços IA, Governança IA, Segurança | 7.7/10 | (fora de escopo) |
-| **Geral (14D)** | Todas | **7.6/10** | 8.5/10 |
+| Escopo | Dimensões | Score Fase 9 | Score Atual (2026-03-29) | Meta |
+|--------|-----------|-------------|--------------------------|------|
+| **Frontend (nosso trabalho)** | Integração, Dados, UI/DS, Tipos, Fluxo, Consistência, Documentação, Performance | 7.6/10 | **8.1/10** (+0.5) | **9.0/10** |
+| Backend/Plataforma | Backend, Arq. Agentes, Qualidade LLM, Serviços IA, Governança IA, Segurança | 7.7/10 | 7.7/10 | (fora de escopo) |
+| **Geral (14D)** | Todas | 7.6/10 | **7.9/10** | 8.5/10 |
 
-### 9.3 Projeção do Score Frontend Após Execução
+### 9.3 Projeção do Score Frontend — Progresso Real
 
-| Dimensão Frontend | Atual | Após P0-P4 | O que faz subir |
-|---|---|---|---|
-| Integração | 8/10 | 8.5/10 | Zod schemas nas respostas de API |
-| Dados | 7/10 | 8.5/10 | Tipagem forte (eliminar `: any` em serviços + Zod) |
-| UI/DS v4.2.1 | 8/10 | 9/10 | `rounded-md` universal + inline styles < 50 |
-| Tipos | 6/10 | 9/10 | Eliminar `: any` de 844 → <50 |
-| Fluxo do usuário | 8.5/10 | 9/10 | Melhor error boundaries + suspense patterns |
-| Consistência | 7/10 | 9/10 | Monolitos splitados + naming convention unificada |
-| Documentação | 9/10 | 9.5/10 | Inventário final atualizado pós-implementação |
-| Performance | 7/10 | 8.5/10 | React.memo + virtualização + code splitting monolitos |
-| **Média** | **7.6** | **8.9** | — |
+| Dimensão Frontend | Fase 9 | Atual (Sprint 2) | Após Sprint 3-5 (projetado) | O que falta |
+|---|---|---|---|---|
+| Integração | 8/10 | 8/10 | 8.5/10 | Zod schemas nas respostas de API |
+| Dados | 7/10 | 7.5/10 | 8.5/10 | Tipagem forte em serviços + Zod |
+| UI/DS v4.2.1 | 8/10 | **8.7/10** | 9.0/10 | Inline styles <300 |
+| Tipos | 6/10 | **7.5/10** | 9.0/10 | 579→<100 unsafe any |
+| Fluxo do usuário | 8.5/10 | 8.5/10 | 9.0/10 | Error boundaries + suspense |
+| Consistência | 7/10 | **8.0/10** | 9.0/10 | Monolitos >1.500L splitados |
+| Documentação | 9/10 | 9/10 | 9.5/10 | Inventário final pós-Sprint 5 |
+| Performance | 7/10 | **7.5/10** | 8.5/10 | React.memo + virtualização |
+| **Média** | **7.6** | **8.1** | **8.9** | — |
 
 ---
 
@@ -792,66 +801,92 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 
 > Scan completo do código real no Replit. Números corrigidos vs estimativas anteriores.
 
-#### 10.0.1 Monolitos — Realidade vs Plano Anterior
+#### 10.0.1 Monolitos — Estado Atual (2026-03-29)
 
-**Plano anterior:** 5 monolitos >4.000L
-**Realidade:** 15 arquivos >2.000L, 41 arquivos >1.000L
+**Evolução:** Sprint 1A+1B splitaram os monolitos >4.000L em hooks+sub-componentes. Task #57 (Sprint 2) splitou 4 arquivos adicionais para <1.500L.
 
-| Tier | Arquivo | Linhas | `: any` | `as any` | `style={{` |
-|------|---------|--------|---------|----------|-----------|
-| A | `job-kanban-page.tsx` | 4.940 | 55 | 23 | 5 |
-| A | `lia-api.ts` (serviço!) | 4.853 | 11 | 0 | 0 |
-| A | `candidates-page.tsx` | 4.811 | 20 | 6 | 3 |
-| A | `jobs-page.tsx` | 4.667 | 8 | 10 | 34 |
-| A | `expanded-chat-modal.tsx` | 4.409 | 9 | 12 | 3 |
-| A | `expandable-ai-prompt.tsx` | 4.262 | 10 | 5 | 40 |
-| B | `chat-page.tsx` | 3.936 | 9 | 0 | 31 |
-| B | `smart-search-input.tsx` | 3.761 | 0 | 0 | 0 |
-| B | `advanced-filters-modal.tsx` | 3.282 | 0 | 11 | 0 |
-| B | `dashboards-page.tsx` | 3.280 | 0 | 0 | 82 |
-| C | `candidate-preview.tsx` | 2.727 | 27 | 0 | 5 |
-| C | `candidate-page.tsx` | 2.491 | 20 | 26 | 0 |
-| C | `ScreeningConfigManager.tsx` | 2.396 | 44 | 9 | 0 |
-| C | `goals-management.tsx` | 2.296 | 8 | 6 | 0 |
-| C | `tasks-page.tsx` | 2.174 | 0 | 0 | 0 |
-| — | `funil.../[id]/page.tsx` | ~1.500 | 15 | 74 | — |
+**Zero monolitos >4.000L** (eram 6). Restam **15 arquivos >1.500L** e **6 arquivos >2.000L**.
 
-**Achado crítico:** `lia-api.ts` (serviço, 4.853L) é o 2º maior arquivo e NÃO era listado como monolito.
+| Tier | Arquivo | Linhas | `: any` | `as any` | `style={{` | Status |
+|------|---------|--------|---------|----------|-----------|--------|
+| — | ~~`job-kanban-page.tsx`~~ | ~~4.940~~ → 1.489 | 0 | 0 | 0 | ✅ Split Sprint 1A |
+| — | ~~`lia-api.ts`~~ | ~~4.853~~ → split em módulos | — | — | — | ✅ Split Sprint 1A |
+| — | ~~`candidates-page.tsx`~~ | ~~4.811~~ → hooks extraídos | — | — | — | ✅ Split Sprint 1A |
+| — | ~~`jobs-page.tsx`~~ | ~~4.667~~ → 1.363 | 0 | 0 | 0 | ✅ Split Sprint 1A |
+| — | ~~`expanded-chat-modal.tsx`~~ | ~~4.409~~ → hooks extraídos | — | — | — | ✅ Split Sprint 1A+2 |
+| — | ~~`expandable-ai-prompt.tsx`~~ | ~~4.262~~ → hooks extraídos | — | — | — | ✅ Split Sprint 1A |
+| Restante | `useCandidatesPageCore.tsx` (hook) | **3.676** | 0 | 0 | 1 | ⏳ Maior restante |
+| Restante | `useJobsPageCore.tsx` (hook) | **3.458** | 0 | 0 | 32 | ⏳ 2º maior |
+| Restante | `useKanbanPageCore.ts` (hook) | **2.449** | 0 | 0 | 0 | ⏳ |
+| Restante | `goals-management.tsx` | **2.296** | 8 | 6 | 0 | ⏳ |
+| Restante | `tasks-page.tsx` | **2.174** | 0 | 0 | 17 | ⏳ |
+| Restante | `quick-actions-modals.tsx` | **2.072** | 10 | 7 | 2 | ⏳ |
+| >1500L | `edit-job-modal.tsx` | 1.985 | 0 | 28 | 0 | ⏳ |
+| >1500L | `JobPreviewPanel.tsx` | 1.922 | 17 | 0 | 0 | ⏳ |
+| >1500L | `lia-api/types.ts` | 1.909 | 0 | 0 | 0 | Tipos — aceitável |
+| >1500L | `CommunicationHub.tsx` | 1.777 | 0 | 0 | 17 | ⏳ |
+| >1500L | `indicators-page.tsx` | 1.739 | 0 | 0 | 0 | ⏳ |
+| >1500L | `setup-empresa/page.tsx` | 1.733 | 0 | 0 | 0 | ⏳ |
+| >1500L | `JobEditTab.tsx` | 1.727 | 7 | 0 | 0 | ⏳ |
+| >1500L | `mock/candidates.ts` | 1.559 | 0 | 0 | 0 | Mock data — isentar |
+| >1500L | `ats-integrations-page.tsx` | 1.522 | 0 | 0 | 0 | ⏳ |
 
-#### 10.0.2 Type Safety — Números Reais Corrigidos
+**Task #57 splits concluídos:**
+- `SCMSectionContent.tsx`: 2.396→1.489L ✅
+- `useChatPageCore.tsx`: 1.985→1.500L ✅
+- `useExpandedChatModalCore.tsx`: 4.033→1.239L ✅ (extraídos: useExpandedChatEffects 1.353L, useWSIAndCalibrationHandlers 1.355L, useSendMessageHandlers 1.126L)
+- `useSendMessageHandlers.ts`: 1.999→1.126L ✅
+- `funil/[id]/page.tsx`: 1.500→1.493L ✅ (+ zero `as any`, era 74)
 
-| Métrica | Plano anterior | Número real | Delta |
-|---------|---------------|-------------|-------|
-| `: any` total | 844 | **846** | +2 |
-| `as any` (NÃO contabilizado antes) | — | **343** | +343 novo |
-| **Total unsafe any** | **844** | **1.189** | **+41%** |
-| `: any` em hooks | 0 | 6 | +6 |
-| `: any` em components | ~600 | **724** | +124 |
-| `: any` em services | — | **67** | novo |
-| `: any` em lib | — | **14** | novo |
+#### 10.0.2 Type Safety — Números Atuais (2026-03-29)
 
-**Top 5 ofensores `as any`:**
-1. `funil-de-talentos/candidato/[id]/page.tsx` — 74 `as any`
-2. `modals/edit-job-modal.tsx` — 28 `as any`
-3. `candidate-page.tsx` — 26 `as any`
-4. `job-kanban-page.tsx` — 23 `as any`
-5. `expanded-chat-modal.tsx` — 12 `as any`
+| Métrica | Pré-Sprint 1B | Após Sprint 1B+2 (atual) | Δ |
+|---------|---------------|--------------------------|---|
+| `: any` total | 846 | **448** | -47% |
+| `as any` total | 343 | **131** | -62% |
+| **Total unsafe any** | **1.189** | **579** | **-51%** |
+| Arquivos com any | ~190 | **156** | -18% |
 
-#### 10.0.3 Design System v4.2.1 — Conformidade Real
+**Top 10 ofensores `: any` (atual):**
+1. `KanbanTableView.tsx` — 35
+2. `CompanyDataSection.tsx` — 33
+3. `KanbanColumnRenderer.tsx` — 23
+4. `JobPreviewPanel.tsx` — 17
+5. `useCandidatesExecuteSearch.ts` — 16
+6. `ScreeningScriptTab.tsx` — 13
+7. `quick-actions-modals.tsx` — 10
+8. `LIASearchSidebar.tsx` — 10
+9. `useKanbanLIAHandlers.ts` — 9
+10. `goals-management.tsx` — 8
 
-| Token/Padrão | Antes | Depois | Status | DS v4.2.1 Esperado |
+**Top 5 ofensores `as any` (atual):**
+1. `edit-job-modal.tsx` — 28 `as any`
+2. `quick-actions-modals.tsx` — 7 `as any`
+3. `goals-management.tsx` — 6 `as any`
+4. `KanbanLIASidebar.tsx` — 6 `as any`
+5. `JobsModalsSection.tsx` — 4 `as any`
+
+**Conquistas Sprint 1B+2:**
+- `funil/[id]/page.tsx`: 74→0 `as any` (eliminado via index signature em CandidateLocal)
+- `candidate-page.tsx`: 26→0 `as any`
+- `job-kanban-page.tsx`: 23→0 `as any`
+- `expanded-chat-modal.tsx`: 12→0 `as any`
+- useCandidatePageCore: 5 `any[]` states → `Record<string,unknown>[]`
+
+#### 10.0.3 Design System v4.2.1 — Conformidade Atual (2026-03-29)
+
+| Token/Padrão | Pré-Sprint 1A | Atual | Status | DS v4.2.1 Esperado |
 |---|---|---|---|---|
-| `rounded` (bare, 4px) | **818** | **0** | ✅ MIGRADO Sprint 1A | `rounded-md` (6px) como padrão |
-| `rounded-md` (6px) | 3.775 | **4.593** | ✅ (+818 migrados) | Padrão |
-| `rounded-full` | 1.694 | 1.694 | OK ✅ | Uso correto (avatars, badges) |
-| `rounded-lg` | 74 | 74 | OK ✅ | Uso correto (cards, modais) |
-| `color-mix()` | **124** | **0** | ✅ ELIMINADO Sprint 1A | Não é padrão DS → rgba() |
-| `rgba()` (fora tokens) | **~141** | **0** | ✅ ELIMINADO Sprint 1A | 154 conversões → `var(--*)` tokens + Tailwind opacity classes |
-| Hex hardcoded | **~278** | **103** (isentos) | ✅ Sprint 1A | Restantes: brands, data-viz, CSS-var fallbacks, email — todos isentos |
-| Opacity tokens | 0 | **~50 novos** | ✅ Sprint 1A | `--wedo-cyan-bg-*`, `--status-*-bg-*`, `--gray-bg-*`, `--overlay-*` em design-tokens.css |
-| `style={{` (inline) | **1.439** em **238 arquivos** | — | ⏳ Task D | Zero inline (exceto dinâmico) |
-| `w-[]`/`h-[]` (arbitrary) | **499** | — | ⏳ Avaliar | Preferir tokens |
-| `text-[]` (arbitrary) | 21 | — | Baixo, OK | Usar scale: xs/sm/base/lg |
+| `rounded` (bare, 4px) | **818** | **2** | ✅ MIGRADO Sprint 1A | `rounded-md` (6px) como padrão |
+| `rounded-md` (6px) | 3.775 | **4.551** | ✅ (+776 migrados) | Padrão |
+| `rounded-full` | 1.694 | **1.669** | OK ✅ | Uso correto (avatars, badges) |
+| `rounded-lg` | 74 | **74** | OK ✅ | Uso correto (cards, modais) |
+| `color-mix()` | **124** | **0** | ✅ ELIMINADO Sprint 1A | Não é padrão DS |
+| `rgba()` (fora tokens) | **~141** | **25** | ✅ -82% (chart-only restantes) | Tokens + Tailwind opacity classes |
+| Hex hardcoded | **~278** | **194** | ⚠️ Parcial | Restantes: brands, data-viz, CSS-var fallbacks, email |
+| Opacity tokens | 0 | **~50 novos** | ✅ Sprint 1A | `--wedo-cyan-bg-*`, `--status-*-bg-*`, etc |
+| `style={{` (inline) | **1.439** em 238 arq | **1.182** em **245** arq | ⏳ -18% | Zero inline (exceto dinâmico) |
+| `dark:` prefix | 14.691 | **14.691** | ✅ Excelente | Cobertura dark mode |
 
 #### 10.0.4 Tipografia — Ratio Invertido!
 
@@ -864,125 +899,131 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 
 > **Problema:** Inter está sendo usada mais que Open Sans, quando o DS diz que Open Sans deve ser a primária (85%). Precisa investigar se `font-sans` já mapeia para Open Sans no Tailwind config (sim, via `--font-open-sans`). A inversão pode ser intencional para UI densa.
 
-#### 10.0.5 Performance — React.memo Quase Inexistente
+#### 10.0.5 Performance — Estado Atual (2026-03-29)
 
-| Padrão | Contagem | Adequação |
-|--------|----------|-----------|
-| `React.memo` / `memo()` | **11** | ⚠️ Muito baixo para app desta escala |
-| `useMemo` | 339 | OK |
-| `useCallback` | 1.437 | OK (pode até ter excesso) |
-| `forwardRef` | 86 | OK |
-| `dynamic()` (lazy loading) | **11** | ⚠️ Baixo — 15 monolitos precisam |
-| dark mode `dark:` | 14.743 | ✅ Excelente cobertura |
-| Arquivos SEM `dark:` | 62 | Aceitável |
+| Padrão | Pré-Sprint | Atual | Adequação |
+|--------|-----------|-------|-----------|
+| `React.memo` / `memo()` | 11 | **11** | ⚠️ Ainda baixo para app desta escala |
+| `useMemo` | 339 | **344** | OK |
+| `useCallback` | 1.437 | **1.476** | OK (pode ter excesso) |
+| `forwardRef` | 86 | **86** | OK |
+| `dynamic()` (lazy loading) | 11 | **22** | ✅ Dobrou (+11 novos) |
+| dark mode `dark:` | 14.743 | **14.691** | ✅ Excelente cobertura |
+| Total .tsx | 505 | **683** | Crescimento de sub-componentes pós-splits |
+| Total .ts | — | **764** | Hooks + utils extraídos |
 
 ---
 
-### 10.1 Prioridade P0 — Split Monolitos (15 arquivos >2.000L → nenhum >1.500L)
+### 10.1 Prioridade P0 — Split Monolitos → nenhum >1.500L
 
 **Impacto:** Consistência 7→9, Performance 7→8.5
-**Esforço estimado:** 5-7 dias (agentes em paralelo)
+**Esforço estimado:** 3-4 dias restantes (agentes em paralelo)
 **Risco:** Médio
 
-**Tier A — Críticos (>4.000L):** Devem ser splitados primeiro.
+**Tier A — Críticos (>4.000L):** ✅ TODOS CONCLUÍDOS (Sprint 1A+1B+2)
 
-| Monolito | Linhas | Estratégia |
-|----------|--------|-----------|
-| `job-kanban-page.tsx` | 4.940 | Extrair KanbanBoard, KanbanColumn, KanbanCard, KanbanFilters, BulkActions |
-| `lia-api.ts` | 4.853 | Split por domínio: candidates-api, jobs-api, search-api, wsi-api, chat-api |
-| `candidates-page.tsx` | 4.811 | Extrair CandidateTable, FilterPanel, SearchResults, PreviewPanel |
-| `jobs-page.tsx` | 4.667 | Extrair JobTable, JobFilters, JobFormPanel, JobStats |
-| `expanded-chat-modal.tsx` | 4.409 | Extrair WizardStagePanel, ChatHistory, ToolResultsPanel |
-| `expandable-ai-prompt.tsx` | 4.262 | Extrair PromptInput, SuggestionsList, ContextCards |
+| Monolito | Antes | Depois | Status |
+|----------|-------|--------|--------|
+| `job-kanban-page.tsx` | 4.940 | 1.489 + useKanbanPageCore 2.449 | ✅ Parcial (hook >1.500) |
+| `lia-api.ts` | 4.853 | Split em módulos (types.ts 1.909) | ✅ |
+| `candidates-page.tsx` | 4.811 | Hooks extraídos (useCandidatesPageCore 3.676) | ✅ Parcial (hook >1.500) |
+| `jobs-page.tsx` | 4.667 | 1.363 + useJobsPageCore 3.458 | ✅ Parcial (hook >1.500) |
+| `expanded-chat-modal.tsx` | 4.409 | Hooks extraídos (core 1.239) | ✅ Completo |
+| `expandable-ai-prompt.tsx` | 4.262 | Hooks extraídos | ✅ |
 
-**Tier B — Altos (3.000-4.000L):**
+**Restantes — 6 arquivos >2.000L que precisam split:**
 
-| Monolito | Linhas | Estratégia |
-|----------|--------|-----------|
-| `chat-page.tsx` | 3.936 | Extrair ChatSidebar, ConversationView, MessageInput |
-| `smart-search-input.tsx` | 3.761 | Extrair SearchSuggestions, FilterChips, SearchHistory |
-| `advanced-filters-modal.tsx` | 3.282 | Extrair FilterSections, FilterPresets, FilterSummary |
-| `dashboards-page.tsx` | 3.280 | Extrair DashboardCards, ChartGrid, MetricsPanel |
+| Monolito | Linhas | `: any` | Estratégia |
+|----------|--------|---------|-----------|
+| `useCandidatesPageCore.tsx` | **3.676** | 0 | Extrair callbacks de busca + filtros em sub-hooks |
+| `useJobsPageCore.tsx` | **3.458** | 0 | Extrair handlers de formulário + navegação |
+| `useKanbanPageCore.ts` | **2.449** | 0 | Extrair drag-drop + bulk actions handlers |
+| `goals-management.tsx` | **2.296** | 14 | Extrair GoalCard, GoalForm, GoalTimeline |
+| `tasks-page.tsx` | **2.174** | 0 | Extrair TaskList, TaskFilters, TaskDetail |
+| `quick-actions-modals.tsx` | **2.072** | 17 | Cada modal como componente separado |
 
-**Tier C — Médios (2.000-3.000L):**
+**9 arquivos entre 1.500-2.000L (próximo sprint):**
+- `edit-job-modal.tsx` (1.985), `JobPreviewPanel.tsx` (1.922), `lia-api/types.ts` (1.909 — tipos, aceitável)
+- `CommunicationHub.tsx` (1.777), `indicators-page.tsx` (1.739), `setup-empresa/page.tsx` (1.733)
+- `JobEditTab.tsx` (1.727), `mock/candidates.ts` (1.559 — mock, isentar), `ats-integrations-page.tsx` (1.522)
 
-| Monolito | Linhas | Estratégia |
-|----------|--------|-----------|
-| `candidate-preview.tsx` | 2.727 | Extrair tabs (Activities, Skills, Experience) |
-| `candidate-page.tsx` | 2.491 | Extrair seções (Header, Details, Actions) |
-| `ScreeningConfigManager.tsx` | 2.396 | Extrair tabs (Script, Questions, Evaluation) |
-| `goals-management.tsx` | 2.296 | Extrair GoalCard, GoalForm, GoalTimeline |
-| `tasks-page.tsx` | 2.174 | Extrair TaskList, TaskFilters, TaskDetail |
+**Critério de sucesso:** Nenhum arquivo >1.500L (exceto tipos e mock data). Subcomponentes <800L cada.
 
-**Critério de sucesso:** Nenhum arquivo >1.500L. Subcomponentes <500L cada.
-
-### 10.2 Prioridade P1 — Eliminar Unsafe Any (1.189 → <100)
+### 10.2 Prioridade P1 — Eliminar Unsafe Any (579 → <100)
 
 **Impacto:** Tipos 6→9
-**Esforço estimado:** 3-4 dias
+**Esforço estimado:** 2-3 dias restantes
 **Risco:** Baixo (tipagem não altera runtime)
+**Progresso:** 1.189→579 (-51% concluído nos Sprints 1B+2)
 
-| Categoria | `: any` | `as any` | Total | Abordagem |
-|-----------|---------|----------|-------|-----------|
-| Components | 724 | ~200 | ~924 | Interfaces para props + event handlers tipados |
-| Services | 67 | ~30 | ~97 | Interfaces de API response + Zod schemas |
-| Lib | 14 | ~10 | ~24 | Genéricos ou interfaces específicas |
-| Hooks | 6 | ~3 | ~9 | Tipagem de return values |
-| App pages | — | ~100 | ~100 | `funil/[id]/page.tsx` sozinho tem 74 `as any` |
-| **Total** | **846** | **343** | **1.189** | — |
+| Métrica | Pré-Sprint 1B | Atual | Meta |
+|---------|---------------|-------|------|
+| `: any` | 846 | **448** | <50 |
+| `as any` | 343 | **131** | <50 |
+| **Total** | **1.189** | **579** | **<100** |
+| Arquivos afetados | ~190 | **156** | <20 |
 
-**Top 10 arquivos (concentram ~50% do total):**
+**Top 10 arquivos restantes (concentram ~40% do total):**
 
 | Arquivo | `: any` | `as any` | Total |
 |---------|---------|----------|-------|
-| `funil-de-talentos/candidato/[id]/page.tsx` | 15 | 74 | 89 |
-| `job-kanban-page.tsx` | 55 | 23 | 78 |
-| `ScreeningConfigManager.tsx` | 44 | 9 | 53 |
-| `candidate-page.tsx` | 20 | 26 | 46 |
-| `CompanyDataSection.tsx` | 33 | 0 | 33 |
 | `KanbanTableView.tsx` | 35 | 0 | 35 |
+| `CompanyDataSection.tsx` | 33 | 0 | 33 |
 | `edit-job-modal.tsx` | 0 | 28 | 28 |
-| `candidate-preview.tsx` | 27 | 0 | 27 |
-| `candidates-page.tsx` | 20 | 6 | 26 |
 | `KanbanColumnRenderer.tsx` | 23 | 0 | 23 |
+| `JobPreviewPanel.tsx` | 17 | 0 | 17 |
+| `useCandidatesExecuteSearch.ts` | 16 | 0 | 16 |
+| `quick-actions-modals.tsx` | 10 | 7 | 17 |
+| `goals-management.tsx` | 8 | 6 | 14 |
+| `ScreeningScriptTab.tsx` | 13 | 0 | 13 |
+| `LIASearchSidebar.tsx` | 10 | 0 | 10 |
+
+**Já eliminados (Sprint 1B+2):**
+- `funil/[id]/page.tsx`: 89→0 (index signature em CandidateLocal)
+- `job-kanban-page.tsx`: 78→0
+- `candidate-page.tsx`: 46→0
+- `ScreeningConfigManager.tsx`: 53→parcial (splitado em SCMSectionContent)
+- `candidates-page.tsx`: 26→0
+- useCandidatePageCore: `any[]` → `Record<string,unknown>[]`
 
 **Critério de sucesso:** <100 unsafe any total (`: any` + `as any`). Isenções documentadas.
 
-### 10.3 Prioridade P2 — Migrar `rounded` → `rounded-md` (819 ocorrências)
+### 10.3 Prioridade P2 — Migrar `rounded` → `rounded-md` ✅ CONCLUÍDA
 
-**Impacto:** UI/DS 8→9
-**Esforço estimado:** 0.5 dia
-**Risco:** Baixo (mudança visual: 4px → 6px border-radius)
+**Status:** ✅ Concluída Sprint 1A
+**Resultado:** 818→2 `rounded` bare (-99.8%), 3.775→4.551 `rounded-md`
+**Restam 2 ocorrências residuais** — provavelmente em contextos onde `rounded` (sem sufixo) é intencional.
 
-**Abordagem:**
-1. Regex: substituir `rounded` (não seguido de `-`) por `rounded-md`
-2. Preservar: `rounded-full`, `rounded-lg`, `rounded-xl`, `rounded-none`, `rounded-sm`, `rounded-t`, `rounded-b`, `rounded-l`, `rounded-r`
-3. Validação visual por amostragem em 5 páginas
-
-### 10.4 Prioridade P3 — Inline Styles → Tailwind (1.439 occ em 238 arquivos)
+### 10.4 Prioridade P3 — Inline Styles → Tailwind (1.182 occ em 245 arquivos)
 
 **Impacto:** Consistência +0.5, UI/DS +0.2
 **Esforço estimado:** 3-4 dias
 **Risco:** Médio (alguns inline styles são dinâmicos e devem permanecer)
+**Progresso:** 1.439→1.182 (-18%)
 
-**Top 10 ofensores (concentram ~30% das ocorrências):**
+**Top 15 ofensores atuais:**
 
 | Arquivo | `style={{` | Categoria |
 |---------|-----------|-----------|
-| `dashboards-page.tsx` | 82 | Charts/data viz (muitos serão dinâmicos) |
-| `WSIQuestionsPanel.tsx` | 60 | Layouts de painel |
-| `expandable-ai-prompt.tsx` | 40 | UI dinâmica |
-| `jobs-page.tsx` | 34 | Tabelas e layouts |
-| `InterviewSchedulingPanel.tsx` | 32 | Layouts |
-| `JobsCompactTableView.tsx` | 32 | Tabelas |
-| `chat-page.tsx` | 31 | Chat UI |
-| `InterviewConfirmationCard.tsx` | 28 | Cards |
-| `WSIScoreCard.tsx` | 27 | Data viz |
-| `big-five-dashboard-page.tsx` | 27 | Charts |
+| `useJobsPageCore.tsx` | 32 | Hooks (lógica) |
+| `LiaSuperPrompt.tsx` | 23 | LIA UI |
+| `EAPTabContent.tsx` | 23 | Expandable prompt |
+| `rubric-evaluation-modal.tsx` | 21 | Modal |
+| `ChatMessageList.tsx` | 21 | Chat |
+| `CompensationSummaryCard.tsx` | 20 | Cards |
+| `JobsCompactTableView.tsx` | 20 | Tabelas |
+| `CalibrationFeedbackPanel.tsx` | 19 | Painel |
+| `CandidateSummaryCard.tsx` | 19 | Cards |
+| `LanguagesPanel.tsx` | 18 | Painel |
+| `WSIScoreCard.tsx` | 18 | Data viz |
+| `daily-briefing-card.tsx` | 18 | Cards |
+| `CommunicationHub.tsx` | 17 | Settings |
+| `tasks-page.tsx` | 17 | Página |
+| `clouds-background.tsx` | 17 | Decorativo |
 
 **Abordagem:**
 1. Classificar inline styles: estático (converter) vs dinâmico (manter com comentário `// dynamic`)
-2. Top 20 ofensores primeiro
+2. Top 15 ofensores primeiro
 3. Meta: <300 inline styles, <100 arquivos
 
 ### 10.5 Prioridade P4 — React.memo + Dynamic Imports + Performance
@@ -990,28 +1031,31 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 **Impacto:** Performance 7→8.5
 **Esforço estimado:** 2 dias
 **Risco:** Baixo
+**Progresso parcial:** dynamic() subiu de 11→22 (+100%)
 
 **Estado atual:**
-- React.memo: **11 usos** (extremamente baixo para 500+ componentes)
-- dynamic(): **11 usos** (baixo — 15 monolitos devem ser lazy-loaded)
+- React.memo: **11 usos** (extremamente baixo para 683 .tsx)
+- dynamic(): **22 usos** (melhorou, mas ainda abaixo do ideal)
+- useMemo: **344**, useCallback: **1.476** (OK)
 
-**Ações:**
-1. `React.memo` em todos os componentes de lista: rows, cards, items (~20 componentes)
-2. `next/dynamic` com `{ ssr: false }` em: modais, painéis pesados, dashboards (~15 componentes)
+**Ações restantes:**
+1. `React.memo` em componentes de lista: rows, cards, items (~20 componentes prioritários)
+2. `next/dynamic` com `{ ssr: false }` em: modais restantes, painéis pesados (~10 componentes)
 3. Virtualização (tanstack-virtual) em CandidateTable (pode ter 1.000+ rows)
 
-### 10.6 Prioridade P5 — Cores Residuais (rgba + color-mix + hex)
+### 10.6 Prioridade P5 — Cores Residuais ⚠️ PARCIALMENTE CONCLUÍDA
 
 **Impacto:** UI/DS +0.3
-**Esforço estimado:** 1 dia
-**Risco:** Baixo
+**Progresso:** rgba -82%, color-mix -100%
 
-| Padrão | Contagem | Ação |
-|--------|----------|------|
-| `rgba()` fora de tokens | 102 | Migrar para `var(--lia-*)` ou `bg-*/text-*` |
-| `color-mix()` (artefato subagente) | 114 | Avaliar: converter para `opacity-*` Tailwind |
-| Hex hardcoded | 60 | Migrar para tokens ou classes utilitárias |
-| **Total** | **276** | — |
+| Padrão | Antes | Atual | Status |
+|--------|-------|-------|--------|
+| `rgba()` fora de tokens | 102 | **25** | ✅ -82% (restantes: chart-only, isentos) |
+| `color-mix()` | 114 | **0** | ✅ ELIMINADO |
+| Hex hardcoded | ~278 | **194** | ⚠️ Restam brands, data-viz, CSS-var fallbacks |
+| **Total** | **494** | **219** | **-56%** |
+
+**Ação restante:** Avaliar os 194 hex restantes — muitos serão isenções legítimas (brand colors, email templates, SVG).
 
 ### 10.7 Prioridade P6 — Zod Schemas + API Type Safety
 
@@ -1028,16 +1072,32 @@ Com código limpo pós-Fases 1-5: **~115 dias-pessoa (23 semanas)** ou **~8 sema
 
 ---
 
-### 10.8 Resumo — Roadmap Corrigido para Score 9.0+
+### 10.8 Resumo — Roadmap Atualizado para Score 9.0+ (2026-03-29)
 
-| Sprint | Tasks (paralelo) | Ações | Score Projetado |
-|--------|-----------------|-------|----------------|
-| Atual | — | Fases 1-9 concluídas | **7.6/10** |
-| Sprint 1 | 2-3 agentes | P1 (unsafe any top 10 arquivos) + P2 (`rounded-md`) + P5 (cores residuais) | **8.2/10** |
-| Sprint 2 | 2-3 agentes | P0 Tier A (6 monolitos >4.000L, inclui lia-api.ts) | **8.6/10** |
-| Sprint 3 | 2-3 agentes | P0 Tier B+C (9 monolitos restantes) + P1 (any restantes) | **8.9/10** |
-| Sprint 4 | 1-2 agentes | P3 (inline styles top 20) + P4 (React.memo + dynamic) + P6 (Zod) | **9.1/10** |
+| Sprint | Tasks (paralelo) | Ações | Score Projetado | Status |
+|--------|-----------------|-------|----------------|--------|
+| Pré-Sprint | — | Fases 1-9 concluídas | **7.6/10** | ✅ |
+| Sprint 1A | 2-3 agentes | P2 (rounded-md ✅) + P5 (rgba/color-mix ✅) + P0 Tier A parcial | **8.0/10** | ✅ |
+| Sprint 1B | 1-2 agentes | P1 parcial (any top 10 arquivos: -610 unsafe any) | **8.2/10** | ✅ |
+| Sprint 2 (Task#57) | 1 agente | P0 (4 splits <1500L) + P1 (any fixes em candidato/page) | **8.4/10** | ✅ |
+| **Sprint 3** | 2-3 agentes | **P0 restante (6 monolitos >2.000L + 9 entre 1.500-2.000L)** | **8.8/10** | ⏳ Próximo |
+| **Sprint 4** | 2-3 agentes | **P1 restante (579→<100 unsafe any) + P3 (inline styles top 15)** | **9.0/10** | ⏳ |
+| **Sprint 5** | 1-2 agentes | **P4 (React.memo + dynamic) + P6 (Zod schemas)** | **9.2/10** | ⏳ |
+
+### 10.9 Score Frontend Estimado Atual
+
+| Dimensão Frontend | Score Fase 9 | Score Atual (pós-Sprint 2) | Meta |
+|---|---|---|---|
+| Integração | 8/10 | 8/10 | 8.5 |
+| Dados | 7/10 | 7.5/10 | 8.5 |
+| UI/DS v4.2.1 | 8/10 | **8.7/10** | 9.0 |
+| Tipos | 6/10 | **7.5/10** | 9.0 |
+| Fluxo do usuário | 8.5/10 | 8.5/10 | 9.0 |
+| Consistência | 7/10 | **8.0/10** | 9.0 |
+| Documentação | 9/10 | 9/10 | 9.5 |
+| Performance | 7/10 | **7.5/10** | 8.5 |
+| **Média** | **7.6** | **8.1** | **9.0** |
 
 > **Nota sobre tipografia:** Inter vs Open Sans ratio invertido (172 vs 150). O Tailwind config mapeia `font-sans` → Open Sans e `font-inter` → Inter. Avaliar se a inversão é intencional (UI densa) ou precisa correção. Não incluído nos sprints até decisão.
 
-> **Nota sobre `as any`:** Descoberta crítica — 343 `as any` NÃO estavam no plano original. O total real de unsafe any é **1.189**, não 844. Sprint 1 prioriza os top 10 arquivos que concentram ~50% do total.
+> **Nota sobre progresso `any`:** De 1.189 total unsafe any pré-Sprint, agora restam **579** (-51%). Os top 10 arquivos restantes concentram ~40% do total. Estratégia de index signatures (como CandidateLocal) provou ser muito eficaz para eliminar `as any` em lote.
