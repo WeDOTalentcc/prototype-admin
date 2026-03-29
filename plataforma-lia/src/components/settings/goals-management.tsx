@@ -124,6 +124,33 @@ const getStatusColor = (status: string) => {
   }
 }
 
+
+// Camada 3 (componente com estado): Usa hook da Camada 1
+export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
+  const { state, actions } = useGoalsManagement(users, onGoalUpdate)
+  const {
+    selectedUser, showTemplates, showCustomGoal, editingGoal, searchTerm,
+    filterCategory, filterPeriod, isLoading, isSaving, savingTemplateId, error,
+    successMessage, userGoalsMap, selectedTemplateIds, templateApplyMode,
+    deleteConfirmGoal, isDeleting, editingTemplate, templateOverrides, hiddenTemplates,
+    selectedYear, collapsedGoals, monthlyGoals, showApplyAllModal, applyAllValue,
+    applyAllMonths, applyAllUsers, templateUsersMap, customGoalForm,
+    filteredTemplates, activeTemplatesWithUsers, goalStats
+  } = state
+  const {
+    setSelectedUser, setShowTemplates, setShowCustomGoal, setEditingGoal,
+    setSearchTerm, setFilterCategory, setFilterPeriod, setSelectedTemplateIds,
+    setTemplateApplyMode, setDeleteConfirmGoal, setEditingTemplate, setTemplateOverrides,
+    setHiddenTemplates, setSelectedYear, setCollapsedGoals, setShowApplyAllModal,
+    setApplyAllValue, setApplyAllMonths, setApplyAllUsers, setCustomGoalForm,
+    getMonthlyValue, calculateRowTotal, calculateColumnTotal, calculateGrandTotal,
+    getEffectiveTemplate, isTemplateAppliedToUser, getAppliedTemplatesForUser, getUserById,
+    findUserGoal, fetchUserGoals,
+    setMonthlyValue, applyValueToAll, toggleGoalCollapse, toggleTemplateSelection,
+    handleApplyTemplate, handleApplySelectedTemplates, handleCreateCustomGoal,
+    handleUpdateGoal, handleDeleteGoal, confirmDeleteGoal, handleAddUserToTemplate
+  } = actions
+
   return (
     <div className="space-y-6">
       {error && (
