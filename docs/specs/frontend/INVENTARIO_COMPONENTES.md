@@ -1476,8 +1476,9 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | **LIA — Buttons** | 9 | `--lia-btn-primary-bg/hover/text`, `--lia-btn-secondary-bg/hover/text/border`, `--lia-btn-ghost-bg/hover/text` |
 | **LIA — Badges** | 3 | `--lia-badge-neutral-bg` (#F3F4F6), `--lia-badge-neutral-text` (#6B7280), `--lia-badge-neutral-border` (#E5E7EB) |
 | **LIA — Input/Forms** | 6 | `--lia-input-bg`, `--lia-input-border`, `--lia-input-border-focus` (#60BED1), `--lia-input-focus-ring`, `--lia-input-text`, `--lia-input-placeholder` |
-| **LIA — Categories** | 5 | `--lia-cat-candidates` (#5DA47A), `--lia-cat-industry` (#60BED1), `--lia-cat-interviews` (#E5A853), `--lia-cat-jobs` (#60BED1), `--lia-cat-reports` (#8B5CF6). ⚠️ **Nenhum componente usa `var(--lia-cat-*)` diretamente** — tokens definidos mas órfãos. Reservados para integração com Kanban. |
+| ~~LIA — Categories~~ | ~~5~~ | **✅ ELIMINADO 2026-03-29** — Tokens órfãos (zero uso). Valores divergiam do kanban real. Serão recriados com valores corretos na sprint do Kanban. |
 | **LIA — Voice/Language** | 19 | `--lia-voice-card-*` (5 temas culturais), `--lia-voice-pastel-*` (7 tons pastel), `--lia-voice-sepia-*` (7 tons sépia). ✅ **MIGRADOS 2026-03-29** de `--eleven-card/pastel/sepia-*` em globals.css. Feature de cards de idioma ElevenLabs. |
+| **LIA — Prompt Component** | 15 | `--lia-accent` (→`var(--wedo-cyan)`), `--lia-accent-hover/light/ring`, `--lia-bg-main/card`, `--lia-border/border-light`, `--lia-text-primary` (#111827), `--lia-text-secondary` (#6B7280), `--lia-text-tertiary` (#9CA3AF), `--lia-btn-neutral/hover`, `--lia-pill-bg/active-bg`. ✅ **MIGRADOS 2026-03-29** de globals.css para design-tokens.css. Textos corrigidos para DS canônico. |
 | **WeDo — Cyan (LIA/AI)** | 11 | `--wedo-cyan` (#60BED1), `--wedo-cyan-dark`, `--wedo-cyan-light`, `--wedo-cyan-hover`, `--wedo-cyan-focus-ring`, `--wedo-cyan-focus-border`, `--wedo-cyan-border`, `--wedo-cyan-shadow`, `--wedo-cyan-bg-02/04/05/06/08/10/12/15/20` |
 | **WeDo — Green** | 8 | `--wedo-green` (#5DA47A), `--wedo-green-light`, `--wedo-green-hover`, `--wedo-green-success` (#60D186), `--wedo-green-active-15`, `--wedo-green-bg-10/15/20`, `--wedo-green-light-bg-20` |
 | **WeDo — Orange** | 5 | `--wedo-orange` (#D19960), `--wedo-orange-light`, `--wedo-orange-hover`, `--wedo-orange-alert`, `--wedo-orange-bg-10/15` |
@@ -1511,7 +1512,7 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | Font vars | 4 | `--font-open-sans`, `--font-inter`, `--font-jetbrains`, `--font-source-serif` |
 | ~~ElevenLabs theme~~ | ~~30+~~ | **✅ ELIMINADO 2026-03-29** — Estruturais removidos (overlap com `--lia-*`). Temáticos migrados para `--lia-voice-*` em `design-tokens.css` (19 tokens). 1 uso ativo migrado: `var(--eleven-text-primary)` → `var(--lia-text-primary)`. |
 | shadcn/ui vars | 23 | `--background`, `--foreground`, `--card`, `--primary`, etc. |
-| Misc | ~108 | Cores de componentes específicos |
+| Misc | ~93 | Cores de componentes específicos (−15 do bloco LIA PROMPT migrado para design-tokens.css) |
 
 **Dark Mode:** Todas as variáveis de componente de `design-tokens.css` têm overrides em `.dark {}`. Coverage: **100%** das variáveis semânticas.
 
@@ -1522,9 +1523,11 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 > - Classes `.eleven-*` órfãs removidas (usavam tokens indefinidos, zero uso em .tsx)
 > - Ver Seção 28.14 para tabela detalhada.
 
-> **⚠️ Issue ativa (2026-03-29): conflito `--lia-text-primary`**
-> `globals.css` bloco "LIA PROMPT" (~linha 1244) redefine `--lia-text-primary: #2D2D2D` globalmente, sobrescrevendo `#111827` de `design-tokens.css`. Todo o app usa `#2D2D2D` como texto primário. Visualmente similar mas divergente do DS.
-> **Pendente:** decidir valor canônico e remover o override local. Não bloqueante.
+> **✅ Conflito `--lia-text-primary` — RESOLVIDO (2026-03-29)**
+> Bloco "LIA PROMPT" migrado de `globals.css` para `design-tokens.css`.
+> Valores de texto corrigidos para DS canônico: `#111827` / `#6B7280` / `#9CA3AF` (Tailwind gray-900/500/400).
+> `--lia-accent` e `--lia-pill-active-bg` agora são alias de `var(--wedo-cyan)`.
+> 15 tokens do sub-sistema LIA Prompt agora residem em `design-tokens.css` (fonte única de verdade).
 
 ### 28.2 Animações & Keyframes — 29 definições
 
