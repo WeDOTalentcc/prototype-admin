@@ -51,13 +51,13 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **WSI Competency Minimums (Task #43)**: Minimum technical skills raised to 9 (from 3) in enrichment service and quality gates; minimum behavioral competencies raised to 5 (from 3). Pipeline handles insufficient skills by requesting more questions per available skill. Behavioral block uses Big Five traits as fallback when no behavioral competencies provided. Frontend shows amber warning in ScreeningConfigManager when skills are below recommended minimums, and disables Full mode when < 5 technical skills. Wizard system prompt updated to guide recruiter toward collecting at least 9 technical skills with decomposition suggestions. Document WSI_METHODOLOGY_COMPLETE_v2.md updated with new minimums, decomposition rules, and F1.C→F2 flow explanation.
 
 # Skills de Desenvolvimento
-24 skills organizadas por fase de trabalho. Ver guia completo em `.agents/skills/SKILLS_INDEX.md`.
-- **Antes de codificar:** lia-gsd-workflow, feature-impact, brainstorming
-- **Design/UI:** frontend-design, design-standardize, design-patterns, vercel-composition-patterns
-- **Implementacao:** tdd-workflow, vue-migration-prep
-- **Validacao:** feature-audit, testing-patterns, ai-agent-evals, browser-use
-- **Compliance:** wedo-governance, screening-compliance, dei-fairness, lgpd-data-protection
-- **Utilitarias:** humanizer, pdf, pptx, agent-tools, find-skills, skill-creator, tlc-spec-driven
+16 skills organizadas por fase de trabalho. Ver guia completo em `.agents/skills/SKILLS_INDEX.md`.
+- **Antes de codificar:** lia-planning (unifica GSD + spec-driven + brainstorming), feature-impact
+- **Design/UI:** frontend-design, design-standardize, design-patterns (inclui composition patterns)
+- **Implementacao:** lia-testing (unifica TDD + piramide + evals IA), vue-migration-prep
+- **Validacao:** feature-audit, browser-use
+- **Compliance:** lia-compliance (unifica governanca + screening + DEI + LGPD)
+- **Utilitarias:** humanizer, pdf, pptx, agent-tools, find-skills, skill-creator
 
 # External Dependencies
 -   Anthropic (Claude API)
