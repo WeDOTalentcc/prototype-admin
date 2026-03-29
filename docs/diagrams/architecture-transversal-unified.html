@@ -159,6 +159,36 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
 .lia-agent .d { font-size: 7px; color: #a16207; }
 
 .footer-note { text-align: center; color: #94a3b8; font-size: 9px; margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+
+.flow-section { margin-bottom: 28px; }
+.flow-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.flow-panel { border-radius: 12px; padding: 16px; }
+.flow-panel.v5 { background: rgba(219,234,254,0.15); border: 2px solid var(--c-v5); }
+.flow-panel.lia { background: rgba(237,233,254,0.15); border: 2px solid var(--c-lia); }
+.flow-title { font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+.flow-title.v5 { color: var(--c-v5); }
+.flow-title.lia { color: var(--c-lia); }
+
+.flow-step { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+.flow-num { min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #fff; flex-shrink: 0; }
+.flow-num.active { background: var(--c-ok); }
+.flow-num.inactive { background: #94a3b8; }
+.flow-num.danger { background: var(--c-critical); }
+.flow-num.v5 { background: var(--c-v5); }
+.flow-num.lia { background: var(--c-lia); }
+.flow-content { flex: 1; }
+.flow-what { font-size: 10px; font-weight: 700; color: #1e293b; }
+.flow-detail { font-size: 9px; color: #475569; margin-top: 1px; }
+.flow-file { font-size: 8px; color: #64748b; font-family: monospace; margin-top: 1px; }
+.flow-activated { display: inline-flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+.flow-tag { font-size: 7px; padding: 1px 5px; border-radius: 3px; font-weight: 700; }
+.flow-tag.on { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.flow-tag.off { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.flow-tag.partial { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.flow-arrow-down { text-align: center; font-size: 14px; color: #94a3b8; margin: 2px 0; font-weight: 900; }
+
+.lia-band-row { grid-template-columns: 110px repeat(11, 1fr); }
+.section-label.flow { color: #0369a1; border-color: #0369a1; }
 </style>
 </head>
 <body>
@@ -367,21 +397,69 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
       <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">PromptInjection</div><div class="d" style="color:#15803d;">Guard centralizado</div></div>
       <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">HITL Gate</div><div class="d" style="color:#15803d;">Ações ativas requerem aprovação</div></div>
     </div>
+  </div>
 
-    <div style="font-size:9px;font-weight:700;color:#166534;margin-top:8px;text-align:center;">11 AGENTES — TODOS recebem as 16 capacidades acima:</div>
-    <div class="lia-agents-grid" style="margin-top:4px;">
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Orchestrator</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">JobPlanner</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Sourcing</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">CV Screening</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Interviewer</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">WSI Evaluator</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Scheduling</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Analyst</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ATS Integrator</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">RecruiterAssist</div></div>
-      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ProactiveInsights</div></div>
+  <!-- LIA TRANSVERSAL BANDS (same structure as v5) -->
+  <div style="font-size:10px;font-weight:700;color:#475569;margin-bottom:4px;margin-top:8px;">BANDAS TRANSVERSAIS — Cobertura por Agente (mesma estrutura do v5)</div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#ede9fe;border:1px solid #c4b5fd;"></span> <strong>✅ auto</strong> = herdado automaticamente via EnhancedAgentMixin — 0 linhas de código por agente</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></span> Implementação adicional no domínio</div>
+  </div>
+
+  <div class="transversal-section">
+    <style>.lia-band { grid-template-columns: 100px repeat(11, 1fr); }</style>
+
+    <div class="band-row lia-band" style="margin-bottom:2px;">
+      <div style="font-size:6px;font-weight:700;color:#64748b;padding:2px 4px;"></div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">orch.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">jobs</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">sourc.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">cv_scr.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">intv.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">wsi</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">sched.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">analy.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">ats</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">recr.</div>
+      <div style="font-size:6px;font-weight:700;color:#7c3aed;text-align:center;">proac.</div>
     </div>
+
+    <div class="band-row lia-band"><div class="band-name">FairnessGuard</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">AuditTrail</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">PII Masking</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">GuardrailRepo</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">Confidence</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">BiasAudit</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">FactChecker</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">HiringPolicy</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">WorkingMem</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">CircuitBreaker</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">AntiSyco</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">PromptInj.</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">HITL Gate</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">LearningLoop</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">ToneFilter</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+    <div class="band-row lia-band"><div class="band-name">ReActObserv.</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div><div class="band-cell cell-auto">✅</div></div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px;margin-top:8px;">
+    <div style="font-size:9px;font-weight:800;color:#166534;margin-bottom:4px;">CONTRASTE VISUAL: v5 tem bandas com buracos (✅/❌ alternando) — LIA é sólido (tudo roxo ✅)</div>
+    <div style="font-size:8px;color:#15803d;">No v5, cada domínio decide se implementa fairness, cache, etc. Na LIA, nenhum agente precisa decidir — a herança de <code>EnhancedAgentMixin</code> injeta as 16 capacidades automaticamente via <code>_setup_enhanced()</code>. Custo para adicionar um 12o agente: <strong>0 linhas de compliance</strong>.</div>
+  </div>
+
+  <div style="font-size:9px;font-weight:700;color:#166534;margin-top:8px;text-align:center;">11 AGENTES — TODOS recebem as 16 capacidades acima:</div>
+  <div class="lia-agents-grid" style="margin-top:4px;">
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Orchestrator</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">JobPlanner</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Sourcing</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">CV Screening</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Interviewer</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">WSI Evaluator</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Scheduling</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Analyst</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ATS Integrator</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">RecruiterAssist</div></div>
+    <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ProactiveInsights</div></div>
   </div>
 
   <!-- LIA Shared Infrastructure -->
@@ -511,6 +589,12 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
 <!-- FULL COVERAGE MATRIX                                       -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div class="section-label coverage">Matriz Completa de Cobertura — 24 Dimensões × 8 Domínios v5 + LIA</div>
+<div class="legend" style="margin-bottom:8px;">
+  <div class="legend-item"><span class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></span> ✅ Implementado neste domínio</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#fee2e2;border:1px solid #fca5a5;"></span> ❌ Ausente neste domínio</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#fef9c3;border:1px solid #fde047;"></span> ⚠️ Existe em services/ mas NÃO integrado no domínio</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#ede9fe;border:1px solid #c4b5fd;"></span> <strong>✅ auto</strong> = Herdado automaticamente via <code>EnhancedAgentMixin._setup_enhanced()</code> — cada agente ganha essa capacidade com 0 linhas adicionais (1 linha de herança + auto-setup). Contraste: no v5, cada domínio precisa implementar manualmente (e 75% não implementam).</div>
+</div>
 <div class="coverage-full">
 <table>
 <tr>
@@ -555,9 +639,345 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
 </table>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FLOW EXAMPLE: SCREENING / TRIAGEM                         -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="section-label flow">Exemplo Real: Fluxo de Triagem de Candidato — Passo a Passo</div>
+<div style="background:#f0f9ff;border:1.5px solid #7dd3fc;border-radius:8px;padding:10px;margin-bottom:12px;">
+  <div style="font-size:10px;color:#0c4a6e;"><strong>Cenário:</strong> Um recrutador pede ao agente: "Avalie o candidato João Silva para a vaga de Engenheiro Senior". O que acontece em cada arquitetura? Quais componentes são ativados? Quais proteções são aplicadas?</div>
+</div>
+
+<div class="flow-split">
+
+<!-- v5 SCREENING FLOW -->
+<div class="flow-panel v5">
+  <div class="flow-title v5">v5 — Fluxo de Triagem (evaluation domain)</div>
+
+  <div class="flow-step">
+    <div class="flow-num v5">1</div>
+    <div class="flow-content">
+      <div class="flow-what">HTTP Request chega ao backend</div>
+      <div class="flow-detail">Frontend (Nuxt 3) envia POST /api/chat com a mensagem do recrutador</div>
+      <div class="flow-file">src/api/routes.py</div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num v5">2</div>
+    <div class="flow-content">
+      <div class="flow-what">Orchestrator Hub recebe e roteia</div>
+      <div class="flow-detail">orchestrator.py (626L) classifica o intent e identifica: domínio = evaluation</div>
+      <div class="flow-file">src/orchestrator/orchestrator.py → SupervisorGraph</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">IntentClassifier</span>
+        <span class="flow-tag on">DomainCatalog</span>
+        <span class="flow-tag on">ContextBuilder</span>
+        <span class="flow-tag off">FairnessGuard</span>
+        <span class="flow-tag off">PII Masking</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num v5">3</div>
+    <div class="flow-content">
+      <div class="flow-what">DomainWorkflow Pipeline (3 nos LangGraph)</div>
+      <div class="flow-detail">classify_intent → execute_action → format_response. Sem fairness check neste pipeline.</div>
+      <div class="flow-file">src/orchestrator/domain_workflow.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">LangGraph 3 nos</span>
+        <span class="flow-tag off">GuardrailCheck</span>
+        <span class="flow-tag off">AuditTrail</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num v5">4</div>
+    <div class="flow-content">
+      <div class="flow-what">Evaluation Domain processa</div>
+      <div class="flow-detail">graph.py + nodes.py + state.py — LangGraph interno com InterviewState. Chama Gemini LLM para gerar perguntas e avaliar respostas.</div>
+      <div class="flow-file">src/domains/evaluation/graph.py → nodes.py → state.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">LangGraph interno</span>
+        <span class="flow-tag on">InterviewState</span>
+        <span class="flow-tag on">Gemini LLM</span>
+        <span class="flow-tag off">FairnessGuard</span>
+        <span class="flow-tag off">BiasAudit</span>
+        <span class="flow-tag off">Confidence</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num v5">5</div>
+    <div class="flow-content">
+      <div class="flow-what">RubricEvaluation (4 dimensoes)</div>
+      <div class="flow-detail">relevance_score + depth_score + clarity_score + examples_score → overall_score (0-1). Sem framework pedagogico (sem Bloom, sem Dreyfus).</div>
+      <div class="flow-file">src/domains/evaluation/models.py → RubricEvaluation</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">4 scores</span>
+        <span class="flow-tag on">FlowDecision</span>
+        <span class="flow-tag off">Bloom taxonomy</span>
+        <span class="flow-tag off">Dreyfus model</span>
+        <span class="flow-tag off">Big Five</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num danger">6</div>
+    <div class="flow-content">
+      <div class="flow-what">Resposta retorna SEM verificacoes</div>
+      <div class="flow-detail">Score + recomendacao ("APPROVED"/"NOT_RECOMMENDED") volta direto ao recrutador. Sem fact-checking, sem bias audit snapshot, sem confidence calibration, sem PII masking dos dados do candidato que foram enviados ao LLM.</div>
+      <div class="flow-file">src/domains/evaluation/ → response direto</div>
+      <div class="flow-activated">
+        <span class="flow-tag off">FactChecker</span>
+        <span class="flow-tag off">BiasAuditSnapshot</span>
+        <span class="flow-tag off">ConfidenceNode</span>
+        <span class="flow-tag off">PII demask</span>
+        <span class="flow-tag off">AuditTrail append-only</span>
+        <span class="flow-tag off">HITL Gate</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:8px;margin-top:10px;">
+    <div style="font-size:9px;font-weight:800;color:#991b1b;">RISCOS NESTE FLUXO (v5):</div>
+    <div style="font-size:8px;color:#7f1d1d;margin-top:2px;">
+      1. <strong>Nome, CPF, endereco</strong> do candidato foram enviados ao Gemini SEM mascaramento PII<br>
+      2. <strong>Nenhum bias audit</strong> — se o LLM discriminou por genero/idade/etnia, nao ha registro<br>
+      3. <strong>Score nao calibrado</strong> — sem ConfidenceNode, 0.7 pode significar qualquer coisa<br>
+      4. <strong>Sem auditoria imutavel</strong> — registro pode ser alterado/deletado depois<br>
+      5. <strong>Sem fairness check</strong> — avaliacao nao passa por FairnessGuard (evaluation e 1 dos 6 dominios sem)<br>
+      6. <strong>Sem fact-checking</strong> — claims do candidato nao sao verificados
+    </div>
+  </div>
+</div>
+
+<!-- LIA SCREENING FLOW -->
+<div class="flow-panel lia">
+  <div class="flow-title lia">LIA — Fluxo de Triagem (cv_screening + WSI)</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">1</div>
+    <div class="flow-content">
+      <div class="flow-what">HTTP Request chega ao FastAPI</div>
+      <div class="flow-detail">Frontend (Next.js 15) envia POST /api/chat. Request logado automaticamente.</div>
+      <div class="flow-file">app/main.py → FastAPI router</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">AuditTrail (inicio)</span>
+        <span class="flow-tag on">Request logging</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">2</div>
+    <div class="flow-content">
+      <div class="flow-what">DomainOrchestrator roteia + GuardrailCheck</div>
+      <div class="flow-detail">Identifica dominio = cv_screening. ANTES de processar, verifica guardrails do DB: "Nunca rejeitar sem FairnessGuard" (regra secundaria cv_screening).</div>
+      <div class="flow-file">app/orchestrator/ → DomainOrchestrator</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">GuardrailRepository (13 regras)</span>
+        <span class="flow-tag on">HiringPolicy (per-tenant)</span>
+        <span class="flow-tag on">PromptInjectionGuard</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">3</div>
+    <div class="flow-content">
+      <div class="flow-what">EnhancedAgentMixin._setup_enhanced() — 16 capacidades injetadas</div>
+      <div class="flow-detail">O agente cv_screening herda de LangGraphReActBase + EnhancedAgentMixin. No __init__, _setup_enhanced() configura automaticamente TODOS os hooks de compliance.</div>
+      <div class="flow-file">libs/agents-core/enhanced_agent_mixin.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">FairnessGuard (3 layers)</span>
+        <span class="flow-tag on">PII Masking (4 layers)</span>
+        <span class="flow-tag on">AuditTrail</span>
+        <span class="flow-tag on">BiasAuditSnapshot</span>
+        <span class="flow-tag on">ConfidenceNode</span>
+        <span class="flow-tag on">AntiSycophancy</span>
+        <span class="flow-tag on">WorkingMemory</span>
+        <span class="flow-tag on">CircuitBreaker</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">4</div>
+    <div class="flow-content">
+      <div class="flow-what">FairnessGuard filtra ANTES do LLM</div>
+      <div class="flow-detail">3 camadas: (1) Regex — bloqueia "rejeitar por idade/genero"; (2) Implicito — detecta vieses indiretos ("bairro nobre"); (3) LLM — analise semantica de fairness. Se bloqueado → AuditTrail registra + resposta negada.</div>
+      <div class="flow-file">app/shared/compliance/fairness_guard.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">Layer 1: regex patterns</span>
+        <span class="flow-tag on">Layer 2: implicit bias</span>
+        <span class="flow-tag on">Layer 3: LLM analysis</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">5</div>
+    <div class="flow-content">
+      <div class="flow-what">PII Masking remove dados sensiveis ANTES do LLM</div>
+      <div class="flow-detail">4 camadas: CPF → [CPF_MASKED], nome → [NAME_1], endereco → [ADDR_MASKED], telefone → [PHONE_MASKED]. O LLM NUNCA ve dados pessoais reais do candidato.</div>
+      <div class="flow-file">app/shared/compliance/pii_masking.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">CPF masking</span>
+        <span class="flow-tag on">Name masking</span>
+        <span class="flow-tag on">Address masking</span>
+        <span class="flow-tag on">Phone masking</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">6</div>
+    <div class="flow-content">
+      <div class="flow-what">WSI Interview Graph processa (1.141 linhas)</div>
+      <div class="flow-detail">Grafo deterministico com 8 stages: INIT → LOAD_CONTEXT → GENERATE_QUESTION → AWAIT_RESPONSE → VALIDATE → SCORE → ADVANCE → COMPLETE. Cada questao com Bloom (1-6) + Dreyfus (1-5) + Big Five (OCEAN). Estado salvo no PostgresSaver (sobrevive a crashes).</div>
+      <div class="flow-file">app/domains/cv_screening/agents/wsi_interview_graph.py (1141L)</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">WSIInterviewState</span>
+        <span class="flow-tag on">Bloom taxonomy (1-6)</span>
+        <span class="flow-tag on">Dreyfus model (1-5)</span>
+        <span class="flow-tag on">Big Five (OCEAN)</span>
+        <span class="flow-tag on">PostgresSaver checkpoint</span>
+        <span class="flow-tag on">3 scores: tech + behav + sit</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">7</div>
+    <div class="flow-content">
+      <div class="flow-what">Gemini/Claude processa (com dados mascarados)</div>
+      <div class="flow-detail">LLM recebe texto com [CPF_MASKED], [NAME_1], etc. Anti-sycophancy block no system prompt. CircuitBreaker protege contra falha do provider.</div>
+      <div class="flow-file">Gemini/Claude API (via CircuitBreaker)</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">AntiSycophancy block</span>
+        <span class="flow-tag on">CircuitBreaker</span>
+        <span class="flow-tag on">ModelRouter</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">8</div>
+    <div class="flow-content">
+      <div class="flow-what">FactChecker verifica APOS o LLM</div>
+      <div class="flow-detail">4 tipos de claim verificados: experiencia declarada, certificacoes, periodo em empresa, habilidades tecnicas. Se claim inconsistente → flag para revisao.</div>
+      <div class="flow-file">app/shared/compliance/fact_checker.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">Claim: experiencia</span>
+        <span class="flow-tag on">Claim: certificacoes</span>
+        <span class="flow-tag on">Claim: periodo</span>
+        <span class="flow-tag on">Claim: skills</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">9</div>
+    <div class="flow-content">
+      <div class="flow-what">ConfidenceNode calibra + BiasAuditSnapshot registra</div>
+      <div class="flow-detail">Score calibrado para que 0.7 signifique realmente 70% de confianca. BiasAudit gera snapshot Four-Fifths Rule — detecta se taxa de aprovacao de um grupo demografico e menor que 80% de outro.</div>
+      <div class="flow-file">app/shared/compliance/confidence.py + bias_audit.py</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">ConfidenceNode</span>
+        <span class="flow-tag on">BiasAuditSnapshot</span>
+        <span class="flow-tag on">Four-Fifths Rule</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num lia">10</div>
+    <div class="flow-content">
+      <div class="flow-what">AuditTrail registra TUDO (append-only, SOX)</div>
+      <div class="flow-detail">Registro imutavel: request, fairness check result, PII masks aplicadas, LLM response, fact-check results, scores, bias audit, recomendacao final. Retencao: 7 anos (SOX). Nao pode ser deletado ou alterado.</div>
+      <div class="flow-file">libs/lia-audit/ → append-only storage</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">Append-only</span>
+        <span class="flow-tag on">SOX 7 anos</span>
+        <span class="flow-tag on">BCB-498 compliant</span>
+        <span class="flow-tag on">IterationLog por fase</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-arrow-down">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-num active">11</div>
+    <div class="flow-content">
+      <div class="flow-what">Resposta ao recrutador (com PII demasked)</div>
+      <div class="flow-detail">WSIFinalReport com recomendacao "aprovado/aguardando/reprovado" + 3 scores (tech/behav/sit) + wsi_final_score. Dados PII restaurados na resposta ao recrutador (mas nunca no audit trail).</div>
+      <div class="flow-file">Response → Frontend (Next.js 15)</div>
+      <div class="flow-activated">
+        <span class="flow-tag on">WSIFinalReport</span>
+        <span class="flow-tag on">PII demasking</span>
+        <span class="flow-tag on">ToneFilter</span>
+        <span class="flow-tag on">LearningLoop feedback</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px;margin-top:10px;">
+    <div style="font-size:9px;font-weight:800;color:#166534;">PROTECOES ATIVADAS NESTE FLUXO (LIA):</div>
+    <div style="font-size:8px;color:#14532d;margin-top:2px;">
+      1. <strong>PII nunca chega ao LLM</strong> — 4 camadas de mascaramento pre-LLM (LGPD Art.12, 46)<br>
+      2. <strong>FairnessGuard 3 layers</strong> — bloqueia vieses explicitos e implicitos ANTES da avaliacao<br>
+      3. <strong>BiasAuditSnapshot</strong> — Four-Fifths Rule detecta discriminacao estatistica (EU AI Act Art.9)<br>
+      4. <strong>ConfidenceNode</strong> — calibra scores para que sejam comparaveis e significativos<br>
+      5. <strong>FactChecker pos-LLM</strong> — verifica claims factuais do candidato<br>
+      6. <strong>Audit Trail SOX</strong> — registro imutavel, 7 anos, append-only<br>
+      7. <strong>WSI com Bloom+Dreyfus</strong> — garantia de progressao de dificuldade e cobertura de competencias<br>
+      8. <strong>PostgresSaver</strong> — entrevista sobrevive a crash do servidor
+    </div>
+  </div>
+</div>
+</div><!-- end flow-split -->
+
+<!-- FLOW COMPARISON SUMMARY -->
+<div style="background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:16px;margin-top:16px;margin-bottom:20px;">
+  <div style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:8px;text-align:center;">Comparacao Direta: Triagem de Candidato</div>
+  <table class="comparative-table">
+    <tr><th style="width:180px;">Aspecto</th><th>v5 (evaluation domain)</th><th>LIA (cv_screening + WSI)</th></tr>
+    <tr><td><strong>Steps no fluxo</strong></td><td>6 steps (HTTP → Orch → Pipeline → Domain → Score → Response)</td><td>11 steps (com 5 verificacoes adicionais de compliance)</td></tr>
+    <tr><td><strong>PII do candidato</strong></td><td style="background:#fee2e2;">Enviado ao Gemini em texto plano</td><td style="background:#dcfce7;">4 camadas de mascaramento, LLM ve [CPF_MASKED]</td></tr>
+    <tr><td><strong>Fairness check</strong></td><td style="background:#fee2e2;">Nao tem (evaluation = 1 dos 6 dominios sem fairness.py)</td><td style="background:#dcfce7;">3 layers: regex + implicito + LLM-judge</td></tr>
+    <tr><td><strong>Framework de avaliacao</strong></td><td>RubricEvaluation: 4 dimensoes, sem progressao</td><td style="background:#dcfce7;">WSI: Bloom (1-6) + Dreyfus (1-5) + Big Five (OCEAN)</td></tr>
+    <tr><td><strong>Fact-checking</strong></td><td style="background:#fee2e2;">Nenhum — claims do candidato aceitos como verdade</td><td style="background:#dcfce7;">4 tipos de claim verificados pos-LLM</td></tr>
+    <tr><td><strong>Calibracao de score</strong></td><td style="background:#fee2e2;">overall_score cru (0-1), sem calibracao</td><td style="background:#dcfce7;">ConfidenceNode calibra para comparabilidade</td></tr>
+    <tr><td><strong>Bias audit</strong></td><td style="background:#fee2e2;">Nenhum registro de bias</td><td style="background:#dcfce7;">BiasAuditSnapshot + Four-Fifths Rule</td></tr>
+    <tr><td><strong>Audit trail</strong></td><td style="background:#fef9c3;">Existe em services/ mas mutavel e 90d retencao</td><td style="background:#dcfce7;">Append-only, SOX 7 anos, por fase</td></tr>
+    <tr><td><strong>Persistencia estado</strong></td><td>InterviewState TypedDict (sem checkpoint)</td><td style="background:#dcfce7;">WSIInterviewState + PostgresSaver (sobrevive crashes)</td></tr>
+    <tr><td><strong>Latencia</strong></td><td style="background:#dcfce7;">50-200ms por step</td><td>2-10s (compliance overhead)</td></tr>
+    <tr><td><strong>Custo compliance</strong></td><td>0 linhas implementadas (ausente)</td><td>0 linhas por agente (herdado)</td></tr>
+  </table>
+</div>
+
 <div class="footer-note">
-  Fonte: Diagnóstico arquitetural completo (8.070 linhas) — leitura direta de código v5 via GitHub API (22/03/2026) + LIA via filesystem.<br>
-  Todos os dados foram verificados por leitura de código real, não por documentação.
+  Fonte: Diagnostico arquitetural completo (8.070 linhas) — leitura direta de codigo v5 via GitHub API (22/03/2026) + LIA via filesystem.<br>
+  Todos os dados foram verificados por leitura de codigo real, nao por documentacao.<br>
+  <strong>"✅ auto"</strong> na coluna LIA da matriz = capacidade herdada automaticamente via <code>EnhancedAgentMixin._setup_enhanced()</code> — 0 linhas de implementacao por agente.
 </div>
 
 </div><!-- end page -->
