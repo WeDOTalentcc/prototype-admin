@@ -117,20 +117,20 @@ export function AgentMemoryIndicator({
               style={{width: `${pct}%`}}
             />
           </div>
-          <span className="text-[11px]">
+          <span className="text-xs">
             {pct}%
           </span>
         </div>
 
         <span
-          className="text-gray-400 border-l border-l-gray-200 text-[11px] pl-2"
+          className="text-gray-400 border-l border-l-gray-200 text-xs pl-2"
         >
           {memory.fields_count} campos
         </span>
 
         {relTime && (
           <span
-            className="text-gray-400 border-l border-l-gray-200 text-[11px] pl-2"
+            className="text-gray-400 border-l border-l-gray-200 text-xs pl-2"
           >
             {relTime}
           </span>
@@ -228,7 +228,7 @@ export function AgentMemoryIndicator({
                     Notas do agente:
                   </div>
                   <div
-                    className="italic text-[11px]"
+                    className="italic text-xs"
                   >
                     {fullMemory.agent_notes}
                   </div>
@@ -237,7 +237,7 @@ export function AgentMemoryIndicator({
 
               {!fullMemory && (
                 <div
-                  className="text-gray-400 text-[11px] italic"
+                  className="text-gray-400 text-xs italic"
                 >
                   Carregando detalhes...
                 </div>
@@ -252,7 +252,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
               >
                 <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

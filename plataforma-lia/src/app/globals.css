@@ -599,52 +599,6 @@
 
 /* ===== COMPONENTES ORIGINAIS WEDO ===== */
 
-/* Typography Scale - Apple-Inspired */
-.text-display {
-  @apply text-2xl font-light tracking-tight;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.text-heading-1 {
-  @apply text-xl font-medium tracking-tight;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-}
-
-.text-heading-2 {
-  @apply text-lg font-medium tracking-tight;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-.text-heading-3 {
-  @apply text-base font-medium tracking-tight;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-}
-
-.text-body-large {
-  @apply text-sm font-normal;
-  line-height: 1.5;
-  letter-spacing: -0.003em;
-}
-
-.text-body {
-  @apply text-xs font-normal;
-  line-height: 1.5;
-}
-
-.text-body-small {
-  @apply text-xs font-normal;
-  line-height: 1.4;
-}
-
-.text-caption {
-  @apply text-xs font-medium tracking-wide;
-  line-height: 1.3;
-}
-
 /* Modern Tech Palette Components */
 .bg-ai-aqua {
   background-color: hsl(var(--ai-aqua));
