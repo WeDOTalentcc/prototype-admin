@@ -43,7 +43,7 @@ export default function RootLayout({
       <head suppressHydrationWarning />
       
       <body 
-        className={`${openSans.className} ${inter.variable} ${openSans.variable} ${crimsonText.variable}`}
+        className={`${inter.variable} ${openSans.variable} ${crimsonText.variable} antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider

@@ -66,10 +66,9 @@
 
 @layer base {
   :root {
-    --font-inter: "Inter", sans-serif;
-    --font-open-sans: "Open Sans", sans-serif;
-    --font-crimson: "Crimson Text", serif;
-    --font-source-serif: var(--font-open-sans), "Open Sans", sans-serif;
+/* --font-* CSS vars definidos aqui foram removidos 2026-03-29
+   next/font injeta suas próprias variáveis em runtime (ex: --font-inter: '__Inter_abc123')
+   Definições hardcoded aqui sobrescreviam os valores do next/font → blur por fallback para fonte do sistema */
 
     /* ===== Voice/Language Tokens → migrados para design-tokens.css como --lia-voice-* ===== */
     /* Removido 2026-03-29: --eleven-* tokens eliminados.
@@ -286,9 +285,10 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
+  /* transition-duration e transition-timing-function removidos do * selector 2026-03-29
+     Aplicar transition-all em * causa blur de texto em camadas GPU (sub-pixel rasterization).
+     Use transition-colors duration-200 diretamente nos componentes interativos. */
 
   html {
     font-feature-settings: "rlig" 1, "calt" 1;

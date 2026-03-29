@@ -2139,3 +2139,8 @@ Sprint 1 (Foundation)
 | OPT-036 | jobs-page.tsx vs jobs2-page.tsx | 5 | ✅ CONCLUÍDO | 2026-03-29 | jobs2-page.tsx (569L) arquivado em /pages/_archived/ |
 | OPT-037 | tasks-page.tsx vs tasks-page-mvp.tsx | 5 | ⚠️ PARCIAL | 2026-03-29 | tasks-mvp route arquivado. tasks-page.tsx mantido: settings-page-enhanced importa <TasksPage /> |
 | OPT-039 | mockup-shadcn-vue-page.tsx em /pages/ | 5 | ⏸️ BLOQUEADO | 2026-03-29 | dashboard-app.tsx ainda importa como rota ativa "🔬 Mockup shadcn Vue" |
+| OPT-003 | Duas escalas tipográficas paralelas | 2 | ✅ CONCLUÍDO | 2026-03-29 | .lia-h* canônico em design-tokens.css. .text-heading-* tinham zero uso — removidos |
+| OPT-004 | font-inter/font-open-sans explícitos em tsx | 2 | ✅ CONCLUÍDO | 2026-03-29 | Zero ocorrências encontradas — herança do body já funcionava |
+| OPT-005 | text-[11px] hardcoded (6 ocorrências) | 2 | ✅ CONCLUÍDO | 2026-03-29 | Substituído por text-xs em agent-memory-indicator.tsx |
+| OPT-042 | 8 classes Apple-inspired coexistindo | 2 | ✅ CONCLUÍDO | 2026-03-29 | Bloco removido de globals.css (-46 linhas). Zero uso em tsx confirmado |
+| FONT-RDR | Blur/tremido nas fontes (fora do catálogo OPT) | - | ✅ CONCLUÍDO | 2026-03-29 | 3 causas corrigidas: openSans.className removido, --font-* hardcoded removidos, transition-duration:200ms removido do * selector |
