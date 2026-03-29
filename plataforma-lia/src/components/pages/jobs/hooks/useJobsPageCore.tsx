@@ -181,6 +181,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     try {
       setIsLoadingJobs(true)
       setJobsError(null)
+      
       const response = await liaApi.listJobVacancies()
       
       if (!response || !response.items) {
@@ -284,6 +285,7 @@ export function useJobsPageCore(props: JobsPageProps) {
       })
       
       setBackendJobs(convertedJobs)
+      setIsLoadingJobs(false)
       
       try {
         const overviewData = await liaApi.getJobVacanciesOverview()
@@ -335,7 +337,6 @@ export function useJobsPageCore(props: JobsPageProps) {
     } catch (error) {
       setJobsError(error instanceof Error ? error.message : 'Failed to load jobs')
       setIsLoadingStats(false)
-    } finally {
       setIsLoadingJobs(false)
     }
   }
