@@ -471,12 +471,10 @@
   --lia-text-muted: #6B7280;        /* Migrar para --wedo-text-muted */
   
   /* Cores de categoria (para badges e ícones) */
-  --lia-cat-jobs: #60BED1;          /* Cyan - Vagas */
-  --lia-cat-candidates: #5DA47A;    /* Green - Candidatos */
-  --lia-cat-interviews: #E5A853;    /* Orange - Entrevistas/LIA */
-  --lia-cat-reports: #8B5CF6;       /* Purple - Relatórios/Localização */
-  --lia-cat-industry: #60BED1;      /* Cyan - Indústria/Setor (migrated from blue) */
-  /* ⚠️ --lia-cat-* tokens: definidos, sem uso direto via var() ainda. Reservados para Kanban. */
+  /* --lia-cat-* ELIMINADOS 2026-03-29
+     Tokens órfãos (zero uso via var()). Valores não alinhados com o kanban real
+     (ex: --lia-cat-interviews era laranja #E5A853 mas kanban usa wedo-purple).
+     Serão recriados com valores corretos na sprint do Kanban. */
 
   /* === LIA VOICE — Temas de Cards de Idioma ===================================
      Migrados de --eleven-card/pastel/sepia-* (globals.css) em 2026-03-29.
@@ -507,6 +505,40 @@
   --lia-voice-sepia-lilac:  #E5E0E2;  /* Lilás-acinzentado */
   --lia-voice-sepia-ice:    #EAEAEA;  /* Cinza muito claro / gelo */
   --lia-voice-sepia-coral:  #E17B75;  /* Coral / vermelho pastel */
+}
+
+/* === LIA PROMPT COMPONENT — Tokens do sub-sistema de chat/prompt ================
+   Migrado de globals.css (:root local) em 2026-03-29.
+   Princípio: tokens pertencem a design-tokens.css; globals.css só estiliza.
+   Referências: componentes .lia-prompt-expanded, .lia-input, .lia-tab, .lia-pill
+   ============================================================================== */
+:root {
+  /* Accent — alias para wedo-cyan (DS principal) */
+  --lia-accent:             var(--wedo-cyan);        /* #60BED1 */
+  --lia-accent-hover:       var(--wedo-cyan-hover);  /* #4DA8BB */
+  --lia-accent-light:       rgba(96, 190, 209, 0.1); /* overlay 10% — hover backgrounds */
+  --lia-accent-ring:        rgba(96, 190, 209, 0.3); /* focus ring — mais visível que focus-border */
+
+  /* Backgrounds — específicos do prompt (levemente diferentes do DS base) */
+  --lia-bg-main:            #F8F8F8;                 /* fundo prompt expandido (vs #F9FAFB do DS) */
+  --lia-bg-card:            var(--lia-bg-primary);   /* #FFFFFF — alias */
+
+  /* Borders — específicos do prompt */
+  --lia-border:             #E8E8E8;                 /* border principal prompt */
+  --lia-border-light:       #F0F0F0;                 /* border sutil prompt */
+
+  /* Textos — alinhados ao DS (fix 2026-03-29, era #2D2D2D / #666666 / #999999) */
+  --lia-text-primary:       #111827;                 /* gray-900 Tailwind — DS canônico */
+  --lia-text-secondary:     #6B7280;                 /* gray-500 Tailwind — DS canônico */
+  --lia-text-tertiary:      #9CA3AF;                 /* gray-400 Tailwind — DS canônico */
+
+  /* Botões neutros — específicos do prompt */
+  --lia-btn-neutral:        #F0F0F0;                 /* estado neutro */
+  --lia-btn-neutral-hover:  #E0E0E0;                 /* hover neutro */
+
+  /* Pills/Tabs */
+  --lia-pill-bg:            #E8E8E8;                 /* pill inativo */
+  --lia-pill-active-bg:     var(--wedo-cyan);        /* #60BED1 — alias */
 }
 
 /* === TIPOGRAFIA PADRONIZADA === */
