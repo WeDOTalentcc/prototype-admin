@@ -10,39 +10,26 @@ import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { useCandidateSuggestions } from "@/hooks/useCandidateSuggestions"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { type TableColumn, type TableSortConfig, getDefaultTableColumns } from "@/components/tables"
+import { type TableColumn } from "@/components/tables"
 import { useUniversalTransition, type KanbanCandidate } from "@/components/kanban"
-import { liaApi, CandidateLocal } from "@/services/lia-api"
+import { liaApi } from "@/services/lia-api"
 import { type UniversalTransitionConfirmData } from "@/components/kanban"
 import {
   RECRUITMENT_STAGES,
   getCompanyPipelineStages,
-  mapLegacyStage,
 } from "@/lib/recruitment-stages"
 import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
-import { mockJobData, mockCandidates } from "@/components/kanban/mock/candidates"
-import {
-  generateWorkHistory,
-  generateEducation,
-  seededRandom,
-  getSalaryByExperience,
-  type CandidateForDataGeneration
-} from "@/components/kanban/mock/data-generators"
+import { mockJobData } from "@/components/kanban/mock/candidates"
 import { useCompanyDefaults } from "@/hooks/use-company-defaults"
 import { usePipelineInheritance } from "@/hooks/use-pipeline-inheritance"
 import { useRecruitmentStages } from "@/hooks/use-recruitment-stages"
 import { enrichStagesWithSubStatuses, buildSubStatusMap } from "@/components/kanban/utils/stage-utils"
 import { useReturnEvents } from '@/hooks/use-return-events'
-import { useBulkCandidateDataRequests, type BulkDataRequestInfo } from "@/hooks/use-candidate-data-requests"
+import { useBulkCandidateDataRequests } from "@/hooks/use-candidate-data-requests"
 import { type DataRequestSubmitData } from "@/components/modals/data-request-modal"
 import {
   mapInterviewStagesToKanban,
-  organizeCandidatesByDynamicStages,
   createInitialCandidatesData,
-  createStageSlug,
-  inferActionBehavior,
-  DYNAMIC_STAGE_COLORS,
-  type InterviewStageFromJob,
   type DynamicStage,
 } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
 import { calculateNotaLiaGeral } from "@/components/pages/job-kanban/utils/kanbanHelpers"
@@ -51,6 +38,9 @@ import { useKanbanLIAHandlers } from "@/components/pages/job-kanban/hooks/useKan
 import { useKanbanCandidateDecisions } from "@/components/pages/job-kanban/hooks/useKanbanCandidateDecisions"
 import { useKanbanJobEditing } from "@/components/pages/job-kanban/hooks/useKanbanJobEditing"
 import { useKanbanDragDrop } from "@/components/pages/job-kanban/hooks/useKanbanDragDrop"
+import { useKanbanUIModals } from "@/components/pages/job-kanban/hooks/useKanbanUIModals"
+import { useKanbanTableView } from "@/components/pages/job-kanban/hooks/useKanbanTableView"
+import { useKanbanCandidateLoader } from "@/components/pages/job-kanban/hooks/useKanbanCandidateLoader"
 
 const jobData = mockJobData
 
@@ -107,8 +97,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)
   const [showExpandedMetrics, setShowExpandedMetrics] = useState(false)
   
-  // Estado para controlar renderização apenas no cliente (evita erro de hidratação)
-  const [isClient, setIsClient] = useState(false)
+  // isClient/hasMounted managed by useKanbanCandidateLoader below
 
   useEffect(() => {
     if (!job?.backendId) return
@@ -402,8 +391,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() => 
     createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages))
   )
-  const [isLoadingCandidates, setIsLoadingCandidates] = useState(true)
-  const [hasMounted, setHasMounted] = useState(false)
+  // isLoadingCandidates / hasMounted managed by useKanbanCandidateLoader below
   const pendingNavigationRef = useRef<{ nav: { candidateId?: string; candidateName?: string; jobId?: string; jobTitle?: string; currentStage?: string; action?: string; openTransitionModal?: boolean }; prompt: string | null } | null>(null)
 
   // Estado para DataRequestModal
@@ -475,415 +463,73 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setDataRequestModalCandidate(null)
   }, [dataRequestModalCandidate, toast])
 
-  // Marcar como cliente para evitar problemas de hidratação SSR
-  useEffect(() => {
-    setIsClient(true)
-    setHasMounted(true)
-  }, [])
-
-  // Atualizar etapas dinâmicas quando job.interviewStages mudar
-  useEffect(() => {
-    const newStages = mapInterviewStagesToKanban(job?.interviewStages)
-    setDynamicStages(newStages)
-    
-    // Atualizar candidatesData para incluir novas etapas
-    setCandidatesData(prev => {
-      const newData = createInitialCandidatesData(newStages)
-      // Preservar candidatos existentes e redistribuir para etapas compatíveis
-      Object.keys(prev).forEach(stageId => {
-        const candidates = prev[stageId] || []
-        if (newData[stageId]) {
-          newData[stageId] = [...candidates]
-        } else {
-          // Se a etapa antiga não existe mais, mover para sourcing
-          newData['sourcing'] = [...(newData['sourcing'] || []), ...candidates]
-        }
-      })
-      return newData
-    })
-  }, [job?.interviewStages])
-
-  // Carregar candidatos reais do backend
-  useEffect(() => {
-    setIsLoadingCandidates(true)
-    liaApi.listCandidates(undefined, undefined, 0, 200)
-      .then(response => {
-        try {
-          if (response.items && response.items.length > 0) {
-            const mapCandidateToKanban = (c: CandidateLocal, index: number) => {
-              try {
-                const experience = c.years_of_experience || ((index % 12) + 1)
-                const monthlySalary = c.current_salary || getSalaryByExperience(experience, index)
-                const location = c.location_city && c.location_state 
-                  ? `${c.location_city}, ${c.location_state}`
-                  : c.location_city || 'Não especificado'
-                
-                let educationData: Record<string, unknown>[] = []
-                let workHistoryData: Record<string, unknown>[] = []
-                
-                try {
-                  educationData = generateEducation(c, experience)
-                } catch (e) {
-                  educationData = []
-                }
-                
-                try {
-                  workHistoryData = generateWorkHistory(c, experience)
-                } catch (e) {
-                  workHistoryData = []
-                }
-                
-                const rawStatus = (c.status || 'novo').toLowerCase()
-                let mappedStage = 'funil'
-                if (rawStatus === 'reprovado' || rawStatus === 'rejected' || rawStatus === 'descartado' || rawStatus === 'reprovados') {
-                  mappedStage = 'reprovados'
-                } else if (rawStatus === 'aprovado' || rawStatus === 'hired' || rawStatus === 'contratado' || rawStatus === 'aprovados') {
-                  mappedStage = 'aprovados'
-                } else if (rawStatus === 'final' || rawStatus === 'proposta' || rawStatus === 'offer') {
-                  mappedStage = 'final'
-                } else if (rawStatus === 'entrevista' || rawStatus === 'interview' || rawStatus === 'entrevistando') {
-                  mappedStage = 'entrevista'
-                } else if (rawStatus === 'triagem' || rawStatus === 'screening' || rawStatus === 'em_triagem') {
-                  mappedStage = 'triagem'
-                }
-
-                return {
-                  id: c.id,
-                  name: c.name || 'Sem nome',
-                  role: c.current_title || 'Não especificado',
-                  currentCompany: c.current_company || '',
-                  location: location,
-                  score: c.lia_score || null,
-                  fitScore: c.skills_match_percentage || Math.floor(70 + seededRandom(c.id || String(index), 1) * 25),
-                  warnings: 0,
-                  avatar: c.avatar_url || '',
-                  source: c.source || 'website',
-                  appliedDate: c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : 'Hoje',
-                  email: c.email || '',
-                  phone: c.phone || '',
-                  linkedin: c.linkedin_url || '',
-                  experience: `${experience} anos`,
-                  stage: mappedStage,
-                  etapa: mappedStage,
-                  education: educationData,
-                  skills: c.technical_skills || [],
-                  languages: Array.isArray(c.languages) 
-                    ? c.languages.map((l: Record<string, unknown>) => typeof l === 'string' ? l : l.language)
-                    : Object.keys(c.languages || {}),
-                  expectedSalary: c.desired_salary_max 
-                    ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}`
-                    : `R$ ${Math.floor(monthlySalary * 1.2).toLocaleString('pt-BR')}`,
-                  currentSalary: `R$ ${monthlySalary.toLocaleString('pt-BR')}`,
-                  contractType: c.contract_type_preference || 'CLT',
-                  workModel: c.work_model_preference || 'híbrido',
-                  availability: 'A confirmar',
-                  portfolio: c.portfolio_url || '',
-                  github: c.github_url || '',
-                  workHistory: workHistoryData,
-                  bigFive: {
-                    openness: 70 + Math.floor(seededRandom(c.id || String(index), 10) * 20),
-                    conscientiousness: 70 + Math.floor(seededRandom(c.id || String(index), 11) * 20),
-                    extraversion: 60 + Math.floor(seededRandom(c.id || String(index), 12) * 25),
-                    agreeableness: 70 + Math.floor(seededRandom(c.id || String(index), 13) * 20),
-                    neuroticism: 25 + Math.floor(seededRandom(c.id || String(index), 14) * 25)
-                  },
-                  notes: c.notes || '',
-                  liaAnalysis: {
-                    score: c.lia_score || 75,
-                    strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
-                    concerns: c.lia_insights?.concerns || [],
-                    recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
-                  },
-                  status: c.status || 'novo'
-                }
-              } catch (mapError) {
-                return null
-              }
-            }
-
-            const backendCandidates = response.items
-              .map(mapCandidateToKanban)
-              .filter((c): c is NonNullable<typeof c> => c !== null)
-            
-            
-            // Usar etapas dinâmicas da vaga para organizar candidatos
-            const currentDynamicStages = mapInterviewStagesToKanban(job?.interviewStages)
-            const newOrganizedData: Record<string, Record<string, unknown>[]> = {}
-            
-            // Inicializar todas as etapas dinâmicas com arrays vazios
-            currentDynamicStages.forEach(stage => {
-              newOrganizedData[stage.id] = []
-            })
-
-            // Função para encontrar a melhor etapa para um candidato
-            const findBestStageForCandidate = (rawStatus: string, mappedStage: string): string => {
-              // Etapas sistema sempre existem
-              if (mappedStage === 'rejected' || rawStatus === 'reprovado' || rawStatus === 'descartado') return 'rejected'
-              if (mappedStage === 'offer_declined' || rawStatus === 'proposta_recusada') return 'offer_declined'
-              if (mappedStage === 'hired' || rawStatus === 'aprovado' || rawStatus === 'contratado') return 'hired'
-              
-              // Buscar correspondência nas etapas dinâmicas
-              const stageExists = (id: string) => currentDynamicStages.some(s => s.id === id)
-              
-              if ((mappedStage === 'offer' || rawStatus === 'final' || rawStatus === 'proposta') && stageExists('offer')) return 'offer'
-              if ((rawStatus === 'interview_manager' || rawStatus === 'entrevista_gestor') && stageExists('interview_manager')) return 'interview_manager'
-              if ((rawStatus === 'interview_technical' || rawStatus === 'entrevista_tecnica') && stageExists('interview_technical')) return 'interview_technical'
-              if ((mappedStage === 'interview_hr' || rawStatus === 'entrevista' || rawStatus === 'interview' || rawStatus === 'entrevistando') && stageExists('interview_hr')) return 'interview_hr'
-              if ((mappedStage === 'screening' || rawStatus === 'triagem' || rawStatus === 'em_triagem' || rawStatus === 'triado' || rawStatus === 'triado_aprovado') && stageExists('screening')) return 'screening'
-              
-              // Tentar encontrar etapa personalizada por nome similar
-              const normalizedStatus = rawStatus.replace(/_/g, ' ').toLowerCase()
-              const customStage = currentDynamicStages.find(s => 
-                s.name.toLowerCase().includes(normalizedStatus) || 
-                s.displayName.toLowerCase().includes(normalizedStatus) ||
-                normalizedStatus.includes(s.name.toLowerCase())
-              )
-              if (customStage) return customStage.id
-              
-              // Fallback para sourcing
-              return 'sourcing'
-            }
-
-            backendCandidates.forEach((candidate) => {
-              const rawStatus = (candidate.status || 'novo').toLowerCase()
-              const mappedStage = mapLegacyStage(rawStatus)
-              const targetStage = findBestStageForCandidate(rawStatus, mappedStage)
-              
-              // Determinar se precisa de ação baseado na etapa
-              const needsAction = ['sourcing', 'screening'].includes(targetStage)
-              
-              // Adicionar detalhes extras para etapas de entrevista
-              let extraData = {}
-              if (targetStage.startsWith('interview')) {
-                const idx = (newOrganizedData[targetStage] || []).length
-                const isScheduled = idx % 2 === 0
-                extraData = {
-                  agendada: isScheduled ? new Date(Date.now() + (idx + 1) * 24 * 60 * 60 * 1000).toISOString() : undefined,
-                  interviewDate: isScheduled ? (idx === 0 ? 'Hoje às 14h' : `${idx + 1} dias às 10h`) : undefined,
-                  typeOfInterview: isScheduled ? 'Teams' : undefined,
-                  teamsLink: isScheduled ? 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_demo123' : undefined,
-                  interviewer: isScheduled ? 'Maria Silva - Head de P&C' : undefined
-                }
-              }
-              
-              if (newOrganizedData[targetStage]) {
-                newOrganizedData[targetStage].push({ 
-                  ...candidate, 
-                  needsAction, 
-                  stage: targetStage, 
-                  sub_status: (candidate as Record<string, unknown>).sub_status || 'pending',
-                  ...extraData
-                })
-              } else {
-                // Fallback se a etapa não existe
-                newOrganizedData['sourcing'] = newOrganizedData['sourcing'] || []
-                newOrganizedData['sourcing'].push({ ...candidate, needsAction: true, stage: 'sourcing', sub_status: 'identified' })
-              }
-            })
-
-            // Log com contagem dinâmica
-            const stageCounts: Record<string, number> = {}
-            currentDynamicStages.forEach(stage => {
-              stageCounts[stage.displayName] = (newOrganizedData[stage.id] || []).length
-            })
-            setCandidatesData(newOrganizedData)
-          } else {
-          }
-        } catch (processError) {
-        } finally {
-          setIsLoadingCandidates(false)
-        }
-      })
-      .catch(error => {
-        setIsLoadingCandidates(false)
-      })
-  }, [])
+  // ── Carregamento de candidatos — extraído para useKanbanCandidateLoader ──
+  const candidateLoader = useKanbanCandidateLoader({ job, dynamicStages, setCandidatesData })
+  const { isLoadingCandidates, hasMounted, isClient } = candidateLoader.state
+  const { setIsLoadingCandidates, setHasMounted, setIsClient } = candidateLoader.actions
 
   // Estado para busca
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Estados para modais
-  const [previewCandidate, setPreviewCandidate] = useState<Record<string, unknown> | null>(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [showCandidatePage, setShowCandidatePage] = useState(false)
-  const [triagemCandidate, setTriagemCandidate] = useState<Record<string, unknown> | null>(null)
-  const [showReport, setShowReport] = useState(false)
-  const [isTriagemOpen, setIsTriagemOpen] = useState(false)
-  const [showTestPreview, setShowTestPreview] = useState(false)
-  const [editingQuestion, setEditingQuestion] = useState<number | null>(null)
-  const [showLiaSuggestions, setShowLiaSuggestions] = useState(false)
-  const [liaSuggestionsData, setLiaSuggestionsData] = useState<Array<{type: string; severity: string; candidate_id: string; candidate_name: string; message: string; suggested_action: string; stage: string}>>([])
-  const [showLiaSuggestionsPanel, setShowLiaSuggestionsPanel] = useState(true)
-  const [showExpandedLIA, setShowExpandedLIA] = useState(false) // Modal expandido da LIA
-  const [transitionInitialPrompt, setTransitionInitialPrompt] = useState<string | undefined>(undefined)
-  const [transitionAllowStageSelection, setTransitionAllowStageSelection] = useState(false)
-  const [transitionInterviewAlert, setTransitionInterviewAlert] = useState<{ name: string; date: string } | null>(null)
-  const [showSuperChat, setShowSuperChat] = useState(false) // Super chat expandido (ocupa mais espaço)
-  const [liaPromptValue, setLiaPromptValue] = useState("") // Valor do prompt da LIA
-  const [liaMessages, setLiaMessages] = useState<{id: string; type: 'user' | 'response'; content: string; timestamp: number; metadata?: Record<string, unknown>}[]>([]) // Mensagens do chat LIA
-  const [isLiaLoading, setIsLiaLoading] = useState(false) // Estado de loading da LIA
-  const [liaConversationId, setLiaConversationId] = useState<string | undefined>(undefined)
-  const chatScrollRef = useRef<HTMLDivElement>(null) // Ref para auto-scroll do chat
-  const [liaSearchQuery, setLiaSearchQuery] = useState("") // Busca de consultas LIA
-  const [userCollapsedLIA, setUserCollapsedLIA] = useState(false) // Se usuário fechou manualmente
-  const [liaExpandedWidth, setLiaExpandedWidth] = useState(400) // Largura do prompt expandido (mín: 280, máx: 520)
-  const [isResizingLIA, setIsResizingLIA] = useState(false) // Controle de redimensionamento
-  
-  // Função para abrir o Super Chat expandido
-  const openSuperChat = useCallback((initialMessage?: string) => {
-    setShowExpandedLIA(false)
-    setShowSuperChat(true)
-    if (initialMessage) {
-      setLiaPromptValue(initialMessage)
-    }
-  }, [])
-  
-  // Função para voltar ao prompt expandido lateral
-  const returnToExpandedPrompt = useCallback(() => {
-    setShowSuperChat(false)
-    setShowExpandedLIA(true)
-  }, [])
-  const [showTestLibrary, setShowTestLibrary] = useState(false)
-  const [showTestHistory, setShowTestHistory] = useState(false)
-  const [selectedTestForHistory, setSelectedTestForHistory] = useState<Record<string, unknown> | null>(null)
-  const [showConceptualPrompt, setShowConceptualPrompt] = useState(false)
-  const [isEditModeTriagem, setIsEditModeTriagem] = useState(false)
-  const [showConceptualPromptTriagem, setShowConceptualPromptTriagem] = useState(false)
-  const [showApresentacaoPrompt, setShowApresentacaoPrompt] = useState(false)
-  const [showFechamentoPrompt, setShowFechamentoPrompt] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false) // Novo estado para modo de edição
-  const [showTriagemSuggestions, setShowTriagemSuggestions] = useState(false) // Painel de sugestões para triagem
-  const [selectedTriagemQuestion, setSelectedTriagemQuestion] = useState<string | null>(null) // Pergunta selecionada
-  const [expandedCronograma, setExpandedCronograma] = useState(false) // Estado para expandir cronograma
-  const [expandedTesteTecnico, setExpandedTesteTecnico] = useState(false) // Estado para expandir teste técnico
-  const [expandedTesteIngles, setExpandedTesteIngles] = useState(false) // Estado para expandir teste de inglês
-  const [expandedRoteiro, setExpandedRoteiro] = useState(false) // Estado para expandir roteiro de triagem
-  
-  // Estados para modal de email
-  const [showEmailModal, setShowEmailModal] = useState(false)
-  const [emailCandidate, setEmailCandidate] = useState<Record<string, unknown> | null>(null)
-
-  // Estado para modal Compartilhar com Gestor (H.3a)
-  const [showShareGestorModal, setShowShareGestorModal] = useState(false)
-
-  // Estados para Unified Communication Modal
-  const [unifiedModalOpen, setUnifiedModalOpen] = useState(false)
-  const [unifiedModalType, setUnifiedModalType] = useState<CommunicationType>('email')
-  const [unifiedModalCandidate, setUnifiedModalCandidate] = useState<Record<string, unknown> | null>(null)
-  const [unifiedModalSituation, setUnifiedModalSituation] = useState<string | undefined>(undefined)
-
-  // Estados para WSI Text Screening Modal
-  const [showWSIModal, setShowWSIModal] = useState(false)
-  const [wsiCandidate, setWsiCandidate] = useState<Record<string, unknown> | null>(null)
-
-  // Estados para WSI Triagem Invite Modal
-  const [showWSIInviteModal, setShowWSIInviteModal] = useState(false)
-  const [wsiInviteCandidate, setWsiInviteCandidate] = useState<Record<string, unknown> | null>(null)
-
-  // Estados para Add to Vacancy Modal
-  const [showAddToVacancyModal, setShowAddToVacancyModal] = useState(false)
-  const [candidateForVacancy, setCandidateForVacancy] = useState<Record<string, unknown> | null>(null)
-
-  // Estados para Rubric Evaluation Modal
-  const [showRubricModal, setShowRubricModal] = useState(false)
-  const [rubricCandidate, setRubricCandidate] = useState<Record<string, unknown> | null>(null)
-  const [rubricEvaluationData, setRubricEvaluationData] = useState<Record<string, unknown> | null>(null)
-
-  // Estados para modais de avaliação da tabela
-  const [selectedCandidateForModal, setSelectedCandidateForModal] = useState<Record<string, unknown> | null>(null)
-  const [activeModal, setActiveModal] = useState<'notaGeral' | 'triagem' | 'testeTecnico' | 'testeIngles' | null>(null)
-  const [showBigFiveModal, setShowBigFiveModal] = useState(false)
-
-  // Estados para modais de scores (dos cards do Kanban)
-  const [showGeneralScoreModal, setShowGeneralScoreModal] = useState(false)
-  const [showTechnicalTestModal, setShowTechnicalTestModal] = useState(false)
-  const [showEnglishTestModal, setShowEnglishTestModal] = useState(false)
-  const [scoreModalCandidate, setScoreModalCandidate] = useState<Record<string, unknown> | null>(null)
-
-  // D9 — Estado para modal de comparação de candidatos
-  const [showCompareModal, setShowCompareModal] = useState(false)
-  const [compareCandidates, setCompareCandidates] = useState<{ id: string; name: string }[]>([])
-  const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set())
-
-  // Estados para modal de fluxo de decisão (aprovar/reprovar)
-  const [showDecisionFlowModal, setShowDecisionFlowModal] = useState(false)
-  const [decisionFlowCandidate, setDecisionFlowCandidate] = useState<Record<string, unknown> | null>(null)
-  const [decisionFlowType, setDecisionFlowType] = useState<'approve_to_triage' | 'approve_to_interview' | 'reject_pre_triage' | 'reject_post_triage' | 'request_urgency' | 'reschedule_interview' | 'confirm_hire'>('approve_to_triage')
-
-  // Estados para modal de seleção de status (movimentação no Kanban)
-  const [pendingMove, setPendingMove] = useState<{
-    candidate: Record<string, unknown>;
-    fromColumn: string;
-    toColumn: string;
-  } | null>(null)
-  const [statusModalOpen, setStatusModalOpen] = useState(false)
-  const [selectedSubStatus, setSelectedSubStatus] = useState<string>('')
-
-  // Estados para JobStatusModal (pausar/reativar) e CloseVacancyModal (fechar vaga)
-  const [showJobStatusModal, setShowJobStatusModal] = useState(false)
-  const [jobStatusModalMode, setJobStatusModalMode] = useState<'pause' | 'activate'>('pause')
-  const [showCloseVacancyModal, setShowCloseVacancyModal] = useState(false)
-
-
-  // Estados para gerenciar perguntas e habilidades dinamicamente
-  const [perguntasEliminatorias, setPerguntasEliminatorias] = useState([
-    '1️⃣ Você está aberto(a) a novas oportunidades no momento? (opções: Sim / Não)',
-    '2️⃣ Você tem disponibilidade para o modelo de trabalho [modelo da vaga]? (opções: Sim / Não)'
-  ])
-  const [perguntasInformativas, setPerguntasInformativas] = useState([
-    '3️⃣ Qual sua disponibilidade para início, caso avance no processo? (opções: Imediata / Até 30 dias / Acima de 30 dias)',
-    '4️⃣ Qual sua expectativa salarial para contratação CLT? (resposta aberta)'
-  ])
-  const [habilidadesTecnicas, setHabilidadesTecnicas] = useState([
-    'Design System',
-    'Prototipagem Figma',
-    'User Research',
-    'Testes de Usabilidade',
-    'Metodologias Ágeis',
-    'Métricas de UX'
-  ])
-
-  const [perguntasTecnicasAvaliacao, setPerguntasTecnicasAvaliacao] = useState([
-    '1️⃣ De 1 a 5, como você avalia seu domínio em **[Skill 1]**? (1 = iniciante / 5 = especialista)',
-    '2️⃣ Conte brevemente sobre um projeto em que aplicou **[Skill 2]**. (Pode responder em poucas frases; quero entender seu papel e resultados.)',
-    '3️⃣ Como você costuma validar seus resultados ao trabalhar com **[Skill 3]**?',
-    '4️⃣ Qual foi o principal desafio técnico que enfrentou em **[Skill 4]** e como resolveu?',
-    '5️⃣ Quando você redesenha uma interface, quais **métricas** usa para avaliar se ela teve sucesso?'
-  ])
-
-  const [skillWeights, setSkillWeights] = useState([
-    { skill: 'Design System', weight: 25, avgScore: 4.3, classification: 'Alto', validationType: 'Contexto real + microteste' },
-    { skill: 'Prototipagem (Figma)', weight: 25, avgScore: 4.8, classification: 'Excelente', validationType: 'Microcase prático' },
-    { skill: 'User Research', weight: 20, avgScore: 3.9, classification: 'Médio', validationType: 'Situação contextual' },
-    { skill: 'Testes de Usabilidade', weight: 15, avgScore: 4.1, classification: 'Alto', validationType: 'Autodeclaração + microteste' },
-    { skill: 'Métricas de UX', weight: 15, avgScore: 4.0, classification: 'Alto', validationType: 'Pergunta teórica' }
-  ])
-
-  // Valores originais definidos pela LIA (para restauração)
-  const [originalSkillWeights] = useState([
-    { skill: 'Design System', weight: 25, avgScore: 4.3, classification: 'Alto', validationType: 'Contexto real + microteste' },
-    { skill: 'Prototipagem (Figma)', weight: 25, avgScore: 4.8, classification: 'Excelente', validationType: 'Microcase prático' },
-    { skill: 'User Research', weight: 20, avgScore: 3.9, classification: 'Médio', validationType: 'Situação contextual' },
-    { skill: 'Testes de Usabilidade', weight: 15, avgScore: 4.1, classification: 'Alto', validationType: 'Autodeclaração + microteste' },
-    { skill: 'Métricas de UX', weight: 15, avgScore: 4.0, classification: 'Alto', validationType: 'Pergunta teórica' }
-  ])
-
-  // Estado para rastrear se os pesos foram modificados manualmente
-  const [isSkillWeightsModified, setIsSkillWeightsModified] = useState(false)
-
-  const [perguntasSituacionais, setPerguntasSituacionais] = useState([
-    '1️⃣ Como você lida com **feedbacks críticos** sobre seu trabalho?',
-    '2️⃣ Conte sobre uma situação em que precisou **defender uma decisão técnica ou de design**.',
-    '3️⃣ Quando há **demandas conflitantes** entre diferentes áreas, como você prioriza?'
-  ])
-
-  // Estados para modais de ações em massa
-  const [showAddToListModal, setShowAddToListModal] = useState(false)
-  const [isAddingToList, setIsAddingToList] = useState(false)
-  
-  // Estados para bulk action modal
-  const [showBulkActionModal, setShowBulkActionModal] = useState(false)
-  const [bulkActionType, setBulkActionType] = useState<BulkActionType>('move_stage')
+  // ── Modais e UI — extraído para useKanbanUIModals ──
+  const uiModals = useKanbanUIModals({ job, toast })
+  const {
+    previewCandidate, isPreviewOpen, showCandidatePage, isPreviewMaximized,
+    triagemCandidate, showReport, isTriagemOpen, showTestPreview, editingQuestion,
+    showTestLibrary, showTestHistory, selectedTestForHistory,
+    showConceptualPrompt, isEditModeTriagem, showConceptualPromptTriagem,
+    showApresentacaoPrompt, showFechamentoPrompt, isEditMode,
+    showTriagemSuggestions, selectedTriagemQuestion,
+    expandedCronograma, expandedTesteTecnico, expandedTesteIngles, expandedRoteiro,
+    perguntasEliminatorias, perguntasInformativas, habilidadesTecnicas,
+    perguntasTecnicasAvaliacao, skillWeights, originalSkillWeights, isSkillWeightsModified, perguntasSituacionais,
+    showLiaSuggestions, liaSuggestionsData, showLiaSuggestionsPanel,
+    showExpandedLIA, transitionInitialPrompt, transitionAllowStageSelection, transitionInterviewAlert,
+    showSuperChat, liaPromptValue, liaMessages, isLiaLoading, liaConversationId,
+    chatScrollRef, liaSearchQuery, userCollapsedLIA, liaExpandedWidth, isResizingLIA,
+    showEmailModal, emailCandidate, showShareGestorModal,
+    unifiedModalOpen, unifiedModalType, unifiedModalCandidate, unifiedModalSituation,
+    showWSIModal, wsiCandidate, showWSIInviteModal, wsiInviteCandidate,
+    showAddToVacancyModal, candidateForVacancy,
+    showRubricModal, rubricCandidate, rubricEvaluationData,
+    selectedCandidateForModal, activeModal, showBigFiveModal,
+    showGeneralScoreModal, showTechnicalTestModal, showEnglishTestModal, scoreModalCandidate,
+    showCompareModal, compareCandidates, selectedForCompare,
+    showDecisionFlowModal, decisionFlowCandidate, decisionFlowType,
+    pendingMove, statusModalOpen, selectedSubStatus,
+    showJobStatusModal, jobStatusModalMode, showCloseVacancyModal,
+    showAddToListModal, isAddingToList, showBulkActionModal, bulkActionType,
+    showDataRequestModal, dataRequestModalCandidate, viewedCandidateIds,
+  } = uiModals.state
+  const {
+    setPreviewCandidate, setIsPreviewOpen, setShowCandidatePage, setIsPreviewMaximized,
+    setTriagemCandidate, setShowReport, setIsTriagemOpen, setShowTestPreview, setEditingQuestion,
+    setShowTestLibrary, setShowTestHistory, setSelectedTestForHistory,
+    setShowConceptualPrompt, setIsEditModeTriagem, setShowConceptualPromptTriagem,
+    setShowApresentacaoPrompt, setShowFechamentoPrompt, setIsEditMode,
+    setShowTriagemSuggestions, setSelectedTriagemQuestion,
+    setExpandedCronograma, setExpandedTesteTecnico, setExpandedTesteIngles, setExpandedRoteiro,
+    setPerguntasEliminatorias, setPerguntasInformativas, setHabilidadesTecnicas,
+    setPerguntasTecnicasAvaliacao, setSkillWeights, setIsSkillWeightsModified, setPerguntasSituacionais,
+    setShowLiaSuggestions, setLiaSuggestionsData, setShowLiaSuggestionsPanel,
+    setShowExpandedLIA, setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
+    setShowSuperChat, setLiaPromptValue, setLiaMessages, setIsLiaLoading, setLiaConversationId,
+    setLiaSearchQuery, setUserCollapsedLIA, setLiaExpandedWidth, setIsResizingLIA,
+    setShowEmailModal, setEmailCandidate, setShowShareGestorModal,
+    setUnifiedModalOpen, setUnifiedModalType, setUnifiedModalCandidate, setUnifiedModalSituation,
+    setShowWSIModal, setWsiCandidate, setShowWSIInviteModal, setWsiInviteCandidate,
+    setShowAddToVacancyModal, setCandidateForVacancy,
+    setShowRubricModal, setRubricCandidate, setRubricEvaluationData,
+    setSelectedCandidateForModal, setActiveModal, setShowBigFiveModal,
+    setShowGeneralScoreModal, setShowTechnicalTestModal, setShowEnglishTestModal, setScoreModalCandidate,
+    setShowCompareModal, setCompareCandidates, setSelectedForCompare,
+    setShowDecisionFlowModal, setDecisionFlowCandidate, setDecisionFlowType,
+    setPendingMove, setStatusModalOpen, setSelectedSubStatus,
+    setShowJobStatusModal, setJobStatusModalMode, setShowCloseVacancyModal,
+    setShowAddToListModal, setIsAddingToList, setShowBulkActionModal, setBulkActionType,
+    setShowDataRequestModal, setDataRequestModalCandidate, setViewedCandidateIds,
+    openSuperChat, returnToExpandedPrompt,
+  } = uiModals.actions
 
   const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
     selectedCandidates,
@@ -903,62 +549,16 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setCandidatesData,
   })
 
-  // Preview Maximize State
-  const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
-
-  // Favorites State  
+  // Favorites State
   const [favoriteCandidates, setFavoriteCandidates] = useState<Set<string>>(new Set())
   const [shortListedCandidateIds, setShortListedCandidateIds] = useState<Set<string>>(new Set())
   const [activeShortListId, setActiveShortListId] = useState<string | null>(null)
-
-  // Viewed Candidates State
-  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
 
   // Sync favorites from useTalentFunnel hook
   useEffect(() => {
     const favoriteIds = talentFunnel.getFavoriteIds()
     setFavoriteCandidates(favoriteIds)
   }, [talentFunnel.favorites])
-
-  // Load viewed candidates on mount
-  useEffect(() => {
-    const loadViewedCandidates = async () => {
-      try {
-        const response = await fetch('/api/backend-proxy/candidates/viewed')
-        if (response.ok) {
-          const data = await response.json()
-          const viewedIds = new Set<string>(data.viewed_candidate_ids || data.viewedCandidateIds || [])
-          setViewedCandidateIds(viewedIds)
-        }
-      } catch (error) {
-      }
-    }
-    loadViewedCandidates()
-  }, [])
-
-  // Handler para redimensionar prompt expandido da LIA
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizingLIA) return
-      const newWidth = Math.max(280, Math.min(480, e.clientX - 16))
-      setLiaExpandedWidth(newWidth)
-    }
-    const handleMouseUp = () => {
-      setIsResizingLIA(false)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-    if (isResizingLIA) {
-      document.body.style.cursor = 'ew-resize'
-      document.body.style.userSelect = 'none'
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    }
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isResizingLIA])
 
   // Detectar ação pendente de comunicação (despublicação com notificação)
   useEffect(() => {
@@ -1104,64 +704,33 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     processPendingNavigation()
   }, [candidatesData, processPendingNavigation])
 
-  // Estado para configuração de colunas
-  const [showColumnConfig, setShowColumnConfig] = useState(false)
-  const [tableColumns, setTableColumns] = useState<TableColumn[]>(() => getDefaultTableColumns())
-  const [columnSearchTerm, setColumnSearchTerm] = useState('')
-  
-  // Estado para painel de filtros
-  const [showTableFiltersPanel, setShowTableFiltersPanel] = useState(false)
-  const [showKanbanFiltersPanel, setShowKanbanFiltersPanel] = useState(false)
+  // ── Tabela view — extraído para useKanbanTableView ──
+  const tableView = useKanbanTableView({ dynamicStages, candidatesData, viewMode })
+  const {
+    showColumnConfig, tableColumns, columnSearchTerm,
+    showTableFiltersPanel, showKanbanFiltersPanel,
+    kanbanScoreMin, kanbanStatusFilter, kanbanWorkModelFilter, kanbanOriginFilter,
+    tableSortColumn, tableSortDirection, tableStageFilter, currentPage, itemsPerPage,
+    tableColumnWidths, draggedTableColumnId, dragOverTableColumnId, tableColumnOrder,
+    pipelineStages, kanbanColumns,
+  } = tableView.state
+  const {
+    setShowColumnConfig, setTableColumns, setColumnSearchTerm,
+    setShowTableFiltersPanel, setShowKanbanFiltersPanel,
+    setKanbanScoreMin, setKanbanStatusFilter, setKanbanWorkModelFilter, setKanbanOriginFilter,
+    setTableSortColumn, setTableSortDirection, setTableStageFilter, setCurrentPage,
+    setTableColumnWidths, setDraggedTableColumnId, setDragOverTableColumnId, setTableColumnOrder,
+    handleTableColumnResize, handleTableSort, startTableColumnResize,
+    handleTableColumnDragStart, handleTableColumnDragOver, handleTableColumnDragLeave,
+    handleTableColumnDrop, handleTableColumnDragEnd,
+    getAllCandidates, getFilteredAndSortedCandidates: _getFilteredAndSortedCandidates,
+    getPaginatedCandidates: _getPaginatedCandidates,
+    toggleStageFilter, clearStageFilters, getStageCount, getConversionRate,
+  } = tableView.actions
 
-  // Filtros específicos para Kanban
-  const [kanbanScoreMin, setKanbanScoreMin] = useState(0)
-  const [kanbanStatusFilter, setKanbanStatusFilter] = useState<string[]>([])
-  const [kanbanWorkModelFilter, setKanbanWorkModelFilter] = useState<string[]>([])
-  const [kanbanOriginFilter, setKanbanOriginFilter] = useState<string[]>([])
-
-  // Table specific states - Nova tabela elegante
-  const [tableSortColumn, setTableSortColumn] = useState<string>('notaLiaGeral')
-  const [tableSortDirection, setTableSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [tableStageFilter, setTableStageFilter] = useState<string[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 50
-
-  // Estados de redimensionamento de colunas da tabela
-  const [tableColumnWidths, setTableColumnWidths] = useState({
-    checkbox: 50,
-    id: 70,
-    notaLiaGeral: 100,
-    scoreLiaTriagem: 100,
-    scoreLiaCV: 100,
-    testeTecnico: 90,
-    testeIngles: 80,
-    bigFive: 90,
-    alertas: 50,
-    candidato: 200,
-    cargo: 150,
-    empresa: 130,
-    etapa: 110,
-    status: 100,
-    acoes: 100
-  })
-  
-  // Callback estável para redimensionamento de colunas
-  const handleTableColumnResize = useCallback((columnId: string, width: number) => {
-    setTableColumnWidths(prev => ({
-      ...prev,
-      [columnId]: width
-    }))
-  }, [])
-
-  // Estados para drag & drop de colunas da tabela
-  const [draggedTableColumnId, setDraggedTableColumnId] = useState<string | null>(null)
-  const [dragOverTableColumnId, setDragOverTableColumnId] = useState<string | null>(null)
-  
-  // Ordem das colunas da tabela (checkbox e acoes são fixos)
-  const [tableColumnOrder, setTableColumnOrder] = useState<string[]>([
-    'checkbox', 'id', 'notaLiaGeral', 'scoreLiaTriagem', 'scoreLiaCV', 'testeTecnico', 
-    'testeIngles', 'bigFive', 'alertas', 'candidato', 'cargo', 'empresa', 'etapa', 'status', 'acoes'
-  ])
+  // Wrappers that pass searchQuery
+  const getFilteredAndSortedCandidates = () => _getFilteredAndSortedCandidates(searchQuery)
+  const getPaginatedCandidates = () => _getPaginatedCandidates(searchQuery)
 
   const [jobLocalOverrides, setJobLocalOverrides] = useState<Record<string, unknown>>({})
   const currentJob = job ? { ...job, ...jobLocalOverrides } : jobData
@@ -1732,6 +1301,17 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowWSIInviteModal(true)
   }
 
+  const handleCloseTriagem = useCallback(() => {
+    setIsTriagemOpen(false)
+    setTriagemCandidate(null)
+  }, [setIsTriagemOpen, setTriagemCandidate])
+
+  const handleRubricModalClose = useCallback(() => {
+    setShowRubricModal(false)
+    setRubricCandidate(null)
+    setRubricEvaluationData(null)
+  }, [setShowRubricModal, setRubricCandidate, setRubricEvaluationData])
+
   // Handlers para Rubric Evaluation Modal
   // Funções para abrir modal de fluxo de decisão
   const { handleDecisionFlowConfirm, handleApproveCandidate, handleRejectCandidate, handleApproveFromScreening, handleRejectFromScreening, handleTriagemApprove, handleTriagemReject, handleOpenAnalysis, openDecisionFlowModal } = useKanbanCandidateDecisions({
@@ -1801,259 +1381,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const handleCloseReport = () => {
     setShowReport(false)
   }
-
-  // Helper functions for elegant table view
-  // Flatten all candidates for table view - suporta etapas dinâmicas
-  const getAllCandidates = useCallback(() => {
-    const allCandidates: Record<string, unknown>[] = []
-    
-    // Criar mapeamento dinâmico baseado em dynamicStages
-    const stageMapping: Record<string, { name: string; color: string }> = {}
-    dynamicStages.forEach(stage => {
-      let color = 'bg-gray-100 text-gray-800 dark:text-gray-200'
-      if (stage.isHired) {
-        color = 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 font-bold'
-      } else if (stage.isRejection || stage.id === 'offer_declined') {
-        color = 'bg-gray-400 text-gray-950 dark:bg-gray-600 dark:text-gray-100 font-medium'
-      } else if (stage.isInitial) {
-        color = 'bg-gray-100 text-gray-800 dark:text-gray-200'
-      } else if (stage.stageType === 'final') {
-        color = 'bg-gray-300 text-gray-950 dark:bg-gray-600 dark:text-gray-50 font-bold'
-      }
-      stageMapping[stage.id] = { name: stage.displayName, color }
-    })
-
-    Object.entries(candidatesData).forEach(([stage, candidates]) => {
-      if (candidates && Array.isArray(candidates)) {
-        candidates.forEach(candidate => {
-          allCandidates.push({
-            ...candidate,
-            stage: stageMapping[stage]?.name || stage,
-            stageColor: stageMapping[stage]?.color || "bg-gray-100 text-gray-800 dark:text-gray-200"
-          })
-        })
-      }
-    })
-
-    return allCandidates
-  }, [dynamicStages, candidatesData])
-
-  useEffect(() => {
-    setShowTableFiltersPanel(false)
-    setShowKanbanFiltersPanel(false)
-    setShowColumnConfig(false)
-  }, [viewMode])
-
-  // Table sorting function
-  const handleTableSort = (column: string) => {
-    if (tableSortColumn === column) {
-      setTableSortDirection(tableSortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setTableSortColumn(column)
-      setTableSortDirection('asc')
-    }
-  }
-
-  // Handlers para redimensionamento de colunas da tabela
-  const startTableColumnResize = (column: string, event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const startX = event.clientX
-    const startWidth = tableColumnWidths[column as keyof typeof tableColumnWidths] || 100
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = Math.max(50, startWidth + (e.clientX - startX))
-      setTableColumnWidths(prev => ({
-        ...prev,
-        [column]: newWidth
-      }))
-    }
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }
-
-  // Handlers para drag & drop de colunas da tabela
-  const handleTableColumnDragStart = (columnId: string, e: React.DragEvent) => {
-    if (columnId === 'checkbox' || columnId === 'acoes') return
-    
-    setDraggedTableColumnId(columnId)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', columnId)
-    
-    const dragImage = document.createElement('div')
-    dragImage.style.opacity = '0'
-    document.body.appendChild(dragImage)
-    e.dataTransfer.setDragImage(dragImage, 0, 0)
-    setTimeout(() => document.body.removeChild(dragImage), 0)
-  }
-
-  const handleTableColumnDragOver = (columnId: string, e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    if (draggedTableColumnId && draggedTableColumnId !== columnId && columnId !== 'checkbox' && columnId !== 'acoes') {
-      setDragOverTableColumnId(columnId)
-    }
-  }
-
-  const handleTableColumnDragLeave = () => {
-    setDragOverTableColumnId(null)
-  }
-
-  const handleTableColumnDrop = (targetColumnId: string, e: React.DragEvent) => {
-    e.preventDefault()
-    if (!draggedTableColumnId || draggedTableColumnId === targetColumnId) {
-      setDraggedTableColumnId(null)
-      setDragOverTableColumnId(null)
-      return
-    }
-
-    if (targetColumnId === 'checkbox' || targetColumnId === 'acoes') {
-      setDraggedTableColumnId(null)
-      setDragOverTableColumnId(null)
-      return
-    }
-
-    setTableColumnOrder(prev => {
-      const newOrder = [...prev]
-      const draggedIndex = newOrder.indexOf(draggedTableColumnId)
-      const targetIndex = newOrder.indexOf(targetColumnId)
-      
-      if (draggedIndex === -1 || targetIndex === -1) return prev
-      
-      newOrder.splice(draggedIndex, 1)
-      newOrder.splice(targetIndex, 0, draggedTableColumnId)
-      
-      localStorage.setItem('job-kanban-table-column-order', JSON.stringify(newOrder))
-      
-      return newOrder
-    })
-
-    setDraggedTableColumnId(null)
-    setDragOverTableColumnId(null)
-  }
-
-  const handleTableColumnDragEnd = () => {
-    setDraggedTableColumnId(null)
-    setDragOverTableColumnId(null)
-  }
-
-  // Carregar ordem de colunas salva do localStorage
-  useEffect(() => {
-    const defaultOrder = [
-      'checkbox', 'id', 'notaLiaGeral', 'scoreLiaTriagem', 'scoreLiaCV', 'testeTecnico', 
-      'testeIngles', 'bigFive', 'alertas', 'candidato', 'cargo', 'empresa', 'etapa', 'status', 'acoes'
-    ]
-    const savedOrder = localStorage.getItem('job-kanban-table-column-order')
-    
-    if (savedOrder) {
-      try {
-        const parsed = JSON.parse(savedOrder) as string[]
-        const validOrder = defaultOrder.filter(id => parsed.includes(id))
-        
-        if (validOrder.length === defaultOrder.length) {
-          const orderedCols = parsed.filter((id: string) => defaultOrder.includes(id))
-          const finalOrder = ['checkbox', ...orderedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes'), 'acoes']
-          setTableColumnOrder(finalOrder)
-        } else {
-          setTableColumnOrder(defaultOrder)
-        }
-      } catch (e) {
-        setTableColumnOrder(defaultOrder)
-      }
-    }
-  }, [])
-  // Paginate candidates
-  const getPaginatedCandidates = () => {
-    const filtered = getFilteredAndSortedCandidates()
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return {
-      candidates: filtered.slice(startIndex, endIndex),
-      total: filtered.length,
-      totalPages: Math.ceil(filtered.length / itemsPerPage)
-    }
-  }
-
-  // Toggle stage filter
-  const toggleStageFilter = (stageName: string) => {
-    setTableStageFilter(prev => {
-      if (prev.includes(stageName)) {
-        return prev.filter(s => s !== stageName)
-      } else {
-        return [...prev, stageName]
-      }
-    })
-    setCurrentPage(1) // Reset to first page when filter changes
-  }
-
-  // Clear all stage filters
-  const clearStageFilters = () => {
-    setTableStageFilter([])
-    setCurrentPage(1)
-  }
-
-  // Get stage counts for filter badges
-  const getStageCount = (stageName: string) => {
-    return getAllCandidates().filter(c => c.stage === stageName).length
-  }
-
-  // Calculate conversion rate from previous stage
-  const getConversionRate = (currentStage: string) => {
-    const stageOrder = ['Funil', 'Triagem', 'Entrevista', 'Final', 'Aprovados', 'Reprovados']
-    const currentIndex = stageOrder.indexOf(currentStage)
-    
-    if (currentIndex <= 0) return null // Funil não tem etapa anterior
-    
-    const previousStage = stageOrder[currentIndex - 1]
-    const previousCount = getStageCount(previousStage)
-    const currentCount = getStageCount(currentStage)
-    
-    if (previousCount === 0) return null
-    
-    const rate = Math.round((currentCount / previousCount) * 100)
-    return {
-      rate,
-      previousStage,
-      color: rate >= 70 ? 'text-gray-600 dark:text-gray-400' : 
-             rate >= 50 ? 'text-gray-800 dark:text-gray-200' : 
-             'text-gray-600 dark:text-gray-500'
-    }
-  }
-
-  // Pipeline stages configuration for elegant table - derivado de dynamicStages
-  const pipelineStages = useMemo(() => 
-    dynamicStages.map(stage => ({
-      id: stage.id,
-      name: stage.displayName,
-      color: stage.isHired 
-        ? "bg-gray-100 text-gray-800 dark:text-gray-200 font-medium" 
-        : "bg-gray-100 text-gray-800 dark:text-gray-200",
-      count: candidatesData[stage.id]?.length || 0
-    })), 
-    [dynamicStages, candidatesData]
-  )
-  // Kanban columns configuration - derivado de dynamicStages
-  const kanbanColumns = useMemo(() => 
-    dynamicStages.map(stage => ({
-      id: stage.id,
-      title: stage.displayName,
-      count: candidatesData[stage.id]?.length || 0,
-      color: "bg-gray-50 border-gray-200",
-      stageColor: stage.color
-    })),
-    [dynamicStages, candidatesData]
-  )
 
   // Backgrounds para colunas do Kanban - suporta etapas dinâmicas
   // Usa a cor da etapa dinâmica e fornece estilo padrão para etapas não conhecidas
@@ -2142,40 +1469,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     'offer_declined': 'var(--gray-300)'
   }
 
-
-  const getFilteredAndSortedCandidates = () => {
-    let candidates = getAllCandidates()
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      candidates = candidates.filter((candidate: Record<string, unknown>) => {
-        const name = (candidate.name as string) || ''
-        const role = (candidate.role as string) || ''
-        const loc = (candidate.location as string) || ''
-        const company = (candidate.currentCompany as string) || ''
-        return name.toLowerCase().includes(query) || role.toLowerCase().includes(query) || loc.toLowerCase().includes(query) || company.toLowerCase().includes(query)
-      })
-    }
-    if (tableStageFilter.length > 0) {
-      candidates = candidates.filter((c: Record<string, unknown>) => tableStageFilter.includes(c.stage as string))
-    }
-    candidates.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
-      let aVal: string | number, bVal: string | number
-      switch (tableSortColumn) {
-        case 'name': aVal = ((a.name as string) || '').toLowerCase(); bVal = ((b.name as string) || '').toLowerCase(); break
-        case 'scoreLiaTriagem': aVal = (a.liaScore as number) || (a.score as number) || 0; bVal = (b.liaScore as number) || (b.score as number) || 0; break
-        case 'scoreLiaCV': aVal = (a.skillsMatch as number) || (a.fitScore as number) || 0; bVal = (b.skillsMatch as number) || (b.fitScore as number) || 0; break
-        case 'testeTecnico': aVal = (a.technicalTestScore as number) || 0; bVal = (b.technicalTestScore as number) || 0; break
-        case 'testeIngles': aVal = (a.englishTestScore as number) || 0; bVal = (b.englishTestScore as number) || 0; break
-        case 'location': aVal = ((a.location as string) || '').toLowerCase(); bVal = ((b.location as string) || '').toLowerCase(); break
-        case 'stage': aVal = ((a.stage as string) || '').toLowerCase(); bVal = ((b.stage as string) || '').toLowerCase(); break
-        default: aVal = calculateNotaLiaGeral(a); bVal = calculateNotaLiaGeral(b)
-      }
-      if (aVal < bVal) return tableSortDirection === 'asc' ? -1 : 1
-      if (aVal > bVal) return tableSortDirection === 'asc' ? 1 : -1
-      return 0
-    })
-    return candidates
-  }
 
   return {
     viewMode, setViewMode,

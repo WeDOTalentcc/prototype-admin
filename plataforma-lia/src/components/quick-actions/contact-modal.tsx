@@ -1,24 +1,15 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Mail, Phone, MessageSquare, Calendar, Heart, Star, Send, Copy,
-  X, Check, Clock, User, Briefcase, MapPin, ExternalLink,
-  Users, FileText, Zap, Video, AlertCircle, CheckCircle,
-  Edit, Trash2, Plus, Filter, Search, MoreVertical,
-  Share2, Download, Upload, Eye, ChevronRight, Building,
-  Globe, Linkedin, Facebook, Instagram, Twitter, Youtube,
-  Calendar as CalendarIcon, Brain, RefreshCw, Info
+  Mail, Phone, MessageSquare, Send, X, Clock, Brain, Eye, RefreshCw
 } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
 import { useToast } from "@/hooks/use-toast"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import { textStyles, cardStyles } from "@/lib/design-tokens"
 
-// Interfaces
 interface Candidate {
   id: string
   name: string
@@ -54,36 +45,6 @@ interface ContactModalProps {
   jobTitle?: string
 }
 
-interface ScheduleModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: Candidate | null
-  onSchedule: (type: string, datetime: string, details: any) => void
-}
-
-interface FavoriteModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidates: Candidate[]
-  onToggleFavorite: (candidateId: string) => void
-  onCreateList: (name: string, candidateIds: string[]) => void
-}
-
-interface BatchActionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  selectedCandidates: Candidate[]
-  onBatchAction: (action: string, data: any) => void
-}
-
-interface QuickViewModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: Candidate | null
-  onNavigateToFull: (candidateId: string) => void
-}
-
-// Modal de Contato
 export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction, jobTitle }: ContactModalProps) {
   const [activeTab, setActiveTab] = useState<'email' | 'whatsapp' | 'phone'>('email')
   const [message, setMessage] = useState('')
@@ -243,10 +204,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
   const generateLiaSuggestions = async (context: string) => {
     setIsLiaGenerating(true)
     setShowLiaSuggestions(true)
-
-    // Simular geração da LIA baseada no contexto e perfil do candidato
     await new Promise(resolve => setTimeout(resolve, 2000))
-
     const suggestions = generateContextualSuggestions(context, candidate, activeTab)
     setLiaSuggestions(suggestions)
     setIsLiaGenerating(false)
@@ -362,9 +320,9 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
         })
 
         onSend(activeTab, message, candidate.email)
-        
-        alert(response.smtp_configured 
-          ? `✅ Email enviado para ${candidate.email}` 
+
+        alert(response.smtp_configured
+          ? `✅ Email enviado para ${candidate.email}`
           : `📧 Email enfileirado para ${candidate.email}\n\nStatus: Funcional - Aguardando Configuração SMTP\nO email foi salvo no sistema e será enviado quando o SMTP for configurado.`)
       } else if (activeTab === 'whatsapp') {
         const whatsappUrl = `https://wa.me/${candidate.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
@@ -676,4 +634,3 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
     </div>
   )
 }
-

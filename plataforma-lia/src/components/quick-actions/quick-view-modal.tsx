@@ -1,79 +1,21 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Mail, Phone, MessageSquare, Calendar, Heart, Star, Send, Copy,
-  X, Check, Clock, User, Briefcase, MapPin, ExternalLink,
-  Users, FileText, Zap, Video, AlertCircle, CheckCircle,
-  Edit, Trash2, Plus, Filter, Search, MoreVertical,
-  Share2, Download, Upload, Eye, ChevronRight, Building,
-  Globe, Linkedin, Facebook, Instagram, Twitter, Youtube,
-  Calendar as CalendarIcon, Brain, RefreshCw, Info
-} from "lucide-react"
-import { liaApi } from "@/services/lia-api"
-import { useToast } from "@/hooks/use-toast"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react"
+import { textStyles } from "@/lib/design-tokens"
 
-// Interfaces
 interface Candidate {
-  id: string
-  name: string
-  role: string
-  email: string
-  phone: string
-  location: string
-  avatar?: string
-  score: number
-  status: string
-  matchPercentage: number
-  riskLevel: string
-  culturalFit: number
-  technicalMatch: number
-  experience: string
-  seniority: string
-  availability: string
-  expectedSalary: string
-  preferredLocation: string
-  linkedin?: string
-  portfolio?: string
-  skills: string[]
-  lastActivity: string
-  source: string
-}
-
-interface ContactModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: Candidate | null
-  onSend: (type: string, message: string, recipient: string) => void
-  initialAction?: 'general' | 'wsi_screening' | 'interview_invite'
-  jobTitle?: string
-}
-
-interface ScheduleModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: Candidate | null
-  onSchedule: (type: string, datetime: string, details: any) => void
-}
-
-interface FavoriteModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidates: Candidate[]
-  onToggleFavorite: (candidateId: string) => void
-  onCreateList: (name: string, candidateIds: string[]) => void
-}
-
-interface BatchActionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  selectedCandidates: Candidate[]
-  onBatchAction: (action: string, data: any) => void
+  id: string; name: string; role: string; email: string; phone: string
+  location: string; avatar?: string; score: number; status: string
+  matchPercentage: number; riskLevel: string; culturalFit: number
+  technicalMatch: number; experience: string; seniority: string
+  availability: string; expectedSalary: string; preferredLocation: string
+  linkedin?: string; portfolio?: string; skills: string[]
+  lastActivity: string; source: string
 }
 
 interface QuickViewModalProps {
@@ -83,8 +25,6 @@ interface QuickViewModalProps {
   onNavigateToFull: (candidateId: string) => void
 }
 
-// Modal de Contato
-// Modal de Visualização Rápida
 export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }: QuickViewModalProps) {
   const [showLiaInsights, setShowLiaInsights] = useState(true)
   const [liaInsights, setLiaInsights] = useState<any>(null)
