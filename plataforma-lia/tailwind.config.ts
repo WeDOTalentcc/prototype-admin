@@ -42,6 +42,62 @@ export default {
         'chart-3': 'rgba(3,7,18,0.35)',
         'chart-4': 'rgba(3,7,18,0.15)',
         // ──────────────────────────────────────────────
+        // LIA DESIGN TOKENS — Fase 5 (inline styles → Tailwind)
+        // Fonte de verdade: design-tokens.css (--lia-*)
+        // Suportam dark mode automático via CSS variables
+        // Uso: bg-lia-bg-primary, text-lia-text-secondary, border-lia-border-default, etc.
+        // ──────────────────────────────────────────────
+        'lia-bg-primary':           'var(--lia-bg-primary)',
+        'lia-bg-secondary':         'var(--lia-bg-secondary)',
+        'lia-bg-tertiary':          'var(--lia-bg-tertiary)',
+        'lia-bg-elevated':          'var(--lia-bg-elevated)',
+        'lia-border-subtle':        'var(--lia-border-subtle)',
+        'lia-border-default':       'var(--lia-border-default)',
+        'lia-border-medium':        'var(--lia-border-medium)',
+        'lia-text-primary':         'var(--lia-text-primary)',
+        'lia-text-secondary':       'var(--lia-text-secondary)',
+        'lia-text-tertiary':        'var(--lia-text-tertiary)',
+        'lia-text-disabled':        'var(--lia-text-disabled)',
+        'lia-text-inverse':         'var(--lia-text-inverse)',
+        'lia-interactive-hover':    'var(--lia-interactive-hover)',
+        'lia-interactive-active':   'var(--lia-interactive-active)',
+        'lia-interactive-focus':    'var(--lia-interactive-focus)',
+        'lia-brand-primary':        'var(--lia-brand-primary)',
+        'lia-brand-primary-hover':  'var(--lia-brand-primary-hover)',
+        'lia-brand-primary-light':  'var(--lia-brand-primary-light)',
+        'lia-info-color':           'var(--lia-info-color)',
+        'lia-info-light':           'var(--lia-info-light)',
+        'lia-status-high-bg':       'var(--lia-status-high-bg)',
+        'lia-status-high-text':     'var(--lia-status-high-text)',
+        'lia-status-high-border':   'var(--lia-status-high-border)',
+        'lia-status-medium-bg':     'var(--lia-status-medium-bg)',
+        'lia-status-medium-text':   'var(--lia-status-medium-text)',
+        'lia-status-medium-border': 'var(--lia-status-medium-border)',
+        'lia-status-low-bg':        'var(--lia-status-low-bg)',
+        'lia-status-low-text':      'var(--lia-status-low-text)',
+        'lia-status-low-border':    'var(--lia-status-low-border)',
+        'lia-destructive-bg':       'var(--lia-destructive-bg)',
+        'lia-destructive-text':     'var(--lia-destructive-text)',
+        'lia-destructive-border':   'var(--lia-destructive-border)',
+        'lia-btn-primary-bg':       'var(--lia-btn-primary-bg)',
+        'lia-btn-primary-hover':    'var(--lia-btn-primary-hover)',
+        'lia-btn-primary-text':     'var(--lia-btn-primary-text)',
+        'lia-btn-secondary-bg':     'var(--lia-btn-secondary-bg)',
+        'lia-btn-secondary-hover':  'var(--lia-btn-secondary-hover)',
+        'lia-btn-secondary-text':   'var(--lia-btn-secondary-text)',
+        'lia-btn-secondary-border': 'var(--lia-btn-secondary-border)',
+        'lia-btn-ghost-bg':         'var(--lia-btn-ghost-bg)',
+        'lia-btn-ghost-hover':      'var(--lia-btn-ghost-hover)',
+        'lia-btn-ghost-text':       'var(--lia-btn-ghost-text)',
+        'lia-badge-neutral-bg':     'var(--lia-badge-neutral-bg)',
+        'lia-badge-neutral-text':   'var(--lia-badge-neutral-text)',
+        'lia-badge-neutral-border': 'var(--lia-badge-neutral-border)',
+        'lia-input-bg':             'var(--lia-input-bg)',
+        'lia-input-border':         'var(--lia-input-border)',
+        'lia-input-border-focus':   'var(--lia-input-border-focus)',
+        'lia-input-text':           'var(--lia-input-text)',
+        'lia-input-placeholder':    'var(--lia-input-placeholder)',
+        // ──────────────────────────────────────────────
         // LEGADOS — manter até Fase 3 (consolidação badges)
         // Gradualmente substituir por status-* ou gray-*
         // ──────────────────────────────────────────────
@@ -151,6 +207,16 @@ export default {
         xl: '1280px',
         '2xl': '1536px',
       },
+      },
+      // ──────────────────────────────────────────────
+      // LIA SHADOW TOKENS — Fase 5
+      // Uso: shadow-lia-sm, shadow-lia-default, shadow-lia-md, shadow-lia-lg
+      // ──────────────────────────────────────────────
+      boxShadow: {
+        'lia-sm':      'var(--lia-shadow-sm)',
+        'lia-default': 'var(--lia-shadow-default)',
+        'lia-md':      'var(--lia-shadow-md)',
+        'lia-lg':      'var(--lia-shadow-lg)',
       },
       // ──────────────────────────────────────────────
       // LAYOUT TOKENS — Sprint 5A (Design System v4.2.1)
