@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { usePermissions } from "@/utils/permissions"
-import { useToast } from "@/hooks/use-toast"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
+import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
+import { OpinionCard } from "@/components/candidate-preview/OpinionCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,21 +33,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { InsufficientDataModal, validateCandidateDataForOpinion, DataRequirement } from "@/components/modals/insufficient-data-modal"
+import { InsufficientDataModal } from "@/components/modals/insufficient-data-modal"
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
-import { LiaAnalysisModal } from "@/components/modals/lia-analysis-modal"
-import { ScreeningMediaModal, ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { DISCAssessmentModal } from "@/components/disc-assessment-modal"
-import { BigFiveModal } from "@/components/big-five-modal"
+import dynamic from "next/dynamic"
+import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
+
+const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
+const ScreeningMediaModal = dynamic(() => import("@/components/modals/screening-media-modal").then(m => ({ default: m.ScreeningMediaModal })), { ssr: false })
+const DISCAssessmentModal = dynamic(() => import("@/components/disc-assessment-modal").then(m => ({ default: m.DISCAssessmentModal })), { ssr: false })
+const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false })
 import { LiaChatModal } from "@/components/candidate-preview/LiaChatModal"
 import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
-
-interface LiaChatMessage {
-  role: 'user' | 'lia'
-  content: string
-  timestamp: Date
-}
 
 interface CandidatePreviewProps {
   candidate: any
@@ -103,423 +99,62 @@ export function CandidatePreview({
   onAddToList,
   jobId,
 }: CandidatePreviewProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
-  const [showLiaModal, setShowLiaModal] = useState(false)
-  const [liaConversation, setLiaConversation] = useState("")
-  
-  const [selectedFile, setSelectedFile] = useState<any>(null)
-  const [showPreview, setShowPreview] = useState(false)
-  const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
-  const [isAnalyzingWithLia, setIsAnalyzingWithLia] = useState(false)
-  const [lastAnalysisDate, setLastAnalysisDate] = useState<Date | null>(candidate?.lastLiaAnalysis ? new Date(candidate.lastLiaAnalysis) : new Date(Date.now() - 2 * 24 * 60 * 60 * 1000))
-  
-  const [liaChatMessages, setLiaChatMessages] = useState<LiaChatMessage[]>([])
-  const [isLiaChatLoading, setIsLiaChatLoading] = useState(false)
-  const [liaConversationId, setLiaConversationId] = useState<string | null>(null)
-  
-  const [opinionsData, setOpinionsData] = useState<any>(null)
-  const [isLoadingOpinions, setIsLoadingOpinions] = useState(false)
-  const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
-  const [opinionsHistory, setOpinionsHistory] = useState<any[]>([])
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-  
-  const [savedAnalyses, setSavedAnalyses] = useState<any>(null)
-  const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
-  const [opinionsSubTab, setOpinionsSubTab] = useState<'pareceres' | 'analises'>('pareceres')
-  const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
-  
-  const [showUpdateOpinionAlert, setShowUpdateOpinionAlert] = useState(false)
-  const [showInsufficientDataModal, setShowInsufficientDataModal] = useState(false)
-  const [dataRequirements, setDataRequirements] = useState<DataRequirement[]>([])
-  const [lastOpinionDate, setLastOpinionDate] = useState<Date | null>(null)
-  const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
-  
-  const [screeningModalOpen, setScreeningModalOpen] = useState(false)
-  const [screeningModalData, setScreeningModalData] = useState<{
-    type: 'audio' | 'video'
-    title: string
-    duration: string
-    mediaUrl?: string
-    questions: ScreeningQuestion[]
-    transcription?: TranscriptionSegment[]
-    highlights?: string[]
-  } | null>(null)
-  
-  const [discModalOpen, setDiscModalOpen] = useState(false)
-  const [discModalData, setDiscModalData] = useState<any>(null)
-  const [bigFiveModalOpen, setBigFiveModalOpen] = useState(false)
-  const [bigFiveModalCandidate, setBigFiveModalCandidate] = useState<any>(null)
-  
-  const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
-  
-  const { toast } = useToast()
-  
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-  
-  
-  const fetchOpinionsSummary = useCallback(async () => {
-    if (!candidate?.id) return
-    setIsLoadingOpinions(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidate.id}/summary?company_id=demo_company`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsData(data)
-      }
-    } catch (error) {
-    } finally {
-      setIsLoadingOpinions(false)
-    }
-  }, [candidate?.id])
-  
-  const fetchSavedAnalyses = useCallback(async () => {
-    if (!candidate?.id) return
-    setIsLoadingAnalyses(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=demo_company`)
-      if (response.ok) {
-        const data = await response.json()
-        setSavedAnalyses(data)
-      }
-    } catch (error) {
-    } finally {
-      setIsLoadingAnalyses(false)
-    }
-  }, [candidate?.id])
-  
-  const saveAnalysisToBackend = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    try {
-      const response = await fetch('/api/backend-proxy/lia/profile-analysis/save?company_id=demo_company', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidate_id: analysis.candidate_id,
-          analysis_type: analysis.type,
-          content: analysis.content,
-          candidate_name: candidate?.name || candidate?.nome,
-        })
-      })
-      
-      if (response.ok) {
-        await fetchSavedAnalyses()
-        return true
-      }
-      return false
-    } catch (error) {
-      return false
-    }
-  }
-  
-  const handleAnalysisTransport = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    const success = await saveAnalysisToBackend(analysis)
-    if (success) {
-      toast({
-        title: "Análise salva",
-        description: "A análise foi adicionada à aba Pareceres e Análises"
-      })
-    } else {
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar a análise. Tente novamente.",
-        variant: "destructive"
-      })
-    }
-  }
-  
-  const fetchOpinionsHistory = useCallback(async () => {
-    if (!candidate?.id) return
-    
-    if (lastFetchedHistoryCandidateRef.current === candidate.id && opinionsHistory.length > 0) {
-      return
-    }
-    
-    lastFetchedHistoryCandidateRef.current = candidate.id
-    setIsLoadingHistory(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidate.id}/history?company_id=demo_company`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsHistory(data)
-      }
-    } catch (error) {
-    } finally {
-      setIsLoadingHistory(false)
-    }
-  }, [candidate?.id, opinionsHistory.length])
-  
-  
-  useEffect(() => {
-    if (candidate?.id) {
-      fetchOpinionsSummary()
-      fetchSavedAnalyses()
-    }
-  }, [candidate?.id, fetchOpinionsSummary, fetchSavedAnalyses])
-  
-  useEffect(() => {
-    if (activeTab === 'opinions' && candidate?.id) {
-      fetchOpinionsHistory()
-    }
-  }, [activeTab, candidate?.id, fetchOpinionsHistory])
-  
-  useEffect(() => {
-    if (candidate?.id && lastFetchedHistoryCandidateRef.current !== candidate.id) {
-      setOpinionsHistory([])
-    }
-  }, [candidate?.id])
-  
-  const sendLiaMessage = async (message: string) => {
-    if (!message.trim()) return
-    
-    setLiaChatMessages(prev => [...prev, {
-      role: 'user',
-      content: message,
-      timestamp: new Date()
-    }])
-    
-    setLiaConversation("")
-    setIsLiaChatLoading(true)
-    
-    try {
-      const response = await fetch('/api/backend-proxy/lia/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          context: {
-            candidate_id: candidate?.id,
-            candidate_name: candidate?.name,
-            conversation_id: liaConversationId
-          }
-        })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Erro: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setLiaChatMessages(prev => [...prev, {
-          role: 'lia',
-          content: data.response,
-          timestamp: new Date()
-        }])
-        
-        if (data.conversation_id) {
-          setLiaConversationId(data.conversation_id)
-        }
-      } else {
-        throw new Error(data.error || 'Erro desconhecido')
-      }
-    } catch (error) {
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsLiaChatLoading(false)
-    }
-  }
-  
-    
-    
-    
-    
-    
-    
-    
-  const generateNewOpinion = async () => {
-    setShowUpdateOpinionAlert(false)
-    setIsAnalyzingWithLia(true)
-    
-    try {
-      const candidateInput = {
-        id: candidate.id,
-        name: candidate.name || 'Candidato',
-        position: candidate.currentPosition || candidate.position || candidate.headline || '',
-        location: candidate.location || candidate.city || '',
-        company: candidate.currentCompany || candidate.company || '',
-        cv_text: candidate.cv_text || candidate.cvText || candidate.resumeText || '',
-        skills: candidate.skills || [],
-        experience_years: candidate.experienceYears || candidate.experience_years || null,
-        education: Array.isArray(candidate.education) && candidate.education.length > 0 
-          ? candidate.education[0]?.degree || candidate.education[0]?.institution || ''
-          : '',
-        seniority_level: candidate.seniorityLevel || candidate.seniority_level || ''
-      }
-      
-      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=demo_company`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidates: [candidateInput],
-          analysis_type: 'general'
-        })
-      })
-      
-      if (!analysisResponse.ok) {
-        throw new Error('Falha na análise')
-      }
-      
-      const analysisData = await analysisResponse.json()
-      const result = analysisData.results?.[0]
-      
-      if (!result) {
-        throw new Error('Resultado da análise vazio')
-      }
-      
-      let recommendation = 'pending_review'
-      if (result.lia_score >= 70) {
-        recommendation = 'approved'
-      } else if (result.lia_score < 50) {
-        recommendation = 'not_approved'
-      }
-      
-      const opinionPayload = {
-        candidate_id: candidate.id,
-        opinion_type: 'general',
-        source: 'cv_analysis',
-        score: result.lia_score || 0,
-        archetype: result.archetype || 'Não Identificado',
-        recommendation: recommendation,
-        summary: result.explanation || 'Análise realizada pela LIA',
-        score_breakdown: result.score_breakdown ? {
-          skills_match: result.score_breakdown.match_tecnico || null,
-          personality_fit: result.score_breakdown.fit_personalidade || null,
-          experience_match: result.score_breakdown.relevancia_experiencia || null,
-          cultural_fit: result.score_breakdown.alinhamento_cultural || null
-        } : {},
-        strengths: result.strengths || [],
-        concerns: [],
-        gaps: result.gaps || [],
-        matched_skills: [],
-        missing_skills: [],
-        next_steps: result.potential_roles ? `Cargos potenciais: ${result.potential_roles.join(', ')}` : 'Validar perfil em entrevista'
-      }
-      
-      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=demo_company&user_id=system`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(opinionPayload)
-      })
-      
-      if (!opinionResponse.ok) {
-        const errorData = await opinionResponse.json().catch(() => ({}))
-        throw new Error('Falha ao salvar parecer')
-      }
-      
-      setLastAnalysisDate(new Date())
-      
-      await fetchOpinionsSummary()
-      
-      toast({
-        title: "Parecer gerado",
-        description: "A LIA gerou um novo parecer para o candidato."
-      })
-    } catch (error) {
-      toast({
-        title: "Erro ao gerar parecer",
-        description: "Não foi possível gerar o parecer. Tente novamente.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsAnalyzingWithLia(false)
-    }
-  }
-  
-  const handleAnalyzeWithLia = async () => {
-    if (!candidate?.id) return
-    
-    const validation = validateCandidateDataForOpinion(candidate)
-    
-    if (!validation.isValid) {
-      setDataRequirements(validation.requirements)
-      setShowInsufficientDataModal(true)
-      return
-    }
-    
-    if (validation.canProceedWithWarning) {
-      setDataRequirements(validation.requirements)
-      setShowInsufficientDataModal(true)
-      return
-    }
-    
-    try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidate.id}/summary?company_id=demo_company`)
-      if (summaryResponse.ok) {
-        const data = await summaryResponse.json()
-        if (data.current_general_opinion?.created_at) {
-          const lastDate = new Date(data.current_general_opinion.created_at)
-          const daysSince = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
-          if (daysSince < 30) {
-            setLastOpinionDate(lastDate)
-            setShowUpdateOpinionAlert(true)
-            return
-          }
-        }
-      }
-    } catch (error) {
-    }
-    
-    await generateNewOpinion()
-  }
-  
-  const handleProceedWithLimitedData = async () => {
-    setShowInsufficientDataModal(false)
-    
-    try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidate.id}/summary?company_id=demo_company`)
-      if (summaryResponse.ok) {
-        const data = await summaryResponse.json()
-        if (data.current_general_opinion?.created_at) {
-          const lastDate = new Date(data.current_general_opinion.created_at)
-          const daysSince = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
-          if (daysSince < 30) {
-            setLastOpinionDate(lastDate)
-            setShowUpdateOpinionAlert(true)
-            return
-          }
-        }
-      }
-    } catch (error) {
-    }
-    
-    await generateNewOpinion()
-  }
-  
-  const formatAnalysisDate = (date: Date | null) => {
-    if (!date) return 'Nunca analisado'
-    
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / (1000 * 60))
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
-    if (diffMins < 1) return 'Agora mesmo'
-    if (diffMins < 60) return `Há ${diffMins} min`
-    if (diffHours < 24) return `Há ${diffHours}h`
-    if (diffDays === 1) return 'Ontem'
-    if (diffDays < 7) return `Há ${diffDays} dias`
-    
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  }
-
-  const generateShortId = (name: string, id: string | number | null | undefined): string => {
-    const letters = (name || 'XX').replace(/[^a-zA-Z]/g, '').slice(0, 2).toUpperCase() || 'XX'
-    const idStr = String(id || '')
-    const digits = idStr.replace(/[^0-9]/g, '')
-    const lastFourDigits = digits.length >= 4 
-      ? digits.slice(-4) 
-      : digits.padStart(4, '0').slice(-4) || String(Math.floor(1000 + Math.random() * 9000))
-    return `${letters}${lastFourDigits}`
-  }
+  const core = useCandidatePreviewCore(candidate)
+  const {
+    activeTab, setActiveTab,
+    showLiaModal, setShowLiaModal,
+    liaConversation, setLiaConversation,
+    selectedFile, setSelectedFile,
+    showPreview, setShowPreview,
+    previewType, setPreviewType,
+    isAnalyzingWithLia,
+    lastAnalysisDate,
+    liaChatMessages,
+    isLiaChatLoading,
+    opinionsData,
+    isLoadingOpinions,
+    expandedOpinionId, setExpandedOpinionId,
+    opinionsHistory,
+    isLoadingHistory,
+    savedAnalyses, setSavedAnalyses,
+    isLoadingAnalyses,
+    opinionsSubTab, setOpinionsSubTab,
+    expandedAnalysisId, setExpandedAnalysisId,
+    showUpdateOpinionAlert, setShowUpdateOpinionAlert,
+    showInsufficientDataModal, setShowInsufficientDataModal,
+    dataRequirements,
+    lastOpinionDate,
+    showLiaAnalysisModal, setShowLiaAnalysisModal,
+    screeningModalOpen, setScreeningModalOpen,
+    screeningModalData, setScreeningModalData,
+    discModalOpen, setDiscModalOpen,
+    discModalData, setDiscModalData,
+    bigFiveModalOpen, setBigFiveModalOpen,
+    bigFiveModalCandidate, setBigFiveModalCandidate,
+    copiedItemId,
+    analysisToDelete, setAnalysisToDelete,
+    isDeletingAnalysis,
+    sendLiaMessage,
+    generateNewOpinion,
+    handleAnalyzeWithLia,
+    handleProceedWithLimitedData,
+    formatAnalysisDate,
+    generateShortId,
+    cleanTextForCopy,
+    handleCopyOpinion,
+    handleCopyAnalysis,
+    handleDeleteAnalysis,
+    handleAnalysisTransport,
+    formatCurrency,
+    getLanguagesData,
+    hasSalaryData,
+    hasAddressData,
+    getAddressString,
+    hasAdditionalDetails,
+  } = core
 
   if (!isOpen || !candidate) return null
 
-  // Normalizar campos que podem ser arrays para evitar erros .slice().map()
   candidate = {
     ...candidate,
     education: Array.isArray(candidate.education) ? candidate.education : (candidate.education ? [candidate.education] : []),
@@ -529,107 +164,7 @@ export function CandidatePreview({
     projects: Array.isArray(candidate.projects) ? candidate.projects : (candidate.projects ? [candidate.projects] : []),
     awards: Array.isArray(candidate.awards) ? candidate.awards : (candidate.awards ? [candidate.awards] : []),
   }
-  
-  const formatCurrency = (value: number | string | null | undefined, currency: string = 'BRL'): string => {
-    if (value === null || value === undefined || value === '') return 'Não informado'
-    const numValue = typeof value === 'string' ? parseFloat(value) : value
-    if (isNaN(numValue)) return 'Não informado'
-    return numValue.toLocaleString('pt-BR', { style: 'currency', currency })
-  }
-  
-  const getLanguagesData = (): Array<{language: string, proficiency: string}> => {
-    const langs = candidate.languages
-    if (!langs) return []
-    if (Array.isArray(langs)) {
-      return langs.map((l: any) => {
-        if (typeof l === 'string') return { language: l, proficiency: '' }
-        return { language: l.language || l.name || '', proficiency: l.proficiency || l.level || '' }
-      }).filter((l: any) => l.language)
-    }
-    if (typeof langs === 'object') {
-      return Object.entries(langs).map(([language, proficiency]) => ({
-        language,
-        proficiency: String(proficiency)
-      }))
-    }
-    return []
-  }
-  
-  const hasSalaryData = (): boolean => {
-    return !!(
-      candidate.current_salary ||
-      candidate.currentSalary ||
-      candidate.desired_salary_min ||
-      candidate.desiredSalaryMin ||
-      candidate.desired_salary_max ||
-      candidate.desiredSalaryMax ||
-      candidate.salary_expectation_clt ||
-      candidate.salaryExpectationClt ||
-      candidate.salary_expectation_pj ||
-      candidate.salaryExpectationPj
-    )
-  }
-  
-  const hasAddressData = (): boolean => {
-    return !!(
-      candidate.address_street ||
-      candidate.addressStreet ||
-      candidate.address_district ||
-      candidate.addressDistrict ||
-      candidate.location_city ||
-      candidate.locationCity ||
-      candidate.location_state ||
-      candidate.locationState ||
-      candidate.address_zip ||
-      candidate.addressZip ||
-      candidate.location
-    )
-  }
-  
-  const getAddressString = (): string => {
-    const parts: string[] = []
-    const street = candidate.address_street || candidate.addressStreet
-    const number = candidate.address_number || candidate.addressNumber
-    const complement = candidate.address_complement || candidate.addressComplement
-    const district = candidate.address_district || candidate.addressDistrict
-    const city = candidate.location_city || candidate.locationCity
-    const state = candidate.location_state || candidate.locationState
-    const zip = candidate.address_zip || candidate.addressZip
-    
-    if (street) {
-      let line = street
-      if (number) line += `, ${number}`
-      if (complement) line += ` - ${complement}`
-      parts.push(line)
-    }
-    if (district) parts.push(district)
-    if (city && state) {
-      parts.push(`${city} - ${state}`)
-    } else if (city) {
-      parts.push(city)
-    } else if (state) {
-      parts.push(state)
-    }
-    if (zip) parts.push(`CEP: ${zip}`)
-    
-    if (parts.length === 0 && candidate.location) {
-      return candidate.location
-    }
-    return parts.join('\n')
-  }
-  
-  const hasAdditionalDetails = (): boolean => {
-    return !!(
-      candidate.work_model_preference ||
-      candidate.workModelPreference ||
-      candidate.contract_type_preference ||
-      candidate.contractTypePreference ||
-      candidate.willing_to_relocate !== undefined ||
-      candidate.willingToRelocate !== undefined ||
-      candidate.mobility
-    )
-  }
-  
+
   const languagesData = getLanguagesData()
 
   const tabs = [
@@ -650,407 +185,6 @@ export function CandidatePreview({
 
   const liaScore = candidate.liaAnalysis?.score || candidate.lia_analysis?.score
   const fitScore = candidate.liaAnalysis?.fitScore || candidate.lia_analysis?.fit_score
-
-  // Function to clean text for copy/paste (remove # and * symbols)
-  const cleanTextForCopy = (text: string): string => {
-    return text
-      .replace(/^#+\s*/gm, '')  // Remove markdown headers
-      .replace(/^\*+\s*/gm, '• ') // Convert asterisks to bullets
-      .replace(/\*\*/g, '')     // Remove bold markers
-      .replace(/\*/g, '')       // Remove italic markers
-      .replace(/^-\s+/gm, '• ') // Convert dashes to bullets
-      .trim()
-  }
-
-  // State for copy feedback
-  const [copiedItemId, setCopiedItemId] = useState<string | null>(null)
-  
-  // State for delete analysis confirmation
-  const [analysisToDelete, setAnalysisToDelete] = useState<any | null>(null)
-  const [isDeletingAnalysis, setIsDeletingAnalysis] = useState(false)
-
-  // Function to copy opinion content with header
-  const handleCopyOpinion = async (opinion: any, type: 'general' | 'wsi') => {
-    const isWsiOpinion = type === 'wsi' || opinion.opinion_type === 'wsi'
-    const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
-    
-    let textToCopy = `PARECER LIA - ${candidate.name || candidate.nome}\n`
-    textToCopy += `Tipo: ${isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}\n`
-    if (opinion.job_vacancy_title) {
-      textToCopy += `Vaga: ${opinion.job_vacancy_title}\n`
-    }
-    if (displayScore !== null && displayScore !== undefined) {
-      textToCopy += `Score: ${isWsiOpinion ? `${displayScore.toFixed(1)}/5` : `${Math.round(displayScore)}/100`}\n`
-    }
-    textToCopy += `\n`
-    
-    if (opinion.summary) {
-      textToCopy += `${cleanTextForCopy(opinion.summary)}\n\n`
-    }
-    if (opinion.strengths?.length > 0) {
-      textToCopy += `PONTOS FORTES:\n${opinion.strengths.map((s: string) => `• ${cleanTextForCopy(s)}`).join('\n')}\n\n`
-    }
-    if (opinion.concerns?.length > 0) {
-      textToCopy += `PONTOS DE ATENÇÃO:\n${opinion.concerns.map((c: string) => `• ${cleanTextForCopy(c)}`).join('\n')}\n\n`
-    }
-    if (opinion.gaps?.length > 0) {
-      textToCopy += `GAPS IDENTIFICADOS:\n${opinion.gaps.map((g: string) => `• ${cleanTextForCopy(g)}`).join('\n')}\n\n`
-    }
-    if (opinion.next_steps) {
-      textToCopy += `PRÓXIMOS PASSOS:\n${cleanTextForCopy(opinion.next_steps)}\n`
-    }
-    
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopiedItemId(`opinion-${opinion.id}`)
-      setTimeout(() => setCopiedItemId(null), 2000)
-    } catch (error) {
-    }
-  }
-
-  // Function to copy analysis content with header
-  const handleCopyAnalysis = async (analysis: any) => {
-    const analysisLabels: Record<string, string> = {
-      'bullet_points': 'Pontos-chave',
-      'short_paragraph': 'Resumo',
-      'detailed_bullets': 'Análise Detalhada'
-    }
-    
-    let textToCopy = `ANÁLISE LIA - ${candidate.name || candidate.nome}\n`
-    textToCopy += `Tipo: ${analysisLabels[analysis.analysis_type] || analysis.analysis_type}\n`
-    textToCopy += `Data: ${analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR') : ''}\n`
-    textToCopy += `\n`
-    textToCopy += cleanTextForCopy(analysis.content)
-    
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopiedItemId(`analysis-${analysis.id}`)
-      setTimeout(() => setCopiedItemId(null), 2000)
-    } catch (error) {
-    }
-  }
-
-  // Function to delete analysis
-  const handleDeleteAnalysis = async (analysis: any) => {
-    setIsDeletingAnalysis(true)
-    try {
-      const candidateId = candidate.id || candidate.candidate_id
-      const response = await fetch(`/api/lia/profile-analysis/${candidateId}/${analysis.analysis_type}?company_id=demo_company`, {
-        method: 'DELETE',
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete analysis')
-      }
-      
-      // Remove from local state
-      setSavedAnalyses((prev: any) => prev?.filter((a: any) => a.id !== analysis.id) || null)
-      setAnalysisToDelete(null)
-      setExpandedAnalysisId(null)
-      
-      toast({
-        title: "Análise removida",
-        description: "A análise foi removida com sucesso.",
-      })
-    } catch (error) {
-      toast({
-        title: "Erro ao remover",
-        description: "Não foi possível remover a análise.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsDeletingAnalysis(false)
-    }
-  }
-
-  const OpinionCard = ({ opinion, isExpanded, onToggle, type }: { 
-    opinion: any, 
-    isExpanded: boolean, 
-    onToggle: () => void,
-    type: 'general' | 'wsi'
-  }) => {
-    const getScoreColor = (score: number | null, isWsi: boolean = false) => {
-      if (score === null || score === undefined) return 'text-gray-600'
-      if (isWsi) {
-        if (score >= 4.0) return 'text-status-success'
-        if (score >= 3.0) return 'text-status-warning'
-        return 'text-status-error'
-      } else {
-        if (score >= 80) return 'text-status-success'
-        if (score >= 60) return 'text-status-warning'
-        return 'text-status-error'
-      }
-    }
-    
-    const getRecommendationBadge = (rec: string | null) => {
-      if (!rec) return null
-      if (rec === 'approved') {
-        return (
-          <Badge className={`${badgeStyles.success} flex items-center gap-0.5`}>
-            <CheckCircle className="w-2.5 h-2.5" />
-            APROVADO
-          </Badge>
-        )
-      }
-      if (rec === 'pending_review') {
-        return (
-          <Badge className={`${badgeStyles.warning} flex items-center gap-0.5`}>
-            <Clock className="w-2.5 h-2.5" />
-            PENDENTE
-          </Badge>
-        )
-      }
-      if (rec === 'not_approved') {
-        return (
-          <Badge className={`${badgeStyles.error} flex items-center gap-0.5`}>
-            <X className="w-2.5 h-2.5" />
-            NÃO APROVADO
-          </Badge>
-        )
-      }
-      return null
-    }
-    
-    const isWsiOpinion = type === 'wsi' || opinion.opinion_type === 'wsi'
-    const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
-    
-    const formatOpinionDate = (dateStr: string | null) => {
-      if (!dateStr) return ''
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-    }
-    
-    return (
-      <div className={`${cardStyles.default} p-3 overflow-hidden dark:bg-gray-950 dark:border-gray-700`}>
-        <div
-          onClick={onToggle}
-          className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-gray-800 transition-colors cursor-pointer"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onToggle()}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isWsiOpinion ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-gray-800'
-            }`}>
-              {isWsiOpinion ? (
-                <Target className="w-4 h-4 text-wedo-purple" />
-              ) : (
-                <Brain className="w-4 h-4 text-wedo-cyan" />
-              )}
-            </div>
-            <div className="text-left">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={textStyles.label}>
-                  {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
-                </span>
-                {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
- <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
-                    <Briefcase className="w-2.5 h-2.5" />
-                    #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
-                  </Badge>
-                ) : opinion.job_vacancy_title ? (
- <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
-                    <Briefcase className="w-2.5 h-2.5" />
-                    {opinion.job_vacancy_title}
-                  </Badge>
-                ) : !opinion.job_vacancy_id ? (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
-                    Sem vaga vinculada
-                  </Badge>
-                ) : null}
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                {displayScore !== null && displayScore !== undefined && (
-                  <span className={`text-micro font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
-                    {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
-                  </span>
-                )}
-                {opinion.archetype && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <span className={textStyles.caption}>{opinion.archetype}</span>
-                  </>
-                )}
-                {getRecommendationBadge(opinion.recommendation)}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {opinion.created_at && (
-              <span className="text-micro text-gray-400 dark:text-gray-500">{formatOpinionDate(opinion.created_at)}</span>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleCopyOpinion(opinion, type)
-                  }}
-                  className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                >
-                  {copiedItemId === `opinion-${opinion.id}` ? (
-                    <Check className="w-3.5 h-3.5 text-status-success" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-gray-400" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
-            </Tooltip>
-            {isExpanded ? (
-              <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            )}
-          </div>
-        </div>
-        
-        {isExpanded && (
-          <div className="px-3 pb-3 pt-0 border-t border-gray-100 dark:border-gray-700 space-y-3">
-            {opinion.summary && (
-              <div className="pt-3">
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
-                  {opinion.summary}
-                </p>
-              </div>
-            )}
-            
-            {opinion.score_breakdown && Object.keys(opinion.score_breakdown).length > 0 && (
-              <div>
-                <h5 className={`${textStyles.label} mb-1.5 flex items-center gap-1`}>
-                  <BarChart3 className="w-3 h-3" />
-                  Score Breakdown
-                </h5>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {Object.entries(opinion.score_breakdown).map(([key, value]: [string, any]) => (
-                    value !== null && value !== undefined && (
-                      <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-gray-800 rounded-full px-2 py-1">
-                        <span className="text-gray-600 dark:text-gray-400 capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {opinion.strengths && opinion.strengths.length > 0 && (
-              <div>
-                <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
-                  <CheckCircle className="w-3 h-3" />
-                  Pontos Fortes
-                </h5>
-                <ul className="space-y-0.5">
-                  {opinion.strengths.map((s: string, i: number) => (
-                    <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-status-success mt-0.5">•</span>
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {opinion.concerns && opinion.concerns.length > 0 && (
-              <div>
-                <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
-                  <AlertCircle className="w-3 h-3" />
-                  Pontos de Atenção
-                </h5>
-                <ul className="space-y-0.5">
-                  {opinion.concerns.map((c: string, i: number) => (
-                    <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-status-warning mt-0.5">•</span>
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {opinion.gaps && opinion.gaps.length > 0 && (
-              <div>
-                <h5 className={`${textStyles.label} text-status-error mb-1 flex items-center gap-1`}>
-                  <AlertCircle className="w-3 h-3" />
-                  Gaps Identificados
-                </h5>
-                <ul className="space-y-0.5">
-                  {opinion.gaps.map((g: string, i: number) => (
-                    <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-status-error mt-0.5">•</span>
-                      {g}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {(opinion.matched_skills?.length > 0 || opinion.missing_skills?.length > 0) && (
-              <div className="flex gap-3">
-                {opinion.matched_skills?.length > 0 && (
-                  <div className="flex-1">
-                    <h5 className={`${textStyles.label} text-status-success mb-1`}>Skills Match</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {opinion.matched_skills.map((skill: string, i: number) => (
-                        <Badge key={i} className={badgeStyles.success}>
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {opinion.missing_skills?.length > 0 && (
-                  <div className="flex-1">
-                    <h5 className={`${textStyles.label} text-status-error mb-1`}>Skills Faltantes</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {opinion.missing_skills.map((skill: string, i: number) => (
-                        <Badge key={i} className={badgeStyles.error}>
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {opinion.next_steps && (
-              <div>
-                <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
-                  <TrendingUp className="w-3 h-3" />
-                  Próximos Passos
-                </h5>
-                <p className={`${textStyles.caption} text-gray-600`}>{opinion.next_steps}</p>
-              </div>
-            )}
-            
-            {opinion.recruiter_notes && (
-              <div className="bg-status-warning/10 rounded-md p-2 border border-status-warning/30">
-                <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
-                  <Edit className="w-3 h-3" />
-                  Notas do Recrutador
-                </h5>
-                <p className={`${textStyles.caption} text-status-warning`}>{opinion.recruiter_notes}</p>
-              </div>
-            )}
-            
-            {opinion.recruiter_override && (
-              <div className="bg-wedo-purple/10 rounded-md p-2 border border-wedo-purple/30">
-                <div className="flex items-center gap-2 mb-1">
-                  <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
-                  {getRecommendationBadge(opinion.recruiter_override)}
-                </div>
-                {opinion.recruiter_override_reason && (
-                  <p className={`${textStyles.caption} text-wedo-purple`}>{opinion.recruiter_override_reason}</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300 w-full">
@@ -2430,6 +1564,8 @@ export function CandidatePreview({
                             expandedOpinionId === opinion.id ? null : opinion.id
                           )}
                           type={opinion.opinion_type === 'wsi' ? 'wsi' : 'general'}
+                          copiedItemId={copiedItemId}
+                          onCopyOpinion={handleCopyOpinion}
                         />
                       </div>
                     ))}

@@ -145,13 +145,13 @@ export function JobSummaryCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
+              <h4 className="font-semibold text-[var(--lia-text-primary)]">
                 {data.title}
               </h4>
               {getStatusBadge(data.status)}
             </div>
             {data.department && (
-              <p className="text-sm mt-0.5" style={{color: 'var(--lia-text-secondary)'}}>
+              <p className="text-sm mt-0.5 text-[var(--lia-text-secondary)]">
                 {data.department}
               </p>
             )}
@@ -162,16 +162,16 @@ export function JobSummaryCard({
               style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
             >
               <div className="text-lg font-bold text-wedo-purple">{data.candidates_count}</div>
-              <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>candidatos</div>
+              <div className="text-xs text-[var(--lia-text-tertiary)]">candidatos</div>
             </div>
           )}
         </div>
 
         {!compact && (
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm" style={{color: 'var(--lia-text-secondary)'}}>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-[var(--lia-text-secondary)]">
             {data.location && (
               <div className="flex items-center gap-2">
-                <MapPin className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
+                <MapPin className="h-3.5 w-3.5 text-[var(--lia-text-tertiary)]" />
                 <span>{data.location}</span>
               </div>
             )}
@@ -183,13 +183,13 @@ export function JobSummaryCard({
             )}
             {data.seniority && (
               <div className="flex items-center gap-2">
-                <Briefcase className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
+                <Briefcase className="h-3.5 w-3.5 text-[var(--lia-text-tertiary)]" />
                 <span>{data.seniority}</span>
               </div>
             )}
             {data.headcount && (
               <div className="flex items-center gap-2">
-                <Users className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
+                <Users className="h-3.5 w-3.5 text-[var(--lia-text-tertiary)]" />
                 <span>{data.headcount} vaga{data.headcount > 1 ? "s" : ""}</span>
               </div>
             )}
@@ -203,7 +203,7 @@ export function JobSummaryCard({
             )}
             {data.deadline && (
               <div className="flex items-center gap-2 col-span-2">
-                <Calendar className="h-3.5 w-3.5" style={{color: 'var(--lia-text-tertiary)'}} />
+                <Calendar className="h-3.5 w-3.5 text-[var(--lia-text-tertiary)]" />
                 <span>Prazo: {data.deadline}</span>
               </div>
             )}
@@ -212,7 +212,7 @@ export function JobSummaryCard({
 
         {data.required_skills && data.required_skills.length > 0 && (
           <div className="mt-3">
-            <div className="text-xs mb-1.5" style={{color: 'var(--lia-text-tertiary)'}}>
+            <div className="text-xs mb-1.5 text-[var(--lia-text-tertiary)]">
               Requisitos principais:
             </div>
             <div className="flex flex-wrap gap-1.5">

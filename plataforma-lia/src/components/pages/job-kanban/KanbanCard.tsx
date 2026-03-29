@@ -16,7 +16,7 @@ interface KanbanCardProps {
   isDragDisabled?: boolean
 }
 
-export function KanbanCard({
+export const KanbanCard = React.memo(function KanbanCard({
   candidate,
   index,
   onClick,
@@ -177,4 +177,4 @@ export function KanbanCard({
       </CardContent>
     </Card>
   )
-}
+})

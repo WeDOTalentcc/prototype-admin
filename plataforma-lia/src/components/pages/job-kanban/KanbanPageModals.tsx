@@ -14,7 +14,7 @@ import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal
 import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
 import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
 import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
-import { BigFiveModal } from "@/components/big-five-modal"
+const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false })
 import { GeneralScoreModal } from "@/components/modals/general-score-modal"
 import { TechnicalTestModal } from "@/components/modals/technical-test-modal"
 import { EnglishTestModal } from "@/components/modals/english-test-modal"

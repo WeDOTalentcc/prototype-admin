@@ -212,10 +212,10 @@ export function WSIQuestionsPanel({
               <Brain className="h-5 w-5 text-wedo-cyan" />
             </div>
             <div>
-              <CardTitle className="text-base font-sans dark:text-gray-100" style={{color: 'var(--lia-text-primary)'}}>
+              <CardTitle className="text-base font-sans dark:text-gray-100 text-[var(--lia-text-primary)]">
                 Gerar Perguntas com IA
               </CardTitle>
-              <p className="text-xs mt-1 dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <p className="text-xs mt-1 dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 A LIA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
               </p>
             </div>
@@ -224,7 +224,7 @@ export function WSIQuestionsPanel({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Quantidade de perguntas
               </Label>
               <Select
@@ -248,7 +248,7 @@ export function WSIQuestionsPanel({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Nível de proficiência
               </Label>
               <Select
@@ -296,7 +296,7 @@ export function WSIQuestionsPanel({
             style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
             <Brain className="h-4 w-4 shrink-0 mt-0.5 text-wedo-cyan" />
-            <p className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+            <p className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
               As perguntas são geradas considerando: requisitos técnicos da vaga, 
               competências comportamentais definidas, nível de senioridade e 
               metodologia WSI (Bloom + Dreyfus + Big Five).
@@ -305,7 +305,7 @@ export function WSIQuestionsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
+      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700 bg-[var(--lia-bg-secondary)]">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <CardTitle 
@@ -332,7 +332,7 @@ export function WSIQuestionsPanel({
               <Brain className="h-8 w-8 mx-auto mb-3 text-wedo-cyan opacity-50" />
               Nenhuma pergunta adicionada.
               <br />
-              <span className="font-medium dark:text-gray-300" style={{color: 'var(--lia-text-secondary)'}}>
+              <span className="font-medium dark:text-gray-300 text-[var(--lia-text-secondary)]">
                 Use a geração com IA acima para começar!
               </span>
             </div>
@@ -512,7 +512,7 @@ export function WSIQuestionsPanel({
             />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+                <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                   Nível Bloom
                 </Label>
                 <Select
@@ -536,7 +536,7 @@ export function WSIQuestionsPanel({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+                <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                   Nível Dreyfus
                 </Label>
                 <Select
@@ -562,7 +562,7 @@ export function WSIQuestionsPanel({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+                <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                   Competência
                 </Label>
                 <Input
@@ -575,7 +575,7 @@ export function WSIQuestionsPanel({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+                <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                   Tempo (min)
                 </Label>
                 <Input
@@ -659,9 +659,9 @@ function QuestionCard({
               #{index + 1}
             </span>
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}} />
+              <ChevronDown className="h-4 w-4 dark:text-gray-400 text-[var(--lia-text-tertiary)]" />
             ) : (
-              <ChevronRight className="h-4 w-4 dark:text-gray-400" style={{color: 'var(--lia-text-tertiary)'}} />
+              <ChevronRight className="h-4 w-4 dark:text-gray-400 text-[var(--lia-text-tertiary)]" />
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -727,7 +727,7 @@ function QuestionCard({
             backgroundColor: 'var(--lia-bg-tertiary)'}}
         >
           <div className="space-y-2">
-            <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+            <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
               Pergunta
             </Label>
             <Textarea
@@ -741,7 +741,7 @@ function QuestionCard({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Nível Bloom
               </Label>
               <Select
@@ -765,7 +765,7 @@ function QuestionCard({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Nível Dreyfus
               </Label>
               <Select
@@ -791,7 +791,7 @@ function QuestionCard({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Competência
               </Label>
               <Input
@@ -803,7 +803,7 @@ function QuestionCard({
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-gray-400" style={{color: 'var(--lia-text-secondary)'}}>
+              <Label className="text-xs dark:text-gray-400 text-[var(--lia-text-secondary)]">
                 Tempo (min)
               </Label>
               <Input

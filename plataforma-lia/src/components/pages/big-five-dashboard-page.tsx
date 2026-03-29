@@ -359,7 +359,7 @@ export function BigFiveDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-950 dark:text-gray-50 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8" style={{color: 'var(--gray-400)'}} />
+            <BarChart3 className="w-8 h-8 text-[var(--gray-400)]" />
             Dashboard Analytics Big Five
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -418,7 +418,7 @@ export function BigFiveDashboardPage() {
                   +15% vs anterior
                 </p>
               </div>
-              <UserCheck className="w-8 h-8" style={{color: 'var(--gray-400)'}} />
+              <UserCheck className="w-8 h-8 text-[var(--gray-400)]" />
             </div>
           </CardContent>
         </Card>
@@ -434,7 +434,7 @@ export function BigFiveDashboardPage() {
                   +0.8 vs tradicional
                 </p>
               </div>
-              <Star className="w-8 h-8" style={{color: 'var(--wedo-green-pastel)'}} />
+              <Star className="w-8 h-8 text-[var(--wedo-green-pastel)]" />
             </div>
           </CardContent>
         </Card>
@@ -450,7 +450,7 @@ export function BigFiveDashboardPage() {
                   +{kpis.accuracyGain}% precisão
                 </p>
               </div>
-              <Target className="w-8 h-8" style={{color: 'var(--status-warning)'}} />
+              <Target className="w-8 h-8 text-[var(--status-warning)]" />
             </div>
           </CardContent>
         </Card>
@@ -466,7 +466,7 @@ export function BigFiveDashboardPage() {
                   -67% vs tradicional
                 </p>
               </div>
-              <UserX className="w-8 h-8" style={{color: 'var(--gray-300)'}} />
+              <UserX className="w-8 h-8 text-[var(--gray-300)]" />
             </div>
           </CardContent>
         </Card>
@@ -482,7 +482,7 @@ export function BigFiveDashboardPage() {
                   vs métodos tradicionais
                 </p>
               </div>
-              <TrendingUp className="w-8 h-8" style={{color: 'var(--status-error)'}} />
+              <TrendingUp className="w-8 h-8 text-[var(--status-error)]" />
             </div>
           </CardContent>
         </Card>
@@ -510,7 +510,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5" style={{color: 'var(--gray-400)'}} />
+              <PieChart className="w-5 h-5 text-[var(--gray-400)]" />
               Distribuição Big Five - Empresa
             </CardTitle>
           </CardHeader>
@@ -525,7 +525,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" style={{color: 'var(--wedo-green-pastel)'}} />
+              <BarChart3 className="w-5 h-5 text-[var(--wedo-green-pastel)]" />
               Correlação Performance x Big Five
             </CardTitle>
           </CardHeader>
@@ -543,7 +543,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" style={{color: 'var(--status-warning)'}} />
+              <Activity className="w-5 h-5 text-[var(--status-warning)]" />
               Evolução de Resultados (6 meses)
             </CardTitle>
           </CardHeader>
@@ -558,7 +558,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" style={{color: 'var(--gray-300)'}} />
+              <Target className="w-5 h-5 text-[var(--gray-300)]" />
               Precisão: Big Five vs Métodos Tradicionais
             </CardTitle>
           </CardHeader>
@@ -574,7 +574,7 @@ export function BigFiveDashboardPage() {
       <Card className="dark:border-gray-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building className="w-5 h-5" style={{color: 'var(--status-error)'}} />
+            <Building className="w-5 h-5 text-[var(--status-error)]" />
             Perfil Big Five por Departamento
           </CardTitle>
         </CardHeader>
@@ -590,7 +590,7 @@ export function BigFiveDashboardPage() {
         <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 mt-1" style={{color: 'var(--wedo-green-pastel)'}} />
+              <CheckCircle className="w-5 h-5 mt-1 text-[var(--wedo-green-pastel)]" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   💡 Insight Principal
@@ -606,7 +606,7 @@ export function BigFiveDashboardPage() {
         <Card style={{borderColor: 'var(--status-warning)'}} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 mt-1" style={{color: 'var(--wedo-green-pastel)'}} />
+              <TrendingUp className="w-5 h-5 mt-1 text-[var(--wedo-green-pastel)]" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   📈 Tendência Detectada
@@ -622,7 +622,7 @@ export function BigFiveDashboardPage() {
         <Card style={{borderColor: 'var(--status-error)'}} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 mt-1" style={{color: 'var(--status-warning)'}} />
+              <AlertTriangle className="w-5 h-5 mt-1 text-[var(--status-warning)]" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   ⚠️ Recomendação

@@ -157,7 +157,7 @@ export function RubricEvaluationModal({
       case 'meets':
         return <Check className="w-3.5 h-3.5 text-gray-700" />
       case 'partial':
-        return <AlertTriangle className="w-3.5 h-3.5" style={{color: 'var(--status-warning)'}} />
+        return <AlertTriangle className="w-3.5 h-3.5 text-[var(--status-warning)]" />
       case 'missing':
         return <X className="w-3.5 h-3.5 text-wedo-coral" />
       default:
@@ -345,7 +345,7 @@ export function RubricEvaluationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100" style={{backgroundColor: 'var(--gray-50)'}}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-gray-800 dark:border-gray-700 border border-gray-100 bg-[var(--gray-50)]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100">
           <div className="flex items-center gap-3">

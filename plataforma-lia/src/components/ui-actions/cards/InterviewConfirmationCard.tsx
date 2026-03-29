@@ -95,7 +95,7 @@ export function InterviewConfirmationCard({
         style={{backgroundColor: 'var(--lia-text-primary)'}}
       >
         <CheckCircle2 className="h-5 w-5 text-wedo-green" />
-        <span className="font-medium" style={{color: 'var(--lia-text-inverse)'}}>
+        <span className="font-medium text-[var(--lia-text-inverse)]">
           Entrevista Agendada!
         </span>
       </div>
@@ -113,10 +113,10 @@ export function InterviewConfirmationCard({
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
+            <div className="font-semibold text-[var(--lia-text-primary)]">
               {data.candidate_name}
             </div>
-            <div className="text-sm" style={{color: 'var(--lia-text-secondary)'}}>
+            <div className="text-sm text-[var(--lia-text-secondary)]">
               {data.job_title}
             </div>
           </div>
@@ -128,11 +128,11 @@ export function InterviewConfirmationCard({
             style={{backgroundColor: 'var(--lia-bg-primary)',
               borderColor: 'var(--lia-border-subtle)'}}
           >
-            <div className="flex items-center gap-2 mb-1" style={{color: 'var(--lia-text-tertiary)'}}>
+            <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
               <Calendar className="h-4 w-4" />
               <span className="text-xs">Data</span>
             </div>
-            <div className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
+            <div className="font-semibold text-[var(--lia-text-primary)]">
               {data.date}
             </div>
           </div>
@@ -142,14 +142,14 @@ export function InterviewConfirmationCard({
             style={{backgroundColor: 'var(--lia-bg-primary)',
               borderColor: 'var(--lia-border-subtle)'}}
           >
-            <div className="flex items-center gap-2 mb-1" style={{color: 'var(--lia-text-tertiary)'}}>
+            <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
               <Clock className="h-4 w-4 text-gray-700 dark:text-gray-300" />
               <span className="text-xs">Horário</span>
             </div>
-            <div className="font-semibold" style={{color: 'var(--lia-text-primary)'}}>
+            <div className="font-semibold text-[var(--lia-text-primary)]">
               {data.time}
             </div>
-            <div className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>
+            <div className="text-xs text-[var(--lia-text-tertiary)]">
               {data.duration}
             </div>
           </div>
@@ -162,12 +162,12 @@ export function InterviewConfirmationCard({
         >
           <div className="flex items-center gap-2 mb-2">
             <span style={{color: 'var(--lia-text-secondary)'}}>{getTypeIcon(data.type)}</span>
-            <span className="text-sm font-medium" style={{color: 'var(--lia-text-primary)'}}>
+            <span className="text-sm font-medium text-[var(--lia-text-primary)]">
               {getTypeLabel(data.type)}
             </span>
           </div>
           {data.location && (
-            <div className="text-sm" style={{color: 'var(--lia-text-secondary)'}}>
+            <div className="text-sm text-[var(--lia-text-secondary)]">
               {data.location}
             </div>
           )}
@@ -199,7 +199,7 @@ export function InterviewConfirmationCard({
 
         {data.interviewers && data.interviewers.length > 0 && (
           <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm mb-2" style={{color: 'var(--lia-text-tertiary)'}}>
+            <div className="flex items-center gap-2 text-sm mb-2 text-[var(--lia-text-tertiary)]">
               <Users className="h-4 w-4" />
               Entrevistadores
             </div>
@@ -220,7 +220,7 @@ export function InterviewConfirmationCard({
                       {getInitials(interviewer.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm" style={{color: 'var(--lia-text-secondary)'}}>
+                  <span className="text-sm text-[var(--lia-text-secondary)]">
                     {interviewer.name}
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export function InterviewConfirmationCard({
               borderColor: 'var(--lia-border-subtle)'}}
           >
             <div className="text-xs mb-1 text-gray-700 dark:text-gray-300">Notas para o candidato</div>
-            <p className="text-sm" style={{color: 'var(--lia-text-secondary)'}}>{data.notes}</p>
+            <p className="text-sm text-[var(--lia-text-secondary)]">{data.notes}</p>
           </div>
         )}
 
