@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIA Platform — Detailed System Architecture</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #fff; font-size: 11px; }
+.diagram { max-width: 1260px; padding: 16px; margin: 0 auto; }
+.title { text-align: center; color: #7c3aed; font-size: 26px; font-weight: bold; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #64748b; font-size: 11px; margin-bottom: 18px; }
+.layer-label { font-size: 12px; font-weight: bold; margin-bottom: 6px; letter-spacing: 0.5px; }
+.layer { border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+
+.layer-frontend { background: rgba(219,234,254,0.25); border: 2px solid #3b82f6; }
+.layer-api { background: rgba(220,252,231,0.3); border: 2px solid #16a34a; padding: 10px 14px; }
+.layer-orch { background: rgba(255,247,237,0.25); border: 2px solid #ea580c; }
+.layer-workflow { background: rgba(253,230,138,0.2); border: 2px solid #d97706; }
+.layer-domain { background: rgba(254,242,242,0.2); border: 2px solid #dc2626; }
+.layer-shared { background: rgba(238,242,255,0.25); border: 2px solid #4338ca; }
+.layer-libs { background: rgba(236,253,245,0.2); border: 2px solid #059669; }
+.layer-infra { background: rgba(245,243,255,0.2); border: 2px solid #7c3aed; }
+.layer-matrix { background: rgba(245,243,255,0.15); border: 2px solid #7c3aed; }
+.layer-flow { background: rgba(245,243,255,0.2); border: 2px dashed #7c3aed; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.box { border-radius: 8px; padding: 10px; }
+
+.prompt-box { background: #ede9fe; border: 2px solid #7c3aed; flex: 1; min-width: 130px; }
+.prompt-box .t { color: #7c3aed; font-size: 11px; font-weight: bold; }
+.prompt-box .d { color: #4c1d95; font-size: 9px; margin-top: 3px; line-height: 1.4; }
+
+.store-box { background: #dbeafe; border: 2px solid #2563eb; flex: 1; }
+.store-box .t { color: #1e40af; font-size: 11px; font-weight: bold; }
+.store-box .d { color: #1e3a8a; font-size: 9px; margin-top: 3px; line-height: 1.5; }
+
+.ctx-box { background: #cffafe; border: 2px solid #0891b2; flex: 1; }
+.ctx-box .t { color: #0e7490; font-size: 11px; font-weight: bold; }
+.ctx-box .d { color: #155e75; font-size: 9px; margin-top: 2px; line-height: 1.4; }
+
+.orch-box { border-radius: 8px; padding: 10px; }
+.orch-core { background: #fdba74; border: 2px solid #ea580c; flex: 1; min-width: 130px; }
+.orch-support { background: #fed7aa; border: 2px solid #ea580c; flex: 1; min-width: 120px; }
+.orch-box .t { color: #9a3412; font-size: 10px; font-weight: bold; }
+.orch-box .d { color: #9a3412; font-size: 9px; margin-top: 2px; line-height: 1.4; }
+
+.wf-box { border-radius: 8px; padding: 10px; flex: 1; }
+.wf-core { background: #fef3c7; border: 2px solid #d97706; }
+.wf-inject { background: #fef9c3; border: 1px solid #ca8a04; }
+.wf-box .t { color: #92400e; font-size: 10px; font-weight: bold; }
+.wf-box .d { color: #92400e; font-size: 9px; margin-top: 2px; line-height: 1.4; }
+
+.domain-group { border-radius: 8px; padding: 10px; flex: 1; min-width: 200px; }
+.grp1 { background: #fef2f2; border: 2px solid #f87171; }
+.grp2 { background: #fef2f2; border: 2px solid #ef4444; }
+.grp3 { background: #fecaca; border: 2px solid #dc2626; }
+.domain-group .grp-label { font-size: 10px; font-weight: bold; color: #b91c1c; background: #fee2e2; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; }
+
+.domain-card { background: white; border: 1px solid #fca5a5; border-radius: 6px; padding: 8px; margin-top: 6px; }
+.domain-card .t { font-size: 10px; font-weight: bold; color: #991b1b; }
+.domain-card .d { font-size: 8px; color: #7f1d1d; margin-top: 2px; line-height: 1.4; }
+.domain-card .tags { margin-top: 4px; display: flex; gap: 3px; flex-wrap: wrap; }
+.tag { font-size: 7px; padding: 1px 4px; border-radius: 3px; display: inline-block; }
+.tag-yes { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.tag-no { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.tag-special { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+
+.shared-box { flex: 1; min-width: 140px; border-radius: 8px; padding: 10px; }
+.s-compliance { background: #fef2f2; border: 2px solid #dc2626; }
+.s-agents { background: #e0e7ff; border: 2px solid #4338ca; }
+.s-intelligence { background: #cffafe; border: 2px solid #0891b2; }
+.s-resilience { background: #fef3c7; border: 2px solid #d97706; }
+.s-memory { background: #dbeafe; border: 2px solid #2563eb; }
+.s-messaging { background: #fed7aa; border: 2px solid #ea580c; }
+.s-learning { background: #d1fae5; border: 2px solid #059669; }
+.s-observability { background: #ede9fe; border: 2px solid #7c3aed; }
+.s-governance { background: #fce7f3; border: 2px solid #db2777; }
+.s-robustness { background: #fef9c3; border: 2px solid #ca8a04; }
+.s-providers { background: #e0e7ff; border: 2px solid #4338ca; }
+.shared-box .t { font-size: 10px; font-weight: bold; }
+.shared-box .d { font-size: 8px; margin-top: 2px; line-height: 1.4; }
+
+.lib-box { flex: 1; min-width: 100px; border-radius: 8px; padding: 8px; background: #d1fae5; border: 2px solid #059669; }
+.lib-box .t { color: #065f46; font-size: 10px; font-weight: bold; }
+.lib-box .d { color: #065f46; font-size: 8px; margin-top: 2px; line-height: 1.4; }
+
+.infra-box { flex: 1; min-width: 100px; border-radius: 8px; padding: 10px; }
+.i-pg { background: #e0e7ff; border: 2px solid #4338ca; }
+.i-es { background: #e0e7ff; border: 2px solid #4338ca; }
+.i-redis { background: #fee2e2; border: 2px solid #dc2626; }
+.i-rabbit { background: #fff7ed; border: 2px solid #ea580c; }
+.i-celery { background: #fef3c7; border: 2px solid #d97706; }
+.i-llm { background: #ede9fe; border: 2px solid #7c3aed; }
+.i-voice { background: #dbeafe; border: 2px solid #2563eb; }
+.i-ext { background: #d1fae5; border: 2px solid #059669; }
+.infra-box .t { font-size: 10px; font-weight: bold; }
+.infra-box .d { font-size: 8px; margin-top: 2px; line-height: 1.4; }
+
+table.matrix { border-collapse: collapse; width: 100%; font-size: 8px; }
+table.matrix th { background: #f1f5f9; padding: 3px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #334155; }
+table.matrix td { padding: 2px 4px; border: 1px solid #e2e8f0; text-align: center; }
+table.matrix td.dim { text-align: left; font-weight: bold; color: #475569; background: #f8fafc; min-width: 120px; }
+.y { color: #16a34a; font-weight: bold; }
+.n { color: #dc2626; }
+.g { color: #059669; font-size: 7px; }
+
+.arrow-down { text-align: center; font-size: 18px; margin: 6px 0; }
+.arrow-label { text-align: center; font-size: 10px; font-style: italic; }
+.section-gap { height: 10px; }
+.highlight-box { background: #dcfce7; border: 2px solid #16a34a; border-radius: 8px; padding: 10px; margin-top: 8px; }
+.highlight-box .t { color: #166534; font-size: 11px; font-weight: bold; }
+.highlight-box .d { color: #14532d; font-size: 9px; margin-top: 3px; line-height: 1.5; }
+
+.footer { text-align: center; color: #64748b; font-size: 10px; margin-top: 12px; line-height: 1.5; }
+
+.label-frontend { color: #1e40af; }
+.label-api { color: #16a34a; }
+.label-orch { color: #ea580c; }
+.label-wf { color: #d97706; }
+.label-domain { color: #dc2626; }
+.label-shared { color: #4338ca; }
+.label-libs { color: #059669; }
+.label-infra { color: #7c3aed; }
+.label-matrix { color: #7c3aed; }
+.label-flow { color: #7c3aed; }
+
+.compare-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 10px; margin-top: 8px; }
+.compare-box .t { color: #92400e; font-size: 11px; font-weight: bold; }
+.compare-box .d { color: #78350f; font-size: 9px; margin-top: 3px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="diagram">
+<div class="title">LIA Platform — Detailed System Architecture</div>
+<div class="subtitle">Python/FastAPI + LangGraph + Multi-LLM (Gemini+Claude+OpenAI) | Next.js 14 + React + shadcn/ui | 12 Domains | 230 Services | 214 API Endpoints | 10 Libs</div>
+
+<div class="layer-label label-frontend">FRONTEND LAYER — plataforma-lia (Next.js 14 + React + shadcn/ui + TailwindCSS)</div>
+<div class="layer layer-frontend">
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="box prompt-box">
+      <div class="t">1. Chat Global</div>
+      <div class="d">Full-page dedicated chat<br>chat-page.tsx<br>useChatPageCore (1069L)<br>All domains via orchestrator</div>
+    </div>
+    <div class="box prompt-box">
+      <div class="t">2. Jobs Inline Chat</div>
+      <div class="d">Beside jobs table<br>InlineChatPanel.tsx<br>useJobsChat.ts<br>domain = 'job_management'</div>
+    </div>
+    <div class="box prompt-box">
+      <div class="t">3. Kanban Chat</div>
+      <div class="d">Pipeline transition panel<br>TransitionChatPanel.tsx<br>useKanbanPageCore (2449L)<br>domain = 'pipeline'</div>
+    </div>
+    <div class="box prompt-box">
+      <div class="t">4. Sourcing Chat</div>
+      <div class="d">Talent sourcing<br>sourcing page<br>domain = 'sourcing'</div>
+    </div>
+    <div class="box prompt-box" style="background: #dcfce7; border-color: #16a34a;">
+      <div class="t" style="color: #166534;">5. Policy Config</div>
+      <div class="d" style="color: #14532d;">HiringPoliciesHub.tsx<br>Settings page<br>domain = 'hiring_policy'<br><b>EXCLUSIVE to LIA</b></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="box store-box">
+      <div class="t">State Management (Zustand + React Query)</div>
+      <div class="d">useLiaStore (global state) · useCompanyStore · useUserStore · useChatStore<br>
+      React Query for data fetching · WebSocket for real-time updates<br>
+      useJobsPageCore (3465L) · useCandidatesPageCore (3676L) · useKanbanPageCore (2449L)</div>
+    </div>
+    <div class="box ctx-box">
+      <div class="t">UI Components</div>
+      <div class="d">shadcn/ui base · LIA design system<br>
+      LiaExpandedPanel · LiaIcon<br>
+      AdminTemplateHub · HiringPoliciesHub<br>
+      Dashboards: Executive, Real-time, BigFive</div>
+    </div>
+    <div class="box ctx-box" style="max-width: 180px;">
+      <div class="t">Voice + WebSocket</div>
+      <div class="d">Deepgram STT · Gemini TTS<br>WebSocket real-time<br>WSI Voice Screening<br>Voice command support</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow-down" style="color: #16a34a;">&#9660;</div>
+<div class="arrow-label" style="color: #16a34a;">POST /api/v1/chat { message, session_id, domain, context } | WebSocket /ws/agent-chat | 214 API endpoint files</div>
+
+<div class="section-gap"></div>
+<div class="layer-label label-api">API GATEWAY — FastAPI (lia-agent-system/app/api/) — 214 endpoint files</div>
+<div class="layer layer-api">
+  <div style="color: #166534; font-size: 10px; line-height: 1.6;">
+    <b>Core:</b> /chat · /chat/stream (SSE) · /ws/agent-chat (WebSocket) · /orchestrator/* &nbsp;|&nbsp;
+    <b>WSI:</b> /wsi · /wsi/async · /wsi/questions · /wsi/screening-pipeline · /wsi/observability<br>
+    <b>Admin:</b> /admin/agents · /admin/bias-audit · /admin/circuit-breakers · /admin/dlq · /admin/lgpd · /admin/prompts · /admin/settings · /admin/templates · /admin/token-budget<br>
+    <b>Compliance:</b> /fairness-reports · /guardrails · /consent-management · /data-subject-requests · /granular-consent · /trust-center · /audit-logs · /audit-timeline · /compliance-controls<br>
+    <b>Intelligence:</b> /semantic-search · /search-assistant · /calibration · /candidate-compare · /pipeline-velocity · /talent-funnel · /workforce-planning · /sod-matrix
+  </div>
+</div>
+
+<div class="arrow-down" style="color: #ea580c;">&#9660;</div>
+<div class="layer-label label-orch">ORCHESTRATOR LAYER — Multi-Tier Routing + Planning + Execution (app/orchestrator/ — 18 files, 249KB total)</div>
+<div class="layer layer-orch">
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="orch-box orch-core">
+      <div class="t">MainOrchestrator (20KB)</div>
+      <div class="d">Primary entry point<br>Session + budget check<br>Routes to domain workflow</div>
+    </div>
+    <div style="display: flex; align-items: center; color: #ea580c; font-size: 14px;">&#8594;</div>
+    <div class="orch-box orch-core">
+      <div class="t">CascadedRouter (22KB)</div>
+      <div class="d">Multi-tier routing cascade<br>fast &#8594; intent &#8594; LLM<br>Domain selection</div>
+    </div>
+    <div style="display: flex; align-items: center; color: #ea580c; font-size: 14px;">&#8594;</div>
+    <div class="orch-box orch-core">
+      <div class="t">IntentRouter (25KB)</div>
+      <div class="d">Intent classification<br>Enhanced classifier<br>Few-shot examples</div>
+    </div>
+    <div style="display: flex; align-items: center; color: #ea580c; font-size: 14px;">&#8594;</div>
+    <div class="orch-box orch-core">
+      <div class="t">TaskPlanner (8.8KB)</div>
+      <div class="d">Multi-step plan creation<br>Step dependencies<br>Execution ordering</div>
+    </div>
+    <div style="display: flex; align-items: center; color: #ea580c; font-size: 14px;">&#8594;</div>
+    <div class="orch-box orch-core" style="min-width: 160px;">
+      <div class="t">ActionExecutor (45KB)</div>
+      <div class="d">Largest file in orchestrator<br>Executes planned actions<br>Domain delegation + fallback</div>
+    </div>
+  </div>
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="orch-box orch-support">
+      <div class="t">FastRouter (12KB)</div>
+      <div class="d">Regex pattern fast-path<br>O(1) routing, cheapest</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">LLM Cascade (8.8KB)</div>
+      <div class="d">Pattern &#8594; Regex &#8594;<br>Embed &#8594; LLM fallback</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">SemanticCache (3.6KB)</div>
+      <div class="d">Query &#8594; cached response<br>Similarity threshold</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">VectorSemanticCache (11.7KB)</div>
+      <div class="d">pgvector embeddings<br>Cosine similarity routing</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">MemoryResolver (13.5KB)</div>
+      <div class="d">Conversation context<br>Reference resolution<br>Entity tracking</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">PolicyEngine (12.5KB)</div>
+      <div class="d">Hiring policy enforcement<br>Per-company rules<br>Action filtering</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="orch-box orch-support">
+      <div class="t">StateManager (10.8KB)</div>
+      <div class="d">Session state persist<br>Cross-turn memory</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">ContextAdapter (10.8KB)</div>
+      <div class="d">Enriches context<br>UI + entity context</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">PendingAction (9.4KB)</div>
+      <div class="d">Confirmation flow<br>HITL actions</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">NavigationIntent (5KB)</div>
+      <div class="d">Frontend navigation<br>Route suggestion</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">TenantBudget (5.7KB)</div>
+      <div class="d">Token budget per company<br>Cost control per tenant</div>
+    </div>
+    <div class="orch-box orch-support">
+      <div class="t">Orchestrator (22KB)</div>
+      <div class="d">Legacy orchestrator<br>Backward compatibility</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow-down" style="color: #d97706;">&#9660;</div>
+<div class="layer-label label-wf">WORKFLOW LAYER — Domain Processing Pipeline (app/domains/workflow.py)</div>
+<div class="layer layer-workflow">
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="wf-box wf-core" style="min-width: 300px;">
+      <div class="t">DomainWorkflow (WorkflowState machine — 7 steps)</div>
+      <div class="d">PRE_CHECK &#8594; RESOLVE_REFERENCES &#8594; SMART_EXTRACT &#8594; ANALYZE_INTENT &#8594; EXECUTE &#8594; FORMAT &#8594; POST_CHECK &#8594; COMPLETE<br>
+      Uses DomainPrompt ABC contract. Every domain passes through this pipeline.</div>
+    </div>
+    <div class="wf-box wf-core">
+      <div class="t">Execution Pipeline (shared/execution/)</div>
+      <div class="d">ActionPlanner &#8594; PlanDetector &#8594;<br>PlanExecutor + PlanTemplates<br>Multi-step execution plans</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="wf-box wf-inject">
+      <div class="t">&#9989; AuditCallback (libs/audit)</div>
+      <div class="d">LangChain callback handler<br>LLM + tool + chain events<br>Persistent audit trail</div>
+    </div>
+    <div class="wf-box wf-inject">
+      <div class="t">&#9989; StreamingCallback</div>
+      <div class="d">libs/agents-core<br>SSE + WebSocket streaming<br>Progress events</div>
+    </div>
+    <div class="wf-box wf-inject">
+      <div class="t">&#9989; FairnessGuard</div>
+      <div class="d">shared/compliance<br>Pre-execution bias check<br><b>ALL domains</b></div>
+    </div>
+    <div class="wf-box wf-inject">
+      <div class="t">&#9989; PIIMasking (pre-LLM)</div>
+      <div class="d">shared/pii_masking.py<br>8 patterns + Presidio NER<br>LGPD Art. 12 compliant</div>
+    </div>
+    <div class="wf-box wf-inject">
+      <div class="t">&#9989; PolicyMiddleware</div>
+      <div class="d">shared/policy_middleware<br>Hiring policy enforcement<br>Per-company guardrails</div>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top: 8px;">
+    <div class="t">&#9989; LIA Advantage: 5 universal cross-cutting concerns (vs v5's 3)</div>
+    <div class="d">LIA injects Audit + Streaming + <b>FairnessGuard</b> + <b>PII Masking pre-LLM</b> + <b>PolicyMiddleware</b> universally.<br>
+    v5 only injects Audit + Streaming + Thinking. Fairness is opt-in (2/8), PII is log-only, no policy engine.</div>
+  </div>
+</div>
+
+<div class="arrow-down" style="color: #dc2626;">&#9660;</div>
+<div id="domains" class="layer-label label-domain">DOMAIN LAYER — 12 Domains in 3 Architectural Groups (app/domains/)</div>
+<div class="layer layer-domain">
+  <div class="row" style="margin-bottom: 8px;">
+    <div style="background: #fecaca; border: 2px solid #dc2626; border-radius: 8px; padding: 10px; width: 100%;">
+      <div style="font-size: 11px; font-weight: bold; color: #991b1b;">DomainRegistry (registry.py) + DomainPrompt ABC (base.py)</div>
+      <div style="font-size: 9px; color: #991b1b; margin-top: 2px;">@register_domain decorator &#8594; DomainPrompt contract (process_intent, execute_action, generate_system_prompt, get_suggestions) &#8594; WorkflowState pipeline</div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="domain-group grp1" style="flex: 4;">
+      <div class="grp-label">GROUP 1 — ReAct Agents (react_agent + tool_registry + stage_context)</div>
+      <div class="row">
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">analytics</div>
+          <div class="d">Cross-domain metrics, reports.<br>ReAct agent + tool registry.</div>
+          <div class="tags">
+            <span class="tag tag-yes">react_agent</span>
+            <span class="tag tag-yes">tools</span>
+            <span class="tag tag-yes">services</span>
+            <span class="tag tag-special">stage_context</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">ats_integration</div>
+          <div class="d">ATS sync (Gupy, PandaPé).<br>External platform integration.</div>
+          <div class="tags">
+            <span class="tag tag-yes">react_agent</span>
+            <span class="tag tag-yes">tools</span>
+            <span class="tag tag-yes">services</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">automation</div>
+          <div class="d">Stage transition rules,<br>trigger-based workflows.</div>
+          <div class="tags">
+            <span class="tag tag-yes">react_agent</span>
+            <span class="tag tag-yes">tools</span>
+            <span class="tag tag-yes">services</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">communication</div>
+          <div class="d">Email, WhatsApp, Teams.<br>Multi-channel dispatch.</div>
+          <div class="tags">
+            <span class="tag tag-yes">react_agent</span>
+            <span class="tag tag-yes">tools</span>
+            <span class="tag tag-special">schemas</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">hiring_policy</div>
+          <div class="d">Recruitment policy config.<br>Company-level guardrails.</div>
+          <div class="tags">
+            <span class="tag tag-yes">react_agent</span>
+            <span class="tag tag-yes">tools</span>
+            <span class="tag tag-special">EXCLUSIVE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="domain-group grp2" style="flex: 1;">
+      <div class="grp-label">GROUP 2 — LangGraph Stateful (graph.py + nodes + state machine)</div>
+      <div class="row">
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">cv_screening</div>
+          <div class="d">WSI interview graph (1141L).<br>Bloom+Dreyfus+BigFive.<br>BCB-498/SOX compliance.<br>PostgresSaver checkpointing.</div>
+          <div class="tags">
+            <span class="tag tag-yes">wsi_graph</span>
+            <span class="tag tag-yes">pipeline_agent</span>
+            <span class="tag tag-special">Bloom/Dreyfus</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">interview_scheduling</div>
+          <div class="d">LangGraph interview nodes.<br>Calendar integration.<br>Multi-step scheduling flow.</div>
+          <div class="tags">
+            <span class="tag tag-yes">interview_graph</span>
+            <span class="tag tag-yes">scheduling_nodes</span>
+            <span class="tag tag-yes">services</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">job_management</div>
+          <div class="d">Job wizard LangGraph.<br>vacancy_nodes + wizard_graph.<br>ReAct hybrid for wizard flow.</div>
+          <div class="tags">
+            <span class="tag tag-yes">wizard_graph</span>
+            <span class="tag tag-yes">vacancy_nodes</span>
+            <span class="tag tag-yes">react_agent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="domain-group grp3" style="flex: 1;">
+      <div class="grp-label">GROUP 3 — Multi-Agent Orchestrated (multiple specialized sub-agents)</div>
+      <div class="row">
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">pipeline</div>
+          <div class="d">4 sub-agents: action, context,<br>decision, transition.<br>Kanban assistant service.</div>
+          <div class="tags">
+            <span class="tag tag-yes">4 agents</span>
+            <span class="tag tag-yes">feedback_tool</span>
+            <span class="tag tag-special">multi-agent</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">recruiter_assistant</div>
+          <div class="d">5 sub-agents: jobs_mgmt,<br>kanban_action/insight/search,<br>kanban_react. Most sub-agents.</div>
+          <div class="tags">
+            <span class="tag tag-yes">5 agents</span>
+            <span class="tag tag-yes">multi-tools</span>
+            <span class="tag tag-special">multi-agent</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">sourcing</div>
+          <div class="d">5 sub-agents: search, enrich,<br>planner, engagement, react.<br>Engagement graph nodes.</div>
+          <div class="tags">
+            <span class="tag tag-yes">5 agents</span>
+            <span class="tag tag-yes">engagement_nodes</span>
+            <span class="tag tag-special">multi-agent</span>
+          </div>
+        </div>
+        <div class="domain-card" style="flex: 1;">
+          <div class="t">policy</div>
+          <div class="d">Global policy enforcement.<br>Cross-domain policy rules.</div>
+          <div class="tags">
+            <span class="tag tag-yes">agent</span>
+            <span class="tag tag-yes">tools</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div id="shared" class="layer-label label-shared">SHARED CROSS-CUTTING — app/shared/ (14 subdirectories, all domains get these)</div>
+<div class="layer layer-shared">
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="shared-box s-compliance">
+      <div class="t" style="color: #991b1b;">compliance/ (8 files)</div>
+      <div class="d" style="color: #991b1b;">AuditCallback + Writer + Storage<br>FairnessGuard (pre-execution)<br>FactChecker (hallucination)<br>GuardrailRepository (DB-stored)<br><b>ALL domains — universal</b></div>
+    </div>
+    <div class="shared-box s-agents">
+      <div class="t" style="color: #3730a3;">agents/ (10 files)</div>
+      <div class="d" style="color: #3730a3;">AgentBus · AgentInterface ABC<br>AgentScaffold · AutonomyEngine<br>BaseStateMachine · Checkpointer<br>Confidence · ExecutionLogStore<br>EnhancedAgentMixin</div>
+    </div>
+    <div class="shared-box s-intelligence">
+      <div class="t" style="color: #0e7490;">intelligence/ (5 files)</div>
+      <div class="d" style="color: #0e7490;">EmbeddingService · ParamPatterns<br>SemanticSearchService<br>SmartExtractor (214L regex+LLM)<br>7-domain semantic expansion</div>
+    </div>
+    <div class="shared-box s-resilience">
+      <div class="t" style="color: #92400e;">resilience/ (5 files)</div>
+      <div class="d" style="color: #92400e;">CircuitBreaker · DLQ Service<br>CacheManager · StatsManager<br>Failure isolation per-service</div>
+    </div>
+    <div class="shared-box s-memory">
+      <div class="t" style="color: #1e40af;">memory/ (4 files)</div>
+      <div class="d" style="color: #1e40af;">CandidateListStore<br>ConversationState<br>ReferenceResolver<br>Implicit entity tracking</div>
+    </div>
+  </div>
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="shared-box s-messaging">
+      <div class="t" style="color: #9a3412;">messaging/ (7 files)</div>
+      <div class="d" style="color: #9a3412;">CeleryConfig · Dispatchers<br>RabbitMQ Consumer+Producer<br>MessageSchemas · PlatformEvents</div>
+    </div>
+    <div class="shared-box s-learning">
+      <div class="t" style="color: #065f46;">learning/ (6 files)</div>
+      <div class="d" style="color: #065f46;">A/B Testing Service<br>LearningLoop · Finetuning Export<br>TemplateLearning · Snapshots<br><b>EXCLUSIVE to LIA</b></div>
+    </div>
+    <div class="shared-box s-observability">
+      <div class="t" style="color: #5b21b6;">observability/ (2 files)</div>
+      <div class="d" style="color: #5b21b6;">AgentMetrics (Prometheus)<br>6 counters: requests, fairness,<br>HITL, tokens, latency, confidence</div>
+    </div>
+    <div class="shared-box s-governance">
+      <div class="t" style="color: #be185d;">governance/ (3 files)</div>
+      <div class="d" style="color: #be185d;">FeatureFlagService<br>AgentMonitoringService<br>Runtime toggles per feature</div>
+    </div>
+    <div class="shared-box s-robustness">
+      <div class="t" style="color: #854d0e;">robustness/ (9 files)</div>
+      <div class="d" style="color: #854d0e;">ResponseFilter · DefensivePrompts<br>InputValidation · IntentSchemas<br>ContextManagement · ErrorHandling</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="shared-box s-providers">
+      <div class="t" style="color: #3730a3;">providers/ (9 files)</div>
+      <div class="d" style="color: #3730a3;">LLMFactory (multi-provider)<br>llm_gemini · llm_claude · llm_openai<br>VoiceProvider · ATSFactory<br><b>3 LLMs vs v5's Gemini-only</b></div>
+    </div>
+    <div class="shared-box" style="background: #fce7f3; border: 2px solid #db2777;">
+      <div class="t" style="color: #be185d;">prompts/ (9 files)</div>
+      <div class="d" style="color: #be185d;">AntiSycophancy block<br>CoT templates · FewShot examples<br>InteractionPatterns · Loader<br>JobWizard prompts</div>
+    </div>
+    <div class="shared-box" style="background: #dbeafe; border: 2px solid #2563eb;">
+      <div class="t" style="color: #1e40af;">execution/ (6 files)</div>
+      <div class="d" style="color: #1e40af;">ActionPlanner · PlanDetector<br>PlanExecutor · PlanTemplates<br>Multi-step execution plans</div>
+    </div>
+    <div class="shared-box" style="background: #cffafe; border: 2px solid #0891b2;">
+      <div class="t" style="color: #0e7490;">channels/ (5 files)</div>
+      <div class="d" style="color: #0e7490;">MultiChannelService<br>ChannelRouter · Adapters<br>Email/WhatsApp/Teams</div>
+    </div>
+    <div class="shared-box" style="background: #fef9c3; border: 2px solid #ca8a04;">
+      <div class="t" style="color: #854d0e;">async_processing/ (6 files)</div>
+      <div class="d" style="color: #854d0e;">TaskManager · PriorityCalc<br>TaskScheduler · Persistence<br>TaskQueue</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div class="layer-label label-libs">LIBS LAYER — 10 Independent Packages (libs/) — Reusable across projects</div>
+<div class="layer layer-libs">
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="lib-box" style="min-width: 180px;">
+      <div class="t">agents-core (18 files)</div>
+      <div class="d">ReactLoop · LangGraphBase<br>StateMachine · WorkingMemory<br>StreamingCallback · Observability<br>Checkpointer · ProactiveWorker<br>AutonomyEngine · TimedToolNode</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">audit (5 files)</div>
+      <div class="d">AuditCallback · AuditModels<br>AuditWriter · AuditStorage<br>S3/PostgreSQL dual-write<br>SOX 7-year retention</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">models</div>
+      <div class="d">SQLAlchemy models<br>BiasAuditSnapshot<br>Shared data models</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">orchestrator</div>
+      <div class="d">Base orchestrator<br>lib-level abstraction</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">services</div>
+      <div class="d">Shared services lib<br>Cross-project reuse</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="lib-box">
+      <div class="t">auth</div>
+      <div class="d">JWT + WorkOS SSO<br>Multi-tenant auth</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">config</div>
+      <div class="d">Environment config<br>Settings management</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">contexts</div>
+      <div class="d">Context management<br>Domain contexts</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">messaging</div>
+      <div class="d">Message schemas<br>Queue abstractions</div>
+    </div>
+    <div class="lib-box">
+      <div class="t">utils</div>
+      <div class="d">Shared utilities<br>Cross-cutting helpers</div>
+    </div>
+  </div>
+  <div class="compare-box" style="margin-top: 8px;">
+    <div class="t">&#9888; LIA Exclusive: Separate libs/ layer for cross-project reusability</div>
+    <div class="d">v5 has all code in flat src/ — no lib extraction. LIA's agents-core, audit, models etc. are independent pip packages,<br>
+    enabling reuse across projects (e.g., libs/audit can be used in other WeDO systems without importing lia-agent-system).</div>
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div class="layer-label" style="color: #ea580c;">SERVICES LAYER — app/services/ — 230 service files (selected highlights)</div>
+<div class="layer" style="background: rgba(255,247,237,0.15); border: 2px solid #ea580c;">
+  <div style="font-size: 9px; color: #9a3412; line-height: 1.6;">
+    <b>WSI Pipeline:</b> wsi_service · wsi_question_generator · wsi_question_adjuster · wsi_deterministic_scorer · wsi_screening_pipeline · wsi_voice_orchestrator · wsi_async_session<br>
+    <b>Candidate Intelligence:</b> cv_parser · cv_scoring · candidate_enrichment · candidate_comparison · candidate_feedback · candidate_channel_selector · candidate_report · pre_qualification<br>
+    <b>Job Intelligence:</b> jd_generator · jd_parser · jd_enrichment · jd_import · jd_template · job_analytics_prompt · job_audit · job_board · job_context · job_embedding · job_insights · job_pattern · job_qualification<br>
+    <b>Search &amp; Discovery:</b> search_service · semantic_search · hybrid_search · vacancy_search · search_analytics · silver_medalist<br>
+    <b>Communication:</b> email_service · whatsapp_service (Meta+Twilio) · microsoft_graph · teams_service · communication_dispatcher · communication_history<br>
+    <b>ML &amp; Analytics:</b> ml/ (ML pipeline) · predictive_analytics · pipeline_prediction · pipeline_velocity · calibration · seniority_resolver · score_normalization · archetype_builder<br>
+    <b>Compliance:</b> bias_audit · consent_checker · granular_consent · lgpd_cleanup · policy_engine · confidence_policy · human_review_sampling · fairness reporting<br>
+    <b>Scheduling:</b> calendar · google_calendar_client · zero_touch_scheduling · scheduling_service<br>
+    <b>Infrastructure:</b> circuit_breaker · cache_manager · ai_cache · embedding_cache · token_tracking · token_budget · billing · plan_limits<br>
+    <b>Integrations:</b> hubspot · apify · deepgram · gupy · pandape · pearch · workos · toon
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div id="infra" class="layer-label label-infra">INFRASTRUCTURE — Data Stores, LLMs & External Services</div>
+<div class="layer layer-infra">
+  <div class="row">
+    <div class="infra-box i-pg">
+      <div class="t" style="color: #3730a3;">PostgreSQL</div>
+      <div class="d" style="color: #3730a3;">SQLAlchemy ORM<br>pgvector (embeddings)<br>Multi-tenant schemas<br>BiasAuditSnapshot, AuditLog</div>
+    </div>
+    <div class="infra-box i-es">
+      <div class="t" style="color: #3730a3;">Elasticsearch</div>
+      <div class="d" style="color: #3730a3;">Hybrid search (BM25+vector)<br>Candidate, Job indexing<br>7-domain semantic expansion</div>
+    </div>
+    <div class="infra-box i-redis">
+      <div class="t" style="color: #991b1b;">Redis</div>
+      <div class="d" style="color: #991b1b;">Cache + Sessions<br>Rate limiting<br>Celery broker</div>
+    </div>
+    <div class="infra-box i-rabbit">
+      <div class="t" style="color: #9a3412;">RabbitMQ</div>
+      <div class="d" style="color: #9a3412;">Async workers<br>Event dispatching<br>Platform events</div>
+    </div>
+    <div class="infra-box i-celery">
+      <div class="t" style="color: #92400e;">Celery</div>
+      <div class="d" style="color: #92400e;">Background tasks<br>Priority queues<br>Task scheduling</div>
+    </div>
+    <div class="infra-box i-llm">
+      <div class="t" style="color: #5b21b6;">Multi-LLM</div>
+      <div class="d" style="color: #5b21b6;"><b>Gemini</b> (primary)<br><b>Claude</b> (fallback)<br><b>OpenAI</b> (specialized)<br>ModelRouter selects</div>
+    </div>
+    <div class="infra-box i-voice">
+      <div class="t" style="color: #1e40af;">Voice</div>
+      <div class="d" style="color: #1e40af;">Deepgram STT<br>Gemini TTS<br>Voice screening</div>
+    </div>
+    <div class="infra-box i-ext">
+      <div class="t" style="color: #065f46;">External APIs</div>
+      <div class="d" style="color: #065f46;">HubSpot CRM<br>Apify scraping<br>WorkOS SSO<br>Google Calendar</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div class="layer-label label-flow">DATA FLOW — Complete Request Lifecycle</div>
+<div class="layer layer-flow" style="padding: 10px 14px;">
+  <div style="color: #5b21b6; font-size: 10px; line-height: 1.7;">
+    <b>1.</b> User types in Chat &#8594; POST /api/v1/chat or /ws/agent-chat with { message, session_id, domain, context }<br>
+    <b>2.</b> <b>MainOrchestrator</b> &#8594; TenantBudget check &#8594; <b>CascadedRouter</b> (FastRouter &#8594; IntentRouter &#8594; LLM) &#8594; domain selected<br>
+    <b>3.</b> <b>PolicyEngine</b> checks hiring policy &#8594; <b>FairnessGuard</b> pre-check &#8594; <b>PIIMasking</b> strips PII from prompt<br>
+    <b>4.</b> <b>DomainWorkflow</b> 7-step pipeline: resolve refs &#8594; smart extract &#8594; analyze intent &#8594; execute action &#8594; format response<br>
+    <b>5.</b> Domain agent (ReAct / LangGraph / Multi-Agent) executes with tool calls &#8594; <b>AuditCallback</b> logs everything<br>
+    <b>6.</b> SSE/WebSocket stream back &#8594; Frontend renders progressively &#8594; <b>Prometheus metrics</b> recorded &#8594; user sees result
+  </div>
+</div>
+
+<div class="section-gap"></div>
+<div class="layer-label" style="color: #059669;">COMPARATIVE SUMMARY — LIA vs v5 at a Glance</div>
+<div class="layer" style="background: rgba(236,253,245,0.2); border: 2px solid #059669;">
+  <table class="matrix" style="font-size: 9px;">
+    <tr>
+      <th style="width: 200px;">Dimension</th>
+      <th style="width: 100px;">LIA (Replit)</th>
+      <th style="width: 100px;">v5 (GitHub)</th>
+      <th>Notes</th>
+    </tr>
+    <tr><td class="dim">Domains</td><td><span class="y">12</span></td><td>8</td><td>LIA +4: analytics, ats_integration, automation, communication, hiring_policy, cv_screening, pipeline, policy, recruiter_assistant</td></tr>
+    <tr><td class="dim">Services (app/services/)</td><td><span class="y">230</span></td><td>40</td><td>LIA 5.7x more services — WSI, ML, compliance, communication, scheduling</td></tr>
+    <tr><td class="dim">API endpoint files</td><td><span class="y">214</span></td><td>~5</td><td>LIA has dedicated endpoints per feature; v5 has /chat as main entry</td></tr>
+    <tr><td class="dim">Orchestrator components</td><td><span class="y">18 (249KB)</span></td><td>13 (hub)</td><td>LIA: MainOrch+CascadedRouter+IntentRouter+ActionExecutor(45KB)+PolicyEngine</td></tr>
+    <tr><td class="dim">Frontend prompts</td><td><span class="y">5</span></td><td>4</td><td>LIA +1: HiringPoliciesHub (policy configuration prompt)</td></tr>
+    <tr><td class="dim">LLM providers</td><td><span class="y">3 (Gemini+Claude+OpenAI)</span></td><td>1 (Gemini)</td><td>LIA: multi-provider with fallback cascade</td></tr>
+    <tr><td class="dim">Libs (reusable packages)</td><td><span class="y">10 libs/</span></td><td>0 (flat src/)</td><td>LIA: agents-core, audit, models etc. as pip packages</td></tr>
+    <tr><td class="dim">PII masking pre-LLM</td><td><span class="y">8 patterns + Presidio NER</span></td><td><span class="n">Log-only (3 patterns)</span></td><td>LIA: LGPD Art.12 compliant; v5: no pre-LLM masking</td></tr>
+    <tr><td class="dim">FairnessGuard (universal)</td><td><span class="y">All domains</span></td><td><span class="n">2/8 domains</span></td><td>LIA: shared/compliance; v5: fairness.py in jobs+sourced_profile only</td></tr>
+    <tr><td class="dim">Guardrails (DB-stored)</td><td><span class="y">GuardrailRepository</span></td><td><span class="n">Absent</span></td><td>LIA: runtime-editable guardrails; v5: none</td></tr>
+    <tr><td class="dim">Bias Audit</td><td><span class="y">BiasAuditSnapshot + service</span></td><td><span class="n">Absent</span></td><td>LIA: SOX/ISO 27001 snapshots; v5: anti-sycophancy only in autonomous prompt</td></tr>
+    <tr><td class="dim">A/B Testing</td><td><span class="y">ABTestingService + learning</span></td><td><span class="n">Absent</span></td><td>LIA: experiment-driven optimization</td></tr>
+    <tr><td class="dim">Prometheus metrics</td><td><span class="y">6 native counters</span></td><td><span class="n">Absent</span></td><td>LIA: requests, fairness, HITL, tokens, latency, confidence</td></tr>
+    <tr><td class="dim">WSI Interview</td><td><span class="y">Bloom+Dreyfus+BigFive (1141L)</span></td><td>RubricEvaluation (4 dims)</td><td>LIA: pedagogical frameworks; v5: simpler rubric</td></tr>
+    <tr><td class="dim">Audit persistence</td><td><span class="y">PostgreSQL + S3 dual-write</span></td><td>Dict (caller persists)</td><td>LIA: 7yr SOX retention; v5: 90-day cleanup</td></tr>
+    <tr><td class="dim">Workflow pipeline steps</td><td><span class="y">7 steps</span></td><td>3 steps</td><td>LIA adds: pre_check, resolve_references, smart_extract, post_check</td></tr>
+    <tr style="background: #fef3c7;"><td class="dim"><b>v5 Advantages</b></td><td colspan="3" style="text-align: left; color: #92400e;">CostLadder (4-tier routing) · SupervisorGraph (15.2KB LangGraph w/ checkpointer) · Simpler codebase (easier to maintain) · DomainCatalog navigation routing</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  <b>Codebase:</b> lia-agent-system (Python/FastAPI) + plataforma-lia (Next.js 14/React) — both on Replit<br>
+  <b>Architecture:</b> compliance-by-design (universal) · 3 agent patterns · 12 domains · 10 libs · 230 services · 214 API endpoints<br>
+  <b>Source:</b> Verified against local Replit codebase, March 2026
+</div>
+</div>
+</body>
+</html>
