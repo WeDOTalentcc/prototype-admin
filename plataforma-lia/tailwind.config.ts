@@ -29,9 +29,17 @@ export default {
         // Fonte de verdade: design-tokens.css (--status-*)
         // Usar: text-status-success, bg-status-error, etc.
         // ──────────────────────────────────────────────
-        'status-success': '#16A34A',
-        'status-error':   '#DC2626',
-        'status-warning': '#D97706',
+        'status-success':              '#16A34A',
+        'status-error':                '#DC2626',
+        'status-warning':              '#D97706',
+        'status-success-bg':           'var(--status-success-bg)',
+        'status-error-bg':             'var(--status-error-bg)',
+        'status-warning-bg':           'var(--status-warning-bg)',
+        'status-error-border':         'var(--status-error-border)',
+        'status-warning-border':       'var(--status-warning-border)',
+        'status-warning-border-light': 'var(--status-warning-border-light)',
+        'gray-border':                 'var(--gray-border)',
+        'white-token':                 '#FFFFFF',
         // ──────────────────────────────────────────────
         // CHART — tons monocromáticos para visualização
         // Fonte de verdade: design-tokens.css (--chart-*)
