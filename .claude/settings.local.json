@@ -983,7 +983,6 @@
       "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -10)",
       "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -30)",
       "Bash(git push:*)",
-<<<<<<< Updated upstream
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(cd:*)",
@@ -996,7 +995,7 @@
       "Bash(for domain:*)",
       "Bash(head -5 find lia-agent-system -name fairness_audit*)",
       "Bash(git -C /home/runner/workspace log --oneline)",
-      "Bash(GH_TOKEN=\"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\" curl -s -H \"Authorization: token $GH_TOKEN\" \"https://api.github.com/user/repos?per_page=50&type=all\")",
+      "Bash(GH_TOKEN=\"REDACTED\" curl -s -H \"Authorization: token $GH_TOKEN\" \"https://api.github.com/user/repos?per_page=50&type=all\")",
       "Bash(curl:*)",
       "Bash(env)",
       "Bash(2)",
@@ -1010,7 +1009,7 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(wc -l /home/runner/workspace/plataforma-lia/src/components/ui/*.tsx)",
       "Bash(gh auth:*)",
-      "Bash(TOKEN=\"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\" curl -s -H \"Authorization: token $TOKEN\" \"https://api.github.com/orgs/WeDOTalent/repos\")",
+      "Bash(TOKEN=\"REDACTED\" curl -s -H \"Authorization: token $TOKEN\" \"https://api.github.com/orgs/WeDOTalent/repos\")",
       "Bash(find /home/runner/workspace/plataforma-lia -maxdepth 3 -type f \\\\\\(-name *.config.js -o -name *.config.ts -o -name nuxt.config.* \\\\\\))",
       "Bash(xargs sed:*)",
       "Bash(npm run:*)",
@@ -1120,8 +1119,7 @@
       "Bash(for dir:*)",
       "Bash(do echo:*)",
       "Bash(sort -k2 done)",
-      "Bash(grep -r \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\" --exclude-dir=node_modules --exclude-dir=.next)"
-=======
+      "Bash(grep -r \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\" --exclude-dir=node_modules --exclude-dir=.next)",
       "Bash(grep -rn \"class FairnessGuard\" /home/runner/workspace --include=\"*.py\" 2>/dev/null | head -3)",
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_sprint_ii_llm_quality.py -v --tb=short 2>&1 | head -120)",
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_sprint_ii_llm_quality.py -v --tb=short --no-cov 2>&1 | tail -30)",
@@ -1172,7 +1170,6 @@
       "Bash(python -m pytest --no-header -q 2>&1 | grep \"TOTAL\\\\|Required\\\\|passed\\\\|failed\" | tail -4)",
       "Bash(ls:*)",
       "Bash(git:*)"
->>>>>>> Stashed changes
     ]
   }
 }
