@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin } from "lucide-react"
+import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from "lucide-react"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { LIAFeedbackWidget } from "@/components/calibration"
 import { textStyles, badgeStyles, formatScore, formatScorePercent } from "@/lib/design-tokens"
@@ -267,7 +267,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => handleTabChangeWithWarning(tab.id)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
                   activeTab === tab.id
                     ? 'border-gray-950 text-gray-950 dark:border-gray-50 dark:text-gray-50'
