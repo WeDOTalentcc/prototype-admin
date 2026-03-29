@@ -272,7 +272,7 @@ export default function ContinuidadePage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-warning-bg">
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>

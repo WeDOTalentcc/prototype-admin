@@ -64,8 +64,8 @@ export function SkipCompetenciesWarningModal({
           </Button>
           <Button
             onClick={onConfirm}
-            className="flex-1 h-10 rounded-md"
-            style={{backgroundColor: 'var(--status-warning)', color: 'white'}}
+            className="flex-1 h-10 rounded-md bg-status-warning text-white"
+            
           >
             Confirmar assim mesmo
           </Button>

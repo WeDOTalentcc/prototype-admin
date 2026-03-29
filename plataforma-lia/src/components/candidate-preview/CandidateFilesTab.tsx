@@ -483,7 +483,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado há 2 dias
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--status-error-bg)', color: 'var(--status-error)'}}>
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-status-error-bg text-status-error" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Currículo
                       </Badge>
@@ -579,7 +579,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado hoje
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success)'}}>
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-status-success-bg text-status-success" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Foto
                       </Badge>

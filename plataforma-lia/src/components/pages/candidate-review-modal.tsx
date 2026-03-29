@@ -752,10 +752,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onIndexChange(currentIndex + 1)
                     }
                   }}
-                  className="w-full justify-center text-sm font-semibold"
-                  style={{backgroundColor: 'white',
-                    color: 'var(--status-success)',
-                    border: '2px solid var(--status-success)'}}
+                  className="w-full justify-center text-sm font-semibold bg-white text-status-success"
+                  style={{border: '2px solid var(--status-success)'}}
                 >
                   Approve
                   <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded-md">A</span>
@@ -768,10 +766,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onIndexChange(currentIndex + 1)
                     }
                   }}
-                  className="w-full justify-center text-sm font-semibold"
-                  style={{backgroundColor: 'white',
-                    color: 'var(--status-error)',
-                    border: '2px solid var(--status-error)'}}
+                  className="w-full justify-center text-sm font-semibold bg-white text-status-error"
+                  style={{border: '2px solid var(--status-error)'}}
                 >
                   Reject
                   <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded-md">R</span>

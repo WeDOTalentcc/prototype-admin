@@ -163,10 +163,8 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               <img
                 src={selectedFile.url || candidate.avatar_url || candidate.avatar}
                 alt={selectedFile.name}
-                style={{width: `${imageZoom}%`,
-                  maxWidth: '100%',
-                  height: 'auto'}}
-                className="rounded-md transition-all duration-300"
+                style={{width: `${imageZoom}%`, maxWidth: '100%'}}
+                className="rounded-md transition-all duration-300 "
               />
             </div>
           )}
@@ -270,7 +268,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--status-success)', color: 'white'}}>
+                        <Badge className="text-xs px-2 py-0.5 bg-status-success text-white" >
                           91% - Altamente Recomendado
                         </Badge>
                       </div>
@@ -458,7 +456,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Badge className="text-xs px-2 py-0.5" style={{backgroundColor: 'var(--status-success)', color: 'white'}}>
+                        <Badge className="text-xs px-2 py-0.5 bg-status-success text-white" >
                           93% - Altamente Recomendado
                         </Badge>
                       </div>

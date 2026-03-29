@@ -342,9 +342,7 @@ export default function IncidentesPage() {
         </div>
 
         <div 
-          className="rounded-md border p-4 mb-6 flex items-center gap-3"
-          style={{backgroundColor: 'var(--status-error-bg)',
-            borderColor: 'var(--status-error-border)'}}
+          className="rounded-md border p-4 mb-6 flex items-center gap-3 bg-status-error-bg border-status-error-border"
         >
           <AlertCircle className="w-5 h-5 text-status-error" />
           <div className="flex-1">
@@ -376,7 +374,7 @@ export default function IncidentesPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-warning-bg">
                   <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>

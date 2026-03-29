@@ -211,7 +211,7 @@ export function SearchPreviewCard({
                 size="sm"
                 onClick={onConfirmHybrid}
                 disabled={!canAffordPearch || isStillSearching}
-                className="flex-1 bg-gray-900" style={{color: "white"}}
+                className="flex-1 bg-gray-900 text-white"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Confirmar Busca
@@ -220,7 +220,7 @@ export function SearchPreviewCard({
               <Button
                 size="sm"
                 onClick={onProceedLocalOnly}
-                className="flex-1 bg-gray-900" style={{color: "white"}}
+                className="flex-1 bg-gray-900 text-white"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Ver {data.localCount} Candidatos

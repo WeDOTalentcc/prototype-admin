@@ -206,7 +206,7 @@ export default function RiscosPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{backgroundColor: 'var(--status-warning-bg)'}}>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-warning-bg">
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
@@ -329,19 +329,19 @@ export default function RiscosPage() {
               </div>
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500" >
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-success)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-success" />
                   <span>Baixo (1-4)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-warning" />
                   <span>Médio (5-9)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-warning" />
                   <span>Alto (10-14)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-error)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-error" />
                   <span>Crítico (15+)</span>
                 </div>
               </div>

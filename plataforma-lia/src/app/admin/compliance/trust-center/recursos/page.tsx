@@ -147,9 +147,9 @@ export default function RecursosPage() {
                       </button>
                     ) : (
                       <button 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors"
-                        style={{borderColor: 'var(--status-warning)',
-                          color: 'var(--status-warning)'}}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors text-status-warning" style={{
+                          borderColor: 'var(--status-warning)'
+                        }}
                         onClick={() => handleRequest(resource.name)}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -164,12 +164,10 @@ export default function RecursosPage() {
         </div>
 
         <div 
-          className="mt-6 p-4 rounded-md border"
-          style={{backgroundColor: 'var(--status-warning-bg)',
-            borderColor: 'var(--status-warning-border-light)'}}
+          className="mt-6 p-4 rounded-md border bg-status-warning-bg border-status-warning-border-light"
         >
           <div className="flex items-start gap-3">
-            <Lock className="w-5 h-5 shrink-0 mt-0.5" style={{color: 'var(--status-warning)'}} />
+            <Lock className="w-5 h-5 shrink-0 mt-0.5 text-status-warning" />
             <div>
               <h4 className="font-medium text-sm mb-1 text-gray-800 dark:text-gray-100" >
                 Documentos com Acesso Restrito

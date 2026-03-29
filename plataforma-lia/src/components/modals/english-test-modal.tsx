@@ -307,8 +307,8 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
           {status === 'in_progress' && (
             <div 
-              className="flex flex-col items-center justify-center py-8"
-              style={{color: 'var(--status-warning)'}}
+              className="flex flex-col items-center justify-center py-8 text-status-warning"
+              
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 

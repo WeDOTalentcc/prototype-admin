@@ -68,8 +68,8 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
   const getComparisonIcon = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore
-    if (diff > 5) return <TrendingUp className="w-3 h-3" style={{color: 'var(--status-success)'}} />
-    if (diff < -5) return <TrendingDown className="w-3 h-3" style={{color: 'var(--status-error)'}} />
+    if (diff > 5) return <TrendingUp className="w-3 h-3 text-status-success"  />
+    if (diff < -5) return <TrendingDown className="w-3 h-3 text-status-error"  />
     return <Minus className="w-3 h-3 text-gray-400" />
   }
 
@@ -302,8 +302,8 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
           {status === 'in_progress' && (
             <div 
-              className="flex flex-col items-center justify-center py-8"
-              style={{color: 'var(--status-warning)'}}
+              className="flex flex-col items-center justify-center py-8 text-status-warning"
+              
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 

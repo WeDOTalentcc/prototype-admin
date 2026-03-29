@@ -438,8 +438,7 @@ export default function SeguroCiberneticoPage() {
 
         {isExpiringSoon && !isExpired && activePolicy && (
           <div 
-            className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
-            style={{backgroundColor: 'var(--status-warning-bg)', borderLeftColor: 'var(--status-warning)'}}
+            className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3 bg-status-warning-bg" style={{ borderLeftColor: 'var(--status-warning)' }}
           >
             <AlertTriangle className="w-5 h-5 text-status-warning" />
             <div>

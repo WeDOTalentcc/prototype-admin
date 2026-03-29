@@ -360,10 +360,10 @@ export default function DashboardSegurancaPage() {
                 {eventsByDay.map((item, idx) => (
                   <div key={idx} className="flex flex-col items-center flex-1">
                     <div className="w-full flex flex-col-reverse rounded-t overflow-hidden" style={{height: `${(item.count / maxDayCount) * 100}%`, minHeight: '20px'}}>
-                      <div style={{height: `${(item.low / item.count) * 100}%`, backgroundColor: 'var(--status-success)'}} />
-                      <div style={{height: `${(item.medium / item.count) * 100}%`, backgroundColor: 'var(--status-warning)'}} />
-                      <div style={{height: `${(item.high / item.count) * 100}%`, backgroundColor: 'var(--status-warning)'}} />
-                      <div style={{height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)'}} />
+                      <div style={{ height: `${(item.low / item.count) * 100}%` }} className="bg-status-success" />
+                      <div style={{ height: `${(item.medium / item.count) * 100}%` }} className="bg-status-warning" />
+                      <div style={{ height: `${(item.high / item.count) * 100}%` }} className="bg-status-warning" />
+                      <div style={{ height: `${(item.critical / item.count) * 100}%` }} className="bg-status-error" />
                     </div>
                     <span className="text-xs font-medium mt-2 text-gray-800 dark:text-gray-100" >
                       {item.count}
@@ -376,19 +376,19 @@ export default function DashboardSegurancaPage() {
               </div>
               <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700" >
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-error)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-error" />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-warning" />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-warning)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-warning" />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-md" style={{backgroundColor: 'var(--status-success)'}} />
+                  <div className="w-3 h-3 rounded-md bg-status-success" />
                   <span className="text-xs text-gray-400 dark:text-gray-500" >Baixo</span>
                 </div>
               </div>

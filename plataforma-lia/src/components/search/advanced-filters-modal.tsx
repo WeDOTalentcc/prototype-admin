@@ -269,9 +269,9 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                         : "border-gray-200 hover:border-gray-300"
                     )}
                   >
-                    <Badge 
-                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none"}}
+                    <Badge
+                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
+                      style={{backgroundColor: "var(--gray-100)", border: "none"}}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>
@@ -304,9 +304,9 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                         : "border-gray-200 hover:border-gray-300"
                     )}
                   >
-                    <Badge 
-                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none"}}
+                    <Badge
+                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
+                      style={{backgroundColor: "var(--gray-100)", border: "none"}}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>

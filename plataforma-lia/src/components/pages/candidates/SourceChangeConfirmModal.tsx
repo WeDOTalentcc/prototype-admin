@@ -28,7 +28,7 @@ export function SourceChangeConfirmModal({
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-4 h-4 text-gray-700" />
               ) : (
-                <Globe className="w-4 h-4" style={{color: 'var(--status-warning)'}} />
+                <Globe className="w-4 h-4 text-status-warning" />
               )}
             </div>
             <div>
