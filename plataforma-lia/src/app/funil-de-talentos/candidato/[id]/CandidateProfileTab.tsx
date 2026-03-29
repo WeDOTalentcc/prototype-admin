@@ -16,13 +16,13 @@ interface CandidateProfileTabProps {
   skillCategories: Array<Record<string, unknown>>
   languagesData: Array<Record<string, unknown>>
   calculateAge: (date: string) => number | null
-  formatCurrency: (value: number) => string
+  formatCurrency: (value: number | null | undefined, currency?: string) => string
   formatDate: (date: string) => string
   formatDateShort: (date: string) => string
-  getLanguageLevel: (level: string) => string
-  hasDocuments: boolean
-  hasPearchData: boolean
-  hasPersonalData: boolean
+  getLanguageLevel: (level: string) => { label: string; percent: number; color: string }
+  hasDocuments: (c: Record<string, unknown>) => boolean
+  hasPearchData: (c: Record<string, unknown>) => boolean
+  hasPersonalData: (c: Record<string, unknown>) => boolean
 }
 
 export function CandidateProfileTab({
