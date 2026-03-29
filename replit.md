@@ -60,8 +60,11 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Utilitarias:** humanizer, pdf, pptx, agent-tools, find-skills, skill-creator
 
 # Architecture Diagrams
-- `docs/diagrams/lia-ai-architecture.excalidraw` — Complete AI architecture diagram (Excalidraw format, open at excalidraw.com). Shows: Frontend (React/Next.js) → Next.js API Proxy → FastAPI :8000 → MainOrchestrator (3 phases) → 6-tier Router → 11 Domain Agents → Shared Services (Intelligence, Compliance, Memory, Observability) → LLMs & External integrations.
-- `docs/diagrams/screenshots/lia-ai-architecture-top.jpg` — Screenshot reference of the diagram.
+- `docs/diagrams/architecture-transversal-unified.html` — Unified transversal architecture diagram (HTML). Shows v5 vs LIA side-by-side with transversal compliance bands crossing all 8 domains, coverage matrix (24 dim × 8 domains), 23 compliance concerns (C01-C23), Hub 13 components, dual pipelines, 3 architectural groups. Published at `/diagram-transversal.html`.
+- `docs/diagrams/recruiter-agent-v5-architecture.excalidraw` — Combined Excalidraw (1022 elements). v5 transversal layout (717 elements: hub, groups, coverage matrix, concerns, pipelines) + LIA side (305 elements). Open at excalidraw.com.
+- `docs/diagrams/recruiter-agent-v5-architecture-detailed.html` — v5 detailed HTML (10 layers). Published at `/diagram-v5-detailed.html`.
+- `docs/diagrams/lia-ai-architecture-detailed.html` — LIA detailed HTML (10 layers). Published at `/diagram-lia-detailed.html`.
+- `docs/diagrams/lia-ai-architecture.excalidraw` — Original LIA-only architecture diagram.
 
 # External Dependencies
 -   Anthropic (Claude API)

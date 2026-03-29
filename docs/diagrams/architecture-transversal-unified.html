@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeDO Talent — Arquitetura Transversal v5 vs LIA</title>
+<style>
+:root {
+  --c-critical: #dc2626;
+  --c-high: #ea580c;
+  --c-medhigh: #d97706;
+  --c-medium: #65a30d;
+  --c-ok: #16a34a;
+  --c-absent: #fecaca;
+  --c-present: #bbf7d0;
+  --c-partial: #fef3c7;
+  --c-v5: #1e40af;
+  --c-lia: #7c3aed;
+  --band-h: 28px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; font-size: 11px; line-height: 1.4; }
+.page { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+.main-title { text-align: center; font-size: 28px; font-weight: 800; background: linear-gradient(135deg, var(--c-v5), var(--c-lia)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2px; }
+.main-sub { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 6px; }
+.main-source { text-align: center; color: #94a3b8; font-size: 10px; margin-bottom: 24px; font-style: italic; }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+.panel { border-radius: 12px; padding: 16px; position: relative; overflow: hidden; }
+.panel-v5 { background: linear-gradient(180deg, rgba(219,234,254,0.4) 0%, rgba(255,255,255,0.9) 100%); border: 2px solid var(--c-v5); }
+.panel-lia { background: linear-gradient(180deg, rgba(237,233,254,0.4) 0%, rgba(255,255,255,0.9) 100%); border: 2px solid var(--c-lia); }
+.panel-title { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+.panel-title.v5 { color: var(--c-v5); }
+.panel-title.lia { color: var(--c-lia); }
+.panel-philosophy { font-size: 10px; color: #64748b; margin-bottom: 12px; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+.panel-philosophy.v5 { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+.panel-philosophy.lia { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+
+.entry-points { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.entry-point { background: #ede9fe; border: 1.5px solid #a78bfa; border-radius: 6px; padding: 4px 8px; font-size: 9px; color: #5b21b6; font-weight: 600; }
+.entry-point.exclusive { background: #dcfce7; border-color: #4ade80; color: #166534; }
+
+.orch-bar { background: linear-gradient(90deg, #fdba74, #fed7aa); border: 2px solid #ea580c; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; text-align: center; }
+.orch-bar .t { font-size: 12px; font-weight: 800; color: #9a3412; }
+.orch-bar .d { font-size: 9px; color: #9a3412; }
+
+.domains-container { position: relative; margin-bottom: 10px; }
+.domains-header { display: grid; gap: 2px; margin-bottom: 0; }
+.domain-col-header { text-align: center; font-size: 9px; font-weight: 700; padding: 4px 2px; border-radius: 4px 4px 0 0; color: #fff; }
+.group1-h { background: #3b82f6; }
+.group2-h { background: #8b5cf6; }
+.group3-h { background: #dc2626; }
+
+.transversal-section { position: relative; margin-top: 0; }
+.transversal-label { position: absolute; left: -4px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 8px; font-weight: 800; letter-spacing: 1px; color: #64748b; white-space: nowrap; z-index: 2; }
+
+.band-row { display: grid; gap: 1px; align-items: center; margin-bottom: 1px; }
+.band-name { font-size: 9px; font-weight: 700; padding: 3px 6px; background: #f1f5f9; border-radius: 3px 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; min-height: var(--band-h); }
+.band-cell { min-height: var(--band-h); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; border-radius: 2px; }
+.cell-yes { background: var(--c-present); color: #166534; }
+.cell-no { background: var(--c-absent); color: #991b1b; }
+.cell-partial { background: var(--c-partial); color: #92400e; }
+.cell-auto { background: #ddd6fe; color: #5b21b6; }
+
+.services-band { background: linear-gradient(90deg, rgba(59,130,246,0.08), rgba(59,130,246,0.15)); border: 1.5px solid #93c5fd; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+.services-band .t { font-size: 10px; font-weight: 700; color: var(--c-v5); margin-bottom: 4px; }
+.services-grid { display: flex; gap: 4px; flex-wrap: wrap; }
+.svc-chip { background: #dbeafe; border: 1px solid #93c5fd; border-radius: 4px; padding: 2px 6px; font-size: 8px; color: #1e40af; font-weight: 600; }
+
+.hub-section { position: relative; margin-bottom: 12px; }
+.hub-radial { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; padding: 8px; background: rgba(251,146,60,0.08); border: 2px solid #fb923c; border-radius: 10px; }
+.hub-chip { background: #ffedd5; border: 1.5px solid #fb923c; border-radius: 6px; padding: 4px 8px; font-size: 9px; color: #9a3412; font-weight: 700; text-align: center; min-width: 80px; }
+.hub-chip .sub { font-size: 7px; font-weight: 400; color: #c2410c; display: block; }
+.hub-chip.core { background: #fdba74; border-width: 2px; }
+
+.pipeline-section { margin-bottom: 12px; }
+.pipeline-flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 4px 0; }
+.pipeline-node { background: #fef3c7; border: 1.5px solid #d97706; border-radius: 6px; padding: 3px 8px; font-size: 8px; font-weight: 700; color: #92400e; white-space: nowrap; }
+.pipeline-arrow { font-size: 12px; color: #d97706; padding: 0 2px; font-weight: 900; }
+.pipeline-label { font-size: 10px; font-weight: 700; color: #92400e; margin-bottom: 2px; }
+
+.shared-wrap { position: relative; border: 3px solid #a78bfa; border-radius: 12px; padding: 10px; margin: 10px 0; background: rgba(167,139,250,0.04); }
+.shared-wrap-label { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #a78bfa; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 12px; border-radius: 10px; white-space: nowrap; }
+.shared-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; }
+.shared-item { background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px; padding: 4px 6px; font-size: 8px; color: #5b21b6; }
+.shared-item .t { font-weight: 700; font-size: 9px; }
+.shared-item .d { font-size: 7px; color: #7c3aed; }
+
+.section-label { font-size: 13px; font-weight: 800; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 2px solid; }
+.section-label.concerns { color: var(--c-critical); border-color: var(--c-critical); }
+.section-label.coverage { color: var(--c-v5); border-color: var(--c-v5); }
+.section-label.comparative { color: #0f766e; border-color: #0f766e; }
+
+.concerns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; margin-bottom: 20px; }
+.concern-card { border-radius: 8px; padding: 8px 10px; display: flex; align-items: flex-start; gap: 8px; }
+.concern-card.critical { background: #fef2f2; border: 1.5px solid #fca5a5; }
+.concern-card.high { background: #fff7ed; border: 1.5px solid #fdba74; }
+.concern-card.medhigh { background: #fefce8; border: 1.5px solid #fde047; }
+.concern-card.medium { background: #f0fdf4; border: 1.5px solid #86efac; }
+.concern-id { font-size: 11px; font-weight: 900; min-width: 32px; }
+.concern-id.critical { color: var(--c-critical); }
+.concern-id.high { color: var(--c-high); }
+.concern-id.medhigh { color: var(--c-medhigh); }
+.concern-id.medium { color: var(--c-medium); }
+.concern-text { font-size: 9px; font-weight: 600; color: #334155; }
+.concern-meta { font-size: 8px; color: #64748b; margin-top: 1px; }
+
+.coverage-full { overflow-x: auto; margin-bottom: 20px; }
+.coverage-full table { border-collapse: collapse; width: 100%; font-size: 9px; }
+.coverage-full th { background: #1e293b; color: #fff; padding: 5px 6px; font-weight: 700; text-align: center; white-space: nowrap; }
+.coverage-full th.dim { text-align: left; min-width: 160px; }
+.coverage-full td { padding: 4px 6px; text-align: center; border: 1px solid #e2e8f0; font-weight: 700; }
+.coverage-full tr:nth-child(even) { background: #f8fafc; }
+.coverage-full .section-row td { background: #334155; color: #e2e8f0; font-size: 8px; font-weight: 800; letter-spacing: 0.5px; }
+.coverage-full .c-yes { background: #dcfce7; color: #166534; }
+.coverage-full .c-no { background: #fee2e2; color: #991b1b; }
+.coverage-full .c-part { background: #fef9c3; color: #854d0e; }
+.coverage-full .c-auto { background: #ede9fe; color: #5b21b6; }
+
+.comparative-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
+.comparative-table th { background: #0f766e; color: #fff; padding: 6px 10px; text-align: left; }
+.comparative-table td { padding: 6px 10px; border: 1px solid #e2e8f0; }
+.comparative-table tr:nth-child(even) { background: #f0fdfa; }
+.winner-v5 { color: var(--c-v5); font-weight: 800; }
+.winner-lia { color: var(--c-lia); font-weight: 800; }
+
+.arch-groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.arch-group { border-radius: 10px; padding: 10px; }
+.arch-group.g1 { background: rgba(59,130,246,0.08); border: 2px solid #3b82f6; }
+.arch-group.g2 { background: rgba(139,92,246,0.08); border: 2px solid #8b5cf6; }
+.arch-group.g3 { background: rgba(220,38,38,0.08); border: 2px solid #dc2626; }
+.arch-group .gt { font-size: 11px; font-weight: 800; margin-bottom: 4px; }
+.arch-group .gt.g1 { color: #1d4ed8; }
+.arch-group .gt.g2 { color: #6d28d9; }
+.arch-group .gt.g3 { color: #b91c1c; }
+.arch-group .gd { font-size: 9px; color: #475569; }
+.arch-group .gdomains { font-size: 9px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+
+.infra-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.infra-chip { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px 8px; font-size: 9px; color: #475569; font-weight: 600; }
+
+.stats-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-card { flex: 1; min-width: 120px; background: #fff; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.stat-card .num { font-size: 24px; font-weight: 900; }
+.stat-card .num.bad { color: var(--c-critical); }
+.stat-card .num.ok { color: var(--c-ok); }
+.stat-card .num.warn { color: var(--c-high); }
+.stat-card .num.neutral { color: var(--c-v5); }
+.stat-card .label { font-size: 9px; color: #64748b; margin-top: 2px; }
+
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; padding: 6px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #475569; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+.lia-agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 4px; margin-bottom: 8px; }
+.lia-agent { background: #fef3c7; border: 1.5px solid #d97706; border-radius: 6px; padding: 5px 6px; text-align: center; }
+.lia-agent .t { font-size: 9px; font-weight: 700; color: #92400e; }
+.lia-agent .d { font-size: 7px; color: #a16207; }
+
+.footer-note { text-align: center; color: #94a3b8; font-size: 9px; margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="main-title">WeDO Talent — Arquitetura Transversal Comparativa</div>
+<div class="main-sub">Recruiter Agent v5 (Modular Opt-in) vs Plataforma LIA (Compliance-by-Design)</div>
+<div class="main-source">Fonte: Diagnóstico arquitetural por leitura direta de código — 8.070 linhas, 22/03/2026 via GitHub API + filesystem</div>
+
+<div class="stats-row">
+  <div class="stat-card"><div class="num neutral">8</div><div class="label">Domínios v5</div></div>
+  <div class="stat-card"><div class="num neutral">3</div><div class="label">Grupos Arquiteturais</div></div>
+  <div class="stat-card"><div class="num bad">6.5%</div><div class="label">Cobertura Compliance v5<br>(~12/184 pontos)</div></div>
+  <div class="stat-card"><div class="num ok">100%</div><div class="label">Cobertura Compliance LIA<br>(herança automática)</div></div>
+  <div class="stat-card"><div class="num bad">23</div><div class="label">Concerns Identificados<br>(8 CRÍTICOS)</div></div>
+  <div class="stat-card"><div class="num warn">13</div><div class="label">Componentes Hub v5</div></div>
+  <div class="stat-card"><div class="num neutral">2</div><div class="label">Pipelines LangGraph<br>Coexistentes</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SPLIT: v5 vs LIA SIDE BY SIDE                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="split">
+
+<!-- ─── v5 PANEL ─── -->
+<div class="panel panel-v5">
+  <div class="panel-title v5">Recruiter Agent v5 — Modular com Opt-in</div>
+  <div class="panel-philosophy v5">⚠️ compliance-by-discipline — cada domínio é responsável por seu próprio compliance</div>
+
+  <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:4px;">FRONTEND — 4 Prompts (ats_front: Nuxt 3 + Vue 3 + Vuetify 3)</div>
+  <div class="entry-points">
+    <div class="entry-point">① Prompt Global</div>
+    <div class="entry-point">② Prompt Vagas</div>
+    <div class="entry-point">③ Prompt Kanban</div>
+    <div class="entry-point">④ Prompt Sourcing</div>
+  </div>
+
+  <div class="orch-bar">
+    <div class="t">Orchestrator Hub — 13 Componentes</div>
+    <div class="d">orchestrator.py (626L) → SupervisorGraph (15.2KB) → DomainCatalog → WorkflowOrchestrator</div>
+  </div>
+
+  <div style="font-size:10px;font-weight:700;color:#475569;margin-bottom:6px;">3 GRUPOS ARQUITETURAIS — Domínios como Colunas</div>
+  <div class="arch-groups">
+    <div class="arch-group g1">
+      <div class="gt g1">Grupo 1 — Flat/Procedural</div>
+      <div class="gd">domain.py + actions/ + api_client.py<br>Sem LangGraph, sem sub-agentes</div>
+      <div class="gdomains">jobs · insights · messaging · applies</div>
+    </div>
+    <div class="arch-group g2">
+      <div class="gt g2">Grupo 2 — LangGraph Interno</div>
+      <div class="gd">+ graph.py + nodes.py + state.py<br>LangGraph com estados</div>
+      <div class="gdomains">evaluation · scheduling</div>
+    </div>
+    <div class="arch-group g3">
+      <div class="gt g3">Grupo 3 — Multi-Agent</div>
+      <div class="gd">+ agents/ + orchestrator.py<br>Sub-agentes especializados</div>
+      <div class="gdomains">sourced_profile · autonomous</div>
+    </div>
+  </div>
+
+  <!-- TRANSVERSAL BANDS -->
+  <div style="font-size:10px;font-weight:700;color:#475569;margin-bottom:4px;">BANDAS TRANSVERSAIS — Cobertura Real por Domínio</div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></span> Presente ✅</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#fee2e2;border:1px solid #fca5a5;"></span> Ausente ❌</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#fef9c3;border:1px solid #fde047;"></span> Parcial ⚠️</div>
+  </div>
+
+  <div class="transversal-section">
+    <!-- Grid: name + 8 domain columns -->
+    <!-- style for 9-col grid -->
+    <style>.v5-band { grid-template-columns: 100px repeat(8, 1fr); }</style>
+
+    <div class="band-row v5-band" style="margin-bottom:2px;">
+      <div style="font-size:7px;font-weight:700;color:#64748b;padding:2px 4px;"></div>
+      <div style="font-size:7px;font-weight:700;color:#3b82f6;text-align:center;">jobs</div>
+      <div style="font-size:7px;font-weight:700;color:#3b82f6;text-align:center;">appl.</div>
+      <div style="font-size:7px;font-weight:700;color:#8b5cf6;text-align:center;">eval.</div>
+      <div style="font-size:7px;font-weight:700;color:#8b5cf6;text-align:center;">sched.</div>
+      <div style="font-size:7px;font-weight:700;color:#dc2626;text-align:center;">srcp.</div>
+      <div style="font-size:7px;font-weight:700;color:#3b82f6;text-align:center;">insig.</div>
+      <div style="font-size:7px;font-weight:700;color:#3b82f6;text-align:center;">msg.</div>
+      <div style="font-size:7px;font-weight:700;color:#dc2626;text-align:center;">auto.</div>
+    </div>
+
+    <div class="band-row v5-band"><div class="band-name">fairness.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">cache.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">memory.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">cards.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">tasks.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">fact_checker.py</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">security.py</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">dispatcher.py</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">graph.py</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div></div>
+    <div class="band-row v5-band"><div class="band-name">agents/</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name">react_agent</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-yes">✅</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+
+    <div style="height:4px;background:linear-gradient(90deg,#e2e8f0,#cbd5e1,#e2e8f0);margin:4px 0;border-radius:2px;"></div>
+    <div style="font-size:8px;font-weight:700;color:#dc2626;margin:2px 0;">13 NOVAS DIMENSÕES — TODAS ❌ EM TODOS OS 8 DOMÍNIOS:</div>
+
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">audit/</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">guardrails</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">confidence</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">bias_audit</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">pii_masking</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#991b1b;">hiring_policy</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">feedback</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">anti_syco</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">persona</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">wsi_graph</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">checkpoints</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">dlq_service</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+    <div class="band-row v5-band"><div class="band-name" style="color:#854d0e;">semantic_i.</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div><div class="band-cell cell-no">❌</div></div>
+  </div>
+
+  <!-- v5 Services Band -->
+  <div class="services-band">
+    <div class="t">src/services/ — 39+ arquivos (globais, NÃO integrados por domínio)</div>
+    <div class="services-grid">
+      <div class="svc-chip">model_router.py</div>
+      <div class="svc-chip">semantic_cache.py</div>
+      <div class="svc-chip">cost_ladder.py</div>
+      <div class="svc-chip">circuit_breaker.py</div>
+      <div class="svc-chip">response_filter.py</div>
+      <div class="svc-chip">react_observer.py</div>
+      <div class="svc-chip">pii_filter.py (3 pat)</div>
+      <div class="svc-chip">security.py</div>
+      <div class="svc-chip">memory/mgr+store</div>
+      <div class="svc-chip">audit/ (4 arqs)</div>
+      <div class="svc-chip">feedback/tracker.py</div>
+      <div class="svc-chip">rabbitmq_svc.py</div>
+      <div class="svc-chip">checkpointer.py</div>
+    </div>
+  </div>
+
+  <!-- Dual Pipelines -->
+  <div class="pipeline-section">
+    <div class="pipeline-label">Pipeline 1: WorkflowOrchestrator (6 agentes sequenciais)</div>
+    <div class="pipeline-flow">
+      <div class="pipeline-node">IntentAnalyzer</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">APIPlannerAgent</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">PlanValidator</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">APIExecutor</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">DataProcessor</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">AnswerFormatter</div>
+    </div>
+    <div class="pipeline-label" style="margin-top:6px;">Pipeline 2: DomainWorkflow (3 nós LangGraph)</div>
+    <div class="pipeline-flow">
+      <div class="pipeline-node">classify_intent</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">execute_action</div><div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">format_response</div>
+    </div>
+  </div>
+
+  <div class="infra-bar">
+    <div class="infra-chip">PostgreSQL</div>
+    <div class="infra-chip">Redis</div>
+    <div class="infra-chip">RabbitMQ</div>
+    <div class="infra-chip">Rails 7.1 API</div>
+    <div class="infra-chip">Celery</div>
+    <div class="infra-chip">Gemini LLM</div>
+  </div>
+</div>
+
+<!-- ─── LIA PANEL ─── -->
+<div class="panel panel-lia">
+  <div class="panel-title lia">Plataforma LIA — Compliance-by-Design</div>
+  <div class="panel-philosophy lia">✅ compliance-by-design — herança obrigatória injeta compliance em todos os agentes</div>
+
+  <div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:4px;">FRONTEND — 5 Prompts (plataforma-lia: Next.js 15 + React 19 + Tailwind)</div>
+  <div class="entry-points">
+    <div class="entry-point">① Prompt Global</div>
+    <div class="entry-point">② Prompt Vagas</div>
+    <div class="entry-point">③ Prompt Kanban</div>
+    <div class="entry-point">④ Prompt Sourcing</div>
+    <div class="entry-point exclusive">⑤ Policy Config ★ exclusivo</div>
+  </div>
+
+  <div class="orch-bar" style="background:linear-gradient(90deg,#c4b5fd,#ddd6fe);border-color:#7c3aed;">
+    <div class="t" style="color:#5b21b6;">Orchestrator Central</div>
+    <div class="d" style="color:#6d28d9;">DomainOrchestrator → LangGraphReActBase → EnhancedAgentMixin → Todos os agentes</div>
+  </div>
+
+  <!-- TRANSVERSAL WRAP: EnhancedAgentMixin -->
+  <div class="shared-wrap" style="border-color:#16a34a;background:rgba(22,163,74,0.03);">
+    <div class="shared-wrap-label" style="background:#16a34a;">EnhancedAgentMixin — TRANSVERSAL AUTOMÁTICA (1 linha de herança)</div>
+
+    <div style="font-size:9px;font-weight:700;color:#166534;margin-bottom:6px;text-align:center;">Cada agente herda TODOS estes concerns automaticamente via _setup_enhanced()</div>
+
+    <div class="shared-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">FairnessGuard</div><div class="d" style="color:#15803d;">3 layers: regex + implícito + LLM</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">AuditTrail</div><div class="d" style="color:#15803d;">SOX-compliant, append-only</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">PII Masking</div><div class="d" style="color:#15803d;">4 camadas pré-LLM</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">GuardrailRepo</div><div class="d" style="color:#15803d;">13 regras em DB, editável em prod</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ConfidenceNode</div><div class="d" style="color:#15803d;">Calibração de certeza</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">BiasAuditSnap</div><div class="d" style="color:#15803d;">Four-Fifths Rule</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">FactChecker</div><div class="d" style="color:#15803d;">4 tipos de claim, pós-LLM</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">HiringPolicy</div><div class="d" style="color:#15803d;">Per-tenant, injetada</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">WorkingMemory</div><div class="d" style="color:#15803d;">MemorySaver LangGraph</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">CircuitBreaker</div><div class="d" style="color:#15803d;">Por provider LLM</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ToneFilter</div><div class="d" style="color:#15803d;">response_filter.py</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ReActObserver</div><div class="d" style="color:#15803d;">+ Prometheus metrics</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">LearningLoop</div><div class="d" style="color:#15803d;">+ fairness gate F1-02</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">AntiSycophancy</div><div class="d" style="color:#15803d;">3 variantes, 100% agentes</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">PromptInjection</div><div class="d" style="color:#15803d;">Guard centralizado</div></div>
+      <div class="shared-item" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">HITL Gate</div><div class="d" style="color:#15803d;">Ações ativas requerem aprovação</div></div>
+    </div>
+
+    <div style="font-size:9px;font-weight:700;color:#166534;margin-top:8px;text-align:center;">11 AGENTES — TODOS recebem as 16 capacidades acima:</div>
+    <div class="lia-agents-grid" style="margin-top:4px;">
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Orchestrator</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">JobPlanner</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Sourcing</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">CV Screening</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Interviewer</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">WSI Evaluator</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Scheduling</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">Analyst</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ATS Integrator</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">RecruiterAssist</div></div>
+      <div class="lia-agent" style="background:#dcfce7;border-color:#86efac;"><div class="t" style="color:#166534;">ProactiveInsights</div></div>
+    </div>
+  </div>
+
+  <!-- LIA Shared Infrastructure -->
+  <div class="shared-wrap">
+    <div class="shared-wrap-label">app/shared/ — 14 Subdiretórios Compartilhados</div>
+    <div class="shared-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="shared-item"><div class="t">agents/</div><div class="d">LangGraphReActBase, ReActObserver</div></div>
+      <div class="shared-item"><div class="t">compliance/</div><div class="d">fairness_guard, guardrail_repo, fact_checker</div></div>
+      <div class="shared-item"><div class="t">resilience/</div><div class="d">circuit_breaker (883L)</div></div>
+      <div class="shared-item"><div class="t">robustness/</div><div class="d">response_filter, tone_filter</div></div>
+      <div class="shared-item"><div class="t">prompts/</div><div class="d">anti_sycophancy_block (3 variantes)</div></div>
+      <div class="shared-item"><div class="t">intelligence/</div><div class="d">embedding_svc, semantic_search</div></div>
+      <div class="shared-item"><div class="t">security/</div><div class="d">prompt_injection_guard</div></div>
+      <div class="shared-item"><div class="t">learning/</div><div class="d">learning_loop (1137L), A/B testing</div></div>
+      <div class="shared-item"><div class="t">memory/</div><div class="d">working_memory_service</div></div>
+      <div class="shared-item"><div class="t">cache/</div><div class="d">domain_cache_service</div></div>
+      <div class="shared-item"><div class="t">observability/</div><div class="d">tracing.py, structured_logging</div></div>
+      <div class="shared-item"><div class="t">config/</div><div class="d">feature_flags, tenant_config</div></div>
+    </div>
+  </div>
+
+  <div style="font-size:9px;font-weight:700;color:#7c3aed;margin-top:4px;">10 Libs Independentes (libs/)</div>
+  <div class="services-grid" style="margin-top:2px;">
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-audit</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-fairness</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-wsi</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-pii</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-resilience</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-cache</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-memory</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-observability</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-guardrails</div>
+    <div class="svc-chip" style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;">lia-learning</div>
+  </div>
+
+  <div class="infra-bar" style="margin-top:8px;">
+    <div class="infra-chip">PostgreSQL</div>
+    <div class="infra-chip">Redis</div>
+    <div class="infra-chip">FastAPI</div>
+    <div class="infra-chip">Alembic 25 migrações</div>
+    <div class="infra-chip">Gemini + Claude + GPT</div>
+    <div class="infra-chip">Prometheus</div>
+  </div>
+</div>
+</div><!-- end split -->
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- HUB v5 — 13 COMPONENTES (radial)                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="section-label" style="color:#ea580c;border-color:#ea580c;">Hub v5 — 13 Componentes Centrais (Orchestrator Layer)</div>
+<div class="hub-radial">
+  <div class="hub-chip core"><div>SupervisorGraph</div><span class="sub">15.2KB — orquestra tudo</span></div>
+  <div class="hub-chip core"><div>DomainCatalog</div><span class="sub">Registry de 8 domínios</span></div>
+  <div class="hub-chip core"><div>WorkflowOrchestrator</div><span class="sub">Pipeline 6 agentes</span></div>
+  <div class="hub-chip core"><div>DomainWorkflow</div><span class="sub">Pipeline 3 nós LangGraph</span></div>
+  <div class="hub-chip"><div>ToolRegistry</div><span class="sub">src/tools/ — registry central</span></div>
+  <div class="hub-chip"><div>CandidateResolver</div><span class="sub">Resolve IDs candidatos</span></div>
+  <div class="hub-chip"><div>RailsAPIClient</div><span class="sub">HTTP → Rails 7.1</span></div>
+  <div class="hub-chip"><div>IntentClassifier</div><span class="sub">Classificação de intenção</span></div>
+  <div class="hub-chip"><div>ContextBuilder</div><span class="sub">Enriquece contexto</span></div>
+  <div class="hub-chip"><div>ResponseFormatter</div><span class="sub">Formata respostas</span></div>
+  <div class="hub-chip"><div>SessionManager</div><span class="sub">Gerencia sessões</span></div>
+  <div class="hub-chip"><div>ErrorHandler</div><span class="sub">Tratamento centralizado</span></div>
+  <div class="hub-chip"><div>ModelRouter</div><span class="sub">Seleção dinâmica LLM</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 23 COMPLIANCE CONCERNS                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="section-label concerns">23 Compliance Concerns — Classificados por Risco (v5)</div>
+<div style="margin-bottom:8px;">
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#fef2f2;border:2px solid #dc2626;"></span> CRÍTICO (C01-C08) — responsabilidade legal/financeira</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#fff7ed;border:2px solid #ea580c;"></span> ALTO (C09-C12) — risco regulatório</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#fefce8;border:2px solid #d97706;"></span> MED-ALTO (C13-C18) — manutenção/confiança</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#f0fdf4;border:2px solid #65a30d;"></span> MÉDIO (C19-C23) — gap funcional</div>
+  </div>
+</div>
+<div class="concerns-grid">
+  <div class="concern-card critical"><div class="concern-id critical">C01</div><div><div class="concern-text">FairnessGuard ausente</div><div class="concern-meta">evaluation — CLT Art.5, Lei 9.029 · 2/8 domínios apenas</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C02</div><div><div class="concern-text">BiasAuditSnapshot ausente</div><div class="concern-meta">evaluation, applies — EU AI Act Art.9 · 0/8 domínios</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C03</div><div><div class="concern-text">PII masking pré-LLM ausente</div><div class="concern-meta">todos (8/8) — LGPD Art.12, 46 · dados pessoais vão ao LLM sem máscara</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C04</div><div><div class="concern-text">Audit trail opt-in</div><div class="concern-meta">todos (8/8) — SOX, BCB-498 · auditoria não é automática</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C05</div><div><div class="concern-text">Audit trail mutável</div><div class="concern-meta">todos (8/8) — SOX, BCB-498 · registros podem ser alterados</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C06</div><div><div class="concern-text">Retenção 90d (SOX = 7 anos)</div><div class="concern-meta">todos (8/8) — SOX, BCB-498 · retenção insuficiente</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C07</div><div><div class="concern-text">GuardrailRepository ausente</div><div class="concern-meta">autonomous — Ética em IA · sem regras editáveis em prod</div></div></div>
+  <div class="concern-card critical"><div class="concern-id critical">C08</div><div><div class="concern-text">PromptInjectionGuard ausente</div><div class="concern-meta">autonomous, applies — Segurança · dados externos sem sanitização</div></div></div>
+
+  <div class="concern-card high"><div class="concern-id high">C09</div><div><div class="concern-text">ConfidenceNode ausente</div><div class="concern-meta">evaluation — Transparência IA · sem calibração de certeza</div></div></div>
+  <div class="concern-card high"><div class="concern-id high">C10</div><div><div class="concern-text">HiringPolicy ausente</div><div class="concern-meta">todos (8/8) — Multi-tenant · sem política por empresa</div></div></div>
+  <div class="concern-card high"><div class="concern-id high">C11</div><div><div class="concern-text">FactChecker ausente em evaluation</div><div class="concern-meta">evaluation (scores) — Precisão factual · claims sem verificação</div></div></div>
+  <div class="concern-card high"><div class="concern-id high">C12</div><div><div class="concern-text">LearningLoop sem fairness gate</div><div class="concern-meta">todos (8/8) — F1-02 WeDO · pode amplificar vieses</div></div></div>
+
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C13</div><div><div class="concern-text">Persona hardcoded</div><div class="concern-meta">autonomous — Manutenção</div></div></div>
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C14</div><div><div class="concern-text">Anti-sycophancy ausente</div><div class="concern-meta">evaluation — Qualidade LLM</div></div></div>
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C15</div><div><div class="concern-text">AuditCallback sem cost_usd</div><div class="concern-meta">todos — Governança de custo (v5 TEM; LIA falta)</div></div></div>
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C16</div><div><div class="concern-text">Criptografia audit ausente</div><div class="concern-meta">todos — ISO 27001</div></div></div>
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C17</div><div><div class="concern-text">Circuit breaker por domínio</div><div class="concern-meta">todos — Resiliência</div></div></div>
+  <div class="concern-card medhigh"><div class="concern-id medhigh">C18</div><div><div class="concern-text">Semantic cache desabilitado</div><div class="concern-meta">todos — SEMANTIC_CACHE_ENABLED=false</div></div></div>
+
+  <div class="concern-card medium"><div class="concern-id medium">C19</div><div><div class="concern-text">Memory inconsistente (5/8)</div><div class="concern-meta">scheduling, eval — Coerência UX</div></div></div>
+  <div class="concern-card medium"><div class="concern-id medium">C20</div><div><div class="concern-text">Cache inconsistente (6/8)</div><div class="concern-meta">eval, autonomous — Performance</div></div></div>
+  <div class="concern-card medium"><div class="concern-id medium">C21</div><div><div class="concern-text">HARD_BUDGET sem fairness</div><div class="concern-meta">autonomous — Governança</div></div></div>
+  <div class="concern-card medium"><div class="concern-id medium">C22</div><div><div class="concern-text">DLQ ausente por domínio</div><div class="concern-meta">todos — Resiliência async</div></div></div>
+  <div class="concern-card medium"><div class="concern-id medium">C23</div><div><div class="concern-text">Checkpointer global não usado</div><div class="concern-meta">jobs, applies, msg — Continuidade</div></div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- COMPARATIVE TABLE                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="section-label comparative">Veredicto Comparativo por Dimensão</div>
+<table class="comparative-table">
+  <tr><th>Dimensão</th><th>v5</th><th>LIA</th><th>Vencedor</th></tr>
+  <tr><td>Compliance garantido</td><td>Opt-in, não exercido em 75%</td><td>Herança obrigatória</td><td class="winner-lia">LIA</td></tr>
+  <tr><td>Consistência arquitetural</td><td>3 grupos coexistentes</td><td>1 padrão unificado</td><td class="winner-lia">LIA</td></tr>
+  <tr><td>Observabilidade</td><td>Manual, logs texto plano</td><td>ReActObserver + Prometheus</td><td class="winner-lia">LIA</td></tr>
+  <tr><td>Paralelismo de agentes</td><td>asyncio.gather (Grupo 3)</td><td>Sequential (ReAct cycle)</td><td class="winner-v5">v5</td></tr>
+  <tr><td>Roteamento dinâmico LLM</td><td>ModelRouter dinâmico</td><td>Circuit breaker estático</td><td class="winner-v5">v5</td></tr>
+  <tr><td>Latência caminho simples</td><td>50-200ms</td><td>2-10s</td><td class="winner-v5">v5</td></tr>
+  <tr><td>Separação dados/IA</td><td>HTTP → Rails (fronteira clara)</td><td>SQL direto nos agents</td><td class="winner-v5">v5</td></tr>
+  <tr><td>Custo 9º domínio</td><td>Reimplementa compliance (0L real)</td><td>0 linhas (herdado)</td><td class="winner-lia">LIA</td></tr>
+  <tr><td>Learning Loop</td><td>tracker.py básico (88L)</td><td>1137L + A/B + fairness gate</td><td class="winner-lia">LIA</td></tr>
+  <tr><td>Guardrails em produção</td><td>Hardcoded, requer deploy</td><td>DB editável, efeito imediato</td><td class="winner-lia">LIA</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FULL COVERAGE MATRIX                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="section-label coverage">Matriz Completa de Cobertura — 24 Dimensões × 8 Domínios v5 + LIA</div>
+<div class="coverage-full">
+<table>
+<tr>
+  <th class="dim">Dimensão / Arquivo</th>
+  <th style="background:#3b82f6;">jobs</th>
+  <th style="background:#3b82f6;">appl.</th>
+  <th style="background:#8b5cf6;">eval.</th>
+  <th style="background:#8b5cf6;">sched.</th>
+  <th style="background:#dc2626;">srcp.</th>
+  <th style="background:#3b82f6;">insig.</th>
+  <th style="background:#3b82f6;">msg.</th>
+  <th style="background:#dc2626;">auto.</th>
+  <th style="background:#475569;">[srvcs]</th>
+  <th style="background:#7c3aed;">LIA</th>
+</tr>
+<tr class="section-row"><td colspan="11">DIMENSÕES ORIGINAIS (Seção 5 do Diagnóstico)</td></tr>
+<tr><td>fairness.py</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>cache.py</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>memory.py</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>cards.py</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>tasks.py (Celery)</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td></tr>
+<tr><td>fact_checker.py</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>security.py</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>dispatcher.py</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>graph.py / nodes.py</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>agents/ (sub-agentes)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>react_agent.py</td><td class="c-no">❌</td><td class="c-yes">✅</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr class="section-row"><td colspan="11">NOVAS DIMENSÕES (verificadas 20/03/2026) — TODAS ❌ nos 8 domínios v5</td></tr>
+<tr><td>audit/ (callback+writer+storage)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>feedback/ (learning loop)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>guardrails.py (DB persistido)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>confidence.py (calibração)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>dlq_service.py (dead letter)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>hiring_policy.py (per-tenant)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>checkpoints/ (LangGraph)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>bias_audit.py (Four-Fifths)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>wsi_interview_graph.py</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>pii_masking.py (pré-LLM 4 cam.)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>persona.py (YAML centralizada)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>anti_sycophancy.py</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-auto">✅ auto</td></tr>
+<tr><td>semantic_intel.py (embed+search)</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-no">❌</td><td class="c-part">⚠️</td><td class="c-auto">✅ auto</td></tr>
+</table>
+</div>
+
+<div class="footer-note">
+  Fonte: Diagnóstico arquitetural completo (8.070 linhas) — leitura direta de código v5 via GitHub API (22/03/2026) + LIA via filesystem.<br>
+  Todos os dados foram verificados por leitura de código real, não por documentação.
+</div>
+
+</div><!-- end page -->
+</body>
+</html>

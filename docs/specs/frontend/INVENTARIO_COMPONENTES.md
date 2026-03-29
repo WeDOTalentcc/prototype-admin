@@ -3,11 +3,11 @@
 
 > **Última atualização:** 2026-03-29 (Revisão automática — análise profunda do código atual vs. documentado)
 > **Arquitetura:** Bridge Architecture — 3 camadas de abstração (CSS vars → framework config → componentes) — ver Seção 0
-> **Componentes:** 684 .tsx em 48+ diretórios (684 confirmados via `find` em 2026-03-29)
+> **Componentes:** 691 .tsx em 50+ diretórios (691 confirmados via `find` em 2026-03-29)
 > **Hooks:** 101 em `src/hooks/` + hooks em subdiretórios = **202 total** (contagem revisada 2026-03-29)
 > **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
 > **Rotas:** 90 page routes + 5 layouts + 424 API endpoints
-> **CSS:** 242 variáveis, 29 keyframes, 200+ classes customizadas, 169 ícones Lucide
+> **CSS:** 428 variáveis (262 design-tokens.css + 166 globals.css), 29+ keyframes, 200+ classes customizadas, 169+ ícones Lucide
 > **Localização:** `plataforma-lia/src/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
 >
@@ -16,7 +16,7 @@
 > ✅ Fase 4 — Split de monolitos — `lia-api.ts` (4.853L) foi splitado em 14 módulos (`lia-api/` dir, 4.869L total, maior: `types.ts` 1.909L). Restam 2 arquivos >2.000L: `useCandidatesPageCore.tsx` (3.676L), `useJobsPageCore.tsx` (3.459L). `goals-management.tsx` (2.296L) e `tasks-page.tsx` (2.174L) ainda acima do limite.
 > 🔄 Fase 5 — Inline styles: 247 arq / 1.193 occ (era 238 arq / 1.439 occ — **ocorrências reduziram 17%**, arquivos subiram +9 pelo crescimento do projeto)
 > ✅ Fases 6–9 — Bridge, Design Audit, Code Review, Auditoria 14D (executadas)
-> ⏳ Fase 10 — Score Frontend 9.0+ (P0-P6 planejados, 4 sprints multi-agent)
+> ⚠️ Fase 10 — Score Frontend 9.0+ (Sprint 1A✅ 1B✅ 2✅ | Sprint 3+4 pendentes | P0-P6 em execução)
 > **Score Frontend:** 7.6/10 → target 9.0/10 | **Unsafe any:** ~1.413 ocorrências (subiu vs. 1.189 — projeto cresceu 180 novos arquivos) | **rgba:** 8 arq (era 25 — ✅ **-68%**)
 > **Testes:** 23 arquivos de teste (era 5 — ✅ **+18 novos testes**, cobertura de hooks melhorou significativamente)
 
@@ -271,7 +271,7 @@ Componentes primitivos reutilizáveis. Base do design system.
 | 7 | `badge` | 102 | Primitivo | 8 variantes: default, secondary, destructive, outline, success, warning, info, lilac |
 | 8 | `big-five-profile` | 171 | Especializado | Radar chart Big Five |
 | 9 | `bulk-selection-bar` | 255 | Especializado | Barra de seleção em massa |
-| 10 | `button` | 57 | Primitivo | 6 variantes + 4 tamanhos. Base do DS |
+| 10 | `button` | 57 | Primitivo | 7 variantes (`default`, `primary`, `destructive`, `outline`, `secondary`, `ghost`, `link`) + 4 tamanhos. Base do DS |
 | 11 | `candidate-card` | 399 | Especializado | Card de candidato com score, tags, ações |
 | 12 | `candidate-queries-guide` | 204 | Especializado | Guia de queries para candidatos |
 | 13 | `card` | 79 | Primitivo | Card genérico com Header/Content/Footer |
@@ -1456,27 +1456,54 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 
 ## 28. CSS Infrastructure & Style System
 
-### 28.1 CSS Variables — 242 variáveis em 2 arquivos
+### 28.1 CSS Variables — 428 variáveis em 2 arquivos
 
-**`design-tokens.css` (:root) — 92 variáveis (fonte de verdade):**
+**`design-tokens.css` (:root) — 262 variáveis (fonte de verdade — atualizado 2026-03-29):**
 
-| Categoria | Variáveis | Exemplos |
-|-----------|-----------|---------|
-| Backgrounds | 4 | `--lia-bg-primary`, `--lia-bg-secondary`, `--lia-bg-tertiary`, `--lia-bg-hover` |
-| Borders | 3 | `--lia-border-subtle`, `--lia-border-default`, `--lia-border-strong` |
-| Text | 5 | `--lia-text-primary` (#111827), `--lia-text-secondary`, `--lia-text-tertiary`, `--lia-text-disabled`, `--lia-text-inverse` |
-| Interactive | 3 | `--lia-interactive-primary`, `--lia-interactive-hover`, `--lia-interactive-active` |
-| Shadows | 4 | `--lia-shadow-sm`, `--lia-shadow-default`, `--lia-shadow-md`, `--lia-shadow-lg` |
-| Brand WeDo | 4 | `--lia-brand-primary`, `--lia-brand-secondary`, `--lia-brand-accent`, `--lia-brand-light` |
-| WeDo Colors | 18 | `--wedo-cyan` (#60BED1), `--wedo-green`, `--wedo-orange`, `--wedo-purple`, `--wedo-magenta`, etc. |
-| Status | 12 | `--lia-status-success`, `--lia-status-error`, `--lia-status-warning`, `--lia-status-info`, `--lia-cat-*` |
-| Components | 15 | `--lia-card-bg`, `--lia-input-bg`, `--lia-sidebar-bg`, etc. |
-| Typography | 7 | `--font-size-xs` (11px), `--font-size-micro` (10px), `--font-size-sm-ui` (12px), `--font-size-base-ui` (13px), etc. |
-| Gray Scale | 8 | `--lia-gray-50` a `--lia-gray-900` |
-| Chart | 4 | `--lia-chart-1` a `--lia-chart-4` |
-| Text Hierarchy | 8 | `--heading-*`, `--body-*` |
+> **Nota:** A contagem cresceu de 92 → 262 entre 2026-03-27 e 2026-03-29. As 170 novas variáveis foram adicionadas nas Fases 1-9 (gray scale explícito, overlays, status variants, color bg variants, z-index semântico, spacing, layout).
 
-**`globals.css` (@layer base :root) — 150 variáveis adicionais:**
+| Categoria | Qtd vars | Exemplos |
+|-----------|----------|---------|
+| **LIA — Backgrounds** | 4 | `--lia-bg-primary` (#FFF), `--lia-bg-secondary` (#F9FAFB), `--lia-bg-tertiary` (#F3F4F6), `--lia-bg-elevated` |
+| **LIA — Borders** | 3 | `--lia-border-subtle` (#E5E7EB), `--lia-border-default` (#D1D5DB), `--lia-border-medium` (#9CA3AF) |
+| **LIA — Text** | 8 | `--lia-text-primary` (#111827), `--lia-text-secondary` (#6B7280), `--lia-text-tertiary` (#9CA3AF), `--lia-text-disabled`, `--lia-text-inverse`, `--lia-text-black`, `--lia-text-body`, `--lia-text-dark`, `--lia-text-muted` |
+| **LIA — Interactive** | 3 | `--lia-interactive-hover` (#F3F4F6), `--lia-interactive-active` (#E5E7EB), `--lia-interactive-focus` (#111827) |
+| **LIA — Shadows** | 4 | `--lia-shadow-sm`, `--lia-shadow-default`, `--lia-shadow-md`, `--lia-shadow-lg` |
+| **LIA — Brand** | 4 | `--lia-brand-primary` (#C74446), `--lia-brand-primary-hover` (#B23B3D), `--lia-brand-primary-light` (#FEF2F2), `--lia-brand-primary-rgb` (199,68,70) |
+| **LIA — Info** | 2 | `--lia-info-color` (#60BED1), `--lia-info-light` (#A8CED5) |
+| **LIA — Status (badges)** | 9 | `--lia-status-high-bg/text/border`, `--lia-status-medium-bg/text/border`, `--lia-status-low-bg/text/border` |
+| **LIA — Destructive** | 3 | `--lia-destructive-bg`, `--lia-destructive-text`, `--lia-destructive-border` |
+| **LIA — Buttons** | 9 | `--lia-btn-primary-bg/hover/text`, `--lia-btn-secondary-bg/hover/text/border`, `--lia-btn-ghost-bg/hover/text` |
+| **LIA — Badges** | 3 | `--lia-badge-neutral-bg` (#F3F4F6), `--lia-badge-neutral-text` (#6B7280), `--lia-badge-neutral-border` (#E5E7EB) |
+| **LIA — Input/Forms** | 6 | `--lia-input-bg`, `--lia-input-border`, `--lia-input-border-focus` (#60BED1), `--lia-input-focus-ring`, `--lia-input-text`, `--lia-input-placeholder` |
+| **LIA — Categories** | 5 | `--lia-cat-candidates`, `--lia-cat-industry`, `--lia-cat-interviews`, `--lia-cat-jobs`, `--lia-cat-reports` |
+| **WeDo — Cyan (LIA/AI)** | 11 | `--wedo-cyan` (#60BED1), `--wedo-cyan-dark`, `--wedo-cyan-light`, `--wedo-cyan-hover`, `--wedo-cyan-focus-ring`, `--wedo-cyan-focus-border`, `--wedo-cyan-border`, `--wedo-cyan-shadow`, `--wedo-cyan-bg-02/04/05/06/08/10/12/15/20` |
+| **WeDo — Green** | 8 | `--wedo-green` (#5DA47A), `--wedo-green-light`, `--wedo-green-hover`, `--wedo-green-success` (#60D186), `--wedo-green-active-15`, `--wedo-green-bg-10/15/20`, `--wedo-green-light-bg-20` |
+| **WeDo — Orange** | 5 | `--wedo-orange` (#D19960), `--wedo-orange-light`, `--wedo-orange-hover`, `--wedo-orange-alert`, `--wedo-orange-bg-10/15` |
+| **WeDo — Purple** | 4 | `--wedo-purple` (#9860D1), `--wedo-purple-light`, `--wedo-purple-hover`, `--wedo-purple-bg-10` |
+| **WeDo — Magenta** | 3 | `--wedo-magenta` (#D160AB), `--wedo-magenta-light`, `--wedo-magenta-hover` |
+| **WeDo — Amber** | 3 | `--wedo-amber` (#F59E0B), `--wedo-amber-light`, `--wedo-amber-hover` (#D97706) |
+| **WeDo — Blue (legado)** | 3 | `--wedo-blue` (#3B82F6), `--wedo-blue-bg-10`, `--wedo-blue-bg-20` |
+| **WeDo — Text Classes** | 4 | `--wedo-text-title`, `--wedo-text-body`, `--wedo-text-secondary`, `--wedo-text-muted` |
+| **Status — Success** | 4 | `--status-success` (#16A34A), `--status-success-bg`, `--status-success-bg-15`, `--status-success-shadow` |
+| **Status — Error** | 7 | `--status-error` (#DC2626), `--status-error-bg`, `--status-error-border`, `--status-error-border-strong`, `--status-error-bg-08/12/15/20` |
+| **Status — Warning** | 9 | `--status-warning` (#D97706), `--status-warning-bg`, `--status-warning-border`, `--status-warning-border-light`, `--status-warning-bg-05/08/12/15`, `--status-warning-bg-amber`, `--status-warning-bg-amber-03` |
+| **Gray Scale explícito** | 14 | `--gray-50/100/200/300/400/500/600/800/950`, `--gray-200-bg-20`, `--gray-300-bg-20`, `--gray-600-bg-10/12`, `--gray-border` |
+| **Gray BG (opacity)** | 8 | `--gray-bg-05/10/12/15/20/30`, `--gray-light-bg-20`, `--gray-bg-05` |
+| **Overlay (opacity)** | 14 | `--overlay-04/05/10`, `--overlay-white-50/52/58/64/68/70/78/80/82/88/95` |
+| **Terceiros (Brand)** | 4 | `--whatsapp-bg` (#E5DDD5), `--whatsapp-bubble` (#DCF8C6), `--whatsapp-green` (#25D366), `--white` |
+| **Login** | 1 | `--login-bg-gradient` (linear-gradient céu azul para login page) |
+| **Shadow extra** | 1 | `--shadow-subtle` |
+| **Typography** | 4 | `--font-size-xs` (11px), `--font-size-micro` (10px), `--font-size-sm-ui` (12px), `--font-size-base-ui` (13px) |
+| **Line Heights** | 4 | `--line-height-tight`, `--line-height-normal`, `--line-height-relaxed`, `--line-height-body` |
+| **Chart** | 4 | `--chart-1` (#030712 100%), `--chart-2` (60%), `--chart-3` (35%), `--chart-4` (15%) |
+| **Z-Index Semântico** | 10 | `--z-base` (0), `--z-raised` (10), `--z-dropdown` (40), `--z-sticky` (50), `--z-overlay` (60), `--z-toast` (100), `--z-select` (200), `--z-backdrop` (9998), `--z-modal` (9999), `--z-max` (10000) |
+| **Spacing** | 6 | `--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px) |
+| **Layout** | 6 | `--layout-panel-sm` (300px), `--layout-panel-md` (350px), `--layout-panel-lg` (400px), `--layout-panel-xl` (500px), `--layout-sidebar` (200px), `--layout-chart-h` (200px) |
+
+**Dark Mode:** Todas as variáveis de `design-tokens.css` com semântica de UI têm overrides em `.dark {}`. Coverage: **100%** das variáveis de componente.
+
+**`globals.css` (@layer base :root) — 166 variáveis adicionais:**
 
 | Categoria | Variáveis | Notas |
 |-----------|-----------|-------|
@@ -1485,7 +1512,7 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | shadcn/ui vars | 23 | `--background`, `--foreground`, `--card`, `--primary`, etc. |
 | Misc | ~108 | Cores de componentes específicos |
 
-**Dark Mode:** Todas as 92 variáveis de `design-tokens.css` têm overrides em `.dark {}`. Coverage: **100%**.
+**Dark Mode:** Todas as variáveis de componente de `design-tokens.css` têm overrides em `.dark {}`. Coverage: **100%** das variáveis semânticas.
 
 > **Problema identificado:** Duplicação entre `--lia-text-primary: #111827` (design-tokens.css) e `--eleven-text-primary: #2D2D2D` (globals.css) — dois sistemas concorrentes.
 
@@ -1500,20 +1527,24 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 
 > **Nota:** Muitas animações Radix são neutralizadas com `animation: none !important` no CSS. O sistema visual é majoritariamente estático.
 
-### 28.3 Z-Index — 15 valores sem escala semântica
+### 28.3 Z-Index — ✅ RESOLVIDO — Escala Semântica Implementada (Fase 8/9)
 
-| Valor | Onde usado | Propósito |
-|-------|-----------|----------|
-| `z-0` a `z-30` | Componentes base | Camadas normais |
-| `z-40`, `z-50` | Dropdowns, popovers | Overlays leves |
-| `z-[60]` | Modais secundários | Modais sobre modais |
-| `z-[100]` | Toasts, alertas | Notificações |
-| `z-[200]` | SelectContent em modais | Dropdowns sobre modais |
-| `z-[9998]` | Dialog overlay | Backdrop de dialog |
-| `z-[9999]` | Dialog content, modais críticos | Conteúdo de dialog |
-| `z-[10000]` | Variable selector | Máximo absoluto |
+> ✅ **Implementado:** Escala semântica completa em `design-tokens.css` (CSS vars `--z-*`) e `tailwind.config.ts` (tokens `z-*`). Valores arbitrários `z-[N]` devem ser migrados para os tokens abaixo nas refatorações da Fase 5/10.
 
-> **Problema:** Escala inflada (0 a 10000) sem naming semântico. Referências de mercado (Linear, Vercel) usam: `z-base`, `z-dropdown`, `z-modal`, `z-toast`, `z-max`.
+**Mapeamento legado → semântico:**
+
+| Valor Antigo | Token Semântico | CSS Var | Valor |
+|-------------|----------------|---------|-------|
+| `z-0`, `z-10` | `z-base` / `z-raised` | `--z-base` / `--z-raised` | 0 / 10 |
+| `z-40`, `z-50` | `z-dropdown` / `z-sticky` | `--z-dropdown` / `--z-sticky` | 40 / 50 |
+| `z-[60]` | `z-overlay` | `--z-overlay` | 60 |
+| `z-[100]` | `z-toast` | `--z-toast` | 100 |
+| `z-[200]` | `z-select` | `--z-select` | 200 |
+| `z-[9998]` | `z-backdrop` | `--z-backdrop` | 9998 |
+| `z-[9999]` | `z-modal` | `--z-modal` | 9999 |
+| `z-[10000]` | `z-max` | `--z-max` | 10000 |
+
+> **Status:** Tokens definidos, mas o codebase ainda usa valores arbitrários em muitos arquivos. Fase 5/10 deve migrar progressivamente.
 
 ### 28.4 Classes CSS Customizadas — 200+ classes
 
@@ -1633,6 +1664,119 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 | `src/styles/onboarding-styles.css` | 264 | Isolado — onboarding wizard |
 | `src/styles/chat-page.css` | 102 | Isolado — página de chat |
 
+
+### 28.13 Tailwind Config — Tokens Customizados (tailwind.config.ts)
+
+> **Fonte de verdade:** `plataforma-lia/tailwind.config.ts`
+> Estes tokens são a **Camada 2** da Bridge Architecture — referenciam CSS vars da Camada 1 (`design-tokens.css`) e são consumidos diretamente nos componentes via classes utilitárias.
+
+#### Cores Customizadas (`theme.extend.colors`)
+
+| Grupo | Token Tailwind | Valor | Uso |
+|-------|---------------|-------|-----|
+| **Brand LIA/AI** | `wedo-cyan` | `#60BED1` | EXCLUSIVO para elementos de IA/LIA. Suporta opacity modifiers (`bg-wedo-cyan/10`) |
+| | `wedo-cyan-dark` | `#4DA8BB` | Hover do cyan |
+| | `chat-cyan` | `#00B8B8` | Variante para chat |
+| **Status Semânticos** | `status-success` | `#16A34A` | Obrigatório WCAG 1.4.1 |
+| | `status-error` | `#DC2626` | Obrigatório WCAG 1.4.1 |
+| | `status-warning` | `#D97706` | Obrigatório WCAG 1.4.1 |
+| | `status-success-bg` | `var(--status-success-bg)` | Background success |
+| | `status-error-bg` | `var(--status-error-bg)` | Background error |
+| | `status-warning-bg` | `var(--status-warning-bg)` | Background warning |
+| | `status-error-border` | `var(--status-error-border)` | Border error |
+| | `status-warning-border` | `var(--status-warning-border)` | Border warning |
+| | `status-warning-border-light` | `var(--status-warning-border-light)` | Border warning sutil |
+| | `gray-border` | `var(--gray-border)` | Border padrão |
+| | `white-token` | `#FFFFFF` | Branco com semântica de token |
+| **Chart** | `chart-1` | `rgba(3,7,18,1.00)` | Série primária — hardcoded intencional |
+| | `chart-2` | `rgba(3,7,18,0.60)` | Série secundária |
+| | `chart-3` | `rgba(3,7,18,0.35)` | Série terciária |
+| | `chart-4` | `rgba(3,7,18,0.15)` | Série quaternária |
+| **LIA Design Tokens** | `lia-bg-primary/secondary/tertiary/elevated` | `var(--lia-bg-*)` | Backgrounds LIA |
+| | `lia-border-subtle/default/medium` | `var(--lia-border-*)` | Borders LIA |
+| | `lia-text-primary/secondary/tertiary/disabled/inverse` | `var(--lia-text-*)` | Textos LIA |
+| | `lia-interactive-hover/active/focus` | `var(--lia-interactive-*)` | Estados interativos |
+| | `lia-brand-primary/hover/light` | `var(--lia-brand-*)` | Vermelho coral LIA |
+| | `lia-info-color/light` | `var(--lia-info-*)` | Info (usa cyan) |
+| | `lia-status-high/medium/low-bg/text/border` | `var(--lia-status-*)` | Status monocromáticos |
+| | `lia-destructive-bg/text/border` | `var(--lia-destructive-*)` | Destrutivo |
+| | `lia-btn-primary/secondary/ghost-*` | `var(--lia-btn-*)` | Botões tokenizados |
+| | `lia-badge-neutral-bg/text/border` | `var(--lia-badge-*)` | Badge neutro |
+| | `lia-input-bg/border/border-focus/text/placeholder` | `var(--lia-input-*)` | Inputs |
+| **Legado (deprecar)** | `wedo-green`, `wedo-green-light`, `wedo-green-pastel` | Hex direto | Substituir por `status-success` |
+| | `wedo-green-bright`, `wedo-orange`, `wedo-purple` | Hex direto | Uso mínimo, deprecar |
+| | `wedo-magenta`, `wedo-coral` | Hex direto | Uso mínimo, deprecar |
+| **Terceiros** | `whatsapp-bg` | `#E5DDD5` | Apenas em preview WhatsApp |
+| | `whatsapp-bubble` | `#DCF8C6` | Apenas em preview WhatsApp |
+| | `whatsapp-green` | `#25D366` | Apenas em preview WhatsApp |
+| | `wedo-blue` | `#3B82F6` | Azul legado — preferir `lia-info-color` |
+| **shadcn/ui base** | `background`, `foreground`, `card`, `primary`, etc. | `hsl(var(--)` | shadcn/ui padrão — não customizar |
+
+#### Tipografia Customizada (`theme.extend.fontSize`)
+
+| Token | CSS Var | Pixels | Line Height | Uso |
+|-------|---------|--------|-------------|-----|
+| `text-xs` | `--font-size-xs` | 11px | `--line-height-normal` | Dominante (7.066 usos) |
+| `text-micro` | `--font-size-micro` | 10px | `--line-height-tight` | Labels mínimos (2.058 usos) |
+| `text-sm-ui` | `--font-size-sm-ui` | 12px | `--line-height-normal` | UI compacta (18 usos) |
+| `text-base-ui` | `--font-size-base-ui` | 13px | `--line-height-relaxed` | Corpo UI (178 usos) |
+
+#### Fontes (`theme.extend.fontFamily`)
+
+| Token | CSS Var | Família | Papel |
+|-------|---------|---------|-------|
+| `font-inter` | `--font-inter` | Inter | Dados/números |
+| `font-open-sans` / `font-brand` | `--font-open-sans` | Open Sans | Principal (85% dos arquivos) |
+| `font-crimson` | `--font-crimson` | Crimson Text | Legacy (remover) |
+| `font-source-serif-4` / `font-sidebar` | `--font-source-serif` | Source Serif 4 | Legacy (remover) |
+| `font-data` | `--font-inter` | Inter | Alias semântico para dados |
+
+#### Sombras (`theme.extend.boxShadow`)
+
+| Token | CSS Var | Uso |
+|-------|---------|-----|
+| `shadow-lia-sm` | `var(--lia-shadow-sm)` | Cards sutis |
+| `shadow-lia-default` | `var(--lia-shadow-default)` | Cards padrão |
+| `shadow-lia-md` | `var(--lia-shadow-md)` | Dropdowns, popovers |
+| `shadow-lia-lg` | `var(--lia-shadow-lg)` | Modais |
+
+#### Dimensões de Layout (`theme.extend.width/height/minWidth/maxWidth/maxHeight`)
+
+| Token | Valor | CSS Var | Uso |
+|-------|-------|---------|-----|
+| `w-panel-sm` / `min-w-panel-sm` | 300px | `--layout-panel-sm` | Painéis laterais pequenos |
+| `w-panel-md` / `min-w-panel-md` | 350px | `--layout-panel-md` | Painéis laterais médios |
+| `w-panel-lg` / `max-w-panel-lg` | 400px | `--layout-panel-lg` | Painéis laterais grandes |
+| `w-panel-xl` / `max-w-panel-xl` | 500px | `--layout-panel-xl` | Painéis laterais extra |
+| `w-sidebar-content` | 200px | `--layout-sidebar` | Conteúdo da sidebar |
+| `h-chart-sm` | 200px | `--layout-chart-h` | Gráficos pequenos |
+| `h-content-md` | 300px | — | Conteúdo médio |
+| `h-content-lg` / `max-h-content-lg` | 400px | — | Conteúdo grande |
+| `h-card-lg` | 180px | — | Cards altos |
+
+#### Z-Index Semântico (`theme.extend.zIndex`)
+
+| Token | Valor | CSS Var | Uso |
+|-------|-------|---------|-----|
+| `z-base` | 0 | `--z-base` | Elemento base |
+| `z-raised` | 10 | `--z-raised` | Elementos elevados |
+| `z-dropdown` | 40 | `--z-dropdown` | Dropdowns, menus |
+| `z-sticky` | 50 | `--z-sticky` | Headers sticky |
+| `z-overlay` | 60 | `--z-overlay` | Modais secundários, confirmações |
+| `z-toast` | 100 | `--z-toast` | Notificações, toasts |
+| `z-select` | 200 | `--z-select` | SelectContent dentro de modais |
+| `z-backdrop` | 9998 | `--z-backdrop` | Backdrop de Dialog |
+| `z-modal` | 9999 | `--z-modal` | Dialog content, modais principais |
+| `z-max` | 10000 | `--z-max` | Sempre acima de tudo (variable-selector) |
+
+#### Animações Customizadas (`theme.extend.keyframes/animation`)
+
+| Token | Keyframe | Uso |
+|-------|----------|-----|
+| `animate-fade-in-up` | `0→translateY(8px)→0` | Entrada de cards, itens |
+| `animate-scale-in-delayed` | `scale(0.95)→scale(1)` | Abertura de modais |
+| `animate-slide-in-up` | `translateY(16px)→0` | Drawers, sheets |
+
 ### 28.12 Testes de Componentes
 
 | Arquivo | Linhas | O que testa |
@@ -1661,7 +1805,7 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 | Lib utilities | 13 | 100% coberto |
 | Page routes | 90 | 100% coberto |
 | API endpoints | 424 | 100% coberto |
-| CSS variables (design-tokens.css + globals.css) | **~260** | +18 tokens (layout, z-index, spacing) |
+| CSS variables (design-tokens.css + globals.css) | **428** | +186 novos tokens (gray scale, overlay, status variants, wedo variants, z-index, spacing, layout) |
 | Keyframe animations | 29 | 100% coberto |
 | Custom CSS classes | 200+ | 100% coberto |
 | Ícones catalogados | 169 | 100% coberto |
@@ -2824,22 +2968,31 @@ Os seguintes componentes existem no código mas **não estão no inventário**:
 | 6+7 Bridge+Design | ✅ Audits | ✅ Confirmado |
 | 8 — Code Review | 🔄 `:any` parcial | 🔄 **1.189 total unsafe** (846 `: any` + 343 `as any`) |
 | 9 — Auditoria 14D | ✅ Score 7.6/10 | ✅ Score Frontend 7.6/10 (separado de backend 7.7/10) |
-| **10 — Score 9.0+** | — | ⏳ **PLANEJADA** — P0-P6 em 4 sprints multi-agent |
+| **10 — Score 9.0+** | ⚠️ EM PROGRESSO | ✅ Sprint 1A (rounded+rgba+color-mix) ✅ Sprint 1B (any top10) ✅ Sprint 2 (splits <1500L) ⏳ Sprint 3 pendente |
 
 ### 33.6 Plano de Implementação Expandido
 
 O inventário previa Fases 0-5. Executadas 9 fases. Fase 10 planejada para score frontend 9.0+.
 
-| Prioridade | Ação | Impacto no Score | Sprint |
-|-----------|------|-----------------|--------|
-| P0 | Split 15 monolitos >2.000L (Tiers A/B/C) | Consistência 7→9, Performance 7→8.5 | Sprint 2+3 |
-| P1 | Eliminar 1.189 unsafe any (`: any` + `as any`) → <100 | Tipos 6→9 | Sprint 1+3 |
-| P2 | Migrar 819 `rounded` → `rounded-md` | UI/DS 8→9 | Sprint 1 |
-| P3 | Converter inline styles: 1.439 → <300 | Consistência +0.5 | Sprint 4 |
-| P4 | React.memo (11→30+) + dynamic imports (11→25+) | Performance 7→8.5 | Sprint 4 |
-| P5 | Cores residuais: 102 rgba + 114 color-mix + 60 hex | UI/DS +0.3 | Sprint 1 |
-| P6 | Zod schemas para API responses | Dados 7→8.5 | Sprint 4 |
+**Status dos Sprints (atualizado 2026-03-29):**
 
-**Projeção:** Score Frontend 7.6 → **9.1/10** após 4 sprints.
+| Sprint | Status | Resultado |
+|--------|--------|-----------|
+| Sprint 1A | ✅ CONCLUÍDO | `rounded` → `rounded-md` (818→2 bare), rgba restante nos charts (isentos), `color-mix()` eliminado |
+| Sprint 1B | ✅ CONCLUÍDO | Top 10 arquivos com `: any` corrigidos (99 ocorrências eliminadas em hooks+components) |
+| Sprint 2 | ✅ CONCLUÍDO | Task#57: 4 arquivos splitados <1500L cada; 15 arquivos >1.500L restantes |
+| Sprint 3 | ⏳ PENDENTE | P1 (unsafe any ~1.413→<100), P3 (inline styles), P4 (performance) |
+
+| Prioridade | Ação | Impacto no Score | Sprint | Status |
+|-----------|------|-----------------|--------|--------|
+| P0 | Split monolitos >2.000L | Consistência 7→9, Perf 7→8.5 | Sprint 2+3 | 🔄 Parcial (4/15 splitados) |
+| P1 | Eliminar unsafe any: ~1.413 → <100 | Tipos 6→9 | Sprint 1B+3 | 🔄 Parcial (99 elim. no 1B) |
+| P2 | Migrar `rounded` → `rounded-md` | UI/DS 8→9 | Sprint 1A | ✅ CONCLUÍDO (818→2) |
+| P3 | Converter inline styles: 1.193 → <300 | Consistência +0.5 | Sprint 4 | ⏳ Pendente |
+| P4 | React.memo + dynamic imports | Performance 7→8.5 | Sprint 4 | ⏳ Pendente |
+| P5 | Cores residuais: rgba+color-mix+hex | UI/DS +0.3 | Sprint 1A | ✅ CONCLUÍDO (chart-only) |
+| P6 | Zod schemas para API responses | Dados 7→8.5 | Sprint 4 | ⏳ Pendente |
+
+**Projeção:** Score Frontend 7.6 → **9.1/10** após Sprint 3+4 completos.
 
 > **Detalhamento completo:** `docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md` (Seções 10.0-10.8)
