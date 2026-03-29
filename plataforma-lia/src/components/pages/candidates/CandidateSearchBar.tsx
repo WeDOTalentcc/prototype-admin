@@ -8,7 +8,8 @@
  * Portabilidade Vue: props → defineProps; callbacks → emit.
  */
 import React, { lazy, Suspense } from "react"
-import { Brain, FileUp, Loader2 } from "lucide-react"
+import { FileUp, Loader2 } from "lucide-react"
+import { LiaPromptHeader } from "@/components/ui/lia-prompt-header"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { SearchMode, SearchSource, SearchMetadata } from "@/components/search/smart-search-input"
 
@@ -75,17 +76,10 @@ export function CandidateSearchBar({
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-3xl mx-auto flex flex-col">
-        {/* Título */}
-        <div className="mb-4 flex flex-col items-center justify-center">
-          <h2
-            className={`text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2.5 ${
-              isSearchActive ? 'animate-pulse' : ''
-            }`}
-          >
-            <Brain className="w-7 h-7 text-wedo-cyan" strokeWidth={2} />
-            {isSearchActive ? 'LIA está buscando...' : 'Vamos buscar de forma inteligente?'}
-          </h2>
-        </div>
+        <LiaPromptHeader
+          title={isSearchActive ? 'LIA está buscando...' : 'Vamos buscar de forma inteligente?'}
+          isAnimating={isSearchActive}
+        />
 
         {/* Loading Animation */}
         <Suspense fallback={null}>

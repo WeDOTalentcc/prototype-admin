@@ -1,0 +1,1649 @@
+# OPORTUNIDADES DE PADRONIZACAO -- WeDo Talent Frontend
+> Analise exaustiva | 2026-03-29
+> Baseado em: FRONTEND_INVENTORY_v1.md + INVENTARIO_COMPONENTES.md + leitura direta do codigo
+> Objetivo: simplificar estrutura, unificar sistemas, fortalecer identidade visual WeDo
+> Stack: React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
+> Componentes auditados: 574 arquivos .tsx em /src/components/
+
+---
+
+## Resumo Executivo
+
+| Categoria | Qtd Oportunidades | P0 | P1 | P2 | P3 |
+|---|---|---|---|---|---|
+| TIPOGRAFIA | 5 | 0 | 2 | 2 | 1 |
+| CORES | 6 | 0 | 2 | 3 | 1 |
+| BADGES & LABELS | 4 | 0 | 1 | 2 | 1 |
+| BOTOES | 3 | 0 | 1 | 1 | 1 |
+| BORDAS & RAIOS | 3 | 0 | 1 | 2 | 0 |
+| ESPACAMENTO | 3 | 0 | 0 | 2 | 1 |
+| SOMBRAS | 2 | 0 | 0 | 1 | 1 |
+| MOTION | 4 | 0 | 1 | 2 | 1 |
+| DARK MODE | 4 | 0 | 2 | 1 | 1 |
+| COMPONENTES DUPLICADOS | 5 | 0 | 2 | 2 | 1 |
+| CSS CLASSES vs TAILWIND | 3 | 0 | 1 | 1 | 1 |
+| INLINE STYLES | 3 | 0 | 1 | 1 | 1 |
+| PADROES DE REFERENCIA MISTOS | 3 | 0 | 0 | 2 | 1 |
+| ICONES | 3 | 0 | 1 | 1 | 1 |
+| OPACITY & TRANSPARENCY | 3 | 0 | 0 | 2 | 1 |
+| **TOTAL** | **58** | **0** | **15** | **25** | **13** |
+
+### Estimativa de Ganho
+
+- **LOC removiveis estimadas:** ~3.500-5.000 (componentes duplicados + dead code + inline styles migrados)
+- **Tokens CSS eliminaveis:** ~40-60 (wedo-apoio-*, ai-aqua/electric-red/etc. sem uso, aliases redundantes)
+- **Reducao de complexidade:** de 3 sistemas de badge paralelos -> 1 unificado; de 2 sistemas de shadow -> 1 canonico; de 3 familias de fonte com uso inconsistente -> regras claras
+- **Score Frontend estimado pos-execucao:** 7.6 -> 9.0+ (meta declarada no INVENTARIO_COMPONENTES.md)
+
+---
+
+## Mapa de Prioridades
+
+| ID | Categoria | Titulo | Prioridade | Impacto Visual | Esforco |
+|---|---|---|---|---|---|
+| OPT-001 | TIPOGRAFIA | Redundancia @import CSS + next/font | P1 | Nenhum | Baixo |
+| OPT-002 | TIPOGRAFIA | font-sidebar aponta para fonte nao carregada | P1 | Sutil | Baixo |
+| OPT-003 | TIPOGRAFIA | Duas escalas tipograficas paralelas (.lia-h* vs .text-heading-*) | P2 | Sutil | Medio |
+| OPT-004 | TIPOGRAFIA | Uso explicito de font-inter e font-open-sans nos componentes | P2 | Nenhum | Medio |
+| OPT-005 | TIPOGRAFIA | text-[11px] hardcoded ainda presente (6 ocorrencias) | P3 | Nenhum | Baixo |
+| OPT-006 | CORES | Tokens wedo-apoio-* definidos mas com zero uso | P1 | Nenhum | Baixo |
+| OPT-007 | CORES | Tokens Tech Startups (ai-aqua, electric-red, etc.) usados apenas em jobs2-page | P1 | Moderado | Baixo |
+| OPT-008 | CORES | Cores hardcoded hex ainda presentes (>130 ocorrencias, 30+ valores unicos) | P2 | Nenhum | Medio |
+| OPT-009 | CORES | Tokens lia-text-* e lia-bg-* acessados via sintaxe arbitraria text-[var(--*)] | P2 | Nenhum | Medio |
+| OPT-010 | CORES | wedo-green-pastel: token nao documentado no inventario, com 10+ usos | P2 | Nenhum | Baixo |
+| OPT-011 | CORES | Duplicidade semantica: default e primary em badge.tsx produzem classes identicas | P3 | Nenhum | Baixo |
+| OPT-012 | BADGES | Tres sistemas de badge paralelos sem regra clara de uso | P1 | Moderado | Medio |
+| OPT-013 | BADGES | LIACommandBadge e LIAFileBadge em lia-processing-card.tsx nao usam badge.tsx | P2 | Sutil | Baixo |
+| OPT-014 | BADGES | Inline Badge com className ad-hoc (score, compliance, LIA%) sem variante | P2 | Sutil | Medio |
+| OPT-015 | BADGES | setup-alert-badge.tsx: uso unico, poderia ser variante de Badge | P3 | Nenhum | Baixo |
+| OPT-016 | BOTOES | default e primary em button.tsx sao identicos (classes duplicadas no CVA) | P1 | Nenhum | Baixo |
+| OPT-017 | BOTOES | lia-button-primary / lia-button-secondary CSS vs componente Button shadcn | P2 | Nenhum | Medio |
+| OPT-018 | BOTOES | Botoes tab customizados (tab-button CSS class) fora do componente Tabs | P3 | Sutil | Medio |
+| OPT-019 | BORDAS | rounded-md dominante (3.848x) vs rounded-full (1.543x) -- sem regra documentada | P1 | Sutil | Medio |
+| OPT-020 | BORDAS | rounded-2xl (59x) e rounded-xl (5x) fora do sistema de 3 tokens (sm/md/lg) | P2 | Sutil | Baixo |
+| OPT-021 | BORDAS | border tokens duplicados: lia-border vs --border Shadcn (HSL) vs hardcoded | P2 | Nenhum | Medio |
+| OPT-022 | ESPACAMENTO | Valores arbitrarios de dimensao (w-[Npx]/h-[Npx]) sem tokens de layout | P2 | Nenhum | Alto |
+| OPT-023 | ESPACAMENTO | h-[90vh], h-[85vh], h-[80vh], h-[95vh] repetidos sem constante compartilhada | P2 | Nenhum | Baixo |
+| OPT-024 | ESPACAMENTO | Tokens --space-* definidos mas componentes usam diretamente p-N/gap-N Tailwind | P3 | Nenhum | Baixo |
+| OPT-025 | SOMBRAS | shadow-sm/md/lg/xl Tailwind (28x) em paralelo com shadow-lia-* (0 usos em /ui/) | P2 | Sutil | Medio |
+| OPT-026 | SOMBRAS | .lia-card e .lia-card-elevated com shadow inline nao cobertos por tokens shadow-lia-* | P3 | Nenhum | Baixo |
+| OPT-027 | MOTION | framer-motion instalado (~160 KB) mas usado apenas em 1 arquivo (login/welcome) | P1 | Nenhum | Baixo |
+| OPT-028 | MOTION | transition-all (737x) vs transition-colors (917x) -- sem criterio documentado | P2 | Nenhum | Medio |
+| OPT-029 | MOTION | ~30 keyframes definidos, 3 sao NOP (fade-in/slideDown/slideUp desabilitados) | P2 | Nenhum | Baixo |
+| OPT-030 | MOTION | Animacoes Radix (tooltip, dropdown) globalmente desabilitadas sem documentacao | P3 | Sutil | Baixo |
+| OPT-031 | DARK MODE | 16 componentes UI base sem nenhuma classe dark: (dialog, card, table, etc.) | P1 | Significativo | Medio |
+| OPT-032 | DARK MODE | 75 arquivos de componentes sem dark: (13% da base de 574) | P1 | Moderado | Alto |
+| OPT-033 | DARK MODE | dark: prefixes usando gray-N hardcoded em vez de tokens semanticos | P2 | Nenhum | Alto |
+| OPT-034 | DARK MODE | Tokens terceiros (whatsapp-*, login-bg-gradient) sem override dark | P3 | Sutil | Baixo |
+| OPT-035 | DUPLICADOS | settings-page.tsx (134L) vs settings-page-enhanced.tsx (622L) em paralelo | P1 | Nenhum | Medio |
+| OPT-036 | DUPLICADOS | jobs-page.tsx vs jobs2-page.tsx em paralelo (jobs2 usa tokens Tech Startups) | P1 | Moderado | Medio |
+| OPT-037 | DUPLICADOS | tasks-page.tsx vs tasks-page-mvp.tsx em paralelo | P2 | Nenhum | Medio |
+| OPT-038 | DUPLICADOS | use-table-features.tsx vs useTableFeatures.ts -- 2 implementacoes paralelas | P2 | Nenhum | Baixo |
+| OPT-039 | DUPLICADOS | mockup-shadcn-vue-page.tsx em /pages/ (arquivo de mock em producao) | P3 | Nenhum | Baixo |
+| OPT-040 | CSS vs TAILWIND | Classes .lia-card usadas em onboarding em vez do componente Card | P1 | Nenhum | Baixo |
+| OPT-041 | CSS vs TAILWIND | Classes .lia-input usadas em search components em vez de Input shadcn | P2 | Nenhum | Medio |
+| OPT-042 | CSS vs TAILWIND | 8 classes tipograficas .text-display/.text-heading-* Apple-inspired vs .lia-h* | P3 | Sutil | Medio |
+| OPT-043 | INLINE STYLES | 890 ocorrencias style={{}} em 206 arquivos -- residual pos-Sprint 4.10 | P1 | Nenhum | Alto |
+| OPT-044 | INLINE STYLES | var(--lia-btn-primary-bg/text) em style={{}} nos paineis ui-actions | P2 | Nenhum | Medio |
+| OPT-045 | INLINE STYLES | style={{color: dimension.color}} em big-five-profile -- valor dinamico, sem dark | P3 | Nenhum | Baixo |
+| OPT-046 | REF MISTAS | Comentario "Apple-Inspired Scale" e "Padrao ElevenLabs" no CSS sem definicao formal | P2 | Nenhum | Baixo |
+| OPT-047 | REF MISTAS | Paleta Tech Startups 2024-2025 paralela a paleta WeDo (filosofias diferentes) | P2 | Moderado | Medio |
+| OPT-048 | REF MISTAS | liaWidth com comentario "ElevenLabs pattern" -- sem token de layout referenciado | P3 | Nenhum | Baixo |
+| OPT-049 | ICONES | w-3/h-3 (1.405x) e w-4/h-4 (2.082x) usados em contextos similares sem criterio | P1 | Sutil | Medio |
+| OPT-050 | ICONES | w-2/h-2 (103x) para icones em badges -- tamanho abaixo do minimo recomendado WCAG | P2 | Sutil | Baixo |
+| OPT-051 | ICONES | Lucide 169 icones -- sem inventario canonico por contexto (nav, action, status) | P3 | Nenhum | Medio |
+| OPT-052 | OPACITY | opacity-50 (211x) dominante sem gradacao semantica definida | P2 | Nenhum | Medio |
+| OPT-053 | OPACITY | Mistura de /N modifiers Tailwind + opacity-N + rgba() inline -- tres sistemas | P2 | Nenhum | Medio |
+| OPT-054 | OPACITY | opacity-15 (1 ocorrencia isolada) -- outlier sem padrao correspondente | P3 | Nenhum | Baixo |
+| OPT-055 | BOTOES | Button size default (h-10) sem documentacao de escala de alturas interativas | P2 | Sutil | Baixo |
+| OPT-056 | ICONES | Icone w-4 h-3 (1 ocorrencia) -- typo provavel, dimensoes inconsistentes | P2 | Sutil | Baixo |
+| OPT-057 | DARK MODE | big-five-profile.tsx: style borderColor var(--gray-200) sem dark mode override | P2 | Sutil | Baixo |
+| OPT-058 | CORES | wedo-blue (#3B82F6) marcado como "(legado)" -- decisao de remocao pendente | P2 | Nenhum | Baixo |
+
+---
+
+## CATEGORIA 1 -- TIPOGRAFIA
+
+### OPT-001: Redundancia @import CSS + next/font para Inter e Open Sans
+
+**Problema:** `globals.css` linha 1 contem:
+```
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:...')
+```
+Simultaneamente, `layout.tsx` usa `next/font/google` (self-hosted). Ambos carregam Inter e Open Sans, resultando em duas requisicoes de fonte: uma externa (Google Fonts CDN, bloqueante no render path) e uma self-hosted (otimizada pelo Next.js com font-display swap automatico). O @import bloqueia a renderizacao de CSS ate a fonte ser baixada.
+
+**Solucao:** Remover o `@import` de `globals.css` linha 1 inteiramente. O `next/font` ja cobre self-hosting, otimizacao, `font-display: swap` e eliminacao de requests externos. Beneficio adicional: GDPR compliance (nenhuma requisicao para servidores Google em producao).
+
+**Impacto Visual:** Nenhum -- a fonte renderiza identica.
+
+**Esforco:** Baixo -- 1 linha removida + verificacao de que nenhum componente depende do @import.
+
+**Prioridade:** P1 -- performance (bloqueia render path) + compliance GDPR.
+
+**Arquivos afetados:** `/src/app/globals.css` (linha 1)
+
+---
+
+### OPT-002: font-sidebar aponta para --font-source-serif-4 nao carregada
+
+**Problema:** `tailwind.config.ts` define `font-sidebar: var(--font-source-serif-4)`. A variavel `--font-source-serif-4` nao e declarada em `design-tokens.css` nem carregada via `next/font` em `layout.tsx`. O resultado e fallback silencioso para sans-serif generica do sistema. Qualquer componente que use `font-sidebar` recebe fonte nao intencional sem erro visivel -- um bug silencioso de rendering.
+
+**Solucao:** Duas opcoes:
+- (A) Remover `font-sidebar` do Tailwind config se nao ha sidebar com fonte serif por design (preferido -- o DS v4.1 descreve sidebar como Open Sans).
+- (B) Adicionar `Source Serif 4` ao `next/font` em layout.tsx e declarar `--font-source-serif-4`.
+
+Recomendar (A) dado o DS v4.1 nao prever fonte serifada na sidebar.
+
+**Impacto Visual:** Sutil -- componentes com font-sidebar hoje usam fallback, entao a correcao pode alterar o rendering dessas areas.
+
+**Esforco:** Baixo.
+
+**Prioridade:** P1 -- bug silencioso de fonte.
+
+**Arquivos afetados:** `tailwind.config.ts`, `/src/app/layout.tsx`
+
+---
+
+### OPT-003: Duas escalas tipograficas paralelas (.lia-h* vs .text-heading-*)
+
+**Problema:** Existem 14 classes `.lia-*` definidas em `design-tokens.css` (`.lia-h1/h2/h3/h4`, `.lia-body`, `.lia-body-sm`, `.lia-label`, `.lia-helper`, `.lia-caption`, `.lia-subtitle`, `.lia-subtitle-sm`, `.lia-label-sm`, `.lia-page-eyebrow`, `.lia-page-title`, `.lia-page-description`) E 8 classes `.text-*` em `globals.css` comentadas como "Apple-Inspired" (`.text-display`, `.text-heading-1`, `.text-heading-2`, `.text-heading-3`, `.text-body-large`, `.text-body`, `.text-body-small`, `.text-caption`). Dois sistemas coexistem sem regra de precedencia, criando inconsistencia tipografica entre partes da plataforma.
+
+Diferencas criticas entre os sistemas:
+- `.lia-h2`: 1.5rem, peso 600, line-height 1.25
+- `.text-heading-1`: `text-xl` base (~1.25rem), line-height 1.25
+
+**Solucao:** Eleger `.lia-*` como canonico (mais completo, alinhado ao DS v4.1). Mapear equivalencias formais:
+- `.text-display` -> `.lia-h1` ou `.lia-page-title`
+- `.text-heading-1` -> `.lia-h2`
+- `.text-heading-2` -> `.lia-h3`
+- `.text-heading-3` -> `.lia-h4`
+- `.text-body-large` -> `.lia-body`
+- `.text-body` / `.text-body-small` -> `.lia-body-sm`
+- `.text-caption` -> `.lia-caption`
+
+Marcar `.text-heading-*` como deprecated via comentario CSS. Iniciar migracao gradual com prazo de 2 sprints.
+
+**Impacto Visual:** Sutil -- ha diferencas de line-height de ~0.05 entre sistemas equivalentes.
+
+**Esforco:** Medio -- mapeamento + busca e substituicao em ~25 arquivos.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/app/globals.css` (linhas ~580-610), componentes consumidores das classes `.text-heading-*`
+
+---
+
+### OPT-004: Uso explicito de font-inter e font-open-sans nos componentes
+
+**Problema:** 19+ ocorrencias de `font-inter` e `font-open-sans` explicitas em componentes:
+- `settings-page.tsx:37`: `font-inter` em heading
+- `settings-page.tsx:65`: `font-inter` em label
+- `tasks-page.tsx:74`: `font-open-sans` em botao
+- `tasks-page.tsx:114-132`: `font-inter` em 4 metricas numericas
+- `LIASearchSidebar.tsx:1046,1255`: `font-open-sans` em botoes
+- `JobsDashboardView.tsx:44,51,58,68`: `font-open-sans` em 4 tab buttons
+
+Open Sans ja e a fonte padrao do `<body>` -- declara-la novamente e redundante. Para Inter em contextos numericos, o alias semantico correto e `font-data` (ja configurado no tailwind.config.ts).
+
+**Solucao:** Remover todas as ocorrencias de `font-open-sans` (ja e o default do body). Substituir `font-inter` por `font-data` onde o contexto e numerico/tabular. Proibir `font-inter` e `font-open-sans` diretos nos componentes via regra documentada.
+
+**Impacto Visual:** Nenhum -- a fonte permanece identica.
+
+**Esforco:** Medio -- ~25 arquivos afetados.
+
+**Prioridade:** P2 -- qualidade de codigo e manutenibilidade.
+
+**Arquivos afetados:** `settings-page.tsx`, `tasks-page.tsx`, `LIASearchSidebar.tsx`, `JobsDashboardView.tsx` e ~15 outros
+
+---
+
+### OPT-005: text-[11px] hardcoded ainda presente (6 ocorrencias)
+
+**Problema:** 6 ocorrencias de `text-[11px]` nos componentes -- valor identico ao `text-xs` configurado no `tailwind.config.ts` (que mapeia para `var(--font-size-xs)` = 11px). A Fase 1 da Bridge Architecture eliminou ~4.500 valores arbitrarios de tipografia, mas este residual persiste.
+
+**Solucao:** Substituir todos os `text-[11px]` por `text-xs`. Verificar contexto para garantir compatibilidade de line-height (`var(--line-height-normal)` = 1.4).
+
+**Impacto Visual:** Nenhum -- rendering identico.
+
+**Esforco:** Baixo -- 6 substituicoes simples.
+
+**Prioridade:** P3 -- residual da Fase 1.
+
+**Arquivos afetados:** ~6 locais (identificar com `grep -rn "text-\[11px\]" src/`)
+
+---
+
+## CATEGORIA 2 -- CORES
+
+### OPT-006: Tokens wedo-apoio-* definidos com zero uso em componentes
+
+**Problema:** 7 tokens CSS definidos em `globals.css` (linhas ~60-80) tem ZERO ocorrencias nos componentes .tsx:
+- `--wedo-apoio-cream: #F5EFE7`
+- `--wedo-apoio-peach-light: #FADCD2`
+- `--wedo-apoio-salmon: #FFB5A7`
+- `--wedo-apoio-blue: #8FA4C4`
+- `--wedo-apoio-mint: #A8D5BA`
+- `--wedo-apoio-coral: #F08080`
+- `--wedo-apoio-gold: #F4D06F`
+
+Sao dead tokens que aumentam a superficie do design system sem contribuir para a UI. Grep confirmou 0 ocorrencias em toda a pasta /src/.
+
+**Solucao:** Remover os 7 tokens de `globals.css`. Se forem necessarios no futuro para feature especifica, podem ser re-adicionados com escopo e uso documentados.
+
+**Impacto Visual:** Nenhum -- nao sao renderizados.
+
+**Esforco:** Baixo -- remocao de ~14 linhas + verificacao final com grep.
+
+**Prioridade:** P1 -- reduz ruido do design system.
+
+**Arquivos afetados:** `/src/app/globals.css` (linhas ~60-80)
+
+---
+
+### OPT-007: Paleta Tech Startups (ai-aqua/electric-red/ethereal-green/warm-energy) -- somente jobs2-page
+
+**Problema:** 6 tokens HSL da "Paleta Tech Startups 2024-2025" sao usados EXCLUSIVAMENTE em `jobs2-page.tsx`:
+- `bg-ethereal-green-light text-ethereal-green` para status "Ativa"
+- `bg-warm-energy-light text-warm-energy` para status "Paralisada"
+- `bg-ai-aqua-light text-ai-aqua` para status "Concluida"
+- `bg-electric-red-light text-electric-red` para status "Cancelada"
+
+O restante da plataforma usa paleta wedo-*/status-* canonica. Isso cria um sistema paralelo de cores -- quando jobs2-page estiver ativa, as cores de status divergem visualmente do restante da plataforma.
+
+**Solucao:** Dois caminhos:
+- (A) Consolidar `jobs2-page.tsx` para usar tokens canonicos: `wedo-green` para Ativa, `wedo-orange` para Paralisada, `wedo-cyan` para Concluida, `status-error` para Cancelada. Deletar tokens Tech Startups de globals.css (~12 linhas).
+- (B) Decidir que jobs2-page substitui jobs-page (ver OPT-036) -- nesse caso migrar tokens primeiro.
+
+Caminho (A) e recomendado.
+
+**Impacto Visual:** Moderado -- as cores Tech Startups sao mais saturadas; migracao altera aparencia de badges de status em jobs2.
+
+**Esforco:** Baixo -- 4 linhas em 1 arquivo + ~12 tokens no CSS.
+
+**Prioridade:** P1 -- elimina sistema de cores paralelo.
+
+**Arquivos afetados:** `/src/components/pages/jobs2-page.tsx`, `/src/app/globals.css`
+
+---
+
+### OPT-008: Cores hardcoded hex ainda presentes (~130 ocorrencias, 30+ valores unicos)
+
+**Problema:** Grep em componentes .tsx revela valores hex hardcoded persistentes (amostra dos mais frequentes):
+- `#f0fdf4` (16x) -- verde muito claro, equivale a `green-50` Tailwind
+- `#fefce8` (10x) -- amarelo muito claro, equivale a `yellow-50`
+- `#374151` (10x) -- equivale a `var(--gray-700)` (nao esta no inventario de cinzas canonica, que pula de 600 para 800)
+- `#fdf2f8` (7x) -- rosa muito claro
+- `#eff6ff` (7x) -- azul muito claro
+- `#D1D5DB` (6x) -- equivale a `var(--gray-300)` ou `border-gray-300`
+- `#1F2937` (6x) -- equivale a `var(--gray-800)`
+- `#667eea` (4x) -- azul/lilas nao catalogado
+- `#4DA8BB` (4x) -- equivale a `var(--wedo-cyan-dark)` hardcoded
+- `#4285F4`, `#EA4335`, `#FBBC05` -- cores Google OAuth
+
+A Fase 2 reduziu de 54+ para ~9 arquivos com hex, mas persistem em contextos especificos.
+
+**Solucao:** Categorizar:
+- (a) Tem token equivalente -> substituir por token (`#1F2937` -> `var(--gray-800)`, `#4DA8BB` -> `var(--wedo-cyan-dark)`)
+- (b) Cores de terceiros (Google OAuth) -> isolar em constante ou componente dedicado com token proprio (`--google-blue`, `--google-red`, `--google-yellow`)
+- (c) Cores sem token mas recorrentes (5+ usos) -> criar token
+- (d) One-offs esporadicos (<3 usos) -> aceitar como excecao documentada
+
+**Impacto Visual:** Nenhum -- substitutos semanticos sao equivalentes.
+
+**Esforco:** Medio -- varredura + categorizacao + substituicao em ~15 arquivos.
+
+**Prioridade:** P2 -- manutenibilidade e Bridge Architecture.
+
+**Arquivos afetados:** ~15 arquivos em /src/components/ (identificar com `grep -rn "#[0-9A-Fa-f]\{6\}"`)
+
+---
+
+### OPT-009: Tokens lia-text-* e lia-bg-* acessados via sintaxe arbitraria text-[var(--*)]
+
+**Problema:** 128 ocorrencias de sintaxe arbitraria para acessar tokens semanticos de cor:
+- `text-[var(--lia-text-tertiary)]` -- 38 ocorrencias
+- `text-[var(--lia-text-primary)]` -- 33 ocorrencias
+- `text-[var(--lia-text-secondary)]` -- 28 ocorrencias
+- `bg-[var(--lia-bg-primary)]` -- 25 ocorrencias
+- `bg-[var(--lia-bg-tertiary)]` -- 9 ocorrencias
+- `bg-[var(--lia-bg-secondary)]` -- 5 ocorrencias
+
+Esta sintaxe contorna o Tailwind config: tokens nao registrados como classes Tailwind nao recebem tree-shaking adequado, nao aparecem no intellisense, e criam verbosidade desnecessaria na classe string.
+
+**Solucao:** Adicionar ao `tailwind.config.ts` mapeamentos dos tokens semanticos principais:
+```ts
+colors: {
+  'lia-text-primary': 'var(--lia-text-primary)',
+  'lia-text-secondary': 'var(--lia-text-secondary)',
+  'lia-text-tertiary': 'var(--lia-text-tertiary)',
+  'lia-text-disabled': 'var(--lia-text-disabled)',
+  'lia-text-inverse': 'var(--lia-text-inverse)',
+  'lia-bg-primary': 'var(--lia-bg-primary)',
+  'lia-bg-secondary': 'var(--lia-bg-secondary)',
+  'lia-bg-tertiary': 'var(--lia-bg-tertiary)',
+  'lia-bg-elevated': 'var(--lia-bg-elevated)',
+}
+```
+Substituir `text-[var(--lia-text-tertiary)]` por `text-lia-text-tertiary` em todos os arquivos.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Medio -- config update + ~130 substituicoes em ~30 arquivos.
+
+**Prioridade:** P2 -- DX + purge correto.
+
+**Arquivos afetados:** `tailwind.config.ts` + ~30 arquivos com sintaxe arbitraria
+
+---
+
+### OPT-010: wedo-green-pastel -- token nao documentado com 10+ usos em producao
+
+**Problema:** `--wedo-green-pastel` aparece em 10 locais:
+- `onboarding-controller.tsx` (inline style `color`)
+- `JobPreviewPanel.tsx` (2 ocorrencias em badge background)
+- `JobsCompactTableView.tsx` (badge background)
+- `big-five-dashboard-page.tsx` (5 ocorrencias em chart colors e card border)
+
+O token nao esta documentado no FRONTEND_INVENTORY_v1.md nem no INVENTARIO_COMPONENTES.md. E um token "fantasma" -- presente em uso real mas fora do inventario oficial.
+
+**Solucao:**
+- (A) Se e distinto de `--wedo-green-light` (#A8D5B7): documentar formalmente, adicionar ao inventario com semantica clara, adicionar variante dark.
+- (B) Se e equivalente ao `--wedo-green-light`: substituir todos os usos e remover o token fantasma.
+
+Primeiro passo: verificar `grep -n "wedo-green-pastel" src/styles/design-tokens.css` para encontrar o valor atual.
+
+**Impacto Visual:** Nenhum (se mapeado para equivalente) ou Sutil (se valores diferem).
+
+**Esforco:** Baixo -- investigacao + 10 substituicoes ou documentacao.
+
+**Prioridade:** P2 -- governa consistencia do inventario de tokens.
+
+**Arquivos afetados:** `onboarding-controller.tsx`, `JobPreviewPanel.tsx`, `JobsCompactTableView.tsx`, `big-five-dashboard-page.tsx`
+
+---
+
+### OPT-011: Variantes default e primary em button.tsx sao identicas no CVA
+
+**Problema:** `button.tsx` declara as variantes `default` e `primary` com classes Tailwind absolutamente identicas:
+```
+default: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+primary: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+```
+
+Isso ocupa espaco desnecessario no bundle (CSS duplicado via CVA) e cria ambiguidade na API: o que distingue `default` de `primary`?
+
+**Solucao:** Remover a variante `primary` do CVA. `default` e o nome canonico para o botao primario. Fazer grep de `variant="primary"` e substituir por `variant="default"`. Documentar na FRONTEND_STANDARDS.md.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- ~20 substituicoes + remocao de 3 linhas no CVA.
+
+**Prioridade:** P3 -- API clarity.
+
+**Arquivos afetados:** `/src/components/ui/button.tsx` + consumidores com `variant="primary"`
+
+---
+
+## CATEGORIA 3 -- BADGES & LABELS
+
+### OPT-012: Tres sistemas de badge paralelos sem regra clara de uso
+
+**Problema:** A plataforma possui tres sistemas de badge coexistindo sem documentacao de qual usar quando:
+
+**Sistema 1: `<Badge>` (badge.tsx) via CVA**
+Variantes: `default | secondary | destructive | outline | success | warning | info | danger | lilac`
+Uso atual: contexto generico, compliance, categorias
+
+**Sistema 2: `<StatusBadge>` (status-badge.tsx)**
+8 `BadgeVariant` types: `standard | dark | accent | outlined | channel | scheduled | hired | rejected`
+`STAGE_PASTEL_COLORS` map com 17 estagios de pipeline
+Uso atual: estagios do pipeline de recrutamento
+
+**Sistema 3: Classes CSS `.lia-badge-*` (design-tokens.css)**
+5 classes: `.lia-badge-jobs | .lia-badge-candidates | .lia-badge-interviews | .lia-badge-reports | .lia-badge-neutral`
+Uso atual: categorias de modulo na sidebar/topbar
+
+**Sistema extra: `LIACommandBadge` e `LIAFileBadge` em lia-processing-card.tsx**
+Implementacoes proprias fora dos tres sistemas
+
+Resultado: um dev sem conhecimento do DS nao sabe qual sistema escolher para um novo badge.
+
+**Solucao:** Documentar regra de uso clara na FRONTEND_STANDARDS.md:
+- Usar `<Badge variant>` para labels genericas, status semanticos, compliance, metricas
+- Usar `<StatusBadge>` exclusivamente para estagios do pipeline de recrutamento
+- Usar `.lia-badge-*` apenas em sidebar/topbar para categorias de modulo
+- Avaliar se `.lia-badge-*` pode ser convertido para variantes do Badge CVA (eliminando Sistema 3)
+- Integrar `LIACommandBadge`/`LIAFileBadge` ao CVA como variantes `command` e `file`
+
+**Impacto Visual:** Moderado -- unificacao altera visual de badges de categorias e processamento.
+
+**Esforco:** Medio -- decisao de design + migracao de componentes.
+
+**Prioridade:** P1 -- coerencia do design system.
+
+**Arquivos afetados:** `badge.tsx`, `status-badge.tsx`, `design-tokens.css`, `lia-processing-card.tsx`, ~20 consumidores
+
+---
+
+### OPT-013: LIACommandBadge e LIAFileBadge nao usam badge.tsx
+
+**Problema:** Em `/src/components/lia-processing-card.tsx` (linhas 318-380), dois componentes de badge sao implementados do zero:
+- `LIACommandBadge` (props: label, icon, variant)
+- `LIAFileBadge` (props: fileName, fileType, size)
+
+Cada um tem sua propria estrutura de `div + className` manual, fora do CVA de `badge.tsx`. Isso cria inconsistencia de estilo (border-radius, padding, font-size podem divergir) e duplica logica.
+
+**Solucao:** Refatorar para usar `<Badge>` como base. Se os estilos sao genuinamente unicos, adicionar variantes ao CVA (`variant="command"`, `variant="file"`). A prop `icon` pode ser suportada via slot ou render prop.
+
+**Impacto Visual:** Sutil -- pequenas diferencas de padding/radius que se alinhariam ao padrao.
+
+**Esforco:** Baixo -- refatoracao de ~60 linhas.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/components/lia-processing-card.tsx`
+
+---
+
+### OPT-014: Badge com className ad-hoc para scores e compliance -- sem variante formal
+
+**Problema:** Padrao recorrente em multiplos arquivos:
+```tsx
+// batch-approval-modal.tsx linha 434
+<Badge className={`${getScoreColor(candidate.liaScore)} text-xs font-bold`}>
+// candidate-page.tsx linha 149
+<Badge className={`text-xs px-1.5 py-0 ${getScoreColor(liaScore)}`}>
+// admin compliance
+<Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Compliance</Badge>
+```
+
+A funcao `getScoreColor(score)` retorna strings de classes Tailwind baseadas em ranges numericos. Este padrao cria variantes ad-hoc dispersas nao reutilizaveis e nao documentadas.
+
+**Solucao:** Adicionar prop `score?: number` ao Badge ou criar componente `<ScoreBadge score={n}>` que encapsula a logica de cor. Centralizar `getScoreColor` em `lib/badge-utils.ts`. Criar variante `metric` no CVA para o padrao de compliance badge cinza.
+
+**Impacto Visual:** Sutil.
+
+**Esforco:** Medio.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `batch-approval-modal.tsx`, `candidate-page.tsx`, `badge.tsx`, `lib/` (nova funcao)
+
+---
+
+### OPT-015: setup-alert-badge.tsx -- uso unico, candidato a integracao no Badge
+
+**Problema:** `setup-alert-badge.tsx` tem 1 unico arquivo consumidor. Com 62 componentes em `/ui/`, componentes de uso unico sao sinal de fragmentacao desnecessaria -- especialmente quando implementam variacao de badge.
+
+**Solucao:** Avaliar se o visual pode ser reproduzido com `<Badge variant="destructive">` ou nova variante `alert` no CVA. Se sim, deletar `setup-alert-badge.tsx` e migrar o consumidor unico.
+
+**Impacto Visual:** Nenhum (se variante equivalente for criada).
+
+**Esforco:** Baixo.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** `/src/components/ui/setup-alert-badge.tsx`
+
+---
+
+## CATEGORIA 4 -- BOTOES
+
+### OPT-016: Variantes default e primary em button.tsx identicas no CVA
+
+**Problema:** (Ver tambem OPT-011) `button.tsx` declara `default` e `primary` como variantes distintas mas com classes identicas. O CVA gera CSS duplicado. A API ambigua: consumidores nao sabem qual usar.
+
+Evidencia direta do codigo:
+```tsx
+default: "bg-gray-900 dark:bg-gray-50 text-white ...",
+primary: "bg-gray-900 dark:bg-gray-50 text-white ...", // identico
+```
+
+**Solucao:** Remover variante `primary`. Documentar: `default` = botao primario (preto/branco), `secondary` = acao secundaria (cinza), `outline` = acao terciaria com borda, `ghost` = acao terciaria sem borda, `link` = acao inline.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- 3 linhas removidas + busca e substituicao de `variant="primary"`.
+
+**Prioridade:** P1 -- API confusion + CSS duplicado.
+
+**Arquivos afetados:** `/src/components/ui/button.tsx` + consumidores com `variant="primary"`
+
+---
+
+### OPT-017: lia-button-primary / lia-button-secondary CSS coexistem com Button shadcn
+
+**Problema:** Em `onboarding-controller.tsx` (3 ocorrencias) e `first-access-manager.tsx` (3 ocorrencias), botoes usam classes CSS ao inves do componente React:
+```tsx
+className="lia-button-primary w-full sm:w-auto"
+className="lia-button-secondary w-full"
+className="lia-button-primary text-lg px-10 py-5"
+```
+
+Este padrao bypassa completamente o componente `<Button>` de `button.tsx`, perdendo: focus ring padronizado, estado disabled gerenciado, asChild pattern, e consistencia de dark mode.
+
+**Solucao:** Migrar:
+- `lia-button-primary` -> `<Button variant="default">`
+- `lia-button-secondary` -> `<Button variant="secondary">` ou `<Button variant="outline">`
+
+Apos migracao, verificar se `.lia-button-*` tem outros usos. Se zero usos, remover as classes do CSS.
+
+**Impacto Visual:** Nenhum (se estilos forem equivalentes) ou Sutil.
+
+**Esforco:** Medio -- 6 ocorrencias + verificacao de outros contextos + cleanup CSS.
+
+**Prioridade:** P2 -- acessibilidade e consistencia.
+
+**Arquivos afetados:** `onboarding-controller.tsx`, `first-access-manager.tsx`, `globals.css`
+
+---
+
+### OPT-018: Botoes tab customizados fora do componente Tabs
+
+**Problema:** `CandidateTabs.tsx` e `jobs-page.tsx` implementam tabs manualmente:
+```tsx
+// CandidateTabs.tsx linha 32
+className={`group inline-flex items-center gap-2 py-2 px-1 border-b-2 tab-button ${activeTab === tab ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500'}`}
+// jobs-page.tsx linha 206
+className={`group inline-flex items-center py-2 px-1 border-b-2 tab-button ${...}`}
+```
+
+Este padrao duplica logica de estado (ativo/inativo) e cria inconsistencia visual com os `<Tabs>` Radix usados em outras partes da plataforma.
+
+**Solucao:** Migrar para `<Tabs>` + `<TabsList>` + `<TabsTrigger>` de `tabs.tsx`. Se o estilo visual "underline" e diferente do estilo "pill" atual, criar variante `variant="underline"` no componente Tabs.
+
+**Impacto Visual:** Sutil -- mudanca de estilo de tab (underline pode ser preservado via nova variante).
+
+**Esforco:** Medio -- refatoracao de 2 componentes com estado de tab.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** `/src/components/pages/candidates/CandidateTabs.tsx`, `/src/components/pages/jobs-page.tsx`
+
+---
+
+### OPT-055: Button size default sem documentacao de escala de alturas interativas
+
+**Problema:** `button.tsx` define alturas: `default: h-10 (40px)`, `sm: h-9 (36px)`, `lg: h-11 (44px)`. Mas outros elementos interativos usam alturas diferentes sem relacao documentada: TabsTrigger usa `h-7` (28px), algumas acoes usam `h-8` (32px), CTAs de onboarding usam `text-lg py-6` resultando em ~56px. Nao ha escala de alturas de elementos interativos documentada.
+
+**Solucao:** Documentar escala na FRONTEND_STANDARDS.md:
+- xs: 24px (h-6) -- chips, filtros ultra-compactos
+- sm: 32px (h-8) -- acoes secundarias compactas
+- md: 36px (h-9 = Button sm) -- botoes secundarios padrao
+- lg: 40px (h-10 = Button default) -- botoes primarios padrao
+- xl: 44px (h-11 = Button lg) -- CTAs principais
+
+**Impacto Visual:** Sutil.
+
+**Esforco:** Baixo -- documentacao.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md
+
+---
+
+## CATEGORIA 5 -- BORDAS & RAIOS
+
+### OPT-019: rounded-md (3.848x) dominante vs rounded-full (1.543x) sem regra documentada
+
+**Problema:** O sistema de tokens define 3 niveis de border-radius via tailwind.config.ts:
+- `rounded-sm` = `calc(var(--radius) - 4px)` = 8px (16 ocorrencias)
+- `rounded-md` = `calc(var(--radius) - 2px)` = 10px (3.848 ocorrencias -- dominante)
+- `rounded-lg` = `var(--radius)` = 12px (74 ocorrencias)
+
+Mas `rounded-full` (9999px) tem 1.543 usos -- muito mais que `rounded-lg` e `rounded-sm` combinados. Nao ha documentacao sobre quando usar `rounded-full` vs `rounded-md`. Isso resulta em decisoes inconsistentes entre desenvolvedores.
+
+**Solucao:** Documentar regra semantica de border-radius na FRONTEND_STANDARDS.md:
+- `rounded-full` = pills, badges, avatares, icone-botoes circulares, tags de filtro
+- `rounded-md` (10px) = botoes, inputs, dropdowns, chips de acao, selects
+- `rounded-lg` (12px) = cards, modais, paineis, tooltips
+- `rounded-sm` (8px) = badges inline, badges compactos, indicadores
+
+Auditar os 1.543 usos de `rounded-full` para verificar conformidade com a nova regra.
+
+**Impacto Visual:** Sutil -- alguns elementos com `rounded-full` incorreto ficam levemente angulados.
+
+**Esforco:** Medio -- documentacao + auditoria + correcoes pontuais.
+
+**Prioridade:** P1 -- governa a "assinatura visual" da plataforma.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md + ~30 arquivos de componentes
+
+---
+
+### OPT-020: rounded-2xl (59x) e rounded-xl (5x) fora do sistema canonico de 3 tokens
+
+**Problema:** O sistema de tokens define apenas 3 niveis (sm=8px, md=10px, lg=12px). Porem:
+- `rounded-2xl` (16px) = 59 ocorrencias -- frequente em modais e cards especiais
+- `rounded-xl` (14px) = 5 ocorrencias -- uso esporadico
+
+Esses valores criam "buracos" no sistema de tokens, forcando devs a usar Tailwind nativo sem passagem pelo DS.
+
+**Solucao:** Decisao de design: criar 4o nivel `--radius-xl: 16px` com classe `rounded-xl` customizada? Ou normalizar os 64 casos para `rounded-lg` (12px)? A diferenca de 4px entre 12px e 16px e perceptivel em modais grandes. Recomendacao: criar `rounded-xl` como token `calc(var(--radius) + 4px)` = 16px, documentar uso para modais grandes e sheets.
+
+**Impacto Visual:** Sutil -- se normalizado para 12px, modais ficam ligeiramente menos arredondados.
+
+**Esforco:** Baixo -- decisao de design + 5 substituicoes de rounded-xl + configuracao de token se necessario.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** Multiplos componentes (grep `rounded-2xl` e `rounded-xl`)
+
+---
+
+### OPT-021: Tres sistemas de border color coexistindo
+
+**Problema:** Cores de borda sao expressas de tres formas distintas:
+1. **Tailwind direto:** `border-gray-200`, `border-gray-300` -- usa escala Tailwind bruta
+2. **Tokens semanticos lia-*:** `--lia-border-subtle` (#E5E7EB), `--lia-border-default` (#D1D5DB), `--lia-border-medium` (#9CA3AF) -- com dark mode override
+3. **Token Shadcn:** `border` -> `hsl(var(--border))` -- usado nos componentes shadcn base
+4. **Hardcoded:** `#E5E7EB`, `#D1D5DB` inline em style={{}}
+
+Os sistemas 2 e 3 sao potencialmente redundantes: `--lia-border-subtle` = `#E5E7EB` = `gray-200` = provavelmente igual a `hsl(var(--border))` em light mode.
+
+**Solucao:** Consolidar: mapear `--border` do Shadcn para `var(--lia-border-default)` se ainda nao feito. Criar classes Tailwind `border-lia-subtle`, `border-lia-default`, `border-lia-medium` mapeando para os tokens semanticos. Remover `border-gray-200/300` em favor das classes semanticas onde o contexto for de borda padrao.
+
+**Impacto Visual:** Nenhum (valores equivalentes).
+
+**Esforco:** Medio.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `design-tokens.css`, `globals.css`, `tailwind.config.ts`, ~20 componentes
+
+---
+
+## CATEGORIA 6 -- ESPACAMENTO
+
+### OPT-022: Valores arbitrarios de dimensao (w-[Npx]/h-[Npx]) -- 40+ valores unicos sem token
+
+**Problema:** 40+ valores unicos de dimensao em sintaxe arbitraria nos componentes (frequencias mais altas):
+- `h-[90vh]` (52x), `h-[85vh]` (13x), `h-[80vh]` (12x), `h-[95vh]` (6x)
+- `w-[100px]` (18x), `h-[100px]` (16x)
+- `h-[200px]` (16x), `w-[180px]` (13x)
+- `h-[400px]` (13x), `h-[300px]` (11x), `h-[180px]` (11x)
+- `w-[280px]` (8x), `h-[280px]` (8x), `w-[140px]` (8x)
+- `w-[420px]` (7x), `w-[340px]` (7x), `w-[320px]` (7x)
+
+O sistema define tokens de layout (w-panel-sm=300px, w-panel-md=350px, etc.) mas valores como 100px, 180px, 280px, 420px nao tem token. Impossibilita ajustes globais de layout responsivo.
+
+**Solucao:** Auditar valores usados 5+ vezes e criar tokens:
+- `h-modal` = 90vh (ver OPT-023 -- merece tratamento proprio)
+- `w-thumb` = 100px (ícones de empresa, logos)
+- `w-preview-sm` = 180px (miniaturas de preview)
+- `w-preview-md` = 280px (paineis compactos)
+- `w-content-xl` = 420px (paineis de conteudo largo)
+
+Para valores <4 usos: aceitar como one-offs documentados.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Alto -- inventario completo + tokenizacao + 100+ substituicoes.
+
+**Prioridade:** P2 -- fundacao para ajustes de layout responsivo.
+
+**Arquivos afetados:** ~50 arquivos de componentes
+
+---
+
+### OPT-023: h-[90vh]/h-[85vh]/h-[80vh]/h-[95vh] -- mesma semantica, 4 valores distintos
+
+**Problema:** 4 valores de viewport height usados para a mesma semantica (altura maxima de modais/paineis):
+- `h-[90vh]` = 52 ocorrencias
+- `h-[85vh]` = 13 ocorrencias
+- `h-[80vh]` = 12 ocorrencias
+- `h-[95vh]` = 6 ocorrencias
+
+A variacao 80->85->90->95 parece aleatoria -- diferentes devs escreveram valores ligeiramente diferentes para a mesma intencao (modal/painel que nao ultrapasse a viewport).
+
+**Solucao:** Eleger `h-[90vh]` como canonico para "altura maxima de modal/painel". Criar token de layout `--layout-modal-max-h: 90vh` e classe Tailwind `h-modal`. Substituir os 31 usos de variantes alternativas (85vh, 80vh, 95vh) por `h-modal`.
+
+**Impacto Visual:** Sutil -- modais ligeiramente maiores ou menores ao normalizar em 90vh.
+
+**Esforco:** Baixo -- 1 token + 1 classe Tailwind + ~80 substituicoes simples.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** ~30 arquivos com modais/paineis
+
+---
+
+### OPT-024: Tokens --space-* definidos mas componentes usam p-N/gap-N Tailwind diretamente
+
+**Problema:** O DS define `--space-xs/sm/md/lg/xl/2xl` (4/8/16/24/32/48px) como tokens CSS, mas os componentes usam Tailwind diretamente (`p-4`, `gap-2`, `p-6`) sem referencia aos aliases semanticos. Nao ha classes `gap-lia-md` ou `p-lia-sm` no Tailwind config.
+
+**Solucao:** Aceitar como estado adequado -- Tailwind nativo de espacamento e suficientemente semantico e a escala de 4px ja esta alinhada com `--space-*`. O que falta e apenas documentar a equivalencia explicitamente na FRONTEND_STANDARDS.md:
+- `p-1 = gap-1 = --space-xs = 4px`
+- `p-2 = gap-2 = --space-sm = 8px`
+- `p-4 = gap-4 = --space-md = 16px`
+- `p-6 = gap-6 = --space-lg = 24px`
+
+Nao e necessario criar aliases Tailwind extras, pois aumentaria o CSS bundle sem beneficio pratico.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- documentacao apenas.
+
+**Prioridade:** P3 -- knowledge documentation.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md
+
+---
+
+## CATEGORIA 7 -- SOMBRAS
+
+### OPT-025: shadow-sm/md/lg/xl Tailwind (28 usos) em paralelo com shadow-lia-* (0 usos em /ui/)
+
+**Problema:** O DS define 4 sombras canonicas como classes Tailwind: `shadow-lia-sm`, `shadow-lia-default`, `shadow-lia-md`, `shadow-lia-lg` (valores ultra-sutis: opacidade 0.02-0.06). Porem grep em /src/components/ui/ encontra apenas sombras Tailwind nativas:
+- `shadow-none` (11x)
+- `shadow-sm` (7x)
+- `shadow-xl` (4x)
+- `shadow-lg` (4x)
+- `shadow-md` (2x)
+
+As classes `shadow-lia-*` tem ZERO usos detectados nos componentes UI. As sombras Tailwind nativas sao significativamente mais pesadas (shadow-sm = `0 1px 3px rgba(0,0,0,0.1)`) vs (shadow-lia-sm = `0 1px 2px rgba(0,0,0,0.02)`).
+
+**Solucao:** Auditar os 28 usos de shadow Tailwind nativo e substituir pelos equivalentes `shadow-lia-*`. Correspondencias sugeridas:
+- `shadow-sm` -> `shadow-lia-default`
+- `shadow-md` -> `shadow-lia-md`
+- `shadow-lg` -> `shadow-lia-lg`
+- `shadow-xl` -> criar `shadow-lia-xl` se necessario
+
+Adicionar a FRONTEND_STANDARDS.md: "Use apenas shadow-lia-* para sombras. Proibido shadow-sm/md/lg/xl Tailwind."
+
+**Impacto Visual:** Sutil -- sombras ficam mais sutis (filosofia ultra-minimal do DS).
+
+**Esforco:** Medio -- auditoria + substituicao + possivel novo token.
+
+**Prioridade:** P2 -- consistencia visual para o estilo flat/ultra-minimal.
+
+**Arquivos afetados:** ~15 arquivos com shadow Tailwind nativo
+
+---
+
+### OPT-026: .lia-card e .lia-card-elevated com shadows inline nao usam tokens shadow-lia-*
+
+**Problema:** As classes CSS `.lia-card` e `.lia-card-elevated` em globals.css definem shadows proprias via rgba() hardcoded:
+- `.lia-card { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }`
+- `.lia-card-elevated { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }`
+
+O token `--lia-shadow-default` e `0 1px 3px 0 rgb(0 0 0 / 0.05)` -- proximo mas nao identico (0.04 vs 0.05). Ha divergencia de 0.01 na opacidade e o formato `rgba()` vs `rgb()`.
+
+**Solucao:** Normalizar:
+- `.lia-card { box-shadow: var(--lia-shadow-default); }`
+- `.lia-card-elevated { box-shadow: var(--lia-shadow-md); }`
+
+E ajustar os tokens se necessario para que os valores sejam exatamente os desejados pelo design.
+
+**Impacto Visual:** Nenhum -- diferenca imperceptivel (0.01 de opacidade).
+
+**Esforco:** Baixo -- 2 linhas em globals.css + possivel ajuste de token.
+
+**Prioridade:** P3 -- consistencia de sistema.
+
+**Arquivos afetados:** `/src/app/globals.css`
+
+---
+
+## CATEGORIA 8 -- MOTION
+
+### OPT-027: framer-motion (~160 KB bundle) usado em apenas 1 arquivo
+
+**Problema:** `framer-motion ^12.23.22` esta em `package.json` e adiciona ~160 KB ao bundle JavaScript. Auditoria de uso real:
+- `/src/app/login/welcome/page.tsx` -- 1 arquivo com `import { motion, AnimatePresence }` e uso de `motion.div` em ~6 elementos
+
+Todos os outros 573 componentes usam CSS keyframes nativos (globals.css tem ~30 keyframes) e classes utilitarias Tailwind. Manter 160 KB de dependencia para uma unica pagina de welcome screen e desproporcional.
+
+**Solucao:** Refatorar `login/welcome/page.tsx` para usar animacoes CSS existentes:
+- `motion.div` com opacity/translateY -> `animate-fade-in-up` (ja existe em tailwind.config.ts)
+- `motion.div` com scale -> `animate-scale-in-delayed` (ja existe)
+- `AnimatePresence` -> pode ser substituido por CSS transitions com display/visibility
+
+Remover `framer-motion` do `package.json`. Economia: ~160 KB de bundle JS.
+
+**Impacto Visual:** Sutil -- a welcome page pode perder animacoes de spring/inertia do framer que nao tem equivalente CSS exato.
+
+**Esforco:** Baixo -- refatorar 1 arquivo + remover dependencia.
+
+**Prioridade:** P1 -- bundle size significativo.
+
+**Arquivos afetados:** `/src/app/login/welcome/page.tsx`, `package.json`
+
+---
+
+### OPT-028: transition-all (737x) vs transition-colors (917x) sem criterio documentado
+
+**Problema:** Dois tipos de transition dominam a codebase:
+- `transition-colors` = 917 ocorrencias -- anima cor/background/border-color
+- `transition-all` = 737 ocorrencias -- anima TODAS as propriedades CSS
+- `transition-opacity` = 76 ocorrencias
+- `transition-transform` = 58 ocorrencias
+
+`transition-all` em elementos com layout properties pode causar repaints desnecessarios e jank visual. Para a maioria dos hover states (mudanca de bg, texto, borda), `transition-colors` e a escolha correta e mais performatica. A diferenca de 737 vs 917 sugere que devs escolhem por preferencia pessoal, nao por criterio tecnico.
+
+**Solucao:** Documentar regra:
+- `transition-colors` = hover states que alteram cor/bg/border
+- `transition-transform` = hover lifts, scales, rotacoes
+- `transition-opacity` = fades, loading states
+- `transition-all` = apenas quando multiplas propriedades heterogeneas animam simultaneamente (raro)
+
+Auditar os 737 usos de `transition-all` e migrar ~80% para equivalentes especificos.
+
+**Impacto Visual:** Nenhum visivelmente, mas melhoria de performance de animacao.
+
+**Esforco:** Medio -- documentacao + auditoria + ~600 substituicoes.
+
+**Prioridade:** P2 -- performance.
+
+**Arquivos afetados:** ~300 arquivos de componentes
+
+---
+
+### OPT-029: 3 keyframes NOP em globals.css (fade-in/slideDown/slideUp desabilitados)
+
+**Problema:** Tres `@keyframes` declarados em globals.css sao efetivamente NOPs (nao animam nada):
+```css
+@keyframes fade-in { opacity: 1; transform: none; } /* inicia E termina igual */
+@keyframes slideDown { /* similar -- desabilitado */ }
+@keyframes slideUp { /* similar -- desabilitado */ }
+```
+
+Esses keyframes provavelmente foram "desabilitados" ao suprimir animacoes Radix UI (transicao de entrada de dropdown, popover), mas o codigo morto nao foi removido.
+
+**Solucao:** Verificar se alguma classe utilitaria referencia esses keyframes (`grep -n "fade-in\|slideDown\|slideUp" globals.css`). Se nao ha referencias ativas, deletar os 3 blocos @keyframes. Se ha referencias, adicionar comentario explicando por que sao NOPs.
+
+**Impacto Visual:** Nenhum -- sao NOPs por definicao.
+
+**Esforco:** Baixo -- 3 blocos @keyframes removidos.
+
+**Prioridade:** P2 -- reduz ruido no CSS.
+
+**Arquivos afetados:** `/src/app/globals.css`
+
+---
+
+### OPT-030: Animacoes Radix desabilitadas globalmente sem documentacao formal
+
+**Problema:** Tooltips, dropdowns, popovers Radix tem suas animacoes de entrada/saida globalmente suprimidas via `animation: none !important` no globals.css. As classes do Tailwind (`animate-in`, `fade-in-0`) tambem estao desabilitadas. Esta decisao de design (plataforma focada em densidade/performance vs. UX animada) e valida, mas nao esta documentada na FRONTEND_STANDARDS.md. Novos devs podem adicionar classes de animacao sem saber que serao ignoradas globalmente.
+
+**Solucao:** Adicionar secao "Motion Policy" na FRONTEND_STANDARDS.md documentando:
+- Animacoes Radix UI e Tailwind animate-in/out estao DESABILITADAS por decisao de design (prioridade: densidade e performance)
+- Animacoes ativas sao exclusivamente as classes CSS customizadas: `.animate-fade-in`, `.animate-sonar-ring`, `.animate-shimmer`, etc.
+- Regra para adicionar nova animacao: criar keyframe em globals.css, criar classe utilitaria com nome semantico, documentar aqui
+- framer-motion esta PROIBIDO exceto em casos de spring/inertia sem equivalente CSS
+
+**Impacto Visual:** Sutil -- se habilitadas, dropdowns/tooltips teriam fade de entrada.
+
+**Esforco:** Baixo -- documentacao apenas.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md
+
+---
+
+## CATEGORIA 9 -- DARK MODE
+
+### OPT-031: 16 componentes UI base sem nenhuma classe dark:
+
+**Problema:** Grep em `/src/components/ui/` confirma que os seguintes componentes nao tem NENHUMA classe `dark:`:
+- `accordion.tsx` -- componente de expansao de conteudo
+- `avatar.tsx` -- avatar de usuario
+- `sheet.tsx` -- drawer lateral
+- `toaster.tsx` -- container de toasts
+- `tooltip.tsx` -- tooltip de hover
+- `separator.tsx` -- divisor/linha horizontal
+- `table.tsx` -- tabela base (usada em toda a plataforma)
+- `collapsible.tsx` -- secao colapsavel
+- **`card.tsx`** -- card base (uso massivo)
+- `label.tsx` -- label de formulario
+- `prompt-suggestions-dock.tsx` -- dock de sugestoes de prompt
+- **`alert-dialog.tsx`** -- dialogo de confirmacao (uso critico)
+- **`dialog.tsx`** -- modal base (uso massivo)
+- `lia-icon.tsx` -- icone da LIA
+- `scroll-area.tsx` -- area de scroll customizada
+- `toast.tsx` -- componente de toast
+
+Se esses componentes dependem exclusivamente de tokens CSS semanticos com override dark (via `.dark {}` no CSS), podem funcionar. Mas qualquer classe Tailwind hardcoded de cor (ex: `bg-white`, `text-gray-700`) sem `dark:` prefix cria bug de dark mode.
+
+**Solucao:** Auditar cada um dos 16 para verificar se usam exclusivamente tokens semanticos ou se tem classes hardcoded sem dark. Prioridade maxima: `dialog.tsx`, `alert-dialog.tsx`, `card.tsx`, `table.tsx`. Para cada classe hardcoded encontrada, adicionar equivalente `dark:`.
+
+**Impacto Visual:** Significativo -- modais, cards e tabelas sem dark mode aparecem com fundo branco em dark theme.
+
+**Esforco:** Medio -- auditoria de 16 arquivos + adicao de dark: prefixes.
+
+**Prioridade:** P1 -- UX de dark mode quebrado em componentes core.
+
+**Arquivos afetados:** Os 16 componentes listados em `/src/components/ui/`
+
+---
+
+### OPT-032: 75 arquivos de componentes (13% da base) sem nenhuma classe dark:
+
+**Problema:** De 574 arquivos de componentes, 499 tem pelo menos uma classe `dark:`. Os 75 restantes (13%) nao tem nenhuma. Alguns sao componentes puramente logicos (hooks embutidos em .tsx, types), mas um subset certamente tem classes Tailwind de cor sem dark override -- causando elementos com aparencia "light" em dark mode.
+
+Os 16 componentes em /ui/ (OPT-031) fazem parte desses 75. Os outros ~59 estao em /modals/, /pages/, /components/ raiz e subdiretorios.
+
+**Solucao:** Filtrar os 75 para identificar quais tem classes Tailwind de cor (`bg-white`, `text-gray-*`, `bg-gray-*`, `border-gray-*`) sem dark override. Estimar: ~35-40 dos 75 precisam de atencao. Criar task/issue para cada.
+
+**Impacto Visual:** Moderado -- componentes com fundo/texto nao adaptados ao dark theme.
+
+**Esforco:** Alto -- auditoria + correcoes em ~40 arquivos.
+
+**Prioridade:** P1 -- completeness do dark mode.
+
+**Arquivos afetados:** 75 arquivos identificados (excluindo os 16 de OPT-031)
+
+---
+
+### OPT-033: dark: prefixes usando gray-N hardcoded em vez de tokens semanticos
+
+**Problema:** Dados de grep mostram escala de dark mode via Tailwind bruto:
+- `dark:text-gray-*` = 7.251 ocorrencias
+- `dark:bg-gray-*` = 3.471 ocorrencias
+- `dark:border-gray-*` = 2.087 ocorrencias
+
+Esse padrao funciona, mas acopla cada componente a valores especificos da escala de cinza. Se a paleta dark mudar (ex: de gray-800 para tom levemente azulado), seria necessario tocar cada uma das ~12.000 ocorrencias.
+
+O DS define tokens semanticos com override dark (`--lia-text-primary`, `--lia-bg-secondary`) exatamente para evitar esse problema. A resolucao de OPT-009 (registrar tokens lia-* no Tailwind config) e prerequisito para tornar a migracao ergonomica.
+
+**Solucao:** Trade-off consciente vs. beneficio a longo prazo. Nao migrar em bloco (custo muito alto). Estrategia gradual:
+1. Concluir OPT-009 primeiro (tokens semanticos no Tailwind)
+2. Documentar guideline: "Ao editar qualquer arquivo, prefira `text-lia-text-primary dark:text-lia-text-primary` a `text-gray-800 dark:text-gray-50`"
+3. Criar ESLint rule que flaggeia padroes `text-gray-N dark:text-gray-M` em codigos novos
+
+**Impacto Visual:** Nenhum a curto prazo.
+
+**Esforco:** Alto -- nao recomendado fazer em bloco; apenas gradualmente.
+
+**Prioridade:** P2 -- longo prazo, migracao incremental.
+
+**Arquivos afetados:** Toda a codebase (migracao gradual)
+
+---
+
+### OPT-034: Tokens de terceiros sem override dark (whatsapp-*, login-bg-gradient)
+
+**Problema:** `--whatsapp-bg` (#E5DDD5), `--whatsapp-bubble` (#DCF8C6), `--whatsapp-green` (#25D366) e `--login-bg-gradient` nao tem versoes dark. O simulador de WhatsApp em dark mode provavelmente mostra o fundo claro padrao do WhatsApp (ja que a marca tem tema proprio). O login gradient e uma tela especifica.
+
+**Solucao:** Para WhatsApp: criar overrides dark que espelham o tema dark oficial do WhatsApp (`--whatsapp-bg` dark = `#1A1F24`, `--whatsapp-bubble` dark = `#0D5C4F`, preservando `--whatsapp-green` = `#25D366`). Para login gradient: aceitar como excecao documentada -- tela de login pode ter tema proprio independente do dark mode da plataforma.
+
+**Impacto Visual:** Sutil -- simulador de WhatsApp aparece com fundo claro em dark mode.
+
+**Esforco:** Baixo -- 3 override declarations no CSS.
+
+**Prioridade:** P3 -- edge case de componente especifico.
+
+**Arquivos afetados:** `design-tokens.css` ou `globals.css`
+
+---
+
+## CATEGORIA 10 -- COMPONENTES DUPLICADOS
+
+### OPT-035: settings-page.tsx (134L) vs settings-page-enhanced.tsx (622L) em paralelo
+
+**Problema:** Dois arquivos implementam configuracoes:
+- `settings-page.tsx` -- 134 linhas (versao simplificada)
+- `settings-page-enhanced.tsx` -- 622 linhas (versao avancada, 4.6x maior)
+
+A coexistencia sugere refatoracao incompleta -- a versao original nao foi removida ao criar a enhanced. Manter dois arquivos significa qualquer bug corrigido em um pode nao ser corrigido no outro.
+
+**Solucao:** Verificar qual versao e referenciada pela rota `/configuracoes/page.tsx`. Deletar a versao nao usada. Se ambas sao usadas por rotas diferentes, consolidar em uma implementacao unica com props para nivel de detalhe.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Medio -- investigacao de uso (1h) + merge ou delete (3h) + verificacao.
+
+**Prioridade:** P1 -- evita manutencao duplicada.
+
+**Arquivos afetados:** `/src/components/pages/settings-page.tsx`, `settings-page-enhanced.tsx`
+
+---
+
+### OPT-036: jobs-page.tsx (1.352L) vs jobs2-page.tsx (569L) em paralelo
+
+**Problema:** Dois arquivos de pagina de vagas:
+- `jobs-page.tsx` = 1.352 linhas (versao principal)
+- `jobs2-page.tsx` = 569 linhas (versao alternativa)
+
+O `jobs2-page.tsx` usa a paleta Tech Startups (ai-aqua, electric-red, ethereal-green) -- paleta paralela nao-canonica ao DS WeDo. Sugere experimento de design ou redesign nao concluido que ficou em producao.
+
+**Solucao:** Decidir qual e a versao canonica. Se `jobs2-page.tsx` e a direcao futura: migrar tokens (OPT-007 como prerequisito) e substituir `jobs-page.tsx`. Se `jobs-page.tsx` e canonica: deletar `jobs2-page.tsx`. Manter dois arquivos perpetua divergencia visual e manutencao duplicada.
+
+**Impacto Visual:** Moderado -- depende de qual versao e removida.
+
+**Esforco:** Medio -- decisao + merge/delete + testes de regressao.
+
+**Prioridade:** P1.
+
+**Arquivos afetados:** `/src/components/pages/jobs-page.tsx`, `jobs2-page.tsx`
+
+---
+
+### OPT-037: tasks-page.tsx (2.174L) vs tasks-page-mvp.tsx em paralelo
+
+**Problema:** `tasks-page.tsx` e um monolito de 2.174 linhas (acima do limite de 2.000L do DS) e `tasks-page-mvp.tsx` existe em paralelo. O sufixo "-mvp" sugere versao simplificada/temporaria que deveria ter sido removida ou evoluida para substituir o original. Alem disso, ambas as rotas existem: `/tasks` e `/tasks-mvp`.
+
+**Solucao:** Verificar qual versao e referenciada por qual rota e qual e a experiencia preferida. Se `/tasks-mvp` e experimental, remover. Se e a versao atual preferida, renomear e remover o original. A `tasks-page.tsx` tambem esta na lista de monolitos a serem splitados (Fase 4 do DS).
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Medio.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/components/pages/tasks-page.tsx`, `tasks-page-mvp.tsx`
+
+---
+
+### OPT-038: use-table-features.tsx vs useTableFeatures.ts -- duas implementacoes
+
+**Problema:** Dois hooks com funcionalidade similar e nomes quase identicos:
+- `use-table-features.tsx` (kebab-case, .tsx)
+- `useTableFeatures.ts` (camelCase, .ts)
+
+O INVENTARIO_COMPONENTES.md documenta `useTableFeatures.ts` como "Versao alternativa/legada de table features". Ter dois hooks paralelos significa diferentes componentes podem usar implementacoes com estados e APIs divergentes.
+
+**Solucao:** Investigar diferencas entre os dois. Manter o mais completo e funcional (provavelmente o .tsx). Migrar consumidores do legado. Deletar o legado.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- investigacao + merge/delete.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/hooks/use-table-features.tsx`, `useTableFeatures.ts`
+
+---
+
+### OPT-039: mockup-shadcn-vue-page.tsx em /pages/ em ambiente de producao
+
+**Problema:** `/src/components/pages/mockup-shadcn-vue-page.tsx` e um arquivo de mockup/prototipo presente no diretorio de paginas de producao. Arquivos de mockup nao devem existir em `src/` de producao -- pertencem a `__mocks__/`, `prototypes/` ou storybook.
+
+**Solucao:** Verificar se o arquivo tem rota ativa (grep em /app/ por "mockup-shadcn"). Se nao, deletar. Se sim, mover para diretorio apropriado e remover da rota de producao.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** `/src/components/pages/mockup-shadcn-vue-page.tsx`
+
+---
+
+## CATEGORIA 11 -- CSS CLASSES vs TAILWIND
+
+### OPT-040: .lia-card usado em onboarding em vez do componente Card shadcn
+
+**Problema:** `onboarding-controller.tsx` e `first-access-manager.tsx` usam `className="lia-card"` em divs:
+```tsx
+// onboarding-controller.tsx linha 294
+<div className="lia-card max-w-2xl w-full">
+// first-access-manager.tsx linhas 198, 229, 307, 378
+<div className="lia-card max-w-md w-full">
+```
+
+A classe CSS `.lia-card` define `bg: #FFFFFF`, `box-shadow`, `border-radius: 12px` e `border: 1px solid var(--gray-200)` -- funcionalidade que o componente `<Card>` de shadcn cobre com melhor suporte a dark mode, variantes e API padronizada.
+
+**Solucao:** Substituir `<div className="lia-card ...">` por `<Card className="...">`. Verificar se `.lia-card` tem outros usos apos migracao; se zero, deletar a classe do CSS.
+
+**Impacto Visual:** Nenhum (se estilos forem equivalentes).
+
+**Esforco:** Baixo -- 5 substituicoes.
+
+**Prioridade:** P1 -- dark mode e consistencia de API.
+
+**Arquivos afetados:** `onboarding-controller.tsx`, `first-access-manager.tsx`
+
+---
+
+### OPT-041: .lia-input usado em search components em vez de Input shadcn
+
+**Problema:** `SimilarProfilesInput.tsx` e `ArchetypesList.tsx` usam a classe CSS `.lia-input`:
+```tsx
+// SimilarProfilesInput.tsx linha 72
+className="lia-input w-full pl-10 pr-20 py-2.5 text-sm"
+// ArchetypesList.tsx linha 159
+className="lia-input w-full px-3 py-2.5 text-sm resize-none"
+```
+
+Similar ao OPT-040, contorna o componente shadcn e perde: focus ring padronizado (cyan), estados de erro, acessibilidade ARIA.
+
+**Solucao:** Substituir `<input className="lia-input ...">` por `<Input>` e `<textarea className="lia-input ...">` por `<Textarea>`. Verificar se `.lia-input` tem outros usos.
+
+**Impacto Visual:** Sutil -- focus ring muda para padrao do DS (cyan via wedo-cyan).
+
+**Esforco:** Medio -- 2 arquivos + possivel ajuste de layout.
+
+**Prioridade:** P2 -- acessibilidade.
+
+**Arquivos afetados:** `SimilarProfilesInput.tsx`, `ArchetypesList.tsx`
+
+---
+
+### OPT-042: 8 classes tipograficas Apple-inspired (.text-display/.text-heading-*) coexistem com .lia-h*
+
+**Problema:** (Complementa OPT-003) As 8 classes `.text-display`, `.text-heading-1/2/3`, `.text-body-large`, `.text-body`, `.text-body-small`, `.text-caption` em `globals.css` sao comentadas como "Typography Scale - Apple-Inspired" -- nomenclatura que remete a design system externo. Alem disso, o prefixo `.text-*` conflita com o namespace das classes Tailwind nativas (`text-sm`, `text-lg`).
+
+**Solucao:**
+- Fase 1: Renomear para `.lia-display`, `.lia-body-large` para eliminar conflito com Tailwind
+- Fase 2: Deprecar em favor do sistema `.lia-h*` / `.lia-body*` ja existente
+- Remover comentarios "Apple-Inspired" do CSS
+
+**Impacto Visual:** Sutil -- diferencas minimas de line-height entre sistemas equivalentes.
+
+**Esforco:** Medio.
+
+**Prioridade:** P3 -- nomenclatura e consistencia de longo prazo.
+
+**Arquivos afetados:** `globals.css`, ~15 arquivos consumidores das classes
+
+---
+
+## CATEGORIA 12 -- INLINE STYLES
+
+### OPT-043: 890 ocorrencias de style={{}} em 206 arquivos -- meta da Fase 5 nao atingida
+
+**Problema:** O INVENTARIO_COMPONENTES.md registra Fase 5 (Inline Styles) como pendente com 1.193 ocorrencias. Grep atual encontra 890 ocorrencias em 206 arquivos -- melhora de ~25% mas ainda muito longe da meta. As 890 ocorrencias representam:
+- Valores dinamicos inevitaveis (ex: `style={{width: progressPercent + '%'}}`) -- aceitaveis
+- CSS vars estaticos (ex: `style={{color: 'var(--gray-800)'}}`) -- deveriam ser Tailwind
+- Valores hardcoded (ex: `style={{backgroundColor: '#4DA8BB'}}`) -- devem usar tokens
+
+**Solucao:** Categorizar as 890 ocorrencias em tres grupos:
+- (a) Dinamicos inevitaveis: documentar com comentario `// DINAMICO: valor calculado em runtime`
+- (b) CSS vars estaticos: converter para Tailwind apos concluir OPT-009
+- (c) Hardcoded: substituir por token/classe Tailwind
+
+Estimativa: ~60% das 890 (534 ocorrencias) sao categorias (b) e (c) e podem ser eliminadas.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Alto -- categorizacao (4h) + ~534 substituicoes (12h).
+
+**Prioridade:** P1 -- Bridge Architecture compliance.
+
+**Arquivos afetados:** 206 arquivos identificados
+
+---
+
+### OPT-044: var(--lia-btn-primary-bg/text) em style={{}} nos paineis ui-actions
+
+**Problema:** Padrao recorrente nos componentes de `/src/components/ui-actions/panels/`:
+```tsx
+// CalibrationFeedbackPanel.tsx
+style={{backgroundColor: 'var(--lia-btn-primary-bg)'}}
+// BehavioralCompetenciesPanel.tsx  
+style={{backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)'}}
+// InterviewSchedulingPanel.tsx (3 ocorrencias)
+style={{backgroundColor: isSelected ? 'var(--lia-btn-primary-bg)' : 'transparent', ...}}
+// LanguagesPanel.tsx
+{ bg: 'var(--lia-btn-primary-bg)', text: 'var(--lia-btn-primary-text)' }
+// JobSummaryCard.tsx
+style={{backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)'}}
+```
+
+Este padrao e uma implementacao manual do estilo do botao primario em elementos nao-button. Alem de verbose, nao tem dark mode automatico.
+
+**Solucao:** Criar classe utilitaria Tailwind `.lia-selected` (ou registrar cores `btn-primary-bg` e `btn-primary-text` no tailwind config) para uso como classe em vez de style. Alternativamente, onde o elemento pode ser um `<button>`, usar `<Button variant="default">` diretamente.
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Medio -- 8+ arquivos em ui-actions/panels.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/components/ui-actions/panels/*.tsx`, `ui-actions/cards/JobSummaryCard.tsx`
+
+---
+
+### OPT-045: style={{color: dimension.color}} em big-five-profile.tsx -- inevitavel mas sem dark
+
+**Problema:** `big-five-profile.tsx` linha 217: `<span style={{color: dimension.color}}>` onde `dimension.color` e uma cor dinamica proveniente de dados (API). Este padrao e inevitavel quando cores sao determinadas em runtime por dados externos. Porem, o valor nao tem variante dark -- em dark mode, a cor pode ter baixo contraste dependendo do valor da API.
+
+**Solucao:** Se `dimension.color` assume valores conhecidos/fixos (ex: 5 cores do modelo Big Five -- geralmente red/blue/green/yellow/purple), mapeá-los para tokens CSS com variantes dark. Se sao arbitrarios, aceitar como excecao com comentario `// EXCECAO: cor dinamica de dados externos, dark mode nao aplicavel`. Adicionar verificacao de contraste WCAG se possivel.
+
+**Impacto Visual:** Nenhum em light mode; potencial issue de contraste em dark mode.
+
+**Esforco:** Baixo -- investigacao + documentacao ou mapeamento.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** `/src/components/ui/big-five-profile.tsx`
+
+---
+
+## CATEGORIA 13 -- PADROES DE REFERENCIA MISTOS
+
+### OPT-046: Referencias a "Apple-Inspired" e "ElevenLabs" nos comentarios CSS e codigo
+
+**Problema:** Referencias a design systems externos encontradas no codigo:
+- `globals.css` linha ~603: `/* Typography Scale - Apple-Inspired */`
+- `globals.css` linha ~1102: `/* Padrao ElevenLabs/WedoTalent Clean */`
+- `useCandidatesPageCore.tsx` linha ~458: `// Largura padrao 400px - ElevenLabs pattern`
+
+Essas referencias sugerem que decisoes de design foram tomadas imitando outros sistemas sem adaptacao para a identidade WeDo. E problematico para onboarding de novos devs (implica que o DS e derivativo) e para a identidade de produto.
+
+**Solucao:** Substituir comentarios por terminologia propria:
+- `/* Typography Scale - Apple-Inspired */` -> `/* Typography Scale - WeDo DS v4.1 */`
+- `/* Padrao ElevenLabs/WedoTalent Clean */` -> `/* Padrao WeDo: minimal, alta densidade, monocromatico */`
+- `// Largura padrao 400px - ElevenLabs pattern` -> `// Largura padrao 400px (matches --layout-panel-lg)`
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- edicao de comentarios.
+
+**Prioridade:** P2 -- identidade e onboarding.
+
+**Arquivos afetados:** `globals.css`, `useCandidatesPageCore.tsx`
+
+---
+
+### OPT-047: Paleta Tech Startups 2024-2025 como sistema paralelo com filosofia diferente do DS WeDo
+
+**Problema:** A "Paleta Tech Startups 2024-2025" usa formato HSL com nomes genericos de tendencia de mercado (`--ai-aqua`, `--electric-red`, `--peach-fuzz`). O restante do DS usa valores hex com nomes semanticos de produto (`--wedo-cyan` = LIA, `--status-error` = erro, `--wedo-green` = candidatos). As duas filosofias sao incompativeis:
+
+- DS WeDo: semantica de produto (wedo-cyan SIGNIFICA LIA/IA)
+- Paleta Tech Startups: estetica de tendencia (ai-aqua E uma cor bonita de 2024)
+
+A mistura de filosofias compromete a coerencia semantica do DS.
+
+**Solucao:** Descartar a paleta Tech Startups completamente (caminho recomendado -- ver OPT-007 para execucao). Usar equivalentes wedo-* que ja cobrem todas as necessidades semanticas. Remover os 6 tokens e ~24 linhas de globals.css.
+
+**Impacto Visual:** Moderado -- jobs2-page (unico consumidor) muda visualmente.
+
+**Esforco:** Medio -- decisao + OPT-007 como prerequisito + cleanup.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `globals.css`, `jobs2-page.tsx`
+
+---
+
+### OPT-048: liaWidth com comentario "ElevenLabs pattern" -- sem referencia ao token de layout
+
+**Problema:** Em `useCandidatesPageCore.tsx` linha ~458:
+```tsx
+const [liaWidth, setLiaWidth] = useState(400) // Largura padrao 400px - ElevenLabs pattern
+```
+
+Alem da referencia externa (OPT-046), o valor `400` esta hardcoded sem referenciar o token de layout correspondente (`--layout-panel-lg: 400px` que ja existe no DS).
+
+**Solucao:** Substituir o comentario por referencia ao token proprio. O valor 400 nao precisa ser alterado -- apenas o comentario e a semantica:
+```tsx
+const [liaWidth, setLiaWidth] = useState(400) // matches --layout-panel-lg (400px)
+```
+
+**Impacto Visual:** Nenhum.
+
+**Esforco:** Baixo -- 1 linha de comentario.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** `/src/components/pages/candidates/hooks/useCandidatesPageCore.tsx`
+
+---
+
+## CATEGORIA 14 -- ICONES
+
+### OPT-049: w-3/h-3 (1.405x) e w-4/h-4 (2.082x) usados em contextos similares sem criterio
+
+**Problema:** Dois tamanhos de icone dominam a codebase sem criterio claro:
+- `w-3 h-3` (12px) = 1.405 ocorrencias
+- `w-4 h-4` (16px) = 2.082 ocorrencias
+
+Ambos aparecem em badges, botoes, listas, tabs -- sem regra que defina qual usar onde. Em um mesmo card, podem existir icones de 12px e 16px misturados, criando inconsistencia visual sutil mas acumulada. Adicionalmente, `w-2 h-2` (8px) tem 103 ocorrencias.
+
+**Solucao:** Definir regras de tamanho de icone na FRONTEND_STANDARDS.md:
+- `w-2 h-2` (8px) = PROIBIDO para icones funcionais. Apenas decorativos com aria-hidden="true"
+- `w-3 h-3` (12px) = icones dentro de badges, pills, labels ultra-compactos, inline com texto-xs
+- `w-4 h-4` (16px) = PADRAO -- botoes, itens de lista, tabs, dropdowns, inputs
+- `w-5 h-5` (20px) = estados vazios, icones de suporte, headings de secao
+- `w-6 h-6` (24px) = navegacao sidebar, hero icons, illustrations de suporte
+- `w-8 h-8` (32px) = icones de onboarding, ilustracoes principais
+
+Auditar os 1.405 usos de w-3/h-3 para garantir conformidade com a nova regra.
+
+**Impacto Visual:** Sutil -- uniformidade visual melhora.
+
+**Esforco:** Medio -- documentacao + auditoria de ~200 locais potencialmente incorretos.
+
+**Prioridade:** P1 -- consistencia visual.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md + ~100 arquivos de componentes
+
+---
+
+### OPT-050: w-2/h-2 (103x) para icones em badges -- potencial problema de acessibilidade
+
+**Problema:** 103 ocorrencias de icones em 8px (`w-2 h-2`). O minimo recomendado pela WCAG 2.2 Success Criterion 2.5.8 para elementos interativos e 24x24px. Para icones funcionais que transmitem informacao de status (Clock, CheckCircle, XCircle em status-badge.tsx), 8px pode comprometer a legibilidade -- especialmente para usuarios com baixa visao.
+
+A especificacao do `status-badge.tsx` documenta explicitamente: `Icon: 8px (w-2 h-2)` -- e uma decisao de design consciente para alta densidade, mas merece revisao.
+
+**Solucao:** Auditar os 103 usos:
+- Icones funcionais (transmitem informacao de status): migrar para minimo `w-3 h-3` (12px)
+- Icones puramente decorativos: manter em 8px com `aria-hidden="true"`
+
+Atualizar especificacao do `status-badge.tsx` de 8px para 10-12px. Verificar impacto no layout do badge.
+
+**Impacto Visual:** Sutil -- badges de status ficam levemente maiores.
+
+**Esforco:** Baixo -- identificacao dos funcionais + ~30 substituicoes em locais criticos.
+
+**Prioridade:** P2 -- acessibilidade.
+
+**Arquivos afetados:** `status-badge.tsx` + ~20 outros arquivos com icones w-2/h-2 funcionais
+
+---
+
+### OPT-051: 169 icones Lucide sem inventario canonico por contexto
+
+**Problema:** A plataforma usa 169 icones Lucide React distintos sem inventario que defina quais sao canonicos por contexto. Exemplos de ambiguidade:
+- Busca: `Search` ou `SearchIcon` ou `Magnifier`?
+- Candidato: `User`, `UserCircle`, ou `Users`?
+- Analise: `BarChart2`, `BarChart`, `TrendingUp`, ou `BrainCircuit`?
+- Sucesso: `CheckCircle`, `Check`, ou `CheckCircle2`?
+
+Sem definicao, diferentes partes da UI podem usar icones diferentes para o mesmo conceito, criando inconsistencia semantica.
+
+**Solucao:** Criar secao "Icones Canonicos" na FRONTEND_STANDARDS.md com tabela:
+- Contexto -> Icone Lucide canonico (ex: Busca -> `Search`, Candidato -> `User`, Vaga -> `Briefcase`, LIA/IA -> `BrainCircuit`, Status OK -> `CheckCircle`, Status Error -> `XCircle`, Warning -> `AlertCircle`, Calendario -> `Calendar`, Email -> `Mail`, WhatsApp -> `MessageCircle`)
+
+Auditar sidebar, topbar, status indicators para inconsistencias mais visiveis.
+
+**Impacto Visual:** Nenhum imediato, mas facilita consistencia futura.
+
+**Esforco:** Medio -- inventario + documentacao + auditoria inicial.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md (nova secao)
+
+---
+
+## CATEGORIA 15 -- OPACITY & TRANSPARENCY
+
+### OPT-052: opacity-50 (211x) dominante sem gradacao semantica definida
+
+**Problema:** 9 valores distintos de opacity em uso:
+- `opacity-50` = 211 ocorrencias (dominante)
+- `opacity-60` = 76 ocorrencias
+- `opacity-100` = 64 ocorrencias
+- `opacity-0` = 56 ocorrencias
+- `opacity-80` = 37 ocorrencias
+- `opacity-70` = 34 ocorrencias
+- `opacity-90` = 22 ocorrencias
+- `opacity-30` = 22 ocorrencias
+- `opacity-40` = 13 ocorrencias
+
+Sem semantica definida, devs escolhem valores por intuicao. `opacity-50` pode significar: disabled? muted? loading? hover? Cada conotacao tem semantica diferente.
+
+**Solucao:** Documentar uso semantico na FRONTEND_STANDARDS.md:
+- `opacity-50` = estado DISABLED (elemento existe mas nao e interativo)
+- `opacity-60` = estado LOADING/SKELETON (transiente)
+- `opacity-70` = elemento MUTED (presente mas nao focal)
+- `opacity-0` = OCULTO (via CSS, sem remover do DOM)
+- `opacity-100` = estado NORMAL
+- Para hover states com mudanca de cor: usar cor especifica (`hover:bg-gray-100`) em vez de `hover:opacity-*`
+
+Auditar os 211 usos de `opacity-50` para verificar se todos sao de fato estados disabled.
+
+**Impacto Visual:** Nenhum -- apenas documenta padrao existente.
+
+**Esforco:** Medio -- documentacao + auditoria de outliers.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** FRONTEND_STANDARDS.md + auditoria de componentes
+
+---
+
+### OPT-053: Tres sistemas de transparencia paralelos sem precedencia documentada
+
+**Problema:** Transparencia e expressa de tres formas distintas:
+
+**Sistema 1: Tailwind /N modifiers (mais moderno)**
+`bg-status-error/15`, `bg-wedo-cyan/10`, `hover:bg-status-error/10`
+100+ ocorrencias. Usa `background-color` com alpha channel. Compativel com dark mode override.
+
+**Sistema 2: opacity-N classes (afeta elemento inteiro)**
+`opacity-50`, `opacity-70`
+348 ocorrencias. Afeta o elemento inteiro (background + texto + borda + filhos). Diferente semantica do sistema 1.
+
+**Sistema 3: rgba() inline (mais antigo)**
+`rgba(96,190,209,0.12)` nas classes `.lia-badge-*`, `rgba(0,0,0,0.04)` nas shadows
+Presente em globals.css e style={{}} inline. Nao tem dark mode automatico.
+
+Os tres sistemas podem produzir resultados similares mas com mecanismos CSS diferentes.
+
+**Solucao:** Documentar precedencia clara:
+1. Use `/N` modifiers Tailwind para transparencia de bg/text/border em componentes
+2. Use `opacity-N` APENAS para opacity do elemento inteiro (ex: disabled state)
+3. Use `rgba()` APENAS em CSS vars de design-tokens.css (nunca inline nos componentes)
+
+Migrar `rgba()` inline em componentes para tokens ou `/N` modifiers. Migrar classes `.lia-badge-*` de `rgba()` para Tailwind equivalente.
+
+**Impacto Visual:** Nenhum (se valores sao equivalentes).
+
+**Esforco:** Medio -- documentacao + migracao de rgba() inline.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `globals.css` (classes .lia-badge-*), componentes com rgba() inline
+
+---
+
+### OPT-054: opacity-15 (1 ocorrencia isolada) -- outlier fora da escala padrao
+
+**Problema:** Tailwind nao gera `opacity-15` por padrao (gera: 0, 5, 10, 20, 25, 30, 40, 50...). A ocorrencia isolada de `opacity-15` e uma classe customizada ou `opacity-[15%]` arbitrario. E um outlier que sugere inconsistencia -- todos os outros valores de opacity usam multiplos de 10.
+
+**Solucao:** Localizar o arquivo exato (`grep -rn "opacity-15" src/components`). Avaliar se `opacity-10` ou `opacity-20` seria mais adequado para o contexto e substituir.
+
+**Impacto Visual:** Nenhum -- diferenca de 5% de opacidade imperceptivel.
+
+**Esforco:** Baixo -- 1 substituicao.
+
+**Prioridade:** P3.
+
+**Arquivos afetados:** 1 arquivo (identificar com grep)
+
+---
+
+## OPT-056 -- ICONES: w-4 h-3 (1 ocorrencia) -- typo provavel
+
+**Problema:** Existe 1 ocorrencia de `w-4 h-3` -- um icone de 16px largura x 12px altura. Icones Lucide sao SVGs quadrados por design; dimensoes assimetricas causam distorcao visual (icone esticado horizontalmente). E provavel typo de `w-4 h-4` ou `w-3 h-3`.
+
+**Solucao:** Localizar com `grep -rn "w-4 h-3" src/components`. Corrigir para `w-4 h-4` (se contexto pede icone de 16px) ou `w-3 h-3` (se contexto pede 12px).
+
+**Impacto Visual:** Sutil -- icone visualmente distorcido corrigido.
+
+**Esforco:** Baixo -- 1 correcao.
+
+**Prioridade:** P2 -- bug visual.
+
+**Arquivos afetados:** 1 arquivo (identificar com grep)
+
+---
+
+## OPT-057 -- DARK MODE: big-five-profile.tsx borderColor inline sem dark mode override
+
+**Problema:** `big-five-profile.tsx` usa `style={{borderColor: 'var(--gray-200)'}}` em 4 ocorrencias (linhas 272, 277, 282, 287, 292). Em light mode, `--gray-200` = `#E5E7EB` (borda sutil). Em dark mode, `--gray-200` nao tem override e permanece claro, criando bordas muito visiveis em fundo escuro. O arquivo nao tem nenhuma classe `dark:` confirmado pelo grep.
+
+**Solucao:** Substituir `style={{borderColor: 'var(--gray-200)'}}` por `className="border border-gray-200 dark:border-gray-700"` para habilitar dark mode automatico via Tailwind.
+
+**Impacto Visual:** Sutil -- bordas em dark mode se alinham ao fundo escuro.
+
+**Esforco:** Baixo -- 4 substituicoes no arquivo.
+
+**Prioridade:** P2.
+
+**Arquivos afetados:** `/src/components/ui/big-five-profile.tsx`
+
+---
+
+## OPT-058 -- CORES: wedo-blue (#3B82F6) marcado como "(legado)" sem decisao de remocao
+
+**Problema:** `--wedo-blue: #3B82F6` esta documentado no FRONTEND_INVENTORY_v1.md com parentesis "(legado)" indicando que deveria ser removido mas ainda nao foi. O token existe no tailwind.config.ts como cor de acento. E usado na variante `info` do badge (`text-wedo-cyan-dark bg-wedo-cyan/15`) -- que curiosamente ja usa wedo-cyan, nao wedo-blue. Se wedo-blue nao e referenciado diretamente em nenhum componente, e dead token.
+
+**Solucao:** Executar `grep -rn "wedo-blue" src/` para mapear usos diretos. Se zero usos nos componentes: remover o token de design-tokens.css e tailwind.config.ts. Se tem usos: decidir -- canonizar (remover "(legado)", adicionar semantica clara) ou migrar para wedo-cyan (o acento preferido do DS).
+
+**Impacto Visual:** Nenhum se migrado para equivalente (wedo-cyan ja cobre informativos).
+
+**Esforco:** Baixo -- investigacao + remocao ou migracao.
+
+**Prioridade:** P2 -- limpeza do inventario de tokens.
+
+**Arquivos afetados:** `design-tokens.css`, `globals.css`, `tailwind.config.ts`
+
+---
+
+## Plano de Execucao Sugerido
+
+### Sprint A -- Quick Wins (< 1 semana, impacto imediato)
+**Foco:** Eliminar dead code, bugs e inconsistencias simples sem risco de regressao
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-001 | Remover @import de globals.css | 30min |
+| OPT-002 | Corrigir font-sidebar no Tailwind config | 1h |
+| OPT-006 | Deletar 7 tokens wedo-apoio-* sem uso | 30min |
+| OPT-016 | Remover variante "primary" duplicada de button.tsx | 1h |
+| OPT-027 | Remover framer-motion, migrar welcome page para CSS animations | 3h |
+| OPT-029 | Deletar 3 keyframes NOP de globals.css | 30min |
+| OPT-039 | Remover/mover mockup-shadcn-vue-page | 30min |
+| OPT-054 | Corrigir opacity-15 isolado | 15min |
+| OPT-056 | Corrigir typo w-4 h-3 | 15min |
+| **Total** | | **~7.5h** |
+
+### Sprint B -- Tokens & API Cleanup (1-2 semanas)
+**Foco:** Unificar sistemas de tokens, remover duplicacoes de API de componentes
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-005 | Substituir 6 text-[11px] por text-xs | 30min |
+| OPT-007 | Eliminar paleta Tech Startups de jobs2-page + globals | 2h |
+| OPT-009 | Registrar tokens lia-text-*/lia-bg-* no Tailwind config | 4h |
+| OPT-010 | Investigar e canonizar/remover wedo-green-pastel | 1h |
+| OPT-011 | Remover variante badge "default" ou "primary" duplicada | 1h |
+| OPT-019 | Documentar regra de border-radius na FRONTEND_STANDARDS | 2h |
+| OPT-031 | Adicionar dark: a 16 componentes UI base (dialog, card, table...) | 4h |
+| OPT-040 | Migrar lia-card -> Card shadcn em onboarding | 1h |
+| OPT-057 | Corrigir borderColor inline em big-five-profile.tsx | 30min |
+| OPT-058 | Decidir destino de wedo-blue "(legado)" | 1h |
+| **Total** | | **~17h** |
+
+### Sprint C -- Design System Consolidation (2-3 semanas)
+**Foco:** Unificar sistemas de badge, botao, shadow; documentacao formal do DS
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-012 | Definir regra de uso dos 3 sistemas de badge + documentar | 4h |
+| OPT-013 | Refatorar LIACommandBadge/LIAFileBadge para usar Badge CVA | 2h |
+| OPT-017 | Migrar lia-button-* -> Button shadcn em onboarding | 3h |
+| OPT-020 | Decidir rounded-2xl: novo token ou migrar para rounded-lg | 2h |
+| OPT-021 | Consolidar sistemas de border color | 4h |
+| OPT-023 | Criar token h-modal e normalizar h-[90vh] variants | 2h |
+| OPT-025 | Migrar shadow Tailwind nativo para shadow-lia-* | 3h |
+| OPT-026 | Corrigir .lia-card shadows para usar var(--lia-shadow-*) | 30min |
+| OPT-028 | Documentar e migrar transition-all -> transition-colors | 3h |
+| OPT-041 | Migrar lia-input -> Input shadcn em search components | 2h |
+| OPT-049 | Documentar e auditar regra de tamanhos de icone | 3h |
+| OPT-050 | Migrar icones w-2/h-2 funcionais para w-3/h-3 | 2h |
+| **Total** | | **~30.5h** |
+
+### Sprint D -- Dark Mode Coverage (2 semanas)
+**Foco:** Completar cobertura de dark mode nos arquivos pendentes
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-032 | Auditar e corrigir ~40 dos 75 arquivos sem dark: | 16h |
+| OPT-034 | Adicionar override dark para tokens whatsapp-* | 1h |
+| **Total** | | **~17h** |
+
+### Sprint E -- Inline Styles & Duplicados (3 semanas)
+**Foco:** Reduzir inline styles e consolidar componentes duplicados
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-035 | Consolidar settings-page + settings-page-enhanced | 4h |
+| OPT-036 | Decidir e consolidar jobs-page + jobs2-page | 6h |
+| OPT-037 | Consolidar tasks-page + tasks-page-mvp | 4h |
+| OPT-038 | Consolidar use-table-features vs useTableFeatures | 2h |
+| OPT-043 | Categorizar e migrar ~534 inline styles (Fase 5 batch) | 16h |
+| OPT-044 | Refatorar var(--lia-btn-*) inline nos paineis ui-actions | 4h |
+| OPT-045 | Documentar excecao de style dinamico em big-five-profile | 30min |
+| **Total** | | **~36.5h** |
+
+### Sprint F -- Documentation & Governance (1 semana)
+**Foco:** Formalizar decisoes de design system e criar guardrails
+
+| ID | Acao | Esforco estimado |
+|---|---|---|
+| OPT-003 | Mapear .text-heading-* -> .lia-* e marcar deprecated | 3h |
+| OPT-004 | Remover font-open-sans explicito; converter font-inter -> font-data | 4h |
+| OPT-008 | Audit e migracao de cores hex hardcoded restantes | 4h |
+| OPT-014 | Criar variante metric/score no Badge CVA | 3h |
+| OPT-015 | Avaliar e possivelmente integrar setup-alert-badge.tsx ao Badge | 1h |
+| OPT-018 | Migrar tab-button para Tabs com variante underline | 4h |
+| OPT-022 | Criar tokens para dimensoes mais frequentes (w-thumb, w-preview-*) | 4h |
+| OPT-024 | Documentar equivalencia --space-* <-> Tailwind na STANDARDS | 1h |
+| OPT-030 | Documentar Motion Policy na FRONTEND_STANDARDS.md | 1h |
+| OPT-033 | Documentar guideline de dark mode semantico (migracao gradual) | 2h |
+| OPT-042 | Renomear .text-heading-* para .lia-display-* e deprecar | 3h |
+| OPT-046 | Remover referencias Apple/ElevenLabs dos comentarios CSS | 1h |
+| OPT-047 | Decisao formal sobre paleta Tech Startups (canonizar ou descartar) | 2h |
+| OPT-048 | Atualizar comentario liaWidth para referencia ao token | 30min |
+| OPT-051 | Criar inventario canonico de icones por contexto | 4h |
+| OPT-052 | Documentar uso semantico de opacity na STANDARDS | 2h |
+| OPT-053 | Documentar precedencia dos 3 sistemas de transparencia | 1h |
+| OPT-055 | Documentar escala de alturas de elementos interativos | 1h |
+| **Total** | | **~41h** |
+
+---
+
+## Impacto Total Estimado
+
+| Metrica | Estado Atual | Estado Alvo | Ganho |
+|---|---|---|---|
+| Tokens CSS mortos (wedo-apoio-*, etc.) | ~15 mortos identificados | 0 mortos | -15 tokens |
+| Inline styles (ocorrencias) | 890 | ~350 | -540 ocorrencias (-61%) |
+| Inline styles (arquivos) | 206 | ~100 | -106 arquivos (-51%) |
+| Sistemas de badge paralelos | 3 sistemas | 1 canonico + 1 especializado | -1 sistema |
+| Paginas de componentes duplicadas | 3 pares | 3 singulares | -3 arquivos (-~2.500 LOC) |
+| Keyframes NOP/dead | 3 | 0 | -3 blocos @keyframes |
+| Referencias externas nos comentarios | 4 | 0 | limpeza de identidade |
+| Cobertura dark mode (componentes UI base) | ~75% | 95%+ | +20% coverage |
+| Dependencias bundle desnecessarias | framer-motion (160 KB) | removida | -160 KB JS bundle |
+| Variantes duplicadas em CVA | 2 (default/primary) | 1 canonica | -CSS duplicado |
+| Font requests externos | 2 (next/font + @import CDN) | 1 (next/font) | -1 request bloqueante |
+| LOC estimadas removiveis | -- | -- | ~3.500-5.000 LOC |
+| Score Frontend | 7.6/10 | 9.0+/10 | +1.4 pontos |
+
+### Esforco Total por Sprint
+
+| Sprint | Foco | Esforco Total |
+|---|---|---|
+| A | Quick Wins | ~7.5h |
+| B | Tokens & API | ~17h |
+| C | DS Consolidation | ~30.5h |
+| D | Dark Mode | ~17h |
+| E | Inline Styles & Duplicados | ~36.5h |
+| F | Documentation & Governance | ~41h |
+| **TOTAL** | | **~150h (~19 dias/dev)** |
+
+### Retorno sobre Investimento
+
+- **Sprint A** (7.5h): elimina framer-motion (-160 KB bundle), corrige bugs de font silenciosos, remove dead tokens -- alto ROI imediato
+- **Sprint B** (17h): melhora DX com tokens Tailwind, corrige dark mode em componentes core -- alto impacto visual
+- **Sprints C+D** (47.5h): consolida o DS visualmente -- impacto moderado mas critico para identidade WeDo
+- **Sprint E** (36.5h): reduz divida tecnica de inline styles -- baixo impacto visual, alto impacto de manutenibilidade
+- **Sprint F** (41h): governanca e documentacao -- previne regressao futura, alto ROI de longo prazo
+
+---
+
+> Documento gerado em 2026-03-29.
+> Fonte de dados primarios: FRONTEND_INVENTORY_v1.md, INVENTARIO_COMPONENTES.md
+> Fonte de dados diretos: grep/ls via SSH em /home/runner/workspace/plataforma-lia/src/
+> Proxima revisao recomendada: apos conclusao dos Sprints A e B.
+> Arquivo de destino: /home/runner/workspace/docs/specs/frontend/OPORTUNIDADES_PADRONIZACAO.md

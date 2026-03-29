@@ -1,9 +1,10 @@
 "use client"
 
 import React from "react"
-import { Search, Plus, Brain, Briefcase, Building2, BarChart3 } from "lucide-react"
+import { Search, Plus, Briefcase, Building2, BarChart3 } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
+import { LiaPromptHeader } from "@/components/ui/lia-prompt-header"
 
 interface JobsDashboardViewProps {
   liaPromptValue: string
@@ -27,12 +28,7 @@ export function JobsDashboardView({
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
-        <div className="mb-4 flex flex-col items-center justify-center">
-          <h2 className="text-2xl font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2.5">
-            <Brain className="w-7 h-7 text-wedo-cyan" strokeWidth={2} />
-            Posso te ajudar com análises de vagas?
-          </h2>
-        </div>
+        <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
         <div className="rounded-2xl overflow-hidden bg-white border border-gray-200">
           <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
             <div className="flex flex-wrap items-center gap-2">

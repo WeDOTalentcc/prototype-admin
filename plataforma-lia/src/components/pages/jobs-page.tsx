@@ -6,6 +6,7 @@ import dynamic from"next/dynamic"
 import { Button } from"@/components/ui/button"
 import { WSITutorialModal } from"@/components/pages/jobs/WSITutorialModal"
 import { EmptyState } from"@/components/ui/empty-state"
+import { LiaPromptHeader } from"@/components/ui/lia-prompt-header"
 import { Card, CardContent } from"@/components/ui/card"
 import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -261,13 +262,7 @@ export function JobsPage(props: JobsPageProps) {
           <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
             {/* Container centralizado com título */}
             <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
-              {/* Título centralizado acima do prompt */}
-              <div className="mb-4 flex flex-col items-center justify-center">
-                <h2 className="text-2xl font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2.5">
-                  <Brain className="w-7 h-7 text-wedo-cyan" strokeWidth={2} />
-                  Posso te ajudar com análises de vagas?
-                </h2>
-              </div>
+              <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
               {/* Container externo - Background branco como funil de talentos */}
               <div className="rounded-2xl overflow-hidden bg-white border border-gray-200">
                 {/* Área de Tags - Linha superior */}
