@@ -8,21 +8,77 @@ import {
   ExternalLink, FileText, GraduationCap, Home, Languages, Lightbulb,
   Linkedin, Mail, User, Users
 } from "lucide-react"
+import type { CandidateLocal } from "@/services/lia-api"
+
+type CandidateWithExtras = CandidateLocal & {
+  estimated_age?: number | null
+  headline?: string | null
+  is_open_to_work?: boolean
+  is_hiring?: boolean
+  linkedin_connections_count?: number | null
+  linkedin_followers_count?: number | null
+}
+
+interface EducationEntry {
+  institution?: string
+  school?: string
+  degree?: string
+  title?: string
+  field_of_study?: string
+  fieldOfStudy?: string
+  start_date?: string
+  startDate?: string
+  end_date?: string
+  endDate?: string
+  description?: string
+}
+
+interface ExperienceEntry {
+  company?: string
+  company_name?: string
+  title?: string
+  position?: string
+  role?: string
+  start_date?: string
+  startDate?: string
+  end_date?: string
+  endDate?: string
+  description?: string
+  location?: string
+  is_current?: boolean
+  duration_years?: number
+  industries?: string[]
+  technologies?: string[]
+  company_size?: string
+  company_size_range?: string
+  is_startup?: boolean
+}
+
+interface SkillCategory {
+  category: string
+  label: string
+  skills: string[]
+}
+
+interface LanguageEntry {
+  language: string
+  level: string
+}
 
 interface CandidateProfileTabProps {
-  candidate: Record<string, unknown>
-  education: Array<Record<string, unknown>>
-  experiences: Array<Record<string, unknown>>
-  skillCategories: Array<Record<string, unknown>>
-  languagesData: Array<Record<string, unknown>>
+  candidate: CandidateWithExtras
+  education: EducationEntry[]
+  experiences: ExperienceEntry[]
+  skillCategories: Array<[string, SkillCategory]>
+  languagesData: LanguageEntry[]
   calculateAge: (date: string) => number | null
   formatCurrency: (value: number | null | undefined, currency?: string) => string
   formatDate: (date: string) => string
   formatDateShort: (date: string) => string
   getLanguageLevel: (level: string) => { label: string; percent: number; color: string }
-  hasDocuments: (c: Record<string, unknown>) => boolean
-  hasPearchData: (c: Record<string, unknown>) => boolean
-  hasPersonalData: (c: Record<string, unknown>) => boolean
+  hasDocuments: (c: CandidateWithExtras) => boolean
+  hasPearchData: (c: CandidateWithExtras) => boolean
+  hasPersonalData: (c: CandidateWithExtras) => boolean
 }
 
 export function CandidateProfileTab({
@@ -133,7 +189,7 @@ export function CandidateProfileTab({
                       <p className="text-sm text-gray-600">
                         {company || 'Empresa não informada'}
                         {location && ` • ${location}`}
-                        {exp.duration_years && <span className="text-gray-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>}
+                        {exp.duration_years != null && <span className="text-gray-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>}
                       </p>
                     </div>
                     <span className="text-xs text-gray-500 whitespace-nowrap">
@@ -145,7 +201,7 @@ export function CandidateProfileTab({
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {industries.slice(0, 2).map((ind: string, idx: number) => (
                       <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border border-gray-200 dark:border-gray-700">
-                        <Building className="w-2.5 h-2.5 mr-0.5" />
+                        <Building2 className="w-2.5 h-2.5 mr-0.5" />
                         {ind}
                       </span>
                     ))}
@@ -234,7 +290,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-2">
               {candidate.certifications.map((cert, idx) => {
-                const certName = typeof cert === 'string' ? cert : (cert as Record<string, unknown>).name || 'Certificação'
+                const certName = typeof cert === 'string' ? cert : String((cert as { name?: string }).name || 'Certificação')
                 return (
                   <Badge key={idx} variant="secondary" className="text-xs px-2 py-1">
                     {certName}
@@ -294,7 +350,7 @@ export function CandidateProfileTab({
             <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 -mx-4 px-4 py-2">
               <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Total Anual (CLT)</span>
               <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {formatCurrency(candidate.salary_expectation_clt * 13.33)}
+                {formatCurrency((candidate.salary_expectation_clt ?? 0) * 13.33)}
               </span>
             </div>
           )}
@@ -437,7 +493,7 @@ export function CandidateProfileTab({
                   Idade
                 </span>
                 <span className="text-sm font-medium text-gray-800">
-                  {calculateAge(candidate.date_of_birth) || candidate.estimated_age} anos
+                  {(candidate.date_of_birth ? calculateAge(candidate.date_of_birth) : null) || candidate.estimated_age} anos
                   {candidate.date_of_birth && (
                     <span className="text-xs text-gray-400 ml-1">
                       ({formatDate(candidate.date_of_birth)})
@@ -517,7 +573,7 @@ export function CandidateProfileTab({
                 {candidate.linkedin_connections_count && (
                   <div className="text-center">
                     <p className="text-lg font-semibold text-gray-800">
-                      {candidate.linkedin_connections_count.toLocaleString('pt-BR')}
+                      {(candidate.linkedin_connections_count ?? 0).toLocaleString('pt-BR')}
                     </p>
                     <p className="text-micro text-gray-500">Conexões</p>
                   </div>
@@ -525,7 +581,7 @@ export function CandidateProfileTab({
                 {candidate.linkedin_followers_count && (
                   <div className="text-center">
                     <p className="text-lg font-semibold text-gray-800">
-                      {candidate.linkedin_followers_count.toLocaleString('pt-BR')}
+                      {(candidate.linkedin_followers_count ?? 0).toLocaleString('pt-BR')}
                     </p>
                     <p className="text-micro text-gray-500">Seguidores</p>
                   </div>
@@ -603,7 +659,7 @@ export function CandidateProfileTab({
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
-              {(candidate.interests as string[]).map((interest: string, idx: number) => (
+              {candidate.interests!.map((interest: string, idx: number) => (
                 <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                   {interest}
                 </Badge>
