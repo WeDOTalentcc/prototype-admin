@@ -70,26 +70,28 @@ export function JobAssignRecruiterModal({
   const [notifyRecruiter, setNotifyRecruiter] = useState(true)
   const [transferCommunications, setTransferCommunications] = useState(false)
 
+  const safeRecruiters = recruiters ?? []
+
   const filteredRecruiters = useMemo(() => {
-    if (!searchTerm.trim()) return recruiters
+    if (!searchTerm.trim()) return safeRecruiters
     const term = searchTerm.toLowerCase()
-    return recruiters.filter(
+    return safeRecruiters.filter(
       (r) =>
         r.name.toLowerCase().includes(term) ||
         (r.email && r.email.toLowerCase().includes(term))
     )
-  }, [recruiters, searchTerm])
+  }, [safeRecruiters, searchTerm])
 
   const recommendedRecruiter = useMemo(() => {
-    if (recruiters.length === 0) return null
-    return recruiters.reduce((best, current) => {
+    if (safeRecruiters.length === 0) return null
+    return safeRecruiters.reduce((best, current) => {
       const currentScore =
         (current.performance_score || 0) - (current.active_jobs_count || 0) * 2
       const bestScore =
         (best.performance_score || 0) - (best.active_jobs_count || 0) * 2
       return currentScore > bestScore ? current : best
-    }, recruiters[0])
-  }, [recruiters])
+    }, safeRecruiters[0])
+  }, [safeRecruiters])
 
   const handleAssign = () => {
     if (!selectedRecruiterId) return
