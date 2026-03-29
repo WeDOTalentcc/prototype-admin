@@ -476,6 +476,37 @@
   --lia-cat-interviews: #E5A853;    /* Orange - Entrevistas/LIA */
   --lia-cat-reports: #8B5CF6;       /* Purple - Relatórios/Localização */
   --lia-cat-industry: #60BED1;      /* Cyan - Indústria/Setor (migrated from blue) */
+  /* ⚠️ --lia-cat-* tokens: definidos, sem uso direto via var() ainda. Reservados para Kanban. */
+
+  /* === LIA VOICE — Temas de Cards de Idioma ===================================
+     Migrados de --eleven-card/pastel/sepia-* (globals.css) em 2026-03-29.
+     Usados para cards de idioma ElevenLabs com temas culturais/visuais distintos.
+     ============================================================================= */
+
+  /* Cards escuros — temas culturais por idioma */
+  --lia-voice-card-arabic:    #3D3330;   /* Marrom escuro sépia */
+  --lia-voice-card-bulgarian: #2C4A3A;   /* Verde floresta */
+  --lia-voice-card-chinese:   #2A3744;   /* Azul marinho */
+  --lia-voice-card-czech:     #443C35;   /* Marrom médio */
+  --lia-voice-card-slate:     #3A3F47;   /* Cinza ardósia (genérico) */
+
+  /* Pastéis — highlights e badges de idioma */
+  --lia-voice-pastel-blue:     #B8D4E8;  /* Azul pastel */
+  --lia-voice-pastel-green:    #C1E1C1;  /* Verde pastel */
+  --lia-voice-pastel-peach:    #F0DDD3;  /* Pêssego pastel */
+  --lia-voice-pastel-lavender: #D4CEE3;  /* Lavanda pastel */
+  --lia-voice-pastel-rose:     #E9D5D5;  /* Rosa pastel */
+  --lia-voice-pastel-mint:     #D4E8E1;  /* Menta pastel */
+  --lia-voice-pastel-sand:     #E8DDD4;  /* Areia pastel */
+
+  /* Sépia — variantes de tema neutro-quente */
+  --lia-voice-sepia-light:  #F3EBE1;  /* Bege sépia claro */
+  --lia-voice-sepia-mint:   #DCE4DB;  /* Verde menta ElevenLabs */
+  --lia-voice-sepia-rose:   #E3DADC;  /* Rosa antigo / bege rosado */
+  --lia-voice-sepia-blue:   #DDE1E9;  /* Azul-acinzentado claro */
+  --lia-voice-sepia-lilac:  #E5E0E2;  /* Lilás-acinzentado */
+  --lia-voice-sepia-ice:    #EAEAEA;  /* Cinza muito claro / gelo */
+  --lia-voice-sepia-coral:  #E17B75;  /* Coral / vermelho pastel */
 }
 
 /* === TIPOGRAFIA PADRONIZADA === */

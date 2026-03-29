@@ -72,54 +72,10 @@
     --font-crimson: "Crimson Text", serif;
     --font-source-serif: var(--font-open-sans), "Open Sans", sans-serif;
 
-    /* ===== ELEVENLABS INSPIRED - Monocromático/Sépia ===== */
-    
-    /* Background principal */
-    --eleven-bg-main: #F8F8F8;
-    --eleven-bg-card: #FFFFFF;
-    --eleven-bg-message: #F5F5F5;
-    
-    /* Textos - nunca preto puro */
-    --eleven-text-primary: #2D2D2D;
-    --eleven-text-secondary: #666666;
-    --eleven-text-tertiary: #999999;
-    
-    /* Cards coloridos - tons monocromáticos/sépia (dos prints) */
-    --eleven-card-sepia-dark: #3D3330;    /* Marrom escuro - Arabic */
-    --eleven-card-forest: #2C4A3A;        /* Verde floresta - Bulgarian */
-    --eleven-card-navy: #2A3744;          /* Azul marinho - Chinese */
-    --eleven-card-brown: #443C35;         /* Marrom - Czech */
-    --eleven-card-slate: #3A3F47;         /* Cinza ardósia */
-    
-    /* Cores pastéis suaves - para badges/highlights */
-    --eleven-pastel-blue: #B8D4E8;        /* Azul pastel */
-    --eleven-pastel-green: #C1E1C1;       /* Verde pastel */
-    --eleven-pastel-peach: #F0DDD3;       /* Pêssego pastel */
-    --eleven-pastel-lavender: #D4CEE3;    /* Lavanda pastel */
-    --eleven-pastel-rose: #E9D5D5;        /* Rosa pastel */
-    --eleven-pastel-mint: #D4E8E1;        /* Menta pastel */
-    --eleven-pastel-sand: #E8DDD4;        /* Areia pastel */
-    
-    /* Paleta ElevenLabs Screenshot - cores exatas da referência */
-    --eleven-sepia-light: #F3EBE1;        /* Bege sépia claro */
-    --eleven-sepia-mint: #DCE4DB;         /* Verde Menta Claro ElevenLabs */
-    --eleven-sepia-rose: #E3DADC;         /* Rosa Antigo / Bege Rosado ElevenLabs */
-    --eleven-sepia-blue: #DDE1E9;         /* Azul-acinzentado Claro ElevenLabs */
-    --eleven-sepia-lilac: #E5E0E2;        /* Lilás-acinzentado ElevenLabs */
-    --eleven-sepia-ice: #EAEAEA;          /* Cinza Muito Claro / Gelo ElevenLabs */
-    --eleven-sepia-gold: #E5E0E2;         /* Dourado = Lilás (reaproveitado) */
-    --eleven-sepia-salmon: #E3DADC;       /* Salmão = Rosa Antigo (reaproveitado) */
-    --eleven-sepia-coral: #E17B75;        /* Coral/vermelho pastel */
-    
-    /* Variáveis para LIA Cards - Melhor Contraste */
-    --lia-card-surface: #FFFFFF;          /* Branco puro para cards */
-    --lia-card-border: #E0D8CE;           /* Borda sépia sutil */
-    --lia-card-shadow: rgba(61, 51, 48, 0.08); /* Sombra sépia suave */
-    --lia-card-hover-shadow: rgba(61, 51, 48, 0.12); /* Sombra no hover */
-    
-    /* Bordas sutis */
-    --eleven-border-subtle: #E8E8E8;
-    --eleven-border-light: #F0F0F0;
+    /* ===== Voice/Language Tokens → migrados para design-tokens.css como --lia-voice-* ===== */
+    /* Removido 2026-03-29: --eleven-* tokens eliminados.
+       Estruturais: substituídos por --lia-* equivalentes.
+       Temáticos: movidos para design-tokens.css como --lia-voice-* */
 
     /* WeDoTalent - Paleta Apoio (cores suaves para UI) */
     --wedo-apoio-cream: #F5EFE7;        /* Bege/creme claro */
@@ -144,7 +100,7 @@
     --wedo-light-blue: #0EA5E9;     /* Azul claro apoio - mais contraste */
     --wedo-mint: #10B981;           /* Menta / success - mais saturado */
     --wedo-yellow: #F59E0B;         /* Amarelo / warning - mais contraste */
-    --wedo-coral: #EF4444;          /* Coral / danger - mais vibrante */
+    --wedo-coral: #EF4444;          /* Coral / danger - mais vibrante no dark (intencional: boost de contraste vs light #E16162 em tailwind.config.ts) */
     --wedo-peach: #F97316;          /* Pêssego (apoio) - mais contraste */
 
     /* Subtle tints for backgrounds */
@@ -324,7 +280,7 @@
     --wedo-gray-700: 48 15% 94%;
     --wedo-gray-800: var(--neutral-warm);
     --wedo-gray-900: 0 0% 100%;
-    --eleven-text-secondary: #9CA3AF; /* gray-400 — texto secundário sobre fundo escuro */
+    /* --eleven-text-secondary removido 2026-03-29 — use var(--lia-text-secondary) no dark mode */
   }
 }
 
@@ -954,7 +910,7 @@
 /* Formatação de mensagens do chat */
 .lia-conversation strong {
   font-weight: 600;
-  color: var(--eleven-text-primary);
+  color: var(--lia-text-primary); /* migrado de --eleven-text-primary 2026-03-29 */
 }
 
 .lia-conversation br {
@@ -1135,96 +1091,11 @@
 }
 
 /* ==============================================
-   ELEVENLABS INSPIRED STYLES
-   Estética: Quase monocromático, pastéis suaves,
-   gradientes sutis, alguns toques de cor
+   ELEVENLABS INSPIRED STYLES — REMOVIDO 2026-03-29
+   Classes .eleven-* eliminadas: zero uso em .tsx,
+   tokens referenciados não definidos (--eleven-blue/gray/coral/yellow/peach).
+   Tokens temáticos migrados para --lia-voice-* em design-tokens.css.
    ============================================== */
-
-/* Card com background escuro tipo ElevenLabs */
-.eleven-dark-card {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  color: var(--eleven-gray-pastel);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.dark .eleven-dark-card {
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-}
-
-/* Gradiente monocromático suave para backgrounds */
-.eleven-gradient-soft {
-  background: linear-gradient(135deg, #f8f8f8 0%, #ececec 100%);
-}
-
-.dark .eleven-gradient-soft {
-  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-}
-
-/* Números com gradiente sutil */
-.eleven-number-gradient {
-  background: linear-gradient(135deg, var(--eleven-blue) 0%, var(--eleven-blue-pastel) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
-
-/* Badge pastel suave */
-.eleven-badge-pastel {
-  background-color: var(--eleven-gray-pastel);
-  color: #4a4a4a;
-  font-weight: 500;
-  border: 1px solid var(--eleven-gray);
-}
-
-.dark .eleven-badge-pastel {
-  background-color: #2a2a2a;
-  color: var(--eleven-gray-pastel);
-  border-color: #3a3a3a;
-}
-
-/* Ícone com toque de cor */
-.eleven-icon-accent {
-  transition: all 0.2s ease;
-}
-
-.eleven-icon-accent:hover {
-  transform: scale(1.1);
-}
-
-/* Cores específicas para estados */
-.eleven-icon-coral {
-  color: var(--eleven-coral-pastel);
-}
-
-.eleven-icon-coral:hover {
-  color: var(--eleven-coral);
-}
-
-.eleven-icon-blue {
-  color: var(--eleven-blue-pastel);
-}
-
-.eleven-icon-blue:hover {
-  color: var(--eleven-blue);
-}
-
-.eleven-icon-yellow {
-  color: var(--eleven-yellow-pastel);
-}
-
-.eleven-icon-yellow:hover {
-  color: var(--eleven-yellow);
-}
-
-.eleven-icon-peach {
-  color: var(--eleven-peach-pastel);
-}
-
-.eleven-icon-peach:hover {
-  color: var(--eleven-peach);
-}
 
 /* ==============================================
    LIA PROMPT - Design System Unificado
