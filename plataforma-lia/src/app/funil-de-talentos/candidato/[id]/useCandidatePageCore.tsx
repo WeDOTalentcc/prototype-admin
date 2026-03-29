@@ -3,8 +3,9 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { FileText, Image, FileVideo } from "lucide-react"
+import { FileText, Image, FileVideo, Award, File } from "lucide-react"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
+import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { useToast } from "@/hooks/use-toast"
 
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
