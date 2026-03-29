@@ -1476,7 +1476,7 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | **LIA — Buttons** | 9 | `--lia-btn-primary-bg/hover/text`, `--lia-btn-secondary-bg/hover/text/border`, `--lia-btn-ghost-bg/hover/text` |
 | **LIA — Badges** | 3 | `--lia-badge-neutral-bg` (#F3F4F6), `--lia-badge-neutral-text` (#6B7280), `--lia-badge-neutral-border` (#E5E7EB) |
 | **LIA — Input/Forms** | 6 | `--lia-input-bg`, `--lia-input-border`, `--lia-input-border-focus` (#60BED1), `--lia-input-focus-ring`, `--lia-input-text`, `--lia-input-placeholder` |
-| **LIA — Categories** | 5 | `--lia-cat-candidates`, `--lia-cat-industry`, `--lia-cat-interviews`, `--lia-cat-jobs`, `--lia-cat-reports` |
+| **LIA — Categories** | 5 | `--lia-cat-candidates` (#5DA47A), `--lia-cat-industry` (#60BED1), `--lia-cat-interviews` (#E5A853), `--lia-cat-jobs` (#60BED1), `--lia-cat-reports` (#8B5CF6). ⚠️ **Nenhum componente usa `var(--lia-cat-*)` diretamente** — tokens definidos mas órfãos. Planejados para integração com Kanban. |
 | **WeDo — Cyan (LIA/AI)** | 11 | `--wedo-cyan` (#60BED1), `--wedo-cyan-dark`, `--wedo-cyan-light`, `--wedo-cyan-hover`, `--wedo-cyan-focus-ring`, `--wedo-cyan-focus-border`, `--wedo-cyan-border`, `--wedo-cyan-shadow`, `--wedo-cyan-bg-02/04/05/06/08/10/12/15/20` |
 | **WeDo — Green** | 8 | `--wedo-green` (#5DA47A), `--wedo-green-light`, `--wedo-green-hover`, `--wedo-green-success` (#60D186), `--wedo-green-active-15`, `--wedo-green-bg-10/15/20`, `--wedo-green-light-bg-20` |
 | **WeDo — Orange** | 5 | `--wedo-orange` (#D19960), `--wedo-orange-light`, `--wedo-orange-hover`, `--wedo-orange-alert`, `--wedo-orange-bg-10/15` |
@@ -1508,13 +1508,17 @@ Todas as rotas de API do Next.js em `src/app/api/`.
 | Categoria | Variáveis | Notas |
 |-----------|-----------|-------|
 | Font vars | 4 | `--font-open-sans`, `--font-inter`, `--font-jetbrains`, `--font-source-serif` |
-| ElevenLabs theme | 15+ | `--eleven-text-*`, `--eleven-surface-*` — sistema paralelo |
+| ElevenLabs theme | 30+ | Estruturais: `--eleven-bg-main/card/message`, `--eleven-text-primary/secondary/tertiary`, `--eleven-border-subtle/light` (8 vars — overlap com `--lia-*`). Temáticos únicos: `--eleven-card-sepia-dark/forest/navy/brown/slate`, `--eleven-pastel-blue/green/peach/lavender/rose/mint/sand`, `--eleven-sepia-*` (22+ vars — feature de linguagem ElevenLabs) |
 | shadcn/ui vars | 23 | `--background`, `--foreground`, `--card`, `--primary`, etc. |
 | Misc | ~108 | Cores de componentes específicos |
 
 **Dark Mode:** Todas as variáveis de componente de `design-tokens.css` têm overrides em `.dark {}`. Coverage: **100%** das variáveis semânticas.
 
-> **Problema identificado:** Duplicação entre `--lia-text-primary: #111827` (design-tokens.css) e `--eleven-text-primary: #2D2D2D` (globals.css) — dois sistemas concorrentes.
+> **⚠️ Sistema `--eleven-*` — Análise (verificado 2026-03-29):**
+> - **Tokens estruturais (8 vars):** `--eleven-bg-main/card/message`, `--eleven-text-primary/secondary/tertiary`, `--eleven-border-subtle/light` → **overlappam com `--lia-*`**. Ex: `--eleven-text-primary: #2D2D2D` vs `--lia-text-primary: #111827` — valores distintos, mesma semântica.
+> - **Tokens temáticos (22+ vars):** `--eleven-card-*`, `--eleven-pastel-*`, `--eleven-sepia-*` → **únicos**, usados para cards de idioma (árabe, búlgaro, chinês, etc.) com temas culturais.
+> - **Uso atual:** tokens consumidos exclusivamente dentro de `globals.css` via classes CSS — zero uso direto em `.tsx`.
+> - **Decisão pendente (Plano ElevenLabs):** (1) Estruturais → eliminar e migrar para `--lia-*`; (2) Temáticos → incorporar ao DS como `--lia-voice-*` ou `--lia-lang-*`.
 
 ### 28.2 Animações & Keyframes — 29 definições
 
@@ -1776,6 +1780,38 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 | `animate-fade-in-up` | `0→translateY(8px)→0` | Entrada de cards, itens |
 | `animate-scale-in-delayed` | `scale(0.95)→scale(1)` | Abertura de modais |
 | `animate-slide-in-up` | `translateY(16px)→0` | Drawers, sheets |
+
+### 28.14 Sistema ElevenLabs — `--eleven-*` (30+ tokens, globals.css)
+
+> Verificado 2026-03-29. Sistema autônomo para feature de cards de idioma/voz ElevenLabs.
+
+#### Tokens Estruturais — candidatos a eliminação (overlap com `--lia-*`)
+
+| Token | Valor | Equivalente `--lia-*` | Ação |
+|-------|-------|----------------------|------|
+| `--eleven-bg-main` | `#F8F8F8` | `--lia-bg-primary` | Eliminar |
+| `--eleven-bg-card` | `#FFFFFF` | `--lia-bg-secondary` | Eliminar |
+| `--eleven-bg-message` | `#F5F5F5` | `--lia-bg-tertiary` | Eliminar |
+| `--eleven-text-primary` | `#2D2D2D` | `--lia-text-primary` | Eliminar (valor ligeiramente diferente) |
+| `--eleven-text-secondary` | `#666666` | `--lia-text-secondary` | Eliminar |
+| `--eleven-text-tertiary` | `#999999` | `--lia-text-tertiary` | Eliminar |
+| `--eleven-border-subtle` | `#E8E8E8` | `--lia-border-subtle` | Eliminar |
+| `--eleven-border-light` | `#F0F0F0` | `--lia-border-default` | Eliminar |
+
+#### Tokens Temáticos — candidatos a incorporação como `--lia-voice-*`
+
+| Token | Valor | Semântica | Ação |
+|-------|-------|-----------|------|
+| `--eleven-card-sepia-dark` | `#3D3330` | Card árabe (dark brown) | Renomear → `--lia-voice-arabic` |
+| `--eleven-card-forest` | `#2C4A3A` | Card búlgaro (forest green) | Renomear → `--lia-voice-bulgarian` |
+| `--eleven-card-navy` | `#2A3744` | Card chinês (navy blue) | Renomear → `--lia-voice-chinese` |
+| `--eleven-card-brown` | `#443C35` | Card tcheco (brown) | Renomear → `--lia-voice-czech` |
+| `--eleven-card-slate` | `#3A3F47` | Card genérico (slate) | Renomear → `--lia-voice-slate` |
+| `--eleven-pastel-blue/green/peach/lavender/rose/mint/sand` | vários | Tons pastel por idioma | Renomear → `--lia-voice-pastel-*` |
+| `--eleven-sepia-light/mint/rose/blue/lilac/ice/gold/salmon/coral` | vários | Tons sépia por variante | Renomear → `--lia-voice-sepia-*` |
+
+> **Status:** ⏳ PENDENTE — aguardando sprint de consolidação ElevenLabs.
+> **Impacto:** Nenhum impacto visual — é apenas renomeação + redirect de variáveis. Zero risco.
 
 ### 28.12 Testes de Componentes
 
