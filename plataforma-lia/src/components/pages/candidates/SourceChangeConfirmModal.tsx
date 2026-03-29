@@ -21,7 +21,7 @@ export function SourceChangeConfirmModal({
 }: SourceChangeConfirmModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100" style={{borderRadius: '10px'}}>
+      <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100 dark:border-gray-700" style={{borderRadius: '10px'}}>
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-status-warning/15'}`}>
@@ -43,15 +43,15 @@ export function SourceChangeConfirmModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-gray-100">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-3 space-y-2 border border-gray-100 dark:border-gray-700">
             <div className="flex justify-between items-center text-xs">
               <span className={textStyles.bodySmall}>Tipo de busca:</span>
-              <span className={`${textStyles.label} text-gray-800`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
+              <span className={`${textStyles.label} text-gray-800 dark:text-gray-200`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
             </div>
-            <div className="border-t border-gray-200 pt-2">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
               <div className="flex justify-between items-center text-xs">
-                <span className={`${textStyles.label} text-gray-800`}>Custo por candidato:</span>
-                <span className="font-semibold text-gray-700">
+                <span className={`${textStyles.label} text-gray-800 dark:text-gray-200`}>Custo por candidato:</span>
+                <span className="font-semibold text-gray-700 dark:text-gray-300">
                   1 crédito
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function SourceChangeConfirmModal({
         <div className="flex gap-2.5 pt-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-8 text-xs px-3 rounded-md bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 font-medium transition-colors"
+            className="flex-1 h-8 text-xs px-3 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
           >
             Cancelar
           </button>

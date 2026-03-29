@@ -70,7 +70,7 @@ export default function JobPage() {
 
   if (error || !jobData) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500 text-sm">
+      <div className="flex items-center justify-center h-screen text-gray-500 dark:text-gray-400 text-sm">
         {error || 'Vaga não encontrada'}
       </div>
     )

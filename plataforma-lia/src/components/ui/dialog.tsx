@@ -39,14 +39,14 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+          "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
           className
         )}
         style={style}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -121,7 +121,7 @@ const DraggableDialogContent = React.forwardRef<
             dialogRef.current = node
           }}
           className={cn(
-            "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+            "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
             className
           )}
           style={{...style,
@@ -133,7 +133,7 @@ const DraggableDialogContent = React.forwardRef<
             onMouseDown={handleMouseDown}
           />
           {children}
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 z-10" data-dialog-close>
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100 z-10" data-dialog-close>
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -193,7 +193,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-xs text-gray-600", className)}
+    className={cn("text-xs text-gray-600 dark:text-gray-400", className)}
     {...props}
   />
 ))
