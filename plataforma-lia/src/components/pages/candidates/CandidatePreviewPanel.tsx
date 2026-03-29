@@ -1,19 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+import React, { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar, Mail, MessageSquare, Star, Briefcase, User } from "lucide-react"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { LIAFeedbackWidget } from "@/components/calibration"
-import {
-  User, Briefcase, Star, MessageSquare, Mail, Phone,
-  Linkedin, Calendar, X
-} from "lucide-react"
 import { textStyles, badgeStyles, formatScore, formatScorePercent } from "@/lib/design-tokens"
-import type { Candidate } from "./types"
+import type { Candidate } from "@/components/pages/candidates/types"
 
 export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) {
+
     const [activeTab, setActiveTab] = useState('overview')
 
     const tabs = [
@@ -269,7 +267,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChangeWithWarning(tab.id)}
                 className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
                   activeTab === tab.id
                     ? 'border-gray-950 text-gray-950 dark:border-gray-50 dark:text-gray-50'
@@ -318,4 +316,4 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
         </div>
       </div>
     )
-  }
+}

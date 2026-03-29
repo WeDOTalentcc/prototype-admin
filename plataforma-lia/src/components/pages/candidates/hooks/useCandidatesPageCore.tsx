@@ -244,16 +244,10 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     if (!raw) return
     localStorage.removeItem('navigateToRecentCandidate')
     try {
-      const nav = JSON.parse(raw) as { candidateId?: string; candidateName?: string }
-      if (nav.candidateId) {
-        const found = candidates.find(c => c.id === nav.candidateId)
-        if (found) {
-          setPreviewCandidate(found)
-          setShowCandidatePreview(true)
-        }
-      }
-    } catch {
-    }
+      const nav = JSON.parse(raw) as { candidateId?: string }
+      const found = nav.candidateId && candidates.find(c => c.id === nav.candidateId)
+      if (found) { setPreviewCandidate(found); setShowCandidatePreview(true) }
+    } catch {}
   }, [candidates])
 
   useEffect(() => {
@@ -350,87 +344,41 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   // ========== CANDIDATE LISTS STATE (for unified modal) ==========
   const [candidateListsForModal, setCandidateListsForModal] = useState<Array<{ id: string; name: string; color?: string }>>([])
 
-  // Load candidate lists for modal
+  // Load candidate lists + viewed candidates on mount
   useEffect(() => {
-    const loadCandidateLists = async () => {
-      try {
-        const response = await liaApi.getCandidateLists({ limit: 50 })
-        if (response?.items) {
-          setCandidateListsForModal(response.items.map(list => ({
-            id: list.id,
-            name: list.name,
-            color: list.color
-          })))
-        }
-      } catch {
-        setCandidateListsForModal([])
-      }
-    }
-    loadCandidateLists()
-  }, [])
-
-  // Load viewed candidates on mount
-  useEffect(() => {
-    const loadViewedCandidates = async () => {
-      try {
-        const response = await fetch('/api/backend-proxy/candidates/viewed')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.candidate_ids) {
-            setViewedCandidateIds(new Set(data.candidate_ids))
-          }
-        }
-      } catch (error) {
-      }
-    }
-    loadViewedCandidates()
+    liaApi.getCandidateLists({ limit: 50 })
+      .then(r => r?.items && setCandidateListsForModal(r.items.map((l: { id: string; name: string; color?: string }) => ({ id: l.id, name: l.name, color: l.color }))))
+      .catch(() => setCandidateListsForModal([]))
+    fetch('/api/backend-proxy/candidates/viewed')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => data?.candidate_ids && setViewedCandidateIds(new Set(data.candidate_ids)))
+      .catch(() => {})
   }, [])
   
-  // Auto-populate tableFilters from search entities when a search is performed
-  // Uses searchExecutionId to trigger on each new search execution
-  // Clears fields explicitly when not present in the new search to always reflect current search criteria
+  // Auto-populate tableFilters from search entities when a new search is executed
   useEffect(() => {
     if (searchExecutionId > 0) {
-      if (lastSearchEntities) {
-        const yearsExp = lastSearchEntities.years_experience
-        const parsedYears = typeof yearsExp === 'string' ? parseInt(yearsExp, 10) : yearsExp
-        setTableFilters(prev => ({
-          ...prev,
-          locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
-          jobTitles: lastSearchEntities.job_title ? [lastSearchEntities.job_title] : [],
-          skills: lastSearchEntities.skills?.length ? lastSearchEntities.skills : [],
-          industries: lastSearchEntities.industry ? [lastSearchEntities.industry] : [],
-          seniorityLevels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
-          minExperience: (parsedYears !== undefined && !isNaN(parsedYears)) ? parsedYears : undefined,
-          companies: lastSearchEntities.company ? [lastSearchEntities.company] : []
-        }))
-      } else {
-        // No entities parsed - clear all auto-populated fields
-        setTableFilters(prev => ({
-          ...prev,
-          locations: [],
-          jobTitles: [],
-          skills: [],
-          industries: [],
-          seniorityLevels: [],
-          minExperience: undefined,
-          companies: []
-        }))
-      }
+      const e = lastSearchEntities
+      const yearsExp = e?.years_experience
+      const parsedYears = typeof yearsExp === 'string' ? parseInt(yearsExp, 10) : yearsExp
+      setTableFilters(prev => ({ ...prev,
+        locations: e?.location ? [e.location] : [],
+        jobTitles: e?.job_title ? [e.job_title] : [],
+        skills: e?.skills?.length ? e.skills : [],
+        industries: e?.industry ? [e.industry] : [],
+        seniorityLevels: e?.seniority ? [e.seniority] : [],
+        minExperience: (parsedYears !== undefined && !isNaN(parsedYears)) ? parsedYears : undefined,
+        companies: e?.company ? [e.company] : []
+      }))
     }
   }, [searchExecutionId])
-  
+
   // Mark candidate as viewed when clicked
   const markCandidateAsViewed = async (candidateId: string, source: string = 'profile') => {
     try {
-      await fetch(`/api/backend-proxy/candidates/${candidateId}/viewed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source })
-      })
+      await fetch(`/api/backend-proxy/candidates/${candidateId}/viewed`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source }) })
       setViewedCandidateIds(prev => new Set([...prev, candidateId]))
-    } catch (error) {
-    }
+    } catch {}
   }
   
   const talentFunnel = useTalentFunnel()
@@ -464,93 +412,44 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     "Inclua soft skills importantes para o time"
   ])
   
-  // 🎯 Auto-expandir LIA sidebar quando há candidatos selecionados
-  // Respeita intent manual do usuário (userCollapsedLIA)
-  // IMPORTANTE: Não fecha o LIA automaticamente - usuário controla manualmente
-  // Também adiciona mensagem ao chat quando candidatos são selecionados
+  // Auto-expandir LIA sidebar + mensagem no chat quando candidatos são selecionados
   const prevSelectedCountRef = useRef(0)
   useEffect(() => {
     const currentCount = selectedCandidatesForBatch.size
     const prevCount = prevSelectedCountRef.current
-    
     if (currentCount > 0 && !userCollapsedLIA) {
       setShowExpandedLIA(true)
-      // REMOVIDO: setShowAdvancedSearch(true) - modal só abre via botão Filtro ou prompt expandido
-      
-      // Adicionar mensagem ao chat quando seleção muda
-      if (currentCount !== prevCount && currentCount > 0) {
-        const selectedCandidateNames = candidates
-          .filter(c => selectedCandidatesForBatch.has(c.id))
-          .slice(0, 3)
-          .map(c => c.name)
-        
-        const namesPreview = selectedCandidateNames.join(', ') + (currentCount > 3 ? ` e mais ${currentCount - 3}` : '')
-        
-        const liaMessage: ChatMessage = {
-          id: `lia-selection-${Date.now()}`,
-          type: 'lia',
-          content: `Você selecionou **${currentCount} candidato${currentCount > 1 ? 's' : ''}**: ${namesPreview}.\n\nPosso analisar ${currentCount > 1 ? 'estes candidatos' : 'este candidato'} para você:\n\n• **Analisar potencial de crescimento**\n• **Definir tipo de perfil** (executor, estratégico, etc)\n• **Resumo executivo do perfil**\n• **Pontos a serem desenvolvidos**\n• **Tipos de vagas ideais para ${currentCount > 1 ? 'estes perfis' : 'este perfil'}**`,
+      if (currentCount !== prevCount) {
+        const names = candidates.filter(c => selectedCandidatesForBatch.has(c.id)).slice(0, 3).map(c => c.name)
+        const preview = names.join(', ') + (currentCount > 3 ? ` e mais ${currentCount - 3}` : '')
+        const plural = currentCount > 1
+        setChatMessages(prev => [...prev, {
+          id: `lia-selection-${Date.now()}`, type: 'lia' as const,
+          content: `Você selecionou **${currentCount} candidato${plural ? 's' : ''}**: ${preview}.\n\nPosso analisar ${plural ? 'estes candidatos' : 'este candidato'} para você:\n\n• **Analisar potencial de crescimento**\n• **Definir tipo de perfil** (executor, estratégico, etc)\n• **Resumo executivo do perfil**`,
           timestamp: new Date()
-        }
-        setChatMessages(prev => [...prev, liaMessage])
+        }])
       }
     }
-    // REMOVIDO: Não fecha mais o LIA automaticamente quando currentCount === 0
-    // O LIA permanece aberto após busca - usuário fecha manualmente se quiser
-    
     prevSelectedCountRef.current = currentCount
   }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch])
   
   // Parsing de entidades do liaPromptValue com debounce
   useEffect(() => {
-    if (!liaPromptValue.trim()) {
-      setLiaPromptEntities({
-        job_title: undefined,
-        location: undefined,
-        skills: [],
-        years_experience: undefined,
-        industry: undefined,
-        seniority: undefined,
-        company: undefined
-      })
-      setLiaSuggestions([])
-      return
-    }
-    
-    const debounceTimer = setTimeout(async () => {
+    const emptyEntities = { job_title: undefined, location: undefined, skills: [], years_experience: undefined, industry: undefined, seniority: undefined, company: undefined }
+    if (!liaPromptValue.trim()) { setLiaPromptEntities(emptyEntities); setLiaSuggestions([]); return }
+    const timer = setTimeout(async () => {
       setLiaIsParsingEntities(true)
       try {
-        const response = await fetch('/api/backend-proxy/search/parse-query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: liaPromptValue })
-        })
-        if (response.ok) {
-          const data = await response.json()
-          const entities = data.entities || data
-          setLiaPromptEntities({
-            job_title: entities.job_title || undefined,
-            location: entities.location || undefined,
-            skills: entities.skills || [],
-            years_experience: entities.years_experience || undefined,
-            industry: entities.industry || undefined,
-            seniority: entities.seniority || undefined,
-            company: entities.company || undefined
-          })
-          // Store suggestions from backend response
-          if (data.suggestions && Array.isArray(data.suggestions)) {
-            setLiaSuggestions(data.suggestions)
-          } else {
-            setLiaSuggestions([])
-          }
+        const res = await fetch('/api/backend-proxy/search/parse-query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: liaPromptValue }) })
+        if (res.ok) {
+          const data = await res.json()
+          const e = data.entities || data
+          setLiaPromptEntities({ job_title: e.job_title || undefined, location: e.location || undefined, skills: e.skills || [], years_experience: e.years_experience || undefined, industry: e.industry || undefined, seniority: e.seniority || undefined, company: e.company || undefined })
+          setLiaSuggestions(Array.isArray(data.suggestions) ? data.suggestions : [])
         }
-      } catch (error) {
-      } finally {
-        setLiaIsParsingEntities(false)
-      }
+      } catch {} finally { setLiaIsParsingEntities(false) }
     }, 500)
-    
-    return () => clearTimeout(debounceTimer)
+    return () => clearTimeout(timer)
   }, [liaPromptValue])
   
   // Estados para o novo sistema de pesquisa avançada da LIA - 6 abas
@@ -706,24 +605,14 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     }
   }, [])
 
-  // ✨ Função para limpar filtro cross-tab
-  const clearCrossTabFilter = () => {
-    setCrossTabFilter(null)
-    setShowCrossTabBanner(false)
-    setSearchTerm("")
-    setQuickFilters(new Set())
-    // Limpar URL params
-    window.history.replaceState({}, '', window.location.pathname)
-  }
+  const clearCrossTabFilter = () => { setCrossTabFilter(null); setShowCrossTabBanner(false); setSearchTerm(""); setQuickFilters(new Set()); window.history.replaceState({}, '', window.location.pathname) }
 
-  // Estados dos modais
   const [showBatchApproval, setShowBatchApproval] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactModalAction, setContactModalAction] = useState<'general' | 'wsi_screening' | 'interview_invite'>('general')
   const [contactModalCandidate, setContactModalCandidate] = useState<Record<string, unknown> | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   
-  // Unified Communication Modal State
   const [unifiedModalOpen, setUnifiedModalOpen] = useState(false)
   const [unifiedModalType, setUnifiedModalType] = useState<CommunicationType>('email')
   const [unifiedModalCandidate, setUnifiedModalCandidate] = useState<Candidate | null>(null)
@@ -732,48 +621,32 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   const [selectedCandidateForAction, setSelectedCandidateForAction] = useState<Candidate | null>(null)
   const [showAddCandidateModal, setShowAddCandidateModal] = useState(false)
   const [preSelectedListForModal, setPreSelectedListForModal] = useState<{ id: string; name: string } | null>(null)
-  // WSI Screening States
   const [showWSITextModal, setShowWSITextModal] = useState(false)
   const [showWSIVoiceModal, setShowWSIVoiceModal] = useState(false)
   const [wsiCandidateForScreening, setWsiCandidateForScreening] = useState<Candidate | null>(null)
   
-  // WSI Triagem Invite Modal State
   const [showWSIInviteModal, setShowWSIInviteModal] = useState(false)
   const [wsiInviteCandidate, setWsiInviteCandidate] = useState<Candidate | null>(null)
   
-  // Rubric Evaluation Modal State (LIA Analysis)
   const [showRubricModal, setShowRubricModal] = useState(false)
   const [rubricCandidate, setRubricCandidate] = useState<Candidate | null>(null)
   const [rubricEvaluationData, setRubricEvaluationData] = useState<Record<string, unknown> | null>(null)
 
-  // Email Modal States
   const [showSendEmailModal, setShowSendEmailModal] = useState(false)
   const [emailCandidateSelected, setEmailCandidateSelected] = useState<Candidate | null>(null)
-
-  // CV Parser Modal States (mantido para CVPreview legado)
   const [showCVPreviewModal, setShowCVPreviewModal] = useState(false)
   const [parsedCVData, setParsedCVData] = useState<ParsedCVResponse | null>(null)
-
-  // Bulk Actions States
   const [bulkJobVacancies, setBulkJobVacancies] = useState<JobVacancy[]>([])
   const [bulkEmailTemplates, setBulkEmailTemplates] = useState<EmailTemplate[]>([])
-
-  // Candidate Lists Modal States
   const [showAddToListModal, setShowAddToListModal] = useState(false)
   const [addToListCandidateIds, setAddToListCandidateIds] = useState<string[]>([])
   const [addToListCandidateNames, setAddToListCandidateNames] = useState<string[]>([])
   const [showAddListToVacanciesModal, setShowAddListToVacanciesModal] = useState(false)
   const [selectedListForVacancies, setSelectedListForVacancies] = useState<{ id: string; name: string; candidateCount: number } | null>(null)
-  
-  // Add to Vacancy Modal State
   const [showAddToVacancyModal, setShowAddToVacancyModal] = useState(false)
-  
-  // Share Search Modal State
   const [showShareSearchModal, setShowShareSearchModal] = useState(false)
   const [shareSearchCandidates, setShareSearchCandidates] = useState<Array<{ id: string; name: string; email?: string; avatar_url?: string; current_title?: string; linkedin_url?: string }>>([])
   const [shareSearchTitle, setShareSearchTitle] = useState('')
-
-  // Pearch AI Credit System States
   const [showCreditConfirmation, setShowCreditConfirmation] = useState(false)
   const [pendingSearchRequest, setPendingSearchRequest] = useState<{
     query: string
@@ -783,28 +656,18 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   } | null>(null)
   const [creditEstimate, setCreditEstimate] = useState<CreditEstimate | null>(null)
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)
-  
-  // Source Change & Contact Filter Credit Confirmation Modals
   const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
   const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
   const [showContactFilterModal, setShowContactFilterModal] = useState(false)
   const [pendingContactFilter, setPendingContactFilter] = useState<'email' | 'phone' | null>(null)
 
-  // ── Reveal Contact — extraído para useRevealContact ──
   const revealContactHook = useRevealContact({ setCreditsRemaining: (fn) => setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining) : fn), toast })
   const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
   const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact } = revealContactHook.actions
   
-  // Estado para linhas expandidas (quebra de linha do cargo)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
-  
-  // Estado para salvar candidatos Pearch na base local
   const [isSavingToBase, setIsSavingToBase] = useState(false)
-  
-  // Estado para importar candidatos Pearch ao adicionar à lista
   const [isAddingToList, setIsAddingToList] = useState(false)
-  
-  // Estado para modal de aviso de candidatos Pearch não salvos
   const [showUnsavedWarningModal, setShowUnsavedWarningModal] = useState(false)
   const [pendingTabChange, setPendingTabChange] = useState<string | null>(null)
   
@@ -814,69 +677,21 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
 
   // Load job vacancies and email templates for bulk actions
   useEffect(() => {
-    liaApi.listJobVacancies()
-      .then(response => {
-        if (response.items) {
-          setBulkJobVacancies(response.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft'))
-        }
-      })
-      .catch(() => {})
-
-    liaApi.listEmailTemplates(undefined, true)
-      .then(response => {
-        if (response.items) {
-          setBulkEmailTemplates(response.items)
-        }
-      })
-      .catch(() => {})
+    liaApi.listJobVacancies().then(r => r.items && setBulkJobVacancies(r.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft'))).catch(() => {})
+    liaApi.listEmailTemplates(undefined, true).then(r => r.items && setBulkEmailTemplates(r.items)).catch(() => {})
   }, [])
-
-  // openRevealModal and handleRevealContact are now provided by useRevealContact above
 
   // Callback for refreshing candidates after bulk actions
   const handleBulkActionComplete = () => {
     setIsLoading(true)
     liaApi.listCandidates(undefined, undefined, 0, 100)
       .then(response => {
-        if (response.items && response.items.length > 0) {
-          const backendCandidates: Candidate[] = response.items.map((c: CandidateLocal) => ({
-            id: c.id,
-            candidateId: c.id.substring(0, 5).toUpperCase(),
-            name: c.name || 'Sem nome',
-            email: c.email || '',
-            phone: c.phone || '',
-            position: c.current_title || 'Não informado',
-            location: [c.location_city, c.location_state].filter(Boolean).join(', ') || 'Não informado',
-            workModel: (c.work_model_preference || 'remoto') as 'remoto' | 'híbrido' | 'presencial',
-            score: c.lia_score || 75,
-            status: (c.status || 'active') as 'active' | 'prospect' | 'interview' | 'hired',
-            currentSalary: c.desired_salary_min ? `R$ ${c.desired_salary_min.toLocaleString('pt-BR')}` : undefined,
-            expectedSalary: c.desired_salary_max ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}` : undefined,
-            contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
-            tags: c.tags || [],
-            linkedin: c.linkedin_url || '',
-            skills: c.technical_skills || [],
-            experience: c.years_of_experience || 0,
-            education: c.education || c.educations || [],
-            notes: c.notes,
-            avatar: c.avatar_url || (c as Record<string, unknown>).picture_url,
-            liaAnalysis: {
-              score: c.lia_score || 75,
-              strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
-              concerns: c.lia_insights?.concerns || [],
-              recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
-            },
-            source: 'local',
-            has_email: true,
-            has_phone: true
-          }))
-          setCandidates(backendCandidates)
+        if (response.items?.length > 0) {
+          setCandidates(response.items.map((c: CandidateLocal) => mapCandidateToInternal(c as unknown as Record<string, unknown>)))
         }
         setIsLoading(false)
       })
-      .catch(error => {
-        setIsLoading(false)
-      })
+      .catch(() => setIsLoading(false))
   }
 
   // CV Parser handlers (legado - mantido para compatibilidade)
@@ -894,524 +709,21 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   // Helper para mapear candidato do backend para formato interno
   const mapCandidateToInternal = _mapCandidateToInternal
 
-  // Função principal de busca - Integra Local + Pearch AI
-  const executeSearch = async (
-    query: string,
-    entities?: ParsedEntities,
-    mode?: SearchMode,
-    metadata?: SearchMetadata,
-    usePearch: boolean = false
-  ) => {
-    setIsLoading(true)
-    setIsSearchActive(true)
-    
-    // Reset searchResults com estado de carregamento
-    setSearchResults(prev => ({ 
-      ...prev, 
-      isLoading: true, 
-      query: query 
-    }))
-    
-    try {
-      let mappedCandidates: Candidate[] = []
-      let totalCount = 0
-      let creditsUsed: number | undefined
-      
-      const shouldUsePearch = usePearch || searchSource === 'global'
-      const shouldUseHybrid = searchSource === 'hybrid'
-      
-      let localCount = 0
-      let pearchCount = 0
-      
-      // ============== MODO SIMILAR - Busca por perfil similar ==============
-      if (mode === 'similar' && metadata) {
-        const similarUrl = metadata.similarProfileUrl || (metadata.similarProfileUrls?.[0])
-        
-        if (similarUrl) {
-          const response = await fetch('/api/backend-proxy/search/candidates/similar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              linkedin_url: similarUrl,
-              limit: 20,
-              search_pearch: shouldUsePearch || shouldUseHybrid,
-              pearch_type: pearchSearchOptions.searchType
-            })
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            totalCount = data.total_count || 0
-            localCount = data.local_count || 0
-            pearchCount = data.pearch_count || 0
-            creditsUsed = data.credits_used
-            
-            if (data.credits_remaining !== undefined) {
-              setCreditsRemaining(data.credits_remaining)
-            }
-            
-            if (data.candidates && data.candidates.length > 0) {
-              mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
-            }
-          } else {
-          }
-        }
-      }
-      // ============== MODO JD - Busca por Job Description ==============
-      else if (mode === 'jd' && metadata?.jobDescription) {
-        const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            job_description: metadata.jobDescription,
-            limit: 20,
-            search_pearch: shouldUsePearch || shouldUseHybrid,
-            pearch_type: pearchSearchOptions.searchType
-          })
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          totalCount = data.total_count || 0
-          localCount = data.local_count || 0
-          pearchCount = data.pearch_count || 0
-          creditsUsed = data.credits_used
-          
-          if (data.credits_remaining !== undefined) {
-            setCreditsRemaining(data.credits_remaining)
-          }
-          
-          if (data.candidates && data.candidates.length > 0) {
-            mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
-          }
-        } else {
-        }
-      }
-      // ============== MODO ARCHETYPES - Busca por arquétipo ==============
-      else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
-        const archetypeId = metadata.archetypeVacancyId
-        const response = await fetch(`/api/backend-proxy/search/archetypes/${archetypeId}/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            limit: 20,
-            search_pearch: shouldUsePearch || shouldUseHybrid,
-            pearch_type: pearchSearchOptions.searchType
-          })
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          totalCount = data.total_count || 0
-          localCount = data.local_count || 0
-          pearchCount = data.pearch_count || 0
-          creditsUsed = data.credits_used
-          
-          if (data.credits_remaining !== undefined) {
-            setCreditsRemaining(data.credits_remaining)
-          }
-          
-          if (data.candidates && data.candidates.length > 0) {
-            mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
-          }
-        } else {
-        }
-      }
-      // ============== MODO NATURAL/BOOLEAN/FILTROS - Busca padrão ==============
-      else if (shouldUsePearch || shouldUseHybrid) {
-        // Converter entities para SearchSpec para filtros avançados da Pearch
-        const searchSpec = entities ? {
-          location: entities.location,
-          job_title: entities.job_title,
-          seniority: entities.seniority,
-          years_experience: entities.years_experience,
-          skills: entities.skills || [],
-          industry: entities.industry,
-          company: entities.company
-        } : undefined
-        
-        // Busca via Pearch AI (apenas Pearch ou híbrida)
-        const searchResponse = await searchCandidatesHybrid({
-          query,
-          thread_id: searchThreadId,
-          search_spec: searchSpec,
-          search_local: shouldUseHybrid,
-          search_pearch: true,
-          pearch_type: pearchSearchOptions.searchType,
-          local_limit: shouldUseHybrid ? 20 : 1,
-          pearch_limit: pearchSearchOptions.limit,
-          show_emails: pearchSearchOptions.showEmails,
-          show_phone_numbers: pearchSearchOptions.showPhoneNumbers,
-          high_freshness: pearchSearchOptions.highFreshness,
-          require_emails: pearchSearchOptions.requireEmails,
-          require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
-        })
-        
-        // Salvar thread_id para refinamentos futuros
-        if (searchResponse.thread_id) {
-          setSearchThreadId(searchResponse.thread_id)
-        }
-        
-        creditsUsed = searchResponse.credits_used
-        totalCount = searchResponse.total_count || 0
-        localCount = searchResponse.local_count || 0
-        pearchCount = searchResponse.pearch_count || 0
-        
-        // Atualiza saldo de créditos se retornado na resposta
-        if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
-          setCreditsRemaining(searchResponse.credits_remaining)
-        }
-        
-        // Mapear candidatos do formato Pearch/SearchResponse para formato interno
-        // A API já define source='local' ou source='pearch' em CandidateSearchResultDTO
-        if (searchResponse.candidates && searchResponse.candidates.length > 0) {
-          mappedCandidates = searchResponse.candidates.map((c) => {
-            // A API define source corretamente como 'local' ou 'pearch'
-            // Usamos o source da API diretamente, com fallback para 'pearch' se indefinido
-            const candidateSource = c.source || 'pearch'
-            
-            return {
-              id: c.id || `pearch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              candidateId: c.id?.substring(0, 8).toUpperCase() || 'PEARCH',
-              name: c.name || 'Nome não disponível',
-              email: c.email || '',
-              phone: c.phone || '',
-              mobile_phone: c.phone,
-              current_title: c.headline || c.current_title || '',
-              current_company: c.current_company || '',
-              current_salary: undefined,
-              desired_salary_min: undefined,
-              desired_salary_max: undefined,
-              location: c.location || '',
-              location_city: c.location?.split(',')[0]?.trim(),
-              location_state: c.location?.split(',')[1]?.trim(),
-              linkedin_url: c.linkedin_url,
-              avatar_url: c.avatar_url || c.picture_url,
-              technical_skills: c.skills || [],
-              skills: c.skills || [],
-              seniority_level: c.seniority_level,
-              years_of_experience: c.years_experience || c.total_experience_years,
-              experience: c.years_experience || c.total_experience_years || 0,
-              position: c.headline || c.current_title || '',
-              monthlySalary: 0,
-              workModel: 'remoto' as const,
-              score: c.match_score ? Math.round(c.match_score * 25) : 75,
-              contractType: 'CLT' as const,
-              linkedin: c.linkedin_url || '',
-              avatar: c.avatar_url,
-              // Mapeamento de experiências profissionais da Pearch
-              experiences: c.experiences || c.work_history || [],
-              workHistory: (c.experiences || c.work_history || []).map((exp: Record<string, unknown>) => ({
-                company: exp.company_info?.name || exp.company || '',
-                title: exp.company_roles?.[0]?.title || exp.title || '',
-                startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
-                endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
-                duration: exp.duration || '',
-                location: exp.company_info?.location || exp.location || '',
-                description: exp.company_roles?.[0]?.description || exp.description || ''
-              })),
-              // Mapeamento de formação acadêmica da Pearch
-              education: (c.education || c.educations || []).map((edu: Record<string, unknown>) => ({
-                school: edu.school || '',
-                degree: edu.degree || '',
-                field_of_study: edu.field_of_study || '',
-                fieldOfStudy: edu.field_of_study || '',
-                startDate: edu.start_date || '',
-                endDate: edu.end_date || ''
-              })),
-              liaAnalysis: {
-                score: c.match_score ? Math.round(c.match_score * 25) : 75,
-                strengths: c.match_reasoning ? [c.match_reasoning] : [],
-                concerns: [],
-                recommendation: c.match_reasoning || ''
-              },
-              source: candidateSource,
-              pearch_profile_id: c.pearch_profile_id,
-              has_email: c.has_email ?? true,
-              has_phone: c.has_phone ?? true,
-              is_opentowork: c.is_opentowork,
-              is_decision_maker: c.is_decision_maker,
-              is_top_universities: c.is_top_universities,
-              is_startup: c.is_startup || c.company_info?.is_startup,
-              expertise: c.expertise,
-              outreach_message: c.outreach_message
-            }
-          })
-        }
-      } else {
-        // Busca apenas local via liaApi (gratuita)
-        const response = await liaApi.listCandidates(query, undefined, 0, 50)
-        
-        if (response.items && response.items.length > 0) {
-          // Filtrar baseado na query para busca local
-          const searchLower = query.toLowerCase()
-          const filtered = response.items.filter((c: CandidateLocal) => {
-            return (
-              c.name?.toLowerCase().includes(searchLower) ||
-              c.current_title?.toLowerCase().includes(searchLower) ||
-              c.current_company?.toLowerCase().includes(searchLower) ||
-              c.location_city?.toLowerCase().includes(searchLower) ||
-              c.location_state?.toLowerCase().includes(searchLower) ||
-              c.technical_skills?.some((s: string) => s.toLowerCase().includes(searchLower))
-            )
-          })
-          
-          totalCount = filtered.length
-          localCount = filtered.length
-          pearchCount = 0
-          
-          // Mapear candidatos locais para formato interno
-          mappedCandidates = filtered.map((c: CandidateLocal) => ({
-            id: c.id,
-            candidateId: c.id.substring(0, 8).toUpperCase(),
-            name: c.name || 'Sem nome',
-            email: c.email || '',
-            phone: c.phone || '',
-            mobile_phone: c.mobile_phone,
-            current_title: c.current_title || '',
-            current_company: c.current_company || '',
-            current_salary: c.current_salary,
-            desired_salary_min: c.desired_salary_min,
-            desired_salary_max: c.desired_salary_max,
-            location: [c.location_city, c.location_state].filter(Boolean).join(', '),
-            location_city: c.location_city,
-            location_state: c.location_state,
-            linkedin_url: c.linkedin_url,
-            avatar_url: c.avatar_url || c.picture_url,
-            technical_skills: c.technical_skills || [],
-            skills: c.technical_skills || [],
-            seniority_level: c.seniority_level,
-            years_of_experience: c.years_of_experience,
-            experience: c.years_of_experience || 0,
-            position: c.current_title || '',
-            monthlySalary: c.current_salary || 0,
-            workModel: (c.work_model_preference || 'remoto') as 'remoto' | 'híbrido' | 'presencial',
-            score: c.lia_score || 75,
-            contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
-            linkedin: c.linkedin_url || '',
-            education: c.education || c.educations || [],
-            avatar: c.avatar_url || (c as Record<string, unknown>).picture_url,
-            liaAnalysis: {
-              score: c.lia_score || 75,
-              strengths: c.lia_insights?.strengths || [],
-              concerns: c.lia_insights?.concerns || [],
-              recommendation: c.lia_insights?.recommendation || ''
-            },
-            source: 'local',
-            tags: c.tags || [],
-            notes: c.notes,
-            has_email: true,
-            has_phone: true,
-            is_opentowork: c.is_opentowork,
-            is_decision_maker: c.is_decision_maker,
-            is_top_universities: c.is_top_universities,
-            is_startup: c.is_startup || c.company_info?.is_startup,
-            expertise: c.expertise,
-            outreach_message: c.outreach_message
-          }))
-        }
-      }
-      
-      // Marcar que a busca foi realizada
-      setHasSearched(true)
-      
-      // Salvar entities, metadata e usePearch para uso na expansão global e re-execução de busca
-      // Sempre incrementa searchExecutionId para resetar filtros, mesmo quando entities é null
-      setLastSearchEntities(entities || null)
-      setLastSearchMetadata(metadata)
-      setLastSearchUsedPearch(usePearch || searchSource === 'global' || searchSource === 'hybrid')
-      setSearchExecutionId(prev => prev + 1)
-      
-      // Determinar e atualizar a fonte de busca atual
-      const shouldUsePearchForSource = usePearch || searchSource === 'global'
-      const shouldUseHybridForSource = searchSource === 'hybrid'
-      if (shouldUsePearchForSource) {
-        setCurrentSearchSource('global')
-      } else if (shouldUseHybridForSource) {
-        setCurrentSearchSource('hybrid')
-      } else {
-        setCurrentSearchSource('local')
-      }
-      
-      // Salvar no histórico
-      talentFunnel.addToHistory({
-        query,
-        mode: (mode || 'natural') as string,
-        source: searchSource,
-        entities,
-        metadata,
-        resultsCount: mappedCandidates.length
-      })
-      
-      // Separar candidatos locais e globais
-      const localCandidates = mappedCandidates.filter(c => {
-        const hasPearchId = Boolean(c.pearch_profile_id)
-        return !isGlobalSource(c.source, hasPearchId)
-      })
-      const globalCandidates = mappedCandidates.filter(c => {
-        const hasPearchId = Boolean(c.pearch_profile_id)
-        return isGlobalSource(c.source, hasPearchId)
-      })
-      
-      // Determinar se devemos mostrar candidatos globais automaticamente
-      // Quando busca é global ou híbrida, mostrar automaticamente
-      // Quando busca é local, manter pendente para usuário ativar
-      const shouldAutoShowGlobal = shouldUsePearch || shouldUseHybrid
-      
-      // IMPORTANTE: Se busca é global/híbrida, todos os candidatos vão para a tabela
-      // Se busca é apenas local, só os locais vão automaticamente
-      const candidatesBeforeFilter = shouldAutoShowGlobal 
-        ? mappedCandidates // Todos (locais + globais)
-        : localCandidates  // Apenas locais
-      
-      // Apply hide viewed candidates filter if enabled
-      const candidatesForTable = hideViewedCandidates.filterCandidates(candidatesBeforeFilter)
-      
-      // Calculate how many were hidden from LOCAL vs GLOBAL sources separately
-      const hiddenCandidates = candidatesBeforeFilter.filter(c => !candidatesForTable.some(visible => visible.id === c.id))
-      const hiddenLocalCount = hiddenCandidates.filter(c => {
-        const hasPearchId = Boolean(c.pearch_profile_id)
-        return !isGlobalSource(c.source, hasPearchId)
-      }).length
-      const hiddenGlobalCount = hiddenCandidates.filter(c => {
-        const hasPearchId = Boolean(c.pearch_profile_id)
-        return isGlobalSource(c.source, hasPearchId)
-      }).length
-      const totalHiddenCount = hiddenLocalCount + hiddenGlobalCount
-      
-      setCandidates(candidatesForTable)
-      setHasSearchResults(true)
-      // Adjust counts to reflect filtered results - subtract hidden from correct source
-      const baseLocalCount = localCount > 0 ? localCount : localCandidates.length
-      const baseGlobalCount = pearchCount > 0 ? pearchCount : globalCandidates.length
-      setSearchResultsCount((totalCount || mappedCandidates.length) - totalHiddenCount)
-      setLocalResultsCount(Math.max(0, baseLocalCount - hiddenLocalCount))
-      setPearchResultsCount(Math.max(0, baseGlobalCount - hiddenGlobalCount))
-      setCreditsUsedInSearch(creditsUsed || 0)
-      setShowSearchResults(true)
-      setDisplayedResultsCount(10)
-      
-      // Popular o searchResults para exibir resumo no painel LIA
-      // IMPORTANTE: Preservar globalDismissed entre buscas
-      setSearchResults(prev => ({
-        local: localCandidates,
-        global: globalCandidates,
-        localCount: localCount > 0 ? localCount : localCandidates.length,
-        globalCount: pearchCount > 0 ? pearchCount : globalCandidates.length,
-        query: query,
-        isLoading: false,
-        showGlobalResults: shouldAutoShowGlobal, // Auto-mostrar quando busca global/híbrida
-        globalDismissed: prev.globalDismissed // Preservar estado de dismiss entre buscas
-      }))
-      
-      // IMPORTANTE: Expandir prompt LIA automaticamente após busca concluída
-      setShowExpandedLIA(true)
-      setUserCollapsedLIA(false) // Reset para permitir auto-expansão
-      
-      // Detectar candidatos internacionais e sugerir filtro de localização
-      // APENAS se: busca foi puramente local (não híbrida nem Pearch) e há resultados globais pendentes
-      // Não mostrar se o usuário optou por busca global ou híbrida
-      const shouldShowLocationTip = !usePearch && !shouldUsePearch && !shouldUseHybrid && globalCandidates.length > 0
-      
-      if (shouldShowLocationTip) {
-        // Verificar se a busca não especificou localização brasileira
-        const hasLocationInQuery = /brasil|brazil|são paulo|sp\b|rio|rj\b|minas|mg\b|curitiba|porto alegre|belo horizonte|recife|salvador|fortaleza|brasília/i.test(query)
-        
-        // Detectar se há candidatos claramente internacionais (países fora do Brasil)
-        const internationalCountries = [
-          'india', 'united states', 'usa', 'uk', 'united kingdom', 'canada', 'germany',
-          'france', 'spain', 'portugal', 'australia', 'netherlands', 'italy', 'mexico',
-          'argentina', 'colombia', 'chile', 'peru', 'philippines', 'pakistan', 'nigeria'
-        ]
-        
-        const internationalCandidates = globalCandidates.filter(c => {
-          const location = (c.location || c.location_city || '').toLowerCase()
-          return internationalCountries.some(country => location.includes(country))
-        })
-        
-        // Só mostrar dica se há candidatos claramente internacionais e query não especificou Brasil
-        if (internationalCandidates.length >= 3 && !hasLocationInQuery) {
-          const liaMessage: ChatMessage = {
-            id: `lia-location-tip-${Date.now()}`,
-            type: 'lia',
-            content: `💡 **Dica de Localização**\n\nEncontrei candidatos de outros países nos resultados globais.\n\nSe você busca apenas profissionais no **Brasil**, pode refinar a busca adicionando a localização, por exemplo:\n\n• "*${query} em São Paulo*"\n• "*${query} Brasil*"\n\nOu use os **filtros de localização** no painel de busca avançada.`,
-            timestamp: new Date()
-          }
-          setChatMessages(prev => [...prev, liaMessage])
-        }
-      }
-      
-      // Salvar a query bem-sucedida para uso no modal de arquétipo
-      setLastSuccessfulQuery(query)
-      
-      // Mostrar opção de expandir busca global se só buscou local
-      if (!shouldUsePearch && !shouldUseHybrid) {
-        setShowExpandGlobalOption(true)
-      } else {
-        setShowExpandGlobalOption(false)
-      }
-      
-      // Log de créditos se usou Pearch
-      if (creditsUsed) {
-      }
-      
-      // 🎯 Chamar análise proativa após busca com resultados
-      if (mappedCandidates.length > 0) {
-        try {
-          const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query,
-              candidates: mappedCandidates.slice(0, 50).map(c => ({
-                id: c.id,
-                name: c.name,
-                current_title: c.current_title || c.position,
-                current_company: c.current_company,
-                location: c.location || c.location_city,
-                skills: c.skills || c.technical_skills,
-                years_experience: c.experience || c.years_of_experience,
-                lia_score: c.liaAnalysis?.score || c.score,
-                seniority_level: c.seniority_level,
-                work_model: c.workModel || c.work_model_preference,
-                email: c.email,
-                phone: c.phone || c.mobile_phone,
-                linkedin_url: c.linkedin_url,
-                source: c.source
-              })),
-              local_count: localCount,
-              global_count: pearchCount
-            })
-          })
-          
-          if (analyzeResponse.ok) {
-            const analyticsData: SearchAnalytics = await analyzeResponse.json()
-            
-            // Inserir card de insights proativos no chat
-            const insightMessage: ChatMessage = {
-              id: `proactive-insight-${Date.now()}`,
-              type: 'proactive_insight',
-              content: '',
-              timestamp: new Date(),
-              analytics: analyticsData
-            }
-            setChatMessages(prev => [...prev, insightMessage])
-          }
-        } catch (analyzeError) {
-        }
-      }
-    } catch (error) {
-      // IMPORTANTE: Reset searchResults.isLoading em caso de erro
-      setSearchResults(prev => ({
-        ...prev,
-        isLoading: false,
-        query: '' // Limpar query para não mostrar o card de loading sem resultado
-      }))
-    } finally {
-      setIsLoading(false)
-      setIsSearchActive(false)
-    }
-  }
+  // ── Função principal de busca — extraída para useCandidatesExecuteSearch ──
+  const { executeSearch } = useCandidatesExecuteSearch({
+    searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
+    hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
+    talentFunnel,
+    setCandidates, setSearchResults, setHasSearchResults, setSearchResultsCount,
+    setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch,
+    setCreditsRemaining: (fn) => setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining ?? 0) : fn),
+    setShowSearchResults, setDisplayedResultsCount, setCurrentSearchSource,
+    setHasSearched, setLastSearchEntities, setLastSearchMetadata, setLastSearchUsedPearch,
+    setSearchExecutionId, setShowExpandGlobalOption, setShowExpandedLIA, setUserCollapsedLIA,
+    setLastSuccessfulQuery, setChatMessages, setIsLoading, setIsSearchActive,
+  })
+
+
 
   const [selectedTemplate, setSelectedTemplate] = useState("")
   // Search handlers — extracted to useCandidatesSearch
@@ -1524,410 +836,40 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
       name: `Busca ${new Date().toLocaleDateString()}`,
       searchTerm,
       quickFilters: Array.from(quickFilters),
-      advancedFilters,
       timestamp: new Date().toISOString()
     }
-
-    // Armazenar busca
     sessionStorage.setItem('current-search-data', JSON.stringify(searchData))
-
-    // Navegar para aba saved-searches
     setActiveTab('saved-searches')
-
-    toast({
-      title: "Busca salva",
-      description: `${sortedCandidates.length} candidatos encontrados`,
-      duration: 4000
-    })
+    toast({ title: "Busca salva", description: `${sortedCandidates.length} candidatos encontrados`, duration: 4000 })
   }
 
-  // Filtros e ordenação
-  const filteredCandidates = candidates.filter(candidate => {
-    // ✨ Filtro cross-tab (empresa específica)
-    if (crossTabFilter?.type === 'company') {
-      const targetCompany = crossTabFilter.company || crossTabFilter.companies?.[0]
-      if (targetCompany) {
-        const candidateCompany = candidate.workHistory?.[0]?.company || ''
-        if (!candidateCompany.toLowerCase().includes(targetCompany.toLowerCase())) {
-          return false
-        }
-      }
-    }
-
-    // Filtro de busca textual - NÃO aplica se já temos resultados de busca IA
-    // (os candidatos já foram filtrados pelo backend)
-    if (searchTerm && !hasSearchResults && !searchTerm.startsWith('empresa:') && !searchTerm.startsWith('empresas:')) {
-      const search = searchTerm.toLowerCase()
-      const matches =
-        candidate.name.toLowerCase().includes(search) ||
-        candidate.position.toLowerCase().includes(search) ||
-        (candidate.candidateId && candidate.candidateId.toLowerCase().includes(search)) ||
-        candidate.skills.some(skill => skill.toLowerCase().includes(search))
-      if (!matches) return false
-    }
-
-    // Filtro de busca por empresa (formato: empresa:"Nome")
-    if (searchTerm.startsWith('empresa:"') || searchTerm.startsWith('empresas:')) {
-      const companyMatch = searchTerm.match(/empresa:"([^"]+)"/) || searchTerm.match(/empresas:(.+)/)
-      if (companyMatch) {
-        const searchCompanies = companyMatch[1].split(',').map(c => c.trim())
-        const candidateCompany = candidate.workHistory?.[0]?.company || ''
-        if (!searchCompanies.some(company =>
-          candidateCompany.toLowerCase().includes(company.toLowerCase())
-        )) {
-          return false
-        }
-      }
-    }
-
-    if (quickFilters.size > 0) {
-      const hasQuickFilter = Array.from(quickFilters).some(filter => {
-        switch (filter) {
-          case 'frontend':
-            return candidate.skills.some(skill => ['React', 'Vue', 'Angular', 'JavaScript'].includes(skill))
-          case 'backend':
-            return candidate.skills.some(skill => ['Node.js', 'Python', 'Java', 'PHP'].includes(skill))
-          case 'design':
-            return candidate.skills.some(skill => ['Figma', 'Sketch', 'Adobe', 'Design'].includes(skill))
-          case 'senior':
-            return candidate.experience >= 5
-          case 'remoto':
-            return candidate.location.includes('Remoto') || candidate.location.includes('Remote')
-          default:
-            return true
-        }
-      })
-      if (!hasQuickFilter) return false
-    }
-
-    // Filtros de coluna
-    if (columnFilters.position.length > 0 && !columnFilters.position.includes(candidate.position)) {
-      return false
-    }
-
-    if (columnFilters.company.length > 0) {
-      const company = candidate.workHistory?.[0]?.company || ''
-      if (!columnFilters.company.includes(company)) {
-        return false
-      }
-    }
-
-    if (columnFilters.location.length > 0 && !columnFilters.location.includes(candidate.location)) {
-      return false
-    }
-
-    if (columnFilters.scoreRange.length > 0) {
-      const score = candidate.liaAnalysis?.score || candidate.score
-      let scoreRange: string
-      if (score >= 90) scoreRange = '90-100%'
-      else if (score >= 80) scoreRange = '80-89%'
-      else if (score >= 70) scoreRange = '70-79%'
-      else scoreRange = '60-69%'
-
-      if (!columnFilters.scoreRange.includes(scoreRange)) {
-        return false
-      }
-    }
-
-    // Filtros de Big Five - só aplica se houver filtros ativos
-    if (columnFilters.bigFive) {
-      const hasActiveBigFiveFilters = Object.values(columnFilters.bigFive).some(v => v && v !== '')
-      
-      if (hasActiveBigFiveFilters) {
-        const bigFive = candidate.bigFive
-        if (!bigFive) return false // Se não tem dados de Big Five e há filtro ativo, não passa
-        
-        // Função para classificar score em nível
-        const getLevel = (score: number) => {
-          if (score >= 80) return 'alto'
-          if (score >= 60) return 'medio'
-          return 'baixo'
-        }
-
-        // Verificar cada dimensão filtrada
-        for (const [dimension, filterLevel] of Object.entries(columnFilters.bigFive)) {
-          if (filterLevel && filterLevel !== '') {
-            const score = bigFive[dimension as keyof typeof bigFive]
-            if (!score || getLevel(score) !== filterLevel) {
-              return false
-            }
-          }
-        }
-      }
-    }
-
-    // Filtros avançados
-
-    // Filtro por modelo de trabalho
-    if (advancedFilters.work_models.length > 0) {
-      const workModelFilters = advancedFilters.work_models.filter(filter =>
-        ['remoto', 'híbrido', 'presencial'].includes(filter)
-      )
-      if (workModelFilters.length > 0 && !workModelFilters.includes(candidate.workModel)) {
-        return false
-      }
-    }
-
-    // Filtro por skills
-    if (advancedFilters.skills.length > 0) {
-      const hasSkill = advancedFilters.skills.some(skill =>
-        candidate.skills.some(candidateSkill =>
-          candidateSkill.toLowerCase().includes(skill.toLowerCase())
-        )
-      )
-      if (!hasSkill) return false
-    }
-
-    // Filtro por empresa
-    if (advancedFilters.companies.length > 0) {
-      const candidateCompany = candidate.workHistory?.[0]?.company || ''
-      const hasCompany = advancedFilters.companies.some(company =>
-        candidateCompany.toLowerCase().includes(company.toLowerCase())
-      )
-      if (!hasCompany) return false
-    }
-
-    // Filtro por localização
-    if (advancedFilters.locations.length > 0) {
-      const hasLocation = advancedFilters.locations.some(location =>
-        candidate.location.toLowerCase().includes(location.toLowerCase())
-      )
-      if (!hasLocation) return false
-    }
-
-    // Filtro por cargos
-    if (advancedFilters.job_titles.length > 0) {
-      const hasJobTitle = advancedFilters.job_titles.some(title =>
-        candidate.position.toLowerCase().includes(title.toLowerCase())
-      )
-      if (!hasJobTitle) return false
-    }
-
-    // 🎯 Filtros da Tabela de Resultados (tableFilters) - Separado dos filtros de busca
-    // Filtro por contato - Email
-    if (tableFilters.hasEmail) {
-      const hasEmail = !!(candidate.email || candidate.has_email)
-      if (!hasEmail) return false
-    }
-
-    // Filtro por contato - Telefone
-    if (tableFilters.hasPhone) {
-      const hasPhone = !!(candidate.phone || candidate.mobile_phone || candidate.has_phone)
-      if (!hasPhone) return false
-    }
-
-    // Filtro por contato - LinkedIn
-    if (tableFilters.hasLinkedin) {
-      const hasLinkedin = !!(candidate.linkedin_url || candidate.linkedin)
-      if (!hasLinkedin) return false
-    }
-
-    // Filtro por modelo remoto
-    if (tableFilters.remoteOnly) {
-      const isRemote = candidate.workModel === 'remoto' || 
-                       candidate.is_remote || 
-                       candidate.location?.toLowerCase().includes('remoto')
-      if (!isRemote) return false
-    }
-
-    // Filtro por experiência mínima
-    if (tableFilters.minExperience !== undefined) {
-      const experience = candidate.experience || candidate.years_of_experience || 0
-      if (experience < tableFilters.minExperience) return false
-    }
-
-    // Filtro por experiência máxima
-    if (tableFilters.maxExperience !== undefined) {
-      const experience = candidate.experience || candidate.years_of_experience || 0
-      if (experience > tableFilters.maxExperience) return false
-    }
-
-    // Filtro por score mínimo
-    if (tableFilters.minScore !== undefined) {
-      const score = candidate.liaAnalysis?.score || candidate.score || candidate.lia_score || 0
-      if (score < tableFilters.minScore) return false
-    }
-
-    // Filtro por score máximo
-    if (tableFilters.maxScore !== undefined) {
-      const score = candidate.liaAnalysis?.score || candidate.score || candidate.lia_score || 0
-      if (score > tableFilters.maxScore) return false
-    }
-
-    // Filtro por senioridade
-    if (tableFilters.seniorityLevels.length > 0) {
-      const level = candidate.seniority_level || ''
-      const position = candidate.position || ''
-      const matchesSeniority = tableFilters.seniorityLevels.some(filterLevel => 
-        level.toLowerCase().includes(filterLevel.toLowerCase()) ||
-        position.toLowerCase().includes(filterLevel.toLowerCase())
-      )
-      if (!matchesSeniority) return false
-    }
-
-    // Filtro por modelo de trabalho (tableFilters)
-    if (tableFilters.workModels.length > 0) {
-      if (!tableFilters.workModels.includes(candidate.workModel)) return false
-    }
-
-    // Filtro por tipo de contrato
-    if (tableFilters.contractTypes.length > 0) {
-      if (!tableFilters.contractTypes.includes(candidate.contractType)) return false
-    }
-
-    // Filtro por fonte
-    if (tableFilters.sources.length > 0) {
-      const source = candidate.source || ''
-      const matchesSource = tableFilters.sources.some(filterSource =>
-        source.toLowerCase().includes(filterSource.toLowerCase())
-      )
-      if (!matchesSource) return false
-    }
-
-    // Filtro por Github
-    if (tableFilters.hasGithub) {
-      const hasGithub = !!(candidate.github_url)
-      if (!hasGithub) return false
-    }
-
-    // Filtro por Portfólio
-    if (tableFilters.hasPortfolio) {
-      const hasPortfolio = !!(candidate.portfolio_url)
-      if (!hasPortfolio) return false
-    }
-
-    // Filtro por Soft Skills
-    if (tableFilters.softSkills.length > 0) {
-      const candidateSoftSkills = candidate.soft_skills || []
-      const hasMatchingSoftSkill = tableFilters.softSkills.some(skill =>
-        candidateSoftSkills.some(cs => cs.toLowerCase().includes(skill.toLowerCase()))
-      )
-      if (!hasMatchingSoftSkill) return false
-    }
-
-    // Filtro por Certificações
-    if (tableFilters.certifications.length > 0) {
-      const candidateCertifications = candidate.certifications || []
-      const hasMatchingCertification = tableFilters.certifications.some(cert =>
-        candidateCertifications.some(cc => cc.toLowerCase().includes(cert.toLowerCase()))
-      )
-      if (!hasMatchingCertification) return false
-    }
-
-    // Filtro por Aberto a mudar (willing_to_relocate)
-    if (tableFilters.willingToRelocate !== null) {
-      if (candidate.willing_to_relocate !== tableFilters.willingToRelocate) return false
-    }
-
-    // Filtro por Mobilidade
-    if (tableFilters.mobility !== null) {
-      if (candidate.mobility !== tableFilters.mobility) return false
-    }
-
-    // Filtro por Última Atualização (de)
-    if (tableFilters.updatedAtFrom) {
-      const updatedAt = candidate.updated_at ? new Date(candidate.updated_at) : null
-      const fromDate = new Date(tableFilters.updatedAtFrom)
-      if (!updatedAt || updatedAt < fromDate) return false
-    }
-
-    // Filtro por Última Atualização (até)
-    if (tableFilters.updatedAtTo) {
-      const updatedAt = candidate.updated_at ? new Date(candidate.updated_at) : null
-      const toDate = new Date(tableFilters.updatedAtTo)
-      if (!updatedAt || updatedAt > toDate) return false
-    }
-
-    // Filtro por Último Contato (de)
-    if (tableFilters.lastContactedFrom) {
-      const lastContacted = candidate.last_contacted_at ? new Date(candidate.last_contacted_at) : null
-      const fromDate = new Date(tableFilters.lastContactedFrom)
-      if (!lastContacted || lastContacted < fromDate) return false
-    }
-
-    // Filtro por Último Contato (até)
-    if (tableFilters.lastContactedTo) {
-      const lastContacted = candidate.last_contacted_at ? new Date(candidate.last_contacted_at) : null
-      const toDate = new Date(tableFilters.lastContactedTo)
-      if (!lastContacted || lastContacted > toDate) return false
-    }
-
-    return true
+  // ── Filtros e ordenação — extraídos para useCandidatesFilterSort ──
+  const {
+    filteredCandidates,
+    sortedCandidates,
+    paginatedCandidates,
+    searchDisplayCandidates,
+    visibleCandidates,
+    getPaginatedCandidates,
+  } = useCandidatesFilterSort({
+    candidates,
+    searchTerm,
+    hasSearchResults,
+    quickFilters,
+    columnFilters,
+    advancedFilters: advancedFilters as Record<string, string[]>,
+    tableFilters,
+    sortBy,
+    sortOrder,
+    searchSortBy,
+    searchFeedbacks,
+    displayedResultsCount,
+    showSearchResults,
+    currentPage,
+    itemsPerPage,
+    showOnlyNew,
+    viewedCandidateIds,
   })
-
-  const sortedCandidates = [...filteredCandidates].sort((a, b) => {
-    let aValue: unknown = a[sortBy as keyof Candidate]
-    let bValue: unknown = b[sortBy as keyof Candidate]
-
-    if (sortBy === 'score_lia') {
-      aValue = a.liaAnalysis?.score || a.score
-      bValue = b.liaAnalysis?.score || b.score
-    }
-
-    if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
-    }
-
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1
-    } else {
-      return aValue < bValue ? 1 : -1
-    }
-  })
-
-  // 🚀 Função para paginação (como Gestão de Vagas)
-  const getPaginatedCandidates = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return {
-      candidates: sortedCandidates.slice(startIndex, endIndex),
-      total: sortedCandidates.length,
-      totalPages: Math.ceil(sortedCandidates.length / itemsPerPage)
-    }
-  }
-
-  // Candidatos paginados para exibição
-  const paginatedCandidates = getPaginatedCandidates().candidates
-
-  const searchDisplayCandidates = React.useMemo(() => {
-    let sorted = [...sortedCandidates]
-    
-    switch (searchSortBy) {
-      case 'score_desc':
-        sorted.sort((a, b) => (b.lia_score || b.score || 0) - (a.lia_score || a.score || 0))
-        break
-      case 'score_asc':
-        sorted.sort((a, b) => (a.lia_score || a.score || 0) - (b.lia_score || b.score || 0))
-        break
-      case 'name_asc':
-        sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-        break
-      case 'name_desc':
-        sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''))
-        break
-      case 'experience_desc':
-        sorted.sort((a, b) => (b.experience || b.years_of_experience || 0) - (a.experience || a.years_of_experience || 0))
-        break
-      default:
-        break
-    }
-    
-    const feedbackKeys = Object.keys(searchFeedbacks)
-    if (feedbackKeys.length > 0) {
-      sorted.sort((a, b) => {
-        const fbA = searchFeedbacks[a.id]
-        const fbB = searchFeedbacks[b.id]
-        const priorityA = fbA === 'like' ? 0 : fbA === 'dislike' ? 2 : 1
-        const priorityB = fbB === 'like' ? 0 : fbB === 'dislike' ? 2 : 1
-        return priorityA - priorityB
-      })
-    }
-    
-    return sorted.slice(0, displayedResultsCount)
-  }, [sortedCandidates, searchSortBy, displayedResultsCount, searchFeedbacks])
-
-  const visibleCandidates = showSearchResults ? searchDisplayCandidates : paginatedCandidates
 
   // 🔄 Resetar página quando filtros mudarem
   useEffect(() => {
@@ -1967,313 +909,10 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     setSidePreviewCandidate(null)
   }
 
-  // Componente de Preview Lateral do Candidato
-  const CandidatePreviewPanel = ({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) => {
-    const [activeTab, setActiveTab] = useState('overview')
+  // CandidatePreviewPanel — extraído para CandidatePreviewPanel.tsx
+  // import { CandidatePreviewPanel } from "@/components/pages/candidates/CandidatePreviewPanel"
 
-    const tabs = [
-      { id: 'overview', label: 'Visão Geral', icon: User },
-      { id: 'experience', label: 'Experiência', icon: Briefcase },
-      { id: 'skills', label: 'Habilidades', icon: Star },
-      { id: 'contact', label: 'Contato', icon: MessageSquare }
-    ]
 
-    const renderTabContent = () => {
-      switch (activeTab) {
-        case 'overview':
-          return (
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Informações Básicas</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Cargo:</span>
-                    <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{candidate.position}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Localização:</span>
-                    <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{candidate.location}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Status:</span>
-                    <Badge className={`${
-                      candidate.status === 'active' ? badgeStyles.success :
-                      candidate.status === 'prospect' ? badgeStyles.info :
-                      candidate.status === 'interview' ? badgeStyles.warning :
-                      badgeStyles.default
-                    } px-2 py-0.5`}>
-                      {candidate.status === 'active' ? 'Ativo' :
-                       candidate.status === 'prospect' ? 'Prospect' :
-                       candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Score LIA</h4>
-                <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`${textStyles.label} dark:text-gray-200`}>Compatibilidade</span>
-                    <span className="text-base font-bold text-gray-900 dark:text-gray-50">{formatScorePercent(candidate.score)}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full"
-                      style={{width: `${formatScore(candidate.score)}%`}}
-                    ></div>
-                  </div>
-                  <div className={`${textStyles.description} mt-1 dark:text-gray-400`}>
-                    Score baseado em habilidades, experiência e fit cultural
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <LIAFeedbackWidget
-                      candidateId={candidate.id}
-                      liaScore={candidate.score}
-                      liaRecommendation={candidate.liaAnalysis?.recommendation}
-                      compact={false}
-                      showLabel={true}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-
-        case 'experience':
-          return (
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Experiência Profissional</h4>
-                <div className="space-y-3">
-                  <div className="border-l-4 border-wedo-green pl-3 py-2 bg-wedo-green/10 dark:bg-wedo-green/20 rounded-r-lg">
-                    <div className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>
-                      Senior Developer
-                    </div>
-                    <div className={`${textStyles.bodySmall} text-wedo-green dark:text-wedo-green`}>
-                      Tech Corp • 2021 - Atual
-                    </div>
-                    <div className={`${textStyles.bodySmall} mt-1 dark:text-gray-400`}>
-                      Desenvolvimento de aplicações web com React, Node.js e PostgreSQL
-                    </div>
-                  </div>
-                  <div className="border-l-4 border-gray-300 pl-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-r-lg">
-                    <div className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>
-                      Full Stack Developer
-                    </div>
-                    <div className={`${textStyles.bodySmall} dark:text-gray-500`}>
-                      Startup XYZ • 2019 - 2021
-                    </div>
-                    <div className={`${textStyles.bodySmall} mt-1 dark:text-gray-400`}>
-                      Desenvolvimento fullstack e arquitetura de sistemas
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-
-        case 'skills':
-          return (
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Habilidades Técnicas</h4>
-                <div className="space-y-3">
-                  <div>
-                    <h5 className={`${textStyles.label} dark:text-gray-200 mb-1`}>Frontend</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Backend</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-status-success/15 text-status-success border-0">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Soft Skills</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-
-        case 'contact':
-          return (
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Informações de Contato</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <Mail className="w-4 h-4 text-gray-800" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{candidate.email}</div>
-                      <div className="text-xs text-gray-800">Email principal</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <Phone className="w-4 h-4 text-gray-800" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{candidate.phone}</div>
-                      <div className="text-xs text-gray-800">Telefone/WhatsApp</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    <Linkedin className="w-4 h-4 text-gray-700 dark:text-gray-300" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Ver perfil LinkedIn</div>
-                      <div className="text-xs text-gray-800 dark:text-gray-200">Perfil profissional</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Histórico de Interações</h4>
-                <div className="space-y-2">
-                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                    📧 Email enviado há 2 dias
-                  </div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
-                    📞 Ligação agendada para amanhã às 14h
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-
-        default:
-          return null
-      }
-    }
-
-    return (
-      <div className="w-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col h-full">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10">
-                <AvatarImage
-                  src={candidate.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(candidate.name)}&background=60BED1&color=fff&size=150`}
-                  alt={candidate.name}
-                />
-                <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">
-                  {candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50">{candidate.name}</h3>
-                <p className="text-sm text-gray-800 dark:text-gray-500">{candidate.position}</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-              <div className="font-semibold text-gray-950 dark:text-gray-50">{formatScorePercent(candidate.score)}</div>
-              <div className="text-gray-800">Score LIA</div>
-            </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-              <div className="font-semibold text-gray-950 dark:text-gray-50 flex items-center justify-center gap-1">
-                <Star className="w-3 h-3 text-status-warning" />
-                4.8
-              </div>
-              <div className="text-gray-800">Avaliação</div>
-            </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-              <Badge className={`text-xs ${
-                candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
-                candidate.status === 'prospect' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' :
-                candidate.status === 'interview' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
-                'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}>
-                {candidate.status === 'active' ? 'Ativo' :
-                 candidate.status === 'prospect' ? 'Prospect' :
-                 candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-0" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChangeWithWarning(tab.id)}
-                className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-gray-950 text-gray-950 dark:border-gray-50 dark:text-gray-50'
-                    : 'border-transparent text-gray-800 hover:text-gray-950 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                <tab.icon className="w-3 h-3 mx-auto mb-1" />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4">
-          {renderTabContent()}
-        </div>
-
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-          <Button
-            className="w-full gap-2 bg-gray-900 hover:bg-gray-800"
-            onClick={() => {}}
-          >
-            <Calendar className="w-4 h-4" />
-            Agendar Entrevista
-          </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {}}
-            >
-              <Mail className="w-4 h-4" />
-              Email
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {}}
-            >
-              <LIAIcon size="sm" />
-              LIA
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   const handleClosePreview = () => {
     setShowPreview(false)
@@ -2422,42 +1061,6 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     return sortOrder === 'asc' ? <ArrowUp className="w-3 h-3 ml-1" /> : <ArrowDown className="w-3 h-3 ml-1" />
   }
 
-  // Handlers para filtros avançados
-  const toggleAdvancedFilter = (category: string, value: string) => {
-    setAdvancedFilters(prev => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter(v => v !== value)
-        : [...prev[category], value]
-    }))
-  }
-
-  const removeAdvancedFilter = (category: string, value: string) => {
-    setAdvancedFilters(prev => ({
-      ...prev,
-      [category]: prev[category].filter(v => v !== value)
-    }))
-  }
-
-  const getActiveAdvancedFiltersCount = () => {
-    return Object.values(advancedFilters).reduce((sum, filters) => sum + filters.length, 0)
-  }
-
-  const getActiveSearchFiltersCount = () => {
-    let count = 0
-    Object.values(activeSearchFilters).forEach(category => {
-      if (category) {
-        Object.values(category).forEach(value => {
-          if (value !== undefined && value !== null && value !== "" && value !== false &&
-              !(Array.isArray(value) && value.length === 0)) {
-            count++
-          }
-        })
-      }
-    })
-    return count
-  }
-
   // Funções para filtros da tabela de resultados (tableFilters - separado dos filtros de busca)
   const getActiveTableFiltersCount = (): number => {
     let count = 0
@@ -2505,93 +1108,15 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   const toggleTableFilter = (category: keyof TableFilters, value: string) => {
     setTableFilters(prev => {
       const current = prev[category]
-      if (Array.isArray(current)) {
-        return {
-          ...prev,
-          [category]: current.includes(value)
-            ? current.filter(v => v !== value)
-            : [...current, value]
-        }
-      }
+      if (Array.isArray(current)) return { ...prev, [category]: current.includes(value) ? current.filter(v => v !== value) : [...current, value] }
       return prev
     })
   }
-
-  const clearAllTableFilters = () => {
-    setTableFilters(getDefaultTableFilters())
-  }
-
+  const clearAllTableFilters = () => setTableFilters(getDefaultTableFilters())
   const clearAllFilters = () => {
-    setSearchTerm("")
-    setQuickFilters(new Set())
-    setBooleanSearch("")
-    setSelectedTemplate("")
-    setAdvancedFilters({
-      first_names: [],
-      job_titles: [],
-      years_experience: [],
-      degrees: [],
-      schools: [],
-      companies: [],
-      industries: [],
-      skills: [],
-      spoken_languages: [],
-      locations: [],
-      salary_ranges: [],
-      contract_types: [],
-      work_models: [],
-      availability: [],
-      certifications: [],
-      soft_skills: []
-    })
-    setColumnFilters({
-      position: [],
-      company: [],
-      location: [],
-      scoreRange: [],
-      bigFive: {
-        openness: '',
-        conscientiousness: '',
-        extraversion: '',
-        agreeableness: '',
-        neuroticism: ''
-      }
-    })
-  }
-
-  const saveSearch = () => {
-    if (searchTerm || booleanSearch) {
-      const searchQuery = `${searchTerm} ${booleanSearch}`.trim()
-      setSearchHistory(prev => [searchQuery, ...prev.slice(0, 9)])
-    }
-  }
-
-  const saveSearchAsTemplate = () => {
-    const searchQuery = `${searchTerm} ${booleanSearch}`.trim()
-    if (searchQuery) {
-      const searchData = {
-        name: selectedTemplate || `Busca ${new Date().toLocaleDateString()}`,
-        query: searchQuery,
-        filters: { ...advancedFilters, booleanSearch },
-        timestamp: new Date().toISOString()
-      }
-      setSavedSearches(prev => [searchData, ...prev])
-      toast({
-        title: "Busca salva",
-        description: "Sua busca foi salva como template",
-        duration: 4000
-      })
-    }
-  }
-
-  const applySavedSearch = (search: Record<string, unknown>) => {
-    setSearchTerm(search.query.replace(search.filters.booleanSearch || '', '').trim())
-    setBooleanSearch(search.filters.booleanSearch || '')
-    setAdvancedFilters(search.filters)
-  }
-
-  const deleteSavedSearch = (index: number) => {
-    setSavedSearches(prev => prev.filter((_, i) => i !== index))
+    setSearchTerm(""); setQuickFilters(new Set()); setSelectedTemplate("")
+    setColumnFilters({ position: [], company: [], location: [], scoreRange: [], bigFive: { openness: '', conscientiousness: '', extraversion: '', agreeableness: '', neuroticism: '' } })
+    clearAllTableFilters()
   }
 
   // handleLIAChatMessage, handleAICommand — delegates to liaHandlers (wired after openUnifiedModal)
@@ -2928,7 +1453,7 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
     isLIAThinking, isLiaSuperChat, isLoading, isResizingLIA, isSavingToBase, isSearchActive,
     liaWidth, newCertificationFilter, newSoftSkillFilter, parsedCVData, pearchSearchOptions, pendingContactFilter,
     pendingSourceChange, pinnedCandidates, preSelectedListForModal, previewWidth, renderCellValue, revealCandidate,
-    revealType, rubricCandidate, rubricEvaluationData, saveCurrentSearch, savedSearches, searchResults,
+    revealType, rubricCandidate, rubricEvaluationData, saveCurrentSearch, searchResults,
     selectAllCandidates, selectedCandidateForAction, selectedCandidatesForBatch, selectedListForVacancies, selectedPearchCount, setActiveSearchFilters,
     setActiveSearchTab, setActiveTab, setAddToListCandidateIds, setAddToListCandidateNames, setCandidateListsForModal, setCandidates,
     setChatMessages, setColumnSearchTerm, setColumnWidths, setContactModalAction, setContactModalCandidate, setEmailCandidateSelected,

@@ -59,6 +59,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Compliance:** lia-compliance (unifica governanca + screening + DEI + LGPD)
 - **Utilitarias:** humanizer, pdf, pptx, agent-tools, find-skills, skill-creator
 
+# Architecture Diagrams
+- `docs/diagrams/lia-ai-architecture.excalidraw` — Complete AI architecture diagram (Excalidraw format, open at excalidraw.com). Shows: Frontend (React/Next.js) → Next.js API Proxy → FastAPI :8000 → MainOrchestrator (3 phases) → 6-tier Router → 11 Domain Agents → Shared Services (Intelligence, Compliance, Memory, Observability) → LLMs & External integrations.
+- `docs/diagrams/screenshots/lia-ai-architecture-top.jpg` — Screenshot reference of the diagram.
+
 # External Dependencies
 -   Anthropic (Claude API)
 -   WorkOS
