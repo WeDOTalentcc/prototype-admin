@@ -3,33 +3,9 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { 
-  ArrowLeft, MapPin, Briefcase, Mail, Phone, Linkedin, ExternalLink,
-  Calendar, GraduationCap, Loader2, Building, Globe, Github, Star,
-  MessageSquare, UserPlus, Heart, EyeOff, DollarSign, Clock, Users,
-  Code, Award, CheckCircle, AlertCircle, Brain, Languages,
-  Home, Shield, FileText, Activity, List, Send, CalendarDays, Plus,
-  GitBranch, Upload, Download, Eye, X, Tag, ChevronDown, ChevronUp,
-  PlusCircle, BarChart3, Target, TrendingUp, Image, File, FileVideo, Video, Play,
-  Edit, User, Cake, Contact, Lightbulb, Car, Network, ClipboardCheck, Copy
-} from "lucide-react"
+import { FileText, Image, FileVideo } from "lucide-react"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
-import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { AddToListModal } from "@/components/modals/add-to-list-modal"
-import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
 import { useToast } from "@/hooks/use-toast"
-import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
-import dynamic from "next/dynamic"
-
-const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
 
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
@@ -60,13 +36,13 @@ export function useCandidatePageCore() {
   const [showAddToVacancyModal, setShowAddToVacancyModal] = useState(false)
   
   const [opinionsData, setOpinionsData] = useState<OpinionData | null>(null)
-  const [opinionsHistory, setOpinionsHistory] = useState<any[]>([])
+  const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
   const [isLoadingOpinions, setIsLoadingOpinions] = useState(false)
-  const [savedAnalyses, setSavedAnalyses] = useState<any>(null)
+  const [savedAnalyses, setSavedAnalyses] = useState<Record<string, unknown> | null>(null)
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
   const [opinionsSubTab, setOpinionsSubTab] = useState<'pareceres' | 'analises'>('pareceres')
   const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
-  const [activities, setActivities] = useState<any[]>([])
+  const [activities, setActivities] = useState<Record<string, unknown>[]>([])
   const [isLoadingActivities, setIsLoadingActivities] = useState(false)
   
   const [activityFilter, setActivityFilter] = useState<'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'notes'>('all')
@@ -75,8 +51,8 @@ export function useCandidatePageCore() {
   const [activityView, setActivityView] = useState<'list' | 'timeline'>('timeline')
   const [periodFilter, setPeriodFilter] = useState<'7days' | '30days' | '3months' | 'all'>('all')
   const [isDragging, setIsDragging] = useState(false)
-  const [candidateFiles, setCandidateFiles] = useState<any[]>([])
-  const [fileCategories, setFileCategories] = useState<any[]>([])
+  const [candidateFiles, setCandidateFiles] = useState<Record<string, unknown>[]>([])
+  const [fileCategories, setFileCategories] = useState<Record<string, unknown>[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)

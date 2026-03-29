@@ -602,9 +602,18 @@ export interface CandidateLocal {
   is_decision_maker?: boolean
   is_top_universities?: boolean
   is_startup?: boolean
+  is_tech?: boolean
+  is_potential?: boolean
+  candidate_status?: string
+  stackoverflow_url?: string
+  twitter_url?: string
+  x_url?: string
+  behance_url?: string
   company_info?: Record<string, unknown>
   expertise?: string[]
   outreach_message?: string
+  screeningQuestions?: unknown[]
+  [key: string]: unknown
 }
 
 export interface CandidateCreateRequest {

@@ -34,10 +34,6 @@ const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 
-interface OpinionData {
-  current_general_opinion?: any
-  vacancy_opinions?: any[]
-}
 import { useCandidatePageCore } from "./useCandidatePageCore"
 
 import { CandidateProfileTab } from "./CandidateProfileTab"
@@ -214,12 +210,12 @@ export default function CandidateProfilePage() {
                     )}
                     
                     {/* Tags: Tech & Potencial */}
-                    {(candidate as any).is_tech && (
+                    {candidate.is_tech && (
                       <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
                         Tech
                       </Badge>
                     )}
-                    {(candidate as any).is_potential && (
+                    {candidate.is_potential && (
                       <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                         Potencial
                       </Badge>
@@ -227,7 +223,7 @@ export default function CandidateProfilePage() {
                     
                     {/* Status do Candidato */}
                     {(() => {
-                      const status = (candidate as any).candidate_status || 'active'
+                      const status = candidate.candidate_status || 'active'
                       const statusConfig: Record<string, { label: string, bg: string, text: string, border: string }> = {
                         'active': { label: 'Ativo', bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
                         'do_not_use': { label: 'Não Utilizar', bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
@@ -332,13 +328,13 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a 
-                          href={(candidate as any).stackoverflow_url || '#'} 
+                          href={candidate.stackoverflow_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${(candidate as any).stackoverflow_url ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
-                          onClick={(e) => !(candidate as any).stackoverflow_url && e.preventDefault()}
+                          className={`p-1.5 rounded-md transition-colors ${candidate.stackoverflow_url ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
+                          onClick={(e) => !candidate.stackoverflow_url && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).stackoverflow_url ? '#F48024' : 'var(--gray-400)'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={candidate.stackoverflow_url ? '#F48024' : 'var(--gray-400)'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>StackOverflow</TooltipContent>
@@ -346,13 +342,13 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a 
-                          href={(candidate as any).twitter_url || (candidate as any).x_url || '#'} 
+                          href={candidate.twitter_url || candidate.x_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${((candidate as any).twitter_url || (candidate as any).x_url) ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
-                          onClick={(e) => !((candidate as any).twitter_url || (candidate as any).x_url) && e.preventDefault()}
+                          className={`p-1.5 rounded-md transition-colors ${(candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
+                          onClick={(e) => !(candidate.twitter_url || candidate.x_url) && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={((candidate as any).twitter_url || (candidate as any).x_url) ? '#000000' : 'var(--gray-400)'}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate.twitter_url || candidate.x_url) ? '#000000' : 'var(--gray-400)'}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>X / Twitter</TooltipContent>
@@ -360,13 +356,13 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a 
-                          href={(candidate as any).behance_url || '#'} 
+                          href={candidate.behance_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${(candidate as any).behance_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
-                          onClick={(e) => !(candidate as any).behance_url && e.preventDefault()}
+                          className={`p-1.5 rounded-md transition-colors ${candidate.behance_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
+                          onClick={(e) => !candidate.behance_url && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).behance_url ? '#1769FF' : 'var(--gray-400)'}><path d="M7.5 11c1.5 0 2.5-.8 2.5-2.2S9 6.5 7.5 6.5H4v4.5h3.5zm.5 1H4v5h4c1.8 0 3-1.1 3-2.5S9.8 12 8 12zm8.5-1c-1.5 0-2.5.8-2.5 2h5c0-1.2-1-2-2.5-2z"/><path d="M22.5 6H14v1.5h8.5V6zm-.5 5c0-2.5-2-4.5-4.5-4.5S13 8.5 13 11s2 4.5 4.5 4.5c1.5 0 3-.8 3.8-2h-1.8c-.5.6-1.2 1-2 1-1.5 0-2.5-1-2.5-2.5h6.5v-.5c0-.2 0-.3-.5-.5z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={candidate.behance_url ? '#1769FF' : 'var(--gray-400)'}><path d="M7.5 11c1.5 0 2.5-.8 2.5-2.2S9 6.5 7.5 6.5H4v4.5h3.5zm.5 1H4v5h4c1.8 0 3-1.1 3-2.5S9.8 12 8 12zm8.5-1c-1.5 0-2.5.8-2.5 2h5c0-1.2-1-2-2.5-2z"/><path d="M22.5 6H14v1.5h8.5V6zm-.5 5c0-2.5-2-4.5-4.5-4.5S13 8.5 13 11s2 4.5 4.5 4.5c1.5 0 3-.8 3.8-2h-1.8c-.5.6-1.2 1-2 1-1.5 0-2.5-1-2.5-2.5h6.5v-.5c0-.2 0-.3-.5-.5z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Behance</TooltipContent>
@@ -393,39 +389,39 @@ export default function CandidateProfilePage() {
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   {/* Work Preferences (Híbrido, CLT, etc) */}
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {(candidate as any).work_model && (
+                    {candidate.work_model && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
-                        {(candidate as any).work_model}
+                        {candidate.work_model}
                       </Badge>
                     )}
-                    {(candidate as any).work_mode && (
+                    {candidate.work_mode && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
-                        {(candidate as any).work_mode}
+                        {candidate.work_mode}
                       </Badge>
                     )}
-                    {(candidate as any).contract_type && (
+                    {candidate.contract_type && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
-                        {(candidate as any).contract_type}
+                        {candidate.contract_type}
                       </Badge>
                     )}
-                    {(candidate as any).is_remote && (
+                    {candidate.is_remote && (
                       <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">
                         🌐 Remoto
                       </Badge>
                     )}
-                    {(candidate as any).willing_to_relocate && (
+                    {candidate.willing_to_relocate && (
                       <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                         ✈️ Aceita Mudança
                       </Badge>
                     )}
-                    {(candidate as any).mobility && (
+                    {candidate.mobility && (
                       <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                         🚗 Mobilidade
                       </Badge>
                     )}
-                    {(candidate as any).availability && (
+                    {candidate.availability && (
                       <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
-                        {(candidate as any).availability}
+                        {candidate.availability}
                       </Badge>
                     )}
                   </div>
@@ -436,13 +432,13 @@ export default function CandidateProfilePage() {
                     {candidate.updated_at && (
                       <p>Atualizado: {formatDate(candidate.updated_at)}</p>
                     )}
-                    {(candidate as any).last_contact_at && (
-                      <p>Último contato: {formatDate((candidate as any).last_contact_at)}</p>
+                    {candidate.last_contact_at && (
+                      <p>Último contato: {formatDate(candidate.last_contact_at)}</p>
                     )}
-                    {(candidate as any).last_activity_at && (
-                      <p>Última atividade: {formatDate((candidate as any).last_activity_at)}</p>
+                    {candidate.last_activity_at && (
+                      <p>Última atividade: {formatDate(candidate.last_activity_at)}</p>
                     )}
-                    {!candidate.updated_at && !(candidate as any).last_contact_at && !(candidate as any).last_activity_at && candidate.created_at && (
+                    {!candidate.updated_at && !candidate.last_contact_at && !candidate.last_activity_at && candidate.created_at && (
                       <p>Cadastro: {formatDate(candidate.created_at)}</p>
                     )}
                   </div>
@@ -575,7 +571,7 @@ export default function CandidateProfilePage() {
 
             {/* Experience Highlight - AI-generated summary */}
             {candidate && (
-              <ExperienceHighlightCard candidate={candidate as any} companyId="demo_company" />
+              <ExperienceHighlightCard candidate={candidate} companyId="demo_company" />
             )}
 
             {/* TAB: PROFILE */}
@@ -611,7 +607,7 @@ export default function CandidateProfilePage() {
                         <div className="flex items-center gap-2">
                           <select
                             value={periodFilter}
-                            onChange={(e) => setPeriodFilter(e.target.value as any)}
+                            onChange={(e) => setPeriodFilter(e.target.value as '7days' | '30days' | '3months' | 'all')}
                             className="text-xs px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 dark:text-gray-200"
                           >
                             <option value="7days">Últimos 7 dias</option>
@@ -727,7 +723,7 @@ export default function CandidateProfilePage() {
                               <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Categoria:</span>
                               <select 
                                 value={newNoteCategory}
-                                onChange={(e) => setNewNoteCategory(e.target.value as any)}
+                                onChange={(e) => setNewNoteCategory(e.target.value as 'general' | 'interview' | 'screening' | 'feedback' | 'technical')}
                                 className="text-xs px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 dark:text-gray-200"
                               >
                                 <option value="general">📋 Nota Geral</option>
@@ -807,7 +803,7 @@ export default function CandidateProfilePage() {
                             }]
                           }
                           if (Array.isArray(candidate.notes)) {
-                            return candidate.notes.map((note: any, idx: number) => ({
+                            return (candidate.notes as Record<string, unknown>[]).map((note: Record<string, unknown>, idx: number) => ({
                               id: note.id || `note-${idx}`,
                               type: 'note',
                               category: note.category || 'general',
@@ -867,7 +863,7 @@ export default function CandidateProfilePage() {
                         
                         return (
                           <div className="space-y-3">
-                            {filteredItems.map((item: any, index: number) => {
+                            {filteredItems.map((item: Record<string, unknown>, index: number) => {
                               if (item.itemType === 'note') {
                                 return (
                                   <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 hover:transition-all">
@@ -974,7 +970,7 @@ export default function CandidateProfilePage() {
                         >
                           📁 Todos ({candidateFiles.length})
                         </Badge>
-                        {fileCategories.filter((c: any) => c.count > 0).map((cat: any) => (
+                        {fileCategories.filter((c: Record<string, unknown>) => (c.count as number) > 0).map((cat: Record<string, unknown>) => (
                           <Badge 
                             key={cat.category}
                             variant="outline" 
@@ -1042,8 +1038,8 @@ export default function CandidateProfilePage() {
 
                       {/* Lista de arquivos da API */}
                       {candidateFiles
-                        .filter((file: any) => !selectedCategory || file.file_type === selectedCategory)
-                        .map((file: any) => {
+                        .filter((file: Record<string, unknown>) => !selectedCategory || file.file_type === selectedCategory)
+                        .map((file: Record<string, unknown>) => {
                           const colors = getCategoryColor(file.file_type)
                           return (
                             <div key={file.id} className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
@@ -1177,7 +1173,7 @@ export default function CandidateProfilePage() {
                   {/* Opinions List */}
                   {!isLoadingOpinions && opinionsHistory.length > 0 && (
                     <div className="space-y-3">
-                      {opinionsHistory.map((opinion: any) => {
+                      {opinionsHistory.map((opinion: Record<string, unknown>) => {
                         const isExpanded = expandedOpinionId === opinion.id
                         const isWsi = opinion.opinion_type === 'wsi'
                         const displayScore = isWsi ? opinion.wsi_score : opinion.score
@@ -1280,11 +1276,11 @@ export default function CandidateProfilePage() {
                                         Score Breakdown
                                       </h5>
                                       <div className="grid grid-cols-2 gap-2">
-                                        {Object.entries(opinion.score_breakdown).map(([key, value]: [string, any]) => (
+                                        {Object.entries(opinion.score_breakdown).map(([key, value]: [string, unknown]) => (
                                           value !== null && value !== undefined && (
                                             <div key={key} className="flex items-center justify-between text-xs bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
                                               <span className="text-gray-600 capitalize">{key.replace(/_/g, ' ')}</span>
-                                              <span className="font-medium text-gray-800">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
+                                              <span className="font-medium text-gray-800">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
                                             </div>
                                           )
                                         ))}
@@ -1384,7 +1380,7 @@ export default function CandidateProfilePage() {
                       {/* Analyses List */}
                       {!isLoadingAnalyses && savedAnalyses?.analyses?.length > 0 && (
                         <div className="space-y-3">
-                          {savedAnalyses.analyses.map((analysis: any) => {
+                          {(savedAnalyses.analyses as Record<string, unknown>[]).map((analysis: Record<string, unknown>) => {
                             const isExpanded = expandedAnalysisId === analysis.id
                             const analysisLabels: Record<string, string> = {
                               'bullet_points': 'Pontos-chave',
