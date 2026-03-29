@@ -27,8 +27,7 @@ import {
   Users
 } from "lucide-react"
 import { toast } from "sonner"
-
-type ScreeningStatus = 'not_configured' | 'not_started' | 'active' | 'paused' | 'completed'
+import { type ScreeningStatus, SCREENING_STATUS_LABELS } from "@/types/screening"
 
 interface ScreeningStatusModalProps {
   isOpen: boolean
@@ -57,11 +56,11 @@ interface ScreeningStatusModalProps {
 }
 
 const STATUS_CONFIG: Record<ScreeningStatus, { label: string; color: string; bgColor: string; darkBgColor: string; icon: React.ElementType }> = {
-  not_configured: { label: 'Não Configurada', color: 'text-gray-600', bgColor: 'bg-gray-100', darkBgColor: 'dark:bg-gray-800', icon: AlertCircle },
-  not_started: { label: 'Não Iniciada', color: 'text-gray-700', bgColor: 'bg-gray-200', darkBgColor: 'dark:bg-gray-700', icon: Clock },
-  active: { label: 'Ativa', color: 'text-status-success', bgColor: 'bg-status-success/15', darkBgColor: 'dark:bg-status-success/30', icon: Play },
-  paused: { label: 'Pausada', color: 'text-status-warning', bgColor: 'bg-status-warning/15', darkBgColor: 'dark:bg-status-warning/30', icon: Pause },
-  completed: { label: 'Concluída', color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
+  not_configured: { label: SCREENING_STATUS_LABELS.not_configured, color: 'text-gray-600', bgColor: 'bg-gray-100', darkBgColor: 'dark:bg-gray-800', icon: AlertCircle },
+  not_started: { label: SCREENING_STATUS_LABELS.not_started, color: 'text-gray-700', bgColor: 'bg-gray-200', darkBgColor: 'dark:bg-gray-700', icon: Clock },
+  active: { label: SCREENING_STATUS_LABELS.active, color: 'text-status-success', bgColor: 'bg-status-success/15', darkBgColor: 'dark:bg-status-success/30', icon: Play },
+  paused: { label: SCREENING_STATUS_LABELS.paused, color: 'text-status-warning', bgColor: 'bg-status-warning/15', darkBgColor: 'dark:bg-status-warning/30', icon: Pause },
+  completed: { label: SCREENING_STATUS_LABELS.completed, color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
 }
 
 export function ScreeningStatusModal({

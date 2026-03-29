@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef } from "react"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -670,11 +671,11 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           }}
                           title="Clique para ir às Configurações de Triagem"
                         >
-                          {(job?.screeningStatus || 'not_configured') === 'active' ? '● Ativa' :
-                           (job?.screeningStatus || 'not_configured') === 'paused' ? '◉ Pausada' :
-                           (job?.screeningStatus || 'not_configured') === 'completed' ? '✓ Concluída' :
-                           (job?.screeningStatus || 'not_configured') === 'not_started' ? '○ Não Iniciada' :
-                           '○ Não Config.'}
+                          {(() => {
+                            const s = (job?.screeningStatus || 'not_configured') as ScreeningStatus
+                            const icons: Record<ScreeningStatus, string> = { active: '●', paused: '◉', completed: '✓', not_started: '○', not_configured: '○' }
+                            return `${icons[s]} ${SCREENING_STATUS_LABELS[s]}`
+                          })()}
                         </div>
                       </div>
                     </div>

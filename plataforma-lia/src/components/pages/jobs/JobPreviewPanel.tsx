@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { SCREENING_STATUS_LABELS } from "@/types/screening"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -249,13 +250,9 @@ export function JobPreviewPanel({
                           </Badge>
                           {(() => {
                             const scrStatus = previewJob.screeningStatus || 'not_configured'
-                            const scrLabels: Record<string, string> = {
-                              not_configured: 'Triagem: N/C',
-                              not_started: 'Triagem: Não Iniciada',
-                              active: 'Triagem: Ativa',
-                              paused: 'Triagem: Pausada',
-                              completed: 'Triagem: Concluída',
-                            }
+                            const scrLabels = Object.fromEntries(
+                              Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
+                            ) as Record<string, string>
                             const scrColors: Record<string, string> = {
                               not_configured: 'var(--gray-200)',
                               not_started: 'var(--gray-100)',

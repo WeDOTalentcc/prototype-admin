@@ -2,6 +2,7 @@
 
 import React from "react"
 import dynamic from "next/dynamic"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { liaApi } from "@/services/lia-api"
 import {
   Popover,
@@ -456,13 +457,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   </Popover>
                   {(() => {
                     const scrStatus = currentJob.screeningStatus || 'not_configured'
-                    const scrLabels: Record<string, string> = {
-                      not_configured: 'Triagem: N/C',
-                      not_started: 'Triagem: Não Iniciada',
-                      active: 'Triagem: Ativa',
-                      paused: 'Triagem: Pausada',
-                      completed: 'Triagem: Concluída',
-                    }
+                    const scrLabels = Object.fromEntries(
+                      Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
+                    ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
                       not_configured: 'bg-gray-100 text-gray-700 border border-gray-300',
                       not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',

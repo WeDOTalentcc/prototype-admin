@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -77,11 +78,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
                   'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
                 }`}>
-                  {(job.screeningStatus || 'not_configured') === 'active' ? 'Ativa' :
-                   (job.screeningStatus || 'not_configured') === 'paused' ? 'Pausada' :
-                   (job.screeningStatus || 'not_configured') === 'completed' ? 'Concluída' :
-                   (job.screeningStatus || 'not_configured') === 'not_started' ? 'Não Iniciada' :
-                   'Não Configurada'}
+                  {SCREENING_STATUS_LABELS[(job.screeningStatus || 'not_configured') as ScreeningStatus]}
                 </span>
               </div>
             </div>
@@ -339,11 +336,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
                   'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
                 }`}>
-                  {(job.screeningStatus || 'not_configured') === 'active' ? 'Ativa' :
-                   (job.screeningStatus || 'not_configured') === 'paused' ? 'Pausada' :
-                   (job.screeningStatus || 'not_configured') === 'completed' ? 'Concluída' :
-                   (job.screeningStatus || 'not_configured') === 'not_started' ? 'Não Iniciada' :
-                   'Não Configurada'}
+                  {SCREENING_STATUS_LABELS[(job.screeningStatus || 'not_configured') as ScreeningStatus]}
                 </span>
               </div>
             </div>

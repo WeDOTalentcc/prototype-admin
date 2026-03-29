@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -573,13 +574,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'screeningStatus') {
                           const status = job.screeningStatus || 'not_configured'
-                          const statusLabels: Record<string, string> = {
-                            not_configured: 'Não Configurada',
-                            not_started: 'Não Iniciada',
-                            active: 'Ativa',
-                            paused: 'Pausada',
-                            completed: 'Concluída',
-                          }
+                          const statusLabels = SCREENING_STATUS_LABELS
                           const screeningColors: Record<string, string> = {
                             not_configured: 'var(--gray-200)',
                             not_started: 'var(--gray-100)',

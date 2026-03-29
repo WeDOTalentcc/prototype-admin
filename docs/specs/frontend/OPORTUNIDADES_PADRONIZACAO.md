@@ -1647,3 +1647,478 @@ Migrar `rgba()` inline em componentes para tokens ou `/N` modifiers. Migrar clas
 > Fonte de dados diretos: grep/ls via SSH em /home/runner/workspace/plataforma-lia/src/
 > Proxima revisao recomendada: apos conclusao dos Sprints A e B.
 > Arquivo de destino: /home/runner/workspace/docs/specs/frontend/OPORTUNIDADES_PADRONIZACAO.md
+
+
+---
+
+## PLANO DE IMPLEMENTACAO REFINADO (v2)
+
+> Gerado em: 2026-03-29 | Supersede os Sprints A-F acima com metodologia detalhada
+> Incorpora: analise profunda pre-sprint, execucao multi-agente, revisao pos-sprint
+> Baseado em: 55 oportunidades OPT-001 a OPT-058, diagnostico via SSH
+
+---
+
+### Metodologia de Execucao
+
+**Principios:**
+1. Analise profunda do codigo relevante ANTES de cada sprint (grep + read + audit)
+2. Execucao com multiplos agentes em paralelo para tarefas independentes
+3. DS como unica fonte de verdade — tokens entram em design-tokens.css, nunca direto no componente
+4. Revisao de codigo ao FINAL de cada sprint com greps de verificacao
+
+**Stack de 10 estagios (ordem de dependencia):**
+
+| Estagio | Nome | Escopo |
+|---------|------|--------|
+| 1 | Setup tokens base | design-tokens.css como unica fonte de verdade |
+| 2 | Tokenizacao hex/cores | Substituir todos os hex hardcoded por tokens DS |
+| 3 | Residual color tokens | Auditoria final de violacoes em arquivos tsx/css |
+| 4 | Monolith split | Quebrar globals.css em modulos coesos |
+| 5 | Component unification | Badges, buttons, pills -- um sistema por primitivo |
+| 6 | Bridge React to Vue | Auditar portabilidade, props, hooks, sidebar para migracao |
+| 7 | Design Audit | Espacamento, tipografia, hierarquia, dark mode |
+| 8 | Code Review profundo | Duplicacoes, dead code, performance, type safety |
+| 9 | Auditoria final | /feature-audit 14 dimensoes |
+| 10 | Governanca | CLAUDE.md, lint rules, DS page, documentacao |
+
+---
+
+### SPRINT 1 -- Foundation & Tokens Criticos
+**Estagios cobertos:** 1, 2 parcial
+**Impacto visual:** Nenhum a Sutil
+**Estimativa:** ~4h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'googleapis.com/css' plataforma-lia/src/
+grep -rn 'font-sidebar' plataforma-lia/src/ plataforma-lia/tailwind.config.ts
+grep -rn '#2D2D2D' plataforma-lia/src/
+grep -rn '#666666\|#999999' plataforma-lia/src/
+grep -n 'variant.*default\|default.*primary' plataforma-lia/src/components/ui/button.tsx
+```
+
+| OPT | Item | Arquivo | Acao |
+|-----|------|---------|------|
+| OPT-001 | Remover @import Google Fonts | globals.css L1 | Deletar -- next/font ja carrega |
+| OPT-002 | Corrigir font-sidebar bug | tailwind.config.ts | Apontar para fonte existente ou remover alias |
+| OPT-008 | Hex hardcoded #2D2D2D/666/999 | globals.css + componentes | Substituir por var(--wedo-text-*) / gray-* Tailwind |
+| OPT-011 | Dead code CVA button.tsx | components/ui/button.tsx | Remover variant default duplicado de primary |
+
+**Revisao pos-sprint:**
+```bash
+grep -rn '#2D2D2D\|#666666\|#999999\|googleapis.com' plataforma-lia/src/
+# Esperado: zero resultados
+grep -rn 'font-sidebar' plataforma-lia/tailwind.config.ts plataforma-lia/src/
+# Esperado: zero resultados
+```
+
+---
+
+### SPRINT 2 -- Tipografia Unificada
+**Estagios cobertos:** 7 parcial
+**Impacto visual:** Sutil
+**Estimativa:** ~4h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'font-bold\|font-medium' plataforma-lia/src/app plataforma-lia/src/components | grep -v node_modules | wc -l
+grep -rn 'text-display\|text-heading-\|\.lia-h[1-4]' plataforma-lia/src/
+grep -rn 'font-inter\|font-open-sans' plataforma-lia/src/
+grep -rn 'text-\[11px\]' plataforma-lia/src/
+```
+
+| OPT | Item | Arquivo | Acao |
+|-----|------|---------|------|
+| OPT-003 | Unificar .lia-h* vs .text-heading-* | globals.css + componentes | Uma escala canonica, deletar duplicata |
+| OPT-004 | Remover font-inter/font-open-sans explicitos | Todos .tsx | Herdar da configuracao next/font no body |
+| OPT-005 | text-[11px] hardcoded | 6 arquivos | Substituir por text-xs (12px) ou text-[10px] token |
+| OPT-042 | 8 classes Apple-inspired coexistindo | globals.css | Migrar para escala canonica WeDo abaixo |
+
+**Escala canonica a implementar:**
+```
+h1: text-2xl font-semibold  (24px / 600)
+h2: text-xl  font-semibold  (20px / 600)
+h3: text-lg  font-semibold  (18px / 600)
+h4: text-base font-medium   (16px / 500)
+body: text-sm font-normal   (14px / 400)
+caption: text-xs font-normal (12px / 400)
+```
+
+**Revisao pos-sprint:**
+```bash
+grep -rn 'font-bold' plataforma-lia/src/app plataforma-lia/src/components
+# Esperado: zero (WeDo DS usa font-semibold no maximo)
+grep -rn 'text-display\|\.lia-h[1-4]\|text-heading-' plataforma-lia/src/
+# Esperado: apenas definicao em globals, zero uso em .tsx
+```
+
+---
+
+### SPRINT 3 -- Componentes Unificados (Badges, Buttons, Pills)
+**Estagios cobertos:** 5, 7
+**Impacto visual:** Moderado
+**Estimativa:** ~8h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'StatusBadge\|LIACommandBadge\|LIAFileBadge\|setup-alert-badge' plataforma-lia/src/
+grep -rn 'badge\.tsx\|Badge' plataforma-lia/src/components | head -20
+grep -rn 'lia-button-primary\|lia-button-secondary' plataforma-lia/src/
+grep -rn 'rounded-2xl\|rounded-xl\|rounded-md\|rounded-full' plataforma-lia/src/ | wc -l
+grep -rn 'border-2' plataforma-lia/src/components/ui/
+```
+
+**GATE -- Decisao necessaria antes de executar:**
+> Border-radius padrao para o produto WeDo:
+> - Opcao A: rounded-xl (12px) cards/modais + rounded-lg (8px) inputs/badges  [estilo Notion/Linear]
+> - Opcao B: rounded-md (6px) uniforme para toda a plataforma  [estilo mais sóbrio]
+> Confirmar antes de iniciar Sprint 3.
+
+| OPT | Item | Arquivo | Acao |
+|-----|------|---------|------|
+| OPT-012 | Tres sistemas badge paralelos | badge.tsx + todos os usos | CVA variants: default, status, count, category |
+| OPT-013 | LIACommandBadge/LIAFileBadge fora do badge.tsx | lia-command-badge.tsx etc | Integrar como variantes ou subcomponentes de Badge |
+| OPT-014 | Badge ad-hoc para scores/compliance | Componentes de score | Criar variante Badge variant="score" |
+| OPT-015 | setup-alert-badge.tsx -- uso unico | setup-alert-badge.tsx | Fundir no Badge como variant="alert" |
+| OPT-016 | CVA default=primary em button.tsx | button.tsx | Remover duplicata, manter primary como canonical |
+| OPT-017 | lia-button-primary/secondary coexistem com Button shadcn | globals.css + usos | Migrar usos para Button shadcn, deletar CSS |
+| OPT-018 | Botoes tab customizados fora de Tabs | Componentes com tab buttons | Migrar para componente Tabs ou criar TabButton DS |
+| OPT-019 | rounded-md dominante sem regra | tailwind.config.ts + CLAUDE.md | Documentar regra apos decisao do gate |
+| OPT-020 | rounded-2xl/xl fora do sistema | Componentes com rounded-2xl | Migrar para token canonico conforme gate |
+| OPT-021 | Tres sistemas de border color | globals.css + componentes | border-border (DS), border-gray-200 (light), eliminar rest |
+
+**Revisao pos-sprint:**
+```bash
+grep -rn 'StatusBadge\|LIACommandBadge\|LIAFileBadge\|setup-alert-badge' plataforma-lia/src/
+# Esperado: zero (substituidos por Badge variants)
+grep -rn 'lia-button-primary\|lia-button-secondary' plataforma-lia/src/
+# Esperado: zero
+grep -rn 'rounded-2xl' plataforma-lia/src/app plataforma-lia/src/components
+# Esperado: zero (migrado para token canonico)
+```
+
+---
+
+### SPRINT 4 -- Dark Mode Completo
+**Estagios cobertos:** 7 completo
+**Impacto visual:** SIGNIFICATIVO
+**Estimativa:** ~12h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rL 'dark:' plataforma-lia/src/components/ui/*.tsx | wc -l
+grep -rL 'dark:' plataforma-lia/src/app --include='*.tsx' | wc -l
+grep -n ':root' plataforma-lia/src/styles/design-tokens.css
+grep -n 'data-theme.*dark\|\[class.*dark\]' plataforma-lia/src/styles/design-tokens.css
+grep -rn 'dark:.*gray-[0-9]' plataforma-lia/src/ | wc -l
+```
+
+**Estrategia multi-agente (3 agentes em paralelo):**
+```
+Agente 1: src/components/ui/*.tsx -- 16 componentes base
+Agente 2: src/app/kanban + src/app/jobs -- modulo 1 de features
+Agente 3: src/app/settings + src/app/lia -- modulo 2 de features
+```
+
+| OPT | Item | Arquivo | Acao |
+|-----|------|---------|------|
+| OPT-031 | 16 componentes UI base sem dark: | components/ui/*.tsx | dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 |
+| OPT-032 | 75 arquivos feature sem dark mode | app/**/page.tsx | Por modulo: kanban > jobs > settings > lia |
+| OPT-033 | dark: prefixes com gray-N hardcoded | Todos com dark:gray-N | Substituir por tokens semanticos dark: |
+| OPT-034 | Tokens de terceiros sem dark override | design-tokens.css | whatsapp-*, login-bg-gradient com [data-theme="dark"] |
+| OPT-057 | big-five-profile.tsx borderColor inline sem dark | big-five-profile.tsx | Adicionar dark mode override |
+
+**Revisao pos-sprint:**
+```bash
+grep -rL 'dark:' plataforma-lia/src/components/ui/*.tsx
+# Esperado: zero arquivos sem dark:
+grep -rL 'dark:' plataforma-lia/src/app --include='*.tsx' | wc -l
+# Esperado: < 5 (apenas layouts estruturais)
+```
+
+**Criterio de aceite:** toggle dark/light em todas as rotas sem nenhum componente com fundo branco sobre background escuro.
+
+---
+
+### SPRINT 5 -- Decisao Duplicatas & jobs2
+**Estagios cobertos:** 3, 8 parcial
+**Impacto visual:** Moderado (depende da decisao)
+**Estimativa:** ~4h
+
+**Pre-analise obrigatoria:**
+```bash
+ls plataforma-lia/src/app/ | grep -E 'jobs|settings|tasks'
+grep -rn 'ai-aqua\|electric-red\|ethereal-green\|warm-energy' plataforma-lia/src/
+grep -rn 'use-table-features\|useTableFeatures' plataforma-lia/src/
+grep -rn 'mockup-shadcn-vue' plataforma-lia/src/
+wc -l plataforma-lia/src/app/*/settings-page.tsx plataforma-lia/src/app/*/settings-page-enhanced.tsx 2>/dev/null
+```
+
+**GATE -- Decisoes de produto necessarias:**
+> 1. jobs2-page substitui jobs-page? (Se sim: migrar paleta Tech Startups para DS)
+> 2. settings-page-enhanced substitui settings-page?
+> 3. tasks-page-mvp substitui tasks-page?
+
+| OPT | Item | Acao |
+|-----|------|------|
+| OPT-035 | settings-page vs settings-page-enhanced | Manter ativa, deletar obsoleta, redirect rota |
+| OPT-036 | jobs-page vs jobs2-page | Se jobs2 ativo: ai-aqua->wedo-cyan, electric-red->wedo-error |
+| OPT-037 | tasks-page vs tasks-page-mvp | Manter ativa, deletar obsoleta |
+| OPT-038 | use-table-features vs useTableFeatures | Manter kebab-case, deletar camelCase |
+| OPT-039 | mockup-shadcn-vue-page.tsx em /pages/ | Deletar ou mover para /archived/ |
+| OPT-007 | Paleta Tech Startups | Migrar para DS se jobs2 ativo |
+| OPT-047 | Paleta Tech Startups como sistema paralelo | Documentar ou eliminar |
+
+**Revisao pos-sprint:**
+```bash
+ls plataforma-lia/src/app/ | grep -E 'jobs|settings|tasks'
+# Esperado: apenas 1 por feature
+grep -rn 'ai-aqua\|electric-red\|ethereal-green' plataforma-lia/src/
+# Esperado: zero se jobs2 migrado para DS
+```
+
+---
+
+### SPRINT 6 -- Performance & Bundle Cleanup
+**Estagios cobertos:** 8 completo
+**Impacto visual:** Nenhum
+**Estimativa:** ~2h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'framer-motion' plataforma-lia/src/
+# Confirmar: apenas 1 arquivo (login/welcome/page.tsx)
+grep -rn 'console\.log\|console\.warn' plataforma-lia/src/ | grep -v node_modules | wc -l
+cat plataforma-lia/package.json | grep 'framer-motion'
+grep -rn 'transition-all' plataforma-lia/src/ | wc -l
+grep -rn 'transition-colors' plataforma-lia/src/ | wc -l
+```
+
+| OPT | Item | Arquivo | Acao |
+|-----|------|---------|------|
+| OPT-027 | Remover framer-motion (160KB) | login/welcome/page.tsx + package.json | Reescrever animacao em CSS @keyframes |
+| OPT-028 | transition-all sem criterio | Componentes com transition-all | Usar transition-colors para hover, transition-all apenas para height/layout |
+| OPT-029 | 3 keyframes NOP em globals.css | globals.css | Remover fade-in/slideDown/slideUp desabilitados |
+| OPT-030 | Animacoes Radix desabilitadas sem doc | globals.css | Adicionar comentario formal ou remover override |
+
+**Revisao pos-sprint:**
+```bash
+cat plataforma-lia/package.json | grep 'framer-motion'
+# Esperado: zero
+npx next build 2>&1 | grep -i 'warn\|error' | grep -v 'node_modules'
+# Esperado: zero warnings de imports nao utilizados
+```
+
+---
+
+### SPRINT 7 -- Monolith Split (globals.css)
+**Estagios cobertos:** 4 completo
+**Impacto visual:** Nenhum
+**Estimativa:** ~4h
+
+**Pre-analise obrigatoria:**
+```bash
+wc -l plataforma-lia/src/app/globals.css
+grep -n '^/\* =====' plataforma-lia/src/app/globals.css
+grep -c ':root' plataforma-lia/src/app/globals.css
+# Deve ser 0 apos Sprints 1-2
+ls plataforma-lia/src/styles/
+```
+
+**Estrutura-alvo:**
+```
+src/styles/
+  design-tokens.css      <- tokens (existente, ja expandido)
+  typography.css         <- regras tipograficas globais
+  components-base.css    <- utilitarios .wedo-card, .wedo-input, .lia-*
+  animations.css         <- @keyframes e transitions
+  globals.css            <- apenas resets + @import dos modulos acima (< 100 LOC)
+```
+
+| OPT | Item | Acao |
+|-----|------|------|
+| OPT-040 | .lia-card em onboarding vs Card shadcn | Migrar usos de .lia-card para <Card> shadcn |
+| OPT-041 | .lia-input em search vs Input shadcn | Migrar usos para <Input> shadcn |
+| OPT-046 | Referencias Apple/ElevenLabs em comentarios | Atualizar para nomenclatura WeDo DS |
+| OPT-048 | liaWidth com comentario "ElevenLabs pattern" | Renomear e documentar com token de layout |
+
+**Revisao pos-sprint:**
+```bash
+wc -l plataforma-lia/src/app/globals.css
+# Esperado: < 100 linhas
+grep -c ':root' plataforma-lia/src/app/globals.css
+# Esperado: 0
+ls plataforma-lia/src/styles/
+# Esperado: 5 arquivos (tokens, typography, components-base, animations, globals)
+```
+
+---
+
+### SPRINT 8 -- Residual Tokens & Espacamento
+**Estagios cobertos:** 2 completo, 3
+**Impacto visual:** Sutil
+**Estimativa:** ~6h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'wedo-apoio-' plataforma-lia/src/
+# OPT-006: tokens definidos com zero uso
+grep -rn 'wedo-green-pastel' plataforma-lia/src/
+# OPT-010: token nao documentado com 10+ usos
+grep -rn 'wedo-blue' plataforma-lia/src/
+# OPT-058: marcado como legado
+grep -rn 'w-\[[0-9]*px\]\|h-\[[0-9]*px\]' plataforma-lia/src/ | wc -l
+# OPT-022: 40+ valores arbitrarios
+grep -rn 'h-\[.*vh\]' plataforma-lia/src/ | sort | uniq -c | sort -rn
+# OPT-023: 4 valores de vh diferentes
+grep -rn 'shadow-sm\|shadow-md\|shadow-lg\|shadow-xl' plataforma-lia/src/ | wc -l
+# OPT-025: Tailwind shadows vs shadow-lia-*
+```
+
+| OPT | Item | Acao |
+|-----|------|------|
+| OPT-006 | wedo-apoio-* com zero uso | Deletar tokens orfaos ou documentar uso previsto |
+| OPT-009 | text-[var(--lia-*)] sintaxe arbitraria | Criar classe Tailwind canonica para cada token lia |
+| OPT-010 | wedo-green-pastel nao documentado | Adicionar ao design-tokens.css com valor e uso |
+| OPT-022 | 40+ dimensoes arbitrarias w/h px | Mapear para escala Tailwind (4, 8, 12, 16, 20...) |
+| OPT-023 | 4 valores vh diferentes | Padronizar: h-screen para full, h-[calc(100vh-64px)] para com nav |
+| OPT-024 | Tokens --space-* ignorados | Documentar quando usar space tokens vs p-N diretamente |
+| OPT-025 | shadow-sm/md/lg em paralelo com shadow-lia-* | Definir: shadow-lia-* substituem shadow-* Tailwind |
+| OPT-026 | .lia-card shadows inline | Migrar para shadow-lia-card token |
+| OPT-058 | wedo-blue marcado legado sem decisao | Decidir: migrar para wedo-primary ou deletar |
+
+**Revisao pos-sprint:**
+```bash
+grep -rn 'wedo-apoio-' plataforma-lia/src/
+# Esperado: apenas definicao em design-tokens.css
+grep -rn 'text-\[var(--' plataforma-lia/src/
+# Esperado: zero (substituido por classes Tailwind canonicas)
+```
+
+---
+
+### SPRINT 9 -- Inline Styles & Icones
+**Estagios cobertos:** 8
+**Impacto visual:** Nenhum a Sutil
+**Estimativa:** ~8h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'style={{' plataforma-lia/src/ | grep -v node_modules | wc -l
+# OPT-043: 890 ocorrencias -- priorizar os 20% com maior frequencia por arquivo
+grep -rn 'w-3 h-3\|w-4 h-4\|w-2 h-2\|w-4 h-3' plataforma-lia/src/ | wc -l
+# OPT-049/050/056: tamanhos de icones sem criterio
+grep -rn 'opacity-50\|opacity-30\|opacity-75\|opacity-15' plataforma-lia/src/ | wc -l
+# OPT-052/054: escala de opacidade semantica
+```
+
+| OPT | Item | Acao |
+|-----|------|------|
+| OPT-043 | 890 style={{}} em 206 arquivos | Priorizar: remover style={{}} que duplicam Tailwind |
+| OPT-044 | var(--lia-btn-*) em style={{}} | Substituir por className com variante Button |
+| OPT-045 | style={{color: dimension.color}} em big-five | Aceitar como inevitavel, adicionar fallback dark |
+| OPT-049 | w-3/h-3 vs w-4/h-4 em icones | Documentar: w-4/h-4 UI, w-3/h-3 inline/badge |
+| OPT-050 | w-2/h-2 em badges -- acessibilidade | Aumentar para w-3/h-3 minimo |
+| OPT-051 | 169 icones Lucide sem inventario | Criar lista em DS page com uso canonico |
+| OPT-052 | opacity-50 dominante sem gradacao | Definir: opacity-100 ativo, opacity-60 hover, opacity-30 disabled |
+| OPT-053 | Tres sistemas de transparencia | Documentar precedencia: tokens > opacity-N > rgba inline |
+| OPT-054 | opacity-15 outlier | Substituir por opacity-20 (mais proximo na escala) |
+| OPT-056 | w-4 h-3 -- typo de icone | Corrigir para w-4 h-4 |
+
+---
+
+### SPRINT 10 -- Bridge React para Vue + Governanca
+**Estagios cobertos:** 6, 9, 10
+**Impacto visual:** Nenhum
+**Estimativa:** ~8h
+
+**Pre-analise obrigatoria:**
+```bash
+grep -rn 'useRouter\|useSearchParams\|usePathname' plataforma-lia/src/ | wc -l
+grep -rn 'interface.*Props\|type.*Props' plataforma-lia/src/components | wc -l
+grep -rn 'useState\|useEffect\|useCallback\|useMemo' plataforma-lia/src/ | wc -l
+cat plataforma-lia/src/styles/design-tokens.css | grep ':root\|var(--' | head -20
+```
+
+| Area | Auditoria | Acao |
+|------|-----------|------|
+| Props interface | Props complexas com callbacks e refs | Simplificar para portabilidade React->Vue |
+| Hooks Next.js-specific | useRouter, useSearchParams | Abstrair em camada de navegacao |
+| Sidebar state | Como sidebar e gerenciada | Preparar equivalente Pinia |
+| Design tokens | CSS vars portaveis para Nuxt? | Confirmar que design-tokens.css funciona em Nuxt |
+| Componentes UI | shadcn vs Vuetify gap | Mapear equivalencias por componente |
+
+**Saida desta sprint:**
+- Arquivo `BRIDGE_REACT_VUE.md` com mapeamento de portabilidade por componente
+- CLAUDE.md atualizado com regras DS
+- `/app/design-system/page.tsx` com todos os tokens e variantes renderizados
+- `.eslintrc` com regra proibindo hex hardcoded em .tsx
+
+**Auditoria final -- 14 dimensoes:**
+
+| # | Dimensao | Criterio de aprovacao |
+|---|----------|-----------------------|
+| 1 | Tokens | Zero hex hardcoded fora de design-tokens.css |
+| 2 | Tipografia | Escala canonica em 100% dos componentes |
+| 3 | Cores | Todas as cores via var(--wedo-*) ou Tailwind gray |
+| 4 | Dark mode | Toggle sem flashes em 100% das rotas |
+| 5 | Componentes | Zero duplicatas de badge/button/pill |
+| 6 | Rotas | Uma pagina por feature, zero duplicatas ativas |
+| 7 | Bundle | Sem dependencias nao utilizadas |
+| 8 | Acessibilidade | WCAG AA em light e dark |
+| 9 | Performance | Sem @import bloqueante, next/font ativo |
+| 10 | Type safety | Zero `any` implicito em componentes UI |
+| 11 | Dead code | Zero console.logs, imports mortos, CSS sem uso |
+| 12 | Responsividade | Mobile-first com sm:/md:/lg: corretos |
+| 13 | Reutilizacao | Componentes em 3+ lugares dentro de components/ui/ |
+| 14 | Documentacao | CLAUDE.md, lint rules, DS page atualizados |
+
+---
+
+### Cronograma e Dependencias
+
+```
+Sprint 1 (Foundation)
+  -> Sprint 2 (Tipografia)
+      -> Sprint 3 (Componentes) [GATE: border-radius]
+          -> Sprint 4 (Dark Mode)   <- maior impacto visual
+          -> Sprint 5 (Duplicatas) [GATE: jobs2 decision]
+              -> Sprint 6 (Performance)
+                  -> Sprint 7 (Monolith split)
+                      -> Sprint 8 (Residual tokens)
+                          -> Sprint 9 (Inline styles)
+                              -> Sprint 10 (Bridge + Governanca)
+```
+
+**Gates pendentes antes de Sprint 3:**
+1. Border-radius: rounded-xl (12px) ou rounded-md (6px) como padrao de cards?
+
+**Gates pendentes antes de Sprint 5:**
+2. jobs2-page substitui jobs-page definitivamente?
+3. settings-page-enhanced substitui settings-page?
+
+---
+
+### Resumo de Esforco por Sprint
+
+| Sprint | Estagios | Impacto visual | Esforco |
+|--------|----------|----------------|---------|
+| 1 -- Foundation | 1, 2 | Nenhum | ~4h |
+| 2 -- Tipografia | 7 parcial | Sutil | ~4h |
+| 3 -- Componentes | 5, 7 | Moderado | ~8h |
+| 4 -- Dark Mode | 7 completo | **Significativo** | ~12h |
+| 5 -- Duplicatas | 3, 8 | Moderado | ~4h |
+| 6 -- Performance | 8 | Nenhum | ~2h |
+| 7 -- Monolith split | 4 | Nenhum | ~4h |
+| 8 -- Residual tokens | 2, 3 | Sutil | ~6h |
+| 9 -- Inline styles | 8 | Nenhum a Sutil | ~8h |
+| 10 -- Bridge + Gov | 6, 9, 10 | Nenhum | ~8h |
+| **TOTAL** | | | **~60h** |
+
+---
+
+> Plano refinado gerado em 2026-03-29.
+> Supersede os Sprints A-F (mantidos para referencia historica acima).
+> Proxima acao: confirmar gates de Sprint 3 (border-radius) e Sprint 5 (jobs2).
+> Execucao: sempre multi-agente + analise profunda pre/pos sprint.
