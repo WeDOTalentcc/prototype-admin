@@ -54,31 +54,30 @@ interface ExperienceEntry {
   is_startup?: boolean
 }
 
-interface SkillCategory {
-  category: string
-  label: string
-  skills: string[]
-}
-
 interface LanguageEntry {
   language: string
   level: string
+}
+
+interface SkillCategoryEntry {
+  label: string
+  skills: string[]
 }
 
 interface CandidateProfileTabProps {
   candidate: CandidateWithExtras
   education: EducationEntry[]
   experiences: ExperienceEntry[]
-  skillCategories: Array<[string, SkillCategory]>
+  skillCategories: Array<[string, SkillCategoryEntry]>
   languagesData: LanguageEntry[]
   calculateAge: (date: string) => number | null
-  formatCurrency: (value: number | null | undefined, currency?: string) => string
-  formatDate: (date: string) => string
-  formatDateShort: (date: string) => string
+  formatCurrency: (value: number | null | undefined, currency?: string) => string | null
+  formatDate: (date: string | null | undefined) => string | null
+  formatDateShort: (date: string | null | undefined) => string | null
   getLanguageLevel: (level: string) => { label: string; percent: number; color: string }
-  hasDocuments: (c: CandidateWithExtras) => boolean
-  hasPearchData: (c: CandidateWithExtras) => boolean
-  hasPersonalData: (c: CandidateWithExtras) => boolean
+  hasDocuments: (c: Record<string, unknown>) => boolean
+  hasPearchData: (c: Record<string, unknown>) => boolean
+  hasPersonalData: (c: Record<string, unknown>) => boolean
 }
 
 export function CandidateProfileTab({
@@ -477,7 +476,7 @@ export function CandidateProfileTab({
       </Card>
 
       {/* Personal Data Card - Dados Pessoais */}
-      {hasPersonalData(candidate) && (
+      {hasPersonalData(candidate as unknown as Record<string, unknown>) && (
         <Card className="border-gray-100">
           <CardHeader className="py-2.5 px-4">
             <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -525,7 +524,7 @@ export function CandidateProfileTab({
       )}
 
       {/* LinkedIn/Pearch Insights Card */}
-      {hasPearchData(candidate) && (
+      {hasPearchData(candidate as unknown as Record<string, unknown>) && (
         <Card className="border-gray-100 border-l-4 border-l-[#0A66C2]">
           <CardHeader className="py-2.5 px-4">
             <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -593,7 +592,7 @@ export function CandidateProfileTab({
       )}
 
       {/* Documents Card */}
-      {hasDocuments(candidate) && (
+      {hasDocuments(candidate as unknown as Record<string, unknown>) && (
         <Card className="border-gray-100">
           <CardHeader className="py-2.5 px-4">
             <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">

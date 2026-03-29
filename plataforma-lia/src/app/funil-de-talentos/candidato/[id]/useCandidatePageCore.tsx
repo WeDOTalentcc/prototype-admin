@@ -98,9 +98,9 @@ export function useCandidatePageCore() {
         
         // Initialize favorite/hidden state from candidate data or API
         try {
-          const additionalData = (data as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
+          const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
           if (additionalData?.is_favorited !== undefined) {
-            setIsFavorite(additionalData.is_favorited)
+            setIsFavorite(Boolean(additionalData.is_favorited))
           } else {
             const favResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite/status`)
             if (favResponse.ok) {
@@ -113,9 +113,9 @@ export function useCandidatePageCore() {
         }
         
         try {
-          const additionalData = (data as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
+          const additionalData = (data as unknown as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
           if (additionalData?.is_hidden !== undefined) {
-            setIsHidden(additionalData.is_hidden)
+            setIsHidden(Boolean(additionalData.is_hidden))
           } else {
             const hideResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/hide/status`)
             if (hideResponse.ok) {
@@ -619,8 +619,8 @@ export function useCandidatePageCore() {
   const skillCategories = !loading && candidate ? categorizeSkills([...(candidate.technical_skills || []), ...(candidate.expertise || [])]) : []
   const cRecord = candidate as unknown as Record<string, unknown>
   const cAdditional = cRecord?.additional_data as Record<string, unknown> | undefined
-  const experiences = cRecord?.workHistory || cRecord?.work_history || cRecord?.experiences || cAdditional?.work_history || cAdditional?.experiences || []
-  const education = cRecord?.education || cAdditional?.education || []
+  const experiences = (cRecord?.workHistory || cRecord?.work_history || cRecord?.experiences || cAdditional?.work_history || cAdditional?.experiences || []) as Array<Record<string, unknown>>
+  const education = (cRecord?.education || cAdditional?.education || []) as Array<Record<string, unknown>>
   const opinion = opinionsData?.current_general_opinion || opinionsData?.vacancy_opinions?.[0]
 
 

@@ -524,7 +524,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   
   // Chat sync for bidirectional panel-chat synchronization (Phase 7)
   const handleProactiveAccept = useCallback(async (actionId: string, messageId: string) => {
-    const userId = user?.id || 'default_user'
+    const userId = (user as Record<string, unknown>)?.id as string || 'default_user'
     try {
       const res = await fetch(`/api/backend-proxy/proactive-actions?path=accept/${actionId}`, {
         method: 'POST',
@@ -546,7 +546,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   }, [user])
 
   const handleProactiveReject = useCallback(async (actionId: string, messageId: string) => {
-    const userId = user?.id || 'default_user'
+    const userId = (user as Record<string, unknown>)?.id as string || 'default_user'
     try {
       const res = await fetch(`/api/backend-proxy/proactive-actions?path=reject/${actionId}`, {
         method: 'POST',
@@ -845,31 +845,32 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
 
   // === Effects and lifecycle logic ===
   const effectsResult = useExpandedChatEffects({
-    INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, actions, analytics, approvedCandidates,
+    INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, analytics, approvedCandidates,
     awaitingWSIRegenerationConfirmation, basicInfoFields, behavioralCompetencies, calibrationComplete, calibrationProactiveTimerRef,
     calibrationStageCompletionShown, checkForExistingDraftSync, companyConfig, companyDefaultQuestions, competenciesProactiveTimerRef,
     competenciesStageCompletionShown, configLoaded, currentStage, detectedCriteria, displayedText,
-    fastTrack, fastTrackOriginalCompetencies, generatedJobDescription, hasMeaningfulDraft, initialLiaMessage,
+    fastTrack, fastTrackOriginalCompetencies, generatedJobDescription, initialLiaMessage,
     initialMessages, inputEvaluationProactiveTimerRef, inputEvaluationStageCompletionShown, inputRef, internalJobCreationMode,
     isJobCreationMode, isOpen, isResizing, isTypingEffect, jobConfig,
-    jobDescription, jobTitle, learning, messages, messagesEndRef,
-    mode, proactiveActionIds, questions, rejectedCandidates, res,
+    jobDescription, learning, messages, messagesEndRef,
+    mode, proactiveActionIds, rejectedCandidates,
     resizeRef, salaryBenchmark, salaryInfo, salaryProactiveTimerRef, salaryStageCompletionShown,
-    seniority, setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies,
+    setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies,
     setCalibrationStageCompletionShown, setCompanyConfig, setCompanyDefaultQuestions, setCompetenciesPanelExpanded, setCompetenciesStageCompletionShown,
     setConfigLoaded, setCurrentStage, setDetectedCriteria, setDisplayedText, setFastTrackMessageSent,
     setFieldOrigins, setFieldsFromConfig, setGeneratedJobDescription, setInputEvaluationStageCompletionShown, setInputValue,
     setIsLoadingBenchmark, setIsResizing, setIsTypingEffect, setJobConfig, setMessages,
     setPanelWidth, setProactiveActionIds, setSalaryBenchmark, setSalaryInfo, setSalaryPanelExpanded,
     setSalaryStageCompletionShown, setShowAutoFilledNotification, setTechnicalSkills, setWizardGreeting, setWizardGreetingLoaded,
-    setWsiCandidates, setWsiQuestionsStageCompletionShown, setWsiRegenerationPrompted, skills, sla,
-    state, suggestions, technicalSkills, typingTimeoutRef, user,
+    setWsiCandidates, setWsiQuestionsStageCompletionShown, setWsiRegenerationPrompted, sla,
+    technicalSkills, typingTimeoutRef, user,
     wizardGreeting, wsiCandidates, wsiQuestionsProactiveTimerRef, wsiQuestionsStageCompletionShown, wsiRegenerationPrompted,
     publishingState, publishingActions, wizardDraftId, STAGE_DISPLAY_NAMES, onMessagesUpdate,
+    isLoadingEligibilityQuestions, companyEligibilityQuestions, isLoadingStages,
   })
   const {
     typeText, isFieldRequiredForWizard, hasConfigData, isInJobCreationMode,
-    wsiQualityGates, applyPendingDraft, quickActions,
+    wsiQualityGates, applyPendingDraft,
     companyMembersMap, languagesUserEdited, setCompanyMembersMap, setLanguagesUserEdited,
     hasAppliedRestoredDraft, setHasAppliedRestoredDraft,
     awaitingDraftChoice, setAwaitingDraftChoice,
@@ -885,9 +886,6 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     return result
   }
 
-
-  // State for validation error display
-  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Proceed to next stage (called after modal or directly if no suggestions)
   // Defined before hook so it can be passed as context
@@ -987,12 +985,12 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     generatedJobDescription, hasAttemptedCalibrationGeneration, highlightField, inputEvaluationStageCompletionShown, inputRef,
     inputValue, interviewStages, isFullscreen, isGeneratingWSI, isInJobCreationMode,
     isJobCreationMode, isLoading, isLoadingCalibration, isOpen, isSearchingVacancies,
-    isTypingEffect, jobConfig, learning, liaMessage, localCandidateCount,
+    isTypingEffect, jobConfig, learning, localCandidateCount,
     messages, newBenefitName, newBenefitValue, newCompetencyJustification, newCompetencyName,
     newSkillCategory, onClose, onJobCreated, pendingDraftData, postCalibrationComplete,
-    preferredCandidateCount, proceedToNextStage, publishedJobId, publishingPlatforms, questions,
+    preferredCandidateCount, proceedToNextStage, publishedJobId, publishingPlatforms,
     rejectedCandidates, salaryInfo, saveWizardDraft, selectedSuggestedBehavioral, selectedSuggestedTechnical,
-    seniority, setActiveToolConfirmationMessageId, setApprovedCandidates, setAwaitingCalibrationChoice, setAwaitingFastTrackSelection,
+    setActiveToolConfirmationMessageId, setApprovedCandidates, setAwaitingCalibrationChoice, setAwaitingFastTrackSelection,
     setAwaitingSensitiveFieldsConfirmation, setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies,
     setCalibrationCandidates, setCalibrationComment, setCalibrationComplete, setCalibrationCriteria, setCalibrationSessionId,
     setCompensationAnalysis, setCompetencySuggestions, setConversationId, setCurrentCalibrationIndex, setCurrentStage,
@@ -1006,26 +1004,36 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     setNewCompetencyJustification, setNewCompetencyName, setNewSkillName, setPostCalibrationComplete, setPublishedJobId,
     setRejectedCandidates, setSalaryInfo, setSearchPhase, setShowAddBenefitModal, setShowAddCompetencyModal,
     setShowAddSkillModal, setShowCalibrationModal, setShowClearDraftConfirm, setShowCompetenciesSuggestionsModal, setShowCustomQuestionForm,
-    setShowUploadModal, setStageTransition, setTechnicalSkills, setUploadedFile, setValidationError,
+    setShowUploadModal, setStageTransition, setTechnicalSkills, setUploadedFile,
     setWizardFastTrackSourceJobId, setWizardMode, setWsiCandidates, setWsiGenerationBatch, setWsiHasGenerated,
-    setWsiQuestions, setWsiRegenerationPrompted, showCalibrationModal, state, suggestions,
+    setWsiQuestions, setWsiRegenerationPrompted, showCalibrationModal,
     technicalSkills, toolCalling, trackFieldChange, typeText, user,
-    validationError, wizardFastTrackSourceJobId, wizardMode, wsiCandidates, wsiGenerationBatch,
+    wizardFastTrackSourceJobId, wizardMode, wsiCandidates, wsiGenerationBatch,
     wsiHasGenerated, wsiQualityGates, wsiQuestions,
-    inline, onOrchestratedMessage, onMessagesUpdate, extractCriteriaFromText,
+    inline, onOrchestratedMessage, onMessagesUpdate,
   })
   const {
-    addCalibrationCriterion, addCustomQuestion, buildCandidateSearchQuery, buildCollectedData,
-    deleteWSIQuestion, detectFastTrackIntent, generateCalibrationCandidates, generateCompetencyAnalysisMessage,
+    addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill,
+    buildCandidateSearchQuery, buildCollectedData, canAdvanceToNextStage, containerClasses, contentClasses,
+    criteriaItems, deleteWSIQuestion, detectFastTrackIntent, generateCalibrationCandidates, generateCompetencyAnalysisMessage,
     generateCriteriaResponse, generateJobDescription, generateMoreCalibrationCandidates, generateParecerData,
-    generateWSIExplanationMessage, generateWSIQuestions, handleAcceptSuggestions, handleApproveCandidate,
-    handleClearDraftAndReset, handleFastTrackPublish, handleFastTrackSearch, handleFastTrackVacancySelect,
+    generateWSIExplanationMessage, generateWSIQuestions, goToNextStage, goToPreviousStage,
+    handleAcceptSuggestions, handleApproveCandidate, handleClearDraftAndReset,
+    handleFastTrackPublish, handleFastTrackSearch, handleFastTrackVacancySelect,
+    handleFileAnalysisComplete, handleFileAnalysisError, handleFileSelect,
     handleKeyDown, handlePublishJob, handleQuickSuggestion, handleRejectCandidate,
-    handleSendMessage, handleSkipSuggestions, initializeCalibrationCriteria, moveToNextCandidate,
-    parseFastTrackAdjustment, processOrchestratorResponse, removeCalibrationCriterion,
+    handleSendMessage, handleSkipSuggestions, handleVoiceResponse,
+    initializeCalibrationCriteria, moveToNextCandidate, parseFastTrackAdjustment,
+    processOrchestratorResponse, removeCalibrationCriterion,
     reorderCalibrationCriteria, startGlobalSearch, startLocalSearch,
     toggleWSIQuestionSelection, updateWSIQuestionCorrectOption, updateWSIQuestionExpectedAnswer,
   } = subHooksResult
+
+  useEffect(() => {
+    if (currentStage === 'review-publish' && !jobDescription) {
+      generateJobDescription()
+    }
+  }, [currentStage])
 
   useEffect(() => {
     if (isOpen && initialMessage && messages.length === 1 && !isTypingEffect) {

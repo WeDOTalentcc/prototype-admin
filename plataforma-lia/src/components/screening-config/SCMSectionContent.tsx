@@ -13,12 +13,17 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
+import { toast } from 'sonner'
 import {
   AlertCircle, AlertTriangle, Archive, Brain, Calendar, CalendarCheck,
   CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock,
-  Gauge, GraduationCap, Loader2, Pause, Play, Scale, ShieldAlert, Target
+  Gauge, Globe, GraduationCap, Loader2, MessageSquare, Pause, Phone, Play, Scale, ShieldAlert, Target, X
 } from "lucide-react"
+import { approvalPresetToLimit } from '@/hooks/useScreeningConfig'
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getBloomComplexity, getEstimatedTime } from '@/components/jobs/jobsPageConstants'
+import { JDEvaluationPanel } from '@/components/wsi'
 import { CompanyBankQuestions } from './CompanyBankQuestions'
+import { CompanyDefaultQuestions } from './CompanyDefaultQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import type { CustomQuestion } from './CustomQuestions'
 import { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
@@ -28,12 +33,17 @@ import { SCMQuestionDetailView } from './SCMQuestionDetail'
 type SCMSectionContentProps = ReturnType<typeof useScreeningConfigManagerCore>
 
 export function SCMSectionContent(props: SCMSectionContentProps) {
-  const {
-    job, onJobUpdate, setEditCalendarProvider, setEditChannels, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditSchedulingEnabled,
-    setEditSchedulingMinScorePreset, setEditTimeoutHours, setExpandedBlocks, setExpandedQuestionDetails, setGeneratedQuestions, setShowScreeningToggleConfirm, setWsiDynamicMessage, setWsiGenerationCompleted,
-    setWsiGenerationContext, setWsiGenerationStep, setWsiProgressCollapsed, setWsiSummaryExpanded, wsiDynamicMessage, wsiGeneratedCount, wsiGenerationCompleted, wsiGenerationContext,
-    wsiGenerationMode, wsiGenerationStep, wsiProgressCollapsed, wsiSummaryExpanded, wsiSummaryTypedText, wsiSummaryTypingDone, wsiTypedMessage
-  } = props
+  const { SectionIcon, acceptedQuestions, activeSection, bankQuestionOverrides, companyQuestions, screeningConfig,
+    customQuestions, deactivatedQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited,
+    editCalendarProvider, editChannels, editInterviewDuration, editMaxRetries, editMinScorePreset, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours,
+    expandedBlocks, expandedQuestionDetails, generatedQuestions, handleAddCustomQuestion, handleGenerateWSI, handleRemoveCustomQuestion,
+    handleToggleBankQuestion, handleToggleCompanyDefault, handleUpdateBankQuestion, handleUpdateCustomQuestion, isEditingScreening, isEditingScreeningConfig, isGeneratingWSI,
+    resetScreeningEditing, selectedBankQuestions, setAcceptedQuestions, setActiveSection, setDeactivatedQuestions,
+    setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset,
+    setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setExpandedBlocks, setExpandedQuestionDetails, setGeneratedQuestions,
+    setShowScreeningToggleConfirm, setWsiDynamicMessage, setWsiGenerationCompleted, setWsiGenerationContext, setWsiGenerationStep, setWsiProgressCollapsed, setWsiSummaryExpanded,
+    wsiDynamicMessage, wsiGeneratedCount, wsiGenerationCompleted, wsiGenerationContext, wsiGenerationMode, wsiGenerationStep, wsiProgressCollapsed, wsiSummaryExpanded,
+    wsiSummaryTypedText, wsiSummaryTypingDone, wsiTypedMessage, job, onJobUpdate } = props
 
   return (
     <>

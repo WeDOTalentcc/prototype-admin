@@ -2,42 +2,46 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import type {
-  Message, DetectedCriteria, BasicInfoFields, WizardStage,
+  DetectedCriteria, BasicInfoFields, WizardStage,
   TechnicalSkill, BehavioralCompetency, SalaryInfo, WSIQuestion,
-  ExtendedWizardStageConfig, WizardDraftData
+  ExtendedWizardStageConfig
 } from '..'
+import type { Message, WizardDraftData } from '../types'
+import type { Benefit } from '../stages/SalaryStage'
 import {
   WIZARD_STAGES, getMissingCriticalFields, DRAFT_DETECTED_MESSAGE,
-  INITIAL_JOB_CREATION_MESSAGE, FROM_SCRATCH_ORIENTATION_MESSAGE, INITIAL_STAGES
+  INITIAL_JOB_CREATION_MESSAGE, FROM_SCRATCH_ORIENTATION_MESSAGE
 } from '..'
+import { liaApi } from "@/services/lia-api"
 import { useWSIQualityGates } from '.'
 import { useWizardAutoSave } from "@/hooks/use-wizard-auto-save"
 import { Plus, Brain } from "lucide-react"
 
 export function useExpandedChatEffects(ctx) {
   const {
-    INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, actions, analytics, approvedCandidates,
+    INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, analytics, approvedCandidates,
     awaitingWSIRegenerationConfirmation, basicInfoFields, behavioralCompetencies, calibrationComplete, calibrationProactiveTimerRef,
     calibrationStageCompletionShown, checkForExistingDraftSync, companyConfig, companyDefaultQuestions, competenciesProactiveTimerRef,
     competenciesStageCompletionShown, configLoaded, currentStage, detectedCriteria, displayedText,
-    fastTrack, fastTrackOriginalCompetencies, generatedJobDescription, hasMeaningfulDraft, initialLiaMessage,
+    fastTrack, fastTrackOriginalCompetencies, generatedJobDescription, initialLiaMessage,
     initialMessages, inputEvaluationProactiveTimerRef, inputEvaluationStageCompletionShown, inputRef, internalJobCreationMode,
     isJobCreationMode, isOpen, isResizing, isTypingEffect, jobConfig,
-    jobDescription, jobTitle, learning, messages, messagesEndRef,
-    mode, proactiveActionIds, questions, rejectedCandidates, res,
+    jobDescription, learning, messages, messagesEndRef,
+    mode, proactiveActionIds, rejectedCandidates,
     resizeRef, salaryBenchmark, salaryInfo, salaryProactiveTimerRef, salaryStageCompletionShown,
-    seniority, setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies,
+    setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies,
     setCalibrationStageCompletionShown, setCompanyConfig, setCompanyDefaultQuestions, setCompetenciesPanelExpanded, setCompetenciesStageCompletionShown,
     setConfigLoaded, setCurrentStage, setDetectedCriteria, setDisplayedText, setFastTrackMessageSent,
     setFieldOrigins, setFieldsFromConfig, setGeneratedJobDescription, setInputEvaluationStageCompletionShown, setInputValue,
     setIsLoadingBenchmark, setIsResizing, setIsTypingEffect, setJobConfig, setMessages,
     setPanelWidth, setProactiveActionIds, setSalaryBenchmark, setSalaryInfo, setSalaryPanelExpanded,
     setSalaryStageCompletionShown, setShowAutoFilledNotification, setTechnicalSkills, setWizardGreeting, setWizardGreetingLoaded,
-    setWsiCandidates, setWsiQuestionsStageCompletionShown, setWsiRegenerationPrompted, skills, sla,
-    state, suggestions, technicalSkills, typingTimeoutRef, user,
+    setWsiCandidates, setWsiQuestionsStageCompletionShown, setWsiRegenerationPrompted, sla,
+    technicalSkills, typingTimeoutRef, user,
     wizardGreeting, wsiCandidates, wsiQuestionsProactiveTimerRef, wsiQuestionsStageCompletionShown, wsiRegenerationPrompted,
     publishingState, publishingActions, wizardDraftId, STAGE_DISPLAY_NAMES,
-    onMessagesUpdate,
+    onMessagesUpdate, isLoadingEligibilityQuestions, companyEligibilityQuestions,
+    isLoadingStages,
   } = ctx
 
   useEffect(() => {
@@ -250,9 +254,9 @@ export function useExpandedChatEffects(ctx) {
   
   // WSI Quality Gates - calculate completeness score
   const wsiQualityGates = useWSIQualityGates({
-    technicalSkills: technicalSkills as unknown as Record<string, unknown>[],
-    behavioralCompetencies: behavioralCompetencies as unknown as Record<string, unknown>[],
-    detectedCriteria: detectedCriteria as unknown as Record<string, unknown>,
+    technicalSkills,
+    behavioralCompetencies,
+    detectedCriteria,
     generatedJobDescription,
     minScoreToAdvance: 70,
   })
@@ -284,9 +288,9 @@ export function useExpandedChatEffects(ctx) {
         employmentType: basicInfoFields.tipoContrato
       },
       salaryInfo: salaryInfo,
-      technicalSkills: technicalSkills as unknown as Record<string, unknown>[],
-      behavioralCompetencies: behavioralCompetencies as unknown as Record<string, unknown>[],
-      wsiCandidates: wsiCandidates as unknown as Record<string, unknown>[],
+      technicalSkills,
+      behavioralCompetencies,
+      wsiCandidates,
       currentStage: currentStage,
       jobDescription: generatedJobDescription || ''
     },
@@ -306,22 +310,22 @@ export function useExpandedChatEffects(ctx) {
         if (newSuggestions.length === 0) return
 
         const newIds = new Set(proactiveActionIds)
-        const proactiveMessages: Message[] = newSuggestions.map((s: Record<string, unknown>) => {
+        const proactiveMessages = newSuggestions.map((s: Record<string, unknown>) => {
           newIds.add(s.id)
           return {
             id: `proactive-${s.id}`,
             role: 'assistant' as const,
-            content: s.message || s.title,
-            timestamp: new Date(s.created_at || Date.now()),
+            content: String(s.message || s.title || ''),
+            timestamp: new Date((s.created_at as string) || Date.now()),
             messageType: 'proactive' as const,
             proactiveData: {
-              actionId: s.id,
-              severity: s.severity || 'info',
-              actionLabel: s.action_label || 'Executar',
-              suggestedAction: s.suggested_action || {},
+              actionId: String(s.id),
+              severity: String(s.severity || 'info'),
+              actionLabel: String(s.action_label || 'Executar'),
+              suggestedAction: (s.suggested_action || {}) as Record<string, unknown>,
             },
           }
-        })
+        }) as Message[]
 
         setProactiveActionIds(newIds)
         setMessages(prev => [...prev, ...proactiveMessages])
@@ -729,10 +733,10 @@ export function useExpandedChatEffects(ctx) {
                     if (Array.isArray(members)) {
                       members.forEach((m: Record<string, unknown>) => {
                         if (m.name && m.email) {
-                          // Store with normalized name (trimmed, lowercase for lookup)
-                          membersMap.set(m.name.trim().toLowerCase(), m.email)
-                          // Also store with original name
-                          membersMap.set(m.name.trim(), m.email)
+                          const mName = String(m.name)
+                          const mEmail = String(m.email)
+                          membersMap.set(mName.trim().toLowerCase(), mEmail)
+                          membersMap.set(mName.trim(), mEmail)
                         }
                       })
                     }
@@ -951,13 +955,6 @@ export function useExpandedChatEffects(ctx) {
       }
     }
   }, [])
-
-  // Generate job description when entering review stage
-  useEffect(() => {
-    if (currentStage === 'review-publish' && !jobDescription) {
-      generateJobDescription()
-    }
-  }, [currentStage])
 
   // Fetch salary benchmark when entering salary stage
   useEffect(() => {
@@ -1344,7 +1341,7 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
 
   return {
     typeText, isFieldRequiredForWizard, hasConfigData, isInJobCreationMode,
-    wsiQualityGates, applyPendingDraft, quickActions,
+    wsiQualityGates, applyPendingDraft,
     companyMembersMap, languagesUserEdited, setCompanyMembersMap, setLanguagesUserEdited,
     hasAppliedRestoredDraft, setHasAppliedRestoredDraft,
     awaitingDraftChoice, setAwaitingDraftChoice,

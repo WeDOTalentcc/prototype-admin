@@ -935,17 +935,18 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
           if (orchestratorResponse.conversation_id && !conversationId) {
             setConversationId(orchestratorResponse.conversation_id)
           }
-          responseText = orchestratorResponse.message || orchestratorResponse.result?.message || responseText
+          responseText = String(orchestratorResponse.message || orchestratorResponse.result?.message || responseText)
           if (conversationMemory.conversationId) {
             conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch(() => {})
           }
           const suggestedToolCall = orchestratorResponse.suggested_tool_call || orchestratorResponse.result?.suggested_tool_call
           if (suggestedToolCall) {
+            const stc = suggestedToolCall as Record<string, unknown>
             const toolCall: ToolCall = {
-              tool_name: suggestedToolCall.tool_name,
-              parameters: suggestedToolCall.parameters || {},
-              requires_confirmation: suggestedToolCall.requires_confirmation !== false,
-              confirmation_message: suggestedToolCall.confirmation_message || responseText,
+              tool_name: String(stc.tool_name),
+              parameters: (stc.parameters || {}) as Record<string, unknown>,
+              requires_confirmation: stc.requires_confirmation !== false,
+              confirmation_message: String(stc.confirmation_message || responseText),
             }
             if (toolCall.requires_confirmation) {
               toolCalling.suggestToolCall(toolCall)

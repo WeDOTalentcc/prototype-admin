@@ -2,9 +2,10 @@
 
 import React, { useState, useCallback } from "react"
 import type {
-  Message, ExtendedWizardStageConfig, WizardStage,
+  ExtendedWizardStageConfig, WizardStage,
   TechnicalSkill, BehavioralCompetency
 } from '..'
+import type { Message } from '../types'
 import { WIZARD_STAGES, getMissingCriticalFields } from '..'
 import { useWizardPublishHandlers } from './useWizardPublishHandlers'
 import { useWSIAndCalibrationHandlers } from './useWSIAndCalibrationHandlers'
@@ -25,15 +26,15 @@ export function useExpandedChatSubHooks(ctx) {
     customQuestionRequired, customQuestionText, customQuestionType, detectedCriteria, fastTrack,
     fastTrackAdjustments, fastTrackAppliedData, fastTrackSearchCriteria, fastTrackSearchResults, fastTrackSelectedVacancy,
     fastTrackState, fastTrackSuggestionsShownTracked, fetchDeduplicatedSkills, generateLLMContext, generatedJobDescription,
-    hasAttemptedCalibrationGeneration, hasMinimumQuestions, hasSalaryRange, highlightField, inputEvaluationStageCompletionShown,
+    hasAttemptedCalibrationGeneration, highlightField, inputEvaluationStageCompletionShown,
     inputRef, inputValue, interviewStages, isFullscreen, isGeneratingWSI,
     isInJobCreationMode, isJobCreationMode, isLoading, isLoadingCalibration, isOpen,
-    isSearchingVacancies, isTypingEffect, jobConfig, learning, liaMessage,
-    localCandidateCount, maxSalary, messages, minSalary, newBenefitName,
+    isSearchingVacancies, isTypingEffect, jobConfig, learning,
+    localCandidateCount, messages, newBenefitName,
     newBenefitValue, newCompetencyJustification, newCompetencyName, newSkillCategory, onClose,
     onJobCreated, pendingDraftData, postCalibrationComplete, preferredCandidateCount, publishedJobId,
-    publishingPlatforms, questions, rejectedCandidates, salary, salaryInfo,
-    saveWizardDraft, selectedSuggestedBehavioral, selectedSuggestedTechnical, seniority, setActiveToolConfirmationMessageId,
+    publishingPlatforms, rejectedCandidates, salaryInfo,
+    saveWizardDraft, selectedSuggestedBehavioral, selectedSuggestedTechnical, setActiveToolConfirmationMessageId,
     setApprovedCandidates, setAwaitingCalibrationChoice, setAwaitingDraftChoice, setAwaitingFastTrackSelection, setAwaitingSensitiveFieldsConfirmation,
     setAwaitingStageAdvanceConfirmation, setAwaitingWSIRegenerationConfirmation, setBasicInfoFields, setBehavioralCompetencies, setCalibrationCandidates,
     setCalibrationComment, setCalibrationComplete, setCalibrationCriteria, setCalibrationSessionId, setCompensationAnalysis,
@@ -50,7 +51,7 @@ export function useExpandedChatSubHooks(ctx) {
     setShowAddCompetencyModal, setShowAddSkillModal, setShowCalibrationModal, setShowClearDraftConfirm, setShowCompetenciesSuggestionsModal,
     setShowCustomQuestionForm, setShowUploadModal, setStageTransition, setTechnicalSkills, setUploadedFile,
     setWizardFastTrackSourceJobId, setWizardMode, setWsiCandidates, setWsiGenerationBatch, setWsiHasGenerated,
-    setWsiQuestions, setWsiRegenerationPrompted, showCalibrationModal, state, suggestions,
+    setWsiQuestions, setWsiRegenerationPrompted, showCalibrationModal,
     technicalSkills, toolCalling, trackFieldChange, typeText, user,
     wizardFastTrackSourceJobId, wizardMode, wsiCandidates, wsiGenerationBatch, wsiHasGenerated,
     wsiQualityGates, wsiQuestions,
@@ -602,9 +603,9 @@ export function useExpandedChatSubHooks(ctx) {
       const resumeResult = result as ResumeAnalysisResponse
       analysisMessage = `📄 **Análise de Currículo**\n\n**Candidato:** ${resumeResult.candidate_name || 'Não identificado'}\n**Qualidade do Layout:** ${resumeResult.layout_score}%\n\n${resumeResult.improvement_suggestions.length > 0 ? `**Sugestões de Melhoria:**\n${resumeResult.improvement_suggestions.map(s => `• ${s}`).join('\n')}` : '✅ Currículo bem estruturado!'}`
     } else if (type === 'image') {
-      analysisMessage = `🖼️ **Análise de Imagem**\n\n${(result as Record<string, unknown>).analysis || 'Análise concluída.'}`
+      analysisMessage = `🖼️ **Análise de Imagem**\n\n${(result as unknown as Record<string, unknown>).analysis || 'Análise concluída.'}`
     } else {
-      analysisMessage = `📑 **Análise de Documento**\n\n${String((result as Record<string, unknown>).text_content || '').substring(0, 500) || 'Documento analisado com sucesso.'}`
+      analysisMessage = `📑 **Análise de Documento**\n\n${String((result as unknown as Record<string, unknown>).text_content || '').substring(0, 500) || 'Documento analisado com sucesso.'}`
     }
     
     const analysisMsg: Message = {
@@ -815,6 +816,20 @@ export function useExpandedChatSubHooks(ctx) {
 
 
   return {
-    addCalibrationCriterion, addCustomQuestion, buildCandidateSearchQuery, buildCollectedData, deleteWSIQuestion, detectFastTrackIntent, generateCalibrationCandidates, generateCompetencyAnalysisMessage, generateCriteriaResponse, generateJobDescription, generateMoreCalibrationCandidates, generateParecerData, generateWSIExplanationMessage, generateWSIQuestions, handleAcceptSuggestions, handleApproveCandidate, handleClearDraftAndReset, handleFastTrackPublish, handleFastTrackSearch, handleFastTrackVacancySelect, handleKeyDown, handlePublishJob, handleQuickSuggestion, handleRejectCandidate, handleSendMessage, handleSkipSuggestions, initializeCalibrationCriteria, moveToNextCandidate, parseFastTrackAdjustment, proceedToNextStage, processOrchestratorResponse, removeCalibrationCriterion, reorderCalibrationCriteria, setValidationError, startGlobalSearch, startLocalSearch, toggleWSIQuestionSelection, updateWSIQuestionCorrectOption, updateWSIQuestionExpectedAnswer, validationError
+    addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill,
+    buildCandidateSearchQuery, buildCollectedData, canAdvanceToNextStage, containerClasses, contentClasses,
+    criteriaItems, deleteWSIQuestion, detectFastTrackIntent, generateCalibrationCandidates, generateCompetencyAnalysisMessage,
+    generateCriteriaResponse, generateJobDescription, generateMoreCalibrationCandidates, generateParecerData,
+    generateWSIExplanationMessage, generateWSIQuestions, goToNextStage, goToPreviousStage,
+    handleAcceptSuggestions, handleApproveCandidate, handleClearDraftAndReset,
+    handleFastTrackPublish, handleFastTrackSearch, handleFastTrackVacancySelect,
+    handleFileAnalysisComplete, handleFileAnalysisError, handleFileSelect,
+    handleKeyDown, handlePublishJob, handleQuickSuggestion, handleRejectCandidate,
+    handleSendMessage, handleSkipSuggestions, handleVoiceResponse,
+    initializeCalibrationCriteria, moveToNextCandidate, parseFastTrackAdjustment,
+    proceedToNextStage, processOrchestratorResponse, removeCalibrationCriterion,
+    reorderCalibrationCriteria, setValidationError, startGlobalSearch, startLocalSearch,
+    toggleWSIQuestionSelection, updateWSIQuestionCorrectOption, updateWSIQuestionExpectedAnswer,
+    validationError,
   }
 }

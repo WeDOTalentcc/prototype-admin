@@ -556,6 +556,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
 
 
   return {
+    job,
+    onJobUpdate,
     SectionIcon,
     acceptedQuestions,
     activeSection,

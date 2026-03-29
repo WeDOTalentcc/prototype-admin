@@ -5,21 +5,7 @@ import { liaApi } from "@/services/lia-api"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
-
-interface Message {
-  id: number
-  sender: string
-  content: string
-  timestamp: string
-  type: string
-  contextData?: Record<string, unknown>
-  actions?: Array<Record<string, unknown>>
-  card?: Record<string, unknown>
-  pipelineReport?: Record<string, unknown>
-  audioBlob?: Blob
-  isAudioTranscription?: boolean
-  [key: string]: unknown
-}
+import type { Message } from "./types"
 
 interface ChatPageHandlersContext {
   input: string

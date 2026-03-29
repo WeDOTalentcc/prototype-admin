@@ -359,14 +359,14 @@ export function useChatPageCore() {
           })
           setIsPanelOpen(true)
           
-          const totalStale = report.total_stale || report.groups.reduce(
+          const totalStale = report.total_stale || (report.groups as unknown as Record<string, unknown>[]).reduce(
             (acc: number, job: Record<string, unknown>) => acc + ((job.stale_candidates as unknown[] | undefined)?.length || 0), 0
           )
           
           const newMessage: Message = {
             id: Date.now(),
             sender: "lia",
-            content: totalStale > 0 
+            content: Number(totalStale) > 0 
               ? `Encontrei **${totalStale} candidatos** que estão parados há mais de 3 dias em **${report.groups.length} vagas**. No painel ao lado você pode ver o detalhamento e tomar ações rápidas para cada candidato.\n\nQuer que eu priorize alguma vaga específica ou sugira as próximas ações?`
               : `Ótimo! Todos os candidatos estão fluindo bem pelo pipeline. Nenhum candidato está parado há mais de 3 dias.\n\nPosso ajudar com outra coisa?`,
             timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
@@ -388,8 +388,8 @@ export function useChatPageCore() {
       }
     }
 
-    window.addEventListener('lia-open-pipeline', handleOpenPipeline as EventListener)
-    return () => window.removeEventListener('lia-open-pipeline', handleOpenPipeline as EventListener)
+    window.addEventListener('lia-open-pipeline', handleOpenPipeline as unknown as EventListener)
+    return () => window.removeEventListener('lia-open-pipeline', handleOpenPipeline as unknown as EventListener)
   }, [])
 
   // Escuta evento de "Nova Tarefa" do botão do Painel de Controle
@@ -638,12 +638,14 @@ Você pode me contar livremente ou colar uma descrição de vaga existente que e
   // Extracted handlers
   const { handleSmartSearchSubmit, handleSmartSearchCancel, handleSendMessage, handlePipelineAction } = useChatPageHandlers({
     input, setInput, isLoading, setIsLoading, messages, setMessages,
-    searchFlow: searchFlow as Record<string, unknown> & { flowState: string; startSearch: (q: string, e: ParsedEntities, m?: SearchMode, meta?: SearchMetadata) => Promise<void>; reset: () => void; submitProfile: (profile: string) => void },
+    searchFlow: searchFlow as unknown as Record<string, unknown> & { flowState: string; startSearch: (q: string, e: ParsedEntities, m?: SearchMode, meta?: SearchMetadata) => Promise<void>; reset: () => void; submitProfile: (profile: string) => void },
     activeSearchFilters, setIsSmartSearchMode, setSmartSearchQuery, setSearchPreviewData,
-    setHasSearchResults, setContextData, setIsPanelOpen, contextData, attachedFiles, setAttachedFiles,
-    audioBlob, setAudioBlob, setChatTitle, setFileAnalysisContext, fileAnalysisContext,
+    setHasSearchResults, setContextData: setContextData as unknown as (v: Record<string, unknown> | null) => void, setIsPanelOpen, contextData: contextData as unknown as Record<string, unknown> | null, attachedFiles, setAttachedFiles,
+    audioBlob, setAudioBlob, setChatTitle, setFileAnalysisContext: setFileAnalysisContext as unknown as (v: Record<string, unknown> | null) => void, fileAnalysisContext: fileAnalysisContext as unknown as Record<string, unknown> | null,
     wsIsConnected, wsSendMessage, wsClearTokens, wsStreamingModeRef,
-    selectedCandidateForScheduling, setSelectedCandidateForScheduling, setIsSchedulingModalOpen,
+    selectedCandidateForScheduling: selectedCandidateForScheduling as unknown as Record<string, unknown> | null,
+    setSelectedCandidateForScheduling: setSelectedCandidateForScheduling as unknown as (v: Record<string, unknown> | null) => void,
+    setIsSchedulingModalOpen,
   })
 
 

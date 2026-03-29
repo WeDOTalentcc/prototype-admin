@@ -559,12 +559,13 @@ export async function handleCompensationMessage(
     const isHighConfidence = interpretation.confidence >= MIN_CONFIDENCE
 
     if (isHighConfidence && (interpretation.action === 'confirm' || interpretation.action === 'advance_stage' || interpretation.should_advance)) {
-      if (interpretation.extracted_entities && Object.keys(interpretation.extracted_entities).length > 0) {
-        if (interpretation.extracted_entities.salario_min) {
-          ctx.setSalaryInfo(prev => ({ ...prev, minSalary: interpretation.extracted_entities!.salario_min.toString() }))
+      const entities = interpretation.extracted_entities as Record<string, unknown> | undefined
+      if (entities && Object.keys(entities).length > 0) {
+        if (entities.salario_min) {
+          ctx.setSalaryInfo(prev => ({ ...prev, minSalary: String(entities.salario_min) }))
         }
-        if (interpretation.extracted_entities.salario_max) {
-          ctx.setSalaryInfo(prev => ({ ...prev, maxSalary: interpretation.extracted_entities!.salario_max.toString() }))
+        if (entities.salario_max) {
+          ctx.setSalaryInfo(prev => ({ ...prev, maxSalary: String(entities.salario_max) }))
         }
       }
       const minSal = parseInt(ctx.salaryInfo.minSalary) || 0
@@ -603,9 +604,10 @@ export async function handleCompensationMessage(
     }
 
     if (isHighConfidence && (interpretation.action === 'update_field' || interpretation.action === 'provide_data')) {
-      if (interpretation.extracted_entities) {
-        const newMin = interpretation.extracted_entities.salario_min
-        const newMax = interpretation.extracted_entities.salario_max
+      const ents = interpretation.extracted_entities as Record<string, unknown> | undefined
+      if (ents) {
+        const newMin = ents.salario_min as number | undefined
+        const newMax = ents.salario_max as number | undefined
         if (newMin || newMax) {
           const minVal = newMin || parseInt(ctx.salaryInfo.minSalary) || 0
           const maxVal = newMax || parseInt(ctx.salaryInfo.maxSalary) || 0
