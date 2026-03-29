@@ -285,7 +285,7 @@
               onSetShowMoreIdeas={setShowMoreIdeas}
               onSetDisplayedText={setDisplayedText}
               onSetInternalJobCreationMode={setInternalJobCreationMode}
-              onSetPendingDraftData={setPendingDraftData as (data: any) => void}
+              onSetPendingDraftData={setPendingDraftData as (data: Record<string, unknown> | null) => void}
               onSetAwaitingDraftChoice={setAwaitingDraftChoice}
               onSetDynamicInitialMessage={setDynamicInitialMessage}
             />
@@ -426,7 +426,7 @@
               onShowAddCompetencyModal={() => setShowAddCompetencyModal(true)}
               onEditCompetency={setEditingCompetency}
               salaryInfo={salaryInfo}
-              salaryBenchmark={salaryBenchmark as any}
+              salaryBenchmark={salaryBenchmark as Record<string, unknown>}
               isLoadingBenchmark={isLoadingBenchmark}
               salaryPanelExpanded={salaryPanelExpanded}
               onSalaryChange={(info) => {
@@ -441,13 +441,13 @@
               onExpandEditSalary={() => setSalaryPanelExpanded(!salaryPanelExpanded)}
               onShowAddBenefitModal={() => setShowAddBenefitModal(true)}
               wsiCandidates={wsiCandidates}
-              companyDefaultQuestions={companyDefaultQuestions as any}
+              companyDefaultQuestions={companyDefaultQuestions as Array<Record<string, unknown>>}
               isGeneratingWSI={isGeneratingWSI}
               showCustomQuestionForm={showCustomQuestionForm}
               customQuestionText={customQuestionText}
               customQuestionType={customQuestionType}
               customQuestionRequired={customQuestionRequired}
-              onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as any}
+              onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as (questions: Array<Record<string, unknown>>) => void}
               onToggleQuestionSelection={toggleWSIQuestionSelection}
               onDeleteQuestion={deleteWSIQuestion}
               onUpdateExpectedAnswer={updateWSIQuestionExpectedAnswer}

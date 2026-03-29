@@ -40,17 +40,17 @@ import {
 } from "lucide-react"
 
 interface CandidatePageProps {
-  candidate: any
+  candidate: Record<string, unknown>
   isOpen: boolean
   onClose: () => void
   onBackToKanban: () => void
-  onSendEmail?: (candidate: any) => void
-  onSendWhatsApp?: (candidate: any) => void
-  onSendAgendamento?: (candidate: any) => void
-  onWSIScreening?: (candidate: any) => void
-  onAddToVacancy?: (candidate: any) => void
-  onAddToList?: (candidate: any) => void
-  onSendFeedback?: (candidate: any) => void
+  onSendEmail?: (candidate: Record<string, unknown>) => void
+  onSendWhatsApp?: (candidate: Record<string, unknown>) => void
+  onSendAgendamento?: (candidate: Record<string, unknown>) => void
+  onWSIScreening?: (candidate: Record<string, unknown>) => void
+  onAddToVacancy?: (candidate: Record<string, unknown>) => void
+  onAddToList?: (candidate: Record<string, unknown>) => void
+  onSendFeedback?: (candidate: Record<string, unknown>) => void
 }
 
 export function CandidatePage({
@@ -123,8 +123,9 @@ export function CandidatePage({
   const liaScore = candidate.liaAnalysis?.score || 92
   const fitScore = candidate.liaAnalysis?.fitScore || 95
 
-  const experiences = (candidate as any).workHistory || (candidate as any).work_history || (candidate as any).experiences || ((candidate as any).additional_data as any)?.work_history || ((candidate as any).additional_data as any)?.experiences || []
-  const education = (candidate as any).education || ((candidate as any).additional_data as any)?.education || []
+  const additionalData = candidate.additional_data as Record<string, unknown> | undefined
+  const experiences = candidate.workHistory || candidate.work_history || candidate.experiences || additionalData?.work_history || additionalData?.experiences || []
+  const education = candidate.education || additionalData?.education || []
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-gray-900 z-30 overflow-hidden flex flex-col">
@@ -360,7 +361,7 @@ export function CandidatePage({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as string)}
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-b-2 text-gray-400 border-gray-400'
@@ -769,7 +770,7 @@ export function CandidatePage({
                     {/* Opinions List */}
                     {!isLoadingHistory && opinionsHistory.length > 0 && (
                       <div className="space-y-3">
-                        {opinionsHistory.map((opinion: any) => {
+                        {opinionsHistory.map((opinion: Record<string, unknown>) => {
                           const isExpanded = expandedOpinionId === opinion.id
                           const isWsiOpinion = opinion.opinion_type === 'wsi'
                           const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
@@ -1021,7 +1022,7 @@ export function CandidatePage({
                     {/* Analyses List */}
                     {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
                       <div className="space-y-3">
-                        {savedAnalyses.analyses.map((analysis: any) => {
+                        {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
                           const analysisLabels: Record<string, string> = {
                             'bullet_points': 'Pontos-chave',
                             'short_paragraph': 'Resumo',

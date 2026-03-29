@@ -48,29 +48,29 @@ import { CandidateActivitiesTab } from "@/components/candidate-preview/Candidate
 import { CandidatePreviewProfileTab } from "@/components/candidate-preview/CandidatePreviewProfileTab"
 
 interface CandidatePreviewProps {
-  candidate: any
+  candidate: Record<string, unknown>
   isOpen: boolean
   onClose: () => void
   isMaximized?: boolean
   onToggleMaximize?: () => void
-  candidates?: any[]
+  candidates?: Record<string, unknown>[]
   currentIndex?: number
   onNavigateCandidate?: (index: number) => void
-  onOpenFullPage?: (candidate: any) => void
-  onScheduleInterview?: (candidate: any) => void
-  onAddToVacancy?: (candidate: any) => void
+  onOpenFullPage?: (candidate: Record<string, unknown>) => void
+  onScheduleInterview?: (candidate: Record<string, unknown>) => void
+  onAddToVacancy?: (candidate: Record<string, unknown>) => void
   onToggleFavorite?: (candidateId: string) => void
-  onWSIScreening?: (candidate: any) => void
-  onOpenTriagemDetails?: (candidate: any) => void
+  onWSIScreening?: (candidate: Record<string, unknown>) => void
+  onOpenTriagemDetails?: (candidate: Record<string, unknown>) => void
   isFavorite?: boolean
-  onSendEmail?: (candidate: any) => void
-  onSendWhatsApp?: (candidate: any) => void  
-  onSendTriagem?: (candidate: any) => void
-  onSendAgendamento?: (candidate: any) => void
-  onSendFeedback?: (candidate: any) => void
-  onContact?: (candidate: any, channel?: 'email' | 'whatsapp') => void
-  onSchedule?: (candidate: any) => void
-  onAddToList?: (candidate: any) => void
+  onSendEmail?: (candidate: Record<string, unknown>) => void
+  onSendWhatsApp?: (candidate: Record<string, unknown>) => void  
+  onSendTriagem?: (candidate: Record<string, unknown>) => void
+  onSendAgendamento?: (candidate: Record<string, unknown>) => void
+  onSendFeedback?: (candidate: Record<string, unknown>) => void
+  onContact?: (candidate: Record<string, unknown>, channel?: 'email' | 'whatsapp') => void
+  onSchedule?: (candidate: Record<string, unknown>) => void
+  onAddToList?: (candidate: Record<string, unknown>) => void
   jobId?: string
 }
 
@@ -587,7 +587,7 @@ export function CandidatePreview({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as string)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-b-2 border-gray-800 text-gray-800 dark:text-gray-200 font-semibold'
@@ -731,7 +731,7 @@ export function CandidatePreview({
                 {/* Opinions List - Full History */}
                 {!isLoadingHistory && opinionsHistory.length > 0 && (
                   <div className="space-y-3">
-                    {opinionsHistory.map((opinion: any) => (
+                    {opinionsHistory.map((opinion: Record<string, unknown>) => (
                       <div key={opinion.id} className="relative">
                         {!opinion.is_current && (
                           <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-gray-400 z-10">
@@ -795,7 +795,7 @@ export function CandidatePreview({
                 {/* Analyses List with Expandable Cards */}
                 {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
                   <div className="space-y-3">
-                    {savedAnalyses.analyses.map((analysis: any) => {
+                    {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
                       const analysisLabels: Record<string, string> = {
                         'bullet_points': 'Pontos-chave',
                         'short_paragraph': 'Resumo',

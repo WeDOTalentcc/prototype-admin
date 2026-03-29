@@ -41,15 +41,15 @@ function getBigFiveLabelPTBR(trait: string | null | undefined): string {
 }
 
 interface ScreeningConfigManagerProps {
-  job: any
-  onJobUpdate?: (updatedJob: any) => void
-  onFormUpdate?: (updates: any) => void
+  job: Record<string, unknown>
+  onJobUpdate?: (updatedJob: Record<string, unknown>) => void
+  onFormUpdate?: (updates: Record<string, unknown>) => void
 }
 
 interface ScreeningConfigContentProps {
-  job: any
-  onJobUpdate?: (updatedJob: any) => void
-  onFormUpdate?: (updates: any) => void
+  job: Record<string, unknown>
+  onJobUpdate?: (updatedJob: Record<string, unknown>) => void
+  onFormUpdate?: (updates: Record<string, unknown>) => void
   activeSection: 'configuracoes' | 'descricao' | 'perguntas'
 }
 
