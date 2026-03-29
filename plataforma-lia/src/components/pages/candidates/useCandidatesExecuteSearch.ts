@@ -9,6 +9,65 @@ import type { SearchAnalytics } from "@/components/proactive-insight-card"
 
 type SearchSource = 'local' | 'global' | 'hybrid'
 
+type RawExperience = {
+  company_info?: { name?: string; location?: string; is_startup?: boolean }
+  company_roles?: Array<{ title?: string; start_date?: string; end_date?: string; description?: string }>
+  company?: string
+  title?: string
+  start_date?: string
+  end_date?: string
+  duration?: string
+  location?: string
+  description?: string
+}
+
+type RawEducation = {
+  school?: string
+  degree?: string
+  field_of_study?: string
+  start_date?: string
+  end_date?: string
+}
+
+type RawCandidate = {
+  id?: string
+  name?: string
+  email?: string
+  phone?: string
+  mobile_phone?: string
+  headline?: string
+  current_title?: string
+  current_company?: string
+  location?: string
+  location_city?: string
+  skills?: string[]
+  seniority_level?: string
+  years_experience?: number
+  total_experience_years?: number
+  avatar_url?: string
+  picture_url?: string
+  linkedin_url?: string
+  match_score?: number
+  match_reasoning?: string
+  match_summary?: string
+  score?: number
+  experiences?: RawExperience[]
+  work_history?: RawExperience[]
+  education?: RawEducation[]
+  educations?: RawEducation[]
+  source?: string
+  pearch_profile_id?: string
+  has_email?: boolean
+  has_phone?: boolean
+  is_opentowork?: boolean
+  is_decision_maker?: boolean
+  is_top_universities?: boolean
+  is_startup?: boolean
+  company_info?: { is_startup?: boolean }
+  expertise?: string[]
+  outreach_message?: string
+}
+
 type ChatMessage = {
   id: string
   type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
@@ -20,11 +79,11 @@ type ChatMessage = {
     query: string
   }
   analytics?: SearchAnalytics
-  candidates?: any[]
+  candidates?: Candidate[]
   metadata?: Record<string, unknown>
 }
 
-export function mapCandidateToInternal(c: any): Candidate {
+export function mapCandidateToInternal(c: RawCandidate): Candidate {
   const candidateSource = c.source || 'pearch'
   return {
     id: c.id || `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -56,7 +115,7 @@ export function mapCandidateToInternal(c: any): Candidate {
     linkedin: c.linkedin_url || '',
     avatar: c.avatar_url || c.picture_url,
     experiences: c.experiences || c.work_history || [],
-    workHistory: (c.experiences || c.work_history || []).map((exp: any) => ({
+    workHistory: (c.experiences || c.work_history || []).map((exp: RawExperience) => ({
       company: exp.company_info?.name || exp.company || '',
       title: exp.company_roles?.[0]?.title || exp.title || '',
       startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
@@ -65,7 +124,7 @@ export function mapCandidateToInternal(c: any): Candidate {
       location: exp.company_info?.location || exp.location || '',
       description: exp.company_roles?.[0]?.description || exp.description || ''
     })),
-    education: (c.education || c.educations || []).map((edu: any) => ({
+    education: (c.education || c.educations || []).map((edu: RawEducation) => ({
       school: edu.school || '',
       degree: edu.degree || '',
       field_of_study: edu.field_of_study || '',
@@ -105,10 +164,10 @@ export interface ExecuteSearchDeps {
   }
   searchThreadId: string | undefined
   hideViewedCandidates: { filterCandidates: (candidates: Candidate[]) => Candidate[] }
-  talentFunnel: { addToHistory: (item: any) => void }
+  talentFunnel: { addToHistory: (item: Record<string, unknown>) => void }
   setIsLoading: (v: boolean) => void
   setIsSearchActive: (v: boolean) => void
-  setSearchResults: (fn: (prev: any) => any) => void
+  setSearchResults: (fn: (prev: Record<string, unknown>) => Record<string, unknown>) => void
   setCreditsRemaining: (v: number) => void
   setCandidates: (v: Candidate[]) => void
   setHasSearchResults: (v: boolean) => void
@@ -118,8 +177,8 @@ export interface ExecuteSearchDeps {
   setCreditsUsedInSearch: (v: number) => void
   setShowSearchResults: (v: boolean) => void
   setDisplayedResultsCount: (v: number) => void
-  setLastSearchEntities: (v: any) => void
-  setLastSearchMetadata: (v: any) => void
+  setLastSearchEntities: (v: ParsedEntities | null | undefined) => void
+  setLastSearchMetadata: (v: SearchMetadata | undefined) => void
   setLastSearchUsedPearch: (v: boolean) => void
   setSearchExecutionId: (fn: (prev: number) => number) => void
   setCurrentSearchSource: (v: string) => void
@@ -143,7 +202,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
     deps.setIsLoading(true)
     deps.setIsSearchActive(true)
 
-    deps.setSearchResults((prev: any) => ({
+    deps.setSearchResults((prev) => ({
       ...prev,
       isLoading: true,
       query: query
@@ -181,7 +240,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             creditsUsed = data.credits_used
             if (data.credits_remaining !== undefined) deps.setCreditsRemaining(data.credits_remaining)
             if (data.candidates?.length > 0) {
-              mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+              mappedCandidates = data.candidates.map((c: RawCandidate) => mapCandidateToInternal(c))
             }
           }
         }
@@ -204,7 +263,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
           creditsUsed = data.credits_used
           if (data.credits_remaining !== undefined) deps.setCreditsRemaining(data.credits_remaining)
           if (data.candidates?.length > 0) {
-            mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+            mappedCandidates = data.candidates.map((c: RawCandidate) => mapCandidateToInternal(c))
           }
         }
       } else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
@@ -226,7 +285,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
           creditsUsed = data.credits_used
           if (data.credits_remaining !== undefined) deps.setCreditsRemaining(data.credits_remaining)
           if (data.candidates?.length > 0) {
-            mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+            mappedCandidates = data.candidates.map((c: RawCandidate) => mapCandidateToInternal(c))
           }
         }
       } else if (shouldUsePearch || shouldUseHybrid) {
@@ -300,7 +359,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
               linkedin: c.linkedin_url || '',
               avatar: c.avatar_url,
               experiences: c.experiences || c.work_history || [],
-              workHistory: (c.experiences || c.work_history || []).map((exp: any) => ({
+              workHistory: (c.experiences || c.work_history || []).map((exp: RawExperience) => ({
                 company: exp.company_info?.name || exp.company || '',
                 title: exp.company_roles?.[0]?.title || exp.title || '',
                 startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
@@ -309,7 +368,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
                 location: exp.company_info?.location || exp.location || '',
                 description: exp.company_roles?.[0]?.description || exp.description || ''
               })),
-              education: (c.education || c.educations || []).map((edu: any) => ({
+              education: (c.education || c.educations || []).map((edu: RawEducation) => ({
                 school: edu.school || '',
                 degree: edu.degree || '',
                 field_of_study: edu.field_of_study || '',
@@ -385,7 +444,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
             linkedin: c.linkedin_url || '',
             education: c.education || c.educations || [],
-            avatar: c.avatar_url || (c as any).picture_url,
+            avatar: c.avatar_url || c.picture_url,
             liaAnalysis: {
               score: c.lia_score || 75,
               strengths: c.lia_insights?.strengths || [],
@@ -425,7 +484,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
 
       deps.talentFunnel.addToHistory({
         query,
-        mode: (mode || 'natural') as any,
+        mode: (mode || 'natural') as SearchMode,
         source: deps.searchSource,
         entities,
         metadata,
@@ -471,7 +530,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
       deps.setShowSearchResults(true)
       deps.setDisplayedResultsCount(10)
 
-      deps.setSearchResults((prev: any) => ({
+      deps.setSearchResults((prev) => ({
         local: localCandidates,
         global: globalCandidates,
         localCount: localCount > 0 ? localCount : localCandidates.length,
@@ -564,7 +623,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
         }
       }
     } catch (error) {
-      deps.setSearchResults((prev: any) => ({
+      deps.setSearchResults((prev) => ({
         ...prev,
         isLoading: false,
         query: ''

@@ -37,6 +37,19 @@ import {
 } from "lucide-react"
 import { textStyles, badgeStyles, formatScorePercent } from "@/lib/design-tokens"
 import { getUrgencyLevel } from "@/components/kanban/utils/status-utils"
+import type { CandidateLocal } from "@/services/lia-api"
+
+type QueryInsight = {
+  match_level?: string
+  subquery?: string
+}
+
+type KanbanCandidate = CandidateLocal & {
+  pearch_insights?: {
+    overall_summary?: string
+    query_insights?: QueryInsight[]
+  }
+}
 
 interface DynamicStageItem {
   id: string
@@ -53,7 +66,7 @@ interface SaturationData {
 }
 
 interface PaginatedResult {
-  candidates: any[]
+  candidates: KanbanCandidate[]
   total: number
   totalPages: number
 }
@@ -97,55 +110,55 @@ interface KanbanTableViewProps {
 
   // Candidate actions
   onColumnResize: (columnId: string, width: number) => void
-  onCandidateClick: (candidate: any) => void
+  onCandidateClick: (candidate: KanbanCandidate) => void
   onStatusChange: (candidateId: string, newSubStatus: string, stage: string, jobVacancyId?: string) => Promise<boolean>
-  onTransitionRequest: (candidate: any, fromStage: string, toStage: string) => void
-  onTransitionRequired: (candidates: any[], fromStage: string, toStage: string) => void
+  onTransitionRequest: (candidate: KanbanCandidate, fromStage: string, toStage: string) => void
+  onTransitionRequired: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
 
   // Callbacks para células customizadas
-  calculateNotaLiaGeral: (candidate: any) => number | null
-  getLiaAlerts: (candidate: any) => any[]
+  calculateNotaLiaGeral: (candidate: KanbanCandidate) => number | null
+  getLiaAlerts: (candidate: KanbanCandidate) => Record<string, unknown>[]
   viewedCandidateIds: Set<string>
-  onOpenTriagem: (candidate: any) => void
-  onOpenAnalysis: (candidate: any) => void
-  onSetSelectedCandidateForModal: (candidate: any) => void
+  onOpenTriagem: (candidate: KanbanCandidate) => void
+  onOpenAnalysis: (candidate: KanbanCandidate) => void
+  onSetSelectedCandidateForModal: (candidate: KanbanCandidate) => void
   onSetActiveModal: (modal: string) => void
   onSetShowBigFiveModal: (show: boolean) => void
-  onSetScoreModalCandidate: (candidate: any) => void
-  getDataRequestForCandidate: (candidateId: string) => any
+  onSetScoreModalCandidate: (candidate: KanbanCandidate) => void
+  getDataRequestForCandidate: (candidateId: string) => Record<string, unknown> | null | undefined
   onDataRequestResend: (candidateId: string) => void
   onDataRequestViewDetails: (candidateId: string) => void
-  onApproveFromScreening: (candidate: any) => void
-  onRejectFromScreening: (candidate: any) => void
-  onApproveCandidate: (candidate: any) => void
-  onRejectCandidate: (candidate: any) => void
-  openDecisionFlowModal: (candidate: any, action: 'approve' | 'reject') => void
+  onApproveFromScreening: (candidate: KanbanCandidate) => void
+  onRejectFromScreening: (candidate: KanbanCandidate) => void
+  onApproveCandidate: (candidate: KanbanCandidate) => void
+  onRejectCandidate: (candidate: KanbanCandidate) => void
+  openDecisionFlowModal: (candidate: KanbanCandidate, action: 'approve' | 'reject') => void
 
   // Interview management
   onSetTransitionInitialPrompt: (prompt: string) => void
   onSetTransitionAllowStageSelection: (allow: boolean) => void
   onSetTransitionInterviewAlert: (alert: { name: string; date: string }) => void
-  openTransition: (candidates: any[], fromStage: string, toStage: string) => void
+  openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
 
   // Preview panel
   isPreviewOpen: boolean
-  previewCandidate: any
+  previewCandidate: KanbanCandidate | null | undefined
   isPreviewMaximized: boolean
   onClosePreview: () => void
   onTogglePreviewMaximize: () => void
   onNavigateCandidate: (index: number) => void
-  onCandidatePageOpen: (candidate: any) => void
-  onScheduleInterview: (candidate: any) => void
-  onAddToVacancy: (candidate: any) => void
-  onToggleFavorite: (candidate: any) => void
+  onCandidatePageOpen: (candidate: KanbanCandidate) => void
+  onScheduleInterview: (candidate: KanbanCandidate) => void
+  onAddToVacancy: (candidate: KanbanCandidate) => void
+  onToggleFavorite: (candidate: KanbanCandidate) => void
   favoriteCandidates: Set<string>
-  onSendWSIInvite: (candidate: any) => void
-  onSendEmail: (candidate: any) => void
-  onSendWhatsApp: (candidate: any) => void
-  onSendTriagem: (candidate: any) => void
-  onSendAgendamento: (candidate: any) => void
-  onSendFeedback: (candidate: any) => void
-  candidatesData: Record<string, any[]>
+  onSendWSIInvite: (candidate: KanbanCandidate) => void
+  onSendEmail: (candidate: KanbanCandidate) => void
+  onSendWhatsApp: (candidate: KanbanCandidate) => void
+  onSendTriagem: (candidate: KanbanCandidate) => void
+  onSendAgendamento: (candidate: KanbanCandidate) => void
+  onSendFeedback: (candidate: KanbanCandidate) => void
+  candidatesData: Record<string, KanbanCandidate[]>
 }
 
 const CandidatePreviewDynamic = React.lazy(() =>
@@ -431,7 +444,7 @@ export function KanbanTableView({
               }
               return null
             }}
-            renderCustomCell={(candidate: any, columnId: string) => {
+            renderCustomCell={(candidate: KanbanCandidate, columnId: string) => {
               const ranking = calculateNotaLiaGeral(candidate)
               const alerts = getLiaAlerts(candidate)
               const urgency = getUrgencyLevel(ranking)
@@ -880,7 +893,7 @@ export function KanbanTableView({
                   }
                   return (
                     <div className="flex flex-col gap-0.5">
-                      {queryInsightsData.slice(0, 2).map((insight: any, idx: number) => (
+                      {queryInsightsData.slice(0, 2).map((insight: QueryInsight, idx: number) => (
                         <div key={idx} className="flex items-center gap-1">
                           <Badge className={`${textStyles.caption} !text-micro px-1 py-0 ${
                             insight.match_level === 'Exceeds' ? badgeStyles.success :
@@ -1085,11 +1098,11 @@ export function KanbanTableView({
                   return null
               }
             }}
-            getNeedsAction={(candidate: any) => {
+            getNeedsAction={(candidate: KanbanCandidate) => {
               const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
               return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || candidate.status === 'triado_aprovado'
             }}
-            renderActions={(candidate: any) => {
+            renderActions={(candidate: KanbanCandidate) => {
               const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
               const showApproveReject = stage === 'funil' || stage === 'triagem'
               return (
@@ -1167,7 +1180,7 @@ export function KanbanTableView({
                 </div>
               )
             }}
-            getStageBorderColor={(candidate: any) => {
+            getStageBorderColor={(candidate: KanbanCandidate) => {
               const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
               const stageColors: Record<string, string> = {
                 'funil': 'var(--gray-600)',
@@ -1277,18 +1290,16 @@ export function KanbanTableView({
             isMaximized={isPreviewMaximized}
             onToggleMaximize={onTogglePreviewMaximize}
             candidates={(() => {
-              const data = candidatesData as Record<string, any[]>
-              const currentColumn = Object.keys(data).find(col =>
-                data[col].some((c: any) => c.id === previewCandidate?.id)
+              const currentColumn = Object.keys(candidatesData).find(col =>
+                candidatesData[col].some((c) => c.id === previewCandidate?.id)
               )
-              return currentColumn ? data[currentColumn] : []
+              return currentColumn ? candidatesData[currentColumn] : []
             })()}
             currentIndex={(() => {
-              const data = candidatesData as Record<string, any[]>
-              const currentColumn = Object.keys(data).find(col =>
-                data[col].some((c: any) => c.id === previewCandidate?.id)
+              const currentColumn = Object.keys(candidatesData).find(col =>
+                candidatesData[col].some((c) => c.id === previewCandidate?.id)
               )
-              return currentColumn ? data[currentColumn].findIndex((c: any) => c.id === previewCandidate?.id) : 0
+              return currentColumn ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id) : 0
             })()}
             onNavigateCandidate={onNavigateCandidate}
             onOpenFullPage={onCandidatePageOpen}

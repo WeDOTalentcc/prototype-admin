@@ -57,13 +57,47 @@ import {
 import { LiaFieldKey } from '@/hooks/use-company-lia-instructions'
 import { textStyles } from '@/lib/design-tokens'
 
+interface CompanyData {
+  logo?: string
+  name?: string
+  tradeName?: string
+  cnpj?: string
+  industry?: string
+  website?: string
+  linkedin_url?: string
+  email?: string
+  phone?: string
+  address?: string
+  mission?: string
+  vision?: string
+  values?: string[]
+  coreCompetencies?: string[]
+  employee_count?: string
+  company_size?: string
+  founded_year?: string
+  work_model?: string
+  employment_types?: string[]
+  seniority_levels?: string[]
+  dei_initiatives?: string
+  sustainability?: string
+  social_impact?: string
+  openness_score?: number
+  conscientiousness_score?: number
+  extraversion_score?: number
+  agreeableness_score?: number
+  stability_score?: number
+  lia_field_toggles?: Record<string, boolean>
+  lia_instructions?: Record<string, string>
+  [key: string]: unknown
+}
+
 interface CompanyDataSectionProps {
-  companyData: any
-  setCompanyData: (fn: (prev: any) => any) => void
+  companyData: CompanyData
+  setCompanyData: (fn: (prev: CompanyData) => CompanyData) => void
   isEditingCompanyData: boolean
   setIsEditingCompanyData: (value: boolean) => void
-  companyDataBackup: any
-  setCompanyDataBackup: (data: any) => void
+  companyDataBackup: CompanyData
+  setCompanyDataBackup: (data: CompanyData) => void
   saveCompanyData: () => Promise<void>
   saving: boolean
   loading: boolean
@@ -81,7 +115,7 @@ interface CompanyDataSectionProps {
   setExpandedCategories: (fn: (prev: Record<string, boolean>) => Record<string, boolean>) => void
   addTechToCategory: (category: string, tech: string) => void
   removeTechFromCategory: (category: string, tech: string) => void
-  TECH_STACK_CATEGORIES: readonly any[]
+  TECH_STACK_CATEGORIES: readonly string[]
 }
 
 const inputClass = (disabled: boolean) => 
@@ -267,7 +301,7 @@ export function CompanyDataSection({
             <input
               type="text"
               value={companyData.name}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, name: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={inputClass(!isEditingCompanyData)}
               placeholder="Nome legal da empresa"
@@ -289,7 +323,7 @@ export function CompanyDataSection({
             <input
               type="text"
               value={companyData.tradeName || ''}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, tradeName: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, tradeName: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={inputClass(!isEditingCompanyData)}
               placeholder="Nome comercial da empresa"
@@ -306,7 +340,7 @@ export function CompanyDataSection({
             <input
               type="text"
               value={companyData.cnpj || ''}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, cnpj: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, cnpj: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={inputClass(!isEditingCompanyData)}
               placeholder="00.000.000/0000-00"
@@ -327,7 +361,7 @@ export function CompanyDataSection({
           >
             <select
               value={companyData.industry || ''}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, industry: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, industry: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={selectClass(!isEditingCompanyData)}
             >
@@ -367,7 +401,7 @@ export function CompanyDataSection({
               <input
                 type="url"
                 value={companyData.website || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, website: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, website: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://www.empresa.com.br"
@@ -391,7 +425,7 @@ export function CompanyDataSection({
               <input
                 type="url"
                 value={companyData.linkedin_url || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, linkedin_url: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, linkedin_url: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://linkedin.com/company/..."
@@ -410,7 +444,7 @@ export function CompanyDataSection({
               <input
                 type="email"
                 value={companyData.email || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, email: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="contato@empresa.com.br"
@@ -429,7 +463,7 @@ export function CompanyDataSection({
               <input
                 type="tel"
                 value={companyData.phone || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, phone: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="(11) 9999-9999"
@@ -455,7 +489,7 @@ export function CompanyDataSection({
               <input
                 type="text"
                 value={companyData.address || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, address: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, address: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="Endereço completo"
@@ -541,7 +575,7 @@ export function CompanyDataSection({
           >
             <textarea
               value={companyData.mission || ''}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, mission: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, mission: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={textareaClass(!isEditingCompanyData)}
               rows={2}
@@ -563,7 +597,7 @@ export function CompanyDataSection({
           >
             <textarea
               value={companyData.vision || ''}
-              onChange={(e) => setCompanyData((prev: any) => ({ ...prev, vision: e.target.value }))}
+              onChange={(e) => setCompanyData((prev) => ({ ...prev, vision: e.target.value }))}
               disabled={!isEditingCompanyData}
               className={textareaClass(!isEditingCompanyData)}
               rows={2}
@@ -590,9 +624,9 @@ export function CompanyDataSection({
                     {value}
                     {isEditingCompanyData && (
                       <button
-                        onClick={() => setCompanyData((prev: any) => ({
+                        onClick={() => setCompanyData((prev) => ({
                           ...prev,
-                          values: prev.values?.filter((_: any, i: number) => i !== idx),
+                          values: prev.values?.filter((_: string, i: number) => i !== idx),
                         }))}
                         className="ml-1 hover:text-status-error"
                       >×</button>
@@ -608,7 +642,7 @@ export function CompanyDataSection({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.currentTarget.value.trim()) {
                     e.preventDefault()
-                    setCompanyData((prev: any) => ({
+                    setCompanyData((prev) => ({
                       ...prev,
                       values: [...(prev.values || []), e.currentTarget.value.trim()],
                     }))
@@ -638,9 +672,9 @@ export function CompanyDataSection({
                     {comp}
                     {isEditingCompanyData && (
                       <button
-                        onClick={() => setCompanyData((prev: any) => ({
+                        onClick={() => setCompanyData((prev) => ({
                           ...prev,
-                          coreCompetencies: prev.coreCompetencies?.filter((_: any, i: number) => i !== idx),
+                          coreCompetencies: prev.coreCompetencies?.filter((_: string, i: number) => i !== idx),
                         }))}
                         className="ml-1 hover:text-status-error"
                       >×</button>
@@ -656,7 +690,7 @@ export function CompanyDataSection({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.currentTarget.value.trim()) {
                     e.preventDefault()
-                    setCompanyData((prev: any) => ({
+                    setCompanyData((prev) => ({
                       ...prev,
                       coreCompetencies: [...(prev.coreCompetencies || []), e.currentTarget.value.trim()],
                     }))
@@ -688,7 +722,7 @@ export function CompanyDataSection({
               <input
                 type="number"
                 value={companyData.employee_count || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({
+                onChange={(e) => setCompanyData((prev) => ({
                   ...prev,
                   employee_count: parseInt(e.target.value) || undefined,
                 }))}
@@ -710,7 +744,7 @@ export function CompanyDataSection({
               <Building2 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <select
                 value={companyData.company_size || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, company_size: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, company_size: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={selectClass(!isEditingCompanyData)}
               >
@@ -736,7 +770,7 @@ export function CompanyDataSection({
               <input
                 type="number"
                 value={companyData.founded_year || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({
+                onChange={(e) => setCompanyData((prev) => ({
                   ...prev,
                   founded_year: parseInt(e.target.value) || undefined,
                 }))}
@@ -772,7 +806,7 @@ export function CompanyDataSection({
               <Briefcase className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <select
                 value={companyData.work_model || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, work_model: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, work_model: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={selectClass(!isEditingCompanyData)}
               >
@@ -811,7 +845,7 @@ export function CompanyDataSection({
                       const updated = isSelected
                         ? current.filter((t: string) => t !== type)
                         : [...current, type]
-                      setCompanyData((prev: any) => ({ ...prev, employment_types: updated }))
+                      setCompanyData((prev) => ({ ...prev, employment_types: updated }))
                     }}
                     className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors ${
                       isSelected
@@ -847,9 +881,9 @@ export function CompanyDataSection({
                     {level}
                     {isEditingCompanyData && (
                       <button
-                        onClick={() => setCompanyData((prev: any) => ({
+                        onClick={() => setCompanyData((prev) => ({
                           ...prev,
-                          seniority_levels: (prev.seniority_levels || []).filter((_: any, i: number) => i !== idx),
+                          seniority_levels: (prev.seniority_levels || []).filter((_: string, i: number) => i !== idx),
                         }))}
                         className="ml-1 hover:text-status-error"
                       >×</button>
@@ -867,7 +901,7 @@ export function CompanyDataSection({
                       disabled={!isEditingCompanyData}
                       onClick={() => {
                         if (!isEditingCompanyData) return
-                        setCompanyData((prev: any) => ({
+                        setCompanyData((prev) => ({
                           ...prev,
                           seniority_levels: [...(prev.seniority_levels || []), level],
                         }))
@@ -906,7 +940,7 @@ export function CompanyDataSection({
               <Users className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
               <textarea
                 value={companyData.dei_initiatives || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, dei_initiatives: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, dei_initiatives: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={textareaClass(!isEditingCompanyData)}
                 rows={2}
@@ -931,7 +965,7 @@ export function CompanyDataSection({
               <Leaf className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
               <textarea
                 value={companyData.sustainability || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, sustainability: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, sustainability: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={textareaClass(!isEditingCompanyData)}
                 rows={2}
@@ -956,7 +990,7 @@ export function CompanyDataSection({
               <Heart className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
               <textarea
                 value={companyData.social_impact || ''}
-                onChange={(e) => setCompanyData((prev: any) => ({ ...prev, social_impact: e.target.value }))}
+                onChange={(e) => setCompanyData((prev) => ({ ...prev, social_impact: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={textareaClass(!isEditingCompanyData)}
                 rows={2}
@@ -1016,7 +1050,7 @@ export function CompanyDataSection({
               }}
               onScoresChange={(scores) => {
                 if (!isEditingCompanyData) return
-                setCompanyData((prev: any) => ({
+                setCompanyData((prev) => ({
                   ...prev,
                   openness_score: scores.openness,
                   conscientiousness_score: scores.conscientiousness,

@@ -50,6 +50,15 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **WSI Pipeline Unification (Fonte Única de Verdade)**: `wsi_interview_graph.py` `load_context()` reads screening questions exclusively from `job_screening_questions` DB table (saved by recruiter in Configurações da Vaga > Perguntas de Triagem). Falls back to `WSIScreeningPipeline` with WARNING log if no saved questions exist. Question source is logged (`saved_db` / `fallback_pipeline` / `hardcoded_fallback`). Modes: compact=7 questions, full=12 questions (seniority-adaptive distributions). Duplicate generation path removed from `JDEvaluationPanel` — `onGenerateQuestions` now redirects to the "perguntas" section. Nomenclature standardized: `compact_plus` → `full` across `wsi_service.py` and `wsi_screening_pipeline.py`.
 -   **WSI Competency Minimums (Task #43)**: Minimum technical skills raised to 9 (from 3) in enrichment service and quality gates; minimum behavioral competencies raised to 5 (from 3). Pipeline handles insufficient skills by requesting more questions per available skill. Behavioral block uses Big Five traits as fallback when no behavioral competencies provided. Frontend shows amber warning in ScreeningConfigManager when skills are below recommended minimums, and disables Full mode when < 5 technical skills. Wizard system prompt updated to guide recruiter toward collecting at least 9 technical skills with decomposition suggestions. Document WSI_METHODOLOGY_COMPLETE_v2.md updated with new minimums, decomposition rules, and F1.C→F2 flow explanation.
 
+# Skills de Desenvolvimento
+24 skills organizadas por fase de trabalho. Ver guia completo em `.agents/skills/SKILLS_INDEX.md`.
+- **Antes de codificar:** lia-gsd-workflow, feature-impact, brainstorming
+- **Design/UI:** frontend-design, design-standardize, design-patterns, vercel-composition-patterns
+- **Implementacao:** tdd-workflow, vue-migration-prep
+- **Validacao:** feature-audit, testing-patterns, ai-agent-evals, browser-use
+- **Compliance:** wedo-governance, screening-compliance, dei-fairness, lgpd-data-protection
+- **Utilitarias:** humanizer, pdf, pptx, agent-tools, find-skills, skill-creator, tlc-spec-driven
+
 # External Dependencies
 -   Anthropic (Claude API)
 -   WorkOS

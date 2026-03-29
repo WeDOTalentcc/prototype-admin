@@ -16,6 +16,25 @@ import { type JobVacancyMetrics } from "@/services/lia-api"
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getStatusColor } from "@/components/jobs/jobsPageConstants"
 import { textStyles } from "@/lib/design-tokens"
 
+type TechnicalRequirement = string | { technology?: string; name?: string; [key: string]: unknown }
+type BehavioralCompetency = string | { competency?: string; name?: string; [key: string]: unknown }
+type Requirement = string | { requirement?: string; text?: string; name?: string; [key: string]: unknown }
+type Benefit = string | { name?: string; [key: string]: unknown }
+type InterviewStage = { order?: number; stageName?: string; liaAssisted?: boolean; [key: string]: unknown }
+type Language = { language?: string; level?: string; required?: boolean; [key: string]: unknown }
+
+type ScreeningQuestion = {
+  id?: string
+  category?: string
+  type?: string
+  required?: boolean
+  block_id?: number
+  time_limit?: number
+  text?: string
+  question?: string
+  [key: string]: unknown
+}
+
 interface JobPreviewPanelProps {
   showJobPreview: boolean
   previewJob: Job | null
@@ -901,9 +920,9 @@ export function JobPreviewPanel({
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
                         {(() => {
-                          const technicalSkills = (previewJob.technicalRequirements || []).map((tr: any) => typeof tr === 'string' ? tr : tr.technology || tr.name).filter(Boolean)
-                          const behavioralSkills = (previewJob.behavioralCompetencies || []).map((bc: any) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
-                          const responsibilitySkills = (previewJob.requirements || []).map((r: any) => typeof r === 'string' ? r : r.requirement || r.text || r.name).filter(Boolean)
+                          const technicalSkills = (previewJob.technicalRequirements || [] as TechnicalRequirement[]).map((tr: TechnicalRequirement) => typeof tr === 'string' ? tr : tr.technology || tr.name).filter(Boolean)
+                          const behavioralSkills = (previewJob.behavioralCompetencies || [] as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
+                          const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => typeof r === 'string' ? r : r.requirement || r.text || r.name).filter(Boolean)
                           const hasData = technicalSkills.length > 0 || behavioralSkills.length > 0 || responsibilitySkills.length > 0
 
                           if (!hasData) {
@@ -982,7 +1001,7 @@ export function JobPreviewPanel({
                         {!collapsedPreviewSections.includes('idiomas') && (
                           previewJob.languages && previewJob.languages.length > 0 ? (
                             <div className="space-y-1.5 mt-2">
-                              {previewJob.languages.map((lang: any, idx: number) => (
+                              {previewJob.languages.map((lang: Language, idx: number) => (
                                 <div key={idx} className="flex items-center gap-2">
                                   <span className="text-micro text-gray-600 dark:text-gray-400 font-medium">
                                     {lang.language}
@@ -1030,7 +1049,7 @@ export function JobPreviewPanel({
                               const bonusMax = previewJob.bonusRange?.max ?? previewJob.bonus_range?.max ?? previewJob.bonusMax
                               const hasBonus = bonusMin || bonusMax
                               const benefits = previewJob.benefits || []
-                              const fmt = (v: any) => {
+                              const fmt = (v: number | string | null | undefined) => {
                                 if (!v) return ''
                                 const n = typeof v === 'string' ? parseFloat(v) : v
                                 return isNaN(n) ? '' : `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -1061,7 +1080,7 @@ export function JobPreviewPanel({
                                     <div>
                                       <span className="text-micro text-gray-500 dark:text-gray-400 block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
-                                        {benefits.map((b: any, idx: number) => (
+                                        {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
                                           <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-gray-200">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
@@ -1106,8 +1125,8 @@ export function JobPreviewPanel({
                             ) : previewJob.interviewStages && previewJob.interviewStages.length > 0 ? (
                               <div className="flex items-center gap-1 overflow-x-auto pb-1">
                                 {previewJob.interviewStages
-                                  .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-                                  .map((stage: any, idx: number) => (
+                                  .sort((a: InterviewStage, b: InterviewStage) => (a.order || 0) - (b.order || 0))
+                                  .map((stage: InterviewStage, idx: number) => (
                                     <React.Fragment key={idx}>
                                       {idx > 0 && (
                                         <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
@@ -1170,7 +1189,7 @@ export function JobPreviewPanel({
                                 <p className="text-micro text-gray-500">Perguntas</p>
                               </div>
                               <div className="text-center p-2 bg-gray-50 rounded-md">
-                                <div className="text-base-ui font-semibold text-gray-800">{Math.ceil((previewJob.screeningQuestions || []).reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0) / 60)}min</div>
+                                <div className="text-base-ui font-semibold text-gray-800">{Math.ceil((previewJob.screeningQuestions || [] as ScreeningQuestion[]).reduce((acc: number, q: ScreeningQuestion) => acc + ((q.time_limit as number) || 120), 0) / 60)}min</div>
                                 <p className="text-micro text-gray-500">Tempo Est.</p>
                               </div>
                             </div>
@@ -1201,10 +1220,10 @@ export function JobPreviewPanel({
                             const isExpanded = expandedBlocks.includes(block.id)
                             
                             const allQuestions = previewJob.screeningQuestions || []
-                            const cat = (q: any) => (q.category || '').toLowerCase()
-                            const typ = (q: any) => (q.type || '').toLowerCase()
-                            
-                            const isBlock2 = (q: any) => {
+                            const cat = (q: ScreeningQuestion) => (q.category || '').toLowerCase()
+                            const typ = (q: ScreeningQuestion) => (q.type || '').toLowerCase()
+
+                            const isBlock2 = (q: ScreeningQuestion) => {
                               if (typ(q) === 'eliminatory' || q.required) return true
                               if (cat(q).includes('elegib') || cat(q).includes('elimin')) return true
                               if (cat(q).includes('fit') && cat(q).includes('básico')) return true
@@ -1212,19 +1231,19 @@ export function JobPreviewPanel({
                               return false
                             }
                             
-                            const isBlock3 = (q: any) => {
+                            const isBlock3 = (q: ScreeningQuestion) => {
                               if (isBlock2(q)) return false
                               return cat(q).includes('tecn') || cat(q).includes('tech') ||
                                 cat(q).includes('skill') || cat(q).includes('técnica') ||
                                 typ(q).includes('tech')
                             }
                             
-                            const isBlock4 = (q: any) => {
+                            const isBlock4 = (q: ScreeningQuestion) => {
                               if (isBlock2(q) || isBlock3(q)) return false
                               return true
                             }
                             
-                            const blockQuestions = allQuestions.filter((q: any) => {
+                            const blockQuestions = (allQuestions as ScreeningQuestion[]).filter((q: ScreeningQuestion) => {
                               if (q.block_id !== undefined && q.block_id !== null) {
                                 return q.block_id === block.id
                               }
@@ -1234,7 +1253,7 @@ export function JobPreviewPanel({
                               return false
                             })
                             
-                            const eliminatoryCount = blockQuestions.filter((q: any) => q.type === 'eliminatory' || q.required).length
+                            const eliminatoryCount = blockQuestions.filter((q: ScreeningQuestion) => q.type === 'eliminatory' || q.required).length
                             const informativeCount = blockQuestions.length - eliminatoryCount
                             
                             return (
@@ -1342,7 +1361,7 @@ export function JobPreviewPanel({
                                             </p>
                                           </div>
                                         ) : (
-                                          blockQuestions.map((item: any, idx: number) => (
+                                          blockQuestions.map((item: ScreeningQuestion, idx: number) => (
                                             <div 
                                               key={item.id || idx} 
                                               className="p-2.5 bg-white border border-gray-200 rounded-md"

@@ -68,6 +68,25 @@ import {
 import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
 import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
+import type { CandidateLocal } from "@/services/lia-api"
+
+type KanbanCandidate = CandidateLocal & Record<string, unknown>
+
+type CurrentJob = {
+  id?: string | number
+  backendId?: string | number
+  [key: string]: unknown
+}
+
+type CandidatesData = Record<string, KanbanCandidate[]>
+
+type AISuggestion = {
+  id: string
+  candidate_id?: string
+  suggested_action?: string
+  confidence?: number
+  [key: string]: unknown
+}
 
 interface DynamicStage {
   id: string
@@ -98,64 +117,64 @@ interface DataRequestInfo {
 
 interface KanbanColumnRendererProps {
   stageId: string
-  candidates: any[]
+  candidates: KanbanCandidate[]
   colorClass: string
   bgClass: string
 
   // State
   dynamicStages: DynamicStage[]
   searchQuery: string
-  draggedCandidate: any
+  draggedCandidate: KanbanCandidate | null | undefined
   dragOverColumn: string | null
   selectedCandidates: Set<string>
   selectedForCompare: Set<string>
   viewedCandidateIds: Set<string>
   favoriteCandidates: Set<string>
   shortListedCandidateIds: Set<string>
-  aiSuggestions: any[]
+  aiSuggestions: AISuggestion[]
   kanbanScoreMin: number
   kanbanStatusFilter: string[]
   kanbanWorkModelFilter: string[]
   kanbanOriginFilter: string[]
-  currentJob: any
+  currentJob: CurrentJob
   _jobIdForSL: string | undefined
 
   // Derived / computed
   getColumnStyle: (stageId: string) => ColumnStyle
   getStageCategory: (stage: DynamicStage) => "system" | "default" | "custom"
-  calculateNotaLiaGeral: (candidate: any) => number | null
+  calculateNotaLiaGeral: (candidate: KanbanCandidate) => number | null
   getDataRequestForCandidate: (candidateId: string) => DataRequestInfo | undefined
 
   // Setters
   setSelectedCandidates: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void
   setSelectedForCompare: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void
-  setCandidatesData: (value: any | ((prev: any) => any)) => void
+  setCandidatesData: (value: CandidatesData | ((prev: CandidatesData) => CandidatesData)) => void
   setTransitionInitialPrompt: (prompt: string | undefined) => void
   setTransitionInterviewAlert: (value: { name: string; date: string } | null) => void
   setTransitionAllowStageSelection: (value: boolean) => void
-  setDecisionFlowCandidate: (candidate: any) => void
+  setDecisionFlowCandidate: (candidate: KanbanCandidate) => void
   setDecisionFlowType: (type: "approve_to_triage" | "approve_to_interview" | "reject_pre_triage" | "reject_post_triage" | "request_urgency" | "reschedule_interview" | "confirm_hire") => void
   setShowDecisionFlowModal: (value: boolean) => void
 
   // Callbacks
-  onDragStart: (e: React.DragEvent, candidate: any, fromColumn: string) => void
+  onDragStart: (e: React.DragEvent, candidate: KanbanCandidate, fromColumn: string) => void
   onDragEnd: (e: React.DragEvent) => void
   onDragOver: (e: React.DragEvent, column: string) => void
   onDrop: (e: React.DragEvent, toColumn: string) => void
   onDragLeave: () => void
-  onOpenPreview: (candidate: any) => void
-  onSendEmail: (candidate: any) => void
-  onSendWhatsApp: (candidate: any) => void
-  onScheduleInterview: (candidate: any) => void
+  onOpenPreview: (candidate: KanbanCandidate) => void
+  onSendEmail: (candidate: KanbanCandidate) => void
+  onSendWhatsApp: (candidate: KanbanCandidate) => void
+  onScheduleInterview: (candidate: KanbanCandidate) => void
   onToggleFavorite: (candidateId: string) => void
   onToggleShortList: (candidateId: string) => void
-  onOpenAnalysis: (candidate: any) => void
-  onOpenScoreModal: (candidate: any, modalType: "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5") => void
-  onOpenDecisionFlowModal: (candidate: any, action: "approve" | "reject") => void
-  onSendWSIInvite: (candidate: any) => void
-  onSendFeedback: (candidate: any) => void
-  onApproveFromScreening: (candidate: any) => void
-  onRejectFromScreening: (candidate: any) => void
+  onOpenAnalysis: (candidate: KanbanCandidate) => void
+  onOpenScoreModal: (candidate: KanbanCandidate, modalType: "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5") => void
+  onOpenDecisionFlowModal: (candidate: KanbanCandidate, action: "approve" | "reject") => void
+  onSendWSIInvite: (candidate: KanbanCandidate) => void
+  onSendFeedback: (candidate: KanbanCandidate) => void
+  onApproveFromScreening: (candidate: KanbanCandidate) => void
+  onRejectFromScreening: (candidate: KanbanCandidate) => void
   onInlineRename: (stageId: string, newName: string) => void
   onInlineToggleActive: (stageId: string, isActive: boolean) => void
   onInlineRemove: (stageId: string) => void
@@ -167,7 +186,7 @@ interface KanbanColumnRendererProps {
   onDataRequestViewDetails: (candidateId: string) => void
   approveSuggestion: (suggestionId: string) => void
   rejectSuggestion: (suggestionId: string) => void
-  openTransition: (candidates: any[], fromStage: string, toStage: string) => void
+  openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
 }
 
 export function KanbanColumnRenderer({
@@ -638,7 +657,7 @@ export function KanbanColumnRenderer({
                 const b5Score = b5Data
                   ? Math.round(
                       (Object.values(b5Data).reduce(
-                        (a: number, b: any) => a + (typeof b === "number" ? b : 0),
+                        (a: number, b: unknown) => a + (typeof b === "number" ? b : 0),
                         0
                       ) as number) / Object.values(b5Data).length
                     )
@@ -971,10 +990,10 @@ export function KanbanColumnRenderer({
                         candidateName={candidate.name}
                         vacancyId={(currentJob.backendId || currentJob.id).toString()}
                         onApproved={(cId: string) => {
-                          setCandidatesData((prev: any) => {
+                          setCandidatesData((prev) => {
                             const updated = { ...prev }
                             Object.keys(updated).forEach((key) => {
-                              updated[key] = updated[key].map((c: any) =>
+                              updated[key] = updated[key].map((c) =>
                                 c.id === cId
                                   ? { ...c, status: "triado_aprovado", sub_status: undefined, subStatus: undefined }
                                   : c
