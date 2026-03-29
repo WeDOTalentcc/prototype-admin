@@ -511,7 +511,21 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
         throw new Error('Failed to delete analysis')
       }
 
-      setSavedAnalyses((prev: Record<string, unknown> | null) => prev ? { ...prev } : null)
+      setSavedAnalyses((prev: Record<string, unknown> | null) => {
+        if (!prev) return null
+        const updated = { ...prev }
+        const analysisType = analysis.analysis_type as string
+        if (analysisType && analysisType in updated) {
+          delete updated[analysisType]
+        }
+        const analyses = updated.analyses
+        if (Array.isArray(analyses)) {
+          updated.analyses = analyses.filter(
+            (a: Record<string, unknown>) => a.analysis_type !== analysisType
+          )
+        }
+        return updated
+      })
       setAnalysisToDelete(null)
       setExpandedAnalysisId(null)
 

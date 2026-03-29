@@ -84,7 +84,7 @@ export const JobFiltersSection = ({
   removeFromArray 
 }: { 
   filters: SearchFilters
-  updateFilter: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: any) => void
+  updateFilter: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string | string[] | number | boolean | null) => void
   addToArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
   removeFromArray: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string) => void
 }) => {
@@ -262,14 +262,14 @@ export const JobFiltersSection = ({
   }
 
   const handleClearAllJobFilters = () => {
-    updateFilter("job", "titles", [] as any)
-    updateFilter("job", "pastTitles", [] as any)
-    updateFilter("job", "levels", [] as any)
-    updateFilter("job", "roles", [] as any)
-    updateFilter("job", "titleScope", "current_only" as any)
-    updateFilter("job", "timeInRoleMin", "no_limit" as any)
-    updateFilter("job", "timeInRoleMax", "no_limit" as any)
-    updateFilter("job", "minAverageTenure", "no_limit" as any)
+    updateFilter("job", "titles", [] as string[])
+    updateFilter("job", "pastTitles", [] as string[])
+    updateFilter("job", "levels", [] as string[])
+    updateFilter("job", "roles", [] as string[])
+    updateFilter("job", "titleScope", "current_only")
+    updateFilter("job", "timeInRoleMin", "no_limit")
+    updateFilter("job", "timeInRoleMax", "no_limit")
+    updateFilter("job", "minAverageTenure", "no_limit")
     setAiSuggestedTitles([])
     setSelectedAiTitles([])
     setAiSuggestedPastTitles([])
@@ -643,7 +643,7 @@ export const JobFiltersSection = ({
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => updateFilter("job", "pastTitles", [] as any)}
+              onClick={() => updateFilter("job", "pastTitles", [] as string[])}
               disabled={(filters.job?.pastTitles?.length || 0) === 0}
               className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

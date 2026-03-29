@@ -35,8 +35,8 @@ type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 
 interface OpinionData {
-  current_general_opinion?: any
-  vacancy_opinions?: any[]
+  current_general_opinion?: Record<string, unknown>
+  vacancy_opinions?: Array<Record<string, unknown>>
 }
 
 export function useCandidatePageCore() {
@@ -98,7 +98,7 @@ export function useCandidatePageCore() {
         
         // Initialize favorite/hidden state from candidate data or API
         try {
-          const additionalData = (data as any)?.additional_data
+          const additionalData = (data as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
           if (additionalData?.is_favorited !== undefined) {
             setIsFavorite(additionalData.is_favorited)
           } else {
@@ -113,7 +113,7 @@ export function useCandidatePageCore() {
         }
         
         try {
-          const additionalData = (data as any)?.additional_data
+          const additionalData = (data as Record<string, unknown>)?.additional_data as Record<string, unknown> | undefined
           if (additionalData?.is_hidden !== undefined) {
             setIsHidden(additionalData.is_hidden)
           } else {
@@ -458,23 +458,23 @@ export function useCandidatePageCore() {
     }
   }
 
-  const hasPearchData = (c: any): boolean => {
+  const hasPearchData = (c: Record<string, unknown>): boolean => {
     return !!(c.headline || c.is_open_to_work || c.is_decision_maker || 
               c.is_top_universities || c.is_hiring || c.linkedin_followers_count || 
               c.linkedin_connections_count || c.pearch_profile_id)
   }
 
-  const hasPersonalData = (c: any): boolean => {
+  const hasPersonalData = (c: Record<string, unknown>): boolean => {
     return !!(c.date_of_birth || c.gender || c.nationality || 
               c.marital_status || c.estimated_age)
   }
 
-  const hasAdditionalContacts = (c: any): boolean => {
+  const hasAdditionalContacts = (c: Record<string, unknown>): boolean => {
     return !!(c.secondary_email || c.secondary_phone || c.best_personal_email || 
               c.best_business_email || c.preferred_contact_method || c.best_time_to_contact)
   }
 
-  const hasDocuments = (c: any): boolean => {
+  const hasDocuments = (c: Record<string, unknown>): boolean => {
     return !!(c.resume_url || c.cover_letter || c.self_introduction)
   }
 
@@ -617,8 +617,10 @@ export function useCandidatePageCore() {
 
   const languagesData = !loading && candidate ? parseLanguages(candidate.languages) : []
   const skillCategories = !loading && candidate ? categorizeSkills([...(candidate.technical_skills || []), ...(candidate.expertise || [])]) : []
-  const experiences = (candidate as any).workHistory || (candidate as any).work_history || (candidate as any).experiences || ((candidate as any).additional_data as any)?.work_history || ((candidate as any).additional_data as any)?.experiences || []
-  const education = (candidate as any).education || ((candidate as any).additional_data as any)?.education || []
+  const cRecord = candidate as unknown as Record<string, unknown>
+  const cAdditional = cRecord?.additional_data as Record<string, unknown> | undefined
+  const experiences = cRecord?.workHistory || cRecord?.work_history || cRecord?.experiences || cAdditional?.work_history || cAdditional?.experiences || []
+  const education = cRecord?.education || cAdditional?.education || []
   const opinion = opinionsData?.current_general_opinion || opinionsData?.vacancy_opinions?.[0]
 
 

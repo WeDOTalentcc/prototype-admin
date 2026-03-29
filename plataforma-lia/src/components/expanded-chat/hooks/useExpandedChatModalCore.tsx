@@ -696,7 +696,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   // Note: Extract syncContext function to avoid re-running when entire hook object changes
   const { syncContext } = contextSwitching
   useEffect(() => {
-    (syncContext as any)(wizardMode, { skipCallbacks: true, skipSnapshotRestore: true })
+    (syncContext as (mode: unknown, opts: Record<string, unknown>) => void)(wizardMode, { skipCallbacks: true, skipSnapshotRestore: true })
   }, [wizardMode, syncContext])
   
   // Start analytics session when wizard opens
@@ -1049,9 +1049,9 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   
   // WSI Quality Gates - calculate completeness score
   const wsiQualityGates = useWSIQualityGates({
-    technicalSkills: technicalSkills as any,
-    behavioralCompetencies: behavioralCompetencies as any,
-    detectedCriteria: detectedCriteria as any,
+    technicalSkills: technicalSkills as unknown as Record<string, unknown>[],
+    behavioralCompetencies: behavioralCompetencies as unknown as Record<string, unknown>[],
+    detectedCriteria: detectedCriteria as unknown as Record<string, unknown>,
     generatedJobDescription,
     minScoreToAdvance: 70,
   })
@@ -1083,9 +1083,9 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
         employmentType: basicInfoFields.tipoContrato
       },
       salaryInfo: salaryInfo,
-      technicalSkills: technicalSkills as any,
-      behavioralCompetencies: behavioralCompetencies as any,
-      wsiCandidates: wsiCandidates as any,
+      technicalSkills: technicalSkills as unknown as Record<string, unknown>[],
+      behavioralCompetencies: behavioralCompetencies as unknown as Record<string, unknown>[],
+      wsiCandidates: wsiCandidates as unknown as Record<string, unknown>[],
       currentStage: currentStage,
       jobDescription: generatedJobDescription || ''
     },
@@ -1101,11 +1101,11 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
         const data = await res.json()
         if (!Array.isArray(data) || data.length === 0) return
 
-        const newSuggestions = data.filter((s: any) => !proactiveActionIds.has(s.id))
+        const newSuggestions = data.filter((s: Record<string, unknown>) => !proactiveActionIds.has(s.id))
         if (newSuggestions.length === 0) return
 
         const newIds = new Set(proactiveActionIds)
-        const proactiveMessages: Message[] = newSuggestions.map((s: any) => {
+        const proactiveMessages: Message[] = newSuggestions.map((s: Record<string, unknown>) => {
           newIds.add(s.id)
           return {
             id: `proactive-${s.id}`,
@@ -1521,7 +1521,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
         if (departmentsRes.ok) {
           const departmentsData = await departmentsRes.json()
           if (Array.isArray(departmentsData)) {
-            config.departments = departmentsData.map((d: any) => ({
+            config.departments = departmentsData.map((d: Record<string, unknown>) => ({
               id: d.id,
               name: d.name
             }))
@@ -1529,13 +1529,13 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
             // Fetch members from each department to build name → email map
             const membersMap = new Map<string, string>()
             try {
-              const memberPromises = departmentsData.map(async (dept: any) => {
+              const memberPromises = departmentsData.map(async (dept: Record<string, unknown>) => {
                 try {
                   const membersRes = await fetch(`/api/backend-proxy/company/departments/${dept.id}/members`)
                   if (membersRes.ok) {
                     const members = await membersRes.json()
                     if (Array.isArray(members)) {
-                      members.forEach((m: any) => {
+                      members.forEach((m: Record<string, unknown>) => {
                         if (m.name && m.email) {
                           // Store with normalized name (trimmed, lowercase for lookup)
                           membersMap.set(m.name.trim().toLowerCase(), m.email)
@@ -1558,7 +1558,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
         if (benefitsRes.ok) {
           const benefitsData = await benefitsRes.json()
           const benefitsList = Array.isArray(benefitsData) ? benefitsData : benefitsData.items || []
-          config.benefits = benefitsList.filter((b: any) => b.is_active)
+          config.benefits = benefitsList.filter((b: Record<string, unknown>) => b.is_active)
         }
         
         // Fetch and store smart wizard greeting with prefill_data
@@ -1573,7 +1573,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
             // Pre-fill departments from prefill_data (if not already set from config)
             if (prefillData.departments && Array.isArray(prefillData.departments) && prefillData.departments.length > 0) {
               if (!config.departments || config.departments.length === 0) {
-                config.departments = prefillData.departments.map((d: any, idx: number) => ({
+                config.departments = prefillData.departments.map((d: Record<string, unknown>, idx: number) => ({
                   id: d.id || `prefill-dept-${idx}`,
                   name: d.name || d
                 }))
@@ -1583,7 +1583,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
             // Pre-fill benefits from prefill_data (if not already set from config)
             if (prefillData.benefits && Array.isArray(prefillData.benefits) && prefillData.benefits.length > 0) {
               if (!config.benefits || config.benefits.length === 0) {
-                config.benefits = prefillData.benefits.map((b: any) => ({
+                config.benefits = prefillData.benefits.map((b: Record<string, unknown>) => ({
                   id: b.id,
                   name: b.name,
                   value: b.value,
@@ -3627,9 +3627,9 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
       const resumeResult = result as ResumeAnalysisResponse
       analysisMessage = `📄 **Análise de Currículo**\n\n**Candidato:** ${resumeResult.candidate_name || 'Não identificado'}\n**Qualidade do Layout:** ${resumeResult.layout_score}%\n\n${resumeResult.improvement_suggestions.length > 0 ? `**Sugestões de Melhoria:**\n${resumeResult.improvement_suggestions.map(s => `• ${s}`).join('\n')}` : '✅ Currículo bem estruturado!'}`
     } else if (type === 'image') {
-      analysisMessage = `🖼️ **Análise de Imagem**\n\n${(result as any).analysis || 'Análise concluída.'}`
+      analysisMessage = `🖼️ **Análise de Imagem**\n\n${(result as Record<string, unknown>).analysis || 'Análise concluída.'}`
     } else {
-      analysisMessage = `📑 **Análise de Documento**\n\n${(result as any).text_content?.substring(0, 500) || 'Documento analisado com sucesso.'}`
+      analysisMessage = `📑 **Análise de Documento**\n\n${(result as Record<string, unknown>).text_content?.substring(0, 500) || 'Documento analisado com sucesso.'}`
     }
     
     const analysisMsg: Message = {

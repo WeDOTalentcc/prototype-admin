@@ -212,7 +212,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     status: string
     created_at: string
     description: string | null
-    technical_requirements: any[] | null
+    technical_requirements: Array<Record<string, unknown>> | null
   }>>([])
   const [isSearchingJobs, setIsSearchingJobs] = useState(false)
   const [archetypeDescription, setArchetypeDescription] = useState("")
@@ -704,7 +704,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
         const data = await response.json()
         const jobs = data.items || []
         const queryLower = query.toLowerCase()
-        const filtered = jobs.filter((job: any) => 
+        const filtered = jobs.filter((job: Record<string, unknown>) => 
           job.title?.toLowerCase().includes(queryLower) ||
           job.id?.toLowerCase().includes(queryLower) ||
           job.department?.toLowerCase().includes(queryLower)
@@ -718,10 +718,10 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     }
   }, [])
 
-  const openArchetypeFromJob = useCallback((job: any) => {
+  const openArchetypeFromJob = useCallback((job: Record<string, unknown>) => {
     const skills: string[] = []
     if (job.technical_requirements && Array.isArray(job.technical_requirements)) {
-      job.technical_requirements.forEach((req: any) => {
+      job.technical_requirements.forEach((req: Record<string, unknown>) => {
         if (req.skill) skills.push(req.skill)
         else if (typeof req === 'string') skills.push(req)
       })
@@ -794,7 +794,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
         body: JSON.stringify({ description })
       })
       
-      let extractedData: any = {}
+      let extractedData: Record<string, unknown> = {}
       if (response.ok) {
         extractedData = await response.json()
       }
@@ -845,7 +845,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     }
   }, [])
 
-  const openEditArchetype = useCallback((arch: any, e: React.MouseEvent) => {
+  const openEditArchetype = useCallback((arch: Record<string, unknown>, e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingArchetype(arch)
     setEditArchetypeName(arch.name || arch.title || "")
@@ -1206,7 +1206,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     }
   }, [value, mode])
 
-  const buildArchetypePrompt = useCallback((arch: any): string => {
+  const buildArchetypePrompt = useCallback((arch: Record<string, unknown>): string => {
     const parts: string[] = []
     
     if (arch.query) {

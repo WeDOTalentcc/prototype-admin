@@ -683,7 +683,7 @@ export function useAdvancedFiltersCore(props: AdvancedFiltersModalProps) {
   const updateFilter = useCallback(<T extends keyof SearchFilters>(
     category: T,
     key: keyof NonNullable<SearchFilters[T]>,
-    value: any
+    value: string | string[] | number | boolean | null
   ) => {
     setFilters(prev => ({
       ...prev,
@@ -701,7 +701,8 @@ export function useAdvancedFiltersCore(props: AdvancedFiltersModalProps) {
   ) => {
     if (!value.trim()) return
     setFilters(prev => {
-      const currentArray = (prev[category] as any)?.[key] || []
+      const categoryObj = prev[category] as Record<string, unknown> | undefined
+      const currentArray = (categoryObj?.[key as string] as string[]) || []
       if (currentArray.includes(value.trim())) return prev
       return {
         ...prev,
@@ -719,7 +720,8 @@ export function useAdvancedFiltersCore(props: AdvancedFiltersModalProps) {
     value: string
   ) => {
     setFilters(prev => {
-      const currentArray = (prev[category] as any)?.[key] || []
+      const categoryObj = prev[category] as Record<string, unknown> | undefined
+      const currentArray = (categoryObj?.[key as string] as string[]) || []
       return {
         ...prev,
         [category]: {

@@ -122,7 +122,7 @@ interface ArchetypeData {
   description?: string
   department?: string
   hired_candidate?: { name: string }
-  criteria?: any
+  criteria?: Record<string, unknown>
 }
 
 interface SimilarProfile {
@@ -145,12 +145,12 @@ interface JobContext {
 }
 
 interface ExpandableAIPromptProps {
-  selectedCandidates: any[]
+  selectedCandidates: Record<string, unknown>[]
   onCommand: (command: string, action: string) => void
   filteredCount: number
   totalCount: number
   forceExpanded?: boolean
-  candidateContext?: any
+  candidateContext?: Record<string, unknown>
   onClose?: () => void
   // AI-First props
   contextPill?: ContextPillData
@@ -657,7 +657,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
       if (res.ok) {
         const data = await res.json()
         const items = data.items || []
-        const suggestions: AutocompleteSuggestion[] = items.map((item: any) => ({
+        const suggestions: AutocompleteSuggestion[] = items.map((item: Record<string, unknown>) => ({
           text: item.text,
           category: item.category,
           icon: item.icon,
@@ -933,10 +933,11 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
     setEditingArchetype(arch)
     setEditArchetypeName(arch.name || "")
     // Backend returns query at top level in ArchetypeDTO, not in criteria
-    const query = (arch as any).query || arch.criteria?.query || ""
+    const archRecord = arch as Record<string, unknown>
+    const query = (archRecord.query as string) || (arch.criteria?.query as string) || ""
     setEditArchetypeQuery(query)
     setEditArchetypeDescription(arch.description || "")
-    const emoji = (arch as any).emoji || arch.criteria?.emoji || "🎯"
+    const emoji = (archRecord.emoji as string) || (arch.criteria?.emoji as string) || "🎯"
     setEditArchetypeEmoji(emoji)
     // Extract tags from criteria or query
     const tags: string[] = []
@@ -1490,7 +1491,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
 
         // Executar automaticamente após delay
         setTimeout(() => {
-          handleSubmit(new Event('submit') as any)
+          handleSubmit(new Event('submit') as unknown as React.FormEvent)
         }, 1000)
 
         sessionStorage.removeItem('lia-execute-template')
@@ -1509,7 +1510,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
         const parsed = JSON.parse(templates)
         // Pegar apenas os 3 templates mais usados
         const topTemplates = parsed
-          .sort((a: any, b: any) => b.usageCount - a.usageCount)
+          .sort((a: Record<string, unknown>, b: Record<string, unknown>) => (b.usageCount as number) - (a.usageCount as number))
           .slice(0, 3)
         setSavedTemplates(topTemplates)
       } catch (error) {
@@ -1568,7 +1569,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
     }
 
     const selectedCount = selectedCandidates.length
-    const allSuggestions: any[] = []
+    const allSuggestions: Array<Record<string, unknown>> = []
 
     // 🔖 Templates salvos (aparecem primeiro quando relevantes)
     if (selectedCount === 0 && savedTemplates.length > 0) {
@@ -1961,7 +1962,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
   }
 
   // ✨ Clique em sugestão
-  const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = (suggestion: Record<string, unknown>) => {
     if (!isProcessing) {
       setIsProcessing(true)
       setLastCommand(suggestion.label)
@@ -1991,10 +1992,9 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
   }
 
   // 🔖 Executar template salvo
-  const executeTemplate = (template: any) => {
-    // Incrementar contador de uso
+  const executeTemplate = (template: Record<string, unknown>) => {
     const templates = JSON.parse(localStorage.getItem('lia-templates') || '[]')
-    const updatedTemplates = templates.map((t: any) =>
+    const updatedTemplates = templates.map((t: Record<string, unknown>) =>
       t.id === template.id
         ? { ...t, usageCount: t.usageCount + 1, updatedAt: new Date() }
         : t
@@ -2056,7 +2056,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
   }, [naturalSearchValue, parsedEntities])
   
   // Handler for successful archetype save
-  const handleArchetypeSaved = (newArchetype: any) => {
+  const handleArchetypeSaved = (newArchetype: ArchetypeData) => {
     setArchetypes(prev => [...prev, newArchetype])
     toast({
       title: "Arquétipo salvo",

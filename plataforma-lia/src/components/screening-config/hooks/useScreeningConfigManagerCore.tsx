@@ -39,15 +39,15 @@ function getBigFiveLabelPTBR(trait: string | null | undefined): string {
 }
 
 interface ScreeningConfigManagerProps {
-  job: any
-  onJobUpdate?: (updatedJob: any) => void
-  onFormUpdate?: (updates: any) => void
+  job: Record<string, unknown>
+  onJobUpdate?: (updatedJob: Record<string, unknown>) => void
+  onFormUpdate?: (updates: Record<string, unknown>) => void
 }
 
 interface ScreeningConfigContentProps {
-  job: any
-  onJobUpdate?: (updatedJob: any) => void
-  onFormUpdate?: (updates: any) => void
+  job: Record<string, unknown>
+  onJobUpdate?: (updatedJob: Record<string, unknown>) => void
+  onFormUpdate?: (updates: Record<string, unknown>) => void
   activeSection: 'configuracoes' | 'descricao' | 'perguntas'
 }
 
@@ -191,8 +191,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     fetch('/api/backend-proxy/company/screening-questions')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const items: any[] = data?.items ?? (Array.isArray(data) ? data : [])
-        setCompanyQuestions(items.map((q: any) => ({
+        const items: Array<Record<string, unknown>> = data?.items ?? (Array.isArray(data) ? data : [])
+        setCompanyQuestions(items.map((q: Record<string, unknown>) => ({
           id: q.id,
           question: q.question_text || q.question,
           is_eliminatory: q.is_eliminatory ?? false,
@@ -328,12 +328,12 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationCompleted(false)
     setWsiSummaryExpanded(false)
 
-    const techSkills = (job.technicalRequirements || []).map((r: any) => r.technology || r.skill || r).filter(Boolean)
-    const behavComp = (job.behavioralCompetencies || []).map((c: any) => c.competency || c.name || c).filter(Boolean)
-    const responsibilities = (job.requirements || []).map((r: any) => typeof r === 'string' ? r : r.requirement || r.text || r.name || r).filter(Boolean)
+    const techSkills = (job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r).filter(Boolean)
+    const behavComp = (job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || c).filter(Boolean)
+    const responsibilities = (job.requirements || []).map((r: Record<string, unknown>) => typeof r === 'string' ? r : r.requirement || r.text || r.name || r).filter(Boolean)
     setWsiGenerationContext({
       title: job.title || '',
-      seniority: job.level || (job as any).seniority || null,
+      seniority: job.level || (job as Record<string, unknown>).seniority || null,
       responsibilities: responsibilities.slice(0, 5),
       technicalSkills: techSkills.slice(0, 6),
       behavioralCompetencies: behavComp.slice(0, 6),
@@ -372,14 +372,14 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           mode,
           technical_skills: techSkills,
           behavioral_competencies: behavComp,
-          seniority: job.level || (job as any).seniority || null,
+          seniority: job.level || (job as Record<string, unknown>).seniority || null,
           description: job.description || null
         })
       })
       const data = await res.json()
       if (data.success && data.questions) {
         const grouped: Record<number, any[]> = {}
-        data.questions.forEach((q: any) => {
+        data.questions.forEach((q: Record<string, unknown>) => {
           const bid = q.block_id || 2
           if (!grouped[bid]) grouped[bid] = []
           grouped[bid].push({ ...q, id: q.id || `q_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, generated: true })
@@ -397,8 +397,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         const methodBreakdown: Record<string, number> = {}
         let hasCompanyStandard = false
         Object.entries(grouped).forEach(([bid, questions]) => {
-          breakdown[Number(bid)] = (questions as any[]).length
-          ;(questions as any[]).forEach((q: any) => {
+          breakdown[Number(bid)] = (questions as Array<Record<string, unknown>>).length
+          ;(questions as Array<Record<string, unknown>>).forEach((q: Record<string, unknown>) => {
             const fw = q.framework || (q.category === 'behavioral' ? 'BigFive' : 'CBI')
             methodBreakdown[fw] = (methodBreakdown[fw] || 0) + 1
             if (q.source === 'company_standard' || q.is_company_standard) hasCompanyStandard = true
@@ -493,7 +493,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
 
       const breakdown: Record<number, number> = {}
       Object.entries(generated).forEach(([bid, questions]) => {
-        breakdown[Number(bid)] = (questions as any[]).length
+        breakdown[Number(bid)] = (questions as Array<Record<string, unknown>>).length
       })
       setWsiGenerationContext(prev => prev ? { ...prev, blockBreakdown: breakdown } : prev)
       setWsiDynamicMessage('Finalizando roteiro de triagem...')
