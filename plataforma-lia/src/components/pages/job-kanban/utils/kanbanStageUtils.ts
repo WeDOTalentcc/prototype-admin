@@ -10,6 +10,21 @@ export interface InterviewStageFromJob {
   type: 'automated' | 'manual' | 'hybrid' | 'system' | 'interview' | 'test' | 'custom'
 }
 
+// Enriched stage returned by the backend (superset of InterviewStageFromJob)
+interface EnrichedInterviewStage extends InterviewStageFromJob {
+  stageCategory?: string
+  displayName?: string
+  name?: string
+  isInitial?: boolean
+  isFinal?: boolean
+  isHired?: boolean
+  isRejection?: boolean
+  isActive?: boolean
+  stageType?: 'active' | 'final'
+  color?: string
+  actionBehavior?: string
+}
+
 export interface DynamicStage {
   id: string
   name: string
@@ -74,13 +89,13 @@ export const mapInterviewStagesToKanban = (
   interviewStages?: InterviewStageFromJob[],
   fallbackStages: RecruitmentStage[] = RECRUITMENT_STAGES
 ): DynamicStage[] => {
-  if (interviewStages && interviewStages.length > 0 && (interviewStages[0] as any).stageCategory) {
-    const enrichedStages = interviewStages as any[]
-    const activeStages = enrichedStages.filter((s: any) => s.isActive !== false)
+  if (interviewStages && interviewStages.length > 0 && (interviewStages[0] as EnrichedInterviewStage).stageCategory) {
+    const enrichedStages = interviewStages as EnrichedInterviewStage[]
+    const activeStages = enrichedStages.filter((s) => s.isActive !== false)
     let colorIndex = 0
     return activeStages
-      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-      .map((stage: any) => {
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .map((stage) => {
         const displayName = stage.stageName || stage.displayName || stage.name || 'Sem nome'
         const stageId = stage.name || createStageSlug(displayName)
         const isIntermediate = !stage.isInitial && !stage.isFinal && stage.stageType === 'active'
@@ -152,10 +167,10 @@ export const mapInterviewStagesToKanban = (
 }
 
 export const organizeCandidatesByDynamicStages = (
-  candidates: any[],
+  candidates: Record<string, unknown>[],
   stages: DynamicStage[]
-): Record<string, any[]> => {
-  const organized: Record<string, any[]> = {}
+): Record<string, Record<string, unknown>[]> => {
+  const organized: Record<string, Record<string, unknown>[]> = {}
   stages.forEach(stage => {
     organized[stage.id] = []
   })
@@ -206,8 +221,8 @@ export const organizeCandidatesByDynamicStages = (
   return organized
 }
 
-export const createInitialCandidatesData = (stages: DynamicStage[]): Record<string, any[]> => {
-  const data: Record<string, any[]> = {}
+export const createInitialCandidatesData = (stages: DynamicStage[]): Record<string, Record<string, unknown>[]> => {
+  const data: Record<string, Record<string, unknown>[]> = {}
   stages.forEach(stage => {
     data[stage.id] = []
   })

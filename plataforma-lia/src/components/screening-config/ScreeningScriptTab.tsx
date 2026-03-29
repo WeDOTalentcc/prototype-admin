@@ -16,7 +16,7 @@ interface ScreeningQuestion {
   options?: string[]
   time_limit?: number
   required?: boolean
-  [key: string]: any
+  [key: string]: string | number | boolean | string[] | undefined
 }
 
 interface ScreeningConfig {
@@ -57,8 +57,8 @@ interface PreviewJob {
   nps: number
   screeningQuestions?: ScreeningQuestion[]
   screeningConfig?: ScreeningConfig
-  behavioralCompetencies?: any[]
-  [key: string]: any
+  behavioralCompetencies?: Array<string | { competency?: string; name?: string }>
+  [key: string]: unknown
 }
 
 const WSI_BLOCKS = [
@@ -214,7 +214,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <div className="text-base-ui font-semibold text-gray-800">
               {(() => {
                 const questions = previewJob.screeningQuestions || []
-                const totalTime = questions.reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0)
+                const totalTime = questions.reduce((acc: number, q: ScreeningQuestion) => acc + (q.time_limit || 120), 0)
                 return Math.ceil(totalTime / 60)
               })()}min
             </div>
@@ -280,7 +280,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex flex-wrap gap-1.5">
           {(() => {
             const skills = previewJob.screeningConfig?.wsi_skills 
-              || (previewJob.behavioralCompetencies?.map((bc: any) => typeof bc === 'string' ? bc : bc.competency || bc.name) || [])
+              || (previewJob.behavioralCompetencies?.map((bc) => typeof bc === 'string' ? bc : bc.competency || bc.name || '') || [])
             const defaultSkills = ['Comunicação', 'Resolução de Problemas', 'Adaptabilidade', 'Trabalho em Equipe']
             const finalSkills = skills.length > 0 ? skills : defaultSkills
             return finalSkills.slice(0, 6).map((skill: string, idx: number) => (
@@ -314,10 +314,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             const isExpanded = expandedBlocks.includes(block.id)
             
             const allQuestions = previewJob.screeningQuestions || []
-            const cat = (q: any) => (q.category || '').toLowerCase()
-            const typ = (q: any) => (q.type || '').toLowerCase()
-            
-            const isBlock2 = (q: any) => {
+            const cat = (q: ScreeningQuestion) => (String(q.category || '')).toLowerCase()
+            const typ = (q: ScreeningQuestion) => (String(q.type || '')).toLowerCase()
+
+            const isBlock2 = (q: ScreeningQuestion) => {
               if (typ(q) === 'eliminatory' || q.required) return true
               if (cat(q).includes('elegib') || cat(q).includes('elimin')) return true
               if (cat(q).includes('fit') && cat(q).includes('básico')) return true
@@ -325,19 +325,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
               return false
             }
             
-            const isBlock3 = (q: any) => {
+            const isBlock3 = (q: ScreeningQuestion) => {
               if (isBlock2(q)) return false
               return cat(q).includes('tecn') || cat(q).includes('tech') ||
                 cat(q).includes('skill') || cat(q).includes('técnica') ||
                 typ(q).includes('tech')
             }
-            
-            const isBlock4 = (q: any) => {
+
+            const isBlock4 = (q: ScreeningQuestion) => {
               if (isBlock2(q) || isBlock3(q)) return false
               return true
             }
-            
-            const blockQuestions = allQuestions.filter((q: any) => {
+
+            const blockQuestions = allQuestions.filter((q: ScreeningQuestion) => {
               if (block.id === 2) return isBlock2(q)
               if (block.id === 3) return isBlock3(q)
               if (block.id === 4) return isBlock4(q)
@@ -345,7 +345,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             })
 
             
-            const eliminatoryCount = blockQuestions.filter((q: any) => q.type === 'eliminatory' || q.required).length
+            const eliminatoryCount = blockQuestions.filter((q: ScreeningQuestion) => q.type === 'eliminatory' || q.required).length
             const informativeCount = blockQuestions.length - eliminatoryCount
             
             return (
@@ -454,7 +454,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                             </p>
                           </div>
                         ) : (
-                          blockQuestions.map((item: any, idx: number) => (
+                          blockQuestions.map((item: ScreeningQuestion, idx: number) => (
                             <div 
                               key={item.id || idx} 
                               className="p-2 bg-white border border-gray-200 rounded-md transition-colors"

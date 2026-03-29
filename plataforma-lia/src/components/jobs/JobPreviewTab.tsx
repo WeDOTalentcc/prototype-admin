@@ -39,16 +39,20 @@ interface JobPreviewTabProps {
     interviewStages?: Array<{stageName: string; stageCategory?: string; order?: number; liaAssisted?: boolean; color?: string; slaDays?: number}>
     behavioralCompetencies?: Array<{competency?: string; name?: string; weight?: number}> | string[]
     technicalCompetencies?: Array<{competency?: string; name?: string; weight?: number}> | string[]
-    screeningQuestions?: any[]
-    screeningConfig?: any
+    screeningQuestions?: Array<{ time_limit?: number; [key: string]: unknown }>
+    screeningConfig?: {
+      status?: { enabled?: boolean }
+      channels?: { whatsapp?: { enabled?: boolean }; chat_web?: { enabled?: boolean }; phone?: { enabled?: boolean } }
+      scheduling?: { enabled?: boolean }
+    }
     funnel?: {total: number; screening: number; interview: number; final: number; hired: number}
     nps?: number
     isAffirmative?: boolean
     affirmativeCriteriaPrimary?: string
     affirmativeType?: string
-    [key: string]: any
+    [key: string]: unknown
   }
-  pipelineStages?: Array<{id: string; name: string; count: number; color?: string}>
+  pipelineStages?: Array<{id: string; name: string; count: number; color?: string; liaAssisted?: boolean}>
 }
 
 function formatCurrency(value: number | string | undefined): string {
@@ -88,7 +92,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
   const benefits = job.benefits || []
 
   const normalizedBenefits: CompanyBenefit[] = React.useMemo(() => {
-    return benefits.map((b: any) => {
+    return benefits.map((b: string | { name?: string; category?: string; value_type?: string }) => {
       if (typeof b === 'string') return toCompanyBenefit(b)
       if (b.category && b.value_type) return b as CompanyBenefit
       return toCompanyBenefit(b)
@@ -98,7 +102,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
   const questions = job.screeningQuestions || []
   const screeningConfig = job.screeningConfig || {}
   const screeningEnabled = screeningConfig?.status?.enabled ?? true
-  const totalTime = questions.reduce((acc: number, q: any) => acc + (q.time_limit || 120), 0)
+  const totalTime = questions.reduce((acc: number, q: { time_limit?: number }) => acc + (q.time_limit || 120), 0)
   const estimatedMinutes = Math.ceil(totalTime / 60)
 
   const channels: string[] = []
@@ -143,7 +147,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </h5>
         {technicalItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
-            {technicalItems.map((item: any, idx: number) => (
+            {technicalItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
               <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
@@ -163,7 +167,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </h5>
         {behavioralItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
-            {behavioralItems.map((item: any, idx: number) => (
+            {behavioralItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
               <Badge key={idx} className="bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
@@ -261,7 +265,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
                 )}
                 <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg flex-shrink-0">
-                  {(stage as any).liaAssisted && (
+                  {stage.liaAssisted && (
                     <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                   )}
                   <span className="text-micro font-medium text-gray-700">{stage.name}</span>

@@ -70,7 +70,7 @@ interface JobsModalsSectionProps {
   updateScreeningConfig: (updates: Partial<ScreeningConfig>) => void
 
   showReactivateScreeningDialog: boolean
-  reactivateScreeningJobs: any[]
+  reactivateScreeningJobs: Job[]
   reactivateEndDate: string
 
   showWSITutorialModal: boolean
@@ -97,7 +97,7 @@ interface JobsModalsSectionProps {
   onOpenJobCreationChat: (msg?: string) => void
   onSetPendingNavigateJobId: (id: string | null) => void
   onSetReactivateScreeningDialog: (show: boolean) => void
-  onSetReactivateScreeningJobs: (jobs: any[]) => void
+  onSetReactivateScreeningJobs: (jobs: Job[]) => void
   onSetReactivateEndDate: (date: string) => void
 }
 
@@ -268,7 +268,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                 try {
                   await liaApi.updateJobVacancy(job.backendId, {
                     status: 'Paralisada'
-                  } as any)
+                  })
                 } catch (err) {
                 }
               }
@@ -531,7 +531,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             
             onSetBackendJobs(prev => prev.map(job => 
               selectedJobsForBatch.has(job.id) 
-                ? { ...job, status: 'Paralisada' as any, screeningStatus: job.screeningStatus === 'active' ? 'paused' : job.screeningStatus } 
+                ? { ...job, status: 'Paralisada' as const, screeningStatus: job.screeningStatus === 'active' ? 'paused' as const : job.screeningStatus }
                 : job
             ))
             
@@ -591,7 +591,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             
             onSetBackendJobs(prev => prev.map(job => 
               selectedJobsForBatch.has(job.id) 
-                ? { ...job, status: 'Ativa' as any } 
+                ? { ...job, status: 'Ativa' as const }
                 : job
             ))
             
@@ -810,8 +810,8 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                     }
                   }
                   onSetBackendJobs(prev => prev.map(j => 
-                    reactivateScreeningJobs.some((rj: any) => rj.id === j.id) 
-                      ? { ...j, screeningStatus: 'active' as any } 
+                    reactivateScreeningJobs.some((rj) => rj.id === j.id)
+                      ? { ...j, screeningStatus: 'active' as const } 
                       : j
                   ))
                   toast.success(`Triagem reativada para ${reactivateScreeningJobs.length} vaga(s)!`)

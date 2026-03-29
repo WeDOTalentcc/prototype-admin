@@ -48,14 +48,14 @@ import { ScreeningConfigContent, SCREENING_SECTIONS } from "@/components/screeni
 import { useScreeningConfig } from "@/hooks/useScreeningConfig"
 
 interface JobEditTabProps {
-  jobEditForm: Record<string, any>
-  setJobEditForm: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  jobEditForm: Record<string, unknown>
+  setJobEditForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
   onSaveSection: (sectionId: string, fields: string[]) => Promise<void>
   savingSection: string | null
   companyDefaults?: CompanyDefaults
-  job?: any
-  onJobUpdate?: (updatedJob: any) => void
-  onFormUpdate?: (updates: any) => void
+  job?: Record<string, unknown>
+  onJobUpdate?: (updatedJob: Record<string, unknown>) => void
+  onFormUpdate?: (updates: Record<string, unknown>) => void
   isCreationMode?: boolean
   onPublish?: () => void
   isPublishing?: boolean
@@ -105,7 +105,7 @@ const labelClass = `${textStyles.label} mb-3 block`
 
 const groupHeaderClass = "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3"
 
-function countFilledFields(form: Record<string, any>, fields: string[]): number {
+function countFilledFields(form: Record<string, unknown>, fields: string[]): number {
   return fields.filter((field) => {
     if (SWITCH_FIELDS.includes(field)) return true
     const val = form[field]
@@ -115,7 +115,7 @@ function countFilledFields(form: Record<string, any>, fields: string[]): number 
   }).length
 }
 
-function formatDateValue(value: any): string {
+function formatDateValue(value: unknown): string {
   if (!value) return ""
   try {
     return new Date(value).toISOString().split("T")[0]
@@ -192,7 +192,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
     return filled >= Math.ceil(sectionFields.length * 0.3)
   }
 
-  const updateField = (field: string, value: any) => {
+  const updateField = (field: string, value: unknown) => {
     setJobEditForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -239,7 +239,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
       liaAssisted: s.liaAssisted,
     }))
 
-  const rawStages = (jobEditForm.interviewStages || []) as Array<{stageName: string, order: number, type: string, stageCategory?: string, name?: string, isEditable?: boolean, isRemovable?: boolean, isReorderable?: boolean, slaDays?: number, defaultSlaDays?: number, liaAssisted?: boolean}>
+  const rawStages = (jobEditForm.interviewStages || []) as Array<{stageName: string, order: number, type: string, stageCategory?: string, name?: string, isEditable?: boolean, isRemovable?: boolean, isReorderable?: boolean, slaDays?: number, defaultSlaDays?: number, liaAssisted?: boolean, isActive?: boolean}>
   const stages = rawStages.length > 0
     ? rawStages
     : (companyPipelineFallback ?? localFallback)
@@ -264,7 +264,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
     updateField("interviewStages", updated)
   }
 
-  const updateStage = (index: number, field: string, value: any) => {
+  const updateStage = (index: number, field: string, value: unknown) => {
     const stage = stages[index]
     if (stage.stageCategory === 'system' && field === 'stageName') return
     const updated = stages.map((s, i) => i === index ? { ...s, [field]: value } : s)
@@ -289,7 +289,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
   const toggleStageActive = (index: number) => {
     const stage = stages[index]
     if (stage.stageCategory === 'system') return
-    const updated = stages.map((s, i) => i === index ? { ...s, isActive: !(s as any).isActive } : s)
+    const updated = stages.map((s, i) => i === index ? { ...s, isActive: !s.isActive } : s)
     updateField("interviewStages", updated)
   }
 
@@ -909,7 +909,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       const removeLanguage = (idx: number) => {
                         updateField("languages", langs.filter((_, i) => i !== idx))
                       }
-                      const updateLanguage = (idx: number, field: string, value: any) => {
+                      const updateLanguage = (idx: number, field: string, value: unknown) => {
                         updateField("languages", langs.map((l, i) => i === idx ? { ...l, [field]: value } : l))
                       }
                       return (
@@ -1408,7 +1408,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       const canEditName = stage.isEditable !== false && !isSystem
                       const canRemove = stage.isRemovable !== false && stage.stageCategory === 'custom'
                       const canReorder = stage.isReorderable !== false && !isSystem
-                      const stageIsActive = (stage as any).isActive !== false
+                      const stageIsActive = stage.isActive !== false
                       const isLiaAssisted = stage.liaAssisted || LIA_ASSISTED_STAGES.includes(stage.name || '') || LIA_ASSISTED_STAGE_NAMES.includes(stage.stageName || '')
                       const currentSla = stage.slaDays ?? stage.defaultSlaDays ?? 3
                       const defaultSla = stage.defaultSlaDays ?? 3

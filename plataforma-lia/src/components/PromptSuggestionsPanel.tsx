@@ -4,6 +4,20 @@ import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 
+interface SavedTemplate {
+  id: string
+  name: string
+  usageCount?: number
+  [key: string]: unknown
+}
+
+interface CandidateContext {
+  name?: string
+  liaAnalysis?: { score?: number }
+  score?: number
+  [key: string]: unknown
+}
+
 interface SuggestionItem {
   id: string
   icon: string
@@ -12,13 +26,13 @@ interface SuggestionItem {
   action: string
   category?: string
   isTemplate?: boolean
-  template?: any
+  template?: SavedTemplate
 }
 
 interface PromptSuggestionsPanelProps {
-  selectedCandidates: any[]
-  candidateContext: any
-  savedTemplates: any[]
+  selectedCandidates: CandidateContext[]
+  candidateContext: CandidateContext | null
+  savedTemplates: SavedTemplate[]
   suggestions: SuggestionItem[]
   isProcessing: boolean
   commandHistory: string[]
@@ -29,9 +43,9 @@ interface PromptSuggestionsPanelProps {
 }
 
 export function getSmartSuggestions(
-  candidateContext: any,
-  selectedCandidates: any[],
-  savedTemplates: any[]
+  candidateContext: CandidateContext | null,
+  selectedCandidates: CandidateContext[],
+  savedTemplates: SavedTemplate[]
 ): SuggestionItem[] {
   if (candidateContext) {
     return [

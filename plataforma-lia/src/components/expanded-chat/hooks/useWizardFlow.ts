@@ -2,9 +2,17 @@
 
 import { useState, useCallback } from "react"
 import type { DetectedCriteria, BasicInfoFields, TechnicalSkill, BehavioralCompetency, SalaryInfo } from '../ExpandedChatContext'
-import type { Message } from '../types'
+import type { Message, WSIQuestionCandidate } from '../types'
 import type { WizardStage, ExtendedWizardStageConfig } from '../config'
 import { WIZARD_STAGES, getMissingCriticalFields } from '../config'
+
+interface CompanyDefaultQuestion {
+  id: string
+  question: string
+  type: 'yes-no' | 'numeric' | 'open' | 'multiple-choice'
+  enabled: boolean
+  fromConfig: boolean
+}
 
 export interface UseWizardFlowOptions {
   currentStage: WizardStage
@@ -14,11 +22,11 @@ export interface UseWizardFlowOptions {
   technicalSkills: TechnicalSkill[]
   behavioralCompetencies: BehavioralCompetency[]
   salaryInfo: SalaryInfo
-  wsiCandidates: any[]
-  companyDefaultQuestions: any[]
+  wsiCandidates: WSIQuestionCandidate[]
+  companyDefaultQuestions: CompanyDefaultQuestion[]
   wsiQualityGates: { canAdvance: boolean }
   calibrationComplete: boolean
-  approvedCandidates: any[]
+  approvedCandidates: string[]
   publishedJobId: string | null
   messages: Message[]
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
@@ -120,7 +128,7 @@ export function useWizardFlow(options: UseWizardFlowOptions): UseWizardFlowRetur
         return hasSalaryRange && bonusValid && hasAtLeastOneBenefit
 
       case 'wsi-questions':
-        const hasMinimumQuestions = wsiCandidates.filter((q: any) => q.selected).length >= 1 || companyDefaultQuestions.filter((q: any) => q.enabled).length >= 1
+        const hasMinimumQuestions = wsiCandidates.filter((q) => q.selected).length >= 1 || companyDefaultQuestions.filter((q) => q.enabled).length >= 1
         return hasMinimumQuestions && wsiQualityGates.canAdvance
 
       case 'review-publish':

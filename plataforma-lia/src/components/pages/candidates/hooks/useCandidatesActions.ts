@@ -34,7 +34,7 @@ export interface CandidatesActionsContext {
   lastSearchQuery: string
   deselectAllCandidates: () => void
   toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
-  user: any
+  user: { id?: string; name?: string; email?: string; [key: string]: unknown } | null
 }
 
 export function useCandidatesActions(ctx: CandidatesActionsContext) {
@@ -98,7 +98,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
+          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
             company_domain: exp.company_domain || null,
@@ -211,7 +211,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
+          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
             company_domain: exp.company_domain || null,
@@ -351,7 +351,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          experiences: (c.experiences || []).map((exp: any) => ({
+          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
             company_domain: exp.company_domain || null,
@@ -416,8 +416,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
         setPendingTabChange(null)
       }
 
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Erro desconhecido ao salvar candidatos'
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao salvar candidatos'
       toast({
         title: "Erro ao salvar",
         description: errorMessage,

@@ -191,7 +191,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
   if (!isOpen || !candidate) return null
 
-  const handleTemplateSelect = (template: any) => {
+  const handleTemplateSelect = (template: { id?: string; subject?: string; message?: string }) => {
     if (activeTab === 'email') {
       setSubject(template.subject)
       setMessage(template.message)
@@ -210,7 +210,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
     setIsLiaGenerating(false)
   }
 
-  const generateContextualSuggestions = (context: string, candidate: any, channel: string) => {
+  const generateContextualSuggestions = (context: string, candidate: Candidate, channel: string) => {
     const baseTemplates = {
       professional: {
         email: {
@@ -255,7 +255,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
         id: '1',
         title: 'Sugestão Personalizada da LIA',
         context: context,
-        content: (baseTemplates as any)[context]?.[channel] || baseTemplates.professional[channel as keyof typeof baseTemplates.professional],
+        content: (baseTemplates as Record<string, Record<string, unknown>>)[context]?.[channel] ?? baseTemplates.professional[channel as keyof typeof baseTemplates.professional],
         reasons: [
           `Baseado no perfil de ${candidate.role} do candidato`,
           `Considerando localização: ${candidate.location}`,
@@ -277,7 +277,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
     ]
   }
 
-  const generateAlternativeMessage = (context: string, candidate: any, channel: string) => {
+  const generateAlternativeMessage = (context: string, candidate: Candidate, channel: string) => {
     if (channel === 'email') {
       return {
         subject: `${candidate.name} - Vaga ${candidate.role} com match de ${candidate.matchPercentage || 95}%`,
@@ -290,7 +290,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
     }
   }
 
-  const applyLiaSuggestion = (suggestion: any) => {
+  const applyLiaSuggestion = (suggestion: { content?: { subject?: string; message?: string } }) => {
     if (activeTab === 'email') {
       setSubject(suggestion.content.subject || '')
       setMessage(suggestion.content.message || '')
@@ -457,7 +457,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <div className="flex items-center gap-2">
                   <select
                     value={liaContext}
-                    onChange={(e) => setLiaContext(e.target.value as any)}
+                    onChange={(e) => setLiaContext(e.target.value as 'professional' | 'warm' | 'urgent' | 'follow_up')}
                     className="text-micro border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   >
                     <option value="professional">Profissional</option>

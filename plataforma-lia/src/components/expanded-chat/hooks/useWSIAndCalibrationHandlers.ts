@@ -18,6 +18,9 @@ import {
 import { type EnrichedJDData } from "../stages"
 import { type WizardMode, type FastTrackState } from "../types"
 import { type UseConversationMemoryReturn } from "./useConversationMemory"
+import { type JobConfig } from "./usePublishingState"
+import { type CompensationAnalysisResult } from "../../job-creation/compensation-analysis-panel"
+import type { VacancySummary } from "../../job-creation/vacancy-search-results"
 
 export interface WSIAndCalibrationHandlersContext {
   // Basic info and criteria
@@ -53,7 +56,7 @@ export interface WSIAndCalibrationHandlersContext {
   setIsGeneratingWSI: React.Dispatch<React.SetStateAction<boolean>>
   wsiHasGenerated: boolean
   setWsiHasGenerated: React.Dispatch<React.SetStateAction<boolean>>
-  setWsiQuestions: React.Dispatch<React.SetStateAction<any[]>>
+  setWsiQuestions: React.Dispatch<React.SetStateAction<WSIQuestionCandidate[]>>
   customQuestionText: string
   customQuestionType: 'open' | 'yes-no' | 'numeric' | 'multiple-choice'
   customQuestionRequired: boolean
@@ -99,12 +102,12 @@ export interface WSIAndCalibrationHandlersContext {
   // Fast Track state
   fastTrackState: FastTrackState
   setFastTrackState: React.Dispatch<React.SetStateAction<FastTrackState>>
-  fastTrackSelectedVacancy: any | null
-  setFastTrackSelectedVacancy: (vacancy: any | null) => void
+  fastTrackSelectedVacancy: VacancySummary | null
+  setFastTrackSelectedVacancy: (vacancy: VacancySummary | null) => void
   fastTrackAdjustments: VacancyAdjustments
   setFastTrackAdjustments: React.Dispatch<React.SetStateAction<VacancyAdjustments>>
-  fastTrackSearchResults: any[]
-  setFastTrackSearchResults: React.Dispatch<React.SetStateAction<any[]>>
+  fastTrackSearchResults: VacancySummary[]
+  setFastTrackSearchResults: React.Dispatch<React.SetStateAction<VacancySummary[]>>
   isSearchingVacancies: boolean
   setIsSearchingVacancies: React.Dispatch<React.SetStateAction<boolean>>
   wizardFastTrackSourceJobId: string | null
@@ -116,14 +119,14 @@ export interface WSIAndCalibrationHandlersContext {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 
   // Job config
-  setJobConfig: React.Dispatch<React.SetStateAction<any>>
+  setJobConfig: React.Dispatch<React.SetStateAction<JobConfig>>
 
   // Enrichment
   setEnrichedJDData: React.Dispatch<React.SetStateAction<EnrichedJDData | null>>
   setIsLoadingEnrichment: React.Dispatch<React.SetStateAction<boolean>>
 
   // Compensation
-  setCompensationAnalysis: React.Dispatch<React.SetStateAction<any>>
+  setCompensationAnalysis: React.Dispatch<React.SetStateAction<CompensationAnalysisResult | null>>
 
   // Display state
   setDisplayedText: React.Dispatch<React.SetStateAction<string>>
@@ -1087,13 +1090,13 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Process tool_results if present (e.g., salary benchmark, skills suggestions)
     if (toolResults.length > 0) {
-      toolResults.forEach((toolResult: any) => {
+      toolResults.forEach((toolResult: { tool: string; result?: { skills?: { name?: string; level?: string; required?: boolean; category?: string; weight?: number }[]; [key: string]: unknown }; [key: string]: unknown }) => {
         if (toolResult.tool === 'salary_benchmark' && toolResult.result) {
-          ctx.setCompensationAnalysis(toolResult.result)
+          ctx.setCompensationAnalysis(toolResult.result as CompensationAnalysisResult)
         }
         if (toolResult.tool === 'skills_suggestion' && toolResult.result?.skills) {
           const suggestedSkills = toolResult.result.skills
-          suggestedSkills.forEach((skill: any, index: number) => {
+          suggestedSkills.forEach((skill, index: number) => {
             if (!ctx.technicalSkills.find(s => s.name.toLowerCase() === skill.name?.toLowerCase())) {
               ctx.setTechnicalSkills(prev => [
                 ...prev,

@@ -2,7 +2,29 @@ import React from "react"
 import { Flag, CheckCircle, AlertCircle, Mail, Clock } from "lucide-react"
 import type { DynamicStage } from "./kanbanStageUtils"
 
-export const calculateNotaLiaGeral = (candidate: any) => {
+interface KanbanCandidateBase {
+  skillsMatch?: number
+  fitScore?: number
+  liaScore?: number
+  score?: number
+  technicalTestScore?: number
+  englishTestScore?: number
+  approvalPending?: boolean
+  needsAction?: boolean
+  liaStatus?: string
+  stage?: string
+  triageComplete?: boolean
+  status?: string
+  feedbackStatus?: string
+  warnings?: number
+  name: string
+  role?: string
+  location?: string
+  currentCompany?: string
+  id: string | number
+}
+
+export const calculateNotaLiaGeral = (candidate: KanbanCandidateBase) => {
   const scoreLiaCV = candidate.skillsMatch || candidate.fitScore || 0
   const scoreLiaTriagem = (candidate.liaScore || candidate.score || 0)
   const scoreTesteTecnico = candidate.technicalTestScore || 0
@@ -45,7 +67,7 @@ export const calculateNotaLiaGeral = (candidate: any) => {
   return Math.round(notaFinal * 10) / 10
 }
 
-export const getLiaAlerts = (candidate: any) => {
+export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
   const alerts: Array<{
     type: string
     icon: React.ReactElement
@@ -100,7 +122,7 @@ export const getLiaAlerts = (candidate: any) => {
 }
 
 export const getFilteredAndSortedCandidates = (
-  getAllCandidates: () => any[],
+  getAllCandidates: () => KanbanCandidateBase[],
   searchQuery: string,
   tableStageFilter: string[],
   tableSortColumn: string,
@@ -123,7 +145,7 @@ export const getFilteredAndSortedCandidates = (
   }
 
   candidates.sort((a, b) => {
-    let aVal: any, bVal: any
+    let aVal: string | number, bVal: string | number
 
     switch (tableSortColumn) {
       case 'name':

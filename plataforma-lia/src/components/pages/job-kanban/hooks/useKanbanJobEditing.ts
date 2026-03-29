@@ -4,17 +4,27 @@ import { useCallback } from "react"
 import type React from "react"
 import { useToast } from "@/hooks/use-toast"
 import { liaApi } from "@/services/lia-api"
+import type { DynamicStage } from "../utils/kanbanStageUtils"
+import type { InterviewStageFromJob } from "../utils/kanbanStageUtils"
+
+interface KanbanJobRef {
+  id?: string | number
+  jobId?: string
+  backendId?: string
+  interviewStages?: InterviewStageFromJob[]
+  [key: string]: unknown
+}
 
 export interface KanbanJobEditingContext {
   toast: ReturnType<typeof useToast>["toast"]
-  currentJob: any
-  jobEditForm: Record<string, any>
+  currentJob: KanbanJobRef
+  jobEditForm: Record<string, unknown>
   setSavingJobSection: (section: string | null) => void
   setEditingSection: (section: string | null) => void
-  setDynamicStages: React.Dispatch<React.SetStateAction<any[]>>
-  setCandidatesData: (updater: (prev: Record<string, any[]>) => Record<string, any[]>) => void
-  mapInterviewStagesToKanban: (interviewStages?: any[]) => any[]
-  createInitialCandidatesData: (stages: any[]) => Record<string, any[]>
+  setDynamicStages: React.Dispatch<React.SetStateAction<DynamicStage[]>>
+  setCandidatesData: (updater: (prev: Record<string, Record<string, unknown>[]>) => Record<string, Record<string, unknown>[]>) => void
+  mapInterviewStagesToKanban: (interviewStages?: InterviewStageFromJob[]) => DynamicStage[]
+  createInitialCandidatesData: (stages: DynamicStage[]) => Record<string, Record<string, unknown>[]>
 }
 
 export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
@@ -59,7 +69,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         description: 'description',
         interviewStages: 'interview_stages',
       }
-      const updates: Record<string, any> = {}
+      const updates: Record<string, unknown> = {}
       fields.forEach(f => {
         if (f === 'salaryMin' || f === 'salaryMax') {
           if (!updates['salary_range']) {

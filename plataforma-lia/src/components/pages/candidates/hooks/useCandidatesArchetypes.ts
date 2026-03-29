@@ -28,7 +28,7 @@ export type BackendArchetype = {
   description?: string
   emoji: string
   query: string
-  filters: Record<string, any>
+  filters: Record<string, unknown>
   tags: string[]
   industry?: string
   seniority?: string
@@ -53,17 +53,17 @@ export type AISuggestion = {
 export interface UseCandidatesArchetypesParams {
   searchSource: string
   pearchSearchOptions: { searchType: string; limit: number }
-  toast: (opts: any) => void
+  toast: (opts: { title?: string; description?: string; variant?: string }) => void
   setCandidates: (candidates: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
   setHasSearchResults: (v: boolean) => void
   setSearchResultsCount: (v: number) => void
   setLocalResultsCount: (v: number) => void
   setPearchResultsCount: (v: number) => void
   setLastSearchQuery: (v: string) => void
-  setLastSearchMode: (v: any) => void
-  setActiveSearchTab: (v: any) => void
+  setLastSearchMode: (v: string) => void
+  setActiveSearchTab: (v: string) => void
   setLiaPromptValue: (v: string) => void
-  setChatMessages: (fn: (prev: any[]) => any[]) => void
+  setChatMessages: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
 }
 
 export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
@@ -163,7 +163,14 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
       setActiveSearchTab('ia-natural')
       
       if (data.candidates && data.candidates.length > 0) {
-        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
+        const mappedCandidates: Candidate[] = data.candidates.map((c: {
+          id?: string; first_name?: string; last_name?: string; name?: string;
+          current_title?: string; headline?: string; current_company?: string;
+          linkedin_url?: string; skills?: string[]; location?: string;
+          picture_url?: string; total_experience_years?: number; source?: string;
+          lia_score?: number; score?: number; lia_reasoning?: string; match_summary?: string;
+          is_open_to_work?: boolean; lia_breakdown?: unknown; lia_strengths?: string[]; lia_concerns?: string[]
+        }) => ({
           id: c.id || `arch-${Date.now()}-${Math.random()}`,
           candidateId: c.id || '',
           name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
@@ -187,7 +194,7 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
           lia_breakdown: c.lia_breakdown,
           lia_strengths: c.lia_strengths || [],
           lia_concerns: c.lia_concerns || []
-        })) as any[]
+        }))
         
         setCandidates(mappedCandidates)
         setHasSearchResults(true)

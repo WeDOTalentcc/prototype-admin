@@ -8,6 +8,49 @@ import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 
+interface KanbanJob {
+  id?: string | number
+  title?: string
+  department?: string
+  level?: string
+  requirements?: string[]
+  location?: string
+  salary?: string
+  workModel?: string
+  deadline?: string
+  recruiter?: string
+}
+
+interface KanbanTableCandidate {
+  id: string | number
+  name: string
+  role?: string
+  currentCompany?: string
+  location?: string
+  score?: number
+  fitScore?: number
+  wsiScore?: number
+  wsiTechnical?: number
+  wsiBehavioral?: number
+  skills?: string[]
+  experience?: string
+  stage?: string
+  subStatus?: string
+  daysInStage?: number
+  warnings?: number
+  email?: string
+  phone?: string
+  bigFive?: unknown
+  cvUrl?: string
+}
+
+interface KanbanUser {
+  company?: string
+  id?: string
+  name?: string
+  email?: string
+}
+
 export interface KanbanLIAHandlersContext {
   // LIA chat state
   liaMessages: { id: string; type: 'user' | 'response'; content: string; timestamp: number; metadata?: Record<string, unknown> }[]
@@ -21,27 +64,27 @@ export interface KanbanLIAHandlersContext {
   setLiaConversationId: (id: string | undefined) => void
 
   // Job and candidates
-  currentJob: any
-  allTableCandidates: any[]
+  currentJob: KanbanJob
+  allTableCandidates: KanbanTableCandidate[]
   selectedCandidates: Set<string>
-  candidatesData: Record<string, any[]>
+  candidatesData: Record<string, KanbanTableCandidate[]>
 
   // User auth
-  user: any
+  user: KanbanUser | null
 
   // findCandidateById
-  findCandidateById: (id: string) => any
+  findCandidateById: (id: string) => KanbanTableCandidate | undefined
 
   // UI action sub-handlers — these open modals
-  openUnifiedModal: (candidate: any, type: CommunicationType) => void
+  openUnifiedModal: (candidate: KanbanTableCandidate, type: CommunicationType) => void
   openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
-  setWsiCandidate: (candidate: any) => void
+  setWsiCandidate: (candidate: KanbanTableCandidate) => void
   setShowWSIModal: (open: boolean) => void
-  setWsiInviteCandidate: (candidate: any) => void
+  setWsiInviteCandidate: (candidate: KanbanTableCandidate) => void
   setShowWSIInviteModal: (open: boolean) => void
-  setDataRequestModalCandidate: (candidate: any) => void
+  setDataRequestModalCandidate: (candidate: KanbanTableCandidate) => void
   setShowDataRequestModal: (open: boolean) => void
-  setRubricCandidate: (candidate: any) => void
+  setRubricCandidate: (candidate: KanbanTableCandidate) => void
   setShowRubricModal: (open: boolean) => void
 }
 
@@ -177,7 +220,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     return `💬 **Olá, ${recruiterName}!**\n\nEu ainda estou evoluindo e em breve estarei pronta para atender a todas as suas solicitações e esclarecer todas as suas dúvidas. 🚀\n\nPeço desculpas por não conseguir te ajudar com essa pergunta específica agora.\n\nNeste momento, posso te ajudar com **análises e informações do pipeline de recrutamento**, como:\n\n• "Quantos candidatos temos no processo?"\n• "Quem são os top 5 candidatos?"\n• "Como está a distribuição por etapa?"\n• "Comparar candidatos selecionados"\n• "Identificar gargalos no processo"\n\n✨ Vamos conversar muito em breve! Use as sugestões acima ou me pergunte sobre seus candidatos.`
   }
 
-  const handleLiaUiAction = useCallback((action: string, params: Record<string, any>) => {
+  const handleLiaUiAction = useCallback((action: string, params: Record<string, unknown>) => {
     if (action === 'start_job_wizard') return
 
     const candidateIds: string[] = params.candidate_ids || []
@@ -380,7 +423,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         if (!response.action_executed && response.ui_action && response.ui_action !== 'start_job_wizard') {
           const enrichedParams = { ...(response.ui_action_params || {}) }
           if (!enrichedParams.candidate_ids && response.actions?.length > 0) {
-            const actionWithIds = response.actions.find((a: any) => a.candidate_ids?.length > 0)
+            const actionWithIds = response.actions.find((a: { candidate_ids?: string[] }) => a.candidate_ids && a.candidate_ids.length > 0)
             if (actionWithIds) {
               enrichedParams.candidate_ids = actionWithIds.candidate_ids
             }

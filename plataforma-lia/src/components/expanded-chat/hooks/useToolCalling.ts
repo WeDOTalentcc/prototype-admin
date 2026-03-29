@@ -6,7 +6,7 @@ const BACKEND_URL = '/api/backend-proxy'
 
 export interface ToolCall {
   tool_name: string
-  parameters: Record<string, any>
+  parameters: Record<string, unknown>
   requires_confirmation: boolean
   confirmation_message?: string
 }
@@ -14,7 +14,7 @@ export interface ToolCall {
 export interface ToolExecutionResult {
   success: boolean
   message: string
-  data?: any
+  data?: unknown
   tool_name: string
   execution_time_ms: number
   error?: string
@@ -28,7 +28,7 @@ export interface UseToolCallingReturn {
   suggestToolCall: (toolCall: ToolCall) => void
   confirmToolCall: () => Promise<ToolExecutionResult>
   cancelToolCall: () => void
-  executeToolDirectly: (toolName: string, params: Record<string, any>) => Promise<ToolExecutionResult>
+  executeToolDirectly: (toolName: string, params: Record<string, unknown>) => Promise<ToolExecutionResult>
   rollbackLastTool: () => Promise<ToolExecutionResult | null>
   hasPendingTool: boolean
   isExecuting: boolean
@@ -73,8 +73,8 @@ function getUserId(): string {
 
 async function executeToolApi(
   toolName: string,
-  parameters: Record<string, any>
-): Promise<{ success: boolean; message: string; data?: any; error?: string }> {
+  parameters: Record<string, unknown>
+): Promise<{ success: boolean; message: string; data?: unknown; error?: string }> {
   const userId = getUserId()
   const response = await fetch(`${BACKEND_URL}/orchestrator/execute-tool`, {
     method: 'POST',
@@ -100,7 +100,7 @@ async function executeToolApi(
 
 async function rollbackToolApi(
   toolName: string,
-  executionData?: any
+  executionData?: unknown
 ): Promise<{ success: boolean; message: string; error?: string }> {
   const userId = getUserId()
   const response = await fetch(`${BACKEND_URL}/orchestrator/rollback-tool`, {
@@ -168,7 +168,7 @@ export function useToolCalling(options: UseToolCallingOptions = {}): UseToolCall
   }, [])
 
   const executeToolInternal = useCallback(
-    async (toolName: string, params: Record<string, any>): Promise<ToolExecutionResult> => {
+    async (toolName: string, params: Record<string, unknown>): Promise<ToolExecutionResult> => {
       const startTime = Date.now()
       setExecutingTools((prev) => [...prev, toolName])
       setToolError(null)
@@ -241,7 +241,7 @@ export function useToolCalling(options: UseToolCallingOptions = {}): UseToolCall
   }, [pendingToolCall, executeToolInternal])
 
   const executeToolDirectly = useCallback(
-    async (toolName: string, params: Record<string, any>): Promise<ToolExecutionResult> => {
+    async (toolName: string, params: Record<string, unknown>): Promise<ToolExecutionResult> => {
       return executeToolInternal(toolName, params)
     },
     [executeToolInternal]

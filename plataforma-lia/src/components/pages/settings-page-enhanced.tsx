@@ -39,7 +39,7 @@ interface SettingsSection {
   id: string
   title: string
   description: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   status: 'completed' | 'incomplete' | 'pending'
   priority: 'high' | 'medium' | 'low'
   category: 'basic' | 'advanced' | 'integrations'
@@ -176,8 +176,8 @@ export default function SettingsPageEnhanced() {
   const [activeSection, setActiveSection] = useState<string>('company-team')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['company-team']))
-  const [users, setUsers] = useState<any[]>([])
-  const [goals, setGoals] = useState<any[]>([])
+  const [users, setUsers] = useState<Array<{ id: string; name?: string; [key: string]: unknown }>>([])
+  const [goals, setGoals] = useState<Record<string, unknown[]>>({})
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
     'company-team': 0,
@@ -219,7 +219,7 @@ export default function SettingsPageEnhanced() {
 
   const [showProgressDashboard, setShowProgressDashboard] = useState(false)
 
-  const [formData, setFormData] = useState<{[key: string]: any}>({
+  const [formData, setFormData] = useState<Record<string, string>>({
     company_name: 'WedoTalent Enterprise',
     cnpj: '12.345.678/0001-90',
     website: 'https://www.wedotalent.com',
@@ -342,7 +342,7 @@ export default function SettingsPageEnhanced() {
   }
 
 
-  const handleUserUpdate = (user: any) => {
+  const handleUserUpdate = (user: { id: string; [key: string]: unknown }) => {
     setUsers(prev => {
       const existingIndex = prev.findIndex(u => u.id === user.id)
       if (existingIndex >= 0) {
@@ -355,7 +355,7 @@ export default function SettingsPageEnhanced() {
     })
   }
 
-  const handleGoalUpdate = (userId: string, userGoals: any) => {
+  const handleGoalUpdate = (userId: string, userGoals: unknown[]) => {
     setGoals(prev => ({
       ...prev,
       [userId]: userGoals

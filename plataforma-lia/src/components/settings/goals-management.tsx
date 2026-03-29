@@ -28,9 +28,19 @@ import {
   type CustomGoalForm
 } from "./use-goals-management"
 
+interface GoalsMgmtUser {
+  id: string
+  name: string
+  email?: string
+  role?: string
+  department?: string
+  isActive?: boolean
+  avatar?: string
+}
+
 interface GoalsManagementProps {
-  users: any[]
-  onGoalUpdate: (userId: string, goals: any) => void
+  users: GoalsMgmtUser[]
+  onGoalUpdate: (userId: string, goals: UserGoal[]) => void
 }
 
 // Componente puro (Camada 2): Célula editável
@@ -352,7 +362,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             </tr>
                           </thead>
                           <tbody>
-                            {assignedUserObjects.map((user: any) => (
+                            {assignedUserObjects.map((user) => (
                               <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800">
                                 <td className="p-2 sticky left-0 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
                                   <div className="flex items-center gap-2">
@@ -837,7 +847,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   </label>
                   <select
                     value={customGoalForm.period}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, period: e.target.value as any }))}
+                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, period: e.target.value as CustomGoalForm['period'] }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="monthly">Mensal</option>
@@ -851,7 +861,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   </label>
                   <select
                     value={customGoalForm.category}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, category: e.target.value as any }))}
+                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, category: e.target.value as CustomGoalForm['category'] }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="recruitment">Recrutamento</option>
@@ -971,7 +981,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 </label>
                 <select
                   value={editingGoal.status}
-                  onChange={(e) => setEditingGoal(prev => prev ? { ...prev, status: e.target.value as any } : null)}
+                  onChange={(e) => setEditingGoal(prev => prev ? { ...prev, status: e.target.value as UserGoal['status'] } : null)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="pending">Pendente</option>
@@ -1134,7 +1144,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <label className={`${textStyles.label} block mb-1`}>Período</label>
                   <select
                     value={editingTemplate.period}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, period: e.target.value as any } : null)}
+                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, period: e.target.value as GoalTemplate['period'] } : null)}
                     className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md text-xs font-['Open_Sans',sans-serif]"
                   >
                     <option value="monthly">Mensal</option>
@@ -1146,7 +1156,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <label className={`${textStyles.label} block mb-1`}>Categoria</label>
                   <select
                     value={editingTemplate.category}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value as any } : null)}
+                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value as GoalTemplate['category'] } : null)}
                     className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md text-xs font-['Open_Sans',sans-serif]"
                   >
                     <option value="recruitment">Recrutamento</option>

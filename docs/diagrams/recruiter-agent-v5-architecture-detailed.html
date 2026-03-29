@@ -218,44 +218,86 @@ table.matrix td.dim { text-align: left; font-weight: bold; color: #475569; backg
       <div class="d">4-tier cost control:<br>Pattern&#8594;Regex&#8594;Embed&#8594;LLM<br>Cheapest-first routing</div>
     </div>
   </div>
-  <div style="background: rgba(254,243,199,0.5); border: 1px dashed #d97706; border-radius: 6px; padding: 8px 12px;">
+  <div class="row" style="margin-top: 8px;">
+    <div class="hub-box hub-core" style="min-width: 210px;">
+      <div class="t">SupervisorGraph (15.2KB)</div>
+      <div class="d">LangGraph StateGraph with checkpointer<br>Creates domain_agent_nodes<br>Injects AuditCallback + StreamingCallback<br>Supervisor orchestration pattern</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">SupervisorState</div>
+      <div class="d">AgentResult TypedDict<br>domain_id, success, message<br>needs_clarification, cards</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">DomainCatalog</div>
+      <div class="d">Domain &#8594; route mapping<br>Navigation routes per domain<br>NAVIGATION_ROUTES dict</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">CandidateResolver</div>
+      <div class="d">Resolves "o primeiro candidato"<br>Ordinal map (pt-BR)<br>Implicit reference resolution</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">ContextManager</div>
+      <div class="d">Stores cross-step results<br>store_result / get_result</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">ResponseBuilder</div>
+      <div class="d">Builds final response<br>NavigationActions, cards<br>Domain data aggregation</div>
+    </div>
+    <div class="hub-box hub-support">
+      <div class="t">Models</div>
+      <div class="d">HubResult, NavigationAction<br>TaskStrategy (seq/parallel)<br>NavigationActionType</div>
+    </div>
+  </div>
+  <div style="background: rgba(254,243,199,0.5); border: 1px dashed #d97706; border-radius: 6px; padding: 8px 12px; margin-top: 8px;">
     <div style="color: #92400e; font-size: 9px; line-height: 1.5; text-align: center;">
       <b>Hub-Level Shared Services (src/services/):</b> ModelRouter (dynamic LLM selection) · SemanticCache (pgvector, disabled by default) · LLMCache<br>
       ClarificationService · PendingActionStore · ResponseFilter (tone) · StreamingCallback · ThinkingCallback · OTTService<br>
-      EmbeddingService · RAGService · SectorBenchmark · QueryPatterns · ReferenceResolver · TTSService · AudioTranscription
+      EmbeddingService · RAGService · SectorBenchmark · QueryPatterns · ReferenceResolver · TTSService · AudioTranscription<br>
+      ExecutionTracker · LLMTrackingService · AuthService · Checkpointer · EndpointLoader · EvaluationService
     </div>
   </div>
 </div>
 
 <div class="arrow-down" style="color: #d97706;">&#9660;</div>
-<div class="layer-label label-wf">DOMAIN WORKFLOW — LangGraph StateGraph with Injected Callbacks (src/domains/workflow.py)</div>
+<div class="layer-label label-wf">WORKFLOW LAYER — Two Coexisting LangGraph Pipelines</div>
 <div class="layer layer-workflow">
-  <div class="row">
-    <div class="wf-box wf-core" style="min-width: 300px;">
-      <div class="t">DomainWorkflow (LangGraph StateGraph)</div>
-      <div class="d">3-node graph: Intent Classification (LLM) &#8594; Domain.execute_action() &#8594; Response Formatting<br>
-      Entry point for ALL 8 domains. Every domain passes through this workflow.</div>
+  <div style="margin-bottom: 8px;">
+    <div class="wf-box wf-core" style="margin-bottom: 6px;">
+      <div class="t">WorkflowOrchestrator (src/workflow/graph.py — 13KB) — Multi-Agent Pipeline</div>
+      <div class="d">LangGraph StateGraph with QueryState. 6-node pipeline: <b>IntentAnalyzerAgent</b> &#8594; <b>APIPlannerAgent</b> &#8594; <b>PlanValidatorAgent</b> &#8594; <b>APIExecutorAgent</b> &#8594; <b>DataProcessorAgent</b> &#8594; <b>AnswerFormatterAgent</b><br>
+      Agents defined in src/agents/ (intent_analyzer, api_planner, plan_validator, api_executor, data_processor, answer_formatter). Uses src/tools/ (ToolRegistry + ToolExecutor + contracts + hooks).</div>
     </div>
+    <div class="wf-box wf-core" style="margin-bottom: 6px;">
+      <div class="t">DomainWorkflow (src/domains/workflow.py — 22KB) — Per-Domain Intent+Execute+Format</div>
+      <div class="d">LangGraph StateGraph with DomainState. 3-node graph: <b>DomainIntentAgent</b> (LLM classifier &#8594; action_id) &#8594; <b>Domain.execute_action()</b> &#8594; <b>Response Formatting</b><br>
+      Entry point for ALL 8 domains. Uses LLMCacheService, CircuitBreaker, PII masking (log only), ResponseFilter (tone).</div>
+    </div>
+  </div>
+  <div class="row">
     <div class="wf-box wf-inject">
       <div class="t">&#9989; AuditCallbackHandler</div>
-      <div class="d">Injected into workflow<br>ALL 8 domains get audit<br>via DomainWorkflow callbacks</div>
+      <div class="d">Injected into both workflows<br>ALL 8 domains get audit<br>via LangChain callbacks</div>
     </div>
     <div class="wf-box wf-inject">
       <div class="t">&#9989; StreamingCallback</div>
-      <div class="d">Injected into workflow<br>ALL 8 domains get streaming<br>SSE progress events</div>
+      <div class="d">Injected into both workflows<br>ALL 8 domains get streaming<br>SSE progress events</div>
     </div>
     <div class="wf-box wf-inject">
       <div class="t">&#9989; ThinkingCallback</div>
-      <div class="d">Injected into workflow<br>ALL 8 domains get thinking<br>Reasoning step visibility</div>
+      <div class="d">Injected into both workflows<br>ALL 8 domains get thinking<br>Reasoning step visibility</div>
     </div>
     <div class="wf-box wf-inject">
-      <div class="t">DomainIntentAgent</div>
-      <div class="d">LLM classifier that picks<br>action_id for the domain<br>Uses LLMCacheService</div>
+      <div class="t">ToolRegistry (src/tools/)</div>
+      <div class="d">Tool contracts + executor<br>hooks.py pre/post hooks<br>formatter.py for output</div>
+    </div>
+    <div class="wf-box wf-inject">
+      <div class="t">TimedExecutor</div>
+      <div class="d">Wraps nodes with timing<br>Measures per-node latency<br>timed_node.py</div>
     </div>
   </div>
   <div class="highlight-box" style="margin-top: 8px;">
     <div class="t">&#9888; Key Insight: Audit + Streaming + Thinking are the ONLY truly universal cross-cutting concerns in v5</div>
-    <div class="d">These 3 callbacks are injected by DomainWorkflow and apply to all 8 domains automatically.<br>
+    <div class="d">These 3 callbacks are injected by both workflows and apply to all 8 domains automatically.<br>
     All other cross-cutting concerns (fairness, memory, cache, fact_checker) are opt-in per domain.</div>
   </div>
 </div>

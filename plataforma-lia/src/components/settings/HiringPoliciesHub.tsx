@@ -28,8 +28,8 @@ function InlineFieldEditor({
   isSaving,
 }: {
   field: string
-  currentValue: any
-  onSave: (value: any) => void
+  currentValue: unknown
+  onSave: (value: unknown) => void
   onCancel: () => void
   isSaving: boolean
 }) {
@@ -42,7 +42,7 @@ function InlineFieldEditor({
   })
 
   const handleSave = () => {
-    let parsed: any = localValue
+    let parsed: unknown = localValue
     if (config?.type === 'number') {
       parsed = localValue === '' ? null : Number(localValue)
     } else if (config?.type === 'boolean') {
@@ -304,7 +304,7 @@ export function HiringPoliciesHub() {
           {POLICY_BLOCKS.map((block) => {
             const IconComp = ICON_MAP[block.iconName]
             const isExpanded = expandedBlocks.has(block.key)
-            const blockData = policy ? (policy as any)[block.key] : null
+            const blockData = policy ? (policy as Record<string, unknown>)[block.key] : null
             const isCompleted = progress?.blocks_completed?.[block.key] ?? false
 
             return (

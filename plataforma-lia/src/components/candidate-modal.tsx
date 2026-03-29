@@ -14,11 +14,17 @@ import {
   Video, Linkedin, Globe, AlertCircle, CheckCircle, ArrowRight
 } from "lucide-react"
 
+interface ModalCandidate {
+  id?: string | number
+  name?: string
+  [key: string]: unknown
+}
+
 interface CandidateModalProps {
-  candidate: any
+  candidate: ModalCandidate
   isOpen: boolean
   onClose: () => void
-  onUpdateCandidate?: (candidate: any) => void
+  onUpdateCandidate?: (candidate: ModalCandidate) => void
   onAddNote?: (candidateId: number, note: string) => void
 }
 
@@ -396,7 +402,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {candidateData.education.map((edu: any, index: number) => (
+                  {candidateData.education.map((edu: { degree?: string; institution?: string; year?: string; location?: string }, index: number) => (
                     <div key={index} className="space-y-2">
                       <div className="font-medium text-gray-950 dark:text-gray-50">{edu.degree}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -457,7 +463,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               </div>
 
               <div className="space-y-4">
-                {candidateData.movementHistory.map((movement: any, index: number) => (
+                {candidateData.movementHistory.map((movement: { id: number; from?: string | null; to?: string; toName?: string; fromName?: string; date?: string; user?: string; notes?: string }, index: number) => (
                   <div key={movement.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 bg-gray-400 dark:bg-gray-800 rounded-full"></div>
@@ -563,7 +569,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   Notas e Comentários ({candidateData.notes.length})
                 </h3>
 
-                {candidateData.notes.map((note: any) => (
+                {candidateData.notes.map((note: { id: number; author: string; date?: string; content?: string; type?: string }) => (
                   <div key={note.id} className={`p-4 rounded-md border-l-4 ${getNoteColor(note.type)}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -597,7 +603,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               </h3>
 
               <div className="space-y-3">
-                {candidateData.interactions.map((interaction: any) => (
+                {candidateData.interactions.map((interaction: { id: number; type?: string; title?: string; date?: string; description?: string }) => (
                   <div key={interaction.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
                     <div className="mt-1">
                       {getInteractionIcon(interaction.type)}

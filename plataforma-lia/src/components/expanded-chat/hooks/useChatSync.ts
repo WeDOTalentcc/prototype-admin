@@ -7,8 +7,8 @@ export type FieldChangeSource = 'panel' | 'chat' | 'orchestrator'
 export interface FieldChange {
   id: string
   field: string
-  oldValue: any
-  newValue: any
+  oldValue: unknown
+  newValue: unknown
   source: FieldChangeSource
   timestamp: Date
   displayLabel?: string
@@ -65,16 +65,16 @@ function getFieldLabel(field: string): string {
   return FIELD_LABELS[field] || field
 }
 
-function formatValue(value: any): string {
+function formatValue(value: unknown): string {
   if (value === null || value === undefined) return '—'
   if (typeof value === 'boolean') return value ? 'Sim' : 'Não'
   if (typeof value === 'number') return value.toLocaleString('pt-BR')
   if (Array.isArray(value)) {
     if (value.length === 0) return '—'
-    return value.join(', ')
+    return (value as unknown[]).map(String).join(', ')
   }
-  if (typeof value === 'object') {
-    if (value.name) return value.name
+  if (typeof value === 'object' && value !== null) {
+    if ('name' in value && typeof (value as { name: unknown }).name === 'string') return (value as { name: string }).name
     return JSON.stringify(value)
   }
   return String(value)

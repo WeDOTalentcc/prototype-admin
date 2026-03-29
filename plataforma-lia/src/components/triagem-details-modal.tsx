@@ -13,14 +13,15 @@ import {
 } from "lucide-react"
 import { liaApi, WSIResultDetails, WSICandidateRanking, WSIVacancyRanking } from "@/services/lia-api"
 import { cn } from "@/lib/utils"
+import type { Candidate } from "@/components/pages/candidates/types"
 
 interface TriagemDetailsModalProps {
-  candidate: any
+  candidate: Candidate
   isOpen: boolean
   onClose: () => void
   jobVacancyId?: string
-  onApprove?: (candidate: any) => void
-  onReject?: (candidate: any) => void
+  onApprove?: (candidate: Candidate) => void
+  onReject?: (candidate: Candidate) => void
 }
 
 const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -228,7 +229,7 @@ export function TriagemDetailsModal({
 
   const handleSendFeedback = async () => {
     if (!details) return
-    const resultId = details.result_id || (details as any).id
+    const resultId = details.result_id || (details as WSIResultDetails & { id?: string }).id
     if (!resultId) return
     setSendingFeedback(true)
     setFeedbackError(null)
@@ -693,8 +694,8 @@ export function TriagemDetailsModal({
                         <div className="mb-2">
                           <p className="text-micro font-medium text-gray-600 mb-1 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-status-warning" /> Gaps Identificados:</p>
                           <ul className="space-y-2">
-                            {report.technical_analysis.gaps.map((g: any, i: number) => {
-                              const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : g
+                            {report.technical_analysis.gaps.map((g: unknown, i: number) => {
+                              const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : (g as { texto?: string; severidade?: string })
                               const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
                               return (
                                 <li key={i} className={`flex items-start gap-2.5 text-xs text-gray-700 rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
@@ -863,7 +864,7 @@ export function TriagemDetailsModal({
                       Geradas com base nos gaps identificados — use na entrevista presencial
                     </p>
                   </div>
-                  {f11Report.cbi_questions.map((q: any, i: number) => {
+                  {f11Report.cbi_questions.map((q: { severity?: string; question?: string; texto?: string; focus?: string; foco?: string }, i: number) => {
                     const sev = sevConfig[(q.severity as keyof typeof sevConfig) ?? 'baixa']
                     return (
                       <div key={i} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
@@ -938,7 +939,7 @@ export function TriagemDetailsModal({
                     </h3>
                     <button
                       onClick={() => {
-                        const f11Feedback = f11Report?.response_analyses?.map((a: any) => a.feedback).filter(Boolean) || []
+                        const f11Feedback = f11Report?.response_analyses?.map((a: { feedback?: string }) => a.feedback).filter(Boolean) || []
                         const text = [
                           ...(feedback ? [
                             feedback.main_message,
@@ -967,7 +968,7 @@ export function TriagemDetailsModal({
 
                   {!feedback && f11Report?.response_analyses && (
                     <div className="mb-3 space-y-1">
-                      {f11Report.response_analyses.slice(0, 3).map((a: any, i: number) => (
+                      {f11Report.response_analyses.slice(0, 3).map((a: { feedback?: string }, i: number) => (
                         a.feedback && (
                           <p key={i} className="text-xs text-gray-700 leading-relaxed">{a.feedback}</p>
                         )

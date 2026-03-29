@@ -24,6 +24,36 @@ import {
 import { HiringPoliciesHub } from './HiringPoliciesHub'
 import { textStyles, tabStyles, actionButtonStyles } from '@/lib/design-tokens'
 
+interface RawPipelineStage {
+  id: string
+  name: string
+  display_name: string
+  stage_order?: number
+  is_active?: boolean
+  description?: string
+  sla_hours?: number
+  stage_category?: string
+  color?: string
+  icon?: string
+  action_behavior?: string
+  default_channel?: string
+  sub_statuses?: unknown[]
+  catalog_id?: string
+}
+
+interface RawScreeningQuestion {
+  id: string
+  question_text?: string
+  question?: string
+  question_type?: string
+  is_required?: boolean
+  order?: number
+  is_default?: boolean
+  options?: string[]
+  is_eliminatory?: boolean
+  expected_answer?: string
+}
+
 interface ScreeningQuestion {
   id: string
   question: string
@@ -94,8 +124,8 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
 
         if (questionsRes.ok) {
           const questionsResult = await questionsRes.json()
-          const rawList: any[] = questionsResult.items ?? (Array.isArray(questionsResult) ? questionsResult : [])
-          const mapped = rawList.map((q: any) => ({
+          const rawList: RawScreeningQuestion[] = questionsResult.items ?? (Array.isArray(questionsResult) ? questionsResult : [])
+          const mapped = rawList.map((q: RawScreeningQuestion) => ({
             id: q.id,
             question: q.question_text || q.question,
             type: q.question_type === 'yes_no' ? 'yesno' : (q.question_type || 'text'),
@@ -113,7 +143,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         if (pipelineRes.ok) {
           const pipelineData = await pipelineRes.json()
           if (pipelineData.pipeline && Array.isArray(pipelineData.pipeline)) {
-            const stages: RecruitmentStage[] = pipelineData.pipeline.map((s: any, idx: number) => ({
+            const stages: RecruitmentStage[] = pipelineData.pipeline.map((s: RawPipelineStage, idx: number) => ({
               id: s.id,
               name: s.name,
               display_name: s.display_name,
@@ -243,7 +273,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
       if (response.ok) {
         const data = await response.json()
         if (data.pipeline) {
-          const updatedStages: RecruitmentStage[] = data.pipeline.map((s: any, idx: number) => ({
+          const updatedStages: RecruitmentStage[] = data.pipeline.map((s: RawPipelineStage, idx: number) => ({
             id: s.id,
             name: s.name,
             display_name: s.display_name,
@@ -730,7 +760,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Tipo</label>
                     <select
                       value={newQuestion.type}
-                      onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as any }))}
+                      onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
                       className={`w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white ${textStyles.body}`}
                     >
                       <option value="text">Texto livre</option>

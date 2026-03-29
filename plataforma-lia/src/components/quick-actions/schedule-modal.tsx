@@ -24,7 +24,7 @@ interface ScheduleModalProps {
   isOpen: boolean
   onClose: () => void
   candidate: Candidate | null
-  onSchedule: (type: string, datetime: string, details: any) => void
+  onSchedule: (type: string, datetime: string, details: Record<string, unknown>) => void
 }
 
 export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: ScheduleModalProps) {
@@ -95,7 +95,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
     setIsLiaAnalyzing(false)
   }
 
-  const analyzeCandidateForInterview = (candidate: any, focus: string) => {
+  const analyzeCandidateForInterview = (candidate: Candidate, focus: string) => {
     const seniorityLevel = candidate.seniority || candidate.level || 'Pleno'
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
@@ -225,9 +225,9 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
         break
       case 'notes':
         const focusAreas = Object.entries(liaRecommendations.interviewFocus)
-          .sort(([,a], [,b]) => (b as any).weight - (a as any).weight)
+          .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
           .slice(0, 2)
-          .map(([key, value]) => `${key}: ${(value as any).approach}`)
+          .map(([key, value]) => `${key}: ${(value as { approach?: string }).approach ?? ''}`)
           .join('\n')
         setNotes(`Foco da entrevista (sugerido pela LIA):\n\n${focusAreas}\n\nPontos de atenção:\n${liaRecommendations.attentionPoints.strengths[0]}`)
         break
@@ -353,7 +353,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               <div className="flex items-center gap-2">
                 <select
                   value={liaFocus}
-                  onChange={(e) => setLiaFocus(e.target.value as any)}
+                  onChange={(e) => setLiaFocus(e.target.value as 'comprehensive' | 'technical' | 'behavioral' | 'cultural')}
                   className="text-micro border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                 >
                   <option value="comprehensive">Análise Completa</option>
@@ -431,7 +431,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     <div>
                       <h5 className="text-xs font-medium text-gray-800 mb-2">Horários Recomendados:</h5>
                       <div className="space-y-2">
-                        {liaRecommendations.suggestedTimes.map((timeRec: any, idx: number) => (
+                        {liaRecommendations.suggestedTimes.map((timeRec: { time: string; reason?: string }, idx: number) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-100">
                             <div>
                               <span className="font-medium text-gray-800 text-xs">{timeRec.time}</span>
@@ -453,17 +453,20 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                       <h5 className="text-xs font-medium text-gray-800 mb-2">Foco da Entrevista:</h5>
                       <div className="grid grid-cols-2 gap-2">
                         {Object.entries(liaRecommendations.interviewFocus)
-                          .sort(([,a], [,b]) => (b as any).weight - (a as any).weight)
+                          .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
                           .slice(0, 4)
-                          .map(([key, value]: [string, any]) => (
+                          .map(([key, value]: [string, unknown]) => {
+                            const v = value as { weight?: number; approach?: string }
+                            return (
                           <div key={key} className="p-2 bg-white rounded-md border border-gray-100">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-micro font-medium text-gray-800 capitalize">{key}</span>
-                              <span className="text-micro text-gray-600 dark:text-gray-400">{value.weight}%</span>
+                              <span className="text-micro text-gray-600 dark:text-gray-400">{v.weight}%</span>
                             </div>
-                            <p className="text-micro text-gray-600">{value.approach}</p>
+                            <p className="text-micro text-gray-600">{v.approach}</p>
                           </div>
-                        ))}
+                            )
+                          })}
                       </div>
                       <button
                         onClick={() => applyLiaRecommendation('notes')}
@@ -512,7 +515,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               {interviewTypes.map((type) => (
                 <button
                   key={type.id}
-                  onClick={() => setScheduleType(type.id as any)}
+                  onClick={() => setScheduleType(type.id as 'phone' | 'video' | 'presential')}
                   className={`p-4 border rounded-md text-left transition-all ${
                     scheduleType === type.id
                       ? 'border-gray-300 bg-gray-100'

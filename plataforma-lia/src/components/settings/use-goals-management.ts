@@ -94,9 +94,19 @@ export const MONTHS = [
 
 // --- Hook Principal (Camada 1) ---
 
-export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, goals: any) => void) {
+interface GoalsUser {
+  id: string
+  name: string
+  email?: string
+  role?: string
+  department?: string
+  isActive?: boolean
+  avatar?: string
+}
+
+export function useGoalsManagement(users: GoalsUser[], onGoalUpdate: (userId: string, goals: UserGoal[]) => void) {
   // UI state
-  const [selectedUser, setSelectedUser] = useState<any | null>(null)
+  const [selectedUser, setSelectedUser] = useState<GoalsUser | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
   const [showCustomGoal, setShowCustomGoal] = useState(false)
   const [editingGoal, setEditingGoal] = useState<UserGoal | null>(null)
@@ -143,7 +153,7 @@ export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, 
     return { monthly: [], quarterly: [], yearly: [] }
   }, [])
 
-  const createGoalInBackend = async (goalData: any): Promise<UserGoal | null> => {
+  const createGoalInBackend = async (goalData: Partial<UserGoal> & { userId: string }): Promise<UserGoal | null> => {
     const response = await fetch('/api/backend-proxy/goals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -176,7 +186,7 @@ export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, 
     }
   }
 
-  const updateGoalInBackend = async (goalId: string, updates: any): Promise<boolean> => {
+  const updateGoalInBackend = async (goalId: string, updates: Partial<UserGoal>): Promise<boolean> => {
     const response = await fetch(`/api/backend-proxy/goals/${goalId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -233,9 +243,9 @@ export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, 
         if (!goal.templateId) return
         const key = `${goal.templateId}-${userId}`
         if (!newMonthly[key]) newMonthly[key] = []
-        const meta = (goal as any).goal_metadata
+        const meta = (goal as UserGoal & { goal_metadata?: { monthly_values?: Array<{ month: number; year: number; target?: number; current?: number }> } }).goal_metadata
         if (meta?.monthly_values && Array.isArray(meta.monthly_values)) {
-          meta.monthly_values.forEach((mv: any) => {
+          meta.monthly_values.forEach((mv: { month: number; year: number; target?: number; current?: number }) => {
             newMonthly[key].push({ userId, templateId: goal.templateId, month: mv.month, year: mv.year, target: mv.target || 0, current: mv.current || 0 })
           })
         } else {
@@ -490,7 +500,7 @@ export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, 
     })
   }
 
-  const handleApplyTemplate = async (template: GoalTemplate, targetUsers: any[]) => {
+  const handleApplyTemplate = async (template: GoalTemplate, targetUsers: GoalsUser[]) => {
     setIsSaving(true)
     setSavingTemplateId(template.id)
     setError(null)
@@ -519,7 +529,7 @@ export function useGoalsManagement(users: any[], onGoalUpdate: (userId: string, 
     setIsSaving(true)
     setError(null)
     try {
-      const goalsToCreate: any[] = []
+      const goalsToCreate: Array<Partial<UserGoal> & { userId: string }> = []
       let totalSkipped = 0
       for (const templateId of selectedTemplateIds) {
         const template = filteredTemplates.find(t => t.id === templateId) || goalTemplates.find(t => t.id === templateId)

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import type { TechnicalSkill, BasicInfoFields, SalaryInfo, DetectedCriteria, Benefit } from '../ExpandedChatContext'
 import type { FieldOrigin } from '../../job-creation/field-origin-badge'
+import type { JobConfig } from './usePublishingState'
 
 export interface CompanyConfig {
   workModel?: string
@@ -31,7 +32,7 @@ export interface WizardGreetingData {
     counts: Record<string, number>
     recommendations: string[]
   }
-  prefill_data: Record<string, any>
+  prefill_data: Record<string, unknown>
 }
 
 export interface UseCompanyConfigFetchOptions {
@@ -42,7 +43,7 @@ export interface UseCompanyConfigFetchOptions {
   setTechnicalSkills: React.Dispatch<React.SetStateAction<TechnicalSkill[]>>
   setSalaryInfo: React.Dispatch<React.SetStateAction<SalaryInfo>>
   setFieldOrigins: React.Dispatch<React.SetStateAction<Record<string, { source: FieldOrigin; confidence: number }>>>
-  setJobConfig: React.Dispatch<React.SetStateAction<any>>
+  setJobConfig: React.Dispatch<React.SetStateAction<JobConfig>>
   setCompanyMembersMap: (map: Map<string, string>) => void
   basicInfoFields: BasicInfoFields
 }
@@ -111,20 +112,20 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
         if (departmentsRes.ok) {
           const departmentsData = await departmentsRes.json()
           if (Array.isArray(departmentsData)) {
-            config.departments = departmentsData.map((d: any) => ({
+            config.departments = (departmentsData as { id: string; name: string }[]).map((d) => ({
               id: d.id,
               name: d.name
             }))
 
             const membersMap = new Map<string, string>()
             try {
-              const memberPromises = departmentsData.map(async (dept: any) => {
+              const memberPromises = (departmentsData as { id: string }[]).map(async (dept) => {
                 try {
                   const membersRes = await fetch(`/api/backend-proxy/company/departments/${dept.id}/members`)
                   if (membersRes.ok) {
                     const members = await membersRes.json()
                     if (Array.isArray(members)) {
-                      members.forEach((m: any) => {
+                      (members as { name?: string; email?: string }[]).forEach((m) => {
                         if (m.name && m.email) {
                           membersMap.set(m.name.trim().toLowerCase(), m.email)
                           membersMap.set(m.name.trim(), m.email)
@@ -145,7 +146,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
         if (benefitsRes.ok) {
           const benefitsData = await benefitsRes.json()
           const benefitsList = Array.isArray(benefitsData) ? benefitsData : benefitsData.items || []
-          config.benefits = benefitsList.filter((b: any) => b.is_active)
+          config.benefits = (benefitsList as { name: string; category: string; value?: number; is_active: boolean }[]).filter((b) => b.is_active)
         }
 
         if (greetingRes.ok) {
@@ -157,16 +158,16 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
 
             if (prefillData.departments && Array.isArray(prefillData.departments) && prefillData.departments.length > 0) {
               if (!config.departments || config.departments.length === 0) {
-                config.departments = prefillData.departments.map((d: any, idx: number) => ({
-                  id: d.id || `prefill-dept-${idx}`,
-                  name: d.name || d
+                config.departments = (prefillData.departments as ({ id?: string; name?: string } | string)[]).map((d, idx) => ({
+                  id: (typeof d === 'object' ? d.id : undefined) || `prefill-dept-${idx}`,
+                  name: (typeof d === 'object' ? d.name : d) || ''
                 }))
               }
             }
 
             if (prefillData.benefits && Array.isArray(prefillData.benefits) && prefillData.benefits.length > 0) {
               if (!config.benefits || config.benefits.length === 0) {
-                config.benefits = prefillData.benefits.map((b: any) => ({
+                config.benefits = (prefillData.benefits as { id?: string; name: string; value?: number; is_active?: boolean }[]).map((b) => ({
                   id: b.id,
                   name: b.name,
                   value: b.value,
@@ -177,7 +178,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
 
             if (prefillData.tech_stack && Array.isArray(prefillData.tech_stack) && prefillData.tech_stack.length > 0) {
               const existingTechStack = config.techStack || []
-              const prefillTechStack = prefillData.tech_stack.map((t: string) => {
+              const prefillTechStack = (prefillData.tech_stack as string[]).map((t) => {
                 const parts = t.split(':')
                 return parts.length > 1 ? parts[1] : t
               })
@@ -214,7 +215,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
         }
 
         if (config.hybridDaysOnsite) {
-          setJobConfig((prev: any) => ({ ...prev, hybridDaysOnsite: config.hybridDaysOnsite }))
+          setJobConfig((prev) => ({ ...prev, hybridDaysOnsite: config.hybridDaysOnsite }))
         }
 
         if (config.headquarters || (config.locations && config.locations.length > 0)) {

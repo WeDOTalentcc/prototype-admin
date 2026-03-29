@@ -128,7 +128,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Benchmarking Competitivo</h4>
                       <div className="space-y-2">
-                        {contextData.data.market_analysis.benchmarking_companies.map((company: any, index: number) => (
+                        {(contextData.data.market_analysis as { benchmarking_companies: { company: string; notes: string; range: string }[] }).benchmarking_companies.map((company, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div>
                               <h5 className="font-medium text-gray-800 dark:text-gray-100">{company.company}</h5>
@@ -475,7 +475,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Canais de Publicação</h4>
                       <div className="space-y-2">
-                        {contextData.data.publication_channels.map((channel: any, index: number) => (
+                        {(contextData.data.publication_channels as { platform: string; reach: string; budget: string; status: string }[]).map((channel, index: number) => (
                           <div key={index} className="flex items-center justify-between p-4 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div className="flex-1">
                               <h5 className="font-medium text-gray-800 dark:text-gray-100">{channel.platform}</h5>
@@ -566,7 +566,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Candidatos Top Performance</h4>
                       <div className="space-y-2">
-                        {contextData.data.top_candidates.map((candidate: any, index: number) => (
+                        {(contextData.data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate, index: number) => (
                           <div key={index} className="p-4 rounded-md bg-gray-100 dark:bg-gray-800">
                             <div className="flex items-center justify-between mb-3">
                               <div>
@@ -623,7 +623,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Cronograma de Screening</h4>
                       <div className="space-y-3 font-open-sans">
-                        {contextData.data.screening_schedule.map((interview: any, index: number) => (
+                        {(contextData.data.screening_schedule as { candidate: string; date: string; time: string; interviewer: string; status: string }[]).map((interview, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 rounded-md">
                             <div>
                               <h5 className="font-medium text-gray-950 dark:text-gray-50">{interview.candidate}</h5>
@@ -986,7 +986,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Predições de Melhoria</h4>
                       <div className="space-y-4 font-open-sans">
-                        {contextData.data.predictions.map((prediction: any, index: number) => (
+                        {(contextData.data.predictions as { category: string; confidence: number; current_performance: string; predicted_improvement: string; actions: string[] }[]).map((prediction, index: number) => (
                           <div key={index} className="p-4 rounded-md">
                             <div className="flex items-center justify-between mb-3">
                               <h5 className="font-medium text-gray-950 dark:text-gray-50">{prediction.category}</h5>
@@ -1118,7 +1118,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Candidatos Selecionados</h4>
                       <div className="space-y-3">
-                        {contextData.data.candidates_to_schedule.map((candidate: any, index: number) => (
+                        {(contextData.data.candidates_to_schedule as { name: string; score: number; interview_type: string; preferred_times: string[] }[]).map((candidate, index: number) => (
                           <div key={index} className="p-4 rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                             <div className="flex justify-between items-start mb-2">
                               <div>
@@ -1144,11 +1144,11 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Horários Disponíveis</h4>
                       <div className="space-y-4">
-                        {Object.entries(contextData.data.available_slots).map(([date, slots]: [string, any], index) => (
+                        {Object.entries(contextData.data.available_slots as Record<string, { time: string; duration: string; available: boolean }[]>).map(([date, slots], index) => (
                           <div key={index}>
                             <h5 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100">{date}</h5>
                             <div className="grid grid-cols-3 gap-2">
-                              {slots.map((slot: any, i: number) => (
+                              {slots.map((slot, i: number) => (
                                 <button
                                   key={i}
                                   disabled={!slot.available}

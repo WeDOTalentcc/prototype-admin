@@ -19,6 +19,57 @@ import {
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
+interface ApiExperience {
+  company_info?: { name?: string; location?: string; is_startup?: boolean }
+  company_roles?: { title?: string; start_date?: string; end_date?: string; description?: string }[]
+  company?: string
+  title?: string
+  start_date?: string
+  end_date?: string
+  duration?: string
+  location?: string
+  description?: string
+}
+
+interface ApiEducation {
+  school?: string
+  degree?: string
+  field_of_study?: string
+  start_date?: string
+  end_date?: string
+}
+
+interface ApiCandidate {
+  id?: string
+  name?: string
+  email?: string
+  phone?: string
+  headline?: string
+  current_title?: string
+  current_company?: string
+  location?: string
+  linkedin_url?: string
+  avatar_url?: string
+  picture_url?: string
+  skills?: string[]
+  seniority_level?: string
+  years_experience?: number
+  total_experience_years?: number
+  match_score?: number
+  source?: string
+  has_email?: boolean
+  has_phone?: boolean
+  is_opentowork?: boolean
+  is_decision_maker?: boolean
+  is_top_universities?: boolean
+  is_startup?: boolean
+  company_info?: { is_startup?: boolean }
+  expertise?: string
+  outreach_message?: string
+  experiences?: ApiExperience[]
+  education?: ApiEducation[]
+}
+
 type ChatMessage = {
   id: string
   type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
@@ -830,7 +881,7 @@ export function LIASearchSidebar({
                       }
 
                       if (data.candidates && data.candidates.length > 0) {
-                        const mappedCandidates = data.candidates.map((c: any) => ({
+                        const mappedCandidates = (data.candidates as ApiCandidate[]).map((c) => ({
                           id: c.id || `jd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                           candidateId: c.id?.substring(0, 8).toUpperCase() || 'JD',
                           name: c.name || 'Nome não disponível',
@@ -858,7 +909,7 @@ export function LIASearchSidebar({
                           expertise: c.expertise,
                           outreach_message: c.outreach_message,
                           experiences: c.experiences || [],
-                          workHistory: (c.experiences || []).map((exp: any) => ({
+                          workHistory: (c.experiences || []).map((exp: ApiExperience) => ({
                             company: exp.company_info?.name || exp.company || '',
                             title: exp.company_roles?.[0]?.title || exp.title || '',
                             startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
@@ -867,7 +918,7 @@ export function LIASearchSidebar({
                             location: exp.company_info?.location || exp.location || '',
                             description: exp.company_roles?.[0]?.description || exp.description || ''
                           })),
-                          education: (c.education || []).map((edu: any) => ({
+                          education: (c.education || []).map((edu: ApiEducation) => ({
                             school: edu.school || '',
                             degree: edu.degree || '',
                             field_of_study: edu.field_of_study || '',
@@ -877,8 +928,8 @@ export function LIASearchSidebar({
                           }))
                         }))
 
-                        const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
-                        const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
+                        const localCandidates = mappedCandidates.filter((c) => c.source === 'local')
+                        const globalCandidates = mappedCandidates.filter((c) => c.source === 'pearch')
 
                         // Respeitar searchSource selecionado pelo usuário
                         const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
@@ -1036,7 +1087,7 @@ export function LIASearchSidebar({
                       const data = await response.json()
 
                       if (data.candidates && data.candidates.length > 0) {
-                        const mappedCandidates = data.candidates.map((c: any) => ({
+                        const mappedCandidates = (data.candidates as ApiCandidate[]).map((c) => ({
                           id: c.id || `similar-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                           candidateId: c.id?.substring(0, 8).toUpperCase() || 'SIM',
                           name: c.name || 'Nome não disponível',
@@ -1064,7 +1115,7 @@ export function LIASearchSidebar({
                           expertise: c.expertise,
                           outreach_message: c.outreach_message,
                           experiences: c.experiences || [],
-                          workHistory: (c.experiences || []).map((exp: any) => ({
+                          workHistory: (c.experiences || []).map((exp: ApiExperience) => ({
                             company: exp.company_info?.name || exp.company || '',
                             title: exp.company_roles?.[0]?.title || exp.title || '',
                             startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
@@ -1073,7 +1124,7 @@ export function LIASearchSidebar({
                             location: exp.company_info?.location || exp.location || '',
                             description: exp.company_roles?.[0]?.description || exp.description || ''
                           })),
-                          education: (c.education || []).map((edu: any) => ({
+                          education: (c.education || []).map((edu: ApiEducation) => ({
                             school: edu.school || '',
                             degree: edu.degree || '',
                             field_of_study: edu.field_of_study || '',
@@ -1083,8 +1134,8 @@ export function LIASearchSidebar({
                           }))
                         }))
 
-                        const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
-                        const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
+                        const localCandidates = mappedCandidates.filter((c) => c.source === 'local')
+                        const globalCandidates = mappedCandidates.filter((c) => c.source === 'pearch')
 
                         // Respeitar searchSource selecionado pelo usuário
                         const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
