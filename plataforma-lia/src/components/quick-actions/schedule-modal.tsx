@@ -1,0 +1,753 @@
+"use client"
+
+import React, { useState, useEffect, useCallback } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Mail, Phone, MessageSquare, Calendar, Heart, Star, Send, Copy,
+  X, Check, Clock, User, Briefcase, MapPin, ExternalLink,
+  Users, FileText, Zap, Video, AlertCircle, CheckCircle,
+  Edit, Trash2, Plus, Filter, Search, MoreVertical,
+  Share2, Download, Upload, Eye, ChevronRight, Building,
+  Globe, Linkedin, Facebook, Instagram, Twitter, Youtube,
+  Calendar as CalendarIcon, Brain, RefreshCw, Info
+} from "lucide-react"
+import { liaApi } from "@/services/lia-api"
+import { useToast } from "@/hooks/use-toast"
+import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+
+// Interfaces
+interface Candidate {
+  id: string
+  name: string
+  role: string
+  email: string
+  phone: string
+  location: string
+  avatar?: string
+  score: number
+  status: string
+  matchPercentage: number
+  riskLevel: string
+  culturalFit: number
+  technicalMatch: number
+  experience: string
+  seniority: string
+  availability: string
+  expectedSalary: string
+  preferredLocation: string
+  linkedin?: string
+  portfolio?: string
+  skills: string[]
+  lastActivity: string
+  source: string
+}
+
+interface ContactModalProps {
+  isOpen: boolean
+  onClose: () => void
+  candidate: Candidate | null
+  onSend: (type: string, message: string, recipient: string) => void
+  initialAction?: 'general' | 'wsi_screening' | 'interview_invite'
+  jobTitle?: string
+}
+
+interface ScheduleModalProps {
+  isOpen: boolean
+  onClose: () => void
+  candidate: Candidate | null
+  onSchedule: (type: string, datetime: string, details: any) => void
+}
+
+interface FavoriteModalProps {
+  isOpen: boolean
+  onClose: () => void
+  candidates: Candidate[]
+  onToggleFavorite: (candidateId: string) => void
+  onCreateList: (name: string, candidateIds: string[]) => void
+}
+
+interface BatchActionModalProps {
+  isOpen: boolean
+  onClose: () => void
+  selectedCandidates: Candidate[]
+  onBatchAction: (action: string, data: any) => void
+}
+
+interface QuickViewModalProps {
+  isOpen: boolean
+  onClose: () => void
+  candidate: Candidate | null
+  onNavigateToFull: (candidateId: string) => void
+}
+
+// Modal de Contato
+// Modal de Agendamento
+export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: ScheduleModalProps) {
+  const [scheduleType, setScheduleType] = useState<'phone' | 'video' | 'presential'>('video')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [duration, setDuration] = useState('60')
+  const [interviewer, setInterviewer] = useState('')
+  const [notes, setNotes] = useState('')
+  const [location, setLocation] = useState('')
+  const [platform, setPlatform] = useState('zoom')
+
+  // LIA states
+  const [showLiaInsights, setShowLiaInsights] = useState(false)
+  const [liaRecommendations, setLiaRecommendations] = useState<any>(null)
+  const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
+  const [liaFocus, setLiaFocus] = useState<'technical' | 'behavioral' | 'cultural' | 'comprehensive'>('comprehensive')
+
+  if (!isOpen || !candidate) return null
+
+  const interviewTypes = [
+    {
+      id: 'phone',
+      name: 'Telefônica',
+      icon: Phone,
+      description: 'Conversa por telefone',
+      color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+    },
+    {
+      id: 'video',
+      name: 'Videoconferência',
+      icon: Video,
+      description: 'Reunião online por vídeo',
+      color: 'bg-status-success/10 text-status-success border-status-success/30'
+    },
+    {
+      id: 'presential',
+      name: 'Presencial',
+      icon: Building,
+      description: 'Encontro no escritório',
+      color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30'
+    }
+  ]
+
+  const platforms = [
+    { id: 'zoom', name: 'Zoom', icon: Video },
+    { id: 'teams', name: 'Teams', icon: Users },
+    { id: 'meet', name: 'Google Meet', icon: Video },
+    { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare }
+  ]
+
+  const interviewers = [
+    'Ana Silva - Recrutadora Sênior',
+    'Carlos Mendes - Tech Lead',
+    'Marina Costa - Gerente de Produto',
+    'Roberto Santos - RH'
+  ]
+
+  const generateLiaRecommendations = async () => {
+    setIsLiaAnalyzing(true)
+    setShowLiaInsights(true)
+
+    // Simular análise da LIA
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    const recommendations = analyzeCandidateForInterview(candidate, liaFocus)
+    setLiaRecommendations(recommendations)
+    setIsLiaAnalyzing(false)
+  }
+
+  const analyzeCandidateForInterview = (candidate: any, focus: string) => {
+    const seniorityLevel = candidate.seniority || candidate.level || 'Pleno'
+    const skills = candidate.skills || []
+    const experience = candidate.experience || ''
+    const role = candidate.role || candidate.position || ''
+    const score = candidate.matchPercentage || candidate.score || 85
+
+    return {
+      // Recomendações gerais
+      recommendedType: seniorityLevel.toLowerCase().includes('senior') || seniorityLevel.toLowerCase().includes('sênior') ? 'video' : 'video',
+      recommendedDuration: seniorityLevel.toLowerCase().includes('senior') ? '90' : seniorityLevel.toLowerCase().includes('junior') || seniorityLevel.toLowerCase().includes('júnior') ? '45' : '60',
+      recommendedPlatform: score >= 90 ? 'zoom' : 'teams',
+
+      // Horários sugeridos
+      suggestedTimes: [
+        { time: '10:00', reason: 'Horário ideal para entrevistas técnicas - candidato mais alerta' },
+        { time: '14:00', reason: 'Pós-almoço, momento relaxado para avaliação comportamental' },
+        { time: '16:00', reason: 'Final da tarde - bom para candidatos que trabalham' }
+      ],
+
+      // Foco da entrevista baseado no perfil
+      interviewFocus: {
+        technical: {
+          weight: score >= 85 ? 40 : 60,
+          topics: skills.slice(0, 3),
+          approach: score >= 85 ? 'Validação de expertise avançada' : 'Avaliação de conhecimentos fundamentais'
+        },
+        behavioral: {
+          weight: 30,
+          topics: ['Trabalho em equipe', 'Resolução de problemas', 'Comunicação'],
+          approach: seniorityLevel.toLowerCase().includes('senior') ? 'Foco em liderança e mentoria' : 'Foco em adaptabilidade e aprendizado'
+        },
+        cultural: {
+          weight: 20,
+          topics: ['Alinhamento com valores', 'Motivação', 'Objetivos de carreira'],
+          approach: 'Avaliar fit com cultura organizacional'
+        },
+        company: {
+          weight: 10,
+          topics: ['Interesse na empresa', 'Conhecimento do mercado', 'Expectativas'],
+          approach: 'Validar interesse genuíno na posição'
+        }
+      },
+
+      // Perguntas sugeridas
+      suggestedQuestions: {
+        opening: [
+          `Conte-me sobre sua experiência mais relevante como ${role}`,
+          `O que te motivou a se candidatar para esta posição?`,
+          `Como você descreveria seu estilo de trabalho?`
+        ],
+        technical: skills.slice(0, 3).map((skill: string) => `Descreva um projeto desafiador onde você utilizou ${skill}`),
+        behavioral: [
+          'Conte sobre uma situação onde você teve que resolver um conflito na equipe',
+          'Descreva um momento onde você teve que aprender algo completamente novo rapidamente',
+          'Como você lida com feedback negativo?'
+        ],
+        closing: [
+          'Quais são suas expectativas para os próximos passos?',
+          'Tem alguma dúvida sobre a empresa ou a posição?',
+          'O que você espera encontrar nesta oportunidade?'
+        ]
+      },
+
+      // Pontos de atenção
+      attentionPoints: {
+        strengths: [
+          `Score alto de ${score}% indica forte compatibilidade`,
+          `Experiência em ${skills[0]} alinhada com necessidades da vaga`,
+          `Localização favorável: ${candidate.location}`
+        ],
+        concerns: score < 80 ? [
+          'Score abaixo de 80% - investigar gaps específicos',
+          'Verificar motivação real para mudança'
+        ] : [
+          'Candidato strong - verificar expectativas salariais',
+          'Confirmar disponibilidade e interesse real'
+        ],
+        redFlags: [
+          'Verificar estabilidade profissional',
+          'Confirmar disponibilidade para início',
+          'Validar expectativas de crescimento'
+        ]
+      },
+
+      // Preparação do entrevistador
+      preparation: {
+        beforeInterview: [
+          `Revisar currículo focando em experiência com ${skills.slice(0, 2).join(' e ')}`,
+          'Preparar cenários práticos relacionados à vaga',
+          'Definir critérios de avaliação específicos'
+        ],
+        duringInterview: [
+          'Manter ambiente acolhedor mas profissional',
+          'Fazer anotações sobre pontos técnicos e comportamentais',
+          'Dar espaço para o candidato fazer perguntas'
+        ],
+        afterInterview: [
+          'Preencher avaliação imediatamente',
+          'Documentar impressões comportamentais',
+          'Definir próximos passos com timeline'
+        ]
+      },
+
+      // Configurações recomendadas
+      settings: {
+        sendReminder: true,
+        reminderTime: '24h',
+        includeCompanyInfo: true,
+        includeInterviewerInfo: true,
+        provideMaterials: score < 85
+      }
+    }
+  }
+
+  const applyLiaRecommendation = (type: string) => {
+    if (!liaRecommendations) return
+
+    switch (type) {
+      case 'duration':
+        setDuration(liaRecommendations.recommendedDuration)
+        break
+      case 'platform':
+        setPlatform(liaRecommendations.recommendedPlatform)
+        break
+      case 'type':
+        setScheduleType(liaRecommendations.recommendedType)
+        break
+      case 'notes':
+        const focusAreas = Object.entries(liaRecommendations.interviewFocus)
+          .sort(([,a], [,b]) => (b as any).weight - (a as any).weight)
+          .slice(0, 2)
+          .map(([key, value]) => `${key}: ${(value as any).approach}`)
+          .join('\n')
+        setNotes(`Foco da entrevista (sugerido pela LIA):\n\n${focusAreas}\n\nPontos de atenção:\n${liaRecommendations.attentionPoints.strengths[0]}`)
+        break
+    }
+  }
+
+  const [isScheduling, setIsScheduling] = useState(false)
+  const [createdInterviewId, setCreatedInterviewId] = useState<string | null>(null)
+
+  const handleSchedule = async () => {
+    setIsScheduling(true)
+
+    try {
+      const startTime = new Date(`${date}T${time}`)
+      
+      const interviewModeMap: Record<string, string> = {
+        'phone': 'phone',
+        'video': 'video', 
+        'presential': 'in_person'
+      }
+
+      const response = await liaApi.createInterview({
+        candidate_id: candidate.id,
+        candidate_name: candidate.name,
+        candidate_email: candidate.email,
+        interviewer_name: interviewer.split(' - ')[0] || interviewer,
+        interviewer_email: `${interviewer.split(' - ')[0]?.toLowerCase().replace(/\s+/g, '.')}@empresa.com`,
+        start_time: startTime.toISOString(),
+        duration_minutes: parseInt(duration),
+        interview_type: 'screening',
+        interview_mode: interviewModeMap[scheduleType] || 'video',
+        job_title: candidate.role,
+        location: scheduleType === 'presential' ? location : platform,
+        notes: notes || (liaRecommendations ? `Recomendações LIA aplicadas: ${liaFocus}` : undefined)
+      })
+
+      setCreatedInterviewId(response.id)
+
+      const scheduleData = {
+        type: scheduleType,
+        date,
+        time,
+        duration: parseInt(duration),
+        interviewer,
+        notes,
+        location: scheduleType === 'presential' ? location : platform,
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        candidateEmail: candidate.email,
+        candidatePhone: candidate.phone,
+        liaRecommendations: liaRecommendations || null,
+        interviewId: response.id
+      }
+
+      onSchedule(scheduleType, `${date}T${time}`, scheduleData)
+
+      const confirmMsg = `✅ Entrevista agendada com sucesso!\n\n` +
+        `📅 Data: ${new Date(startTime).toLocaleDateString('pt-BR')} às ${time}\n` +
+        `👤 Candidato: ${candidate.name}\n` +
+        `🎥 Tipo: ${scheduleType === 'video' ? 'Videoconferência' : scheduleType === 'phone' ? 'Telefone' : 'Presencial'}\n` +
+        `⏱️ Duração: ${duration} minutos\n\n` +
+        `Status: Funcional - Aguardando Configuração Calendar\n` +
+        `Os dados foram salvos no banco. Para sincronizar com calendário, configure Microsoft Graph ou Google Calendar.`
+
+      alert(confirmMsg)
+      onClose()
+    } catch (error) {
+      alert(`❌ Erro ao agendar entrevista: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    } finally {
+      setIsScheduling(false)
+    }
+  }
+
+  const handleDownloadIcs = async () => {
+    if (!createdInterviewId) return
+
+    try {
+      const blob = await liaApi.downloadInterviewIcs(createdInterviewId)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `entrevista_${candidate.name.replace(/\s+/g, '_')}.ics`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      alert('Erro ao baixar arquivo de calendário')
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={candidate.avatar} />
+              <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className={`${textStyles.title} dark:text-gray-100`}>
+                Agendar Entrevista - {candidate.name}
+              </h3>
+              <p className={textStyles.bodySmall}>
+                {candidate.role} • {candidate.location}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-6">
+          {/* LIA Assistant */}
+          <div className={`${cardStyles.flat} dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4`}>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className={`${textStyles.label} flex items-center gap-2`}>
+                <Brain className="w-4 h-4 text-wedo-cyan" />
+                LIA - Recomendações Inteligentes
+              </h4>
+              <div className="flex items-center gap-2">
+                <select
+                  value={liaFocus}
+                  onChange={(e) => setLiaFocus(e.target.value as any)}
+                  className="text-micro border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                >
+                  <option value="comprehensive">Análise Completa</option>
+                  <option value="technical">Foco Técnico</option>
+                  <option value="behavioral">Foco Comportamental</option>
+                  <option value="cultural">Foco Cultural</option>
+                </select>
+                <button
+                  onClick={generateLiaRecommendations}
+                  disabled={isLiaAnalyzing}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+                >
+                  {isLiaAnalyzing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4 text-wedo-cyan" />
+                      Analisar com LIA
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* LIA Recommendations */}
+            {showLiaInsights && (
+              <div className="mt-4">
+                {isLiaAnalyzing ? (
+                  <div className="flex items-center justify-center py-6">
+                    <div className="text-center">
+                      <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+                      <p className="text-xs text-gray-600">LIA analisando perfil para recomendações...</p>
+                    </div>
+                  </div>
+                ) : liaRecommendations && (
+                  <div className="space-y-4">
+                    {/* Quick Recommendations */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50">{liaRecommendations.recommendedDuration}min</div>
+                        <div className="text-micro text-gray-600">Duração sugerida</div>
+                        <button
+                          onClick={() => applyLiaRecommendation('duration')}
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                        >
+                          Aplicar
+                        </button>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedType}</div>
+                        <div className="text-micro text-gray-600">Tipo recomendado</div>
+                        <button
+                          onClick={() => applyLiaRecommendation('type')}
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                        >
+                          Aplicar
+                        </button>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedPlatform}</div>
+                        <div className="text-micro text-gray-600">Plataforma sugerida</div>
+                        <button
+                          onClick={() => applyLiaRecommendation('platform')}
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                        >
+                          Aplicar
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Suggested Times */}
+                    <div>
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Horários Recomendados:</h5>
+                      <div className="space-y-2">
+                        {liaRecommendations.suggestedTimes.map((timeRec: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-100">
+                            <div>
+                              <span className="font-medium text-gray-800 text-xs">{timeRec.time}</span>
+                              <span className="text-micro text-gray-600 ml-2">{timeRec.reason}</span>
+                            </div>
+                            <button
+                              onClick={() => setTime(timeRec.time)}
+                              className="text-micro h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                            >
+                              Usar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Interview Focus */}
+                    <div>
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Foco da Entrevista:</h5>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(liaRecommendations.interviewFocus)
+                          .sort(([,a], [,b]) => (b as any).weight - (a as any).weight)
+                          .slice(0, 4)
+                          .map(([key, value]: [string, any]) => (
+                          <div key={key} className="p-2 bg-white rounded-md border border-gray-100">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-micro font-medium text-gray-800 capitalize">{key}</span>
+                              <span className="text-micro text-gray-600 dark:text-gray-400">{value.weight}%</span>
+                            </div>
+                            <p className="text-micro text-gray-600">{value.approach}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => applyLiaRecommendation('notes')}
+                        className="text-micro mt-2 px-2 py-1 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                      >
+                        Aplicar foco nas observações
+                      </button>
+                    </div>
+
+                    {/* Key Insights */}
+                    <div className="border-t border-gray-100 pt-3">
+                      <h5 className="text-xs font-medium text-gray-800 mb-2">Insights Principais:</h5>
+                      <div className="grid grid-cols-1 gap-2">
+                        <div>
+                          <span className="text-micro font-medium text-gray-800 dark:text-gray-200">Pontos Fortes:</span>
+                          <ul className="text-micro text-gray-600 ml-2">
+                            {liaRecommendations.attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
+                              <li key={idx}>• {strength}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        {liaRecommendations.attentionPoints.concerns.length > 0 && (
+                          <div>
+                            <span className="text-micro font-medium text-status-warning">Pontos de Atenção:</span>
+                            <ul className="text-micro text-status-warning ml-2">
+                              {liaRecommendations.attentionPoints.concerns.slice(0, 2).map((concern: string, idx: number) => (
+                                <li key={idx}>• {concern}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Tipo de Entrevista */}
+          <div>
+            <h4 className="text-xs font-medium text-gray-800 mb-3">
+              Tipo de Entrevista
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              {interviewTypes.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setScheduleType(type.id as any)}
+                  className={`p-4 border rounded-md text-left transition-all ${
+                    scheduleType === type.id
+                      ? 'border-gray-300 bg-gray-100'
+                      : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                  }`}
+                >
+                  <type.icon className={`w-5 h-5 mb-2 ${scheduleType === type.id ? 'text-gray-900' : 'text-gray-500'}`} />
+                  <div className="text-xs font-medium text-gray-800">{type.name}</div>
+                  <div className="text-micro text-gray-600">{type.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Data e Hora */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                Data
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                Horário
+              </label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                Duração (min)
+              </label>
+              <select
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              >
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">1 hora</option>
+                <option value="90">1h 30min</option>
+                <option value="120">2 horas</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Local/Plataforma */}
+          {scheduleType === 'video' && (
+            <div>
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                Plataforma
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {platforms.map((plat) => (
+                  <button
+                    key={plat.id}
+                    onClick={() => setPlatform(plat.id)}
+                    className={`p-3 border rounded-md text-center transition-all ${
+                      platform === plat.id
+                        ? 'border-gray-300 bg-gray-100'
+                        : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                    }`}
+                  >
+                    <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'text-gray-900' : 'text-gray-500'}`} />
+                    <div className="text-micro text-gray-800 dark:text-gray-200">{plat.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {scheduleType === 'presential' && (
+            <div>
+              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                Local da Entrevista
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                placeholder="Endereço completo ou sala"
+              />
+            </div>
+          )}
+
+          {/* Entrevistador */}
+          <div>
+            <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              Entrevistador Responsável
+            </label>
+            <select
+              value={interviewer}
+              onChange={(e) => setInterviewer(e.target.value)}
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+            >
+              <option value="">Selecione o entrevistador</option>
+              {interviewers.map((person) => (
+                <option key={person} value={person}>{person}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Observações */}
+          <div>
+            <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              Observações para a Entrevista
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+              placeholder="Pontos específicos a abordar, preparações necessárias..."
+            />
+          </div>
+
+          {/* Status Info */}
+          <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
+            <div className="flex items-center gap-2 text-status-warning">
+              <Info className="w-4 h-4" />
+              <span className="text-xs font-medium">Funcional - Aguardando Configuração Calendar</span>
+            </div>
+            <p className="text-micro text-status-warning mt-1">
+              Entrevistas são salvas no banco de dados. Para sincronização automática com calendários, configure Microsoft Graph ou Google Calendar.
+            </p>
+          </div>
+
+          {/* Ações */}
+          <div className="flex justify-end gap-3 pt-5 border-t border-gray-100">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            {createdInterviewId && (
+              <button
+                onClick={handleDownloadIcs}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                Baixar .ICS
+              </button>
+            )}
+            <button
+              onClick={handleSchedule}
+              disabled={!date || !time || !interviewer || isScheduling}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-all disabled:opacity-50"
+            >
+              {isScheduling ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Agendando...
+                </>
+              ) : (
+                <>
+                  <Calendar className="w-4 h-4" />
+                  Agendar Entrevista
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
