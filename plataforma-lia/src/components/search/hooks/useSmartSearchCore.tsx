@@ -1292,6 +1292,28 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     { key: "archetypes", label: "Arquétipos", icon: Target }
   ]
 
+  const canSubmit = () => {
+    if (isLoading) return false
+    switch (mode) {
+      case "natural":
+        return value.trim().length > 0
+      case "boolean":
+        if (value.trim().length > 0 && booleanFinalPrompt.trim().length === 0) {
+          return false
+        }
+        return value.trim().length > 0 && !booleanError
+      case "jd":
+        return jdContent.trim().length > 0
+      case "similar":
+        const validUrls = similarUrls.filter(url => url.trim().length > 0)
+        return validUrls.length > 0 || similarCvFiles.length > 0
+      case "archetypes":
+        return selectedArchetype !== null
+      default:
+        return false
+    }
+  }
+
   const scopeControlsProps = {
     searchSource,
     onSearchSourceChange,
@@ -1319,30 +1341,6 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
         return "Buscar vagas concluídas..."
       default:
         return placeholder
-    }
-  }
-
-  const canSubmit = () => {
-    if (isLoading) return false
-    switch (mode) {
-      case "natural":
-        return value.trim().length > 0
-      case "boolean":
-        // If user has typed something, the preview prompt should also have content
-        // This prevents submission when user manually clears the preview textarea
-        if (value.trim().length > 0 && booleanFinalPrompt.trim().length === 0) {
-          return false
-        }
-        return value.trim().length > 0 && !booleanError
-      case "jd":
-        return jdContent.trim().length > 0
-      case "similar":
-        const validUrls = similarUrls.filter(url => url.trim().length > 0)
-        return validUrls.length > 0 || similarCvFiles.length > 0
-      case "archetypes":
-        return selectedArchetype !== null
-      default:
-        return false
     }
   }
 
