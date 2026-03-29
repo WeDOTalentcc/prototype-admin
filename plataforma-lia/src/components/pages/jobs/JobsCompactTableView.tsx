@@ -102,40 +102,40 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   if (isLoading) {
     return (
       <div className="overflow-x-auto">
-        <table className="w-full" style={{tableLayout: 'fixed'}}>
+        <table className="w-full table-fixed">
           <thead>
             <tr className="">
               <th className="py-3 px-3 text-center w-12">
                 <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '80px'}}>
+              <th className="py-3 px-3 text-left w-[80px]">
                 <div className="w-8 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '200px'}}>
+              <th className="py-3 px-3 text-left w-[200px]">
                 <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-center" style={{width: '100px'}}>
+              <th className="py-3 px-3 text-center w-[100px]">
                 <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '180px'}}>
+              <th className="py-3 px-3 text-left w-[180px]">
                 <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '100px'}}>
+              <th className="py-3 px-3 text-left w-[100px]">
                 <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '60px'}}>
+              <th className="py-3 px-3 text-left w-[60px]">
                 <div className="w-10 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '120px'}}>
+              <th className="py-3 px-3 text-left w-[120px]">
                 <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-left" style={{width: '100px'}}>
+              <th className="py-3 px-3 text-left w-[100px]">
                 <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
               </th>
-              <th className="py-3 px-3 text-center" style={{width: '100px'}}>
+              <th className="py-3 px-3 text-center w-[100px]">
                 <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
               </th>
-              <th className="py-3 px-3 text-center" style={{width: '80px'}}>
+              <th className="py-3 px-3 text-center w-[80px]">
                 <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
               </th>
             </tr>
@@ -204,7 +204,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
   return (
     <div className="overflow-auto h-full">
-      <table className="w-full" style={{tableLayout: 'fixed'}}>
+      <table className="w-full table-fixed">
         <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
@@ -245,7 +245,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   <th 
                     key={columnId} 
                     className="text-center py-3 px-3 text-xs font-semibold text-gray-950 dark:text-gray-200"
-                    style={{width: jobsColumnWidths.acoes}}
+                    style={{width: jobsColumnWidths.acoes}} /* dynamic */
                   >
                     <span className="sr-only">Ações</span>
                     <MoreVertical className="w-4 h-4 text-gray-800 dark:text-gray-200 mx-auto" aria-hidden="true" />
@@ -267,7 +267,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                     ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
                     ${config.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
                   `}
-                  style={{width: `${width}px`, minWidth: '50px'}}
+                  style={{width: `${width}px`, minWidth: '50px'}} /* dynamic */
                   draggable={columnId !== 'checkbox' && columnId !== 'acoes'}
                   onDragStart={(e) => onColumnDragStart(columnId, e)}
                   onDragOver={(e) => onColumnDragOver(columnId, e)}
@@ -339,7 +339,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'id') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-200">
                                 V{job.id.toString().padStart(4, '0')}
                               </span>
@@ -349,7 +349,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'vaga') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div>
                                 <div className="font-semibold text-xs text-gray-950 dark:text-gray-50 flex items-center gap-1">
                                   {pinnedJobs.has(job.id) && (
@@ -379,7 +379,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'candidatos') {
                           return (
-                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}} /* dynamic */>
                               <div className="flex items-center justify-center group relative cursor-help">
                                 <div className="flex items-center gap-1">
                                   <Users 
@@ -388,7 +388,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                         ? 'var(--gray-600)'
                                         : job.funnel.total >= 20
                                         ? 'var(--status-error)'
-                                        : 'var(--status-warning)'}}
+                                        : 'var(--status-warning)'}} /* dynamic */
                                   />
                                   <span className="text-sm font-normal text-gray-800 dark:text-gray-50">
                                     {job.funnel.total}
@@ -472,15 +472,14 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           }
                           
                           return (
-                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}} /* dynamic */>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{backgroundColor: 'var(--gray-200)',
-                                        width: `${getCardWidth(liaTriages.pipeline)}px`,
-                                        minWidth: '24px'}}>
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      style={{width: `${getCardWidth(liaTriages.pipeline)}px`,
+                                        minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.pipeline}
                                       </span>
@@ -499,10 +498,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{backgroundColor: 'var(--gray-300)',
-                                        width: `${getCardWidth(liaTriages.agendadas)}px`,
-                                        minWidth: '24px'}}>
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-300" 
+                                      style={{width: `${getCardWidth(liaTriages.agendadas)}px`,
+                                        minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.agendadas}
                                       </span>
@@ -520,7 +518,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     <div 
                                       className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
-                                        minWidth: '24px'}}>
+                                        minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.realizadas}
                                       </span>
@@ -536,10 +534,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
-                                      style={{backgroundColor: 'var(--gray-200)',
-                                        width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
-                                        minWidth: '24px'}}>
+                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      style={{width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
+                                        minWidth: '24px'}} /* dynamic */>
                                       <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
@@ -560,12 +557,12 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'status') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="space-y-1">
                                 <Badge
                                   variant="outline"
                                   className="border-0 text-xs font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50"
-                                  style={{backgroundColor: getStatusColor(job.status)}}
+                                  style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
                                   {job.status}
                                 </Badge>
@@ -591,11 +588,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             completed: 'var(--gray-400)',
                           }
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <Badge
                                 variant="outline"
                                 className="border-0 text-micro font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
-                                style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}}
+                                style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}} /* dynamic */
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   onJobPreview(job)
@@ -609,7 +606,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'recrutador') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
@@ -627,7 +624,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'gestor') {
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.manager}
                               </div>
@@ -637,7 +634,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'prazoTriagem') {
                           return (
-                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.openDate 
                                   ? new Date(job.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
@@ -649,7 +646,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
                         if (columnId === 'prazoShortlist' || columnId === 'prazoEncerramento') {
                           return (
-                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
                               <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
                                 {job.deadline 
                                   ? new Date(job.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
@@ -665,7 +662,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           const isFavorite = favoriteJobs.has(job.id)
                           
                           return (
-                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}}>
+                            <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="flex items-center gap-1">
                                 <Button
                                   variant="ghost"

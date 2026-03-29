@@ -109,16 +109,16 @@ export function ChatPage() {
   } = useChatPageCore()
 
   return (
-    <div className="flex overflow-hidden flex-1" style={{backgroundColor: 'var(--gray-50)'}}>
+    <div className="flex overflow-hidden flex-1 bg-gray-50">
       {/* Main Chat Area */}
       <div className={`flex flex-col transition-all duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0" style={{backgroundColor: 'var(--gray-50)', borderBottom: '1px solid var(--gray-200)'}}>
+        <div className="py-3 px-6 flex-shrink-0 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
               <div>
-                <h1 className="text-base font-semibold " style={{color: 'var(--gray-800)'}}>
+                <h1 className="text-base font-semibold text-gray-800">
                   Chat {chatId} - {chatTitle}
                 </h1>
                 <p className="text-xs font-open-sans text-gray-500">
@@ -149,10 +149,7 @@ export function ChatPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none"
-                  style={{border: '1px solid var(--gray-200)',
-                    backgroundColor: 'var(--white)',
-                    color: 'var(--gray-800)'}}
+                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-gray-200 bg-white text-gray-800"
                   autoFocus
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-600" />
@@ -171,11 +168,11 @@ export function ChatPage() {
           {/* Tabs de Navegação */}
           <div className="mt-2">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "conversa" | "controle")}>
-              <TabsList className="bg-transparent p-0 h-auto gap-4" style={{borderBottom: '1px solid var(--gray-200)'}}>
+              <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-gray-200">
                 <TabsTrigger 
                   value="conversa" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}}
+                  style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Conversa
@@ -183,7 +180,7 @@ export function ChatPage() {
                 <TabsTrigger 
                   value="controle" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}}
+                  style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <Cpu className="w-4 h-4 mr-2" />
                   Centro de Controle
@@ -207,7 +204,7 @@ export function ChatPage() {
           className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-all duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
-          style={{scrollBehavior: 'smooth'}}
+          style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
           onScroll={checkNewMessageIndicator}
         >
           {/* Empty state with PromptSuggestionsDock */}
@@ -215,10 +212,10 @@ export function ChatPage() {
             <div className={`text-left pt-8 ${messagesContainerClass}`}>
               <div className="mb-8">
                 <LIAIcon size="xl" className="mb-4" />
-                <h2 className="text-3xl font-semibold mb-3" style={{color: 'var(--gray-800)'}}>
+                <h2 className="text-3xl font-semibold mb-3 text-gray-800">
                   Oi, eu sou a <span className="text-gray-700">LIA</span>.
                 </h2>
-                <p className="text-base mb-8" style={{color: 'var(--gray-500)'}}>
+                <p className="text-base mb-8 text-gray-500">
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                 </p>
                 
@@ -240,9 +237,9 @@ export function ChatPage() {
                     <div className="flex-shrink-0 pt-4">
                       <LIAIcon size="md" />
                     </div>
-                    <div className="rounded-md p-5 flex-1" style={{backgroundColor: 'var(--gray-100)'}}>
+                    <div className="rounded-md p-5 flex-1 bg-gray-100">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium lia-name -ml-1" style={{color: 'var(--gray-800)'}}>
+                        <span className="text-sm font-medium lia-name -ml-1 text-gray-800">
                           Lia
                         </span>
                         <Badge variant="secondary" className="text-xs border-0">
@@ -284,10 +281,10 @@ export function ChatPage() {
                 <div className="flex-shrink-0 pt-4">
                   <LIAIcon size="md" />
                 </div>
-                <div className="rounded-md p-5 flex-1" style={{backgroundColor: 'var(--gray-100)'}}>
+                <div className="rounded-md p-5 flex-1 bg-gray-100">
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm" style={{color: 'var(--gray-500)'}}>
+                    <span className="text-sm text-gray-500">
                       LIA está digitando...
                     </span>
                   </div>
@@ -303,10 +300,8 @@ export function ChatPage() {
             <div className="absolute bottom-4 right-4">
               <Button
                 onClick={scrollToBottom}
-                className="rounded-full"
+                className="rounded-full bg-gray-800 text-white"
                 size="sm"
-                style={{backgroundColor: 'var(--gray-800)',
-                  color: 'var(--white)'}}
               >
                 <ChevronDown className="w-4 h-4 mr-1" />
                 Nova mensagem
@@ -316,7 +311,7 @@ export function ChatPage() {
         </div>
 
         {/* Input Card */}
-        <div className="p-6 flex-shrink-0" style={{backgroundColor: 'var(--gray-50)'}}>
+        <div className="p-6 flex-shrink-0 bg-gray-50">
           <div className={inputContainerClass}>
             {/* Context Pills */}
             {contextData && contextData.data?.totalCount > 0 && (
@@ -350,7 +345,7 @@ export function ChatPage() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
             ) : (
-              <div className="rounded-md p-5 space-y-4" style={{backgroundColor: 'var(--white)'}}>
+              <div className="rounded-md p-5 space-y-4 bg-white">
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && searchFlow.flowState !== "collecting_profile" && (
@@ -362,7 +357,7 @@ export function ChatPage() {
                             key={index}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-gray-200" style={{backgroundColor: 'var(--gray-50)'}}
+                            className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-gray-200 bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -399,7 +394,7 @@ export function ChatPage() {
 
                 {/* Attached Files Preview */}
                 {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2" style={{backgroundColor: 'var(--gray-100)'}}>
+                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2 bg-gray-100">
                     {attachedFiles.map((file, index) => {
                       const fileSizeKB = (file.size / 1024).toFixed(0)
                       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
@@ -408,22 +403,20 @@ export function ChatPage() {
                       return (
                         <div 
                           key={index}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
-                          style={{backgroundColor: 'var(--white)',
-                            border: '1px solid var(--gray-300)'}}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-white border border-gray-300"
                         >
                           <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                          <span className="max-w-[150px] truncate" style={{color: 'var(--gray-800)'}}>
+                          <span className="max-w-[150px] truncate text-gray-800">
                             {file.name}
                           </span>
-                          <span className="text-xs" style={{color: 'var(--gray-400)'}}>
+                          <span className="text-xs text-gray-400">
                             ({sizeDisplay})
                           </span>
                           <button
                             onClick={() => handleRemoveFile(index)}
                             className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
                           >
-                            <X className="w-3 h-3" style={{color: 'var(--gray-500)'}} />
+                            <X className="w-3 h-3 text-gray-500" />
                           </button>
                         </div>
                       )
@@ -460,7 +453,7 @@ export function ChatPage() {
                         <span className="text-sm font-medium text-gray-700">
                           Áudio gravado ({recordingTime}s)
                         </span>
-                        <span className="text-xs" style={{color: 'var(--gray-500)'}}>
+                        <span className="text-xs text-gray-500">
                           Pronto para enviar junto com sua mensagem
                         </span>
                       </div>
@@ -502,7 +495,7 @@ export function ChatPage() {
                         <span className="text-sm font-medium text-status-success">
                           Arquivo analisado: {fileAnalysisContext.filename}
                         </span>
-                        <span className="text-xs" style={{color: 'var(--gray-500)'}}>
+                        <span className="text-xs text-gray-500">
                           A análise será enviada junto com sua próxima mensagem
                         </span>
                       </div>
@@ -523,16 +516,14 @@ export function ChatPage() {
 
                 {/* Indicador de ação pendente */}
                 {activePendingAction && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35]"
-                    style={{color: 'var(--gray-500)'}}
+                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-gray-500"
                   >
                     <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse shrink-0" />
                     <span>
-                      Ação em andamento: <strong style={{color: 'var(--gray-800)'}}>{activePendingAction.intent.replace(/_/g, " ")}</strong>
+                      Ação em andamento: <strong className="text-gray-800">{activePendingAction.intent.replace(/_/g, " ")}</strong>
                     </span>
                     <button
-                      className="ml-auto text-xs hover:opacity-80 transition-opacity"
-                      style={{color: 'var(--gray-400)'}}
+                      className="ml-auto text-xs hover:opacity-80 transition-opacity text-gray-400"
                       onClick={() => handleSendMessage("cancelar")}
                       type="button"
                     >
@@ -550,7 +541,7 @@ export function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{backgroundColor: 'var(--gray-50)', color: 'var(--gray-800)'}}
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200 bg-gray-50 text-gray-800"
                       rows={1}
                     />
                   </div>
@@ -561,7 +552,6 @@ export function ChatPage() {
                       size="sm" 
                       onClick={activateSmartSearch}
                       className="transition-all duration-200 hover:scale-105"
-                      style={{color: 'var(--gray-500)'}}
                       title="Busca avançada de candidatos"
                     >
                       <Search className="w-4 h-4" />
@@ -588,9 +578,7 @@ export function ChatPage() {
                       onClick={() => handleSendMessage()}
                       disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                       size="sm"
-                      className="transition-all duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
-                      style={{backgroundColor: 'var(--gray-800)',
-                        color: 'var(--white)'}}
+                      className="transition-all duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
                       title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                     >
                       <Send className="w-4 h-4" />
