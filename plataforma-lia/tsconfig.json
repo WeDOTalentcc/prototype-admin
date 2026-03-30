@@ -9,7 +9,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": false, // TECH-DEBT: strict:true conflicts with noImplicitAny:false. 215 implicit-any errors block removal. Track as tech-debt.
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
