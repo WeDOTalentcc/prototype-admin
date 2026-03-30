@@ -11,6 +11,8 @@
 
 **Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
 
+**Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). A correspondência principal: Ag.0 = MainOrchestrator, Ag.2 = SourcingReActAgent, Ag.4 = WSIInterviewGraph, Ag.5 = scoring via WSIService, Ag.6 = SchedulingService, Ag.7 = AnalistaFeedback (pipeline domain), Ag.8 = ATSIntegrationReActAgent.
+
 **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
 ---
@@ -62,7 +64,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | Componente IA | O que faz | Por quê | Status |
 |--------------|----------|---------|--------|
 | **JDGeneratorService** (Claude) | Se o JD ainda não existe ou precisa ajuste, gera/melhora o JD a partir dos dados da vaga (mesmo serviço da E2) | Porque o roteiro WSI parte do JD — se não há JD, precisa gerar antes | ● |
-| **WSI Question Generator** (Gemini) | Recebe JD + competências técnicas + comportamentais + senioridade → gera perguntas WSI organizadas em Blocos 2 (elegibilidade), 3 (técnico), 4 (comportamental) via `POST /api/v1/wsi/generate-questions` | Porque as perguntas de triagem precisam ser calibradas por senioridade (Dreyfus), complexidade cognitiva (Bloom), traços de personalidade (Big Five) e competência (CBI) | ● |
+| **WSI Question Generator** (Gemini) | Recebe JD + competências técnicas + comportamentais + senioridade → gera perguntas WSI organizadas em Blocos 2 (elegibilidade), 3 (técnico), 4 (comportamental) via `POST /api/v1/wsi/generate-questions`. Há também o pipeline unificado `POST /api/v1/wsi/screening-pipeline` (`WSIScreeningPipeline`) que orquestra geração + calibração + scoring em fluxo único | Porque as perguntas de triagem precisam ser calibradas por senioridade (Dreyfus), complexidade cognitiva (Bloom), traços de personalidade (Big Five) e competência (CBI) | ● |
 | **WSIScreeningQuestionGenerator** (heurístico + calibração) | Gera perguntas via templates Big5/CBI/Bloom/Dreyfus quando o LLM não está disponível; aplica `SeniorityContextCalibrator` para ajustar Dreyfus target e Bloom levels por área/indústria | Porque o fallback garante geração mesmo sem LLM, e a calibração contextual adapta a dificuldade ao perfil real da vaga | ● |
 | **FairnessGuard L1/L2** | Pre-check nas perguntas geradas: L1 bloqueia perguntas com padrões discriminatórios; L2 alerta proxy terms | Porque perguntas de triagem discriminatórias invalidam o processo seletivo inteiro | ◐ |
 
@@ -105,7 +107,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **Ag.0 Orchestrator** (LangGraph) | Coordena pós-aprovação: dispara contato para aprovados, feedback para reprovados, delega a Ag.7 e Ag.8 | Porque a ação de aprovar/reprovar desencadeia múltiplos fluxos paralelos que precisam de coordenação | ● |
 | **Ag.7 AnalistaFeedback** (LangGraph) | Gera parecer textual de feedback para candidatos reprovados baseado nos dados de triagem/score | Porque feedback personalizado e construtivo melhora employer branding e é requisito WeDO Talent Guide | ● |
 | **Ag.8 IntegradorATS** (LangGraph) | Sincroniza status de aprovação/reprovação de volta ao ATS (Gupy/Pandape) via `sync_candidate_to_ats` | Porque o ATS externo precisa refletir a decisão tomada na plataforma LIA para manter consistência | ● |
-| **Policy Engine** | Aplica `ALPHA1_SECTOR_RULES`: autonomy levels + HITL thresholds por setor determinam se a IA pode agir sozinha ou precisa confirmação humana | Porque em setores regulados (saúde, finanças) a IA não pode tomar decisão final sem HITL | ● |
+| **Policy Engine** *(governa IA)* | Aplica `ALPHA1_SECTOR_RULES`: autonomy levels + HITL thresholds por setor determinam se a IA pode agir sozinha ou precisa confirmação humana. Nota: é regra determinística que controla o comportamento dos agentes IA, não é IA em si | Porque em setores regulados (saúde, finanças) a IA não pode tomar decisão final sem HITL | ● |
 | **FairnessGuard L1** | `check_rejection_fairness` como tool: valida se motivo de rejeição contém padrão discriminatório | Porque rejeições discriminatórias são risco legal e reputacional | ● |
 | **Learning Loop** | Captura decisões consultor vs. sugestão IA (aceitar/rejeitar/modificar) → alimenta routing adjustments + score calibration | Porque o delta entre sugestão IA e decisão humana é o sinal mais forte para melhorar o modelo | ● |
 | **Calibration** | Implicit feedback: consultor avança candidato com low-score = sinal de que o score está subestimando | Porque calibração contínua corrige systematic bias nos scores | ● |
@@ -123,7 +125,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 
 | Componente IA | O que faz | Por quê | Status |
 |--------------|----------|---------|--------|
-| **Ag.0 Orchestrator** (LangGraph) | Dispara contato via EmailService/WhatsAppService: seleciona template, personaliza com dados do candidato/vaga, agenda follow-ups | Porque o contato inicial e follow-ups precisam ser personalizados por candidato e vaga sem intervenção manual | ● |
+| **Ag.0 Orchestrator** (LangGraph) | Dispara contato via EmailService/WhatsAppService: seleciona template, personaliza com dados do candidato/vaga. Follow-ups dependem de scheduler (não implementado no MVP) | Porque o contato inicial precisa ser personalizado por candidato e vaga sem intervenção manual | ● (contato) / ○ (follow-up) |
 | **Template Learning** | Aprende quais templates de email têm melhor taxa de abertura/resposta → prioriza em envios futuros | Porque otimizar o template por performance reduz "sem_resposta" | ◐ |
 | **A/B Testing** | Variantes de template de email testadas por cohort para medir taxa de abertura/clique | Porque decisões de template devem ser data-driven, não por opinião | ◐ |
 
@@ -148,7 +150,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **Score Normalization** | Normaliza scores por versão do roteiro para comparação justa entre candidatos avaliados com roteiros diferentes | Porque se o roteiro mudou entre candidatos, scores brutos não são comparáveis | ● |
 | **Model Drift** | Monitora drift em scores WSI entre períodos → alerta se distribuição muda | Porque drift indica mudança no modelo de avaliação ou nos prompts | ● |
 | **Voice Analysis** | STT (Deepgram) + TTS (OpenAI): transcreve áudio do candidato → texto para avaliação; gera áudio da pergunta | Porque candidatos podem preferir responder por voz, e a plataforma precisa suportar multimodal | ● |
-| **Policy Engine** | Autonomy level por setor: define se Ag.5 pode auto-aprovar candidatos high-score ou precisa HITL | Porque em setores regulados a decisão final não pode ser 100% automática | ● |
+| **Policy Engine** *(governa IA)* | Autonomy level por setor: define se Ag.5 pode auto-aprovar candidatos high-score ou precisa HITL (regra determinística, não IA) | Porque em setores regulados a decisão final não pode ser 100% automática | ● |
 
 > **GAP CRITICO ⚠:** Chat web público NÃO EXISTE (frontend). Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.
 
@@ -164,7 +166,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 |--------------|----------|---------|--------|
 | **Ag.7 AnalistaFeedback** (LangGraph) | Gera feedback personalizado para reprovados com base no score WSI + parecer + motivo de rejeição | Porque feedback genérico prejudica employer branding; o LLM personaliza por competência | ● |
 | **Ag.8 IntegradorATS** (LangGraph) | Sincroniza decisão Gate 2 (aprovado/reprovado + motivo) de volta ao ATS | Porque o ATS precisa refletir o status pós-triagem para o workflow do cliente | ● |
-| **Policy Engine** | HITL thresholds por setor: define se candidatos acima de threshold X podem ser auto-aprovados | Porque Gate 2 é decisão crítica e setores regulados exigem aprovação humana explícita | ● |
+| **Policy Engine** *(governa IA)* | HITL thresholds por setor: define se candidatos acima de threshold X podem ser auto-aprovados (regra determinística, não IA) | Porque Gate 2 é decisão crítica e setores regulados exigem aprovação humana explícita | ● |
 | **FairnessGuard L1** | Valida motivo de rejeição: bloqueia se contém padrão discriminatório | Porque rejeição pós-triagem com motivo discriminatório é risco legal máximo | ● |
 | **Learning Loop** | Captura decisões Gate 2 vs. recomendação IA → alimenta calibration | Porque o delta Gate 2 é o sinal mais maduro (pós-triagem completa) para calibrar scoring | ● |
 | **Calibration** | Implicit feedback: consultor aprova candidato com low-WSI ou reprova high-WSI = sinal forte | Porque a calibração pós-WSI é mais precisa que a pós-sourcing (E5) | ● |
