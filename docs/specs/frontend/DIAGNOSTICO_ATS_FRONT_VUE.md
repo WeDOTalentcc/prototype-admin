@@ -61,59 +61,33 @@
 
 ## Diagnóstico Honesto — Estado Real
 
-┌──────────────────────────────┬──────────────────────────────────────────────────┬──────────────────────────┐
-│            Item              │              Real (auditoria)                     │          Status          │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Hex hardcoded (#RRGGBB)      │ ~50 arquivos / ~1.596 ocorrências                │ Nunca atacado            │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ rgba() hardcoded             │ ~80 arquivos / ~1.350 ocorrências                │ Nunca atacado            │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Inline :style="" / style=""  │ ~220 arquivos / ~1.168 ocorrências               │ Problema sistêmico       │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ !important em .vue           │ ~1.232 ocorrências estimadas                     │ Guerra de especificidade  │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ !important no style.css      │ 411 ocorrências em 1.864 linhas                  │ CSS global força tudo    │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ :deep() selector overrides   │ ~968 ocorrências estimadas                       │ Acoplamento ao Vuetify   │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ console.log/error/warn       │ ~60 arq Vue (~407 occ) + 58 composables (93 occ) │ Nunca limpo              │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Direct axios em componentes  │ ~437 ocorrências estimadas (bypass $api plugin)  │ Sem error handling padrão│
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ `: any` (composables)        │ 87 ocorrências / 58 composables                  │ Moderado                 │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ `: any` (stores)             │ 28 ocorrências / 18 stores                       │ Moderado                 │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ defineProps ausente           │ ~191/536 (36%) sem defineProps                   │ 64% coberto              │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Dark mode                    │ Vuetify theme OK, ~2.946 hex/rgba overridam      │ Infra boa, execucao 0%   │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Conflito primary/cyan        │ CSS: primary=#60BED1, Vuetify: primary=#111827   │ Confusão semântica       │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Monolitos (>500 linhas)      │ 35 arquivos (5 críticos >1.000 linhas)           │ Alto                     │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Types definidos              │ 7 arquivos em types/                             │ Insuficiente             │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Testes                       │ 0 arquivos (.test/.spec)                         │ Zero cobertura           │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ setTimeout sem cleanup       │ ~61 ocorrências estimadas                        │ Memory leaks             │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ setInterval em composables   │ 13 ocorrências                                   │ Memory leaks             │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Lifecycle cleanup ausente    │ ~72% sem onUnmounted pareado (top 45 files)      │ Memory leaks sistêmico   │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Direct window.* access       │ ~44 ocorrências estimadas                        │ Quebra SSR               │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ v-html (risco XSS)          │ ~12 ocorrências estimadas                         │ Vulnerabilidade          │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ ts-ignore / ts-nocheck       │ 0 ocorrências                                    │ OK                       │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ TODO/FIXME                   │ ~1 ocorrência                                    │ OK                       │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Composition API              │ 100% <script setup> (top 45 files)               │ OK                       │
-├──────────────────────────────┼──────────────────────────────────────────────────┼──────────────────────────┤
-│ Scoped styles                │ ~92% com <style scoped>                          │ OK                       │
-└──────────────────────────────┴──────────────────────────────────────────────────┴──────────────────────────┘
+| Item | Real (auditoria) | Status |
+|------|-------------------|--------|
+| Hex hardcoded (#RRGGBB) | ~50 arquivos / ~1.596 ocorrências | Nunca atacado |
+| rgba() hardcoded | ~80 arquivos / ~1.350 ocorrências | Nunca atacado |
+| Inline :style="" / style="" | ~220 arquivos / ~1.168 ocorrências | Problema sistêmico |
+| !important em .vue | ~1.232 ocorrências estimadas | Guerra de especificidade |
+| !important no style.css | 411 ocorrências em 1.864 linhas | CSS global força tudo |
+| :deep() selector overrides | ~968 ocorrências estimadas | Acoplamento ao Vuetify |
+| console.log/error/warn | ~60 arq Vue (~407 occ) + 58 composables (93 occ) | Nunca limpo |
+| Direct axios em componentes | ~437 ocorrências estimadas (bypass $api plugin) | Sem error handling padrão |
+| `: any` (composables) | 87 ocorrências / 58 composables | Moderado |
+| `: any` (stores) | 28 ocorrências / 18 stores | Moderado |
+| defineProps ausente | ~191/536 (36%) sem defineProps | 64% coberto |
+| Dark mode | Vuetify theme OK, ~2.946 hex/rgba overridam | Infra boa, execução 0% |
+| Conflito primary/cyan | CSS: primary=#60BED1, Vuetify: primary=#111827 | Confusão semântica |
+| Monolitos (>500 linhas) | 35 arquivos (5 críticos >1.000 linhas) | Alto |
+| Types definidos | 7 arquivos em types/ | Insuficiente |
+| Testes | 0 arquivos (.test/.spec) | Zero cobertura |
+| setTimeout sem cleanup | ~61 ocorrências estimadas | Memory leaks |
+| setInterval em composables | 13 ocorrências | Memory leaks |
+| Lifecycle cleanup ausente | ~72% sem onUnmounted pareado (top 45 files) | Memory leaks sistêmico |
+| Direct window.* access | ~44 ocorrências estimadas | Quebra SSR |
+| v-html (risco XSS) | ~12 ocorrências estimadas | Vulnerabilidade |
+| ts-ignore / ts-nocheck | 0 ocorrências | OK |
+| TODO/FIXME | ~1 ocorrência | OK |
+| Composition API | 100% `<script setup>` (top 45 files) | OK |
+| Scoped styles | ~92% com `<style scoped>` | OK |
 
 ---
 
@@ -123,170 +97,80 @@
 
 Estes 3 problemas devem ser resolvidos ANTES de qualquer esforço de conversão automatizada ou geração de código por agentes IA:
 
-┌───┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ # │           Problema               │              Escala                   │                        Por que bloqueia                                │
-├───┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 1 │ Cores hardcoded (hex + rgba)     │ ~2.946 ocorrências em ~130 arquivos   │ Qualquer ferramenta de conversão/geração precisa de tokens semânticos.  │
-│   │                                  │                                       │ Com hex/rgba inline, nao há como gerar dark mode, mudar paleta, ou     │
-│   │                                  │                                       │ converter automaticamente para outro framework.                         │
-├───┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 2 │ Zero testes automatizados        │ 0 arquivos .test/.spec em todo o     │ Impossível validar que conversão/geração nao quebrou funcionalidade.    │
-│   │                                  │ projeto                               │ Cada mudança é um salto no escuro. Sem testes, nao há safety net.       │
-├───┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 3 │ Conflito semântico primary/cyan  │ CSS global: primary = #60BED1        │ Geração automatizada nao sabe qual é o "primary" real. Qualquer tool    │
-│   │                                  │ Vuetify theme: primary = #111827     │ que leia o tema vai gerar output incorreto. text-primary = preto        │
-│   │                                  │                                       │ (Vuetify) vs .primary_color = cyan (CSS).                               │
-└───┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Por que bloqueia |
+|---|----------|--------|------------------|
+| 1 | Cores hardcoded (hex + rgba) | ~2.946 ocorrências em ~130 arquivos | Qualquer ferramenta de conversão/geração precisa de tokens semânticos. Com hex/rgba inline, não há como gerar dark mode, mudar paleta, ou converter automaticamente para outro framework. |
+| 2 | Zero testes automatizados | 0 arquivos .test/.spec em todo o projeto | Impossível validar que conversão/geração não quebrou funcionalidade. Cada mudança é um salto no escuro. Sem testes, não há safety net. |
+| 3 | Conflito semântico primary/cyan | CSS global: primary = #60BED1; Vuetify theme: primary = #111827 | Geração automatizada não sabe qual é o "primary" real. Qualquer tool que leia o tema vai gerar output incorreto. text-primary = preto (Vuetify) vs .primary_color = cyan (CSS). |
 
 ---
 
 ### BLOCO 2 — Problemas de Estilo e CSS (8 itens)
 
-┌────┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ #  │           Problema               │              Escala                   │                            Impacto                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  4 │ Inline styles (:style=""/style="")│ ~1.168 ocorrências / ~220 arquivos   │ Override do Vuetify theme, dark mode quebrado, impossível extrair       │
-│    │                                  │                                       │ para tokens. Regra: inline style legítimo APENAS para valores           │
-│    │                                  │                                       │ computados dinâmicos (ex: :style="{ width: progress + '%' }").          │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  5 │ !important em arquivos Vue       │ ~1.232 ocorrências estimadas          │ Guerra de especificidade CSS. Vuetify theme nao consegue prevalecer.    │
-│    │                                  │                                       │ Cada !important gera necessidade de mais !important em cascata.          │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  6 │ !important no style.css global   │ 411 ocorrências em 1.864 linhas       │ CSS global com !important força overrides em toda a aplicação.           │
-│    │                                  │                                       │ Qualquer componente precisa de !important para competir.                 │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  7 │ :deep() selector overrides       │ ~968 ocorrências estimadas            │ Acoplamento ao DOM interno do Vuetify — quebra em updates de versão.    │
-│    │                                  │                                       │ Cada upgrade do Vuetify pode mudar estrutura interna e invalidar :deep. │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  8 │ CSS global excessivo             │ 1.864 linhas com classes custom       │ Classes utilitárias custom (.f8 a .f32 com !important) que duplicam     │
-│    │                                  │ (.f8-.f32, .primary_color, etc.)      │ funcionalidade do Vuetify. Aumentam bundle e criam confusão.            │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│  9 │ Unscoped <style> blocks          │ ~55 arquivos .vue com style nao-scoped│ Poluição do namespace CSS global. Side-effects imprevisíveis entre      │
-│    │                                  │                                       │ componentes. Estilos de um componente afetam outros.                    │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 10 │ Arquivos sem <style>             │ ~214 arquivos .vue                    │ Componentes sem estilo próprio dependem de estilos globais implícitos   │
-│    │                                  │                                       │ ou herdam de parents — fragilidade e acoplamento invisível.              │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 11 │ Dark mode quebrado por cores     │ Vuetify theme light+dark OK, mas      │ Infraestrutura dark mode existe e é bem configurada. Execução 0%:       │
-│    │ hardcoded                        │ ~2.946 hex/rgba overridam             │ ~2.946 cores hardcoded impedem o tema de funcionar nos templates.       │
-└────┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Impacto |
+|---|----------|--------|---------|
+| 4 | Inline styles (`:style=""`/`style=""`) | ~1.168 ocorrências / ~220 arquivos | Override do Vuetify theme, dark mode quebrado, impossível extrair para tokens. Regra: inline style legítimo APENAS para valores computados dinâmicos (ex: `:style="{ width: progress + '%' }"`). |
+| 5 | !important em arquivos Vue | ~1.232 ocorrências estimadas | Guerra de especificidade CSS. Vuetify theme não consegue prevalecer. Cada !important gera necessidade de mais !important em cascata. |
+| 6 | !important no style.css global | 411 ocorrências em 1.864 linhas | CSS global com !important força overrides em toda a aplicação. Qualquer componente precisa de !important para competir. |
+| 7 | :deep() selector overrides | ~968 ocorrências estimadas | Acoplamento ao DOM interno do Vuetify — quebra em updates de versão. Cada upgrade do Vuetify pode mudar estrutura interna e invalidar :deep. |
+| 8 | CSS global excessivo | 1.864 linhas com classes custom (.f8-.f32, .primary_color, etc.) | Classes utilitárias custom (.f8 a .f32 com !important) que duplicam funcionalidade do Vuetify. Aumentam bundle e criam confusão. |
+| 9 | Unscoped `<style>` blocks | ~55 arquivos .vue com style não-scoped | Poluição do namespace CSS global. Side-effects imprevisíveis entre componentes. Estilos de um componente afetam outros. |
+| 10 | Arquivos sem `<style>` | ~214 arquivos .vue | Componentes sem estilo próprio dependem de estilos globais implícitos ou herdam de parents — fragilidade e acoplamento invisível. |
+| 11 | Dark mode quebrado por cores hardcoded | Vuetify theme light+dark OK, mas ~2.946 hex/rgba overridam | ~2.946 cores hardcoded impedem o tema de funcionar nos templates. Infraestrutura dark mode existe e é bem configurada, execução 0%. |
 
 ---
 
 ### BLOCO 3 — Problemas de Código e Qualidade (10 itens)
 
-┌────┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ #  │           Problema               │              Escala                   │                            Impacto                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 12 │ console.log/error/warn em .vue   │ ~407 ocorrências / ~60 arquivos       │ Poluição de logs de desenvolvimento. Potencial leak de informação       │
-│    │                                  │                                       │ sensível. Existe suppress-logs.client.ts mas nao resolve dev.           │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 13 │ console.log em composables       │ 93 ocorrências / 58 composables       │ Mesma poluição, mas em código reutilizável — cada componente que         │
-│    │                                  │                                       │ usa o composable herda os logs.                                         │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 14 │ Direct axios em componentes      │ ~437 ocorrências estimadas            │ Bypass do plugin $api centralizado. Sem interceptors de auth, sem       │
-│    │                                  │                                       │ error handling padrão, sem retry, sem logging uniforme.                  │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 15 │ setTimeout sem cleanup           │ ~61 ocorrências estimadas             │ Memory leaks quando componente desmonta antes do timeout disparar.       │
-│    │                                  │                                       │ Pode causar erros "Cannot update unmounted component".                   │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 16 │ setInterval em composables       │ 13 ocorrências em composables         │ Memory leaks se nao limpo em onUnmounted/onBeforeUnmount.                │
-│    │                                  │                                       │ Intervals continuam rodando após navegação de página.                   │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 17 │ Lifecycle cleanup ausente        │ onMounted sem onUnmounted pareado     │ Listeners, timers, WebSockets e subscriptions nao removidos.             │
-│    │                                  │ (~72% sem cleanup nos top 45 files)   │ Memory leaks sistêmico — app fica lento com uso prolongado.             │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 18 │ Direct window.* access           │ ~44 ocorrências estimadas             │ Quebra SSR do Nuxt 3. window nao existe no servidor — runtime error.     │
-│    │                                  │                                       │ Deve usar process.client guard ou <ClientOnly>.                         │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 19 │ v-html (risco XSS)              │ ~12 ocorrências estimadas             │ Injeção de HTML nao sanitizado — vulnerabilidade de segurança.           │
-│    │                                  │ (3 confirmadas + extrapolação)        │ Deve usar DOMPurify ou equivalent.                                      │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 20 │ $api plugin com `any` type       │ FetchContext usa options: any,        │ API layer sem tipagem — erros de request/response nao sao               │
-│    │                                  │ request?: any, response?: any         │ capturados em build time. TypeScript nao protege nada.                  │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 21 │ Handler 401 comentado            │ plugins/api.ts — redirect de 401      │ Usuário com token expirado nao é redirecionado para login.               │
-│    │                                  │ está comentado com "// Exemplo:"      │ Sessão expira silenciosamente — UX degradado.                           │
-└────┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Impacto |
+| --- | --- | --- | --- |
+| 12 | console.log/error/warn em .vue | ~407 ocorrências / ~60 arquivos | Poluição de logs de desenvolvimento. Potencial leak de informação sensível. Existe suppress-logs.client.ts mas nao resolve dev. |
+| 13 | console.log em composables | 93 ocorrências / 58 composables | Mesma poluição, mas em código reutilizável — cada componente que usa o composable herda os logs. |
+| 14 | Direct axios em componentes | ~437 ocorrências estimadas | Bypass do plugin $api centralizado. Sem interceptors de auth, sem error handling padrão, sem retry, sem logging uniforme. |
+| 15 | setTimeout sem cleanup | ~61 ocorrências estimadas | Memory leaks quando componente desmonta antes do timeout disparar. Pode causar erros "Cannot update unmounted component". |
+| 16 | setInterval em composables | 13 ocorrências em composables | Memory leaks se nao limpo em onUnmounted/onBeforeUnmount. Intervals continuam rodando após navegação de página. |
+| 17 | Lifecycle cleanup ausente | onMounted sem onUnmounted pareado (~72% sem cleanup nos top 45 files) | Listeners, timers, WebSockets e subscriptions nao removidos. Memory leaks sistêmico — app fica lento com uso prolongado. |
+| 18 | Direct window.* access | ~44 ocorrências estimadas | Quebra SSR do Nuxt 3. window nao existe no servidor — runtime error. Deve usar process.client guard ou <ClientOnly>. |
+| 19 | v-html (risco XSS) | ~12 ocorrências estimadas (3 confirmadas + extrapolação) | Injeção de HTML nao sanitizado — vulnerabilidade de segurança. Deve usar DOMPurify ou equivalent. |
+| 20 | $api plugin com `any` type | FetchContext usa options: any, request?: any, response?: any | API layer sem tipagem — erros de request/response nao sao capturados em build time. TypeScript nao protege nada. |
+| 21 | Handler 401 comentado | plugins/api.ts — redirect de 401 está comentado com "// Exemplo:" | Usuário com token expirado nao é redirecionado para login. Sessão expira silenciosamente — UX degradado. |
 
 ---
 
 ### BLOCO 4 — Problemas de Tipagem (6 itens)
 
-┌────┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ #  │           Problema               │              Escala                   │                            Impacto                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 22 │ `: any` em composables           │ 87 ocorrências / 58 composables       │ Sem type safety na lógica reutilizável. Erros de runtime nao            │
-│    │                                  │ (média 1.5/composable)                │ detectados em build. Qualquer valor aceito sem validação.               │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 23 │ `: any` em stores               │ 28 ocorrências / 18 stores            │ State management sem tipagem. Actions e getters aceitam qualquer        │
-│    │                                  │ (média 1.6/store)                     │ tipo — bugs silenciosos em runtime.                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 24 │ defineProps ausente              │ ~191/536 (36%) componentes sem        │ Componentes sem contrato de props. Impossível gerar bindings            │
-│    │                                  │ defineProps tipado                     │ automaticamente ou validar uso correto pelo parent.                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 25 │ Types insuficientes              │ Apenas 7 arquivos em types/ para      │ Tipos provavelmente inline/duplicados nos composables e stores.          │
-│    │                                  │ 536 componentes                       │ Sem reusabilidade, sem single source of truth.                          │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 26 │ 1 composable em JavaScript       │ useActiveSection.js — legado          │ Sem type checking, nao segue padrão TypeScript do projeto.              │
-│    │                                  │ (2.273 bytes)                         │ Deveria ser migrado para .ts.                                          │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 27 │ Middleware usa `: any`           │ microsoft-auth.ts — `(r: any)`        │ Response do axios sem tipagem no middleware de auth.                     │
-│    │                                  │ no response do axios                  │ Erro silencioso se API mudar formato de resposta.                       │
-└────┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Impacto |
+| --- | --- | --- | --- |
+| 22 | `: any` em composables | 87 ocorrências / 58 composables (média 1.5/composable) | Sem type safety na lógica reutilizável. Erros de runtime nao detectados em build. Qualquer valor aceito sem validação. |
+| 23 | `: any` em stores | 28 ocorrências / 18 stores (média 1.6/store) | State management sem tipagem. Actions e getters aceitam qualquer tipo — bugs silenciosos em runtime. |
+| 24 | defineProps ausente | ~191/536 (36%) componentes sem defineProps tipado | Componentes sem contrato de props. Impossível gerar bindings automaticamente ou validar uso correto pelo parent. |
+| 25 | Types insuficientes | Apenas 7 arquivos em types/ para 536 componentes | Tipos provavelmente inline/duplicados nos composables e stores. Sem reusabilidade, sem single source of truth. |
+| 26 | 1 composable em JavaScript | useActiveSection.js — legado (2.273 bytes) | Sem type checking, nao segue padrão TypeScript do projeto. Deveria ser migrado para .ts. |
+| 27 | Middleware usa `: any` | microsoft-auth.ts — `(r: any)` no response do axios | Response do axios sem tipagem no middleware de auth. Erro silencioso se API mudar formato de resposta. |
 
 ---
 
 ### BLOCO 5 — Problemas de Arquitetura (7 itens)
 
-┌────┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ #  │           Problema               │              Escala                   │                            Impacto                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 28 │ Monolitos críticos (>1.000 lin.) │ 5 arquivos:                          │ Impossível revisar, testar, ou converter individualmente.                │
-│    │                                  │ kanban.vue (2.129)                    │ Cada arquivo contém múltiplas responsabilidades misturadas.             │
-│    │                                  │ lia/candidates/index.vue (2.095)     │ Alto risco em qualquer mudança.                                        │
-│    │                                  │ jobs/form/questions.vue (1.526)       │                                                                        │
-│    │                                  │ evaluations/wrapper.vue (1.463)      │                                                                        │
-│    │                                  │ jobs/form/description.vue (1.245)    │                                                                        │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 29 │ Monolitos altos (500-1.000 lin.) │ 30 arquivos adicionais               │ Mesmos problemas em menor escala. Dificultam code review,               │
-│    │                                  │ (list.vue, general.vue, settings,    │ onboarding de novos devs, e geração automatizada.                      │
-│    │                                  │ schedule_interview, screening, etc.)  │                                                                        │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 30 │ features/messages/ oversized     │ 88 arquivos em um único domínio      │ Violação de single responsibility. Difícil navegar, entender scope,     │
-│    │                                  │                                       │ e manter. Candidato a sub-modularização.                                │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 31 │ components/ui/table/ complexo    │ 52 arquivos para sistema de tabela   │ Subsistema que deveria ser uma lib/package separado.                     │
-│    │                                  │                                       │ Acoplado ao resto da app, difícil de testar isoladamente.               │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 32 │ Composables oversized            │ useSourcingWebSocket.ts (605 linhas)  │ Composables monolíticos — difíceis de testar, manter e reutilizar.      │
-│    │                                  │ useHubVoiceCommand.ts (465 linhas)   │ Devem ser splitados em sub-composables menores.                         │
-│    │                                  │ useVoiceRecorder.ts (449 linhas)     │                                                                        │
-│    │                                  │ useCurriculumParser.ts (417 linhas)  │                                                                        │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 33 │ Apenas 1 middleware              │ Só microsoft-auth.ts                  │ Rotas protegidas sem guard centralizado de autenticação.                 │
-│    │                                  │ Sem auth guard geral                  │ Qualquer rota /user/* pode ser acessada sem token válido.               │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 34 │ Sem error.vue                    │ Nuxt error page nao implementada     │ Erros 404/500 mostram página default genérica do Nuxt.                  │
-│    │                                  │                                       │ UX degradado para usuário final em erros.                               │
-└────┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Impacto |
+| --- | --- | --- | --- |
+| 28 | Monolitos críticos (>1.000 lin.) | 5 arquivos: kanban.vue (2.129) lia/candidates/index.vue (2.095) jobs/form/questions.vue (1.526) evaluations/wrapper.vue (1.463) jobs/form/description.vue (1.245) | Impossível revisar, testar, ou converter individualmente. Cada arquivo contém múltiplas responsabilidades misturadas. Alto risco em qualquer mudança. |
+| 29 | Monolitos altos (500-1.000 lin.) | 30 arquivos adicionais (list.vue, general.vue, settings, schedule_interview, screening, etc.) | Mesmos problemas em menor escala. Dificultam code review, onboarding de novos devs, e geração automatizada. |
+| 30 | features/messages/ oversized | 88 arquivos em um único domínio | Violação de single responsibility. Difícil navegar, entender scope, e manter. Candidato a sub-modularização. |
+| 31 | components/ui/table/ complexo | 52 arquivos para sistema de tabela | Subsistema que deveria ser uma lib/package separado. Acoplado ao resto da app, difícil de testar isoladamente. |
+| 32 | Composables oversized | useSourcingWebSocket.ts (605 linhas) useHubVoiceCommand.ts (465 linhas) useVoiceRecorder.ts (449 linhas) useCurriculumParser.ts (417 linhas) | Composables monolíticos — difíceis de testar, manter e reutilizar. Devem ser splitados em sub-composables menores. |
+| 33 | Apenas 1 middleware | Só microsoft-auth.ts Sem auth guard geral | Rotas protegidas sem guard centralizado de autenticação. Qualquer rota /user/* pode ser acessada sem token válido. |
+| 34 | Sem error.vue | Nuxt error page nao implementada | Erros 404/500 mostram página default genérica do Nuxt. UX degradado para usuário final em erros. |
 
 ---
 
 ### BLOCO 6 — Problemas de Infraestrutura e DX (3 itens)
 
-┌────┬──────────────────────────────────┬───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────┐
-│ #  │           Problema               │              Escala                   │                            Impacto                                     │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 35 │ Sem .env.example                 │ Nenhum arquivo de exemplo de env vars│ Novos devs nao sabem quais variáveis configurar.                        │
-│    │                                  │                                       │ Onboarding lento e propenso a erros.                                   │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 36 │ Sem i18n                         │ 0 ocorrências de $t(), sem vue-i18n  │ Todas as strings hardcoded em português.                                │
-│    │                                  │                                       │ Impossível internacionalizar sem rewrite massivo.                       │
-├────┼──────────────────────────────────┼───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
-│ 37 │ Sem validação de forms           │ Sem VeeValidate / Zod / Yup          │ Cada formulário implementa validação ad-hoc ou simplesmente             │
-│    │ padronizada                      │                                       │ nao implementa. Inconsistência de UX e data quality.                   │
-└────┴──────────────────────────────────┴───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+| # | Problema | Escala | Impacto |
+| --- | --- | --- | --- |
+| 35 | Sem .env.example | Nenhum arquivo de exemplo de env vars | Novos devs nao sabem quais variáveis configurar. Onboarding lento e propenso a erros. |
+| 36 | Sem i18n | 0 ocorrências de $t(), sem vue-i18n | Todas as strings hardcoded em português. Impossível internacionalizar sem rewrite massivo. |
+| 37 | Sem validação de forms padronizada | Sem VeeValidate / Zod / Yup | Cada formulário implementa validação ad-hoc ou simplesmente nao implementa. Inconsistência de UX e data quality. |
 
 ---
 
@@ -824,23 +708,15 @@ Component Defaults:
 
 **Estimativa: 1 sprint**
 
-┌─────┬────────────────────────────────────────────────────────────┬──────────────────────────────────────┬──────────┐
-│  #  │                           Ação                             │            Arquivos                  │  Agente  │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A1  │ Remover console.log/error/warn em .vue                     │ ~60 arquivos / ~407 ocorrências      │ Agente 1 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A2  │ Remover console.log em composables                         │ 58 composables / 93 ocorrências      │ Agente 1 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A3  │ Migrar useActiveSection.js para .ts                        │ 1 arquivo                            │ Agente 1 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A4  │ Criar error.vue (Nuxt error page)                          │ 1 arquivo novo                       │ Agente 2 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A5  │ Criar .env.example                                         │ 1 arquivo novo                       │ Agente 2 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A6  │ Fix handler 401 em plugins/api.ts                          │ 1 arquivo                            │ Agente 2 │
-├─────┼────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────┤
-│ A7  │ Resolver conflito primary/cyan no style.css                │ 1 arquivo (style.css)                │ Agente 2 │
-└─────┴────────────────────────────────────────────────────────────┴──────────────────────────────────────┴──────────┘
+| # | Ação | Arquivos | Agente |
+| --- | --- | --- | --- |
+| A1 | Remover console.log/error/warn em .vue | ~60 arquivos / ~407 ocorrências | Agente 1 |
+| A2 | Remover console.log em composables | 58 composables / 93 ocorrências | Agente 1 |
+| A3 | Migrar useActiveSection.js para .ts | 1 arquivo | Agente 1 |
+| A4 | Criar error.vue (Nuxt error page) | 1 arquivo novo | Agente 2 |
+| A5 | Criar .env.example | 1 arquivo novo | Agente 2 |
+| A6 | Fix handler 401 em plugins/api.ts | 1 arquivo | Agente 2 |
+| A7 | Resolver conflito primary/cyan no style.css | 1 arquivo (style.css) | Agente 2 |
 
 ---
 
@@ -997,15 +873,11 @@ Agente 3 — Componentes + E2E:
 
 **Estimativa: 1 sprint**
 
-┌──────────────────────────────────────────────────────────────────────┬──────────┐
-│                              Dimensões                               │  Agente  │
-├──────────────────────────────────────────────────────────────────────┼──────────┤
-│ D1-D5: Tokens, DS v4.1, dark mode, tipografia, espaçamento           │ Agente 1 │
-├──────────────────────────────────────────────────────────────────────┼──────────┤
-│ D6-D10: Vue portability, type safety, composables, props, stores     │ Agente 2 │
-├──────────────────────────────────────────────────────────────────────┼──────────┤
-│ D11-D14: Performance, acessibilidade (WCAG), compliance LGPD, testes │ Agente 3 │
-└──────────────────────────────────────────────────────────────────────┴──────────┘
+| Dimensões | Agente |
+| --- | --- |
+| D1-D5: Tokens, DS v4.1, dark mode, tipografia, espaçamento | Agente 1 |
+| D6-D10: Vue portability, type safety, composables, props, stores | Agente 2 |
+| D11-D14: Performance, acessibilidade (WCAG), compliance LGPD, testes | Agente 3 |
 
 ---
 
