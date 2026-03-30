@@ -220,6 +220,9 @@ export function useCandidatesPageCore({
   // Alias for backward compat
   const handleBulkActionComplete = refreshCandidates
 
+  // ── Advanced filters state (declared early — referenced in effects below) ─
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(DEFAULT_ADVANCED_FILTERS)
+
   // ── Navigation & URL effects ──────────────────────────────────────────────
   useEffect(() => {
     if (activeTab === 'search' || activeTab === 'favorites' || activeTab === 'lists') {
@@ -322,7 +325,6 @@ export function useCandidatesPageCore({
   // ── Local state ───────────────────────────────────────────────────────────
   const [itemsPerPage] = useState(50)
   const tableContainerRef = useRef<HTMLDivElement>(null)
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(DEFAULT_ADVANCED_FILTERS)
 
   const [liaPromptEntities, setLiaPromptEntities] = useState<ParsedEntities>({
     job_title: undefined, location: undefined, skills: [],
