@@ -1,6 +1,7 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   auditLogsService,
   AuditLog,
@@ -9,15 +10,15 @@ import {
   AuditLogFilters,
   ActionCategory,
   AuditStatus,
-} from '@/services/admin/audit-logs-service'
+} from "@/services/admin/audit-logs-service"
 
 export interface UseAuditLogsFilters {
   dateFrom?: string
   dateTo?: string
   clientId?: string
   userId?: string
-  actionCategory?: ActionCategory | 'all'
-  status?: AuditStatus | 'all'
+  actionCategory?: ActionCategory | "all"
+  status?: AuditStatus | "all"
   action?: string
   search?: string
 }
@@ -41,91 +42,100 @@ export interface UseAuditLogsResult {
 
 const DEFAULT_PAGE_SIZE = 50
 
+const buildFilters = (filters?: UseAuditLogsFilters, page = 1, pageSize = DEFAULT_PAGE_SIZE): AuditLogFilters => {
+  const apiFilters: AuditLogFilters = {
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  }
+
+  if (filters?.dateFrom) apiFilters.dateFrom = filters.dateFrom
+  if (filters?.dateTo) apiFilters.dateTo = filters.dateTo
+  if (filters?.clientId && filters.clientId !== "all") apiFilters.clientId = filters.clientId
+  if (filters?.userId) apiFilters.userId = filters.userId
+  if (filters?.actionCategory && filters.actionCategory !== "all") {
+    apiFilters.actionCategory = filters.actionCategory as ActionCategory
+  }
+  if (filters?.status && filters.status !== "all") {
+    apiFilters.status = filters.status as AuditStatus
+  }
+  if (filters?.action) apiFilters.action = filters.action
+  if (filters?.search) apiFilters.action = filters.search
+
+  return apiFilters
+}
+
 export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogsResult {
-  const [logs, setLogs] = useState<AuditLog[]>([])
-  const [stats, setStats] = useState<AuditStats | null>(null)
-  const [retentionPolicies, setRetentionPolicies] = useState<RetentionPolicy[]>([])
-  const [totalLogs, setTotalLogs] = useState(0)
-  const [hasMore, setHasMore] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [isExporting, setIsExporting] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
 
-  const buildFilters = useCallback((filters?: UseAuditLogsFilters, page = 1, pageSize = DEFAULT_PAGE_SIZE): AuditLogFilters => {
-    const apiFilters: AuditLogFilters = {
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
+  const { data, error, isLoading, mutate } = useSWR(
+    "adminAuditLogs",
+    async () => {
+      const [logsResponse, statsData, policiesResponse] = await Promise.all([
+        auditLogsService.getAuditLogs(buildFilters(initialFilters)),
+        auditLogsService.getAuditStats(),
+        auditLogsService.getRetentionPolicies(),
+      ])
+      return {
+        logs: logsResponse.logs,
+        total: logsResponse.total,
+        hasMore: logsResponse.hasMore,
+        stats: statsData,
+        retentionPolicies: policiesResponse.policies,
+      }
     }
-
-    if (filters?.dateFrom) apiFilters.dateFrom = filters.dateFrom
-    if (filters?.dateTo) apiFilters.dateTo = filters.dateTo
-    if (filters?.clientId && filters.clientId !== 'all') apiFilters.clientId = filters.clientId
-    if (filters?.userId) apiFilters.userId = filters.userId
-    if (filters?.actionCategory && filters.actionCategory !== 'all') {
-      apiFilters.actionCategory = filters.actionCategory as ActionCategory
-    }
-    if (filters?.status && filters.status !== 'all') {
-      apiFilters.status = filters.status as AuditStatus
-    }
-    if (filters?.action) apiFilters.action = filters.action
-    if (filters?.search) apiFilters.action = filters.search
-
-    return apiFilters
-  }, [])
+  )
 
   const fetchLogs = useCallback(async (
-    filters?: UseAuditLogsFilters, 
-    page = 1, 
+    filters?: UseAuditLogsFilters,
+    page = 1,
     pageSize = DEFAULT_PAGE_SIZE
   ) => {
-    setIsLoading(true)
-    setError(null)
-
     try {
-      const apiFilters = buildFilters(filters, page, pageSize)
-      const response = await auditLogsService.getAuditLogs(apiFilters)
-      
-      if (isMountedRef.current) setLogs(response.logs)
-      if (isMountedRef.current) setTotalLogs(response.total)
-      if (isMountedRef.current) setHasMore(response.hasMore)
+      const result = await auditLogsService.getAuditLogs(buildFilters(filters, page, pageSize))
+      await mutate(
+        (prev) => prev ? { ...prev, logs: result.logs, total: result.total, hasMore: result.hasMore } : prev,
+        false
+      )
     } catch (err) {
-      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch audit logs'))
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
     }
-  }, [buildFilters])
+  }, [mutate])
 
   const fetchStats = useCallback(async (filters?: Partial<AuditLogFilters>) => {
     try {
-      const statsData = await auditLogsService.getAuditStats(filters)
-      setStats(statsData)
+      const result = await auditLogsService.getAuditStats(filters)
+      await mutate(
+        (prev) => prev ? { ...prev, stats: result } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [])
+  }, [mutate])
 
   const fetchRetentionPolicies = useCallback(async () => {
     try {
-      const response = await auditLogsService.getRetentionPolicies()
-      setRetentionPolicies(response.policies)
+      const result = await auditLogsService.getRetentionPolicies()
+      await mutate(
+        (prev) => prev ? { ...prev, retentionPolicies: result.policies } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [])
+  }, [mutate])
 
   const exportLogs = useCallback(async (filters?: AuditLogFilters) => {
     setIsExporting(true)
     try {
       const blob = await auditLogsService.exportAuditLogs(filters)
-      
+
       const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
+      const link = document.createElement("a")
       link.href = url
-      link.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`
+      link.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to export audit logs'))
       throw err
     } finally {
       setIsExporting(false)
@@ -135,55 +145,24 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
   const seedRetentionPolicies = useCallback(async (): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await auditLogsService.seedRetentionPolicies()
-      await fetchRetentionPolicies()
+      await mutate()
       return { success: true, message: response.message }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to seed retention policies'
+      const message = err instanceof Error ? err.message : "Failed to seed retention policies"
       return { success: false, message }
     }
-  }, [fetchRetentionPolicies])
-
-  const isMountedRef = useRef(true)
-
-  const refetch = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const [logsResponse, statsData, policiesResponse] = await Promise.all([
-        auditLogsService.getAuditLogs(buildFilters(initialFilters)),
-        auditLogsService.getAuditStats(),
-        auditLogsService.getRetentionPolicies(),
-      ])
-
-      setLogs(logsResponse.logs)
-      setTotalLogs(logsResponse.total)
-      setHasMore(logsResponse.hasMore)
-      setStats(statsData)
-      setRetentionPolicies(policiesResponse.policies)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch audit data'))
-    } finally {
-      setIsLoading(false)
-    }
-  }, [buildFilters, initialFilters])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    refetch()
-    return () => { isMountedRef.current = false }
-  }, [])
+  }, [mutate])
 
   return {
-    logs,
-    stats,
-    retentionPolicies,
-    totalLogs,
-    hasMore,
+    logs: data?.logs ?? [],
+    stats: data?.stats ?? null,
+    retentionPolicies: data?.retentionPolicies ?? [],
+    totalLogs: data?.total ?? 0,
+    hasMore: data?.hasMore ?? false,
     isLoading,
     isExporting,
-    error,
-    refetch,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: async () => { await mutate() },
     fetchLogs,
     fetchStats,
     fetchRetentionPolicies,

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from react
-import useSWR from swr
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   templatesService,
   DefaultTemplate,
@@ -10,7 +10,7 @@ import {
   UpdateTemplateData,
   TemplateListFilters,
   ApiClientError,
-} from @/services/admin/templates-service
+} from "@/services/admin/templates-service"
 
 export interface UseDefaultTemplatesFilters {
   category?: string
@@ -42,19 +42,19 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
 
   const buildApiFilters = (f: UseDefaultTemplatesFilters): TemplateListFilters => {
     const apiFilters: TemplateListFilters = {}
-    if (f.category && f.category !== all) apiFilters.category = f.category
-    if (f.status && f.status !== all) apiFilters.status = f.status
+    if (f.category && f.category !== "all") apiFilters.category = f.category
+    if (f.status && f.status !== "all") apiFilters.status = f.status
     if (f.search) apiFilters.search = f.search
     return apiFilters
   }
 
   const { data: templatesData, error: templatesError, isLoading, mutate: mutateTemplates } = useSWR(
-    [adminDefaultTemplates, filters.category ?? , filters.status ?? , filters.search ?? ],
+    ["adminDefaultTemplates", filters.category ?? "", filters.status ?? "", filters.search ?? ""],
     ([, , ,]) => templatesService.getTemplates(buildApiFilters(filters))
   )
 
   const { data: variablesData, mutate: mutateVariables } = useSWR(
-    adminTemplateVariables,
+    "adminTemplateVariables",
     () => templatesService.getVariables()
   )
 
@@ -72,7 +72,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       await mutateTemplates()
       return newTemplate
     } catch (err) {
-      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao criar template)
+      setSubmitError(err instanceof ApiClientError ? err.message : "Erro ao criar template")
       return null
     } finally {
       setIsSubmitting(false)
@@ -87,7 +87,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       await mutateTemplates()
       return updatedTemplate
     } catch (err) {
-      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao atualizar template)
+      setSubmitError(err instanceof ApiClientError ? err.message : "Erro ao atualizar template")
       return null
     } finally {
       setIsSubmitting(false)
@@ -102,7 +102,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       await mutateTemplates()
       return true
     } catch (err) {
-      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao excluir template)
+      setSubmitError(err instanceof ApiClientError ? err.message : "Erro ao excluir template")
       return false
     } finally {
       setIsSubmitting(false)
@@ -117,7 +117,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       await mutateTemplates()
       return duplicatedTemplate
     } catch (err) {
-      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao duplicar template)
+      setSubmitError(err instanceof ApiClientError ? err.message : "Erro ao duplicar template")
       return null
     } finally {
       setIsSubmitting(false)
@@ -132,7 +132,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
       await mutateTemplates()
       return { success: true, count: result.count }
     } catch (err) {
-      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao popular templates)
+      setSubmitError(err instanceof ApiClientError ? err.message : "Erro ao popular templates")
       return { success: false, count: 0 }
     } finally {
       setIsSubmitting(false)
@@ -148,7 +148,7 @@ export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters)
     error,
     filters,
     setFilters,
-    refetch: () => mutateTemplates(),
+    refetch: async () => { await mutateTemplates() },
     createTemplate,
     updateTemplate,
     deleteTemplate,
