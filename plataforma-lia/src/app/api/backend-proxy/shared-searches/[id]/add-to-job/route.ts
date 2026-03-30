@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+
+const _bodySchema = z.record(z.unknown())
 
 export async function POST(
   request: NextRequest,
@@ -9,7 +12,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const backendUrl = `${BACKEND_URL}/api/v1/shared-searches/${id}/add-to-job`
     

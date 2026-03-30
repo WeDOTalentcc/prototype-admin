@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
 
@@ -37,13 +38,15 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const { jobId } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const backendUrl = `${BACKEND_URL}/api/v1/job-vacancies/${jobId}`
     

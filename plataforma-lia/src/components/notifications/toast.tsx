@@ -62,6 +62,7 @@ export function Toast({ notification }: ToastProps) {
         config.bgColor,
         config.borderColor
       )}
+      role="alert" aria-live="polite" aria-atomic="true"
       style={{animation: 'slideInFromRight 0.3s ease-out'}}
     >
       {/* Indicador de tempo real */}

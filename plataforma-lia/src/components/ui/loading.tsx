@@ -32,7 +32,7 @@ export function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
- 'rounded-full border-2 border-lia-border-subtle border-t-gray-400 dark:border-t-gray-500 animate-spin',
+ 'rounded-full border-2 border-lia-border-subtle border-t-gray-400 dark:border-t-gray-500 animate-spin motion-reduce:animate-none',
             sizeClasses[size]
           )}
         />
@@ -84,7 +84,7 @@ export function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
- 'rounded-full bg-gray-700 animate-pulse',
+ 'rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none',
             sizeClasses[size]
           )}
         />

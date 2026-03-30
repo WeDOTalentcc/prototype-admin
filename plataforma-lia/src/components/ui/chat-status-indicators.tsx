@@ -24,7 +24,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
       className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
     >
       <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
-        <Brain className="w-4 h-4 text-wedo-cyan animate-pulse" />
+        <Brain className="w-4 h-4 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
                 {isCompleted ? (
                   <CheckCircle className="w-4 h-4" />
                 ) : isProcessing ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Icon className="w-3 h-3" />
                 )}
@@ -179,7 +179,7 @@ export const FileCreationIndicator = ({
     >
       <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
         {status === "creating" ? (
-          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         ) : (
           <CheckCircle className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
         )}

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const _bodySchema = z.record(z.unknown())
 
 export async function POST(
   request: NextRequest,
@@ -8,7 +11,7 @@ export async function POST(
 ) {
   try {
     const { jobId } = await params
-    const body = await request.json().catch(() => ({}))
+    const body = _bodySchema.parse(await request.json()).catch(() => ({}))
     
     const response = await fetch(`${BACKEND_URL}/api/v1/search/archetypes/from-job`, {
       method: 'POST',

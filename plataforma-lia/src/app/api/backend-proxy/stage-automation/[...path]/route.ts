@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
@@ -27,7 +28,7 @@ async function proxyRequest(
 
     if (method !== "GET" && method !== "HEAD") {
       try {
-        const body = await request.json()
+        const body = _bodySchema.parse(await request.json())
         fetchOptions.body = JSON.stringify(body)
       } catch {
       }
@@ -62,6 +63,8 @@ export async function GET(
   const pathParams = await params
   return proxyRequest(request, "GET", pathParams.path)
 }
+
+const _bodySchema = z.record(z.unknown())
 
 export async function POST(
   request: NextRequest,

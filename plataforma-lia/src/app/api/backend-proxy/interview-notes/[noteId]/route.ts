@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -27,12 +28,14 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { noteId: string } }
 ) {
   try {
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/interview-notes/${params.noteId}`,

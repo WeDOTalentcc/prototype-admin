@@ -8,7 +8,7 @@ export function ToastContainer() {
   const { notifications } = useNotifications()
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full pointer-events-none">
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full pointer-events-none" aria-live="polite" aria-label="Notificacoes">
       {notifications.map((notification) => (
         <div
           key={notification.id}

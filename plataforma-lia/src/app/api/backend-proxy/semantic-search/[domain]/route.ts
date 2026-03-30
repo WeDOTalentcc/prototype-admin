@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://localhost:8000"
+
+const _bodySchema = z.record(z.unknown())
 
 export async function POST(
   request: NextRequest,
@@ -8,7 +11,7 @@ export async function POST(
 ) {
   try {
     const { domain } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const response = await fetch(`${BACKEND_URL}/api/v1/semantic-search/${domain}`, {
       method: "POST",

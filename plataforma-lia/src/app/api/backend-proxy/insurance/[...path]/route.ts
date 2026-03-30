@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || ''
@@ -68,6 +69,8 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -96,7 +99,7 @@ export async function POST(
       }
       fetchOptions.headers = headers
     } else {
-      const body = await request.json()
+      const body = _bodySchema.parse(await request.json())
       fetchOptions.headers = getHeaders(request)
       fetchOptions.body = JSON.stringify(body)
     }
@@ -130,7 +133,7 @@ export async function PUT(
     const pathStr = path.join('/')
     const backendUrl = `${BACKEND_URL}/api/v1/insurance/${pathStr}`
     
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const response = await fetch(backendUrl, {
       method: 'PUT',

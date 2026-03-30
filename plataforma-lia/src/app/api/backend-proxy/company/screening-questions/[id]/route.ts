@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkOSSession } from '@/lib/workos-session'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -18,13 +19,15 @@ async function getAuthHeaders(request: NextRequest) {
   return headers
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     const headers = await getAuthHeaders(request)
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/screening-questions/${id}`

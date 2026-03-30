@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -42,11 +43,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     let backendUrl = `${BACKEND_URL}/api/v1/job-analytics`
     

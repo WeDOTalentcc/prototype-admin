@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -28,11 +29,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     const backendUrl = `${BACKEND_URL}/api/v1/short-lists${queryString ? `?${queryString}` : ''}`
 
     const response = await fetch(backendUrl, {

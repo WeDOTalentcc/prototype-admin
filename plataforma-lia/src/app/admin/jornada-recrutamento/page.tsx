@@ -180,7 +180,7 @@ export default function JornadaRecrutamentoPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
+      <div aria-live="polite" aria-busy={isLoading} className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="text-sm lia-text-500">Carregando jornada de recrutamento...</p>

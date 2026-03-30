@@ -237,7 +237,7 @@ function BenefitsContent({
   }
 
   return (
-    <div className="space-y-6">
+    <div aria-live="polite" aria-busy={isLoading} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary" >

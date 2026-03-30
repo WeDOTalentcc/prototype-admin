@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -37,11 +38,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const companyId = searchParams.get('company_id')
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     if (!companyId) {
       return NextResponse.json(
@@ -93,7 +96,7 @@ export async function PUT(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const companyId = searchParams.get('company_id')
     const templateId = searchParams.get('template_id')
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     if (!companyId) {
       return NextResponse.json(

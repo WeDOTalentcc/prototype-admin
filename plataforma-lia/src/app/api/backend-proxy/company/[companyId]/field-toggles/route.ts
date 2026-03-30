@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -37,13 +38,15 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { companyId: string } }
 ) {
   try {
     const { companyId } = params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/${companyId}/field-toggles`
     

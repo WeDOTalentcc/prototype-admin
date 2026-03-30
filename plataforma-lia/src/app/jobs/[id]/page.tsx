@@ -62,7 +62,7 @@ export default function JobPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen" aria-live="polite" aria-busy={true} role="status">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wedo-cyan/30" />
       </div>
     )
@@ -70,7 +70,7 @@ export default function JobPage() {
 
   if (error || !jobData) {
     return (
-      <div className="flex items-center justify-center h-screen lia-text-500 dark:text-lia-text-tertiary text-sm">
+      <div className="flex items-center justify-center h-screen lia-text-500 dark:text-lia-text-tertiary text-sm" role="alert" aria-live="assertive">
         {error || 'Vaga não encontrada'}
       </div>
     )

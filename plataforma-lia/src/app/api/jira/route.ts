@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jiraService, JiraSyncResult } from '@/lib/api/jira-service';
+import { z } from 'zod'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -99,9 +100,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = _bodySchema.parse(await request.json());
     const { action, issueKeys, docStatuses } = body;
     
     if (action === 'sync') {

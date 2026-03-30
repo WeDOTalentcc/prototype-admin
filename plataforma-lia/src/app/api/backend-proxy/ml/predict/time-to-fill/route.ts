@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
@@ -8,9 +9,11 @@ const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
  * Proxy para previsão de tempo de preenchimento de vaga.
  * Mapeia para: POST /api/v1/ml/predict/time-to-fill
  */
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/ml/predict/time-to-fill`,

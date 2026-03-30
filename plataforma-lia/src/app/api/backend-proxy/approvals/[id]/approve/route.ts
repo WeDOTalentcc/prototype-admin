@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const _bodySchema = z.record(z.unknown())
 
 export async function PUT(
   request: NextRequest,
@@ -10,7 +13,7 @@ export async function PUT(
     const { id } = await params
     const { searchParams } = new URL(request.url)
     const approvedBy = searchParams.get('approved_by')
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     if (!approvedBy) {
       return NextResponse.json(

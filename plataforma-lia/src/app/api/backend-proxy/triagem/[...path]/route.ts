@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000"
 
@@ -43,6 +44,8 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -54,7 +57,7 @@ export async function POST(
     const contentType = request.headers.get("content-type") || ""
 
     if (contentType.includes("application/json")) {
-      const jsonBody = await request.json().catch(() => null)
+      const jsonBody = _bodySchema.parse(await request.json()).catch(() => null)
       if (jsonBody) {
         body = JSON.stringify(jsonBody)
       }

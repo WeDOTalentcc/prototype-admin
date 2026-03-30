@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -7,13 +8,15 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
 // PUBLIC — no auth required (candidate-facing action)
 // Body: { start: string, end: string }
 // Returns: { success, message, candidate_name, job_title, selected_slot }
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { token: string } }
 ) {
   try {
     const { token } = params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
 
     if (!token) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 400 })

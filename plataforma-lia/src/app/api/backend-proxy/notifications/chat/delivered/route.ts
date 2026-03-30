@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("user_id") || "default_user"
     

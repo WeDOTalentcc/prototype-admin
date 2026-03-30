@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
+
+const _bodySchema = z.record(z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const company_id = searchParams.get("company_id") || "demo_company"
     
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const response = await fetch(`${BACKEND_URL}/api/v1/analysis/candidates?company_id=${company_id}`, {
       method: "POST",

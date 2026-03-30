@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const _bodySchema = z.record(z.unknown())
 
 export async function PATCH(
   request: NextRequest,
@@ -9,7 +12,7 @@ export async function PATCH(
 ) {
   try {
     const { subStatusId } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/recruitment-stages/sub-statuses/${subStatusId}`,
@@ -37,7 +40,7 @@ export async function PUT(
 ) {
   try {
     const { subStatusId } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/recruitment-stages/sub-statuses/${subStatusId}`,

@@ -282,7 +282,7 @@ export default function AuditLogsPage() {
   const mainCategories: ActionCategoryUI[] = ['authentication', 'data_access', 'configuration', 'ai_decision']
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary" aria-live="polite" aria-busy={isLoading}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">

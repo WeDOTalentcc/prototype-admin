@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://localhost:8000"
 
@@ -28,13 +29,15 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     const url = `${BACKEND_URL}/api/v1/company/pipeline-templates/${id}`
     
     const response = await fetch(url, {

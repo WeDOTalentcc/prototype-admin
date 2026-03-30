@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
 
+const _bodySchema = z.record(z.unknown())
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const response = await fetch(`${BACKEND_URL}/api/v1/job-embeddings/fast-track`, {
       method: 'POST',

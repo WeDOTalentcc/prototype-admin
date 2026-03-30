@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -40,13 +41,15 @@ export async function GET(
   }
 }
 
+const _bodySchema = z.record(z.unknown())
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ listId: string }> }
 ) {
   try {
     const { listId } = await params
-    const body = await request.json()
+    const body = _bodySchema.parse(await request.json())
     
     const backendUrl = `${BACKEND_URL}/api/v1/candidate-lists/${listId}`
     
