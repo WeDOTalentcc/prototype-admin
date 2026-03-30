@@ -1,109 +1,218 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
 **Data:** 30/03/2026  
-**Versão:** 2.0 — Mapa Completo com Camadas de Inteligência  
+**Versão:** 3.0 — Diagrama Vertical com Todas as Dimensões Laterais  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
 **Objetivo:** Mapear TODAS as dimensões — agentes, domínios, serviços, tools, 6 camadas de compliance, 11 camadas de inteligência — por etapa do fluxo Alpha 1
 
 ---
 
-## 0. DIAGRAMA DE JORNADA VISUAL — FLUXO ALPHA 1
+## 0. DIAGRAMA DE JORNADA VISUAL — FLUXO ALPHA 1 (VERTICAL)
+
+### Legenda de Status
 
 ```
-╔══════════════════════════════════════════════════════════════════════════════════╗
-║                        JORNADA ALPHA 1 — 9 ETAPAS                              ║
-╠══════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                ║
-║  ┌─────────┐    ┌─────────────┐    ┌──────────────┐    ┌─────────────────┐     ║
-║  │ ETAPA 1 │───►│  ETAPA 2    │───►│  ETAPA 3     │───►│    ETAPA 4      │     ║
-║  │  LOGIN  │    │ EDITAR VAGA │    │ ROTEIRO WSI  │    │BUSCAR CANDIDATOS│     ║
-║  │         │    │ (ATS Import)│    │ (Perguntas)  │    │(Funil Talentos) │     ║
-║  └─────────┘    └─────────────┘    └──────────────┘    └────────┬────────┘     ║
-║       │              │                    │                      │              ║
-║    [Auth]        [Ag.8 ATS]          [Ag.4 WSI]          [Ag.2 Sourcing]       ║
-║    [JWT+SSO]     [FG L1-L2]          [FG L1-L2]         [Ag.3 Triagem]        ║
-║                  [Template           [Fact-Check]        [FG L1-L2-L3]        ║
-║                   Learning]          [A/B Testing]       [Semantic Search]     ║
-║                                                          [Score Norm.]        ║
-║                                                          [Predictive]         ║
-║                                                                                ║
-║  ┌──────────────┐    ┌────────────────┐    ┌──────────────────┐                ║
-║  │   ETAPA 5    │───►│    ETAPA 6     │───►│     ETAPA 7      │                ║
-║  │APROVAR MAPE- │    │ CONTATO EMAIL  │    │  TRIAGEM WSI     │                ║
-║  │ADOS (Gate 1) │    │ + FOLLOW-UP    │    │ (Chat/WhatsApp)  │                ║
-║  └──────┬───────┘    └────────────────┘    └────────┬─────────┘                ║
-║         │                  │                        │                          ║
-║    [Ag.0 Orch.]       [Ag.0 Orch.]           [Ag.4 Entrev.]                   ║
-║    [Ag.7 Feedback]    [Rate Limiting]        [Ag.5 Avaliador]                 ║
-║    [Policy Engine]    [LGPD Opt-out]         [FG L1-L2-L3]                    ║
-║    [Calibration]      [Scheduler ⚠️]         [Voice Analysis]                 ║
-║    [Learning Loop]                           [Conv. Memory]                   ║
-║                                              [Scheduler ⚠️]                   ║
-║                                              [Chat Web ⚠️]                    ║
-║                                                                                ║
-║  ┌──────────────────┐    ┌────────────────────┐                                ║
-║  │     ETAPA 8      │───►│      ETAPA 9       │                                ║
-║  │ APROVAR TRIADOS  │    │ AGENDAR ENTREVISTA  │                                ║
-║  │   (Gate 2)       │    │ + FEEDBACK          │                                ║
-║  └──────────────────┘    └────────────────────┘                                ║
-║         │                        │                                             ║
-║    [Ag.7 Feedback]          [Ag.6 Scheduling]                                  ║
-║    [Policy Engine]          [Ag.7 Feedback]                                    ║
-║    [Audit Trail]            [FG (texto)]                                      ║
-║    [Routing Learning]       [Embedding Svc]                                   ║
-║                                                                                ║
-║  ⚠️ = GAP BLOQUEANTE (não existe no código)                                    ║
-╚══════════════════════════════════════════════════════════════════════════════════╝
+● = ATIVO (funcionando)    ◐ = DISPONÍVEL (código existe, precisa ativar/integrar)
+○ = A IMPLEMENTAR (gap)    ⚠ = GAP BLOQUEANTE    · = N/A nesta etapa
 ```
 
-### Camadas Transversais (ativas em TODOS os nós do grafo):
+### Diagrama Completo — Leitura: Etapa ↓ | Envolvidos → | Compliance → | Inteligência → | Comunicação →
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                    6 CAMADAS DE COMPLIANCE                                      │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                 │
-│  │ FairnessGuard   │  │ PII Masking     │  │ Fact-Checker    │                 │
-│  │ L1: 350 patterns│  │ L1: Regex       │  │ Salary/Count/   │                 │
-│  │ L2: Proxy terms │  │ L2: Spacy NER   │  │ Percentage/Date │                 │
-│  │ L3: Semantic    │  │ L3: Contextual  │  │ + Top-N claims  │                 │
-│  │ (13 categorias) │  │ L4: Presidio    │  │                 │                 │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                 │
-│  │ Audit Trail     │  │ Policy Engine   │  │ LGPD/Consent    │                 │
-│  │ SOX-compliant   │  │ Business Rules  │  │ DSR/Anonymize   │                 │
-│  │ 730-1825d ret.  │  │ Rate Limiting   │  │ Opt-out/Delete  │                 │
-│  │ Human Override  │  │ Escalation      │  │ PII Export      │                 │
-│  │ tracking        │  │ Sector Rules    │  │                 │                 │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘                 │
-└──────────────────────────────────────────────────────────────────────────────────┘
+╔═══════════════════════╦═══════════════════════════════╦══════════════════════════════════╦══════════════════════════════════════════╦═════════════════════════════╗
+║       ETAPA           ║     ENVOLVIDOS                ║     COMPLIANCE (6 camadas)       ║     INTELIGÊNCIA (11 camadas)            ║     COMUNICAÇÃO             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  —                   ║ FG L1: ·   FG L2: ·   FG L3: ·  ║ Learning Loop: ·    A/B Testing: ·       ║ Email: ·                    ║
+║  1. LOGIN             ║ Domínio:  auth                ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ·    Template Lrn: ·      ║ WhatsApp: ·                 ║
+║     Autenticação      ║ Serviço:  AuthService         ║ Audit: ◐   Policy Eng: ◐         ║ Calibration: ·      Score Norm: ·        ║ Chat Web: ·                 ║
+║     JWT + WorkOS SSO  ║ LangGraph: Não                ║ LGPD:  ◐   Rate Limit: ◐         ║ Predictive: ·       Model Drift: ·       ║ Teams: ·                    ║
+║                       ║ Metodologia: —                ║                                  ║ Conv Memory: ·      Semantic: ·          ║ Telefone/VoIP: ·            ║
+║                       ║                               ║                                  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ·            ║
+║                       ║                               ║                                  ║                                        ║ Notificação: ·              ║
+║  GAP: Rate limiting de login + Audit trail de autenticação precisam ser ativados                                                                               ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.8 IntegradorATS  ║ FG L1: ◐   FG L2: ◐   FG L3: ·  ║ Learning Loop: ●    A/B Testing: ◐       ║ Email: ·                    ║
+║  2. EDITAR VAGA       ║ Domínio:  ats_integration,    ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ·    Template Lrn: ●      ║ WhatsApp: ·                 ║
+║     Importar do ATS   ║           job_management      ║ Audit: ◐   Policy Eng: ·         ║ Calibration: ·      Score Norm: ·        ║ Chat Web: ·                 ║
+║     Editar wizard     ║ Serviço:  ATSSyncService,     ║ LGPD:  ◐   Rate Limit: ·         ║ Predictive: ◐      Model Drift: ·       ║ Teams: ·                    ║
+║                       ║           GupyClient,         ║                                  ║ Conv Memory: ●      Semantic: ◐         ║ Telefone/VoIP: ·            ║
+║                       ║           PandapeClient       ║                                  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ·            ║
+║                       ║ LangGraph: Sim (Ag.8)         ║                                  ║                                        ║ Notificação: ·              ║
+║                       ║ Metodologia: —                ║                                  ║                                        ║                             ║
+║                       ║ Tools: sync_candidate_to_ats, ║                                  ║                                        ║                             ║
+║                       ║   fetch_candidate_from_ats,   ║                                  ║                                        ║                             ║
+║                       ║   validate_ats_fields         ║                                  ║                                        ║                             ║
+║  GAP: ATS real depende de credenciais (API keys Gupy/Pandapé). FG precisa virar middleware no save JD                                                          ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.4 Entrev.WSI     ║ FG L1: ◐   FG L2: ◐   FG L3: ·  ║ Learning Loop: ●    A/B Testing: ◐       ║ Email: ·                    ║
+║  3. ROTEIRO WSI       ║ Domínio:  cv_screening,       ║ PII:   ●   Fact-Check: ◐         ║ Routing Adapt: ·    Template Lrn: ·      ║ WhatsApp: ·                 ║
+║     Configurar        ║           wizard              ║ Audit: ◐   Policy Eng: ·         ║ Calibration: ·      Score Norm: ·        ║ Chat Web: ·                 ║
+║     perguntas de      ║ Serviço:  WSIService,         ║ LGPD:  ·   Rate Limit: ·         ║ Predictive: ·       Model Drift: ·       ║ Teams: ·                    ║
+║     triagem           ║           JDGeneratorService  ║                                  ║ Conv Memory: ●      Semantic: ◐         ║ Telefone/VoIP: ·            ║
+║     (CBI/Bloom/       ║ LangGraph: Sim (Ag.4)         ║                                  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ·            ║
+║      Dreyfus/Big5)    ║ Metodologia: WSI              ║                                  ║                                        ║ Notificação: ·              ║
+║                       ║ Tools: generate_screening_    ║                                  ║                                        ║                             ║
+║                       ║   questions, analyze_jd_and_  ║                                  ║                                        ║                             ║
+║                       ║   suggest_competencies        ║                                  ║                                        ║                             ║
+║  GAP: FG e Fact-Checker precisam ser ativados como step pós-geração nas perguntas WSI                                                                          ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.2 Sourcing,      ║ FG L1: ●   FG L2: ●   FG L3: ◐  ║ Learning Loop: ●    A/B Testing: ◐       ║ Email: ·                    ║
+║  4. BUSCAR            ║           Ag.3 TriagemCurr,   ║ PII:   ●   Fact-Check: ◐         ║ Routing Adapt: ●    Template Lrn: ·      ║ WhatsApp: ·                 ║
+║     CANDIDATOS        ║           Ag.5 AvaliadorWSI   ║ Audit: ◐   Policy Eng: ·         ║ Calibration: ●      Score Norm: ●        ║ Chat Web: ·                 ║
+║     Funil de          ║ Domínio:  sourcing, pipeline  ║ LGPD:  ●   Rate Limit: ·         ║ Predictive: ◐      Model Drift: ●       ║ Teams: ·                    ║
+║     Talentos          ║ Serviço:  SourcingPipeline,   ║ Bias Det: ◐                      ║ Conv Memory: ●      Semantic: ●          ║ Telefone/VoIP: ·            ║
+║     SmartSearch       ║           CandidateEnrich,    ║   (LGPD: Anonymize=True no Toon) ║ Voice Analysis: ·   Embedding: ◐        ║ Feedback Auto: ·            ║
+║     WRF + ES +        ║           CVScoringService    ║                                  ║                                        ║ Notificação: ·              ║
+║     PGVector          ║ LangGraph: Sim (Ag.2,3,5)     ║                                  ║                                        ║                             ║
+║                       ║ Metodologia: WSI (scoring)    ║                                  ║                                        ║                             ║
+║                       ║ Tools: search_candidates,     ║                                  ║                                        ║                             ║
+║                       ║   analyze_profile, score_     ║                                  ║                                        ║                             ║
+║                       ║   candidate, enrich_profile   ║                                  ║                                        ║                             ║
+║  GAP CRÍTICO: WRF Dynamic K + LLM Job Classification precisa validação e2e. FG L3 depende de sector rules. Apify API keys.                                    ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.0 Orchestrator,  ║ FG L1: ●   FG L2: ●   FG L3: ·  ║ Learning Loop: ●    A/B Testing: ·       ║ Email: ·                    ║
+║  5. APROVAR           ║           Ag.7 Feedback,      ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ●    Template Lrn: ·      ║ WhatsApp: ·                 ║
+║     MAPEADOS          ║           Ag.8 IntegradorATS  ║ Audit: ◐   Policy Eng: ●         ║ Calibration: ●      Score Norm: ·        ║ Chat Web: ·                 ║
+║     (Gate 1)          ║ Domínio:  pipeline, kanban    ║ LGPD:  ◐   Rate Limit: ·         ║ Predictive: ·       Model Drift: ●       ║ Teams: ·                    ║
+║     Decisão humana    ║ Serviço:  KanbanService,      ║ Escalation: ●                    ║ Conv Memory: ●      Semantic: ·          ║ Telefone/VoIP: ·            ║
+║     assistida por IA  ║           PipelineTransition  ║   (trigger AI conf < threshold)  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ·            ║
+║                       ║ LangGraph: Sim (Ag.0,7,8)     ║                                  ║                                        ║ Notificação: ○              ║
+║                       ║ Metodologia: HITL, BARS       ║                                  ║                                        ║                             ║
+║                       ║ Tools: suggest_movements,     ║                                  ║                                        ║                             ║
+║                       ║   check_rejection_fairness,   ║                                  ║                                        ║                             ║
+║                       ║   identify_bottlenecks        ║                                  ║                                        ║                             ║
+║  GAP: check_rejection_fairness precisa ser automática (não sob demanda). Audit de overrides humanos.                                                           ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.0 Orchestrator   ║ FG L1: ·   FG L2: ·   FG L3: ·  ║ Learning Loop: ·    A/B Testing: ◐       ║ Email: ● (Resend/SendGrid)  ║
+║  6. CONTATO           ║ Domínio:  communication       ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ·    Template Lrn: ◐      ║ WhatsApp: ● (Twilio)        ║
+║     EMAIL +           ║ Serviço:  EmailService,       ║ Audit: ◐   Policy Eng: ·         ║ Calibration: ·      Score Norm: ·        ║ Chat Web: ·                 ║
+║     FOLLOW-UP         ║           WhatsAppService     ║ LGPD:  ○   Rate Limit: ●         ║ Predictive: ·       Model Drift: ·       ║ Teams: ○                    ║
+║     Primeiro contato  ║ LangGraph: Sim (Ag.0)         ║   (LGPD: falta opt-out link)     ║ Conv Memory: ●      Semantic: ·          ║ Telefone/VoIP: ·            ║
+║     com candidatos    ║ Metodologia: —                ║                                  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ·            ║
+║     aprovados         ║ Tools: send_email,            ║                                  ║                                        ║ Notificação: ○              ║
+║                       ║   send_whatsapp,              ║                                  ║                                        ║                             ║
+║                       ║   send_bulk_email,            ║                                  ║                                        ║                             ║
+║                       ║   send_feedback               ║                                  ║                                        ║                             ║
+║  GAP ⚠: Follow-up 7d precisa SCHEDULER (não existe). Opt-out link LGPD. Webhook de tracking opens/clicks.                                                     ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.0 Orchestrator,  ║ FG L1: ◐   FG L2: ◐   FG L3: ◐  ║ Learning Loop: ●    A/B Testing: ◐       ║ Email: ◐ (notificar result) ║
+║  7. TRIAGEM WSI       ║           Ag.4 Entrev.WSI,    ║ PII:   ●   Fact-Check: ◐         ║ Routing Adapt: ·    Template Lrn: ·      ║ WhatsApp: ● (Twilio)        ║
+║     Chat/WhatsApp     ║           Ag.5 AvaliadorWSI   ║ Audit: ◐   Policy Eng: ●         ║ Calibration: ●      Score Norm: ●        ║ Chat Web: ⚠ NÃO EXISTE     ║
+║     Candidato         ║ Domínio:  cv_screening,       ║ LGPD:  ○   Rate Limit: ·         ║ Predictive: ·       Model Drift: ●       ║ Teams: ·                    ║
+║     responde          ║           communication       ║ Timeout: ○                       ║ Conv Memory: ●      Semantic: ·          ║ Telefone/VoIP: ◐ (VoiceS)  ║
+║     perguntas WSI     ║ Serviço:  WSIService,         ║   (LGPD: falta tela de aceite)   ║ Voice Analysis: ●   Embedding: ·        ║ Feedback Auto: ·            ║
+║     (CBI/Bloom/       ║           WhatsAppService,    ║   (Timeout: falta scheduler      ║                                        ║ Notificação: ○              ║
+║      Dreyfus/Big5)    ║           VoiceService        ║    48h+48h lembretes)            ║                                        ║                             ║
+║                       ║ LangGraph: Sim (Ag.0,4,5)     ║                                  ║                                        ║                             ║
+║                       ║ Metodologia: WSI completa     ║                                  ║                                        ║                             ║
+║                       ║ Tools: generate_screening_    ║                                  ║                                        ║                             ║
+║                       ║   questions, analyze_response,║                                  ║                                        ║                             ║
+║                       ║   calculate_wsi               ║                                  ║                                        ║                             ║
+║  GAP CRÍTICO ⚠: Chat web público NÃO EXISTE. Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.                                   ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.7 Feedback,      ║ FG L1: ●   FG L2: ●   FG L3: ·  ║ Learning Loop: ●    A/B Testing: ·       ║ Email: ·                    ║
+║  8. APROVAR           ║           Ag.8 IntegradorATS  ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ●    Template Lrn: ·      ║ WhatsApp: ·                 ║
+║     TRIADOS           ║ Domínio:  pipeline, kanban,   ║ Audit: ◐   Policy Eng: ●         ║ Calibration: ●      Score Norm: ·        ║ Chat Web: ·                 ║
+║     (Gate 2)          ║           analytics           ║ LGPD:  ◐   Rate Limit: ·         ║ Predictive: ·       Model Drift: ●       ║ Teams: ·                    ║
+║     Decisão humana    ║ Serviço:  KanbanService,      ║                                  ║ Conv Memory: ·      Semantic: ·          ║ Telefone/VoIP: ·            ║
+║     pós-triagem WSI   ║           PipelineTransition  ║                                  ║ Voice Analysis: ·   Embedding: ·        ║ Feedback Auto: ◐            ║
+║                       ║ LangGraph: Sim (Ag.7,8)       ║                                  ║                                        ║ Notificação: ○              ║
+║                       ║ Metodologia: HITL, BARS       ║                                  ║                                        ║                             ║
+║                       ║ Tools: suggest_movements,     ║                                  ║                                        ║                             ║
+║                       ║   check_rejection_fairness    ║                                  ║                                        ║                             ║
+║  GAP: Mesmo que Gate 1 — check_rejection_fairness precisa ser automática. Feedback automático para reprovados.                                                 ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║          │            ║                               ║                                  ║                                        ║                             ║
+║          ▼            ║                               ║                                  ║                                        ║                             ║
+╠═══════════════════════╬═══════════════════════════════╬══════════════════════════════════╬══════════════════════════════════════════╬═════════════════════════════╣
+║                       ║ Agentes:  Ag.6 Scheduling,    ║ FG L1: ◐   FG L2: ◐   FG L3: ·  ║ Learning Loop: ◐    A/B Testing: ◐       ║ Email: ● (convite + ICS)    ║
+║  9. AGENDAR           ║           Ag.7 Feedback       ║ PII:   ●   Fact-Check: ·         ║ Routing Adapt: ·    Template Lrn: ◐      ║ WhatsApp: ● (lembrete)      ║
+║     ENTREVISTA +      ║ Domínio:  scheduling,         ║ Audit: ◐   Policy Eng: ·         ║ Calibration: ·      Score Norm: ·        ║ Chat Web: ·                 ║
+║     FEEDBACK          ║           analytics,          ║ LGPD:  ◐   Rate Limit: ·         ║ Predictive: ·       Model Drift: ·       ║ Teams: ◐ (Graph API)        ║
+║     Agendar c/ gestor ║           communication       ║   (LGPD: minimizar dados no ICS) ║ Conv Memory: ·      Semantic: ·          ║ Telefone/VoIP: ·            ║
+║     + feedback auto   ║ Serviço:  SchedulingService,  ║                                  ║ Voice Analysis: ·   Embedding: ◐        ║ Feedback Auto: ◐            ║
+║     p/ reprovados     ║           EmailService,       ║                                  ║ Long-Term Memory: ◐                     ║ Notificação: ○              ║
+║                       ║           WhatsAppService     ║                                  ║                                        ║                             ║
+║                       ║ LangGraph: Sim (Ag.6,7)       ║                                  ║                                        ║                             ║
+║                       ║ Metodologia: —                ║                                  ║                                        ║                             ║
+║                       ║ Tools: schedule_interview,    ║                                  ║                                        ║                             ║
+║                       ║   send_feedback               ║                                  ║                                        ║                             ║
+║  GAP: Teams depende de configuração Graph API (tenant). ICS funciona standalone. Feedback auto precisa integração.                                              ║
+╚═══════════════════════╩═══════════════════════════════╩══════════════════════════════════╩══════════════════════════════════════════╩═════════════════════════════╝
+```
 
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                    11 CAMADAS DE INTELIGÊNCIA                                   │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │
-│  │Learning Loop │ │ A/B Testing  │ │Routing Learn.│ │Template Learn│           │
-│  │Silent capture│ │z-score/p-val │ │0.8x-1.2x adj│ │Auto after 3  │           │
-│  │accept/modify/│ │95% CI, >5%   │ │per domain    │ │similar jobs  │           │
-│  │reject/ignore │ │improvement   │ │              │ │              │           │
-│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘           │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │
-│  │Calibration   │ │Score Normal. │ │Predictive    │ │Model Drift   │           │
-│  │Explicit +    │ │Difficulty    │ │Time-to-fill  │ │4 dimensions: │           │
-│  │implicit      │ │coefficient   │ │Optimal salary│ │Score/Approval│           │
-│  │feedback      │ │per version   │ │Skill success │ │Cost/Latency  │           │
-│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘           │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                            │
-│  │Conv. Memory  │ │Semantic Srch │ │Voice Analysis│                            │
-│  │Entity track  │ │Gemini 768-dim│ │STT: Deepgram │                            │
-│  │Pronoun resol.│ │Redis cache   │ │TTS: OpenAI   │                            │
-│  │Session state │ │Domain expand │ │Multi-provider│                            │
-│  └──────────────┘ └──────────────┘ └──────────────┘                            │
-│                                                                                │
-│  + Embedding Service (Gemini text-embedding-004, 768-dim vectors)              │
-│  + Long-Term Memory (episode store + LLM compression after 30d)                │
-│  + Learning Snapshot (pre-learning rollback points)                             │
-└──────────────────────────────────────────────────────────────────────────────────┘
+### Resumo Visual de Conexões por Coluna
+
+```
+COMPLIANCE — Quem precisa do quê:
+┌────────────────────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
+│                    │ E1 │ E2 │ E3 │ E4 │ E5 │ E6 │ E7 │ E8 │ E9 │
+├────────────────────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ FairnessGuard L1   │ ·  │ ◐  │ ◐  │ ●  │ ●  │ ·  │ ◐  │ ●  │ ◐  │
+│ FairnessGuard L2   │ ·  │ ◐  │ ◐  │ ●  │ ●  │ ·  │ ◐  │ ●  │ ◐  │
+│ FairnessGuard L3   │ ·  │ ·  │ ·  │ ◐  │ ·  │ ·  │ ◐  │ ·  │ ·  │
+│ PII Masking        │ ●  │ ●  │ ●  │ ●  │ ●  │ ●  │ ●  │ ●  │ ●  │
+│ Fact-Checker       │ ·  │ ·  │ ◐  │ ◐  │ ·  │ ·  │ ◐  │ ·  │ ·  │
+│ Audit Trail        │ ◐  │ ◐  │ ◐  │ ◐  │ ◐  │ ◐  │ ◐  │ ◐  │ ◐  │
+│ Policy Engine      │ ◐  │ ·  │ ·  │ ·  │ ●  │ ·  │ ●  │ ●  │ ·  │
+│ Rate Limiting      │ ◐  │ ·  │ ·  │ ·  │ ·  │ ●  │ ·  │ ·  │ ·  │
+│ LGPD               │ ◐  │ ◐  │ ·  │ ●  │ ◐  │ ○  │ ○  │ ◐  │ ◐  │
+└────────────────────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+
+INTELIGÊNCIA — Quem precisa do quê:
+┌────────────────────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
+│                    │ E1 │ E2 │ E3 │ E4 │ E5 │ E6 │ E7 │ E8 │ E9 │
+├────────────────────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ Learning Loop      │ ·  │ ●  │ ●  │ ●  │ ●  │ ·  │ ●  │ ●  │ ◐  │
+│ A/B Testing        │ ·  │ ◐  │ ◐  │ ◐  │ ·  │ ◐  │ ◐  │ ·  │ ◐  │
+│ Routing Adaptativo │ ·  │ ·  │ ·  │ ●  │ ●  │ ·  │ ·  │ ●  │ ·  │
+│ Template Learning  │ ·  │ ●  │ ·  │ ·  │ ·  │ ◐  │ ·  │ ·  │ ◐  │
+│ Calibration        │ ·  │ ·  │ ·  │ ●  │ ●  │ ·  │ ●  │ ●  │ ·  │
+│ Score Normalization│ ·  │ ·  │ ·  │ ●  │ ·  │ ·  │ ●  │ ·  │ ·  │
+│ Predictive Analyt. │ ·  │ ◐  │ ·  │ ◐  │ ·  │ ·  │ ·  │ ·  │ ·  │
+│ Model Drift        │ ·  │ ·  │ ·  │ ●  │ ●  │ ·  │ ●  │ ●  │ ·  │
+│ Conv. Memory       │ ·  │ ●  │ ●  │ ●  │ ●  │ ●  │ ●  │ ·  │ ·  │
+│ Semantic Search    │ ·  │ ◐  │ ◐  │ ●  │ ·  │ ·  │ ·  │ ·  │ ·  │
+│ Voice Analysis     │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ●  │ ·  │ ·  │
+│ Embedding Service  │ ·  │ ·  │ ·  │ ◐  │ ·  │ ·  │ ·  │ ·  │ ◐  │
+│ Long-Term Memory   │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ◐  │
+└────────────────────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+
+COMUNICAÇÃO — Canais por etapa:
+┌────────────────────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
+│                    │ E1 │ E2 │ E3 │ E4 │ E5 │ E6 │ E7 │ E8 │ E9 │
+├────────────────────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤
+│ Email (Resend/SG)  │ ·  │ ·  │ ·  │ ·  │ ·  │ ●  │ ◐  │ ·  │ ●  │
+│ WhatsApp (Twilio)  │ ·  │ ·  │ ·  │ ·  │ ·  │ ●  │ ●  │ ·  │ ●  │
+│ Chat Web (candidat)│ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ⚠  │ ·  │ ·  │
+│ Teams (Graph API)  │ ·  │ ·  │ ·  │ ·  │ ·  │ ○  │ ·  │ ·  │ ◐  │
+│ Telefone/VoIP      │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ◐  │ ·  │ ·  │
+│ Feedback Automático│ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ·  │ ◐  │ ◐  │
+│ Notificação (Bell) │ ·  │ ·  │ ·  │ ·  │ ○  │ ○  │ ○  │ ○  │ ○  │
+└────────────────────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+
+● = ATIVO     ◐ = DISPONÍVEL (precisa ativar)     ○ = A IMPLEMENTAR     ⚠ = GAP BLOQUEANTE     · = N/A
 ```
 
 ---
