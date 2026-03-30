@@ -107,7 +107,7 @@ export function CommandPalette({
         className="max-w-2xl p-0 gap-0 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary"
       >
         <div className="flex items-center px-4 py-3 border-b border-lia-border-default dark:border-lia-border-default">
-          <Search className="w-4 h-4 mr-3 text-gray-600 dark:text-lia-text-tertiary" />
+          <Search className="w-4 h-4 mr-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={query}
@@ -124,7 +124,7 @@ export function CommandPalette({
         <div className="max-h-[400px] overflow-y-auto">
           {Object.entries(groupedCommands).map(([category, items]) => (
             <div key={category}>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-400">
+              <div className="px-4 py-2 text-xs font-semibold text-lia-text-disabled">
                 {getCategoryLabel(category as CommandItem['category'])}
               </div>
               {items.map((cmd, index) => {
@@ -141,13 +141,13 @@ export function CommandPalette({
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
                     className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left lia-text-strong ${isSelected ? 'bg-gray-100' : 'bg-transparent'}`}
                   >
-                    <span className="text-gray-600 dark:text-lia-text-tertiary flex-shrink-0">
+                    <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
                       {cmd.icon}
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium">{cmd.label}</div>
                       {cmd.description && (
-                        <div className="text-sm text-gray-500 dark:text-lia-text-tertiary">
+                        <div className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
                           {cmd.description}
                         </div>
                       )}
@@ -164,7 +164,7 @@ export function CommandPalette({
           ))}
 
           {filteredCommands.length === 0 && (
-            <div className="px-4 py-8 text-center text-gray-400">
+            <div className="px-4 py-8 text-center text-lia-text-disabled">
               Nenhum comando encontrado para "{query}"
             </div>
           )}

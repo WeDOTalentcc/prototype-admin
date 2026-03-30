@@ -113,7 +113,7 @@ export function CalibrationProfileModal({
                         </svg>
                       </a>
                     )}
-                    <button className="px-3 py-1 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-gray-800 dark:text-lia-text-primary rounded-md transition-colors">
+                    <button className="px-3 py-1 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary dark:text-lia-text-primary rounded-md transition-colors">
                       Full Profile ↗
                     </button>
                   </div>
@@ -162,7 +162,7 @@ export function CalibrationProfileModal({
                         <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                           <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
                             {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
-                            {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />}
+                            {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
                             {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-wedo-purple" />}
                             {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-wedo-green" />}
                             {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-wedo-magenta" />}
@@ -220,7 +220,7 @@ export function CalibrationProfileModal({
                             <p className="text-xs lia-text-secondary mt-2">
                               Skills: {exp.skills.slice(0, 6).join(' · ')}
                               {exp.skills.length > 6 && (
-                                <button className="text-gray-600 dark:text-lia-text-tertiary ml-1">Read More</button>
+                                <button className="text-lia-text-secondary dark:text-lia-text-tertiary ml-1">Read More</button>
                               )}
                             </p>
                           )}
@@ -236,7 +236,7 @@ export function CalibrationProfileModal({
                   {candidate.educationHistory.map((edu) => (
                     <div key={edu.id} className="flex gap-4 p-3 bg-gray-50 rounded-md">
                       <div className="w-8 h-8 rounded-md bg-lia-bg-primary flex items-center justify-center flex-shrink-0">
-                        <GraduationCap className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <GraduationCap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold lia-text-strong">{edu.institution}</p>
@@ -272,7 +272,7 @@ export function CalibrationProfileModal({
                         </span>
                       ))}
                       {candidate.additionalSkills.length > 10 && (
-                        <span className="px-3 py-1.5 text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
+                        <span className="px-3 py-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                           +{candidate.additionalSkills.length - 10} more skills
                         </span>
                       )}
@@ -307,7 +307,7 @@ export function CalibrationProfileModal({
                 </h3>
                 <button
                   onClick={onOpenEditCriteria}
-                  className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark font-medium transition-colors"
+                  className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-wedo-cyan-dark font-medium transition-colors"
                 >
                   Editar Critérios
                 </button>

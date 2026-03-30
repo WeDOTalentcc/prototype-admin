@@ -54,34 +54,34 @@ export function CreditConfirmationModal({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">
-              <Zap className="w-4 h-4 text-gray-700 dark:text-lia-text-tertiary" />
+              <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             Confirmar Busca na Base Global
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
               Esta busca utilizará créditos da sua conta.
             </p>
 
             {creditEstimate && (
               <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800 dark:text-lia-text-primary">Tipo de busca:</span>
+                  <span className="text-lia-text-primary dark:text-lia-text-primary">Tipo de busca:</span>
                   <span className="font-medium capitalize">{pearchSearchOptions.searchType}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800 dark:text-lia-text-primary">Limite de resultados:</span>
+                  <span className="text-lia-text-primary dark:text-lia-text-primary">Limite de resultados:</span>
                   <span className="font-medium">{pearchSearchOptions.limit}</span>
                 </div>
 
                 {/* Filtros de Otimização de Créditos */}
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 space-y-2">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Filtros de Contato</span>
+                  <span className="text-xs font-medium text-lia-text-tertiary uppercase tracking-wide">Filtros de Contato</span>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
-                      <span className="text-sm text-gray-800 dark:text-lia-text-primary">Apenas com Email</span>
-                      <span className="text-xs text-gray-500">(+1 cr)</span>
+                      <Mail className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                      <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Apenas com Email</span>
+                      <span className="text-xs text-lia-text-tertiary">(+1 cr)</span>
                     </div>
                     <Switch
                       checked={pearchSearchOptions.requireEmails}
@@ -91,8 +91,8 @@ export function CreditConfirmationModal({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-status-success" />
-                      <span className="text-sm text-gray-800 dark:text-lia-text-primary">Apenas com Telefone</span>
-                      <span className="text-xs text-gray-500">(+1 cr)</span>
+                      <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Apenas com Telefone</span>
+                      <span className="text-xs text-lia-text-tertiary">(+1 cr)</span>
                     </div>
                     <Switch
                       checked={pearchSearchOptions.requirePhoneNumbers}
@@ -107,25 +107,25 @@ export function CreditConfirmationModal({
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800 dark:text-lia-text-primary">Custo base:</span>
+                  <span className="text-lia-text-primary dark:text-lia-text-primary">Custo base:</span>
                   <span className="font-medium">{creditEstimate.breakdown.base} créditos</span>
                 </div>
                 {creditEstimate.breakdown.emails > 0 && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-800 dark:text-lia-text-primary">E-mails (+):</span>
+                    <span className="text-lia-text-primary dark:text-lia-text-primary">E-mails (+):</span>
                     <span className="font-medium">{creditEstimate.breakdown.emails} créditos</span>
                   </div>
                 )}
                 {creditEstimate.breakdown.phone_numbers > 0 && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-800 dark:text-lia-text-primary">Telefones (+):</span>
+                    <span className="text-lia-text-primary dark:text-lia-text-primary">Telefones (+):</span>
                     <span className="font-medium">{creditEstimate.breakdown.phone_numbers} créditos</span>
                   </div>
                 )}
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total estimado:</span>
-                    <span className="text-base-ui font-semibold text-gray-700 dark:text-lia-text-primary">
+                    <span className="text-base-ui font-semibold text-lia-text-secondary dark:text-lia-text-primary">
                       {creditEstimate.total_estimated} créditos
                     </span>
                   </div>

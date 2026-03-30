@@ -99,7 +99,7 @@ export function LiaChatModal({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Avatar className="w-6 h-6">
-                  <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs font-bold">
+                  <AvatarFallback className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs font-bold">
                     LIA
                   </AvatarFallback>
                 </Avatar>
@@ -122,19 +122,19 @@ export function LiaChatModal({
             {/* Candidate info */}
             <div className="flex items-center gap-2 bg-white dark:bg-lia-bg-secondary rounded-md px-3 py-2">
               <Avatar className="w-6 h-6">
-                <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs">
+                <AvatarFallback className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs">
                   {candidate.name?.split(' ').map((n: string) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <div className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
+                <div className="font-medium text-lia-text-primary dark:text-lia-text-primary text-xs">
                   {candidate.candidateId || candidate.id} • {candidate.name}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   {candidate.position} • Score: {formatScorePercent(candidate.score ?? 0)}
                 </div>
               </div>
-              <Badge className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-xs px-2 py-0.5">
+              <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-xs px-2 py-0.5">
                 Foco Individual
               </Badge>
             </div>
@@ -144,7 +144,7 @@ export function LiaChatModal({
         {/* Ações rápidas */}
         <div className="px-4 py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white/50 dark:bg-lia-bg-primary/50">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Ações rápidas sugeridas</span>
+            <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Ações rápidas sugeridas</span>
             <Badge className="bg-status-success/15 lia-text-strong dark:bg-status-success text-xs px-1.5 py-0.5">
               Score {formatScorePercent(candidate.score ?? 0)}
             </Badge>
@@ -154,21 +154,21 @@ export function LiaChatModal({
               onClick={handleContact}
               className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <MessageSquare className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+              <MessageSquare className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Contatar
             </button>
             <button
               onClick={handleSchedule}
               className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <CalendarIcon className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+              <CalendarIcon className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Agendar
             </button>
             <button
               onClick={handleAddTo}
               className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <UserPlus className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+              <UserPlus className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Adicionar
             </button>
           </div>
@@ -188,11 +188,11 @@ export function LiaChatModal({
                   <h4 className="text-xs font-medium lia-text-strong group-hover:lia-text-strong">
                     {action.title}
                   </h4>
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary truncate">
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">
                     {action.buttonText}
                   </p>
                 </div>
-                <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-700 dark:text-lia-text-secondary" />
+                <ChevronRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:text-lia-text-secondary" />
               </div>
             ))}
           </div>
@@ -211,7 +211,7 @@ export function LiaChatModal({
                     <div className={`max-w-[80%] rounded-md px-3 py-2 ${
  msg.role === 'user'
                         ? 'bg-gray-800 text-white'
-                        : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary'
+                        : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary'
                     }`}>
                       <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
                     </div>
@@ -250,11 +250,11 @@ export function LiaChatModal({
                   value={liaConversation}
                   onChange={(e) => onConversationChange(e.target.value)}
                   placeholder={`Peça à LIA para analisar ${candidate.name}, agendar entrevista, enviar email...`}
-                  className="flex-1 bg-transparent text-gray-800 dark:text-lia-text-primary placeholder-gray-500 text-xs focus:outline-none"
+                  className="flex-1 bg-transparent text-lia-text-primary dark:text-lia-text-primary placeholder-gray-500 text-xs focus:outline-none"
                   disabled={isLiaChatLoading}
                 />
 
-                <div className="text-xs text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
+                <div className="text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1">
                   {isLiaChatLoading ? (
                     <><span className="animate-pulse">●</span>Processando...</>
                   ) : (
@@ -267,7 +267,7 @@ export function LiaChatModal({
                   className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-gray-200 transition-colors"
                   disabled={isLiaChatLoading}
                 >
-                  <Mic className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                  <Mic className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                 </button>
 
                 <button
@@ -276,7 +276,7 @@ export function LiaChatModal({
                   className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
  liaConversation.trim() && !isLiaChatLoading
                       ? 'bg-gray-800 text-white hover:bg-gray-700'
-                      : 'bg-gray-200 text-gray-600 dark:text-lia-text-tertiary cursor-not-allowed'
+                      : 'bg-gray-200 text-lia-text-secondary dark:text-lia-text-tertiary cursor-not-allowed'
                   }`}
                 >
                   <Send className="w-3 h-3" />

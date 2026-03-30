@@ -24,7 +24,7 @@ export interface KanbanColumnProps {
   onSelectAll: (stageId: string, candidateIds: string[]) => void
   onCandidateClick: (candidate: KanbanCandidate) => void
   onCandidateSelect?: (candidateId: string) => void
-  onCandidateQuickAction: (action: QuickActionType, candidate: KanbanCandidate, extra?: any) => void
+  onCandidateQuickAction: (action: QuickActionType, candidate: KanbanCandidate, extra?: Record<string, unknown>) => void
   onSubStatusChange?: (candidateId: string, newSubStatus: string, stage: string) => void
   subStatusOptions?: Array<{ code: string; display_name: string }>
   onDragStart: (e: React.DragEvent, candidate: KanbanCandidate, fromColumn: string) => void

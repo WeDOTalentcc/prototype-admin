@@ -123,7 +123,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{agent.icon}</span>
                 <div>
-                  <h3 className="font-semibold text-sm text-gray-800 dark:text-lia-text-primary">
+                  <h3 className="font-semibold text-sm text-lia-text-primary dark:text-lia-text-primary">
                     {agent.name}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       className="w-2 h-2 rounded-full"
                       style={{backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
                     />
-                    <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                    <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
                     </span>
                   </div>
@@ -145,8 +145,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">{agent.actions_today}</div>
-                <div className="text-xs text-gray-400">Ações Hoje</div>
+                <div className="text-xl font-bold text-lia-text-primary">{agent.actions_today}</div>
+                <div className="text-xs text-lia-text-disabled">Ações Hoje</div>
               </div>
               <div className="text-center">
                 <div
@@ -155,20 +155,20 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 >
                   {agent.progress}%
                 </div>
-                <div className="text-xs text-gray-400">Progresso</div>
+                <div className="text-xs text-lia-text-disabled">Progresso</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
-                  <span className="text-xl font-bold text-gray-900">{agent.daily_goal}</span>
+                  <span className="text-xl font-bold text-lia-text-primary">{agent.daily_goal}</span>
                 </div>
-                <div className="text-xs text-gray-400">Meta Diária</div>
+                <div className="text-xs text-lia-text-disabled">Meta Diária</div>
               </div>
             </div>
 
             {/* Trend Chart */}
             <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-lia-text-tertiary">
+                <span className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Tendência 24h
                 </span>
                 <div className="flex items-center gap-1">
@@ -180,9 +180,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <Minus className="w-3 h-3 lia-text-base" />
                   )}
                   <span
-                    className="text-xs"
+                    className={`text-xs ${agent.delta === 0 ? 'text-lia-text-disabled' : ''}`}
                     style={{color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : undefined}}
-                  className={agent.delta === 0 ? 'text-gray-400' : ''}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
@@ -203,7 +202,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-gray-500 dark:text-lia-text-tertiary' : ''}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-lia-text-tertiary dark:text-lia-text-tertiary' : ''}`}
                   style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
                     backgroundColor: activeTab === tab.id ? 'var(--gray-bg-20)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
@@ -220,12 +219,12 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {activeTab === 'activity' && (
                 <div className="p-4 space-y-3">
                   {isLoading ? (
-                    <div className="flex items-center justify-center py-8 text-gray-400">
+                    <div className="flex items-center justify-center py-8 text-lia-text-disabled">
                       <Clock className="w-4 h-4 animate-spin mr-2" />
                       Carregando...
                     </div>
                   ) : activities.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-lia-text-disabled">
                       Nenhuma atividade recente
                     </div>
                   ) : (
@@ -242,14 +241,14 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                               {activity.title}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-lia-text-disabled">
                               {formatTimeAgo(activity.started_at)}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                             {activity.description}
                           </p>
                         </div>
@@ -274,7 +273,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <span className="text-2xl font-bold" style={{color: getHealthTierColor(healthScore.tier)}}>
                           {healthScore.score}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-lia-text-disabled">
                           de 100
                         </span>
                       </div>
@@ -291,7 +290,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
                   {/* Score Drivers */}
                   <div>
-                    <h4 className="text-xs font-medium mb-3 text-gray-800 dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-3 text-lia-text-primary dark:text-lia-text-primary">
                       Fatores de Score
                     </h4>
                     <div className="space-y-2">
@@ -299,7 +298,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <div key={i} className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                                 {driver.name}
                               </span>
                               <div className="flex items-center gap-1">
@@ -327,8 +326,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   {/* Recommendations */}
                   {healthScore.recommendations.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-lia-text-primary">
-                        <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
+                        <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         Recomendações
                       </h4>
                       <div className="space-y-2">
@@ -337,8 +336,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                             key={i}
                             className="p-3 rounded-md flex items-start gap-2 bg-gray-200/20"
                           >
-                            <ChevronRight className="w-3 h-3 mt-0.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
-                            <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                            <ChevronRight className="w-3 h-3 mt-0.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
+                            <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                               {rec}
                             </span>
                           </div>
@@ -353,18 +352,18 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {activeTab === 'settings' && (
                 <div className="p-4 space-y-4">
                   <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-                    <h4 className="text-xs font-medium mb-2 text-gray-800 dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">
                       Configurações do Agente
                     </h4>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-lia-text-disabled">
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
                   <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-                    <h4 className="text-xs font-medium mb-2 text-gray-800 dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">
                       Integrações
                     </h4>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-lia-text-disabled">
                       Em breve: Conecte APIs externas e configure webhooks.
                     </p>
                   </div>

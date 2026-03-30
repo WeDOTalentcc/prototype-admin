@@ -356,7 +356,7 @@ export default function AdminComunicacoesPage() {
       if (!response.ok) throw new Error('Erro ao carregar matriz')
       const data = await response.json()
       if (data.success && data.data?.modules) {
-        const modules: MatrixModule[] = data.data.modules.map((mod: any) => ({
+        const modules: MatrixModule[] = data.data.modules.map((mod: Record<string, unknown>) => ({
           module: mod.module,
           label: mod.label || moduleLabels[mod.module]?.label || mod.module,
           description: mod.description || '',

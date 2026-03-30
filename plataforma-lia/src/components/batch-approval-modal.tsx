@@ -56,7 +56,7 @@ interface BatchApprovalModalProps {
   isOpen: boolean
   onClose: () => void
   candidates: BatchApprovalCandidate[]
-  onApprovalComplete: (results: any) => void
+  onApprovalComplete: (results: Record<string, unknown>) => void
 }
 
 export function BatchApprovalModal({
@@ -96,8 +96,8 @@ export function BatchApprovalModal({
 
   // Available stages for moving candidates
   const availableStages = [
-    { id: 'triagem', name: 'Triagem Inicial', color: 'bg-gray-100 text-gray-800 dark:text-lia-text-primary' },
-    { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-900' },
+    { id: 'triagem', name: 'Triagem Inicial', color: 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary' },
+    { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary' },
     { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-wedo-purple/15 text-wedo-purple' },
     { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-wedo-orange/15 text-wedo-orange' },
     { id: 'entrevista_final', name: 'Entrevista Final', color: 'bg-status-warning/15 text-status-warning' },
@@ -179,7 +179,7 @@ export function BatchApprovalModal({
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-status-success bg-status-success/15"
-    if (score >= 70) return "text-gray-900 bg-gray-100 dark:bg-lia-bg-elevated"
+    if (score >= 70) return "text-lia-text-primary bg-gray-100 dark:bg-lia-bg-elevated"
     if (score >= 60) return "text-status-warning bg-status-warning/15"
     return "text-status-error bg-status-error/15"
   }
@@ -189,7 +189,7 @@ export function BatchApprovalModal({
       case 'alta': return 'bg-status-error/15 text-status-error'
       case 'média': return 'bg-wedo-orange/15 text-wedo-orange'
       case 'baixa': return 'bg-status-success/15 text-status-success'
-      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'
+      default: return 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
     }
   }
 
@@ -197,7 +197,7 @@ export function BatchApprovalModal({
     switch (status) {
       case 'approved': return <CheckCircle className="w-4 h-4 text-status-success" />
       case 'rejected': return <XCircle className="w-4 h-4 text-status-error" />
-      case 'moved': return <ArrowRight className="w-4 h-4 text-gray-900" />
+      case 'moved': return <ArrowRight className="w-4 h-4 text-lia-text-primary" />
       default: return <Clock className="w-4 h-4 lia-text-base" />
     }
   }
@@ -218,7 +218,7 @@ export function BatchApprovalModal({
     if (filterCriteria.department !== 'all' && candidate.department !== filterCriteria.department) return false
     return true
   }).sort((a, b) => {
-    let aValue: any, bValue: any
+    let aValue: string | number | undefined, bValue: string | number | undefined
     switch (sortBy) {
       case 'name':
         aValue = a.name.toLowerCase()
@@ -297,13 +297,13 @@ export function BatchApprovalModal({
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
-              <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-950">
+              <h2 className="text-xl font-semibold text-lia-text-primary">
                 Aprovação em Lote
               </h2>
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 Processe múltiplos candidatos simultaneamente
               </p>
             </div>
@@ -312,7 +312,7 @@ export function BatchApprovalModal({
           <div className="flex items-center gap-3">
             {/* Step indicator */}
             <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
-              <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Etapa {['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1} de 5
               </span>
             </div>
@@ -345,14 +345,14 @@ export function BatchApprovalModal({
                       placeholder="Buscar candidatos..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                      className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                     />
                   </div>
 
                   <select
                     value={filterCriteria.stage}
                     onChange={(e) => setFilterCriteria({...filterCriteria, stage: e.target.value})}
-                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm"
+                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
                   >
                     <option value="all">Todas as etapas</option>
                     {availableStages.map(stage => (
@@ -363,7 +363,7 @@ export function BatchApprovalModal({
                   <select
                     value={filterCriteria.score}
                     onChange={(e) => setFilterCriteria({...filterCriteria, score: e.target.value})}
-                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm"
+                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
                   >
                     <option value="all">Todos os scores</option>
                     <option value="high">Alto (85+)</option>
@@ -379,7 +379,7 @@ export function BatchApprovalModal({
                   <Button variant="outline" size="sm" onClick={deselectAll}>
                     Limpar Seleção
                   </Button>
-                  <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                  <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                     {selectedCount} de {filteredCandidates.length} selecionados
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export function BatchApprovalModal({
                           <div className="relative">
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={candidate.avatar} alt={candidate.name} />
-                              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-900 text-sm font-medium">
+                              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-sm font-medium">
                                 {candidate.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
@@ -414,10 +414,10 @@ export function BatchApprovalModal({
                             )}
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-950 text-sm">
+                            <h4 className="font-semibold text-lia-text-primary text-sm">
                               {candidate.name}
                             </h4>
-                            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                               {candidate.position}
                             </p>
                           </div>
@@ -430,25 +430,25 @@ export function BatchApprovalModal({
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">Score LIA:</span>
+                          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Score LIA:</span>
                           <Badge className={`${getScoreColor(candidate.liaScore)} text-xs font-bold`}>
                             {formatScorePercent(candidate.liaScore)}
                           </Badge>
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">Etapa:</span>
+                          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Etapa:</span>
                           <Badge variant="outline" className="text-xs">
                             {availableStages.find(s => s.id === candidate.currentStage)?.name || candidate.currentStage}
                           </Badge>
                         </div>
 
-                        <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                        <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           <MapPin className="w-3 h-3" />
                           {candidate.location}
                         </div>
 
-                        <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                        <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           <Calendar className="w-3 h-3" />
                           {new Date(candidate.appliedDate).toLocaleDateString('pt-BR')}
                         </div>
@@ -476,10 +476,10 @@ export function BatchApprovalModal({
               {filteredCandidates.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 lia-text-base mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-950 mb-2">
+                  <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                     Nenhum candidato encontrado
                   </h3>
-                  <p className="text-gray-600 dark:text-lia-text-tertiary">
+                  <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
                     Ajuste os filtros para encontrar candidatos
                   </p>
                 </div>
@@ -491,10 +491,10 @@ export function BatchApprovalModal({
             <div className="p-6 h-full overflow-y-auto">
               <div className="max-w-4xl mx-auto">
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-950 mb-2">
+                  <h3 className="text-lg font-semibold text-lia-text-primary mb-2">
                     Escolha a Ação para {selectedCount} Candidatos
                   </h3>
-                  <p className="text-gray-600 dark:text-lia-text-tertiary">
+                  <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
                     Selecione a ação que deseja aplicar aos candidatos selecionados
                   </p>
                 </div>
@@ -520,10 +520,10 @@ export function BatchApprovalModal({
                             <template.icon className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-950">
+                            <h4 className="font-semibold text-lia-text-primary">
                               {template.name}
                             </h4>
-                            <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                               {template.description}
                             </p>
                           </div>
@@ -541,13 +541,13 @@ export function BatchApprovalModal({
                   <CardContent className="space-y-6">
                     {batchAction.type === 'move' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                        <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                           Mover para Etapa
                         </label>
                         <select
                           value={batchAction.targetStage || ''}
                           onChange={(e) => setBatchAction({...batchAction, targetStage: e.target.value})}
-                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950"
+                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
                         >
                           <option value="">Selecione uma etapa</option>
                           {availableStages.map(stage => (
@@ -558,14 +558,14 @@ export function BatchApprovalModal({
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                      <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                         Comentário Geral
                       </label>
                       <textarea
                         value={batchAction.comment}
                         onChange={(e) => setBatchAction({...batchAction, comment: e.target.value})}
                         placeholder="Adicione um comentário sobre esta ação em lote..."
-                        className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 h-24 resize-none"
+                        className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary h-24 resize-none"
                       />
                     </div>
 
@@ -577,8 +577,8 @@ export function BatchApprovalModal({
                           onChange={(e) => setBatchAction({...batchAction, notifyTeam: e.target.checked})}
                           className="rounded-md border-lia-border-default"
                         />
-                        <Bell className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">Notificar equipe</span>
+                        <Bell className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Notificar equipe</span>
                       </label>
 
                       <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -589,7 +589,7 @@ export function BatchApprovalModal({
                           className="rounded-md border-lia-border-default"
                         />
                         <Mail className="w-4 h-4 text-status-success" />
-                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">Enviar email aos candidatos</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Enviar email aos candidatos</span>
                       </label>
 
                       <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -600,7 +600,7 @@ export function BatchApprovalModal({
                           className="rounded-md border-lia-border-default"
                         />
                         <Calendar className="w-4 h-4 text-wedo-purple" />
-                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">Agendar entrevistas automaticamente</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Agendar entrevistas automaticamente</span>
                       </label>
 
                       <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -611,7 +611,7 @@ export function BatchApprovalModal({
                           className="rounded-md border-lia-border-default"
                         />
                         <Star className="w-4 h-4 text-wedo-orange" />
-                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">Adicionar ao banco de talentos</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Adicionar ao banco de talentos</span>
                       </label>
                     </div>
                   </CardContent>
@@ -624,10 +624,10 @@ export function BatchApprovalModal({
             <div className="p-6 h-full overflow-y-auto">
               <div className="max-w-4xl mx-auto">
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-950 mb-2">
+                  <h3 className="text-lg font-semibold text-lia-text-primary mb-2">
                     Revisar Ação em Lote
                   </h3>
-                  <p className="text-gray-600 dark:text-lia-text-tertiary">
+                  <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
                     Confirme os detalhes antes de processar
                   </p>
                 </div>
@@ -636,8 +636,8 @@ export function BatchApprovalModal({
                 <div className="grid grid-cols-4 gap-4 mb-8">
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-gray-900 mb-1">{selectedCount}</div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Candidatos Selecionados</div>
+                      <div className="text-2xl font-bold text-lia-text-primary mb-1">{selectedCount}</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Candidatos Selecionados</div>
                     </CardContent>
                   </Card>
 
@@ -646,7 +646,7 @@ export function BatchApprovalModal({
                       <div className="text-2xl font-bold text-status-success mb-1">
                         {batchAction.type === 'approve' ? selectedCount : 0}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Serão Aprovados</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Serão Aprovados</div>
                     </CardContent>
                   </Card>
 
@@ -655,7 +655,7 @@ export function BatchApprovalModal({
                       <div className="text-2xl font-bold text-status-error mb-1">
                         {batchAction.type === 'reject' ? selectedCount : 0}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Serão Rejeitados</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Serão Rejeitados</div>
                     </CardContent>
                   </Card>
 
@@ -664,7 +664,7 @@ export function BatchApprovalModal({
                       <div className="text-2xl font-bold text-wedo-purple mb-1">
                         {batchAction.type === 'move' ? selectedCount : 0}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Serão Movidos</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Serão Movidos</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -677,8 +677,8 @@ export function BatchApprovalModal({
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Tipo de Ação:</label>
-                        <p className="text-gray-950 capitalize">
+                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Tipo de Ação:</label>
+                        <p className="text-lia-text-primary capitalize">
                           {batchAction.type === 'approve' ? 'Aprovar' :
                            batchAction.type === 'reject' ? 'Rejeitar' :
                            batchAction.type === 'move' ? 'Mover para ' + (availableStages.find(s => s.id === batchAction.targetStage)?.name || '') :
@@ -688,16 +688,16 @@ export function BatchApprovalModal({
 
                       {batchAction.comment && (
                         <div>
-                          <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Comentário:</label>
-                          <p className="text-gray-950">{batchAction.comment}</p>
+                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Comentário:</label>
+                          <p className="text-lia-text-primary">{batchAction.comment}</p>
                         </div>
                       )}
 
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Ações Adicionais:</label>
+                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Ações Adicionais:</label>
                         <div className="flex flex-wrap gap-2 mt-1">
                           {batchAction.notifyTeam && (
-                            <Badge className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-900 flex items-center gap-1">
+                            <Badge className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary flex items-center gap-1">
                               <Bell className="w-3 h-3" />
                               Notificar equipe
                             </Badge>
@@ -742,15 +742,15 @@ export function BatchApprovalModal({
                             <div className="flex items-center gap-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={candidate.avatar} alt={candidate.name} />
-                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-900 text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-xs">
                                   {candidate.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <div className="font-medium text-gray-950 text-sm">
+                                <div className="font-medium text-lia-text-primary text-sm">
                                   {candidate.name}
                                 </div>
-                                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                                   {candidate.position} • Score: {formatScorePercent(candidate.liaScore)}
                                 </div>
                               </div>
@@ -773,13 +773,13 @@ export function BatchApprovalModal({
             <div className="p-6 h-full flex items-center justify-center">
               <div className="text-center">
                 <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <h3 className="text-lg font-semibold text-gray-950 mb-2">
+                <h3 className="text-lg font-semibold text-lia-text-primary mb-2">
                   Processando Aprovação em Lote
                 </h3>
-                <p className="text-gray-600 dark:text-lia-text-tertiary mb-4">
+                <p className="text-lia-text-secondary dark:text-lia-text-tertiary mb-4">
                   Aplicando ações para {selectedCount} candidatos...
                 </p>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-lia-text-tertiary">
+                <div className="space-y-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                   <div className="flex items-center justify-center gap-2">
                     <Activity className="w-4 h-4 animate-pulse" />
                     Atualizando status dos candidatos
@@ -804,11 +804,11 @@ export function BatchApprovalModal({
                   <CheckCircle className="w-8 h-8 text-status-success" />
                 </div>
 
-                <h3 className="text-xl font-semibold text-gray-950 mb-2">
+                <h3 className="text-xl font-semibold text-lia-text-primary mb-2">
                   Aprovação em Lote Concluída!
                 </h3>
 
-                <p className="text-gray-600 dark:text-lia-text-tertiary mb-8">
+                <p className="text-lia-text-secondary dark:text-lia-text-tertiary mb-8">
                   {results.total} candidatos foram processados com sucesso
                 </p>
 
@@ -816,29 +816,29 @@ export function BatchApprovalModal({
                 <div className="grid grid-cols-4 gap-4 mb-8">
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <div className="text-3xl font-bold text-gray-900 mb-2">{results.total}</div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Total Processados</div>
+                      <div className="text-3xl font-bold text-lia-text-primary mb-2">{results.total}</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Total Processados</div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-3xl font-bold text-status-success mb-2">{results.approved}</div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Aprovados</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Aprovados</div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-3xl font-bold text-status-error mb-2">{results.rejected}</div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Rejeitados</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Rejeitados</div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardContent className="p-6 text-center">
                       <div className="text-3xl font-bold text-wedo-purple mb-2">{results.moved}</div>
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Movidos</div>
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Movidos</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -878,7 +878,7 @@ export function BatchApprovalModal({
           <div className="flex items-center justify-between">
             <div>
               {currentStep !== 'complete' && (
-                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                   {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}
                 </p>
               )}

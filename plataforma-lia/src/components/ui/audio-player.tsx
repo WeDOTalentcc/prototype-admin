@@ -126,7 +126,7 @@ export function AudioPlayer({
  "flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition-colors",
           isLoaded
             ? "bg-gray-900 text-white hover:bg-gray-700 dark:hover:bg-gray-300"
-            : "bg-gray-300 text-gray-500 dark:text-lia-text-tertiary cursor-not-allowed"
+            : "bg-gray-300 text-lia-text-tertiary dark:text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label={isPlaying ? "Pausar áudio" : "Reproduzir áudio"}
       >
@@ -152,7 +152,7 @@ export function AudioPlayer({
             style={{width: `${progress}%`}}
           />
         </div>
-        <div className="flex justify-between text-micro font-['Inter',sans-serif] text-gray-400 tabular-nums">
+        <div className="flex justify-between text-micro font-['Inter',sans-serif] text-lia-text-disabled tabular-nums">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>

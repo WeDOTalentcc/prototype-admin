@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || "Erro ao enviar email. Tente novamente.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Erro ao enviar email. Tente novamente.")
     } finally {
       setIsLoading(false)
     }

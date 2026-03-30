@@ -70,13 +70,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
               </div>
               <div>
-                <span className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">Status da Triagem</span>
+                <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Status da Triagem</span>
                 <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
  (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
                   (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
                   (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
-                  (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
-                  'bg-gray-100 text-gray-500 dark:bg-lia-bg-secondary'
+                  (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
+                  'bg-gray-100 text-lia-text-tertiary dark:bg-lia-bg-secondary'
                 }`}>
                   {SCREENING_STATUS_LABELS[(job.screeningStatus || 'not_configured') as ScreeningStatus]}
                 </span>
@@ -84,7 +84,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             </div>
             {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
               <div className="flex items-center gap-2.5 opacity-50 cursor-not-allowed" title="Clique em Editar Configurações para alterar">
-                <span className="text-micro text-gray-400" >
+                <span className="text-micro text-lia-text-disabled" >
                   {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                 </span>
                 <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
@@ -100,7 +100,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           </div>
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+          <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
           <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-100 dark:divide-gray-700">
             {[
               { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
@@ -111,10 +111,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               return (
                 <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <ChIcon className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary" >{ch.label}</span>
+                    <ChIcon className="w-3.5 h-3.5 text-lia-text-disabled" />
+                    <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >{ch.label}</span>
                     {ch.key === 'phone' && !ch.enabled && (
-                      <span className="text-micro text-gray-300">(Integração pendente)</span>
+                      <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>
                     )}
                   </div>
                   <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${ch.enabled ? 'bg-gray-400' : 'bg-gray-200 dark:bg-lia-bg-elevated'}`}>
@@ -127,10 +127,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+          <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -141,11 +141,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   return (
                     <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400'}`} >{preset.label}</span>
-                        {isSelected && <CheckCircle className="w-3 h-3 text-gray-400" />}
+                        <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.label}</span>
+                        {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
                       </div>
-                      <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400'}`} >{preset.score}</span>
-                      <span className="text-micro text-gray-400 block mt-0.5">{preset.desc}</span>
+                      <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.score}</span>
+                      <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
                     </div>
                   )
                 })}
@@ -153,14 +153,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                   {screeningConfig?.settings?.response_timeout_hours ?? 48}h
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                   {screeningConfig?.settings?.max_retries ?? 2}x
                 </div>
               </div>
@@ -170,19 +170,19 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+            <Calendar className="w-3.5 h-3.5 text-lia-text-disabled" />
+            <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
-              <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+              <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                 {job.deadlineScreening ? new Date(job.deadlineScreening).toLocaleDateString('pt-BR') : 'Não definido'}
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
-              <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
+              <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                 {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(job.deadlineScreening).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
               </div>
             </div>
@@ -192,12 +192,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         {/* Controle de Paralização preview */}
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+            <ShieldAlert className="w-3.5 h-3.5 text-lia-text-disabled" />
+            <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -209,11 +209,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   return (
                     <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400'}`} >{preset.label}</span>
-                        {isSelected && <CheckCircle className="w-3 h-3 text-gray-400" />}
+                        <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.label}</span>
+                        {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
                       </div>
-                      <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400'}`} >{preset.limit}</span>
-                      <span className="text-micro text-gray-400 block mt-0.5">{preset.desc}</span>
+                      <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.limit}</span>
+                      <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
                     </div>
                   )
                 })}
@@ -222,8 +222,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
               <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-micro text-gray-400">Progresso atual</span>
-                  <span className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary" >
+                  <span className="text-micro text-lia-text-disabled">Progresso atual</span>
+                  <span className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary" >
                     {screeningConfig?.settings?.auto_approvals_count ?? 0}/{screeningConfig?.settings?.auto_approval_limit ?? 10} aprovações
                   </span>
                 </div>
@@ -248,8 +248,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <CalendarCheck className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+              <CalendarCheck className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
             </div>
             <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-400' : 'bg-gray-200 dark:bg-lia-bg-elevated'}`}>
               <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'translate-x-4' : 'translate-x-0.5'}`} />
@@ -258,7 +258,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           {(screeningConfig?.scheduling?.auto_enabled ?? true) && (
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -269,11 +269,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     return (
                       <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
                         <div className="flex items-center justify-between mb-0.5">
-                          <span className={`text-micro font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-400'}`} >{preset.label}</span>
-                          {isSelected && <CheckCircle className="w-3 h-3 text-gray-400" />}
+                          <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.label}</span>
+                          {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
                         </div>
-                        <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400'}`} >{preset.score}</span>
-                        <span className="text-micro text-gray-400 block mt-0.5">{preset.desc}</span>
+                        <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} >{preset.score}</span>
+                        <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
                       </div>
                     )
                   })}
@@ -281,23 +281,23 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                     {screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                     {screeningConfig?.scheduling?.available_hours || '9h-18h'}
                   </div>
                   {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
-                    <span className="text-micro text-gray-300 mt-0.5 block">Conforme config. da empresa</span>
+                    <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary opacity-60">
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                     {screeningConfig?.scheduling?.interview_duration_min ?? 60}min
                   </div>
                 </div>
@@ -328,13 +328,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
               </div>
               <div>
-                <span className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">Status da Triagem</span>
+                <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Status da Triagem</span>
                 <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
  (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
                   (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
                   (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
-                  (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
-                  'bg-gray-100 text-gray-500 dark:bg-lia-bg-secondary'
+                  (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
+                  'bg-gray-100 text-lia-text-tertiary dark:bg-lia-bg-secondary'
                 }`}>
                   {SCREENING_STATUS_LABELS[(job.screeningStatus || 'not_configured') as ScreeningStatus]}
                 </span>
@@ -342,7 +342,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             </div>
             {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
               <div className="flex items-center gap-2.5">
-                <span className="text-micro text-gray-500 dark:text-lia-text-tertiary" >
+                <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary" >
                   {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                 </span>
                 <button
@@ -367,7 +367,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           </div>
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+          <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
           <div className="border border-lia-border-subtle dark:border-lia-border-default rounded-md divide-y divide-gray-200 dark:divide-gray-600">
             {[
               { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
@@ -379,10 +379,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               return (
                 <div key={ch.key} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <ChIcon className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-                    <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary" >{ch.label}</span>
+                    <ChIcon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary" >{ch.label}</span>
                     {ch.key === 'phone' && !enabled && (
-                      <span className="text-micro text-gray-400">(Integração pendente)</span>
+                      <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>
                     )}
                   </div>
                   <button
@@ -398,10 +398,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+          <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -412,11 +412,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   return (
                     <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-lia-text-tertiary'}`} >{preset.label}</span>
-                        {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-lia-text-secondary" />}
+                        <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
+                        {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
                       </div>
-                      <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary block" >{preset.score}</span>
-                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block" >{preset.score}</span>
+                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
                     </button>
                   )
                 })}
@@ -424,13 +424,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
                 <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                   {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
                 <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                   {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
                 </select>
@@ -442,12 +442,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         {/* Controle de Paralização editing */}
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
-            <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+            <ShieldAlert className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+            <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
@@ -458,11 +458,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   return (
                     <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-lia-text-tertiary'}`} >{preset.label}</span>
-                        {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-lia-text-secondary" />}
+                        <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
+                        {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
                       </div>
-                      <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary block" >{preset.limit}</span>
-                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block" >{preset.limit}</span>
+                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
                     </button>
                   )
                 })}
@@ -471,8 +471,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
               <div className="border border-lia-border-subtle dark:border-lia-border-default rounded-md p-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-micro text-gray-500 dark:text-lia-text-tertiary">Progresso atual</span>
-                  <span className="text-micro font-medium text-gray-700 dark:text-lia-text-secondary" >
+                  <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Progresso atual</span>
+                  <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary" >
                     {screeningConfig?.settings?.auto_approvals_count ?? 0}/{approvalPresetToLimit(editAutoApprovalPreset)} aprovações
                   </span>
                 </div>
@@ -488,7 +488,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded-md text-status-warning dark:text-status-warning">
                 <AlertTriangle className="w-3 h-3" />
                 <span className="text-micro font-medium" >Triagem pausada — limite atingido</span>
-                <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 underline" >
+                <button onClick={() => {}} className="ml-auto text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse underline" >
                   Retomar
                 </button>
               </div>
@@ -498,16 +498,16 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-default">
           <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-            <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+            <Calendar className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
             <input
               type="date"
               value={job.deadlineScreening ? new Date(job.deadlineScreening).toISOString().split('T')[0] : ''}
               onChange={(e) => onJobUpdate?.({ ...job, deadlineScreening: e.target.value || null })}
-              className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary"
+              className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
             />
           </div>
         </div>
@@ -516,8 +516,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <CalendarCheck className="w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
-              <span className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+              <CalendarCheck className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+              <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
             </div>
             <button
               onClick={() => setEditSchedulingEnabled(!editSchedulingEnabled)}
@@ -529,7 +529,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           {editSchedulingEnabled && (
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
@@ -540,11 +540,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     return (
                       <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                         <div className="flex items-center justify-between mb-0.5">
-                          <span className={`text-micro font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-lia-text-tertiary'}`} >{preset.label}</span>
-                          {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-lia-text-secondary" />}
+                          <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
+                          {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
                         </div>
-                        <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary block" >{preset.score}</span>
-                        <span className="text-micro text-gray-500 dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                        <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block" >{preset.score}</span>
+                        <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
                       </button>
                     )
                   })}
@@ -552,7 +552,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
                   <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                     <option value="Microsoft">Microsoft</option>
                     <option value="Google">Google</option>
@@ -560,16 +560,16 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
                   <div className="flex items-center gap-2">
                     <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors" />
                   </div>
                   {editAvailableHoursInherited && (
-                    <span className="text-micro text-gray-400 mt-0.5 block">Conforme config. da empresa</span>
+                    <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
                   <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
                     {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
                   </select>
@@ -700,8 +700,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
     <CardContent className="p-4">
       <div className="space-y-4">
         <div>
-          <h4 className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
-          <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-lia-text-tertiary flex-wrap mb-3">
+          <h4 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
+          <div className="flex items-center gap-3 text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex-wrap mb-3">
             <span>Total: {job.screeningQuestions?.length || 0} perguntas WSI</span>
             <span>•</span>
             <span>{(job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
@@ -718,14 +718,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             return (
               <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-gray-50/50 border border-lia-border-subtle' : totalBlockCount > 0 ? 'bg-lia-bg-primary border border-lia-border-subtle' : 'bg-lia-bg-primary border border-lia-border-subtle border-dashed/50 dark:border-lia-border-default'}`}>
                 <div className="flex items-center gap-2">
-                  <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-gray-400 dark:text-lia-text-tertiary dark:bg-lia-bg-elevated'}`}>{block.id}</span>
-                  <span className={`text-xs font-medium ${isAutomatic ? 'text-gray-500' : 'text-gray-800 dark:text-lia-text-primary'}`}>{block.name}</span>
+                  <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-lia-text-disabled dark:text-lia-text-tertiary dark:bg-lia-bg-elevated'}`}>{block.id}</span>
+                  <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{block.name}</span>
                   {isAutomatic ? (
                     <span className="text-micro px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full font-medium uppercase tracking-wide dark:bg-lia-bg-elevated">Automático</span>
                   ) : totalBlockCount > 0 ? (
-                    <span className="text-micro text-gray-500 dark:text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
+                    <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                   ) : (
-                    <span className="text-micro text-gray-400 italic">Nenhuma pergunta</span>
+                    <span className="text-micro text-lia-text-disabled italic">Nenhuma pergunta</span>
                   )}
                 </div>
                 {block.id === 2 && (
@@ -766,7 +766,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 {!isAutomatic && block.id !== 2 && blockQuestions.length > 0 && (
                   <div className="space-y-1 ml-7 mt-1.5">
                     {blockQuestions.map((q: ScreeningQuestionItem, idx: number) => (
-                      <p key={q.id || idx} className="text-xs text-gray-600 dark:text-lia-text-secondary leading-relaxed truncate">
+                      <p key={q.id || idx} className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed truncate">
                         • {q.question || q.text}
                       </p>
                     ))}
@@ -774,15 +774,15 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 )}
                 {isAutomatic && WSI_AUTOMATIC_MESSAGES[block.id] && (
                   <div className="ml-7 mt-1.5">
-                    <p className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary mb-1">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                    <p className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-1">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                     <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg px-2.5 py-2">
-                      <p className="text-micro text-gray-600 dark:text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
+                      <p className="text-micro text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                     </div>
-                    <p className="text-micro text-gray-400 mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                    <p className="text-micro text-lia-text-disabled mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                   </div>
                 )}
                 {isAutomatic && !WSI_AUTOMATIC_MESSAGES[block.id] && (
-                  <p className="text-micro text-gray-400 ml-7 mt-0.5">{block.description}</p>
+                  <p className="text-micro text-lia-text-disabled ml-7 mt-0.5">{block.description}</p>
                 )}
               </div>
             )
@@ -880,7 +880,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             <div className="flex items-center gap-3 px-5 py-3 cursor-pointer" onClick={() => setWsiProgressCollapsed(!wsiProgressCollapsed)}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                 {wsiGenerationStep < 4 ? (
-                  <Loader2 className="w-5 h-5 text-gray-900 dark:text-lia-text-primary animate-spin" />
+                  <Loader2 className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary animate-spin" />
                 ) : (
                   <Brain className="w-5 h-5 text-wedo-cyan" />
                 )}
@@ -963,7 +963,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   <div className="pt-2">
                     <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
                     <p className="text-xs lia-text-strong">
-                      {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-gray-600 dark:text-lia-text-tertiary"> · {wsiGenerationContext.seniority}</span> : ''}
+                      {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary dark:text-lia-text-tertiary"> · {wsiGenerationContext.seniority}</span> : ''}
                     </p>
                   </div>
                 )}
@@ -975,7 +975,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
-                            <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">
+                            <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">
                               {resp.length > 35 ? resp.slice(0, 35) + '...' : resp}
                             </span>
                           ))}
@@ -987,17 +987,17 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
-                            <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{skill}</span>
+                            <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{skill}</span>
                           ))}
                         </div>
                       </div>
                     )}
                     {wsiGenerationContext.behavioralCompetencies.length > 0 && (
                       <div>
-                        <p className="text-micro font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
+                        <p className="text-micro font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.behavioralCompetencies.map((comp: string, i: number) => (
-                            <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{comp}</span>
+                            <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{comp}</span>
                           ))}
                         </div>
                       </div>
@@ -1021,7 +1021,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
                         {['CBI', 'Bloom', 'Big Five', 'Dreyfus'].map(m => (
-                          <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{m}</span>
+                          <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{m}</span>
                         ))}
                       </div>
                     )}
@@ -1043,7 +1043,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       <div className="space-y-1.5 pl-1">
                         {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
                           <div className="flex items-start gap-2">
-                            <span className="text-gray-400 mt-0.5">•</span>
+                            <span className="text-lia-text-disabled mt-0.5">•</span>
                             <p className="text-base-ui lia-text-strong">
                               <span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo
                             </p>
@@ -1051,7 +1051,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
                           <div className="flex items-start gap-2">
-                            <span className="text-gray-400 mt-0.5">•</span>
+                            <span className="text-lia-text-disabled mt-0.5">•</span>
                             <p className="text-base-ui lia-text-strong">
                               <span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática
                             </p>
@@ -1059,7 +1059,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
                           <div className="flex items-start gap-2">
-                            <span className="text-gray-400 mt-0.5">•</span>
+                            <span className="text-lia-text-disabled mt-0.5">•</span>
                             <p className="text-base-ui lia-text-strong">
                               <span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga
                             </p>
@@ -1077,7 +1077,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       </div>
 
                       {!wsiSummaryExpanded ? (
-                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 transition-colors">
+                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors">
                           <ChevronDown className="w-3.5 h-3.5" />
                           Ver detalhes completos
                         </button>
@@ -1089,7 +1089,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                           </div>
                           <div className="space-y-1.5">
                             <p className="text-base-ui lia-text-strong">
-                              As perguntas foram geradas com base na metodologia <span className="font-semibold text-gray-900">WeDoTalent Skill Index</span>, considerando:
+                              As perguntas foram geradas com base na metodologia <span className="font-semibold text-lia-text-primary">WeDoTalent Skill Index</span>, considerando:
                             </p>
                             <div className="space-y-0.5 pl-1">
                               <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Senioridade do cargo</p></div>
@@ -1118,7 +1118,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               <span className="text-xs lia-text-base">Perguntas padrão da empresa incluídas</span>
                             </div>
                           )}
-                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 transition-colors pt-1">
+                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors pt-1">
                             <ChevronUp className="w-3.5 h-3.5" />
                             Recolher detalhes
                           </button>
@@ -1184,7 +1184,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   <div className="flex items-center gap-2">
                     <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center ${block.editable ? 'bg-gray-700' : 'bg-gray-400'}`}>{block.id}</span>
                     <div>
-                      <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-800 dark:text-lia-text-primary'}`}>{block.name}</span>
+                      <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{block.name}</span>
                       <span className="text-micro lia-text-base ml-2">({block.duration})</span>
                     </div>
                     {!block.editable && <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 lia-text-base ml-1">Automático</Badge>}
@@ -1212,13 +1212,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
                         <div className="rounded-md border border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50 overflow-hidden">
                           <div className="px-3 py-2 border-b border-lia-border-subtle dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
-                            <p className="text-xs font-medium text-gray-950 dark:text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                            <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                           </div>
                           <div className="p-3">
-                            <div className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
+                            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
                           </div>
                           <div className="px-3 py-2 border-t border-lia-border-subtle dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50">
-                            <p className="text-micro text-gray-600 dark:text-lia-text-tertiary italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                            <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                           </div>
                         </div>
                       ) : (
@@ -1278,7 +1278,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                     />
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                       {isDeactivated ? (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:border-lia-border-default">Inativa</Badge>
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-lia-text-tertiary border border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:border-lia-border-default">Inativa</Badge>
                                       ) : (
                                         <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
                                           <CheckCircle className="w-3 h-3 mr-1" />Aceita
@@ -1350,7 +1350,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
       {/* Save/Cancel buttons */}
       <div className="flex items-center justify-between px-5 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-        <Button variant="outline" size="sm" className="h-7 text-micro px-3 border-lia-border-subtle text-gray-600 dark:border-lia-border-default dark:text-lia-text-secondary" onClick={resetScreeningEditing}>
+        <Button variant="outline" size="sm" className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary" onClick={resetScreeningEditing}>
           Cancelar
         </Button>
         <div className="flex items-center gap-2">

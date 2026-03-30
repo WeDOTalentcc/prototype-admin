@@ -51,10 +51,10 @@ export const getTaskTypeIcon = (type: 'feedback' | 'entrevista' | 'sourcing') =>
 
 export const getAlertIcon = (type: string) => {
   switch (type) {
-    case 'urgent': return <AlertTriangle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-    case 'warning': return <AlertCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+    case 'urgent': return <AlertTriangle className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
+    case 'warning': return <AlertCircle className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
     case 'success': return <CheckCircle className="w-4 h-4" style={{color: 'var(--gray-800)'}} />
-    default: return <Info className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+    default: return <Info className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
   }
 }
 

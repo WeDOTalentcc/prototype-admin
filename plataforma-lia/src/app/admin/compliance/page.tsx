@@ -116,7 +116,7 @@ async function fetchAlerts(): Promise<Alert[]> {
       throw new Error('Failed to fetch alerts')
     }
     const data = await response.json()
-    return (data || []).map((item: any) => ({
+    return (data || []).map((item: Record<string, unknown>) => ({
       id: item.id || String(Math.random()),
       title: item.title || item.message || 'Alerta',
       description: item.description || item.details || '',
@@ -281,7 +281,7 @@ export default function ComplianceDashboardPage() {
                     {lgpdStatus}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={lgpdBadgeVariant as any} className="text-micro">
+                    <Badge variant={lgpdBadgeVariant as "default" | "secondary" | "destructive" | "outline"} className="text-micro">
                       {lgpdStats?.dpoActive ? 'DPO Ativo' : 'Verificar'}
                     </Badge>
                   </div>

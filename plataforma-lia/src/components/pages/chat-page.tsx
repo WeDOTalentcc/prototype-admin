@@ -118,10 +118,10 @@ export function ChatPage() {
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
               <div>
-                <h1 className="text-base font-semibold text-gray-800">
+                <h1 className="text-base font-semibold text-lia-text-primary">
                   Chat {chatId} - {chatTitle}
                 </h1>
-                <p className="text-xs font-open-sans text-gray-500">
+                <p className="text-xs font-open-sans text-lia-text-tertiary">
                   Lia - Assistente de Recrutamento
                 </p>
               </div>
@@ -149,10 +149,10 @@ export function ChatPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-gray-800"
+                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
                   autoFocus
                 />
-                <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-600" />
+                <Search className="absolute right-3 top-2.5 w-4 h-4 text-lia-text-secondary" />
               </div>
               <Button
                 variant="ghost"
@@ -171,7 +171,7 @@ export function ChatPage() {
               <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-lia-border-subtle">
                 <TabsTrigger 
                   value="conversa" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-colors"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors"
                   style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ export function ChatPage() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="controle" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-colors"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors"
                   style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <Cpu className="w-4 h-4 mr-2" />
@@ -212,10 +212,10 @@ export function ChatPage() {
             <div className={`text-left pt-8 ${messagesContainerClass}`}>
               <div className="mb-8">
                 <LIAIcon size="xl" className="mb-4" />
-                <h2 className="text-3xl font-semibold mb-3 text-gray-800">
-                  Oi, eu sou a <span className="text-gray-700">LIA</span>.
+                <h2 className="text-3xl font-semibold mb-3 text-lia-text-primary">
+                  Oi, eu sou a <span className="text-lia-text-secondary">LIA</span>.
                 </h2>
-                <p className="text-base mb-8 text-gray-500">
+                <p className="text-base mb-8 text-lia-text-tertiary">
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                 </p>
                 
@@ -239,7 +239,7 @@ export function ChatPage() {
                     </div>
                     <div className="rounded-md p-5 flex-1 bg-gray-100">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium lia-name -ml-1 text-gray-800">
+                        <span className="text-sm font-medium lia-name -ml-1 text-lia-text-primary">
                           Lia
                         </span>
                         <Badge variant="secondary" className="text-xs border-0">
@@ -284,7 +284,7 @@ export function ChatPage() {
                 <div className="rounded-md p-5 flex-1 bg-gray-100">
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-lia-text-tertiary">
                       LIA está digitando...
                     </span>
                   </div>
@@ -357,7 +357,7 @@ export function ChatPage() {
                             key={index}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-transform duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-lia-border-subtle bg-gray-50"
+                            className="text-xs h-7 px-3 transition-transform duration-200 hover:scale-105 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -379,7 +379,7 @@ export function ChatPage() {
                     <div className="flex-1">
                       <p className="text-sm font-medium text-status-error">Arquivo inválido</p>
                       <p className="text-xs text-status-error whitespace-pre-line mt-0.5">{fileValidationError}</p>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-lia-text-secondary mt-1">
                         Formatos aceitos: PDF, DOC, DOCX, TXT, CSV, XLSX, PNG, JPG (máx. {MAX_FILE_SIZE_MB}MB)
                       </p>
                     </div>
@@ -405,18 +405,18 @@ export function ChatPage() {
                           key={index}
                           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-lia-bg-primary border border-lia-border-default"
                         >
-                          <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-                          <span className="max-w-[150px] truncate text-gray-800">
+                          <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <span className="max-w-[150px] truncate text-lia-text-primary">
                             {file.name}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-lia-text-disabled">
                             ({sizeDisplay})
                           </span>
                           <button
                             onClick={() => handleRemoveFile(index)}
                             className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
                           >
-                            <X className="w-3 h-3 text-gray-500" />
+                            <X className="w-3 h-3 text-lia-text-tertiary" />
                           </button>
                         </div>
                       )
@@ -448,12 +448,12 @@ export function ChatPage() {
                   <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-gray-200/30 border border-wedo-cyan/30"
                   >
                     <div className="flex items-center gap-2">
-                      <Mic className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Mic className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-lia-text-secondary">
                           Áudio gravado ({recordingTime}s)
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-lia-text-tertiary">
                           Pronto para enviar junto com sua mensagem
                         </span>
                       </div>
@@ -495,7 +495,7 @@ export function ChatPage() {
                         <span className="text-sm font-medium text-status-success">
                           Arquivo analisado: {fileAnalysisContext.filename}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-lia-text-tertiary">
                           A análise será enviada junto com sua próxima mensagem
                         </span>
                       </div>
@@ -516,14 +516,14 @@ export function ChatPage() {
 
                 {/* Indicador de ação pendente */}
                 {activePendingAction && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-gray-500"
+                  <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-lia-text-tertiary"
                   >
                     <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse shrink-0" />
                     <span>
-                      Ação em andamento: <strong className="text-gray-800">{activePendingAction.intent.replace(/_/g, " ")}</strong>
+                      Ação em andamento: <strong className="text-lia-text-primary">{activePendingAction.intent.replace(/_/g, " ")}</strong>
                     </span>
                     <button
-                      className="ml-auto text-xs hover:opacity-80 transition-opacity text-gray-400"
+                      className="ml-auto text-xs hover:opacity-80 transition-opacity text-lia-text-disabled"
                       onClick={() => handleSendMessage("cancelar")}
                       type="button"
                     >
@@ -541,7 +541,7 @@ export function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle bg-gray-50 text-gray-800"
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle bg-gray-50 text-lia-text-primary"
                       rows={1}
                     />
                   </div>
@@ -705,7 +705,7 @@ export function ChatPage() {
       {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_UI_ACTIONS_DEBUG === 'true' && (
         <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2">
           <div className="bg-gray-900/90 backdrop-blur-sm rounded-md p-2 border border-gray-700">
-            <div className="text-xs text-gray-600 mb-2 px-2">Debug: UI Actions</div>
+            <div className="text-xs text-lia-text-secondary mb-2 px-2">Debug: UI Actions</div>
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => uiActions.openPanel("compensation_benefits", {
@@ -713,7 +713,7 @@ export function ChatPage() {
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors"
               >
                 Debug Panel
               </button>

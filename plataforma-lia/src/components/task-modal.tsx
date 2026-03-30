@@ -30,7 +30,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
       case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
       case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
       case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-gray-50 text-gray-800 dark:text-lia-text-primary"
+      default: return "border-lia-border-subtle bg-gray-50 text-lia-text-primary dark:text-lia-text-primary"
     }
   }
 
@@ -63,7 +63,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
             </Badge>
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             {task.description}
           </p>
 

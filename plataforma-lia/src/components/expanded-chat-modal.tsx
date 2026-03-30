@@ -589,7 +589,7 @@
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Upload className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Analisar Arquivo
             </AlertDialogTitle>
             <AlertDialogDescription>

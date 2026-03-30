@@ -351,7 +351,7 @@ function BenefitRow({
       >
         <span>{benefit.name}</span>
         {benefit.is_mandatory && (
-          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">obrig.</span>
+          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">obrig.</span>
         )}
         {benefit.is_highlighted && (
           <Heart className="inline w-3 h-3 ml-1 text-wedo-magenta fill-pink-500" />

@@ -202,49 +202,49 @@ export const borderRadius = {
  */
 export const textStyles = {
   // DS v4.1: Títulos com Open Sans
-  h1: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50",
-  h2: "font-['Open_Sans',sans-serif] text-lg font-semibold text-gray-900 dark:text-gray-50",
-  h3: "font-['Open_Sans',sans-serif] text-sm font-semibold text-gray-900 dark:text-gray-50",
-  h4: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
+  h1: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h2: "font-['Open_Sans',sans-serif] text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h3: "font-['Open_Sans',sans-serif] text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h4: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // Aliases para compatibilidade
-  title: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
-  titleLarge: "font-['Open_Sans',sans-serif] text-base font-semibold text-gray-900 dark:text-gray-50",
-  titleXl: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50",
+  title: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  titleLarge: "font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  titleXl: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Subtítulos
-  subtitle: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200",
-  subtitleMuted: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-600 dark:text-gray-400",
+  subtitle: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
+  subtitleMuted: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
   
   // v4: Corpo de texto
-  body: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-800 dark:text-gray-200",
-  bodySmall: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-800 dark:text-gray-200",
-  bodyLarge: "font-['Open_Sans',sans-serif] text-base-ui font-normal text-gray-800 dark:text-gray-200",
+  body: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
+  bodySmall: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
+  bodyLarge: "font-['Open_Sans',sans-serif] text-base-ui font-normal text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Descrições secundárias
-  description: "font-['Open_Sans',sans-serif] text-xs font-normal text-gray-600 dark:text-gray-400",
+  description: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-secondary dark:text-lia-text-secondary",
   
   // v4: Captions e labels
-  caption: "font-['Open_Sans',sans-serif] text-micro font-normal text-gray-600 dark:text-gray-400",
-  captionBold: "font-['Open_Sans',sans-serif] text-micro font-medium text-gray-800 dark:text-gray-200",
+  caption: "font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
+  captionBold: "font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Labels
-  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200",
-  labelSmall: "font-['Open_Sans',sans-serif] text-micro font-medium text-gray-800 dark:text-gray-200",
+  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
+  labelSmall: "font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Métricas com Inter
-  metric: "font-['Inter',sans-serif] text-sm font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
-  metricLarge: "font-['Inter',sans-serif] text-2xl font-semibold text-gray-900 dark:text-gray-50 tabular-nums",
-  metricSmall: "font-['Inter',sans-serif] text-xs font-medium text-gray-800 dark:text-gray-200 tabular-nums",
+  metric: "font-['Inter',sans-serif] text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricLarge: "font-['Inter',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricSmall: "font-['Inter',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
-  sidebarTitle: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-gray-900 dark:text-gray-50",
-  sidebarItem: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 dark:text-gray-300",
-  sidebarItemActive: "font-['Open_Sans',sans-serif] text-xs font-semibold text-gray-900 dark:text-gray-50",
+  sidebarTitle: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  sidebarItem: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
+  sidebarItemActive: "font-['Open_Sans',sans-serif] text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Links (cyan para LIA/IA)
   link: "font-['Open_Sans',sans-serif] text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
-  linkSubtle: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 transition-colors",
+  linkSubtle: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors",
 } as const
 
 /**
@@ -252,13 +252,13 @@ export const textStyles = {
  * Border-radius padrão: 8px (rounded-md) conforme DS v4.1
  */
 export const cardStyles = {
-  default: 'bg-white border border-lia-border-subtle rounded-md dark:bg-gray-800 dark:border-gray-700',
-  elevated: 'bg-white border border-lia-border-subtle rounded-md dark:bg-gray-800 dark:border-gray-700',
-  interactive: 'bg-white border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600',
-  selected: 'bg-white border-2 border-gray-900 rounded-md dark:bg-gray-800 dark:border-gray-50',
-  flat: 'bg-gray-50 border border-lia-border-subtle rounded-md dark:bg-gray-900 dark:border-gray-700',
-  compact: 'bg-white border border-lia-border-subtle rounded-md p-3 dark:bg-gray-800 dark:border-gray-700',
-  expanded: 'bg-white border border-lia-border-subtle rounded-md p-4 dark:bg-gray-800 dark:border-gray-700',
+  default: 'bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  elevated: 'bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  interactive: 'bg-white border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-gray-600',
+  selected: 'bg-white border-2 border-gray-900 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-medium',
+  flat: 'bg-gray-50 border border-lia-border-subtle rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle',
+  compact: 'bg-white border border-lia-border-subtle rounded-md p-3 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  expanded: 'bg-white border border-lia-border-subtle rounded-md p-4 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
 } as const
 
 /**
@@ -268,26 +268,26 @@ export const cardStyles = {
  */
 export const buttonStyles = {
   // v4.1: Primário é PRETO (inverte em dark mode) — rounded-md (8px)
-  primary: 'bg-gray-900 hover:bg-gray-800 active:bg-gray-950 text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-900/20 focus:outline-none disabled:bg-gray-400 disabled:cursor-not-allowed dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 dark:active:bg-gray-300',
+  primary: 'bg-gray-900 hover:bg-gray-800 active:bg-gray-950 text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-900/20 focus:outline-none disabled:bg-gray-400 disabled:cursor-not-allowed dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 dark:active:bg-gray-300',
   
   // v4.1: Secundário
-  secondary: 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600',
+  secondary: 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:bg-lia-bg-tertiary dark:text-lia-text-primary dark:hover:bg-gray-600',
   
   // v4.1: Outline
-  outline: 'bg-transparent border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 text-gray-700 font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:border-gray-500',
+  outline: 'bg-transparent border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800 dark:hover:border-gray-500',
   
   // v4.1: Ghost
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+  ghost: 'bg-transparent hover:bg-gray-100 text-lia-text-secondary font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:text-lia-text-secondary dark:hover:bg-gray-800 dark:hover:text-lia-text-inverse',
   
   // v4.1: Destructive
   destructive: 'bg-status-error hover:bg-status-error active:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-red-600/20 focus:outline-none',
   
   // v4.1: Link style
-  link: 'bg-transparent text-gray-600 hover:text-gray-900 font-medium rounded-md px-2 py-1 transition-colors underline-offset-4 hover:underline dark:text-gray-400 dark:hover:text-gray-50',
+  link: 'bg-transparent text-lia-text-secondary hover:text-lia-text-primary font-medium rounded-md px-2 py-1 transition-colors underline-offset-4 hover:underline dark:text-lia-text-secondary dark:hover:text-lia-text-inverse',
   
   // Aliases para compatibilidade
   danger: 'bg-status-error hover:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors',
-  success: 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-semibold rounded-md px-4 py-2 transition-colors',
+  success: 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 font-semibold rounded-md px-4 py-2 transition-colors',
 } as const
 
 /**
@@ -295,10 +295,10 @@ export const buttonStyles = {
  * Focus ring usa gray-900 (preto)
  */
 export const inputStyles = {
-  default: 'border border-lia-border-default hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-colors',
-  error: 'border border-status-error/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-status-error/30 outline-none',
-  success: 'border border-status-success/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-status-success/30 outline-none',
-  disabled: 'border border-lia-border-subtle bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-gray-400 cursor-not-allowed',
+  default: 'border border-lia-border-default hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary placeholder:text-lia-text-disabled focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-colors',
+  error: 'border border-status-error/30 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary focus:ring-2 focus:ring-red-500/10 focus:border-status-error/30 outline-none',
+  success: 'border border-status-success/30 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary focus:ring-2 focus:ring-green-500/10 focus:border-status-success/30 outline-none',
+  disabled: 'border border-lia-border-subtle bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-disabled cursor-not-allowed',
 } as const
 
 /**
@@ -307,7 +307,7 @@ export const inputStyles = {
  */
 export const badgeStyles = {
   // v4.1: Neutro/Default — rounded-full (pill) conforme DS v4.1
-  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
   
   // v4.1: Estados semânticos com dark mode
   success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
@@ -325,7 +325,7 @@ export const badgeStyles = {
   primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   
   // v4.1: Outline variants com dark mode
-  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-lia-border-default text-gray-700 dark:border-gray-600 dark:text-gray-300',
+  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-lia-border-default text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary',
   outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-success/30 text-status-success dark:border-status-success/30 dark:text-status-success',
   outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning',
   outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error',
@@ -337,15 +337,15 @@ export const badgeStyles = {
  */
 export const tabStyles = {
   // Estilo underline (tradicional)
-  container: 'flex border-b border-lia-border-subtle dark:border-gray-700',
-  tab: 'px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-lia-border-default transition-colors cursor-pointer dark:text-gray-400 dark:hover:text-gray-200',
-  tabActive: 'px-4 py-2 text-xs font-semibold text-gray-900 border-b-2 border-gray-900 dark:text-gray-50 dark:border-gray-50',
-  tabDisabled: 'px-4 py-2 text-xs font-medium text-gray-400 cursor-not-allowed',
+  container: 'flex border-b border-lia-border-subtle dark:border-lia-border-subtle',
+  tab: 'px-4 py-2 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary border-b-2 border-transparent hover:border-lia-border-default transition-colors cursor-pointer dark:text-lia-text-secondary dark:hover:text-lia-text-inverse',
+  tabActive: 'px-4 py-2 text-xs font-semibold text-lia-text-primary border-b-2 border-gray-900 dark:text-lia-text-primary dark:border-lia-border-medium',
+  tabDisabled: 'px-4 py-2 text-xs font-medium text-lia-text-disabled cursor-not-allowed',
   
   // Estilo pill (badges arredondadas) - PADRÃO para Settings hubs
   pillContainer: 'flex items-center gap-1 flex-wrap',
-  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
-  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900",
+  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800",
+  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled",
   pillIcon: 'w-3.5 h-3.5',
 } as const
 
@@ -356,9 +356,9 @@ export const tabStyles = {
 export const actionButtonStyles = {
   // Botões pequenos para ações inline
   sm: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors",
-  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50",
-  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50",
-  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-transparent text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
+  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 disabled:opacity-50",
+  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-white text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 disabled:opacity-50",
+  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-transparent text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800",
   // Ícones padrão para botões de ação
   icon: 'w-3.5 h-3.5',
 } as const
@@ -370,7 +370,7 @@ export const modalStyles = {
   overlay: 'fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50',
   container: 'bg-white border border-lia-border-subtle rounded-md',
   header: 'px-6 py-4 border-b border-lia-border-subtle',
-  headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-gray-900",
+  headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary",
   body: 'px-6 py-4',
   footer: 'px-6 py-4 border-t border-lia-border-subtle flex justify-end gap-3',
 } as const
@@ -380,9 +380,9 @@ export const modalStyles = {
  */
 export const formStyles = {
   fieldGroup: 'space-y-1.5',
-  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700",
-  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 after:content-['*'] after:ml-0.5 after:text-status-error",
-  helperText: "font-['Open_Sans',sans-serif] text-micro font-normal text-gray-500 mt-1",
+  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary",
+  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary after:content-['*'] after:ml-0.5 after:text-status-error",
+  helperText: "font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-tertiary mt-1",
   errorText: "font-['Open_Sans',sans-serif] text-micro font-normal text-status-error mt-1",
 } as const
 
@@ -396,10 +396,10 @@ export const tailwindToVuetify = {
     'bg-gray-50': 'class="bg-grey-lighten-5"',
     'border-lia-border-subtle': 'class="border-grey-lighten-3"',
     'border-lia-border-default': 'class="border-grey-lighten-2"',
-    'text-gray-900': 'class="text-grey-darken-4"',
-    'text-gray-800': 'class="text-grey-darken-3"',
-    'text-gray-600': 'class="text-grey-darken-1"',
-    'text-gray-500': 'class="text-grey"',
+    'text-lia-text-primary': 'class="text-grey-darken-4"',
+    'text-lia-text-primary': 'class="text-grey-darken-3"',
+    'text-lia-text-secondary': 'class="text-grey-darken-1"',
+    'text-lia-text-tertiary': 'class="text-grey"',
     'border': 'elevation="0"',
   },
   
@@ -590,10 +590,10 @@ export function getStatusStyle(status: string): {
     'pendente': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Pendente' },
     'waiting': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
     'aguardando': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
-    'inactive': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Inativo' },
-    'inativa': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Inativa' },
-    'draft': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Rascunho' },
-    'rascunho': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Rascunho' },
+    'inactive': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Inativo' },
+    'inativa': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Inativa' },
+    'draft': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Rascunho' },
+    'rascunho': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Rascunho' },
     'error': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
     'erro': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
     'rejected': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Rejeitado' },
@@ -603,7 +603,7 @@ export function getStatusStyle(status: string): {
   }
   
   const key = status.toLowerCase()
-  return statusMap[key] || { text: 'text-gray-700', bg: 'bg-gray-100', label: status }
+  return statusMap[key] || { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: status }
 }
 
 /**
@@ -626,7 +626,7 @@ export function getRecommendationStyle(recommendation: string): {
     case 'NÃO APROVADO':
       return { text: 'text-status-error', bg: 'bg-status-error/10', label: 'NÃO APROVADO' }
     default:
-      return { text: 'text-gray-700', bg: 'bg-gray-100', label: recommendation }
+      return { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: recommendation }
   }
 }
 

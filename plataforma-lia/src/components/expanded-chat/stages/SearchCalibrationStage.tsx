@@ -92,7 +92,7 @@ export function SearchCalibrationStage({
           <div className="p-3 bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span className="text-sm lia-text-secondary">
                   Candidatos ideais:
                 </span>
@@ -118,7 +118,7 @@ export function SearchCalibrationStage({
           {/* Local Search Status */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-2">
-              <Database className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Database className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-xs font-medium lia-text-strong">
                 Busca na Base Interna
               </span>
@@ -126,7 +126,7 @@ export function SearchCalibrationStage({
 
             {searchPhase === 'idle' || searchPhase === 'local-searching' ? (
               <div className="flex flex-col items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary animate-spin mb-2" />
+                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin mb-2" />
                 <p className="text-xs lia-text-secondary">
                   Buscando candidatos na sua base de talentos...
                 </p>
@@ -149,7 +149,7 @@ export function SearchCalibrationStage({
             <div className="p-3 bg-wedo-cyan/10 rounded-md border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-start gap-2">
                 <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Globe className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="text-xs font-medium lia-text-strong mb-1">
@@ -185,13 +185,13 @@ export function SearchCalibrationStage({
           {searchPhase === 'global-searching' && (
             <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
               <div className="flex items-center gap-2 mb-2">
-                <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span className="text-xs font-medium lia-text-strong">
                   Busca Global (Pearch AI)
                 </span>
               </div>
               <div className="flex flex-col items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary animate-spin mb-2" />
+                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin mb-2" />
                 <p className="text-xs lia-text-secondary">
                   Buscando em 800M+ perfis profissionais...
                 </p>
@@ -203,16 +203,16 @@ export function SearchCalibrationStage({
           {searchPhase === 'global-complete' && globalSearchAuthorized && globalCandidateCount > 0 && (
             <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
               <div className="flex items-center gap-2 mb-2">
-                <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span className="text-xs font-medium lia-text-strong">
                   Busca Global (Pearch AI)
                 </span>
               </div>
               <div className="flex items-center justify-between p-2 bg-wedo-cyan/10 rounded-md">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <CheckCircle2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   <span className="text-xs lia-text-strong">
-                    <span className="font-semibold text-gray-900">+{globalCandidateCount}</span> candidatos encontrados
+                    <span className="font-semibold text-lia-text-primary">+{globalCandidateCount}</span> candidatos encontrados
                   </span>
                 </div>
                 <span className="text-micro lia-text-secondary">Base global</span>
@@ -241,7 +241,7 @@ export function SearchCalibrationStage({
                 {globalSearchAuthorized && globalCandidateCount > 0 && (
                   <div className="flex items-center justify-between text-micro">
                     <span className="lia-text-secondary">Base global:</span>
-                    <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">{globalCandidateCount}</span>
+                    <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{globalCandidateCount}</span>
                   </div>
                 )}
                 <div className="pt-2 border-t border-lia-border-subtle">
@@ -292,7 +292,7 @@ export function SearchCalibrationStage({
           {isLoadingCalibration && (
             <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
               <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+                <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
                 <div>
                   <h4 className="text-xs font-medium lia-text-strong">
                     Buscando candidatos...
@@ -349,7 +349,7 @@ export function SearchCalibrationStage({
               <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center">
-                    <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div>
                     <h4 className="text-xs font-medium lia-text-strong">
@@ -366,7 +366,7 @@ export function SearchCalibrationStage({
               <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium lia-text-strong">Progresso</span>
-                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary font-semibold">{approvedCandidates.length}/3 aprovados</span>
+                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-semibold">{approvedCandidates.length}/3 aprovados</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -418,14 +418,14 @@ export function SearchCalibrationStage({
             </h4>
             <ul className="space-y-2.5">
               {[
-                { icon: <FileText className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <><strong>O plano de trabalho</strong> será enviado por e-mail para todos os envolvidos na vaga</> },
+                { icon: <FileText className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <><strong>O plano de trabalho</strong> será enviado por e-mail para todos os envolvidos na vaga</> },
                 { icon: <BarChart3 className="w-3 h-3 text-wedo-purple" />, bg: 'bg-wedo-purple/10', text: <><strong>Relatórios de progresso</strong> serão enviados automaticamente a cada 5 dias por e-mail</> },
                 { icon: <Users className="w-3 h-3 text-wedo-green" />, bg: 'bg-wedo-green/10', text: <><strong>Candidatos inscritos</strong> via website serão automaticamente triados por mim e você será notificado via <strong>Teams</strong></> },
                 { icon: <Calendar className="w-3 h-3 text-wedo-magenta" />, bg: 'bg-wedo-magenta/10', text: <>Vou cuidar da sua <strong>agenda</strong>, avisando sobre tarefas pendentes como sua assistente de recrutamento inteligente</> },
                 { icon: <Bell className="w-3 h-3 text-status-warning" />, bg: 'bg-status-warning/10', text: <><strong>Lembretes de feedback</strong> serão enviados quando candidatos estiverem aguardando resposta há muito tempo</> },
-                { icon: <Clock className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <><strong>SLAs de resposta</strong> serão monitorados para cada etapa do processo seletivo</> },
+                { icon: <Clock className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <><strong>SLAs de resposta</strong> serão monitorados para cada etapa do processo seletivo</> },
                 { icon: <MessageSquare className="w-3 h-3 text-wedo-cyan" />, bg: 'bg-wedo-cyan/10', text: <><strong>Comunicação automática</strong> com candidatos sobre o status do processo será gerenciada por mim</> },
-                { icon: <Rocket className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <>Quando houver candidatos aprovados, seguirei com a <strong>triagem</strong> e posteriormente com os <strong>agendamentos de entrevistas</strong>!</> },
+                { icon: <Rocket className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />, bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: <>Quando houver candidatos aprovados, seguirei com a <strong>triagem</strong> e posteriormente com os <strong>agendamentos de entrevistas</strong>!</> },
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <div className={cn('w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5', item.bg)}>

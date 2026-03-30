@@ -26,7 +26,7 @@ export function SourceChangeConfirmModal({
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-status-warning/15'}`}>
               {pendingSourceChange === 'hybrid' ? (
-                <Zap className="w-4 h-4 text-gray-700" />
+                <Zap className="w-4 h-4 text-lia-text-secondary" />
               ) : (
                 <Globe className="w-4 h-4 text-status-warning" />
               )}
@@ -46,12 +46,12 @@ export function SourceChangeConfirmModal({
           <div className="bg-gray-50 dark:bg-lia-bg-primary rounded-md p-3 space-y-2 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex justify-between items-center text-xs">
               <span className={textStyles.bodySmall}>Tipo de busca:</span>
-              <span className={`${textStyles.label} text-gray-800 dark:text-lia-text-primary`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
+              <span className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
             </div>
             <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
               <div className="flex justify-between items-center text-xs">
-                <span className={`${textStyles.label} text-gray-800 dark:text-lia-text-primary`}>Custo por candidato:</span>
-                <span className="font-semibold text-gray-700 dark:text-lia-text-secondary">
+                <span className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>Custo por candidato:</span>
+                <span className="font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
                   1 crédito
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function SourceChangeConfirmModal({
         <div className="flex gap-2.5 pt-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-8 text-xs px-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+            className="flex-1 h-8 text-xs px-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
           >
             Cancelar
           </button>

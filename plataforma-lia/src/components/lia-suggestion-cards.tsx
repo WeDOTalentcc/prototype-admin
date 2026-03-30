@@ -63,7 +63,7 @@ export function LiaSuggestionCards({
   if (loading) {
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
-        <Loader2 className="w-5 h-5 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+        <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
         <span className="ml-2 text-xs lia-text-secondary">Carregando sugestões...</span>
       </div>
     )
@@ -78,7 +78,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="mt-2 text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
+            className="mt-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
           >
             <RefreshCw className="w-3 h-3 mr-1" />
             Atualizar

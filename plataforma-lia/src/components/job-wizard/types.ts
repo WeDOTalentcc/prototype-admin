@@ -124,7 +124,7 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
-  contextData?: any
+  contextData?: Record<string, unknown>
   isTyping?: boolean
   isProcessing?: boolean
   processingState?: 'thinking' | 'analyzing' | 'searching' | 'generating' | 'completed'

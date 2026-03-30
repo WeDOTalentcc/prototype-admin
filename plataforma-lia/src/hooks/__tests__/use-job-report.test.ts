@@ -24,11 +24,11 @@ const MOCK_REPORT = {
   ],
 }
 
-global.fetch = jest.fn()
+global.fetch = vi.fn()
 
 describe('useJobReport', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('starts with null data and no loading', () => {
@@ -39,7 +39,7 @@ describe('useJobReport', () => {
   })
 
   it('fetches and returns report data', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_REPORT,
     })
@@ -56,7 +56,7 @@ describe('useJobReport', () => {
 
   it('sets loading to true during fetch', async () => {
     let resolve: (v: unknown) => void
-    ;(global.fetch as jest.Mock).mockReturnValueOnce(
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockReturnValueOnce(
       new Promise(r => { resolve = r })
     )
 
@@ -70,7 +70,7 @@ describe('useJobReport', () => {
   })
 
   it('sets error on non-ok response', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: false,
       status: 404,
     })
@@ -85,7 +85,7 @@ describe('useJobReport', () => {
   })
 
   it('sets error on network failure', async () => {
-    ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'))
 
     const { result } = renderHook(() => useJobReport())
     await act(async () => {

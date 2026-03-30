@@ -42,7 +42,7 @@ const CATEGORY_LABELS = {
   candidatos: { label: 'Candidatos', color: 'bg-status-success/15 text-status-success' },
   comunicacao: { label: 'Comunicação', color: 'bg-wedo-purple/15 text-wedo-purple' },
   analytics: { label: 'Analytics', color: 'bg-wedo-orange/15 text-wedo-orange' },
-  automacao: { label: 'Automação', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-900' }
+  automacao: { label: 'Automação', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary' }
 }
 
 const BASE_SUGGESTIONS: PromptSuggestion[] = [
@@ -235,7 +235,7 @@ export function PromptSuggestionsPopover({
  "h-7 px-2 gap-1.5 text-xs font-medium transition-colors",
             "hover:bg-gray-100 dark:bg-lia-bg-secondary hover:lia-text-strong dark:hover:lia-text-subtle",
             "border border-transparent hover:border-lia-border-default dark:border-lia-border-default",
-            isOpen && "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
+            isOpen && "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
             className
           )}
         >
@@ -252,7 +252,7 @@ export function PromptSuggestionsPopover({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <h3 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">
+              <h3 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 Ações Sugeridas
               </h3>
             </div>
@@ -268,7 +268,7 @@ export function PromptSuggestionsPopover({
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                 !activeCategory 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
+                  : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
               )}
             >
               Todas
@@ -281,7 +281,7 @@ export function PromptSuggestionsPopover({
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                   activeCategory === key 
                     ? "bg-gray-900 text-white" 
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
+                    : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
                 )}
               >
                 {label}
@@ -294,7 +294,7 @@ export function PromptSuggestionsPopover({
           {displaySuggestions.length === 0 ? (
             <div className="py-6 text-center">
               <Lightbulb className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
-              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                 Selecione candidatos ou uma vaga para ver sugestões contextuais
               </p>
             </div>
@@ -315,12 +315,12 @@ export function PromptSuggestionsPopover({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <h4 className="text-xs font-medium truncate text-gray-800 dark:text-lia-text-primary">
+                        <h4 className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
                           {suggestion.title}
                         </h4>
                         <ChevronRight className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <p className="text-xs text-gray-800 dark:text-lia-text-primary line-clamp-1">
+                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary line-clamp-1">
                         {suggestion.description}
                       </p>
                     </div>
@@ -338,7 +338,7 @@ export function PromptSuggestionsPopover({
         </div>
 
         <div className="p-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary text-center">
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary text-center">
             Dica: Selecione candidatos ou abra uma vaga para mais ações
           </p>
         </div>

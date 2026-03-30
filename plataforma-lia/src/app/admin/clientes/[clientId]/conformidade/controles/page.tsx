@@ -106,9 +106,9 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                 href={basePath + tab.href}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
-                  "border-transparent"
+                  "border-transparent",
+                  "lia-text-500 dark:text-lia-text-tertiary"
                 )}
-                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -136,9 +136,9 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                 href={basePath + tab.href}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
-                  "border-transparent"
+                  "border-transparent",
+                  "lia-text-500 dark:text-lia-text-tertiary"
                 )}
-                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}

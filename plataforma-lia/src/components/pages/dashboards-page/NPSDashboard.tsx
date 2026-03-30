@@ -111,55 +111,55 @@ export function NPSDashboard() {
     <div className="space-y-3">
       {/* KPIs de NPS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5">
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
               <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>NPS Geral</p>
               <Award className="w-3.5 h-3.5 text-wedo-green" />
             </div>
-            <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">+67</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">+67</div>
             <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>Excelente (acima de 50)</p>
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
               <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Promotores</p>
               <CheckCircle className="w-3.5 h-3.5 text-wedo-green" />
             </div>
-            <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">72%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">72%</div>
             <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>64 de 89 respostas</p>
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
               <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Neutros</p>
-              <Activity className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+              <Activity className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
             </div>
-            <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">23%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">23%</div>
             <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>21 de 89 respostas</p>
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
               <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Detratores</p>
               <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
             </div>
-            <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">5%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">5%</div>
             <p className={`${textStyles.bodySmall} text-status-error dark:text-status-error mt-1`}>4 de 89 respostas</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Distribuição NPS */}
-      <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
-          <CardTitle className="text-xs font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
+          <CardTitle className="text-xs font-sans font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">
             Distribuição de Respostas
           </CardTitle>
         </CardHeader>
@@ -169,9 +169,9 @@ export function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-green"></div>
-                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Promotores (9-10)</span>
+                <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Promotores (9-10)</span>
               </div>
-              <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">72%</span>
+              <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">72%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
               <div className="h-3 rounded-full bg-wedo-green w-[72%]"></div>
@@ -183,9 +183,9 @@ export function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Neutros (7-8)</span>
+                <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Neutros (7-8)</span>
               </div>
-              <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">23%</span>
+              <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">23%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
               <div className="h-3 rounded-full bg-gray-400 w-[23%]"></div>
@@ -197,9 +197,9 @@ export function NPSDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-magenta"></div>
-                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Detratores (0-6)</span>
+                <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Detratores (0-6)</span>
               </div>
-              <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">5%</span>
+              <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">5%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
               <div className="h-3 rounded-full bg-wedo-magenta w-[5%]"></div>
@@ -209,43 +209,43 @@ export function NPSDashboard() {
       </Card>
 
       {/* Satisfação por Etapa */}
-      <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
-          <CardTitle className="text-xs font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
+          <CardTitle className="text-xs font-sans font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">
             Satisfação por Etapa do Processo
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-            <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Aplicação Inicial</span>
+            <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Aplicação Inicial</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Excelente</Badge>
               <span className="text-sm font-inter font-bold">9.2</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-            <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Comunicação</span>
+            <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Comunicação</span>
             <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary text-xs tracking-tight">Muito Bom</Badge>
+ <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-secondary text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.8</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-            <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Entrevistas</span>
+            <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Entrevistas</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.6</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-            <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Tempo de Resposta</span>
+            <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Tempo de Resposta</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Bom</Badge>
               <span className="text-sm font-inter font-bold">7.9</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-            <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Feedback Pós-Entrevista</span>
+            <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-primary">Feedback Pós-Entrevista</span>
             <div className="flex items-center gap-2">
               <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-xs tracking-tight">Regular</Badge>
               <span className="text-sm font-inter font-bold">6.8</span>
@@ -255,7 +255,7 @@ export function NPSDashboard() {
       </Card>
 
       {/* Principais Feedbacks */}
-      <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -265,19 +265,19 @@ export function NPSDashboard() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Pontos Positivos:</strong> Plataforma intuitiva e processo transparente elogiados por 89% dos candidatos.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Oportunidade de Melhoria:</strong> Tempo de resposta pós-entrevista pode ser reduzido. Meta: responder em até 3 dias.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-lia-text-tertiary" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Tendência Positiva:</strong> NPS cresceu +12 pontos nos últimos 3 meses após implementação de melhorias.
             </p>
           </div>

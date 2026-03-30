@@ -225,10 +225,10 @@ export function LIASearchSidebar({
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
+                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">
                   Olá! Sou a Lia.
                 </h3>
-                <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
+                <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
                   Posso criar vagas, buscar candidatos, analisar métricas e muito mais!
                 </p>
               </div>
@@ -252,9 +252,9 @@ export function LIASearchSidebar({
                       className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                     >
                       {isLiaSuperChat ? (
-                        <PanelLeftClose className="w-4 h-4 text-gray-700" />
+                        <PanelLeftClose className="w-4 h-4 text-lia-text-secondary" />
                       ) : (
-                        <Maximize2 className="w-4 h-4 text-gray-500" />
+                        <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
                       )}
                     </Button>
                   </TooltipTrigger>
@@ -270,7 +270,7 @@ export function LIASearchSidebar({
                 onClick={onClose}
                 className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
             </div>
           </div>
@@ -308,8 +308,8 @@ export function LIASearchSidebar({
                       <div className="flex-1 space-y-3">
                         {/* Resumo dos resultados */}
                         <div className="p-3 rounded-md bg-white dark:bg-lia-bg-secondary">
-                          <p className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">
-                            Encontrei <span className="text-gray-600 dark:text-lia-text-tertiary">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
+                          <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                            Encontrei <span className="text-lia-text-secondary dark:text-lia-text-tertiary">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
                           </p>
                           <div className="flex items-center gap-3 text-xs mb-2">
                             {searchResults.localCount > 0 && (
@@ -319,14 +319,14 @@ export function LIASearchSidebar({
                               </div>
                             )}
                             {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
-                              <div className="flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
+                              <div className="flex items-center gap-1 text-lia-text-secondary dark:text-lia-text-tertiary">
                                 <Globe className="w-3 h-3" />
                                 <span className="font-medium">{searchResults.globalCount} busca global</span>
                               </div>
                             )}
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-800 dark:text-lia-text-tertiary flex items-center gap-1">
+                            <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary flex items-center gap-1">
                               <TrendingUp className="w-3 h-3" />
                               Ordenados por aderência ao perfil
                             </p>
@@ -334,7 +334,7 @@ export function LIASearchSidebar({
                               onClick={() => {
                                 setShowSaveAsArchetypeModal(true)
                               }}
-                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height]"
+                              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height]"
 
                             >
                               <Bookmark className="w-3 h-3" />
@@ -347,8 +347,8 @@ export function LIASearchSidebar({
                         {searchResults.localCount > 0 && (
                           <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                             <div className="flex items-center gap-2">
-                              <Home className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-                              <p className="text-xs text-gray-800 dark:text-lia-text-secondary">
+                              <Home className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                              <p className="text-xs text-lia-text-primary dark:text-lia-text-secondary">
                                 <span className="font-semibold">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
                               </p>
                             </div>
@@ -360,12 +360,12 @@ export function LIASearchSidebar({
  <div className="p-3 rounded-md border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Globe className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                                <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                                 <div>
                                   <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                     Expandir para Busca Global?
                                   </p>
-                                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                                     Acesse +800M de perfis (1 crédito/candidato)
                                   </p>
                                 </div>
@@ -374,7 +374,7 @@ export function LIASearchSidebar({
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="!text-xs !px-2.5 !py-1.5 text-gray-800 hover:text-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                  className="!text-xs !px-2.5 !py-1.5 text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
 
                                   onClick={() => {
                                     setSearchResults(prev => ({ ...prev, globalDismissed: true }))
@@ -401,14 +401,14 @@ export function LIASearchSidebar({
                           <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Globe className="w-3.5 h-3.5 text-gray-800" />
-                                <p className="text-xs text-gray-800 dark:text-gray-500">
+                                <Globe className="w-3.5 h-3.5 text-lia-text-primary" />
+                                <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                                   Busca global disponível
                                 </p>
                               </div>
                               <button
                                 onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
-                                className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 hover:underline"
+                                className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary hover:underline"
 
                               >
                                 Expandir busca
@@ -421,7 +421,7 @@ export function LIASearchSidebar({
                         {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
  <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle">
                             <div className="flex items-center gap-2">
-                              <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                              <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
  <p className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary">
                                 <span className="font-semibold">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
                               </p>
@@ -456,15 +456,15 @@ export function LIASearchSidebar({
                           <div className="flex items-center gap-3 mb-3">
                             <div className="relative">
                               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                                <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-pulse" />
+                                <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-pulse" />
                               </div>
                               <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-gray-50 rounded-full animate-ping" />
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
+                              <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                                 LIA está buscando...
                               </p>
-                              <p className="text-xs text-gray-800 dark:text-gray-500">
+                              <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                                 Analisando perfis compatíveis
                               </p>
                             </div>
@@ -472,7 +472,7 @@ export function LIASearchSidebar({
 
                           {/* Progress steps */}
                           <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                               <div className="w-4 h-4 rounded-full bg-status-success flex items-center justify-center">
                                 <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -480,13 +480,13 @@ export function LIASearchSidebar({
                               </div>
                               <span>Interpretando critérios</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                               <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin">
                                 <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                               </div>
                               <span>Buscando na base de candidatos</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-800">
+                            <div className="flex items-center gap-2 text-xs text-lia-text-primary">
                               <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-lia-bg-elevated" />
                               <span>Rankeando por compatibilidade</span>
                             </div>
@@ -522,10 +522,10 @@ export function LIASearchSidebar({
 
                         >
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-micro font-bold text-gray-800">Você</span>
-                            <span className="text-micro text-gray-500">agora</span>
+                            <span className="text-micro font-bold text-lia-text-primary">Você</span>
+                            <span className="text-micro text-lia-text-tertiary">agora</span>
                           </div>
-                          <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
+                          <p className="text-xs text-lia-text-primary leading-relaxed">{msg.content}</p>
                         </div>
                       </div>
                     ) : msg.type === 'proactive_insight' && msg.analytics ? (
@@ -542,7 +542,7 @@ export function LIASearchSidebar({
                           <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-cyan/15">
                             <LIAIcon size="xs" />
                           </div>
-                          <p className="text-xs text-gray-800 dark:text-gray-500">
+                          <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                             Vou mostrar alguns candidatos para entender melhor o perfil que você busca:
                           </p>
                         </div>
@@ -564,8 +564,8 @@ export function LIASearchSidebar({
                             <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                           </div>
                           <div className="flex-1">
-                            <span className="text-micro font-bold text-gray-800" >LIA</span>
-                            <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap mt-0.5">
+                            <span className="text-micro font-bold text-lia-text-primary" >LIA</span>
+                            <p className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap mt-0.5">
                               {msg.content.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
                                 part.startsWith('**') && part.endsWith('**')
                                   ? <strong key={i}>{part.slice(2, -2)}</strong>
@@ -592,8 +592,8 @@ export function LIASearchSidebar({
                 {isCreatingArchetype && (
                   <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                      <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+                      <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                         Criando novo arquétipo...
                       </span>
                     </div>
@@ -605,7 +605,7 @@ export function LIASearchSidebar({
                       className="p-1 hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md"
                       aria-label="Cancelar criação de arquétipo"
                     >
-                      <X className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" aria-hidden="true" />
+                      <X className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -665,7 +665,7 @@ export function LIASearchSidebar({
                         }
                       }
                     }}
-                    className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50"
+                    className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
 
                   />
                   <AudioRecordButton
@@ -723,7 +723,7 @@ export function LIASearchSidebar({
 
                 {/* Sugestões - abaixo do input conforme design specs */}
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="text-micro font-medium text-gray-500">Sugestões:</span>
+                  <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
                   <button
                     onClick={() => onAICommand('Top 5 candidatos')}
                     className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-[width,height]"
@@ -731,7 +731,7 @@ export function LIASearchSidebar({
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
                   >
-                    <Star className="w-2.5 h-2.5 text-gray-500" />
+                    <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Top 5
                   </button>
                   <button
@@ -741,7 +741,7 @@ export function LIASearchSidebar({
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
                   >
-                    <FileText className="w-2.5 h-2.5 text-gray-500" />
+                    <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Resumir busca
                   </button>
                   <LiaSearchQueriesGuide
@@ -757,7 +757,7 @@ export function LIASearchSidebar({
           {activeSearchTab === 'job-description' && (
             <div className="space-y-4">
               {/* Descrição */}
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-lia-text-tertiary">
                 Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
               </p>
 
@@ -767,7 +767,7 @@ export function LIASearchSidebar({
                   placeholder="Cole aqui a descrição da vaga completa..."
                   value={jobDescriptionText}
                   onChange={(e) => setJobDescriptionText(e.target.value)}
-                  className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-gray-950 dark:text-gray-50 border border-lia-border-subtle"
+                  className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
                   onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
                 />
@@ -781,7 +781,7 @@ export function LIASearchSidebar({
                       // TODO: Implementar upload de arquivo
                     }}
                   >
-                    <Paperclip className="w-4 h-4 text-gray-800" />
+                    <Paperclip className="w-4 h-4 text-lia-text-primary" />
                   </button>
                   <button
                     type="button"
@@ -791,7 +791,7 @@ export function LIASearchSidebar({
                       // TODO: Implementar gravação de áudio
                     }}
                   >
-                    <Mic className="w-4 h-4 text-gray-800" />
+                    <Mic className="w-4 h-4 text-lia-text-primary" />
                   </button>
                 </div>
               </div>
@@ -801,33 +801,33 @@ export function LIASearchSidebar({
                 <div className="p-3 rounded-md border bg-wedo-cyan/[0.06] border-wedo-cyan/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="text-xs font-medium text-gray-950 dark:text-gray-50">
+                    <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                       Critérios Extraídos
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {extractedJDCriteria.job_title && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                         {extractedJDCriteria.job_title}
                       </span>
                     )}
                     {extractedJDCriteria.seniority && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                         {extractedJDCriteria.seniority}
                       </span>
                     )}
                     {extractedJDCriteria.skills.map((skill, idx) => (
-                      <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                      <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                         {skill}
                       </span>
                     ))}
                     {extractedJDCriteria.experience_years && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                         {extractedJDCriteria.experience_years}+ anos
                       </span>
                     )}
                     {extractedJDCriteria.location && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                         {extractedJDCriteria.location}
                       </span>
                     )}
@@ -1019,7 +1019,7 @@ export function LIASearchSidebar({
           {/* ABA 4: SIMILAR */}
           {activeSearchTab === 'similar' && (
             <div className="space-y-4">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-lia-text-tertiary">
                 Encontre candidatos similares a um perfil específico
               </p>
 
@@ -1029,14 +1029,14 @@ export function LIASearchSidebar({
                   value={similarProfileUrl}
                   onChange={(e) => setSimilarProfileUrl(e.target.value)}
                   placeholder="Cole o link do LinkedIn ou nome do candidato..."
-                  className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors bg-white dark:bg-lia-bg-secondary text-gray-950 dark:text-gray-50 border border-lia-border-subtle"
+                  className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
                 />
               </div>
 
               <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-500">
+                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                     <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que você considera ideal para encontrar perfis similares.
                   </p>
                 </div>
@@ -1219,7 +1219,7 @@ export function LIASearchSidebar({
           {/* ABA 5: BOOLEAN */}
           {activeSearchTab === 'boolean' && (
             <div className="space-y-4">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-lia-text-tertiary">
                 Use operadores booleanos para buscas avançadas
               </p>
 
@@ -1228,7 +1228,7 @@ export function LIASearchSidebar({
                   <button
                     key={op}
                     onClick={() => setBooleanSearchValue(prev => prev + ' ' + op)}
-                    className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono transition-colors"
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-lia-text-primary font-mono transition-colors"
                   >
                     {op}
                   </button>
@@ -1239,13 +1239,13 @@ export function LIASearchSidebar({
                 value={booleanSearchValue}
                 onChange={(e) => setBooleanSearchValue(e.target.value)}
                 placeholder='Ex: ("Node.js" OR "Python") AND "sênior" NOT "júnior"'
-                className="w-full h-32 p-3 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-gray-950 dark:text-gray-50 font-mono border border-lia-border-subtle"
+                className="w-full h-32 p-3 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary font-mono border border-lia-border-subtle"
               />
 
               <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-500">
+                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                     <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições.
                   </p>
                 </div>
@@ -1271,8 +1271,8 @@ export function LIASearchSidebar({
               {/* Dica contextual */}
               <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-500">
+                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                     <strong>Dica:</strong> Use os filtros avançados para refinar sua busca por localização, experiência, skills, idiomas e muito mais.
                   </p>
                 </div>
@@ -1301,7 +1301,7 @@ export function LIASearchSidebar({
                         education: {},
                         languages: {}
                       })}
-                      className="text-xs text-gray-800 hover:text-status-error transition-colors"
+                      className="text-xs text-lia-text-primary hover:text-status-error transition-colors"
 
                     >
                       Limpar todos
@@ -1323,7 +1323,7 @@ export function LIASearchSidebar({
 
               {/* Info sobre filtros laterais */}
               {!showTableFiltersPanel && (
-                <p className="text-xs text-gray-800 text-center mt-2">
+                <p className="text-xs text-lia-text-primary text-center mt-2">
                   Os filtros aparecerão ao lado da tabela de candidatos
                 </p>
               )}
@@ -1366,7 +1366,7 @@ export function LIASearchSidebar({
           document.addEventListener('mouseup', handleMouseUp)
         }}
       >
- <div className={`w-1 rounded-full transition-colors ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-gray-600 hover:dark:hover:bg-gray-800'}`} />
+ <div className={`w-1 rounded-full transition-colors ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-lia-bg-elevated hover:dark:hover:bg-gray-800'}`} />
       </div>
     </div>
   )

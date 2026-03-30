@@ -101,7 +101,7 @@ interface JobVacancy {
 interface NewCandidateUnifiedModalProps {
   isOpen: boolean
   onClose: () => void
-  onCandidateAdded: (candidate: any) => void
+  onCandidateAdded: (candidate: Record<string, unknown>) => void
   jobVacancies?: JobVacancy[]
   candidateLists?: Array<{ id: string; name: string; color?: string }>
   preSelectedListId?: string
@@ -242,7 +242,7 @@ export function NewCandidateUnifiedModal({
     const ext = filename.split('.').pop()?.toLowerCase()
     if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
     if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
-    return <File className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+    return <File className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -345,7 +345,7 @@ export function NewCandidateUnifiedModal({
     }
   }
 
-  const createCandidate = async (candidateData: any): Promise<string> => {
+  const createCandidate = async (candidateData: Record<string, unknown>): Promise<string> => {
     const response = await fetch("/api/backend-proxy/candidates/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -692,8 +692,8 @@ export function NewCandidateUnifiedModal({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'cv'
-              ? "text-gray-900 dark:text-lia-text-primary"
-              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              ? "text-lia-text-primary dark:text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -709,8 +709,8 @@ export function NewCandidateUnifiedModal({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'linkedin'
-              ? "text-gray-900 dark:text-lia-text-primary"
-              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              ? "text-lia-text-primary dark:text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -726,8 +726,8 @@ export function NewCandidateUnifiedModal({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'manual'
-              ? "text-gray-900 dark:text-lia-text-primary"
-              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              ? "text-lia-text-primary dark:text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -766,12 +766,12 @@ export function NewCandidateUnifiedModal({
               )}
             >
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
-                <Upload className={cn("w-5 h-5", isDragging ? "text-gray-900 dark:text-lia-text-primary" : "text-gray-500")} />
+                <Upload className={cn("w-5 h-5", isDragging ? "text-lia-text-primary dark:text-lia-text-primary" : "text-lia-text-tertiary")} />
               </div>
-              <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
               </p>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
                 PDF, DOCX, DOC ou TXT (máx. 5MB)
               </p>
             </div>
@@ -780,10 +780,10 @@ export function NewCandidateUnifiedModal({
               <div className="flex items-center gap-2">
                 {getFileIcon(selectedFile.name)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary truncate">
+                  <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -807,7 +807,7 @@ export function NewCandidateUnifiedModal({
               <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-lia-bg-primary px-2 text-gray-500 dark:text-lia-text-tertiary">ou cole o texto</span>
+              <span className="bg-white dark:bg-lia-bg-primary px-2 text-lia-text-tertiary dark:text-lia-text-tertiary">ou cole o texto</span>
             </div>
           </div>
 
@@ -821,7 +821,7 @@ export function NewCandidateUnifiedModal({
           <div className="flex justify-between items-center">
             <span className={cn(
               "text-xs",
-              cvText.length < 50 ? "text-gray-500" : "text-status-success"
+              cvText.length < 50 ? "text-lia-text-tertiary" : "text-status-success"
             )}>
               {cvText.length} caracteres (mín. 50)
             </span>
@@ -852,9 +852,9 @@ export function NewCandidateUnifiedModal({
         <div className="space-y-4">
           <div className="text-center py-2">
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-              <Linkedin className="w-6 h-6 text-gray-600" />
+              <Linkedin className="w-6 h-6 text-lia-text-secondary" />
             </div>
-            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
               Cole a URL do perfil do LinkedIn do candidato
             </p>
           </div>
@@ -868,14 +868,14 @@ export function NewCandidateUnifiedModal({
               onChange={(e) => setLinkedinUrl(e.target.value)}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary font-sans">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary font-sans">
               Ex: linkedin.com/in/joao-silva
             </p>
           </div>
 
           <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-sans">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-sans">
               A LIA irá buscar os dados do candidato
             </p>
           </div>
@@ -906,7 +906,7 @@ export function NewCandidateUnifiedModal({
             <div className="space-y-1.5">
               <Label htmlFor="manual-name" className="text-xs">Nome Completo *</Label>
               <div className="relative">
-                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
                 <Input
                   id="manual-name"
                   placeholder="João Silva"
@@ -920,7 +920,7 @@ export function NewCandidateUnifiedModal({
             <div className="space-y-1.5">
               <Label htmlFor="manual-email" className="text-xs">E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
                 <Input
                   id="manual-email"
                   type="email"
@@ -935,7 +935,7 @@ export function NewCandidateUnifiedModal({
             <div className="space-y-1.5">
               <Label htmlFor="manual-phone" className="text-xs">Telefone</Label>
               <div className="relative">
-                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
                 <Input
                   id="manual-phone"
                   placeholder="(11) 99999-9999"
@@ -949,7 +949,7 @@ export function NewCandidateUnifiedModal({
             <div className="space-y-1.5">
               <Label htmlFor="manual-linkedin" className="text-xs font-sans">LinkedIn (opcional)</Label>
               <div className="relative">
-                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
                 <Input
                   id="manual-linkedin"
                   placeholder="linkedin.com/in/joao-silva"
@@ -959,14 +959,14 @@ export function NewCandidateUnifiedModal({
                 />
               </div>
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
-                <p className="text-micro text-gray-600 dark:text-lia-text-tertiary flex items-center gap-1 font-sans">
+                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   A LIA irá buscar os dados do candidato
                 </p>
               )}
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
               * Informe pelo menos um contato (email ou telefone)
             </p>
           </div>
@@ -1006,10 +1006,10 @@ export function NewCandidateUnifiedModal({
         <div className="w-12 h-12 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center mx-auto mb-3">
           <AlertCircle className="w-6 h-6 text-status-warning" />
         </div>
-        <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+        <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
           Candidato já existe
         </h3>
-        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
+        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
           {duplicateResult?.message}
         </p>
       </div>
@@ -1018,15 +1018,15 @@ export function NewCandidateUnifiedModal({
         <Card className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10/50 dark:bg-status-warning/20 rounded-md">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-600 dark:bg-gray-500 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gray-600 dark:bg-lia-bg-elevated flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                 {duplicateResult.candidate.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                   {duplicateResult.candidate.name}
                 </p>
                 {duplicateResult.candidate.current_title && (
-                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
                     {duplicateResult.candidate.current_title}
                   </p>
                 )}
@@ -1088,7 +1088,7 @@ export function NewCandidateUnifiedModal({
         <Button
           onClick={() => { setCurrentStep('input'); setDuplicateResult(null) }}
           variant="ghost"
-          className="w-full h-9 text-xs text-gray-500"
+          className="w-full h-9 text-xs text-lia-text-tertiary"
         >
           Voltar
         </Button>
@@ -1102,13 +1102,13 @@ export function NewCandidateUnifiedModal({
         {isEnriching ? (
           <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
         ) : (
-          <Loader2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+          <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
         )}
       </div>
-      <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">
+      <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
         {isEnriching ? 'Enriquecendo perfil...' : 'Processando...'}
       </h3>
-      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
         {isEnriching 
           ? 'Buscando dados adicionais via LinkedIn...'
           : activeTab === 'cv' 
@@ -1127,10 +1127,10 @@ export function NewCandidateUnifiedModal({
       <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center mx-auto mb-4">
         <CheckCircle className="w-6 h-6 text-status-success" />
       </div>
-      <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">
+      <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
         Candidato cadastrado!
       </h3>
-      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
         Abrindo perfil completo...
       </p>
     </div>
@@ -1140,10 +1140,10 @@ export function NewCandidateUnifiedModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <DialogHeader className="p-4 pb-0">
-          <DialogTitle className="text-base font-semibold text-gray-950 dark:text-gray-50 font-sans">
+          <DialogTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary font-sans">
             Novo Candidato
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-500 font-sans">
+          <DialogDescription className="text-xs text-lia-text-tertiary font-sans">
             Cadastre um candidato usando CV, LinkedIn ou manualmente
           </DialogDescription>
         </DialogHeader>

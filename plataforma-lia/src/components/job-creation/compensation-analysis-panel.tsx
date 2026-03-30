@@ -125,7 +125,7 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   user_input: {
     icon: '✏️',
     label: 'Informado',
-    className: 'bg-gray-100 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle'
+    className: 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle'
   }
 }
 

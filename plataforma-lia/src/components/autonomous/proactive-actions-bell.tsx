@@ -119,8 +119,8 @@ export function ProactiveActionsBell({
     const noVacancy: ProactiveAction[] = []
 
     for (const action of visibleActions) {
-      const vacId = action.vacancy?.id || (action.suggested_action as any)?.vacancy_id
-      const vacTitle = action.vacancy?.title || (action.suggested_action as any)?.vacancy_title
+      const vacId = action.vacancy?.id || (action.suggested_action as Record<string, unknown>)?.vacancy_id as string | undefined
+      const vacTitle = action.vacancy?.title || (action.suggested_action as Record<string, unknown>)?.vacancy_title as string | undefined
       if (vacId) {
         if (!vacancyMap.has(vacId)) {
           vacancyMap.set(vacId, [])
@@ -155,7 +155,7 @@ export function ProactiveActionsBell({
 
   const renderActionCard = (action: ProactiveAction) => {
     const isProcessing = processingId === action.id
-    const candidate = action.candidate || (action.suggested_action as any)?.candidate
+    const candidate = action.candidate || (action.suggested_action as Record<string, unknown>)?.candidate
 
     return (
       <div
@@ -166,7 +166,7 @@ export function ProactiveActionsBell({
           {candidate ? (
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
+              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
                 {candidate.name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??'}
               </AvatarFallback>
             </Avatar>
@@ -182,7 +182,7 @@ export function ProactiveActionsBell({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className="text-xs font-medium text-gray-900 dark:text-lia-text-primary line-clamp-1">
+                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary line-clamp-1">
                   {candidate?.name || action.title}
                 </p>
                 {candidate?.score && (
@@ -199,16 +199,16 @@ export function ProactiveActionsBell({
               </span>
             </div>
             {candidate && (
-              <p className="text-micro font-medium text-gray-700 dark:text-lia-text-secondary line-clamp-1 mt-0.5">
+              <p className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary line-clamp-1 mt-0.5">
                 {action.title}
               </p>
             )}
-            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary line-clamp-2 mt-0.5">
+            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary line-clamp-2 mt-0.5">
               {action.description}
             </p>
             <div className="flex items-center gap-1 mt-2">
-              <ArrowRight className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary shrink-0" />
-              <span className="text-micro text-gray-600 dark:text-lia-text-tertiary font-medium line-clamp-1">
+              <ArrowRight className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary shrink-0" />
+              <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium line-clamp-1">
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
                   : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -272,7 +272,7 @@ export function ProactiveActionsBell({
         >
           <Bell className={cn(
  "h-5 w-5",
-            hasUrgent ? "text-gray-600 dark:text-lia-text-tertiary" : "text-gray-500"
+            hasUrgent ? "text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-tertiary"
           )} />
           {pendingCount > 0 && (
             <span className={cn(
@@ -293,7 +293,7 @@ export function ProactiveActionsBell({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan-dark" />
-              <span className="text-xs font-semibold text-gray-900 dark:text-lia-text-primary">
+              <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 Sugestões da LIA
               </span>
             </div>
@@ -308,14 +308,14 @@ export function ProactiveActionsBell({
         <div className="max-h-[400px] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+              <Loader2 className="h-5 w-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
           ) : visibleActions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-3">
                 <Brain className="h-5 w-5 text-wedo-cyan" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary text-center">
                 {deferredIds.size > 0 ? 'Todas as sugestões foram adiadas' : 'Nenhuma sugestão pendente'}
               </p>
               {deferredIds.size > 0 && (
@@ -334,7 +334,7 @@ export function ProactiveActionsBell({
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
                   <div className="px-3 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
-                    <span className="text-micro font-semibold text-gray-600 dark:text-lia-text-tertiary uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
                     <Badge variant="outline" className="ml-2 text-micro py-0 h-4">
@@ -370,7 +370,7 @@ export function ProactiveActionsBell({
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
+              className="ml-auto text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
               onClick={() => setOpen(false)}
             >
               Ver todas as sugestões

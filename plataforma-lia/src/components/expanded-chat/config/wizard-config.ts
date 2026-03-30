@@ -474,7 +474,7 @@ export const getBackendStageNumber = (frontendStageId: string): number => {
 /**
  * Get transition message between stages
  */
-export const getStageTransitionMessage = (currentStageId: string, detectedFields: Record<string, any>): string => {
+export const getStageTransitionMessage = (currentStageId: string, detectedFields: Record<string, unknown>): string => {
   const stage = WIZARD_STAGES.find(s => s.id === currentStageId) as ExtendedWizardStageConfig
   if (!stage?.transition) return ""
   
@@ -512,7 +512,7 @@ const FIELD_MAPPING: Record<string, string> = {
 /**
  * Check missing critical fields for a stage
  */
-export const getMissingCriticalFields = (stageId: string, detectedCriteria: Record<string, any>): { required: string[], recommended: string[] } => {
+export const getMissingCriticalFields = (stageId: string, detectedCriteria: Record<string, unknown>): { required: string[], recommended: string[] } => {
   const stage = WIZARD_STAGES.find(s => s.id === stageId) as ExtendedWizardStageConfig
   if (!stage?.criticalFields) return { required: [], recommended: [] }
   

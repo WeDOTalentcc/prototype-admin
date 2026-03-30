@@ -766,19 +766,19 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && onSetReactivateScreeningDialog(false)}>
           <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
             <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Reativar Triagem?
               </DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-3">
-              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                 {reactivateScreeningJobs.length === 1 
                   ? `A vaga "${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
                   : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
                 }
               </p>
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+                <Label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                   Nova data de término (opcional)
                 </Label>
                 <Input
@@ -819,7 +819,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                   onSetReactivateScreeningJobs([])
                   onSetReactivateEndDate('')
                 }}
-                className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
               >
                 Sim, reativar triagem
               </Button>

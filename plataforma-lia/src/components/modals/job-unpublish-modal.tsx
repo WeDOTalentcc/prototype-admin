@@ -209,7 +209,7 @@ export function JobUnpublishModal({
               const candidatesData = data.candidates || data.items || data || []
               
               if (Array.isArray(candidatesData)) {
-                allFetched.push(...candidatesData.map((c: any) => ({
+                allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
                   id: c.id || c.candidate_id,
                   name: c.name || c.full_name || 'Candidato',
                   email: c.email,
@@ -418,24 +418,24 @@ export function JobUnpublishModal({
                 step.done 
                   ? "bg-gray-900 text-white" 
                   : currentStep === 'options' && index === 0 
-                    ? "bg-gray-100 text-gray-900 border border-gray-900"
+                    ? "bg-gray-100 text-lia-text-primary border border-gray-900"
                     : currentStep === 'communication' && index === 1
-                      ? "bg-gray-100 text-gray-900 border border-gray-900"
+                      ? "bg-gray-100 text-lia-text-primary border border-gray-900"
                       : currentStep === 'confirmation' && index === 1
-                        ? "bg-gray-100 text-gray-900 border border-gray-900"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                        : "bg-gray-100 text-lia-text-tertiary"
               )}>
                 {step.done ? <Check className="w-3 h-3" /> : index + 1}
               </div>
               <span className={cn(
                 "text-xs font-medium",
-                step.done ? "text-gray-900" : "text-gray-600"
+                step.done ? "text-lia-text-primary" : "text-lia-text-secondary"
               )}>
                 {step.label}
               </span>
             </div>
             {index < steps.length - 1 && (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400 mx-1" />
+              <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled mx-1" />
             )}
           </React.Fragment>
         ))}
@@ -446,17 +446,17 @@ export function JobUnpublishModal({
   const renderOptionsStep = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
         <div className="max-h-[100px] overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
           {jobs.map((job) => (
             <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  {job.code && <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
-                  <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
+                  {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                  <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                 </div>
               </div>
             </div>
@@ -465,9 +465,9 @@ export function JobUnpublishModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-        <div className="flex items-center gap-2 text-gray-800 mb-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-gray-600" />
-          <span className="text-xs font-semibold text-gray-950">Opções ao despublicar</span>
+        <div className="flex items-center gap-2 text-lia-text-primary mb-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-lia-text-secondary" />
+          <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
         </div>
 
         <div className="space-y-2">
@@ -479,11 +479,11 @@ export function JobUnpublishModal({
               className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <div className="flex-1">
-              <Label htmlFor="freezeJob" className="text-xs font-medium text-gray-950 cursor-pointer flex items-center gap-1">
-                <Snowflake className="w-3 h-3 text-gray-600" />
+              <Label htmlFor="freezeJob" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
+                <Snowflake className="w-3 h-3 text-lia-text-secondary" />
                 Congelar vaga
               </Label>
-              <p className="text-micro text-gray-600">Pausar temporariamente o processo seletivo (status → Paralisada)</p>
+              <p className="text-micro text-lia-text-secondary">Pausar temporariamente o processo seletivo (status → Paralisada)</p>
             </div>
           </div>
 
@@ -491,7 +491,7 @@ export function JobUnpublishModal({
             <div className="ml-6 space-y-3 pt-2 pl-3 border-l-2 border-lia-border-default">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-micro text-gray-600 mb-1 block">Data início congelamento</Label>
+                  <Label className="text-micro text-lia-text-secondary mb-1 block">Data início congelamento</Label>
                   <Input
                     type="date"
                     value={freezeStartDate}
@@ -500,9 +500,9 @@ export function JobUnpublishModal({
                   />
                 </div>
                 <div>
-                  <Label className="text-micro text-gray-600 mb-1 block">
+                  <Label className="text-micro text-lia-text-secondary mb-1 block">
                     Previsão descongelamento
-                    <span className="text-gray-400 ml-1">(opcional)</span>
+                    <span className="text-lia-text-disabled ml-1">(opcional)</span>
                   </Label>
                   <Input
                     type="date"
@@ -515,7 +515,7 @@ export function JobUnpublishModal({
               </div>
 
               <div>
-                <Label className="text-micro text-gray-600 mb-1 block">Motivo do congelamento</Label>
+                <Label className="text-micro text-lia-text-secondary mb-1 block">Motivo do congelamento</Label>
                 <Select value={freezeReason} onValueChange={setFreezeReason}>
                   <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
                     <SelectValue placeholder="Selecione um motivo..." />
@@ -542,15 +542,15 @@ export function JobUnpublishModal({
               className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <div className="flex-1">
-              <Label htmlFor="notifyApplicants" className="text-xs font-medium text-gray-950 cursor-pointer flex items-center gap-1">
-                <Bell className="w-3 h-3 text-gray-600" />
+              <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
+                <Bell className="w-3 h-3 text-lia-text-secondary" />
                 Notificar candidatos
               </Label>
-              <p className="text-micro text-gray-600">
+              <p className="text-micro text-lia-text-secondary">
                 Todos os candidatos do processo receberão uma mensagem
               </p>
               {notifyApplicants && (
-                <p className="text-micro text-gray-500 mt-1 flex items-center gap-1">
+                <p className="text-micro text-lia-text-tertiary mt-1 flex items-center gap-1">
                   <Archive className="w-3 h-3" />
                   LIA abrirá o modal de envio por email/WhatsApp com template sugerido
                 </p>
@@ -604,7 +604,7 @@ export function JobUnpublishModal({
               "h-7 px-2.5 text-micro",
               (notificationChannel === 'email' || notificationChannel === 'both') 
                 ? "bg-gray-800 text-white" 
-                : "border-lia-border-subtle text-gray-600"
+                : "border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <Mail className="w-3 h-3 mr-1" />
@@ -619,7 +619,7 @@ export function JobUnpublishModal({
               "h-7 px-2.5 text-micro",
               (notificationChannel === 'whatsapp' || notificationChannel === 'both') 
                 ? "bg-status-success text-white hover:bg-status-success" 
-                : "border-lia-border-subtle text-gray-600"
+                : "border-lia-border-subtle text-lia-text-secondary"
             )}
           >
             <MessageSquare className="w-3 h-3 mr-1" />
@@ -629,7 +629,7 @@ export function JobUnpublishModal({
       </div>
 
       <div>
-        <Label className="text-micro text-gray-600 mb-1 block">Template de mensagem</Label>
+        <Label className="text-micro text-lia-text-secondary mb-1 block">Template de mensagem</Label>
         <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
           <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
             <SelectValue placeholder="Selecione um template..." />
@@ -646,7 +646,7 @@ export function JobUnpublishModal({
 
       {notificationChannel !== 'whatsapp' && (
         <div>
-          <Label className="text-micro text-gray-600 mb-1 block">Assunto</Label>
+          <Label className="text-micro text-lia-text-secondary mb-1 block">Assunto</Label>
           <Input
             value={notificationSubject}
             onChange={(e) => setNotificationSubject(e.target.value)}
@@ -657,35 +657,35 @@ export function JobUnpublishModal({
       )}
 
       <div>
-        <Label className="text-micro text-gray-600 mb-1 block">Mensagem</Label>
+        <Label className="text-micro text-lia-text-secondary mb-1 block">Mensagem</Label>
         <Textarea
           value={notificationMessage}
           onChange={(e) => setNotificationMessage(e.target.value)}
           placeholder="Conteúdo da mensagem..."
           className="min-h-[100px] text-xs border-lia-border-subtle resize-none"
         />
-        <p className="text-micro text-gray-500 mt-1">
+        <p className="text-micro text-lia-text-tertiary mt-1">
           Variáveis disponíveis: {'{{candidato_nome}}'}, {'{{vaga}}'}, {'{{empresa_nome}}'}
         </p>
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <Label className="text-micro text-gray-600">
+          <Label className="text-micro text-lia-text-secondary">
             Candidatos selecionados ({selectedCandidateIds.size}/{jobCandidates.length - candidatesInProposal.length})
           </Label>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={selectAllCandidates}
-              className="text-micro text-gray-600 hover:underline"
+              className="text-micro text-lia-text-secondary hover:underline"
             >
               Selecionar todos
             </button>
             <button
               type="button"
               onClick={deselectAllCandidates}
-              className="text-micro text-gray-500 hover:underline"
+              className="text-micro text-lia-text-tertiary hover:underline"
             >
               Limpar
             </button>
@@ -694,13 +694,13 @@ export function JobUnpublishModal({
         <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
           {loadingCandidates ? (
             <div className="flex items-center justify-center h-full py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
-              <span className="ml-2 text-xs text-gray-500">Carregando candidatos...</span>
+              <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary" />
+              <span className="ml-2 text-xs text-lia-text-tertiary">Carregando candidatos...</span>
             </div>
           ) : jobCandidates.length === 0 ? (
             <div className="flex items-center justify-center h-full py-8">
-              <Users className="w-4 h-4 text-gray-400 mr-2" />
-              <span className="text-xs text-gray-500">Nenhum candidato encontrado</span>
+              <Users className="w-4 h-4 text-lia-text-disabled mr-2" />
+              <span className="text-xs text-lia-text-tertiary">Nenhum candidato encontrado</span>
             </div>
           ) : (
             <div className="space-y-1">
@@ -720,10 +720,10 @@ export function JobUnpublishModal({
                     className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{candidate.name}</p>
-                    <p className="text-micro text-gray-500">{candidate.email || candidate.phone || 'Sem contato'}</p>
+                    <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
+                    <p className="text-micro text-lia-text-tertiary">{candidate.email || candidate.phone || 'Sem contato'}</p>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-gray-600 font-normal">
+                  <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-lia-text-secondary font-normal">
                     {candidate.stage}
                   </Badge>
                 </div>
@@ -778,7 +778,7 @@ export function JobUnpublishModal({
           onCheckedChange={(checked) => setAcknowledgedWarning(!!checked)}
           className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
         />
-        <Label htmlFor="acknowledgeWarning" className="text-xs text-gray-700 cursor-pointer">
+        <Label htmlFor="acknowledgeWarning" className="text-xs text-lia-text-secondary cursor-pointer">
           Li e estou ciente de que todas as ações acima serão executadas e não podem ser desfeitas.
         </Label>
       </div>
@@ -790,29 +790,29 @@ export function JobUnpublishModal({
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-status-success/15 flex items-center justify-center">
         <CheckCircle2 className="w-8 h-8 text-status-success" />
       </div>
-      <h3 className="text-sm font-semibold text-gray-950 mb-2">Processo finalizado!</h3>
-      <p className="text-xs text-gray-600 mb-4">
+      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Processo finalizado!</h3>
+      <p className="text-xs text-lia-text-secondary mb-4">
         A vaga foi despublicada e congelada com sucesso.
       </p>
       <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
-        <div className="flex items-center gap-2 text-xs text-gray-700">
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span>Vaga despublicada dos job boards</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-700">
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span>Status alterado para "Paralisada"</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-700">
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span>{selectedCandidateIds.size} candidatos notificados</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-700">
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span>Agendamentos cancelados</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-700">
-          <Mail className="w-3.5 h-3.5 text-gray-600" />
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
+          <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span>Resumo enviado para seu email</span>
         </div>
       </div>
@@ -828,7 +828,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
             >
               Cancelar
             </Button>
@@ -856,7 +856,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('options')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
             >
               Voltar
             </Button>
@@ -884,7 +884,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('communication')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
             >
               Voltar
             </Button>
@@ -925,14 +925,14 @@ export function JobUnpublishModal({
               {currentStep === 'complete' ? (
                 <CheckCircle2 className="w-4 h-4 text-status-success" />
               ) : (
-                <X className="w-4 h-4 text-gray-600" />
+                <X className="w-4 h-4 text-lia-text-secondary" />
               )}
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 {currentStep === 'complete' ? 'Processo Finalizado' : 'Despublicar Vagas'}
               </DialogTitle>
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>

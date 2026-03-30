@@ -12,7 +12,7 @@ export interface User {
 export interface Permission {
   action: string
   resource: string
-  conditions?: Record<string, any>
+  conditions?: Record<string, unknown>
 }
 
 // Definição de permissões por role
@@ -163,7 +163,7 @@ class PermissionManager {
     return this.user
   }
 
-  hasPermission(action: string, resource: string, context?: Record<string, any>): boolean {
+  hasPermission(action: string, resource: string, context?: Record<string, unknown>): boolean {
     if (!this.user) return false
 
     const permissions = ROLE_PERMISSIONS[this.user.role] || []
@@ -273,7 +273,7 @@ class PermissionManager {
     })).filter(action => action.label) // Remove ações sem label
   }
 
-  private checkConditions(conditions: Record<string, any>, context: Record<string, any>): boolean {
+  private checkConditions(conditions: Record<string, unknown>, context: Record<string, unknown>): boolean {
     // Implementar lógica de verificação de condições
     for (const [key, value] of Object.entries(conditions)) {
       if (context[key] !== value) {
@@ -293,7 +293,7 @@ export function usePermissions() {
 
   return {
     user,
-    hasPermission: (action: string, resource: string, context?: Record<string, any>) =>
+    hasPermission: (action: string, resource: string, context?: Record<string, unknown>) =>
       permissionManager.hasPermission(action, resource, context),
     canUseLiaAction: (actionId: string) => permissionManager.canUseLiaAction(actionId),
     canManageUser: (targetUser: User) => permissionManager.canManageUser(targetUser),

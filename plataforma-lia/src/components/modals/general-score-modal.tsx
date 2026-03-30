@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 interface GeneralScoreModalProps {
   isOpen: boolean
   onClose: () => void
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 const SCORE_COMPONENTS = [
@@ -107,17 +107,17 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
-              <Gauge className="w-4 h-4 text-gray-700" />
+              <Gauge className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <h2 
-                className="text-sm font-semibold text-gray-950 dark:text-gray-50"
+                className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary"
                
               >
                 Nota Geral LIA
               </h2>
               <p 
-                className="text-xs text-gray-600"
+                className="text-xs text-lia-text-secondary"
                
               >
                 Metodologia de cálculo do score
@@ -126,7 +126,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -138,7 +138,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           >
             <div>
               <p 
-                className="text-micro uppercase tracking-wide mb-1 text-gray-600"
+                className="text-micro uppercase tracking-wide mb-1 text-lia-text-secondary"
                
               >
                 Nota Final
@@ -151,7 +151,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                   {finalScore}
                 </span>
                 <span 
-                  className="text-sm text-gray-500"
+                  className="text-sm text-lia-text-tertiary"
                  
                 >
                   / 100
@@ -172,7 +172,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
           <div className="mb-3">
             <p 
-              className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
+              className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
              
             >
               Composição do Score (Média Ponderada)
@@ -191,15 +191,15 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                        <Icon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         <span 
-                          className="text-xs font-medium text-gray-950 dark:text-gray-50"
+                          className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
                          
                         >
                           {component.label}
                         </span>
                         <span 
-                          className="text-micro px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-200"
+                          className="text-micro px-1.5 py-0.5 rounded-full text-lia-text-secondary bg-gray-200"
                         >
                           Peso: {component.weight}%
                         </span>
@@ -213,10 +213,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                     </div>
                     <Progress 
                       value={hasScore ? score : 0} 
-                      className="h-1.5 bg-gray-200" style={{['--progress-color' as any]: hasScore ? getScoreColor(score) : 'var(--gray-200)'}}
+                      className="h-1.5 bg-gray-200" style={{['--progress-color' as string]: hasScore ? getScoreColor(score) : 'var(--gray-200)'}}
                     />
                     <p 
-                      className="text-micro mt-1.5 text-gray-600"
+                      className="text-micro mt-1.5 text-lia-text-secondary"
                      
                     >
                       {component.description}
@@ -231,13 +231,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             className="p-3 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/20"
           >
             <p 
-              className="text-micro font-medium mb-1 text-gray-700 dark:text-lia-text-secondary"
+              className="text-micro font-medium mb-1 text-lia-text-secondary dark:text-lia-text-secondary"
              
             >
               Fórmula do cálculo:
             </p>
             <p 
-              className="text-micro text-gray-600"
+              className="text-micro text-lia-text-secondary"
              
             >
               Score = (CV × 0.25) + (Triagem × 0.30) + (Técnico × 0.25) + (Inglês × 0.20)
@@ -251,7 +251,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             Entendido
           </Button>

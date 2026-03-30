@@ -80,7 +80,7 @@ const categoryIcons: Record<string, React.ElementType> = {
 }
 
 const typeColors: Record<string, { bg: string; text: string; border: string }> = {
-  info: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-gray-600 dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' },
+  info: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' },
   success: { bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
   warning: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
   urgent: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
@@ -214,7 +214,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
           className="relative h-8 w-8 p-0"
           aria-label="Notificações"
         >
-          <Bell className="h-4 w-4 text-gray-800" aria-hidden="true" />
+          <Bell className="h-4 w-4 text-lia-text-primary" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-error text-xs font-medium text-white">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -231,7 +231,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
         <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4" style={{color: 'var(--wedo-blue)'}} aria-hidden="true" />
-            <h3 className="font-sans font-semibold text-sm text-gray-950">Notificações</h3>
+            <h3 className="font-sans font-semibold text-sm text-lia-text-primary">Notificações</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                 {unreadCount} novas
@@ -320,8 +320,8 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                           <h4 className={cn(
  "text-sm font-medium truncate",
                             notification.is_read 
-                              ? "text-gray-800" 
-                              : "text-gray-950"
+                              ? "text-lia-text-primary" 
+                              : "text-lia-text-primary"
                           )}>
                             {notification.title}
                           </h4>
@@ -330,7 +330,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                           )}
                         </div>
                         
-                        <p className="text-xs text-gray-800 line-clamp-2">
+                        <p className="text-xs text-lia-text-primary line-clamp-2">
                           {notification.message}
                         </p>
                         

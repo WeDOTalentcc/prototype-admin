@@ -79,7 +79,7 @@ export function ProgressTrackerCard({
               </>
             ) : (
               <>
-                <AlertTriangle className="h-3 w-3 mr-1 text-gray-700 dark:text-lia-text-secondary" />
+                <AlertTriangle className="h-3 w-3 mr-1 text-lia-text-secondary dark:text-lia-text-secondary" />
                 Atenção
               </>
             )}
@@ -142,7 +142,7 @@ export function ProgressTrackerCard({
           <div
             className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
-            <div className="text-lg font-bold text-gray-700 dark:text-lia-text-secondary">{data.days_open}</div>
+            <div className="text-lg font-bold text-lia-text-secondary dark:text-lia-text-secondary">{data.days_open}</div>
             <div className="text-xs text-lia-text-tertiary">Dias Aberta</div>
           </div>
           {data.avg_time_to_hire !== undefined && (
@@ -172,7 +172,7 @@ export function ProgressTrackerCard({
                 key={index}
                 className="flex items-start gap-2 text-xs px-2 py-1.5 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
               >
-                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-lia-text-secondary" />
+                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
                 <span>{alert}</span>
               </div>
             ))}

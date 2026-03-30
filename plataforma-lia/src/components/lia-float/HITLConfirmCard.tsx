@@ -62,7 +62,7 @@ export function HITLConfirmCard({
 
       {/* Descrição da ação */}
       <p
-        className="text-sm-ui text-gray-700 dark:text-lia-text-secondary leading-relaxed pl-6"
+        className="text-sm-ui text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed pl-6"
        
       >
         {description}
@@ -82,7 +82,7 @@ export function HITLConfirmCard({
           aria-label="Confirmar automaticamente esta ação no futuro"
         />
         <span
-          className="text-xs text-gray-500 dark:text-lia-text-tertiary"
+          className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary"
          
         >
           Confirmar automaticamente esta ação no futuro
@@ -110,7 +110,7 @@ export function HITLConfirmCard({
  "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
             "border border-lia-border-subtle dark:border-lia-border-subtle",
-            "text-gray-600 dark:text-lia-text-tertiary",
+            "text-lia-text-secondary dark:text-lia-text-tertiary",
             "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           )}
           aria-label="Cancelar ação"

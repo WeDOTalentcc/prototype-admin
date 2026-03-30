@@ -79,10 +79,10 @@ interface UseJobsFiltersReturn {
 }
 
 const STATUS_FILTERS = [
-  { id: 'todas', label: 'Todas', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
-  { id: 'Ativa', label: 'Ativas', color: 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' },
-  { id: 'Paralisada', label: 'Paralisadas', color: 'bg-gray-50 text-gray-800 dark:text-gray-200 dark:bg-gray-800' },
-  { id: 'Concluída', label: 'Concluídas', color: 'bg-gray-50 text-gray-800 dark:text-gray-500 dark:bg-gray-800' },
+  { id: 'todas', label: 'Todas', color: 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary' },
+  { id: 'Ativa', label: 'Ativas', color: 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-disabled' },
+  { id: 'Paralisada', label: 'Paralisadas', color: 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-secondary' },
+  { id: 'Concluída', label: 'Concluídas', color: 'bg-gray-50 text-lia-text-primary dark:text-lia-text-tertiary dark:bg-lia-bg-secondary' },
   { id: 'Cancelada', label: 'Canceladas', color: 'bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error' },
 ]
 

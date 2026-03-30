@@ -100,7 +100,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans ${
  activeSection === section.id
                       ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-wedo-cyan-dark dark:text-lia-text-secondary'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-lia-text-primary border border-transparent'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
                   }`}
                   style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
                 >
@@ -124,7 +124,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
         <div className="space-y-4">
           <div className="flex items-center justify-between bg-white dark:bg-lia-bg-secondary rounded-md p-4">
             <div className="flex items-center gap-3">
-              <SectionIcon className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />
+              <SectionIcon className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
               <div>
                 <h2 className={textStyles.h3}>{currentSection.title}</h2>
                 <p className={textStyles.description}>{currentSection.description}</p>
@@ -133,7 +133,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
             <div className="flex items-center gap-3">
               {activeSection === 'configuracoes' && (
                 <>
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
                     {getConfigStatusInfo()}
                   </span>
                   {!isEditingScreeningConfig ? (
@@ -223,20 +223,20 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 </>
               )}
               {activeSection === 'descricao' && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
                   {jdDone ? 'Descrição preenchida' : 'Descrição pendente'}
                 </span>
               )}
               {activeSection === 'perguntas' && (
                 <>
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
                     {job.screeningQuestions?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (
                       <> · {(companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length} extras</>
                     )}
                   </span>
                   <div className="flex items-center gap-2 border-l border-lia-border-subtle dark:border-lia-border-subtle pl-3 ml-1">
-                    <span className="text-micro text-gray-500 dark:text-lia-text-tertiary" >
+                    <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary" >
                       Triagem
                     </span>
                     {(job.screeningStatus === 'not_configured' || !job.screeningStatus) ? (
@@ -312,15 +312,15 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
                     {showScreeningToggleConfirm === 'activate'
-                      ? <Play className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
-                      : <Pause className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                      ? <Play className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      : <Pause className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     }
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-lia-text-primary">
+                    <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                       {showScreeningToggleConfirm === 'activate' ? 'Ativar Triagem' : 'Pausar Triagem'}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                       {job.title}
                     </p>
                   </div>
@@ -335,7 +335,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         : <Pause className="w-3 h-3 text-status-warning" />
                       }
                     </div>
-                    <p className="text-xs leading-relaxed text-gray-600 dark:text-lia-text-tertiary" >
+                    <p className="text-xs leading-relaxed text-lia-text-secondary dark:text-lia-text-tertiary" >
                       {showScreeningToggleConfirm === 'activate'
                         ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'

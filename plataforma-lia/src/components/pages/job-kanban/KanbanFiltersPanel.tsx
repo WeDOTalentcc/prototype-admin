@@ -71,7 +71,7 @@ export function KanbanFiltersPanel({
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-600" />
+              <Filter className="w-4 h-4 text-lia-text-secondary" />
               <h3 className={textStyles.title}>Filtros Avançados</h3>
             </div>
             <Button
@@ -80,7 +80,7 @@ export function KanbanFiltersPanel({
               onClick={onClose}
               className="h-7 w-7 p-0 hover:bg-gray-100"
             >
-              <X className="w-4 h-4 text-gray-600" />
+              <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
           </div>
           <p className={`${textStyles.description} mt-1`}>Refine os candidatos exibidos</p>
@@ -90,7 +90,7 @@ export function KanbanFiltersPanel({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Score LIA */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
               Score LIA Mínimo
             </label>
             <div className="flex items-center gap-2">
@@ -102,13 +102,13 @@ export function KanbanFiltersPanel({
                 onChange={(e) => onScoreMinChange(Number(e.target.value))}
                 className="flex-1 h-1.5 bg-gray-200 rounded-md appearance-none cursor-pointer accent-gray-900"
               />
-              <span className="text-xs text-gray-600 w-12 text-right">{scoreMin}%</span>
+              <span className="text-xs text-lia-text-secondary w-12 text-right">{scoreMin}%</span>
             </div>
           </div>
 
           {/* Status */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Status</label>
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Status</label>
             <div className="space-y-1.5">
               {STATUS_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -116,9 +116,9 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={statusFilter.includes(value)}
                     onChange={() => toggleItem(statusFilter, value, onStatusFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                   />
-                  <span className="text-xs text-gray-600">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
               ))}
             </div>
@@ -126,7 +126,7 @@ export function KanbanFiltersPanel({
 
           {/* Origem */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Origem</label>
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Origem</label>
             <div className="space-y-1.5">
               {ORIGIN_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -134,9 +134,9 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={originFilter.includes(value)}
                     onChange={() => toggleItem(originFilter, value, onOriginFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                   />
-                  <span className="text-xs text-gray-600">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
               ))}
             </div>
@@ -144,7 +144,7 @@ export function KanbanFiltersPanel({
 
           {/* Modelo de Trabalho */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Modelo de Trabalho</label>
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Modelo de Trabalho</label>
             <div className="space-y-1.5">
               {WORK_MODEL_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -152,9 +152,9 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={workModelFilter.includes(value)}
                     onChange={() => toggleItem(workModelFilter, value, onWorkModelFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                   />
-                  <span className="text-xs text-gray-600">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
               ))}
             </div>
@@ -166,7 +166,7 @@ export function KanbanFiltersPanel({
           <div className="flex gap-2">
             <button
               onClick={handleClear}
-              className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
             >
               Limpar
             </button>

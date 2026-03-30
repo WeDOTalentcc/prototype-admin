@@ -159,7 +159,7 @@ const approvedCandidates: ApprovedCandidate[] = [
 ]
 
 const kanbanStages = [
-  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
+  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
   { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
   { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
   { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
@@ -266,7 +266,7 @@ export function OnboardingPremiumPage() {
 
   const getStageColor = (stage: string) => {
     const stageData = kanbanStages.find(s => s.id === stage)
-    return stageData?.color || 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'
+    return stageData?.color || 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
   }
 
   const filteredCandidates = approvedCandidates.filter(candidate => {
@@ -284,12 +284,12 @@ export function OnboardingPremiumPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Novos Colaboradores</p>
-                <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{approvedCandidates.length}</p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary">em onboarding</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Novos Colaboradores</p>
+                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{approvedCandidates.length}</p>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">em onboarding</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+                <UserPlus className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -299,11 +299,11 @@ export function OnboardingPremiumPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Em Andamento</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Em Andamento</p>
                 <p className="text-2xl font-bold text-status-warning">
                   {approvedCandidates.filter(c => c.stage !== 'completed').length}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary">processos ativos</p>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">processos ativos</p>
               </div>
               <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
                 <Clock className="w-6 h-6 text-status-warning" />
@@ -316,11 +316,11 @@ export function OnboardingPremiumPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Concluídos</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Concluídos</p>
                 <p className="text-2xl font-bold text-status-success">
                   {approvedCandidates.filter(c => c.stage === 'completed').length}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary">este mês</p>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">este mês</p>
               </div>
               <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-status-success" />
@@ -333,9 +333,9 @@ export function OnboardingPremiumPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Tempo Médio</p>
                 <p className="text-2xl font-bold text-wedo-purple">12d</p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary">para conclusão</p>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">para conclusão</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <Timer className="w-6 h-6 text-wedo-purple" />
@@ -349,20 +349,20 @@ export function OnboardingPremiumPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-secondary w-4 h-4" />
             <input
               type="text"
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
             />
           </div>
 
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
           >
             <option value="all">Todas as Etapas</option>
             {kanbanStages.map(stage => (
@@ -400,7 +400,7 @@ export function OnboardingPremiumPage() {
                     <Badge className={stage.color}>
                       {stage.name}
                     </Badge>
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-medium text-lia-text-secondary">
                       {filteredCandidates.filter(c => c.stage === stage.id).length}
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export function OnboardingPremiumPage() {
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">{stage.description}</p>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">{stage.description}</p>
               </div>
 
               {/* Cards */}
@@ -426,8 +426,8 @@ export function OnboardingPremiumPage() {
 
                 {/* Empty state */}
                 {filteredCandidates.filter(c => c.stage === stage.id).length === 0 && (
-                  <div className="text-center py-8 text-gray-800 dark:text-lia-text-primary">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50 text-gray-600" />
+                  <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                     <p className="text-sm">Nenhum colaborador</p>
                   </div>
                 )}
@@ -443,8 +443,8 @@ export function OnboardingPremiumPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50">Templates de Comunicação</h3>
-          <p className="text-sm text-gray-600">Personalize mensagens automáticas para cada etapa</p>
+          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Templates de Comunicação</h3>
+          <p className="text-sm text-lia-text-secondary">Personalize mensagens automáticas para cada etapa</p>
         </div>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
@@ -474,14 +474,14 @@ export function OnboardingPremiumPage() {
               <div className="space-y-3">
                 {template.subject && (
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Assunto:</p>
-                    <p className="text-sm text-gray-950 dark:text-gray-50">{template.subject}</p>
+                    <p className="text-sm font-medium text-lia-text-secondary">Assunto:</p>
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.subject}</p>
                   </div>
                 )}
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Conteúdo:</p>
-                  <p className="text-sm text-gray-800 dark:text-lia-text-primary line-clamp-4">
+                  <p className="text-sm font-medium text-lia-text-secondary">Conteúdo:</p>
+                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary line-clamp-4">
                     {template.content}
                   </p>
                 </div>
@@ -515,11 +515,11 @@ export function OnboardingPremiumPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold font-sans text-gray-950 dark:text-gray-50 mb-1 flex items-center gap-1.5">
-                <Crown className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+              <h1 className="text-sm font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
+                <Crown className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Onboarding Automatizado Premium
               </h1>
-              <p className="text-gray-600">
+              <p className="text-lia-text-secondary">
                 Sistema completo de integração de novos colaboradores aprovados
               </p>
             </div>
@@ -545,11 +545,11 @@ export function OnboardingPremiumPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedView(tab.id as any)}
+                onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -564,16 +564,16 @@ export function OnboardingPremiumPage() {
         {selectedView === 'templates' && renderTemplatesView()}
         {selectedView === 'candidates' && (
           <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Lista de Colaboradores</h3>
-            <p className="text-gray-600">Visão detalhada em desenvolvimento</p>
+            <Users className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Lista de Colaboradores</h3>
+            <p className="text-lia-text-secondary">Visão detalhada em desenvolvimento</p>
           </div>
         )}
         {selectedView === 'analytics' && (
           <div className="text-center py-12">
-            <BarChart3 className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Analytics de Onboarding</h3>
-            <p className="text-gray-600">Métricas detalhadas em desenvolvimento</p>
+            <BarChart3 className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Analytics de Onboarding</h3>
+            <p className="text-lia-text-secondary">Métricas detalhadas em desenvolvimento</p>
           </div>
         )}
 
@@ -614,17 +614,17 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm text-gray-950 dark:text-gray-50 truncate">
+            <h4 className="font-semibold text-sm text-lia-text-primary dark:text-lia-text-primary truncate">
               {candidate.name}
             </h4>
-            <p className="text-xs text-gray-600">{candidate.position}</p>
-            <p className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.department}</p>
+            <p className="text-xs text-lia-text-secondary">{candidate.position}</p>
+            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.department}</p>
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600">Progresso:</span>
+            <span className="text-lia-text-secondary">Progresso:</span>
             <span className="font-medium">{candidate.progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -637,16 +637,16 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
 
         <div className="mt-3 space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600">Início:</span>
+            <span className="text-lia-text-secondary">Início:</span>
             <span className="font-medium">{new Date(candidate.startDate).toLocaleDateString('pt-BR')}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600">Gestor:</span>
+            <span className="text-lia-text-secondary">Gestor:</span>
             <span className="font-medium">{candidate.manager}</span>
           </div>
           {daysUntilStart > 0 && (
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Faltam:</span>
+              <span className="text-lia-text-secondary">Faltam:</span>
               <Badge variant="outline" className="text-xs">
                 {daysUntilStart} dias
               </Badge>
@@ -691,8 +691,8 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">{candidate.name}</h2>
-              <p className="text-gray-600">{candidate.position} • {candidate.department}</p>
+              <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h2>
+              <p className="text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
               <div className="flex items-center gap-2 mt-1">
                 <Badge className={kanbanStages.find(s => s.id === candidate.stage)?.color}>
                   {kanbanStages.find(s => s.id === candidate.stage)?.name}
@@ -718,11 +718,11 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "text-gray-600 dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:border-gray-50"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:border-lia-border-medium"
+                  : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -743,27 +743,27 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Email</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Email</p>
                         <p className="text-sm">{candidate.email}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Telefone</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Telefone</p>
                         <p className="text-sm">{candidate.phone}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Gestor</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Gestor</p>
                         <p className="text-sm">{candidate.manager}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Salário</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Salário</p>
                         <p className="text-sm">R$ {candidate.salary.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Data de Contratação</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Data de Contratação</p>
                         <p className="text-sm">{new Date(candidate.hireDate).toLocaleDateString('pt-BR')}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Início</p>
+                        <p className="text-sm font-medium text-lia-text-secondary">Início</p>
                         <p className="text-sm">{new Date(candidate.startDate).toLocaleDateString('pt-BR')}</p>
                       </div>
                     </div>
@@ -777,7 +777,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Progresso Geral</span>
+                        <span className="text-sm text-lia-text-secondary">Progresso Geral</span>
                         <span className="text-sm font-medium">{candidate.progress}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
@@ -790,12 +790,12 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                       <div className="space-y-2">
                         {kanbanStages.map(stage => (
                           <div key={stage.id} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">{stage.name}</span>
+                            <span className="text-sm text-lia-text-secondary">{stage.name}</span>
                             <CheckCircle
                               className={`w-4 h-4 ${
                                 kanbanStages.findIndex(s => s.id === candidate.stage) >= kanbanStages.findIndex(s => s.id === stage.id)
                                   ? 'text-status-success'
-                                  : 'text-gray-600'
+                                  : 'text-lia-text-secondary'
                               }`}
                             />
                           </div>
@@ -841,14 +841,14 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                         <Clock className="w-4 h-4 text-status-warning" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Solicitar comprovante de residência</p>
-                          <p className="text-xs text-gray-600">Vence hoje</p>
+                          <p className="text-xs text-lia-text-secondary">Vence hoje</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                        <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Agendar exame admissional</p>
-                          <p className="text-xs text-gray-600">Vence em 2 dias</p>
+                          <p className="text-xs text-lia-text-secondary">Vence em 2 dias</p>
                         </div>
                       </div>
                     </div>
@@ -877,7 +877,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                            doc.status === 'rejected' ? 'Rejeitado' : 'Pendente'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{doc.type}</p>
+                      <p className="text-sm text-lia-text-secondary mb-3">{doc.type}</p>
                       {doc.isRequired && (
                         <Badge variant="outline" className="text-xs">Obrigatório</Badge>
                       )}
@@ -891,8 +891,8 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
           {activeTab === 'communications' && (
             <div className="space-y-4">
               <h3 className="text-xs font-medium">Histórico de Comunicações</h3>
-              <div className="text-center py-8 text-gray-800 dark:text-lia-text-primary">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50 text-gray-600" />
+              <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                 <p className="text-sm">Nenhuma comunicação enviada ainda</p>
               </div>
             </div>
@@ -901,8 +901,8 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
           {activeTab === 'schedule' && (
             <div className="space-y-4">
               <h3 className="text-xs font-medium">Agenda de Onboarding</h3>
-              <div className="text-center py-8 text-gray-800 dark:text-lia-text-primary">
-                <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50 text-gray-600" />
+              <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+                <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                 <p className="text-sm">Agenda será configurada automaticamente</p>
               </div>
             </div>

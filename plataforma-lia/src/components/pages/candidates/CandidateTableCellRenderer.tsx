@@ -149,7 +149,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
               </div>
             ) : (
               <div className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-gray-100 dark:bg-lia-bg-elevated">
-                <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-secondary" />
+                <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
               </div>
             )}
             {/* Tooltip dinâmico com informações de créditos */}
@@ -159,11 +159,11 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   {isLocal ? (
                     <Home className="w-3.5 h-3.5" style={{color: "var(--wedo-orange)"}} />
                   ) : (
-                    <Globe className="w-3.5 h-3.5 text-gray-300" />
+                    <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
                   )}
                   {sourceInfo.label}
                 </div>
-                <div className="text-xs text-gray-500 mb-1">{sourceInfo.subtext}</div>
+                <div className="text-xs text-lia-text-tertiary mb-1">{sourceInfo.subtext}</div>
                 {isLocal ? (
                   <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700 text-wedo-green-light">
                     <CheckCircle className="w-3 h-3" />
@@ -223,7 +223,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={strokeWidth}
-                  className="text-gray-500 dark:text-gray-500"
+                  className="text-lia-text-tertiary dark:text-lia-text-tertiary"
                 />
               </svg>
               {/* Progress ring */}
@@ -270,7 +270,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   }
                   alt={candidate.name}
                 />
-                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary">
+                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
                   {candidate.name
                     .split(" ")
                     .map((n) => n[0])
@@ -290,7 +290,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-gray-950 dark:text-lia-text-primary truncate text-xs">
+                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary truncate text-xs">
                   {candidate.name}
                 </span>
               </div>
@@ -301,7 +301,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
 
       case "id":
         return (
-          <span className="font-mono text-xs text-gray-800">
+          <span className="font-mono text-xs text-lia-text-primary">
             {candidate.candidateId || candidate.id}
           </span>
         )
@@ -314,17 +314,17 @@ export function createCellRenderer(deps: CellRendererDeps) {
         if (!hasBeenEvaluated) {
           return (
             <div className="relative group cursor-help">
-              <span className="text-xs text-gray-800">—</span>
+              <span className="text-xs text-lia-text-primary">—</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
                 <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
                   <div className="font-semibold mb-1.5 flex items-center gap-1.5">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Sem avaliação
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-lia-text-tertiary">
                     Este candidato ainda não participou de nenhum processo seletivo.
                   </div>
-                  <div className="text-xs text-gray-800 mt-1.5">
+                  <div className="text-xs text-lia-text-primary mt-1.5">
                     O Score LIA é calculado quando o candidato é avaliado para uma vaga específica.
                   </div>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
@@ -347,7 +347,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "lia_insights": {
         const insights = candidate.lia_insights
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {insights?.overall_summary?.slice(0, 50) || ""}
             {insights?.overall_summary && insights.overall_summary.length > 50 ? "..." : ""}
           </span>
@@ -369,7 +369,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           candidate.has_email !== false
 
         if (candidateEmail) {
-          return <span className="text-xs text-gray-800 truncate">{candidateEmail}</span>
+          return <span className="text-xs text-lia-text-primary truncate">{candidateEmail}</span>
         }
 
         if (canRevealEmail) {
@@ -379,7 +379,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 e.stopPropagation()
                 onRevealContact(candidate, "email")
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 transition-colors"
               title="Clique para revelar email (2 créditos)"
             >
               <Mail className="w-3 h-3" />
@@ -389,12 +389,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
           )
         }
 
-        return <span className="text-xs text-gray-800">-</span>
+        return <span className="text-xs text-lia-text-primary">-</span>
       }
 
       case "secondary_email":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.secondary_email || ""}
           </span>
         )
@@ -406,7 +406,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           candidate.has_phone !== false
 
         if (candidatePhone) {
-          return <span className="text-xs text-gray-800">{candidatePhone}</span>
+          return <span className="text-xs text-lia-text-primary">{candidatePhone}</span>
         }
 
         if (canRevealPhone) {
@@ -426,7 +426,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           )
         }
 
-        return <span className="text-xs text-gray-800">-</span>
+        return <span className="text-xs text-lia-text-primary">-</span>
       }
 
       case "mobile_phone": {
@@ -437,7 +437,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           candidate.has_phone !== false
 
         if (candidateMobile) {
-          return <span className="text-xs text-gray-800">{candidateMobile}</span>
+          return <span className="text-xs text-lia-text-primary">{candidateMobile}</span>
         }
 
         if (canRevealMobile) {
@@ -457,11 +457,11 @@ export function createCellRenderer(deps: CellRendererDeps) {
           )
         }
 
-        return <span className="text-xs text-gray-800">-</span>
+        return <span className="text-xs text-lia-text-primary">-</span>
       }
 
       case "secondary_phone":
-        return <span className="text-xs text-gray-800">{candidate.secondary_phone || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.secondary_phone || ""}</span>
 
       case "linkedin_url":
         return candidate.linkedin_url ? (
@@ -472,14 +472,14 @@ export function createCellRenderer(deps: CellRendererDeps) {
             className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Ver perfil no LinkedIn"
           >
-            <Linkedin className="w-4 h-4 text-gray-600" />
+            <Linkedin className="w-4 h-4 text-lia-text-secondary" />
           </a>
         ) : (
           <span
             className="inline-flex items-center justify-center w-6 h-6"
             title="LinkedIn não informado"
           >
-            <Linkedin className="w-4 h-4 text-gray-500 dark:text-gray-500" />
+            <Linkedin className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
           </span>
         )
 
@@ -489,12 +489,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
             href={candidate.github_url}
             target="_blank"
             rel="noopener"
-            className="text-gray-800 hover:underline text-xs flex items-center gap-1"
+            className="text-lia-text-primary hover:underline text-xs flex items-center gap-1"
           >
             <Github className="w-3 h-3" /> GitHub
           </a>
         ) : (
-          <span className="text-xs text-gray-800">N/A</span>
+          <span className="text-xs text-lia-text-primary">N/A</span>
         )
 
       case "portfolio_url":
@@ -508,20 +508,20 @@ export function createCellRenderer(deps: CellRendererDeps) {
             <Globe className="w-3 h-3" /> Portfólio
           </a>
         ) : (
-          <span className="text-xs text-gray-800">N/A</span>
+          <span className="text-xs text-lia-text-primary">N/A</span>
         )
 
       // Pessoal
       case "date_of_birth":
-        return <span className="text-xs text-gray-800">{formatDate(candidate.date_of_birth)}</span>
+        return <span className="text-xs text-lia-text-primary">{formatDate(candidate.date_of_birth)}</span>
       case "gender":
-        return <span className="text-xs text-gray-800">{candidate.gender || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.gender || ""}</span>
       case "nationality":
-        return <span className="text-xs text-gray-800">{candidate.nationality || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.nationality || ""}</span>
       case "marital_status":
-        return <span className="text-xs text-gray-800">{candidate.marital_status || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.marital_status || ""}</span>
       case "cpf":
-        return <span className="text-xs text-gray-800 font-mono">{candidate.cpf || ""}</span>
+        return <span className="text-xs text-lia-text-primary font-mono">{candidate.cpf || ""}</span>
 
       // Profissional
       case "current_title": {
@@ -532,7 +532,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return (
           <div className="flex items-start gap-1 max-w-[250px]">
             <span
-              className={`text-xs text-gray-800 font-medium ${isRowExpanded ? "whitespace-normal break-words" : "truncate"}`}
+              className={`text-xs text-lia-text-primary font-medium ${isRowExpanded ? "whitespace-normal break-words" : "truncate"}`}
               title={titleText}
             >
               {titleText}
@@ -547,7 +547,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
               >
                 <ChevronsLeftRight
-                  className={`w-3 h-3 text-gray-800 hover:text-gray-800 transition-transform ${isRowExpanded ? "rotate-90" : ""}`}
+                  className={`w-3 h-3 text-lia-text-primary hover:text-lia-text-primary transition-transform ${isRowExpanded ? "rotate-90" : ""}`}
                 />
               </button>
             )}
@@ -557,7 +557,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
 
       case "current_company":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.current_company || candidate.workHistory?.[0]?.company || ""}
           </span>
         )
@@ -569,7 +569,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "years_of_experience":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.years_of_experience !== undefined
               ? `${candidate.years_of_experience} anos`
               : ""}
@@ -577,7 +577,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "self_introduction":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.self_introduction?.slice(0, 50) || ""}
             {candidate.self_introduction && candidate.self_introduction.length > 50 ? "..." : ""}
           </span>
@@ -586,31 +586,31 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Competências
       case "technical_skills":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.technical_skills || candidate.skills)}
           </span>
         )
       case "soft_skills":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.soft_skills)}
           </span>
         )
       case "languages":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatLanguages(candidate.languages)}
           </span>
         )
       case "certifications":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.certifications)}
           </span>
         )
       case "interests":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.interests)}
           </span>
         )
@@ -619,52 +619,52 @@ export function createCellRenderer(deps: CellRendererDeps) {
         if (Array.isArray(educationData) && educationData.length > 0) {
           const firstEdu = educationData[0]
           return (
-            <span className="text-xs text-gray-800 truncate">
+            <span className="text-xs text-lia-text-primary truncate">
               {firstEdu.degree || firstEdu.course || ""}
               {firstEdu.institution ? ` - ${firstEdu.institution}` : ""}
             </span>
           )
         }
-        return <span className="text-xs text-gray-800">—</span>
+        return <span className="text-xs text-lia-text-primary">—</span>
       }
 
       // Localização
       case "location_city":
         return (
           <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-gray-800" />
-            <span className="text-xs text-gray-800 truncate">
+            <MapPin className="w-3 h-3 text-lia-text-primary" />
+            <span className="text-xs text-lia-text-primary truncate">
               {candidate.location_city || candidate.location?.split(",")[0] || ""}
             </span>
           </div>
         )
       case "location_state":
-        return <span className="text-xs text-gray-800">{candidate.location_state || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.location_state || ""}</span>
       case "location_country":
-        return <span className="text-xs text-gray-800">{candidate.location_country || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.location_country || ""}</span>
 
       // Endereço
       case "address_street":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.address_street || ""}
           </span>
         )
       case "address_number":
-        return <span className="text-xs text-gray-800">{candidate.address_number || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.address_number || ""}</span>
       case "address_district":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.address_district || ""}
           </span>
         )
       case "address_zip":
         return (
-          <span className="text-xs text-gray-800 font-mono">{candidate.address_zip || ""}</span>
+          <span className="text-xs text-lia-text-primary font-mono">{candidate.address_zip || ""}</span>
         )
       case "address_complement":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.address_complement || ""}
           </span>
         )
@@ -681,12 +681,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "willing_to_relocate":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatBoolean(candidate.willing_to_relocate)}
           </span>
         )
       case "mobility":
-        return <span className="text-xs text-gray-800">{formatBoolean(candidate.mobility)}</span>
+        return <span className="text-xs text-lia-text-primary">{formatBoolean(candidate.mobility)}</span>
       case "work_model_preference": {
         const workModel = candidate.work_model_preference || candidate.workModel
         return (
@@ -717,7 +717,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       }
       case "contract_type_preference":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.contract_type_preference || ""}
           </span>
         )
@@ -725,7 +725,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Salário
       case "current_salary":
         return (
-          <span className="text-xs text-gray-800 font-medium">
+          <span className="text-xs text-lia-text-primary font-medium">
             {formatCurrency(
               candidate.current_salary || candidate.monthlySalary,
               candidate.salary_currency
@@ -734,35 +734,35 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "salary_currency":
         return (
-          <span className="text-xs text-gray-800">{candidate.salary_currency || "BRL"}</span>
+          <span className="text-xs text-lia-text-primary">{candidate.salary_currency || "BRL"}</span>
         )
       case "desired_salary_min":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.desired_salary_min, candidate.salary_currency)}
           </span>
         )
       case "desired_salary_max":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.desired_salary_max, candidate.salary_currency)}
           </span>
         )
       case "salary_expectation_clt":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_clt)}
           </span>
         )
       case "salary_expectation_pj":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_pj)}
           </span>
         )
       case "salary_expectation_freelance":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatCurrency(candidate.salary_expectation_freelance)}
           </span>
         )
@@ -774,23 +774,23 @@ export function createCellRenderer(deps: CellRendererDeps) {
             href={candidate.resume_url}
             target="_blank"
             rel="noopener"
-            className="text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline text-xs flex items-center gap-1"
+            className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline text-xs flex items-center gap-1"
           >
             <FileText className="w-3 h-3" /> Currículo
           </a>
         ) : (
-          <span className="text-xs text-gray-800">N/A</span>
+          <span className="text-xs text-lia-text-primary">N/A</span>
         )
       case "resume_text":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.resume_text?.slice(0, 40) || ""}
             {candidate.resume_text && candidate.resume_text.length > 40 ? "..." : ""}
           </span>
         )
       case "cover_letter":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.cover_letter?.slice(0, 40) || ""}
             {candidate.cover_letter && candidate.cover_letter.length > 40 ? "..." : ""}
           </span>
@@ -798,16 +798,16 @@ export function createCellRenderer(deps: CellRendererDeps) {
 
       // Origem
       case "ats_source_name":
-        return <span className="text-xs text-gray-800">{candidate.ats_source_name || ""}</span>
+        return <span className="text-xs text-lia-text-primary">{candidate.ats_source_name || ""}</span>
       case "ats_candidate_id":
         return (
-          <span className="text-xs text-gray-800 font-mono">
+          <span className="text-xs text-lia-text-primary font-mono">
             {candidate.ats_candidate_id || ""}
           </span>
         )
       case "pearch_profile_id":
         return (
-          <span className="text-xs text-gray-800 font-mono">
+          <span className="text-xs text-lia-text-primary font-mono">
             {candidate.pearch_profile_id || ""}
           </span>
         )
@@ -818,57 +818,57 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return isOpenToWork ? (
           <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       }
       case "is_decision_maker":
         return candidate.is_decision_maker ? (
           <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "is_top_universities":
         return candidate.is_top_universities ? (
-          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary">
+          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary">
             Top University
           </Badge>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "is_hiring":
         return candidate.is_hiring ? (
           <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "headline":
-        return <span className="text-xs text-gray-800 truncate">{candidate.headline || ""}</span>
+        return <span className="text-xs text-lia-text-primary truncate">{candidate.headline || ""}</span>
       case "expertise":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {formatArray(candidate.expertise)}
           </span>
         )
       case "linkedin_followers_count":
         return candidate.linkedin_followers_count ? (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.linkedin_followers_count.toLocaleString("pt-BR")}
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "linkedin_connections_count":
         return candidate.linkedin_connections_count ? (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.linkedin_connections_count.toLocaleString("pt-BR")}
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "outreach_message":
         return candidate.outreach_message ? (
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-800 truncate max-w-sidebar-content">
+            <span className="text-xs text-lia-text-primary truncate max-w-sidebar-content">
               {candidate.outreach_message.slice(0, 50)}...
             </span>
             <button
@@ -879,74 +879,74 @@ export function createCellRenderer(deps: CellRendererDeps) {
               className="p-0.5 hover:bg-gray-100 rounded-md"
               title="Copiar mensagem"
             >
-              <Copy className="w-3 h-3 text-gray-500" />
+              <Copy className="w-3 h-3 text-lia-text-tertiary" />
             </button>
           </div>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "pearch_insights":
         return candidate.pearch_insights?.overall_summary ? (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.pearch_insights.overall_summary.slice(0, 50)}...
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "best_personal_email":
         return candidate.best_personal_email ? (
           <a
             href={`mailto:${candidate.best_personal_email}`}
-            className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
+            className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
           >
             {candidate.best_personal_email}
           </a>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "phone_types": {
         if (!candidate.phone_types || Object.keys(candidate.phone_types).length === 0) {
-          return <span className="text-xs text-gray-500">—</span>
+          return <span className="text-xs text-lia-text-tertiary">—</span>
         }
         const activeTypes = Object.entries(candidate.phone_types)
           .filter(([_, active]) => active)
           .map(([type]) => type)
         return (
-          <span className="text-xs text-gray-800">{activeTypes.join(", ") || "—"}</span>
+          <span className="text-xs text-lia-text-primary">{activeTypes.join(", ") || "—"}</span>
         )
       }
       case "estimated_age":
         return candidate.estimated_age ? (
-          <span className="text-xs text-gray-800">{candidate.estimated_age} anos</span>
+          <span className="text-xs text-lia-text-primary">{candidate.estimated_age} anos</span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "match_reasoning":
         return candidate.pearch_insights?.match_reasoning ? (
           <span
-            className="text-xs text-gray-800 truncate"
+            className="text-xs text-lia-text-primary truncate"
             title={candidate.pearch_insights.match_reasoning}
           >
             {candidate.pearch_insights.match_reasoning.slice(0, 60)}...
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "overall_summary":
         return candidate.pearch_insights?.overall_summary ? (
           <span
-            className="text-xs text-gray-800 truncate"
+            className="text-xs text-lia-text-primary truncate"
             title={candidate.pearch_insights.overall_summary}
           >
             {candidate.pearch_insights.overall_summary.slice(0, 60)}...
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "query_insights": {
         const queryInsights = candidate.pearch_insights?.query_insights
         if (!queryInsights || queryInsights.length === 0) {
-          return <span className="text-xs text-gray-500">—</span>
+          return <span className="text-xs text-lia-text-tertiary">—</span>
         }
         return (
           <div className="flex flex-col gap-0.5">
@@ -957,10 +957,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
                     insight.match_level === "Exceeds"
                       ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
                       : insight.match_level === "Meets"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary"
                         : insight.match_level === "Partial"
                           ? "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
-                          : "bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-secondary"
+                          : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-secondary"
                   }`}
                 >
                   {insight.match_level}
@@ -981,29 +981,29 @@ export function createCellRenderer(deps: CellRendererDeps) {
       }
       case "middle_name":
         return candidate.middle_name ? (
-          <span className="text-xs text-gray-800 truncate">{candidate.middle_name}</span>
+          <span className="text-xs text-lia-text-primary truncate">{candidate.middle_name}</span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "best_business_email":
         return candidate.best_business_email ? (
           <a
             href={`mailto:${candidate.best_business_email}`}
-            className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
+            className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
           >
             {candidate.best_business_email}
           </a>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "personal_emails": {
         const personalEmailsArr = candidate.personal_emails
         if (!personalEmailsArr || personalEmailsArr.length === 0) {
-          return <span className="text-xs text-gray-500">—</span>
+          return <span className="text-xs text-lia-text-tertiary">—</span>
         }
         return (
           <span
-            className="text-xs text-gray-800 truncate"
+            className="text-xs text-lia-text-primary truncate"
             title={personalEmailsArr.join(", ")}
           >
             {personalEmailsArr.length === 1
@@ -1015,11 +1015,11 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "business_emails": {
         const businessEmailsArr = candidate.business_emails
         if (!businessEmailsArr || businessEmailsArr.length === 0) {
-          return <span className="text-xs text-gray-500">—</span>
+          return <span className="text-xs text-lia-text-tertiary">—</span>
         }
         return (
           <span
-            className="text-xs text-gray-800 truncate"
+            className="text-xs text-lia-text-primary truncate"
             title={businessEmailsArr.join(", ")}
           >
             {businessEmailsArr.length === 1
@@ -1030,16 +1030,16 @@ export function createCellRenderer(deps: CellRendererDeps) {
       }
       case "company_followers_count":
         return candidate.company_followers_count != null ? (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.company_followers_count.toLocaleString("pt-BR")}
           </span>
         ) : (
-          <span className="text-xs text-gray-500">—</span>
+          <span className="text-xs text-lia-text-tertiary">—</span>
         )
       case "company_keywords": {
         const companyKeywordsArr = candidate.company_keywords
         if (!companyKeywordsArr || companyKeywordsArr.length === 0) {
-          return <span className="text-xs text-gray-500">—</span>
+          return <span className="text-xs text-lia-text-tertiary">—</span>
         }
         return (
           <div className="flex flex-wrap gap-1">
@@ -1058,7 +1058,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Status
       case "status": {
         const statusColors: Record<string, string> = {
-          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary",
+          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary",
           triagem:
             "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
           entrevista:
@@ -1070,7 +1070,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         }
         return (
           <Badge
-            className={`text-xs ${statusColors[candidate.status || ""] || "bg-gray-100 text-gray-800"}`}
+            className={`text-xs ${statusColors[candidate.status || ""] || "bg-gray-100 text-lia-text-primary"}`}
           >
             {candidate.status || ""}
           </Badge>
@@ -1089,11 +1089,11 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return candidate.is_blacklisted ? (
           <Badge className="text-xs bg-status-error/15 text-status-error">Sim</Badge>
         ) : (
-          <span className="text-xs text-gray-800">Não</span>
+          <span className="text-xs text-lia-text-primary">Não</span>
         )
       case "blacklist_reason":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.blacklist_reason || ""}
           </span>
         )
@@ -1101,13 +1101,13 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Comunicação
       case "preferred_contact_method":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {candidate.preferred_contact_method || ""}
           </span>
         )
       case "best_time_to_contact":
         return (
-          <span className="text-xs text-gray-800">{candidate.best_time_to_contact || ""}</span>
+          <span className="text-xs text-lia-text-primary">{candidate.best_time_to_contact || ""}</span>
         )
       case "communication_consent":
         return (
@@ -1122,50 +1122,50 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Cadastro
       case "completed_register":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatBoolean(candidate.completed_register)}
           </span>
         )
       case "accept_terms":
         return (
-          <span className="text-xs text-gray-800">{formatBoolean(candidate.accept_terms)}</span>
+          <span className="text-xs text-lia-text-primary">{formatBoolean(candidate.accept_terms)}</span>
         )
 
       // Adicional
       case "tags":
         return (
-          <span className="text-xs text-gray-800 truncate">{formatArray(candidate.tags)}</span>
+          <span className="text-xs text-lia-text-primary truncate">{formatArray(candidate.tags)}</span>
         )
       case "notes":
         return (
-          <span className="text-xs text-gray-800 truncate">
+          <span className="text-xs text-lia-text-primary truncate">
             {candidate.notes?.slice(0, 40) || ""}
             {candidate.notes && candidate.notes.length > 40 ? "..." : ""}
           </span>
         )
       case "additional_data":
-        return <span className="text-xs text-gray-800">JSON</span>
+        return <span className="text-xs text-lia-text-primary">JSON</span>
 
       // Datas
       case "created_at":
-        return <span className="text-xs text-gray-800">{formatDate(candidate.created_at)}</span>
+        return <span className="text-xs text-lia-text-primary">{formatDate(candidate.created_at)}</span>
       case "updated_at":
-        return <span className="text-xs text-gray-800">{formatDate(candidate.updated_at)}</span>
+        return <span className="text-xs text-lia-text-primary">{formatDate(candidate.updated_at)}</span>
       case "last_contacted_at":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatDate(candidate.last_contacted_at)}
           </span>
         )
       case "last_activity_at":
         return (
-          <span className="text-xs text-gray-800">
+          <span className="text-xs text-lia-text-primary">
             {formatDate(candidate.last_activity_at)}
           </span>
         )
 
       default:
-        return <span className="text-xs text-gray-800">N/A</span>
+        return <span className="text-xs text-lia-text-primary">N/A</span>
     }
   }
 }

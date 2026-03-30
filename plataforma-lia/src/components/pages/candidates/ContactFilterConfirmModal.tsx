@@ -42,7 +42,7 @@ export function ContactFilterConfirmModal({
             {pendingContactFilter === 'email' ? 'Filtrar por Email' : 'Filtrar por Telefone'}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
               {pendingContactFilter === 'email'
                 ? 'Ao ativar este filtro, a busca retornará apenas candidatos com email disponível.'
                 : 'Ao ativar este filtro, a busca retornará apenas candidatos com telefone disponível.'}
@@ -50,7 +50,7 @@ export function ContactFilterConfirmModal({
 
             <div className="bg-gray-50 dark:bg-lia-bg-primary rounded-md p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-800 dark:text-lia-text-primary">Filtro:</span>
+                <span className="text-lia-text-primary dark:text-lia-text-primary">Filtro:</span>
                 <span className="font-medium">{pendingContactFilter === 'email' ? 'Apenas com Email' : 'Apenas com Telefone'}</span>
               </div>
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">

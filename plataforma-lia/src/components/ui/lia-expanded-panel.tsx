@@ -69,7 +69,7 @@ export function LiaExpandedPanel({
               </div>
               <div className="min-w-0 flex-1">
                 <h3 
-                  className="text-base-ui font-bold leading-tight truncate text-gray-900" 
+                  className="text-base-ui font-bold leading-tight truncate text-lia-text-primary" 
                   
                 >
                   {title}
@@ -340,7 +340,7 @@ export function LiaChatInput({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-colors resize-none text-gray-950"
+          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-colors resize-none text-lia-text-primary"
           style={{border: '1px solid var(--gray-200)',
             backgroundColor: 'var(--gray-50)'}}
         />
@@ -363,7 +363,7 @@ export function LiaChatInput({
             )}
           </div>
           <Button
-            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200' : 'bg-gray-100 text-gray-400'}`}
+            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200' : 'bg-gray-100 text-lia-text-disabled'}`}
             
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}
@@ -387,7 +387,7 @@ export function LiaChatInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         data-testid="chat-input"
-        className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-gray-900 placeholder:text-gray-400"
+        className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-lia-text-primary placeholder:text-lia-text-disabled"
        
       />
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -447,7 +447,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
             className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px] ml-auto"
           >
             <div 
-              className="text-base-ui leading-relaxed text-gray-700 dark:text-lia-text-primary" 
+              className="text-base-ui leading-relaxed text-lia-text-secondary dark:text-lia-text-primary" 
              
               dangerouslySetInnerHTML={{ __html: userHtml }}
             />
@@ -459,7 +459,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           )}
         </div>
         <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
-          <User className="w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
+          <User className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
         </div>
       </div>
     )
@@ -473,7 +473,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >
+          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >
             LIA
           </span>
         </div>
@@ -483,7 +483,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
         >
           <div 
-            className="text-base-ui leading-relaxed text-gray-700 dark:text-lia-text-primary" 
+            className="text-base-ui leading-relaxed text-lia-text-secondary dark:text-lia-text-primary" 
            
             dangerouslySetInnerHTML={{ __html: liaHtml }}
           />
@@ -512,7 +512,7 @@ export function LiaLoadingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >
+          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >
             LIA
           </span>
         </div>

@@ -137,7 +137,7 @@ export function WSIQuestionsStage({
                q.type === 'multiple-choice' ? 'Múltipla escolha' : 'Aberta'}
             </span>
             {q.required && (
-              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                 Obrigatória
               </span>
             )}
@@ -226,7 +226,7 @@ export function WSIQuestionsStage({
         <div className="flex items-center gap-1">
           <span className={cn(
  "text-xs font-semibold",
-            selectedCount === 5 ? "text-status-success" : "text-gray-600 dark:text-lia-text-tertiary"
+            selectedCount === 5 ? "text-status-success" : "text-lia-text-secondary dark:text-lia-text-tertiary"
           )}>
             {selectedCount}
           </span>
@@ -238,7 +238,7 @@ export function WSIQuestionsStage({
         <div className="mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
@@ -246,7 +246,7 @@ export function WSIQuestionsStage({
             </div>
             <button
               onClick={() => onSetCompanyDefaultQuestions(companyDefaultQuestions.map(q => ({ ...q, enabled: false })))}
-              className="text-micro text-gray-600 dark:text-lia-text-tertiary hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+              className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:underline focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
             >
               Desabilitar todas
             </button>
@@ -309,7 +309,7 @@ export function WSIQuestionsStage({
           {technicalQuestions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-md">
-                <Code className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Code className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
                   Validação Técnica
                 </span>
@@ -336,7 +336,7 @@ export function WSIQuestionsStage({
 
       {isGeneratingWSI && (
         <div className="flex items-center justify-center py-4 bg-gray-50 rounded-md border border-lia-border-subtle">
-          <Loader2 className="w-5 h-5 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+          <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="ml-2 text-xs lia-text-secondary">Gerando perguntas com metodologia WSI...</span>
         </div>
       )}
@@ -345,7 +345,7 @@ export function WSIQuestionsStage({
         <div className="flex gap-2">
           <button
             onClick={() => onGenerateWSIQuestions(3, 'technical')}
-            className="flex-1 py-2 border border-dashed border-gray-900 rounded-md text-xs text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-1 py-2 border border-dashed border-gray-900 rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label="Gerar perguntas técnicas WSI"
           >
             <Code className="w-3.5 h-3.5" /> Gerar perguntas técnicas
@@ -448,7 +448,7 @@ export function WSIQuestionsStage({
           {selectedCount === 5 ? (
             <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
           ) : (
-            <AlertCircle className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           )}
           <span className="text-micro lia-text-secondary">
             {selectedCount === 5

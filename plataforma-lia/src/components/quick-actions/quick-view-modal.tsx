@@ -42,7 +42,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     setIsLiaAnalyzing(false)
   }, [candidate])
 
-  const analyzeCandidateQuickInsights = (candidate: any) => {
+  const analyzeCandidateQuickInsights = (candidate: Record<string, unknown>) => {
     const score = candidate.matchPercentage || candidate.score || 85
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
@@ -154,7 +154,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
               <AvatarFallback className="text-lg">{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-xl font-semibold text-gray-800">
+              <h3 className="text-xl font-semibold text-lia-text-primary">
                 {candidate.name}
               </h3>
               <p className="text-sm lia-text-base">
@@ -232,7 +232,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                             <Badge className={`text-xs ${
  liaInsights.candidateStatus.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
                               liaInsights.candidateStatus.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
-                              'bg-gray-100 text-gray-800 dark:text-lia-text-primary'
+                              'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
                             }`}>
                               {liaInsights.candidateStatus.priority.toUpperCase()}
                             </Badge>
@@ -254,7 +254,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
                       <h5 className="text-xs font-medium text-status-success mb-2">Próximos Passos Recomendados:</h5>
                       <div className="space-y-2">
-                        {liaInsights.nextSteps.slice(0, 3).map((step: any, idx: number) => (
+                        {liaInsights.nextSteps.slice(0, 3).map((step: string, idx: number) => (
                           <div key={idx} className="flex items-center justify-between">
                             <div className="flex-1">
                               <span className="text-xs text-status-success">{step.action}</span>
@@ -262,7 +262,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                                 <Badge className={`text-xs ${
  step.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
                                   step.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
-                                  'bg-gray-100 text-gray-800 dark:text-lia-text-primary'
+                                  'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
                                 }`}>
                                   {step.priority}
                                 </Badge>
@@ -354,7 +354,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                   {candidate.linkedin && (
                     <div className="flex items-center gap-2">
                       <Linkedin className="w-4 h-4 lia-text-base" />
-                      <a href={candidate.linkedin} target="_blank" className="text-sm text-gray-600 dark:text-lia-text-tertiary hover:underline">
+                      <a href={candidate.linkedin} target="_blank" className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary hover:underline">
                         LinkedIn
                       </a>
                     </div>
@@ -368,15 +368,15 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="text-sm">
-                    <span className="text-gray-800 dark:text-lia-text-primary">Disponibilidade:</span>
+                    <span className="text-lia-text-primary dark:text-lia-text-primary">Disponibilidade:</span>
                     <span className="ml-2 font-medium">{candidate.availability}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-800 dark:text-lia-text-primary">Salário esperado:</span>
+                    <span className="text-lia-text-primary dark:text-lia-text-primary">Salário esperado:</span>
                     <span className="ml-2 font-medium">{candidate.expectedSalary}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-800 dark:text-lia-text-primary">Local preferido:</span>
+                    <span className="text-lia-text-primary dark:text-lia-text-primary">Local preferido:</span>
                     <span className="ml-2 font-medium">{candidate.preferredLocation}</span>
                   </div>
                 </CardContent>
@@ -462,21 +462,21 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <div className="w-2 h-2 bg-status-success rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Candidatura enviada</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.lastActivity}</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.lastActivity}</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-gray-900 rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Análise LIA concluída</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Há 2 horas</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Há 2 horas</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Perfil visualizado</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Há 1 dia</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Há 1 dia</div>
                     </div>
                   </div>
                 </CardContent>
@@ -493,7 +493,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
                     <div>
                       <div className="text-sm font-medium">{candidate.source}</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Fonte de candidatura</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Fonte de candidatura</div>
                     </div>
                   </div>
                 </CardContent>

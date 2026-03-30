@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,7 @@ export interface CandidateTableRowProps {
   viewedCandidateIds?: Set<string>
 }
 
-export function CandidateTableRow({ 
+const CandidateTableRowComponent = memo(function CandidateTableRow({ 
   candidate, 
   onCandidateClick, 
   isSelected, 
@@ -339,4 +339,8 @@ export function CandidateTableRow({
       </td>
     </tr>
   )
-}
+})
+
+CandidateTableRowComponent.displayName = "CandidateTableRow"
+
+export const CandidateTableRow = CandidateTableRowComponent

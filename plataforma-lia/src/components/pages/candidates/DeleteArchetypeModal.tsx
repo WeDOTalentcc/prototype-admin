@@ -66,7 +66,7 @@ export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: 
             <AlertCircle className="w-5 h-5 text-status-error" />
             Excluir Arquétipo
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-base-ui text-gray-500 dark:text-lia-text-tertiary">
+          <AlertDialogDescription className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">
             Tem certeza que deseja excluir o arquétipo <strong>"{archetypeToDelete?.name}"</strong>? Esta ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>

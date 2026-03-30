@@ -84,7 +84,7 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return <Check className="w-3.5 h-3.5 text-status-success" />
       case 'meets':
-        return <Check className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+        return <Check className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
       case 'partial':
         return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
       case 'missing':
@@ -191,7 +191,7 @@ export function RubricEvaluationCard({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary`}>
+        <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary`}>
           <span className="font-medium">Vaga:</span> {jobTitle}
         </p>
         {jobCode && (
@@ -211,7 +211,7 @@ export function RubricEvaluationCard({
                 backgroundColor: getScoreColor(score)}}
             />
           </div>
-          <span className={`${textStyles.label} text-gray-950 font-bold min-w-10`}>
+          <span className={`${textStyles.label} text-lia-text-primary font-bold min-w-10`}>
             {score}%
           </span>
           <Badge className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>
@@ -285,7 +285,7 @@ export function RubricEvaluationCard({
             <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-0.5`}>
               Resumo LIA:
             </span>
-            <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
+            <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
               "{displaySummary}"
             </p>
           </div>
@@ -332,7 +332,7 @@ export function RubricEvaluationCard({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary`}
+          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary`}
           onClick={(e) => {
             e.stopPropagation()
             onViewAnalysis?.()

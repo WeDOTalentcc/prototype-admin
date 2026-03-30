@@ -23,7 +23,7 @@ export const KanbanCard = React.memo(function KanbanCard({
   isDragDisabled = false,
 }: KanbanCardProps) {
   const getScoreColor = (score?: number) => {
-    if (!score) return "text-gray-400 dark:text-gray-500"
+    if (!score) return "text-lia-text-disabled dark:text-lia-text-tertiary"
     if (score >= 80) return "text-status-success dark:text-status-success"
     if (score >= 60) return "text-status-warning dark:text-status-warning"
     return "text-status-error dark:text-status-error"
@@ -57,20 +57,20 @@ export const KanbanCard = React.memo(function KanbanCard({
               className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
               data-testid="drag-handle"
             >
-              <GripVertical className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+              <GripVertical className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
             </div>
           )}
           
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary text-xs">
+            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary text-xs">
               {getInitials(candidate.name)}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-gray-900 dark:text-gray-50 text-sm truncate">
+              <span className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm truncate">
                 {candidate.name}
               </span>
               {candidate.lia_score && (
@@ -81,13 +81,13 @@ export const KanbanCard = React.memo(function KanbanCard({
             </div>
             
             {candidate.current_title && (
-              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary truncate mt-0.5">
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary truncate mt-0.5">
                 {candidate.current_title}
               </p>
             )}
             
             {candidate.current_company && (
-              <p className="text-xs text-gray-500 dark:text-gray-500 truncate">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                 {candidate.current_company}
               </p>
             )}
@@ -97,7 +97,7 @@ export const KanbanCard = React.memo(function KanbanCard({
         {candidate.substatus && (
           <Badge 
             variant="outline" 
-            className="mt-2 text-xs border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary"
+            className="mt-2 text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary"
           >
             {candidate.substatus}
           </Badge>
@@ -109,7 +109,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               <Badge 
                 key={skill} 
                 variant="outline" 
-                className="text-micro border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary py-0"
+                className="text-micro border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary py-0"
               >
                 {skill}
               </Badge>
@@ -117,7 +117,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             {candidate.skills.length > 3 && (
               <Badge 
                 variant="outline" 
-                className="text-micro border-lia-border-default dark:border-lia-border-default text-gray-500 dark:text-gray-500 py-0"
+                className="text-micro border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary dark:text-lia-text-tertiary py-0"
               >
                 +{candidate.skills.length - 3}
               </Badge>
@@ -132,7 +132,7 @@ export const KanbanCard = React.memo(function KanbanCard({
                 <Star className="h-3 w-3 text-status-warning fill-amber-500" />
               )}
               {candidate.notes && (
-                <MessageSquare className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                <MessageSquare className="h-3 w-3 text-lia-text-disabled dark:text-lia-text-tertiary" />
               )}
               {isStale && (
                 <Tooltip>
@@ -167,7 +167,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             </div>
           </TooltipProvider>
           
-          <span className="text-micro text-gray-500 dark:text-gray-500">
+          <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
             {new Date(candidate.addedAt).toLocaleDateString("pt-BR", {
               day: "2-digit",
               month: "short"

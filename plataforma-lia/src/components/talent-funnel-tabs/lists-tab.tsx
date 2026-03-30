@@ -402,18 +402,18 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-950 font-['Open_Sans',sans-serif] flex items-center gap-2">
-            <List className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+          <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Listas de Candidatos
           </h2>
-          <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-0.5">
+          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-0.5">
             {lists.length} {lists.length === 1 ? 'lista' : 'listas'} • {totalCandidates} {totalCandidates === 1 ? 'candidato' : 'candidatos'} no total
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <Input
               placeholder="Buscar listas..."
               value={searchTerm}
@@ -435,8 +435,8 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
-          <span className="ml-2 text-sm text-gray-800 dark:text-lia-text-primary">Carregando listas...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="ml-2 text-sm text-lia-text-primary dark:text-lia-text-primary">Carregando listas...</span>
         </div>
       ) : filteredLists.length > 0 ? (
         <div className="space-y-2">
@@ -449,7 +449,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
               <div 
                 className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-gray-100"
               >
-                <List className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <div
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white"
                   style={{backgroundColor: list.color || 'var(--gray-400)'}}
@@ -458,27 +458,27 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-medium text-gray-950 truncate transition-colors">
+                  <p className="text-sm font-medium text-lia-text-primary truncate transition-colors">
                     {list.name}
                   </p>
                 </div>
                 {list.description && (
-                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary truncate">
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary truncate">
                     {truncateText(list.description, 60)}
                   </p>
                 )}
               </div>
 
               <div className="flex-shrink-0 flex flex-col items-center justify-center px-4 border-l border-r border-lia-border-subtle dark:border-lia-border-subtle">
-                <span className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">
+                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                   {list.candidate_count || 0}
                 </span>
-                <span className="text-micro text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wide">
+                <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide">
                   {(list.candidate_count || 0) === 1 ? 'candidato' : 'candidatos'}
                 </span>
               </div>
 
-              <div className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 dark:text-lia-text-tertiary min-w-[100px]">
+              <div className="flex-shrink-0 flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary min-w-[100px]">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{formatDate(list.updated_at || list.created_at)}</span>
               </div>
@@ -491,7 +491,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                   onClick={(e) => { e.stopPropagation(); openAddCandidateModal(list) }}
                   title="Adicionar candidatos"
                 >
-                  <UserPlus className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <UserPlus className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -581,12 +581,12 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gray-100"
           >
-            <FolderOpen className="w-8 h-8 text-gray-500 dark:text-lia-text-tertiary" />
+            <FolderOpen className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-tertiary" />
           </div>
-          <h3 className="text-lg font-medium text-gray-950 mb-2 font-['Open_Sans',sans-serif]">
+          <h3 className="text-lg font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
             {searchTerm ? 'Nenhuma lista encontrada' : 'Nenhuma lista criada'}
           </h3>
-          <p className="text-sm text-gray-800 dark:text-lia-text-primary text-center max-w-md mb-6">
+          <p className="text-sm text-lia-text-primary dark:text-lia-text-primary text-center max-w-md mb-6">
             {searchTerm
               ? `Não encontramos listas com o termo "${searchTerm}". Tente outro termo ou crie uma nova lista.`
               : 'Crie sua primeira lista para organizar candidatos de forma eficiente. Você pode agrupar candidatos por vaga, perfil ou qualquer critério.'}
@@ -606,7 +606,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       {/* Compartilhados Section */}
       <div className="mt-8 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-950 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
             <Link2 className="w-4 h-4 lia-text-base" />
             Compartilhados
             {totalNewFeedbacks > 0 && (
@@ -636,12 +636,12 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-950">
+                        <p className="text-sm font-medium text-lia-text-primary">
                           {shared.title}
                         </p>
                         {getStatusBadge(shared.status)}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         {shared.share_type === 'search' ? 'Busca' : 'Lista'} • {shared.candidate_count} {shared.candidate_count === 1 ? 'candidato' : 'candidatos'}
                       </p>
                     </div>
@@ -649,7 +649,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 </div>
 
                 <div className="space-y-2 mb-3">
-                  <p className="text-xs text-gray-700 dark:text-lia-text-secondary">
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
                     <span className="font-medium">Destinatário:</span> {shared.recipient_name || shared.recipient_email}
                   </p>
                   <p className="text-xs flex items-center gap-1">
@@ -735,9 +735,9 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         ) : (
           <div className="flex flex-col items-center justify-center py-10 px-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-gray-100 dark:bg-lia-bg-secondary">
-              <Link2 className="w-6 h-6 text-gray-400" />
+              <Link2 className="w-6 h-6 text-lia-text-disabled" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-lia-text-tertiary text-center max-w-sm">
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary text-center max-w-sm">
               Nenhum compartilhamento. Compartilhe buscas ou listas com gestores para receber feedback.
             </p>
           </div>
@@ -754,7 +754,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Nome da lista <span className="text-status-error">*</span>
               </label>
               <Input
@@ -766,7 +766,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Descrição
               </label>
               <Textarea
@@ -779,7 +779,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Cor
               </label>
               <div className="flex flex-wrap gap-2">

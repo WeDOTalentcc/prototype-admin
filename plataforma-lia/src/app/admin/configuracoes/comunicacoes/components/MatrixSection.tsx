@@ -174,8 +174,7 @@ export function MatrixSection({
                       return (
                         <div
                           key={entry.id}
- className={`p-4 rounded-md border transition-opacity ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60'}`}
-                          className="border-lia-border-subtle dark:border-lia-border-subtle" 
+ className={`p-4 rounded-md border transition-opacity border-lia-border-subtle dark:border-lia-border-subtle ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60'}`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">

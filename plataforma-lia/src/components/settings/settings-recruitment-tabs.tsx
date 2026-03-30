@@ -397,7 +397,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             {subTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as any)}
+                onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors font-crimson ${
                   activeSubTab === tab.id
  ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
@@ -1041,7 +1041,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setSelectedView(tab.id as any)}
+            onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
             className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
               selectedView === tab.id
                 ? 'bg-lia-bg-primary lia-text-950'

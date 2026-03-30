@@ -53,8 +53,8 @@ function ResetPasswordContent() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || "Erro ao redefinir senha. Tente novamente.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Erro ao redefinir senha. Tente novamente.")
     } finally {
       setIsLoading(false)
     }

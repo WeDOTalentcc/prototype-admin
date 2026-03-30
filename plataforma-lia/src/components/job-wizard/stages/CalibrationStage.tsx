@@ -66,7 +66,7 @@ export function CalibrationStage() {
   if (isLoading || (totalCandidates === 0 && !calibrationComplete)) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-4">
-        <Loader2 className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+        <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
         <div className="text-center">
           <p className="text-sm lia-text-strong font-medium">
             Buscando candidatos compatíveis...

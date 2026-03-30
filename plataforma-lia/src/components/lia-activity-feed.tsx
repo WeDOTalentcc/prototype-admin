@@ -56,7 +56,7 @@ export function LIAActivityFeed() {
     const savedActivities = localStorage.getItem('lia-activities')
     if (savedActivities) {
       try {
-        const parsed = JSON.parse(savedActivities).map((activity: any) => ({
+        const parsed = JSON.parse(savedActivities).map((activity: Record<string, unknown> & { timestamp: string }) => ({
           ...activity,
           timestamp: new Date(activity.timestamp)
         }))
@@ -197,10 +197,10 @@ export function LIAActivityFeed() {
     }
 
     // Escutar eventos customizados de notificação
-    window.addEventListener('lia-notification' as any, handleNotification)
+    window.addEventListener('lia-notification', handleNotification as EventListener)
 
     return () => {
-      window.removeEventListener('lia-notification' as any, handleNotification)
+      window.removeEventListener('lia-notification', handleNotification as EventListener)
     }
   }, [])
 
@@ -238,7 +238,7 @@ export function LIAActivityFeed() {
   // Ícones por tipo de atividade
   const getActivityIcon = (type: LIAActivity['type']) => {
     switch (type) {
-      case 'email': return <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      case 'email': return <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
       case 'candidate': return <Users className="w-4 h-4 text-status-success" />
       case 'interview': return <Calendar className="w-4 h-4 text-wedo-purple" />
       case 'assessment': return <BarChart3 className="w-4 h-4 text-wedo-orange" />
@@ -254,7 +254,7 @@ export function LIAActivityFeed() {
       case 'success': return 'text-status-success'
       case 'error': return 'text-status-error'
       case 'pending': return 'text-status-warning'
-      default: return 'text-gray-600 dark:text-lia-text-tertiary'
+      default: return 'text-lia-text-secondary dark:text-lia-text-tertiary'
     }
   }
 
@@ -283,7 +283,7 @@ export function LIAActivityFeed() {
   return (
     <Card className="bg-white dark:bg-lia-bg-secondary">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg font-semibold font-sans text-gray-950 flex items-center gap-3">
+        <CardTitle className="text-lg font-semibold font-sans text-lia-text-primary flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
             <span className="text-sm">📝</span>
           </div>
@@ -294,7 +294,7 @@ export function LIAActivityFeed() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-1 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950"
+            className="px-3 py-1 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="all">Todas</option>
             <option value="email">Emails</option>
@@ -320,7 +320,7 @@ export function LIAActivityFeed() {
         {Object.entries(groups).map(([period, periodActivities]) => (
           periodActivities.length > 0 && (
             <div key={period} className="mb-6">
-              <h4 className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-3 sticky top-0 bg-white dark:bg-lia-bg-secondary py-1">
+              <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 sticky top-0 bg-white dark:bg-lia-bg-secondary py-1">
                 {period === 'today' ? 'Hoje' : period === 'yesterday' ? 'Ontem' : 'Mais antigas'}
               </h4>
 
@@ -342,7 +342,7 @@ export function LIAActivityFeed() {
                           <h4 className={`font-medium text-sm ${getStatusColor(activity.status)} mb-1`}>
                             {activity.title}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2 leading-relaxed">
+                          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2 leading-relaxed">
                             {activity.description}
                           </p>
 
@@ -376,7 +376,7 @@ export function LIAActivityFeed() {
                         </div>
 
                         <div className="flex items-center gap-2 ml-4">
-                          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                             {formatTime(activity.timestamp)}
                           </span>
                           <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -423,7 +423,7 @@ export function LIAActivityFeed() {
         ))}
 
         {filteredActivities.length === 0 && (
-          <div className="text-center py-8 text-gray-600 dark:text-lia-text-tertiary">
+          <div className="text-center py-8 text-lia-text-secondary dark:text-lia-text-tertiary">
             <CheckCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">
               {filter === 'all' ? 'Nenhuma atividade registrada ainda' : `Nenhuma atividade do tipo "${filter}" encontrada`}

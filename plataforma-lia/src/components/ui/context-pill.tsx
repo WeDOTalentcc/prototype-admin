@@ -23,7 +23,7 @@ export function ContextPill({
     <div 
       className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-[width,height] duration-200 bg-lia-bg-primary border-lia-border-default lia-text-strong ${className}`}
     >
-      <span className="text-gray-600 dark:text-lia-text-tertiary flex-shrink-0">
+      <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
         {icon}
       </span>
       
@@ -33,8 +33,8 @@ export function ContextPill({
       
       {secondaryText && (
         <>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-500 dark:text-lia-text-tertiary">
+          <span className="text-lia-text-disabled">•</span>
+          <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">
             {secondaryText}
           </span>
         </>

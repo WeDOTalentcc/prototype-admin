@@ -117,10 +117,10 @@ export function ExecutiveDashboardPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">
+              <h1 className="text-xl font-sans font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">
                 Dashboard Executivo
               </h1>
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 Visão consolidada de métricas e performance de recrutamento
               </p>
             </div>
@@ -128,7 +128,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
               >
                 <option value="week">Esta Semana</option>
                 <option value="month">Este Mês</option>
@@ -139,7 +139,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
               >
                 <option value="all">Todos Departamentos</option>
                 <option value="tecnologia">Tecnologia</option>
@@ -217,7 +217,7 @@ export function ExecutiveDashboardPage() {
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                            <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                               {action.count}
                             </span>
                             <Badge
@@ -227,7 +227,7 @@ export function ExecutiveDashboardPage() {
                               {action.priority}
                             </Badge>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{action.message}</p>
+                          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{action.message}</p>
                         </div>
                       ))}
                     </div>
@@ -240,15 +240,15 @@ export function ExecutiveDashboardPage() {
                 <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Briefcase className="w-8 h-8 text-gray-600" />
+                      <Briefcase className="w-8 h-8 text-lia-text-secondary" />
                       <div className={`flex items-center text-xs font-medium ${data.trends.jobs.trend === 'up' ? 'text-status-success' : 'text-status-error'}`}>
                         {data.trends.jobs.trend === 'up' ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                         {data.trends.jobs.change > 0 ? '+' : ''}{data.trends.jobs.change}%
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.activeJobs}</div>
-                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Vagas Ativas</div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.activeJobs}</div>
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Vagas Ativas</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">
                       <span className="text-status-warning font-medium">{data.summary.urgentJobs}</span> urgentes,{" "}
                       <span className="text-status-error font-medium">{data.summary.criticalJobs}</span> críticas
                     </div>
@@ -264,8 +264,8 @@ export function ExecutiveDashboardPage() {
                         {data.trends.candidates.change > 0 ? '+' : ''}{data.trends.candidates.change}%
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.totalCandidates.toLocaleString()}</div>
-                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Candidatos no Período</div>
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.totalCandidates.toLocaleString()}</div>
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Candidatos no Período</div>
                   </CardContent>
                 </Card>
 
@@ -278,9 +278,9 @@ export function ExecutiveDashboardPage() {
                         {data.trends.hires.change > 0 ? '+' : ''}{data.trends.hires.change}%
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.totalHires}</div>
-                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.totalHires}</div>
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Contratações</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">
                       <span className="text-status-success font-medium">{data.summary.conversionRate}%</span> taxa de conversão
                     </div>
                   </CardContent>
@@ -295,9 +295,9 @@ export function ExecutiveDashboardPage() {
                         {Math.abs(data.trends.timeToHire.change)}%
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.averageTimeToHire}d</div>
-                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Tempo Médio de Contratação</div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.averageTimeToHire}d</div>
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Tempo Médio de Contratação</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">
                       Mercado: <span className="font-medium">{data.benchmarks.industryAverages.timeToHire}d</span>
                     </div>
                   </CardContent>
@@ -310,7 +310,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                      <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       Funil de Recrutamento
                     </CardTitle>
                   </CardHeader>
@@ -324,7 +324,7 @@ export function ExecutiveDashboardPage() {
                         { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-status-success", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
                       ].map((stage, index) => (
                         <div key={index} className="flex items-center gap-3">
-                          <div className="w-20 text-xs font-medium text-gray-600 dark:text-lia-text-tertiary text-right">{stage.stage}</div>
+                          <div className="w-20 text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary text-right">{stage.stage}</div>
                           <div className="flex-1 relative h-7 bg-gray-100 dark:bg-lia-bg-elevated rounded-md overflow-hidden">
                             <div
                               className={`h-full ${stage.color} flex items-center px-2`}
@@ -333,12 +333,12 @@ export function ExecutiveDashboardPage() {
                               <span className="text-xs font-bold text-white">{stage.count}</span>
                             </div>
                           </div>
-                          <div className="w-10 text-xs text-gray-600 text-right">{stage.pct}%</div>
+                          <div className="w-10 text-xs text-lia-text-secondary text-right">{stage.pct}%</div>
                         </div>
                       ))}
                     </div>
                     <div className="mt-4 pt-3 flex justify-between text-sm">
-                      <span className="text-gray-800 dark:text-lia-text-primary">Taxa de Conversão:</span>
+                      <span className="text-lia-text-primary dark:text-lia-text-primary">Taxa de Conversão:</span>
                       <span className="font-bold text-status-success">
                         {Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100)}%
                       </span>
@@ -350,7 +350,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <Building className="w-5 h-5 text-gray-800 dark:text-lia-text-primary" />
+                      <Building className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary" />
                       Performance por Departamento
                     </CardTitle>
                   </CardHeader>
@@ -358,27 +358,27 @@ export function ExecutiveDashboardPage() {
                     <div className="space-y-3">
                       {data.departmentMetrics.map((dept, index) => (
                         <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <div className="w-24 font-medium text-sm text-gray-950 dark:text-gray-50">{dept.department}</div>
+                          <div className="w-24 font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{dept.department}</div>
                           <div className="flex-1 grid grid-cols-4 gap-2 text-center text-xs">
                             <div>
-                              <div className="font-bold text-gray-950 dark:text-gray-50">{dept.jobs}</div>
-                              <div className="text-gray-600">vagas</div>
+                              <div className="font-bold text-lia-text-primary dark:text-lia-text-primary">{dept.jobs}</div>
+                              <div className="text-lia-text-secondary">vagas</div>
                             </div>
                             <div>
-                              <div className="font-bold text-gray-950 dark:text-gray-50">{dept.candidates}</div>
-                              <div className="text-gray-600">candidatos</div>
+                              <div className="font-bold text-lia-text-primary dark:text-lia-text-primary">{dept.candidates}</div>
+                              <div className="text-lia-text-secondary">candidatos</div>
                             </div>
                             <div>
                               <div className={`font-bold ${dept.avgTime <= 28 ? 'text-status-success' : dept.avgTime <= 35 ? 'text-status-warning' : 'text-status-error'}`}>
                                 {dept.avgTime}d
                               </div>
-                              <div className="text-gray-600">tempo</div>
+                              <div className="text-lia-text-secondary">tempo</div>
                             </div>
                             <div>
                               <div className={`font-bold ${dept.conversion >= 60 ? 'text-status-success' : dept.conversion >= 40 ? 'text-status-warning' : 'text-status-error'}`}>
                                 {dept.conversion}%
                               </div>
-                              <div className="text-gray-600">conversão</div>
+                              <div className="text-lia-text-secondary">conversão</div>
                             </div>
                           </div>
                         </div>
@@ -402,26 +402,26 @@ export function ExecutiveDashboardPage() {
                       <div key={job.id} className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <div className="font-medium text-gray-950 dark:text-gray-50 text-sm">{job.title}</div>
+                            <div className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{job.title}</div>
                             <Badge variant="outline" className="text-xs mt-1">{job.department}</Badge>
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold text-status-success">{job.conversion}%</div>
-                            <div className="text-xs text-gray-600">conversão</div>
+                            <div className="text-xs text-lia-text-secondary">conversão</div>
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
-                            <div className="font-bold text-gray-950 dark:text-gray-50">{job.candidates}</div>
-                            <div className="text-gray-600">candidatos</div>
+                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                            <div className="font-bold text-lia-text-primary dark:text-lia-text-primary">{job.candidates}</div>
+                            <div className="text-lia-text-secondary">candidatos</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
-                            <div className="font-bold text-gray-950 dark:text-gray-50">{job.hires}</div>
-                            <div className="text-gray-600">contratados</div>
+                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                            <div className="font-bold text-lia-text-primary dark:text-lia-text-primary">{job.hires}</div>
+                            <div className="text-lia-text-secondary">contratados</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded-md">
-                            <div className="font-bold text-gray-950 dark:text-gray-50">{job.avgTime}d</div>
-                            <div className="text-gray-600">tempo</div>
+                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                            <div className="font-bold text-lia-text-primary dark:text-lia-text-primary">{job.avgTime}d</div>
+                            <div className="text-lia-text-secondary">tempo</div>
                           </div>
                         </div>
                       </div>
@@ -439,37 +439,37 @@ export function ExecutiveDashboardPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-700 dark:text-lia-text-secondary">{data.strategicMetrics.employeeSatisfaction}</div>
-                    <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Satisfação</div>
-                    <div className="text-xs text-gray-600 mt-1">de 5.0</div>
+                    <div className="text-2xl font-bold text-lia-text-secondary dark:text-lia-text-secondary">{data.strategicMetrics.employeeSatisfaction}</div>
+                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Satisfação</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">de 5.0</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-status-success/10 dark:bg-status-success/20">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-status-success">{data.strategicMetrics.retentionRate}%</div>
                     <div className="text-xs text-status-success">Retenção</div>
-                    <div className="text-xs text-gray-600 mt-1">12 meses</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">12 meses</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-wedo-purple/10 dark:bg-wedo-purple/20">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-wedo-purple">{data.strategicMetrics.diversityScore}%</div>
                     <div className="text-xs text-wedo-purple">Diversidade</div>
-                    <div className="text-xs text-gray-600 mt-1">meta: 75%</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">meta: 75%</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-wedo-orange/10 dark:bg-wedo-orange/20">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-wedo-orange">{data.summary.npsScore}</div>
                     <div className="text-xs text-wedo-orange">NPS Candidatos</div>
-                    <div className="text-xs text-gray-600 mt-1">mercado: {data.benchmarks.industryAverages.nps}</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">mercado: {data.benchmarks.industryAverages.nps}</div>
                   </CardContent>
                 </Card>
  <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">{data.strategicMetrics.marketCompetitiveness}%</div>
-                    <div className="text-xs text-gray-900 dark:text-gray-50">Competitividade</div>
-                    <div className="text-xs text-gray-600 mt-1">vs mercado</div>
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.strategicMetrics.marketCompetitiveness}%</div>
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Competitividade</div>
+                    <div className="text-xs text-lia-text-secondary mt-1">vs mercado</div>
                   </CardContent>
                 </Card>
               </div>
@@ -488,7 +488,7 @@ export function ExecutiveDashboardPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
-                          <Clock className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                          <Clock className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                           <span className="text-sm font-medium">Time to Hire</span>
                         </div>
                         <div className="text-right">
@@ -548,21 +548,21 @@ export function ExecutiveDashboardPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                          <div className="text-xs text-gray-600 mb-1">Orçamento Total</div>
-                          <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-xs text-lia-text-secondary mb-1">Orçamento Total</div>
+                          <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                             R$ {data.financialMetrics.totalBudget.toLocaleString()}
                           </div>
                         </div>
                         <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                          <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1">Utilizado</div>
-                          <div className="text-lg font-bold text-gray-700 dark:text-lia-text-secondary">
+                          <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1">Utilizado</div>
+                          <div className="text-lg font-bold text-lia-text-secondary dark:text-lia-text-secondary">
                             R$ {data.financialMetrics.spentToDate.toLocaleString()}
                           </div>
                         </div>
                       </div>
 
                       <div>
-                        <div className="flex justify-between text-xs text-gray-600 mb-2">
+                        <div className="flex justify-between text-xs text-lia-text-secondary mb-2">
                           <span>Utilização do Orçamento</span>
                           <span className={data.financialMetrics.budgetUtilization > 90 ? 'text-status-error font-medium' : ''}>
                             {data.financialMetrics.budgetUtilization}%
@@ -614,11 +614,11 @@ export function ExecutiveDashboardPage() {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm text-gray-950 dark:text-gray-50">{risk.factor}</span>
+                          <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{risk.factor}</span>
                           <Badge className={`text-xs ${
                             risk.impact === 'High' ? 'bg-status-error/15 text-status-error' :
                             risk.impact === 'Medium' ? 'bg-status-warning/15 text-status-warning' :
-                            'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary'
+                            'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary'
                           }`}>
                             {risk.probability}%
                           </Badge>
@@ -632,7 +632,7 @@ export function ExecutiveDashboardPage() {
                             style={{width: `${risk.probability}%`}}
                           />
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           <strong>Mitigação:</strong> {risk.mitigation}
                         </p>
                       </div>

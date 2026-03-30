@@ -233,11 +233,11 @@ export function FavoritesTab({
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-950 font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
               <Star className="w-5 h-5 text-wedo-orange" />
               Candidatos Favoritos
             </h2>
-            <p className="text-xs text-gray-600 dark:text-lia-text-secondary mt-0.5">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mt-0.5">
               {pinnedCount} {pinnedCount === 1 ? 'fixado' : 'fixados'} • {starredCount} {starredCount === 1 ? 'salvo' : 'salvos'}
             </p>
           </div>
@@ -246,8 +246,8 @@ export function FavoritesTab({
             <Popover>
               <PopoverTrigger asChild>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary transition-colors group">
-                  <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-lia-text-secondary">Insights</span>
+                  <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary">Insights</span>
                   <Badge className="h-4 px-1.5 text-xs bg-gray-700 text-white">
                     {filteredCandidates.length}
                   </Badge>
@@ -263,15 +263,15 @@ export function FavoritesTab({
                     <div className="w-7 h-7 rounded-md bg-gray-700 flex items-center justify-center">
                       <BarChart3 className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-gray-700 dark:text-lia-text-secondary">
+                    <span className="text-sm font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
                       Insights dos Favoritos
                     </span>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-lia-text-primary">Score médio</span>
-                      <span className="text-sm font-bold text-gray-700 dark:text-lia-text-secondary">
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Score médio</span>
+                      <span className="text-sm font-bold text-lia-text-secondary dark:text-lia-text-secondary">
                         {filteredCandidates.length > 0 
                           ? Math.round(filteredCandidates.reduce((acc, c) => acc + (c.liaAnalysis?.score || c.lia_score || c.score || 0), 0) / filteredCandidates.length)
                           : 0}%
@@ -279,10 +279,10 @@ export function FavoritesTab({
                     </div>
 
                     <div className="p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-lia-text-primary block mb-1.5">Top skills</span>
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary block mb-1.5">Top skills</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.flatMap(c => ((c.skills || c.technical_skills || []) as string[]).slice(0, 2)))).slice(0, 4).map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                             {skill}
                           </Badge>
                         ))}
@@ -290,7 +290,7 @@ export function FavoritesTab({
                     </div>
 
                     <div className="p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-lia-text-primary block mb-1.5">Localizações</span>
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs bg-status-success/15 text-status-success dark:bg-status-success/10 dark:text-status-success">
@@ -309,7 +309,7 @@ export function FavoritesTab({
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <Input
               placeholder="Buscar nos favoritos..."
               value={searchTerm}
@@ -367,7 +367,7 @@ export function FavoritesTab({
             emptyMessage="Nenhum candidato favorito encontrado"
           />
           <div className="px-4 py-3 bg-gray-50 dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle rounded-b-lg -mt-4">
-            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
               {filteredCandidates.length} candidato{filteredCandidates.length !== 1 ? 's' : ''} 
               {filterType !== 'all' && ` (${filterType === 'pinned' ? 'fixados' : 'salvos'})`}
             </p>
@@ -400,7 +400,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-wedo-orange/15 flex items-center justify-center">
                     <Star className="w-4 h-4 text-wedo-orange" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans']">
                     Adicionar aos Favoritos
                   </h3>
                 </div>
@@ -424,17 +424,17 @@ export function FavoritesTab({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
+                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-xs">
                     {selectedCandidateForNote.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                     {selectedCandidateForNote.position}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-600 dark:text-lia-text-secondary">
+                <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary">
                   Por que você está salvando este candidato? (opcional)
                 </label>
                 <Textarea
@@ -443,7 +443,7 @@ export function FavoritesTab({
                   onChange={(e) => setNoteText(e.target.value)}
                   className="h-24 resize-none text-xs border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
                 />
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Esta nota ajuda você a lembrar por que salvou este candidato.
                 </p>
               </div>
@@ -481,7 +481,7 @@ export function FavoritesTab({
                   <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center">
                     <StickyNote className="w-4 h-4 text-status-warning" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans']">
                     Nota do Candidato
                   </h3>
                 </div>
@@ -505,17 +505,17 @@ export function FavoritesTab({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
+                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-xs">
                     {viewingNote.candidate.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                     {viewingNote.candidate.position}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-600 dark:text-lia-text-secondary">
+                <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary">
                   Sua nota sobre este candidato
                 </label>
                 <Textarea

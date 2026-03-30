@@ -90,11 +90,11 @@ export function PreviewSuggestionModal({
     }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50">
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
             <Brain className="w-5 h-5 text-wedo-cyan" />
             {previewSuggestion?.name}
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-500">
+          <DialogDescription className="text-xs text-lia-text-tertiary">
             {previewSuggestion?.description}
           </DialogDescription>
         </DialogHeader>

@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ items: [], byCandidate: {} })
     }
     
-    const allRequests: any[] = []
+    const allRequests: Record<string, unknown>[] = []
     const fetchPromises = ids.map(async (candidateId) => {
       const params = new URLSearchParams()
       params.set('candidate_id', candidateId.trim())
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const results = await Promise.all(fetchPromises)
     results.forEach(items => allRequests.push(...items))
     
-    const byCandidate: Record<string, any> = {}
+    const byCandidate: Record<string, unknown> = {}
     for (const req of allRequests) {
       const cid = req.candidate_id || req.candidateId
       if (!cid) continue
@@ -61,13 +61,13 @@ export async function GET(request: NextRequest) {
         candidateId: cid,
         jobVacancyId: req.vacancy_id || req.jobVacancyId,
         status: req.status,
-        fieldsRequested: (req.fields_requested || []).map((f: any) => ({
+        fieldsRequested: (req.fields_requested as Record<string, unknown>[] || []).map((f) => ({
           id: f.name || f.id,
           name: f.name || f.id,
           displayName: f.label || f.displayName || f.name,
           status: 'pending',
         })),
-        fieldsCompleted: (req.fields_completed || []).map((f: any) => ({
+        fieldsCompleted: (req.fields_completed as Record<string, unknown>[] || []).map((f) => ({
           id: f.name || f.id,
           name: f.name || f.id,
           displayName: f.label || f.displayName || f.name,

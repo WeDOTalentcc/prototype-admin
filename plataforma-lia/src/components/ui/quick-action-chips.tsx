@@ -21,7 +21,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
   const getVariantStyles = (variant: QuickAction['variant'] = 'default') => {
     switch (variant) {
       case 'primary':
- return 'text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default hover:bg-gray-100'
+ return 'text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default hover:bg-gray-100'
       case 'success':
         return 'bg-status-success/10 text-status-success border-status-success/30 hover:bg-status-success/20'
       case 'warning':

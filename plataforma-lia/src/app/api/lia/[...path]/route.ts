@@ -51,7 +51,7 @@ async function proxyRequest(
     const response = await fetch(backendUrl, options)
 
     const responseContentType = response.headers.get('content-type')
-    let data: any
+    let data: unknown
 
     if (responseContentType?.includes('application/json')) {
       data = await response.json()

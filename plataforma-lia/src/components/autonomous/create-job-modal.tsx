@@ -222,7 +222,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-wedo-cyan" />
-            <span className="text-gray-950">Novo Job Autônomo</span>
+            <span className="text-lia-text-primary">Novo Job Autônomo</span>
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
             Configure uma tarefa para a LIA executar em background
@@ -242,7 +242,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                   return (
                     <SelectItem key={type.value} value={type.value}>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <Icon className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         <span>{type.label}</span>
                       </div>
                     </SelectItem>
@@ -282,7 +282,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                     className={cn(
  "flex items-center justify-center gap-2 p-3 rounded-md border transition-colors text-xs",
                       scheduleType === option.value
-                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-gray-600 dark:text-lia-text-tertiary"
+                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-lia-text-secondary dark:text-lia-text-tertiary"
                         : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600"
                     )}
                   >

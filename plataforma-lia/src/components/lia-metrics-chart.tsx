@@ -53,7 +53,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
 
   return (
     <div className="w-full">
-      <h4 className="text-xs font-semibold font-sans text-gray-800 dark:text-lia-text-primary mb-2">{title}</h4>
+      <h4 className="text-xs font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-2">{title}</h4>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
         {/* Grid lines */}
         {[0, 25, 50, 75, 100].map(value => (
@@ -66,7 +66,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
               stroke="currentColor"
               strokeWidth="1"
               strokeDasharray="2,2"
-              className="text-gray-200"
+              className="text-lia-text-inverse"
               opacity="0.5"
             />
             <text
@@ -74,7 +74,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
               y={yScale(value)}
               textAnchor="end"
               alignmentBaseline="middle"
-              className="text-gray-600 dark:text-lia-text-tertiary"
+              className="text-lia-text-secondary dark:text-lia-text-tertiary"
               style={{fontSize: '10px'}}
             >
               {value}%
@@ -145,7 +145,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
                 x={xScale(index)}
                 y={height - padding.bottom + 15}
                 textAnchor="middle"
-                className="text-gray-600 dark:text-lia-text-tertiary"
+                className="text-lia-text-secondary dark:text-lia-text-tertiary"
                 style={{fontSize: '9px'}}
               >
                 {point.date}

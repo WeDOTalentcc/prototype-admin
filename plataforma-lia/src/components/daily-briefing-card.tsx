@@ -73,7 +73,7 @@ interface BriefingData {
 interface DailyBriefingCardProps {
   userName?: string
   onNavigate?: (page: string) => void
-  onActionClick?: (action: string, context?: any) => void
+  onActionClick?: (action: string, context?: Record<string, unknown>) => void
 }
 
 // [OPT-043] TODO: revisar inline styles dinâmicos (18 ocorrências)
@@ -196,7 +196,7 @@ export function DailyBriefingCard({
   const getGreetingIcon = () => {
     const hour = new Date().getHours()
     if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
-    if (hour < 18) return <Cloud className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+    if (hour < 18) return <Cloud className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
     return <Moon className="w-5 h-5 text-wedo-purple" />
   }
 
@@ -262,7 +262,7 @@ export function DailyBriefingCard({
     }
   }
 
-  const handleActionClick = (actionType: string, context?: any) => {
+  const handleActionClick = (actionType: string, context?: Record<string, unknown>) => {
     if (onActionClick) {
       onActionClick(actionType, context)
     }
@@ -299,10 +299,10 @@ export function DailyBriefingCard({
           <div className="flex items-center gap-3">
             {getGreetingIcon()}
             <div>
-              <CardTitle className="text-base font-semibold text-gray-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 {getGreeting()}, {displayName}!
               </CardTitle>
-              <p className="text-sm mt-0.5 text-gray-500 dark:text-lia-text-tertiary">
+              <p className="text-sm mt-0.5 text-lia-text-tertiary dark:text-lia-text-tertiary">
                 Seu resumo do dia - {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
@@ -315,7 +315,7 @@ export function DailyBriefingCard({
               disabled={refreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={`w-4 h-4 text-gray-500 dark:text-lia-text-tertiary ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -324,9 +324,9 @@ export function DailyBriefingCard({
               className="h-8 w-8 p-0"
             >
               {expanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+                <ChevronUp className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+                <ChevronDown className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
               )}
             </Button>
           </div>
@@ -526,7 +526,7 @@ export function DailyBriefingCard({
                   <BarChart3 className="w-4 h-4 lia-text-base" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-950">
+                  <p className="text-sm font-medium text-lia-text-primary">
                     Pipeline: {briefing.pipeline.total_candidates} candidatos em {briefing.pipeline.active_jobs} vagas
                   </p>
                   <div className="flex items-center gap-3 mt-0.5">

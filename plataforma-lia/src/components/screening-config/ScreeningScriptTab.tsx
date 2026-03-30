@@ -191,8 +191,8 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       {/* Header externo: Título + Status + Botão Editar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-          <h4 className="text-xs font-semibold text-gray-950">Roteiro de Triagem Automática</h4>
+          <ClipboardList className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
           <Badge 
             className={`text-micro px-1.5 py-0 h-4 lia-text-strong ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
           >
@@ -203,8 +203,8 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
       {/* 1. Card Performance da Triagem */}
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold text-gray-950 flex items-center gap-1.5 mb-3">
-          <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-3">
+          <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Performance da Triagem
         </h5>
         
@@ -233,7 +233,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <p className="text-micro lia-text-secondary">Reprovação Est.</p>
           </div>
           <div className="text-center">
-            <div className="text-base-ui font-semibold text-gray-900">
+            <div className="text-base-ui font-semibold text-lia-text-primary">
               {previewJob.screeningConfig?.status?.last_updated 
                 ? new Date(previewJob.screeningConfig.status.last_updated).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                 : new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
@@ -273,7 +273,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
       {/* 2. Skills WSI Utilizadas */}
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold text-gray-950 flex items-center gap-1.5 mb-2">
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Skills WSI Avaliadas
         </h5>
@@ -284,7 +284,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             const defaultSkills = ['Comunicação', 'Resolução de Problemas', 'Adaptabilidade', 'Trabalho em Equipe']
             const finalSkills = skills.length > 0 ? skills : defaultSkills
             return finalSkills.slice(0, 6).map((skill: string, idx: number) => (
-              <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro px-2 py-0.5 h-5 font-medium">
                 {skill}
               </Badge>
             ))
@@ -299,10 +299,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       {/* 3. Blocos WSI do Roteiro de Triagem */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <h5 className="text-xs font-semibold text-gray-950 flex items-center gap-1.5">
-            <Layers3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+            <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Fluxo de Triagem WSI
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-lia-text-primary">
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-lia-text-primary dark:text-lia-text-primary">
               6 Blocos
             </Badge>
           </h5>
@@ -377,7 +377,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       {block.id}
                     </span>
                     <div>
-                      <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'lia-text-base'}`}>
+                      <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'lia-text-base'}`}>
                         {block.name}
                       </span>
                       <span className="text-micro lia-text-secondary ml-1.5">({block.duration})</span>
@@ -424,7 +424,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                             </p>
                           </div>
                           <div className="p-2.5">
-                            <div className="text-micro text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-line">
+                            <div className="text-micro text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-line">
                               {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                             </div>
                           </div>
@@ -480,7 +480,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                       </Badge>
                                     )}
                                   </div>
-                                  <p className="text-micro text-gray-950 leading-relaxed">
+                                  <p className="text-micro text-lia-text-primary leading-relaxed">
                                     {item.question}
                                   </p>
                                 </div>
@@ -500,8 +500,8 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
       {/* 4. Canais + Configurações Agrupados */}
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold text-gray-950 flex items-center gap-1.5 mb-3">
-          <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-3">
+          <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Canais e Configurações
         </h5>
 
@@ -535,11 +535,11 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro lia-text-secondary">Timeout Resposta</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro lia-text-secondary">Re-tentativas</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro lia-text-secondary">Fallback</span>
@@ -565,8 +565,8 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <CalendarCheck className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-            <h5 className="text-xs font-semibold text-gray-950">Agendamento Automático</h5>
+            <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
           </div>
           <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
@@ -577,19 +577,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro lia-text-secondary">Score Mínimo</span>
-            <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
+            <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro lia-text-secondary">Calendário</span>
-            <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
+            <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro lia-text-secondary">Horários</span>
-            <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
+            <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
             <span className="text-micro lia-text-secondary">Duração</span>
-            <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
+            <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
           </div>
         </div>
       </div>
@@ -597,9 +597,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
       {/* 6. Insights LIA */}
       <div className="p-2.5 bg-gray-50 rounded-md border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+          <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-micro font-medium text-gray-800 dark:text-lia-text-primary mb-1">Insights da LIA</p>
+            <p className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Insights da LIA</p>
             <ul className="space-y-0.5 text-micro lia-text-base">
               <li>• Triagens 6.5x mais rápidas que processo manual</li>
               <li>• Economia estimada: R$ {(() => {

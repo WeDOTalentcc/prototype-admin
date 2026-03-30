@@ -35,7 +35,7 @@ interface JobDescriptionPreviewProps {
 function SuggestionBadge({ isNew }: { isNew: boolean }) {
   if (!isNew) return null;
   return (
-    <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 border-lia-border-default dark:border-lia-border-default text-xs">
+    <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
       <Lightbulb className="w-3 h-3 mr-1" />
       Sugerido pela LIA
     </Badge>
@@ -141,7 +141,7 @@ export function JobDescriptionPreview({
           <div className="flex flex-col items-end gap-2">
             <CompletenessIndicator score={data.completeness_score} />
             {data.suggestions_count > 0 && (
-              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 border-lia-border-default dark:border-lia-border-default">
+              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                 <Lightbulb className="w-3 h-3 mr-1" />
                 {data.suggestions_count} sugestões
               </Badge>
@@ -179,7 +179,7 @@ export function JobDescriptionPreview({
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-gray-700 dark:text-lia-text-secondary mt-1">•</span>
+                  <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
                   <span className="flex-1">
                     {resp.description}
                     <SuggestionBadge isNew={resp.is_new} />
@@ -209,7 +209,7 @@ export function JobDescriptionPreview({
                   <ul className="space-y-1">
                     {requiredTech.map((comp, index) => (
                       <li key={index} className="flex items-center gap-2">
-                        <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                        <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
                           {comp.years_experience && ` (${comp.years_experience}+ anos)`}
@@ -229,7 +229,7 @@ export function JobDescriptionPreview({
                   <ul className="space-y-1">
                     {requiredBeh.map((comp, index) => (
                       <li key={index} className="flex items-center gap-2">
-                        <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                        <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
                           <SuggestionBadge isNew={comp.is_new} />
@@ -250,7 +250,7 @@ export function JobDescriptionPreview({
               <ul className="space-y-1">
                 {niceTech.map((comp, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>
                       {comp.name}
                       <SuggestionBadge isNew={comp.is_new} />
@@ -352,7 +352,7 @@ export function JobDescriptionPreview({
 
         <div className="text-xs text-muted-foreground flex items-center gap-4">
           <span className="flex items-center gap-1">
-            <Lightbulb className="w-3 h-3 text-gray-700 dark:text-lia-text-secondary" />
+            <Lightbulb className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-secondary" />
             = Sugerido pela LIA
           </span>
           <span className="flex items-center gap-1">

@@ -127,14 +127,14 @@ interface CompanyProfile {
   vision?: string
   values?: string
   tagline?: string
-  additional_data?: Record<string, any>
+  additional_data?: Record<string, unknown>
 }
 
 interface EnrichmentResult {
   success: boolean
-  linkedin_data: Record<string, any>
-  glassdoor_data: Record<string, any>
-  enriched_culture: Record<string, any>
+  linkedin_data: Record<string, unknown>
+  glassdoor_data: Record<string, unknown>
+  enriched_culture: Record<string, unknown>
   errors: string[]
 }
 

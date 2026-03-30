@@ -46,8 +46,8 @@ interface JobPublishModalProps {
     wsi_question_count?: number
     screeningStatus?: string
   }>
-  onPublish: (jobIds: string[], channels: string[], options: any) => void
-  onUnpublish?: (jobIds: string[], options: any) => void
+  onPublish: (jobIds: string[], channels: string[], options: Record<string, unknown>) => void
+  onUnpublish?: (jobIds: string[], options: Record<string, unknown>) => void
   onOpenCommunicationModal?: (jobIds: string[], templateCategory?: string) => void
 }
 
@@ -197,13 +197,13 @@ export function JobPublishModal({
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
-              <Share2 className="w-4 h-4 text-gray-600" />
+              <Share2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                 {getModalTitle()}
               </DialogTitle>
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>
@@ -217,7 +217,7 @@ export function JobPublishModal({
           )}>
             <div className="space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vagas Selecionadas
                 </h4>
                 <div className={cn(
@@ -230,10 +230,10 @@ export function JobPublishModal({
                       className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                        <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          {job.code && <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
-                          <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
+                          {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                          <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                         </div>
                       </div>
                       {job.is_published ? (
@@ -242,7 +242,7 @@ export function JobPublishModal({
                           Publicada
                         </span>
                       ) : (
-                        <span className="text-micro font-medium text-gray-600 flex-shrink-0 ml-2">Não publicada</span>
+                        <span className="text-micro font-medium text-lia-text-secondary flex-shrink-0 ml-2">Não publicada</span>
                       )}
                     </div>
                   ))}
@@ -251,7 +251,7 @@ export function JobPublishModal({
 
               {(mode === 'publish' || mode === 'mixed') && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
+                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
                     <Calendar className="w-3 h-3" />
                     Agendamento
                   </h4>
@@ -264,9 +264,9 @@ export function JobPublishModal({
                       <RadioGroupItem
                         value="now"
                         id="schedule-now"
-                        className="border-lia-border-default text-gray-900 data-[state=checked]:border-gray-900"
+                        className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-gray-900"
                       />
-                      <Label htmlFor="schedule-now" className="text-xs text-gray-800 cursor-pointer">
+                      <Label htmlFor="schedule-now" className="text-xs text-lia-text-primary cursor-pointer">
                         Publicar agora
                       </Label>
                     </div>
@@ -276,9 +276,9 @@ export function JobPublishModal({
                         <RadioGroupItem
                           value="scheduled"
                           id="schedule-later"
-                          className="border-lia-border-default text-gray-900 data-[state=checked]:border-gray-900"
+                          className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-gray-900"
                         />
-                        <Label htmlFor="schedule-later" className="text-xs text-gray-800 cursor-pointer">
+                        <Label htmlFor="schedule-later" className="text-xs text-lia-text-primary cursor-pointer">
                           Agendar para:
                         </Label>
                       </div>
@@ -306,9 +306,9 @@ export function JobPublishModal({
 
               {(mode === 'unpublish' || mode === 'mixed') && (
                 <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-                  <div className="flex items-center gap-2 text-gray-800 mb-2">
+                  <div className="flex items-center gap-2 text-lia-text-primary mb-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
-                    <span className="text-xs font-semibold text-gray-950">Opções ao despublicar</span>
+                    <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
                   </div>
                   
                   {/* Congelar vaga */}
@@ -321,21 +321,21 @@ export function JobPublishModal({
                         className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                       />
                       <div className="flex-1">
-                        <Label htmlFor="freezeJob" className="text-xs font-medium text-gray-950 cursor-pointer">
+                        <Label htmlFor="freezeJob" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                           Congelar vaga
                         </Label>
-                        <p className="text-micro text-gray-600">Pausar temporariamente o processo seletivo</p>
+                        <p className="text-micro text-lia-text-secondary">Pausar temporariamente o processo seletivo</p>
                       </div>
                     </div>
                     
                     {freezeJob && (
                       <div className="ml-6 space-y-2 pt-1">
                         <div>
-                          <Label className="text-micro text-gray-600 mb-1 block">Motivo do congelamento</Label>
+                          <Label className="text-micro text-lia-text-secondary mb-1 block">Motivo do congelamento</Label>
                           <select
                             value={freezeReason}
                             onChange={(e) => setFreezeReason(e.target.value)}
-                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-900/20"
+                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-gray-900/20"
                           >
                             <option value="">Selecione um motivo...</option>
                             <option value="budget_review">Revisão orçamentária</option>
@@ -349,9 +349,9 @@ export function JobPublishModal({
                         </div>
                         
                         <div>
-                          <Label className="text-micro text-gray-600 mb-1 block">
+                          <Label className="text-micro text-lia-text-secondary mb-1 block">
                             Previsão de descongelamento
-                            <span className="text-gray-400 ml-1">(LIA irá notificá-lo)</span>
+                            <span className="text-lia-text-disabled ml-1">(LIA irá notificá-lo)</span>
                           </Label>
                           <Input
                             type="date"
@@ -374,14 +374,14 @@ export function JobPublishModal({
                         className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                       />
                       <div className="flex-1">
-                        <Label htmlFor="notifyApplicants" className="text-xs font-medium text-gray-950 cursor-pointer">
+                        <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                           Notificar candidatos
                         </Label>
-                        <p className="text-micro text-gray-600">
+                        <p className="text-micro text-lia-text-secondary">
                           Todos os candidatos do processo receberão uma mensagem
                         </p>
                         {notifyApplicants && (
-                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-gray-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
+                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                             <span>LIA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
                           </div>
@@ -396,7 +396,7 @@ export function JobPublishModal({
             <div className="space-y-3">
               {(mode === 'publish' || mode === 'mixed') && (
                 <div className="rounded-md border border-lia-border-subtle bg-gray-50 p-3 space-y-2">
-                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide font-['Open_Sans',sans-serif]">
+                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide font-['Open_Sans',sans-serif]">
                     Checklist de Publicação
                   </h4>
                   <div className="space-y-1.5">
@@ -454,7 +454,7 @@ export function JobPublishModal({
               {(mode === 'publish' || mode === 'mixed') && (
                 <>
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                       Canais de Publicação
                     </h4>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -475,15 +475,15 @@ export function JobPublishModal({
                             className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                           />
                           <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-gray-600">
+                            <div className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-lia-text-secondary">
                               {channel.icon}
                             </div>
-                            <span className="text-xs font-medium text-gray-800">{channel.name}</span>
+                            <span className="text-xs font-medium text-lia-text-primary">{channel.name}</span>
                           </div>
                           {!channel.connected && (
                             <a
                               href={channel.configUrl}
-                              className="text-micro font-medium text-gray-600 hover:text-gray-900 ml-auto"
+                              className="text-micro font-medium text-lia-text-secondary hover:text-lia-text-primary ml-auto"
                               onClick={(e) => e.stopPropagation()}
                             >
                               Config
@@ -495,7 +495,7 @@ export function JobPublishModal({
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1 font-['Open_Sans',sans-serif]">
                       <Search className="w-3 h-3" />
                       Busca Automática
                     </h4>
@@ -508,10 +508,10 @@ export function JobPublishModal({
                           className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                         />
                         <div>
-                          <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-gray-950 cursor-pointer">
+                          <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                             Busca na base interna
                           </Label>
-                          <p className="text-micro text-gray-600">LIA encontra candidatos no banco de talentos</p>
+                          <p className="text-micro text-lia-text-secondary">LIA encontra candidatos no banco de talentos</p>
                         </div>
                       </div>
                       
@@ -523,16 +523,16 @@ export function JobPublishModal({
                           className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                         />
                         <div className="flex-1">
-                          <Label htmlFor="autoSearchGlobal" className="text-xs font-medium text-gray-950 cursor-pointer flex items-center gap-1">
+                          <Label htmlFor="autoSearchGlobal" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
                             Busca Global
-                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                               <Brain className="w-2 h-2 text-wedo-cyan" />
                               IA
                             </span>
                           </Label>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <p className="text-micro text-gray-600">Fontes externas</p>
-                            <span className="inline-flex items-center gap-0.5 text-micro font-medium text-gray-700 bg-gray-100 px-1 py-0.5 rounded-full">
+                            <p className="text-micro text-lia-text-secondary">Fontes externas</p>
+                            <span className="inline-flex items-center gap-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 px-1 py-0.5 rounded-full">
                               <Coins className="w-2 h-2" />
                               {globalSearchCredits} créd.
                             </span>
@@ -552,7 +552,7 @@ export function JobPublishModal({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
           >
             Cancelar
           </Button>
@@ -562,7 +562,7 @@ export function JobPublishModal({
               variant="outline"
               onClick={handleUnpublish}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-gray-50 text-gray-700 hover:bg-gray-100"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-gray-50 text-lia-text-secondary hover:bg-gray-100"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar ({publishedCount})

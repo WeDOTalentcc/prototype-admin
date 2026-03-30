@@ -25,8 +25,8 @@ interface ExperienceHighlightCardProps {
     yearsOfExperience?: number
     technical_skills?: string[]
     technicalSkills?: string[]
-    work_history?: any[]
-    workHistory?: any[]
+    work_history?: Record<string, unknown>[]
+    workHistory?: Record<string, unknown>[]
   }
   companyId?: string
 }

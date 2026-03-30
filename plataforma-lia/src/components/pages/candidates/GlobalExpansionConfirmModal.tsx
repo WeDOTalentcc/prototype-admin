@@ -37,28 +37,28 @@ export function GlobalExpansionConfirmModal({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">
-              <Globe className="w-4 h-4 text-gray-700" />
+              <Globe className="w-4 h-4 text-lia-text-secondary" />
             </div>
             Expandir para Busca Global
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-gray-500">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
               A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
             </p>
 
             <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-800">Busca atual:</span>
+                <span className="text-lia-text-primary">Busca atual:</span>
                 <span className="font-medium text-xs max-w-sidebar-content truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-800">Resultados locais:</span>
+                <span className="text-lia-text-primary">Resultados locais:</span>
                 <span className="font-medium">{localResultsCount} candidatos</span>
               </div>
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Custo por candidato:</span>
-                  <span className="font-bold text-lg text-gray-700">
+                  <span className="font-bold text-lg text-lia-text-secondary">
                     1 crédito
                   </span>
                 </div>

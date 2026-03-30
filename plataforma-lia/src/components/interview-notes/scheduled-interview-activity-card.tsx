@@ -150,7 +150,7 @@ export function ScheduledInterviewActivityCard({
           <Badge className={cn(getUrgencyBadgeStyle(timeInfo.urgency), "border-0")}>
             {timeInfo.label}
           </Badge>
-          <span className={`${textStyles.caption} text-gray-500 dark:text-lia-text-tertiary`}>
+          <span className={`${textStyles.caption} text-lia-text-tertiary dark:text-lia-text-tertiary`}>
             Entrevista agendada
           </span>
         </div>
@@ -169,14 +169,14 @@ export function ScheduledInterviewActivityCard({
         <div className="space-y-1.5 bg-gray-50 dark:bg-lia-bg-primary/30 rounded-md p-2.5">
           {/* Date and Time */}
           <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+            <Calendar className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
             <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
               {dateStr}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+            <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
             <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
               {timeStr} ({interview.duration}min)
             </span>
@@ -192,7 +192,7 @@ export function ScheduledInterviewActivityCard({
 
           {/* Interviewer */}
           <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+            <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
             <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
               {interview.interviewerName}
             </span>
@@ -211,7 +211,7 @@ export function ScheduledInterviewActivityCard({
           <Button
             onClick={() => onViewSuggestedQuestions(interview.id)}
             variant="outline"
-            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-gray-800 dark:text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors text-xs h-auto"
+            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-lia-text-primary dark:text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors text-xs h-auto"
           >
             <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
             Perguntas

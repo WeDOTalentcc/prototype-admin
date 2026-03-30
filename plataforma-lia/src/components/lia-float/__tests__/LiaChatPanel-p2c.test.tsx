@@ -33,7 +33,13 @@ vi.mock("@/contexts/lia-float-context", () => ({
     isOpen: true,
     conversationId: null,
     close: vi.fn(),
+    expand: vi.fn(),
     openSplitView: vi.fn(),
+    sharedMessages: _msgStore.messages,
+    addSharedMessage: vi.fn(),
+    setSharedMessages: mockSetMessages,
+    sharedConversationId: null,
+    setSharedConversationId: mockSetConversationId,
   }),
 }))
 
@@ -46,9 +52,13 @@ vi.mock("@/hooks/use-float-streaming", () => ({
   useFloatStreaming: () => ({
     isConnected: false,
     isStreaming: false,
+    isReconnecting: false,
+    reconnectAttempt: 0,
     streamingContent: "",
     error: null,
     hitlPending: null,
+    fairnessWarnings: [],
+    dismissFairnessWarnings: vi.fn(),
     sendMessage: mockWsSend,
     sendApproval: mockSendApproval,
     connect: mockWsConnect,
@@ -62,12 +72,12 @@ const mockLoadHistory = vi.fn().mockResolvedValue(undefined)
 const mockAddMessage = vi.fn()
 const mockInitConversation = vi.fn().mockResolvedValue("conv-123")
 
-let _messagesState: { id: string; sender: string; content: string; timestamp: string }[] = []
+const _msgStore = vi.hoisted(() => ({ messages: [] as { id: string; sender: string; content: string; timestamp: string }[] }))
 
 vi.mock("@/hooks/use-float-conversation", () => ({
   useFloatConversation: () => ({
     conversationId: null,
-    messages: _messagesState,
+    messages: _msgStore.messages,
     isCreating: false,
     isFetchingHistory: false,
     initConversation: mockInitConversation,
@@ -96,6 +106,7 @@ vi.mock("@/hooks/use-action-intent", () => ({
 
 vi.mock("@/hooks/use-current-scope", () => ({
   useCurrentScope: () => ({ scope: "global", scopeName: "Global" }),
+  resolveScopeFromPathname: vi.fn().mockReturnValue("global"),
 }))
 
 vi.mock("@/components/lia-float/HITLConfirmCard", () => ({
@@ -127,7 +138,7 @@ import { LiaChatPanel } from "../LiaChatPanel"
 describe("P2-C — LiaChatPanel: Novo Chat / Limpar / Histórico", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    _messagesState = []
+    _msgStore.messages = []
     localStorageMock.clear()
   })
 
@@ -147,7 +158,7 @@ describe("P2-C — LiaChatPanel: Novo Chat / Limpar / Histórico", () => {
   })
 
   it("4. botão Limpar desabilitado quando sem mensagens", () => {
-    _messagesState = []
+    _msgStore.messages = []
     render(<LiaChatPanel />)
     const clearBtn = screen.getByRole("button", { name: /limpar mensagens/i })
     expect(clearBtn).toBeDisabled()
@@ -173,7 +184,7 @@ describe("P2-C — LiaChatPanel: Novo Chat / Limpar / Histórico", () => {
   })
 
   it("8. Limpar chama setMessages([]) sem tocar no conversationId", () => {
-    _messagesState = [{ id: "1", sender: "user", content: "oi", timestamp: "10:00" }]
+    _msgStore.messages = [{ id: "1", sender: "user", content: "oi", timestamp: "10:00" }]
     render(<LiaChatPanel />)
     fireEvent.click(screen.getByRole("button", { name: /limpar mensagens/i }))
     expect(mockSetMessages).toHaveBeenCalledWith([])

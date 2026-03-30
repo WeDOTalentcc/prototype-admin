@@ -155,7 +155,7 @@ export function AddListToVacanciesModal({
       <DialogContent className="max-w-lg border-lia-border-subtle dark:border-lia-border-subtle rounded-md dark:bg-lia-bg-primary">
         <DialogHeader>
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+            <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Adicionar a Vagas
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -164,9 +164,9 @@ export function AddListToVacanciesModal({
                 <div 
                   className="w-3 h-3 rounded-full bg-gray-500 dark:bg-gray-400" 
                 />
-                <span className="font-medium text-gray-800 dark:text-lia-text-primary">{listName}</span>
+                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{listName}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-800 dark:text-lia-text-primary">
+              <div className="flex items-center gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
                 <Users className="w-4 h-4" />
                 <span>
                   {isAddingSelected 
@@ -181,7 +181,7 @@ export function AddListToVacanciesModal({
 
         <div className="py-4 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
@@ -192,21 +192,21 @@ export function AddListToVacanciesModal({
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
             </div>
           ) : vacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Briefcase className="w-10 h-10 text-gray-300 mb-3" />
-              <p className="text-xs text-gray-800 dark:text-lia-text-primary">Nenhuma vaga aberta encontrada</p>
-              <p className="text-xs text-gray-600 mt-1">
+              <Briefcase className="w-10 h-10 text-lia-text-disabled mb-3" />
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nenhuma vaga aberta encontrada</p>
+              <p className="text-xs text-lia-text-secondary mt-1">
                 Crie uma vaga primeiro para poder adicionar candidatos
               </p>
             </div>
           ) : filteredVacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Search className="w-10 h-10 text-gray-300 mb-3" />
-              <p className="text-xs text-gray-800 dark:text-lia-text-primary">Nenhuma vaga encontrada</p>
-              <p className="text-xs text-gray-600 mt-1">
+              <Search className="w-10 h-10 text-lia-text-disabled mb-3" />
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nenhuma vaga encontrada</p>
+              <p className="text-xs text-lia-text-secondary mt-1">
                 Tente buscar com outros termos
               </p>
             </div>
@@ -216,7 +216,7 @@ export function AddListToVacanciesModal({
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="text-xs text-gray-700 dark:text-lia-text-secondary hover:underline flex items-center gap-1.5"
+                  className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:underline flex items-center gap-1.5"
                 >
                   <Checkbox 
                     checked={selectedVacancyIds.size === filteredVacancies.length && filteredVacancies.length > 0}
@@ -227,7 +227,7 @@ export function AddListToVacanciesModal({
                     : 'Selecionar todas'
                   }
                 </button>
-                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                   {filteredVacancies.length} vaga{filteredVacancies.length !== 1 ? 's' : ''} disponíve{filteredVacancies.length !== 1 ? 'is' : 'l'}
                 </span>
               </div>
@@ -252,10 +252,10 @@ export function AddListToVacanciesModal({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate">
+                            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                               {vacancy.title}
                             </h4>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                               {vacancy.department && (
                                 <div className="flex items-center gap-1">
                                   <Building2 className="w-3 h-3" />
@@ -276,13 +276,13 @@ export function AddListToVacanciesModal({
                           </div>
                         </div>
                         {vacancy.funnel_data?.total !== undefined && (
-                          <div className="mt-2 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-2 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             {vacancy.funnel_data.total} candidato{vacancy.funnel_data.total !== 1 ? 's' : ''} no funil
                           </div>
                         )}
                       </div>
                       {selectedVacancyIds.has(vacancy.id) && (
-                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-900 dark:text-lia-text-primary" />
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-primary dark:text-lia-text-primary" />
                       )}
                     </div>
                   ))}
@@ -291,8 +291,8 @@ export function AddListToVacanciesModal({
 
               {selectedVacancyIds.size > 0 && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-                  <Check className="w-4 h-4 text-gray-900 dark:text-lia-text-primary" />
-                  <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                  <Check className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                  <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                     <strong>{selectedVacancyIds.size}</strong> vaga{selectedVacancyIds.size !== 1 ? 's' : ''} selecionada{selectedVacancyIds.size !== 1 ? 's' : ''}
                     {' · '}
                     <strong>{candidatesToAdd}</strong> candidato{candidatesToAdd !== 1 ? 's' : ''} serão adicionados
@@ -317,7 +317,7 @@ export function AddListToVacanciesModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || selectedVacancyIds.size === 0}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             {isSubmitting ? (
               <>

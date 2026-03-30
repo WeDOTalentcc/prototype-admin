@@ -6,7 +6,7 @@ const MOCK_INSIGHTS = [
   { id: 'i2', title: 'Pipeline lento', message: 'Entrevistas agendadas há >5 dias', urgency: 'normal', type: 'pipeline_alert', action_url: null, created_at: '2026-03-15T00:00:00' },
 ]
 
-global.fetch = jest.fn()
+global.fetch = vi.fn()
 
 // Mock sessionStorage
 const mockSessionStorage: Record<string, string> = {}
@@ -21,17 +21,17 @@ Object.defineProperty(window, 'sessionStorage', {
 
 describe('useProactiveInsights', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     Object.keys(mockSessionStorage).forEach(k => delete mockSessionStorage[k])
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   it('fetches insights on mount', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_INSIGHTS,
     })
@@ -61,7 +61,7 @@ describe('useProactiveInsights', () => {
   })
 
   it('dismiss removes insight from visible list and persists to sessionStorage', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_INSIGHTS,
     })
@@ -81,7 +81,7 @@ describe('useProactiveInsights', () => {
   })
 
   it('filters by job_id in URL when jobId provided', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => [],
     })
@@ -95,7 +95,7 @@ describe('useProactiveInsights', () => {
   })
 
   it('returns empty array on fetch failure (fail-silent)', async () => {
-    ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network'))
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network'))
 
     const { result } = renderHook(() =>
       useProactiveInsights('job-1', 'comp-1')
@@ -106,7 +106,7 @@ describe('useProactiveInsights', () => {
   })
 
   it('auto-refreshes every 5 minutes', async () => {
-    ;(global.fetch as jest.Mock)
+    ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValue({ ok: true, json: async () => [] })
 
     renderHook(() => useProactiveInsights('job-1', 'comp-1'))
@@ -114,7 +114,7 @@ describe('useProactiveInsights', () => {
     await act(async () => { await Promise.resolve() })
     expect(global.fetch).toHaveBeenCalledTimes(1)
 
-    await act(async () => { jest.advanceTimersByTime(5 * 60 * 1000) })
+    await act(async () => { vi.advanceTimersByTime(5 * 60 * 1000) })
     expect(global.fetch).toHaveBeenCalledTimes(2)
   })
 })

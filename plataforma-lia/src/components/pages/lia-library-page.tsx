@@ -210,14 +210,14 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
         {/* Header Simplificado */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black mb-1 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-gray-700" />
+              <BookOpen className="w-5 h-5 text-lia-text-secondary" />
               Biblioteca LIA
             </h1>
             <p className="text-sm font-open-sans wedo-text-gray">
@@ -235,18 +235,18 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
         </div>
 
         {/* Prompt AI-First */}
-        <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800 p-5 mb-5">
+        <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-5 mb-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900">
               <Brain className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-['Open_Sans',sans-serif] font-medium text-gray-950 dark:text-gray-50">
+            <span className="text-base font-['Open_Sans',sans-serif] font-medium text-lia-text-primary dark:text-lia-text-primary">
               O que você precisa fazer hoje?
             </span>
           </div>
           
           <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-lia-text-primary" />
             <input
               type="text"
               placeholder="Descreva sua necessidade ou pergunte à LIA..."
@@ -257,7 +257,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   handlePromptSubmit(searchTerm)
                 }
               }}
-              className="w-full pl-12 pr-24 py-3 text-sm font-open-sans border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-gray-950 dark:text-gray-50 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent"
+              className="w-full pl-12 pr-24 py-3 text-sm font-open-sans border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent"
             />
             {searchTerm.trim() && (
               <Button
@@ -282,7 +282,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-open-sans font-medium transition-[width,height] ${
                     isSelected
                       ? 'text-white'
-                      : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-tertiary hover:bg-gray-200 dark:hover:bg-gray-700'
+                      : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-tertiary hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                   style={isSelected ? { backgroundColor: category.color } : undefined}
                 >
@@ -296,7 +296,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
 
         {/* Contador de Resultados */}
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-tertiary">
+          <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">
             {filteredCommands.length} comando{filteredCommands.length !== 1 ? 's' : ''} disponíve{filteredCommands.length !== 1 ? 'is' : 'l'}
           </span>
         </div>
@@ -312,12 +312,12 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
               return (
                 <div
                   key={command.id}
-                  className="group bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800 p-4 hover:border-lia-border-default dark:hover:border-gray-700 transition-colors"
+                  className="group bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-gray-700 transition-colors"
                   style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-sm font-['Open_Sans',sans-serif] font-medium text-gray-950 dark:text-gray-50 leading-tight pr-2">
+                    <h3 className="text-sm font-['Open_Sans',sans-serif] font-medium text-lia-text-primary dark:text-lia-text-primary leading-tight pr-2">
                       {command.title}
                     </h3>
                     <button
@@ -332,12 +332,12 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   </div>
 
                   {/* Descrição */}
-                  <p className="text-xs font-open-sans text-gray-800 dark:text-lia-text-tertiary leading-relaxed mb-3 line-clamp-2">
+                  <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary leading-relaxed mb-3 line-clamp-2">
                     {command.description}
                   </p>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle dark:border-gray-800">
+                  <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant="secondary" 
@@ -347,7 +347,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                         {categoryInfo.label}
                       </Badge>
                       {command.usageCount && (
-                        <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">
+                        <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                           {command.usageCount} usos
                         </span>
                       )}
@@ -359,7 +359,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                         className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
-                        <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-gray-800'}`} />
+                        <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-lia-text-primary'}`} />
                       </button>
                       <Button
                         size="sm"
@@ -377,15 +377,15 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800 p-12">
+          <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-12">
             <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
-                <Search className="w-6 h-6 text-gray-800" />
+                <Search className="w-6 h-6 text-lia-text-primary" />
               </div>
-              <h3 className="text-base font-['Open_Sans',sans-serif] font-medium text-gray-950 dark:text-gray-50 mb-2">
+              <h3 className="text-base font-['Open_Sans',sans-serif] font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                 Nenhum comando encontrado
               </h3>
-              <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-tertiary mb-4">
+              <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-4">
                 Tente ajustar os filtros ou descreva sua necessidade para a LIA
               </p>
               <Button

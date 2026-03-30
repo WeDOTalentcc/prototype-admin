@@ -282,7 +282,7 @@ export function CandidatePreview({
                     onClick={() => onOpenFullPage?.(candidate)}
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <Expand className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+                    <Expand className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Expandir</TooltipContent>
@@ -295,7 +295,7 @@ export function CandidatePreview({
                 onClick={onClose}
                 className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <X className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+                <X className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
               </Button>
             </div>
           </div>
@@ -345,7 +345,7 @@ export function CandidatePreview({
                 {lastContactedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
                         <MessageSquare className="w-2.5 h-2.5" />
                         {formatDate(lastContactedAt)}
                       </span>
@@ -371,7 +371,7 @@ export function CandidatePreview({
                     onClick={() => onSendEmail ? onSendEmail(candidate) : (candidate.email && window.open(`mailto:${candidate.email}`, '_self'))}
                     disabled={!candidate.email && !onSendEmail}
                   >
-                    <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
@@ -392,7 +392,7 @@ export function CandidatePreview({
                     }}
                     disabled={!candidate.phone && !onSendWhatsApp}
                   >
-                    <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Phone className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">WhatsApp</TooltipContent>
@@ -420,7 +420,7 @@ export function CandidatePreview({
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onWSIScreening ? onWSIScreening(candidate) : onSendTriagem?.(candidate)}
                   >
-                    <ClipboardCheck className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Triagem WSI</TooltipContent>
@@ -434,7 +434,7 @@ export function CandidatePreview({
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onAddToVacancy?.(candidate)}
                   >
-                    <Briefcase className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Atribuir à Vaga</TooltipContent>
@@ -570,7 +570,7 @@ export function CandidatePreview({
                     className={`p-1 rounded-md transition-colors ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.portfolio || candidate.portfolio_url) && e.preventDefault()}
                   >
-                    <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-400'}`} />
+                    <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-disabled'}`} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -590,8 +590,8 @@ export function CandidatePreview({
               onClick={() => setActiveTab(tab.id as string)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
  activeTab === tab.id
-                  ? 'border-b-2 border-gray-800 text-gray-800 dark:text-lia-text-primary font-semibold'
-                  : 'text-gray-600 dark:text-lia-text-tertiary hover:text-gray-800'
+                  ? 'border-b-2 border-gray-800 text-lia-text-primary dark:text-lia-text-primary font-semibold'
+                  : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'
               }`}
             >
               <tab.icon className="w-3 h-3" />
@@ -661,8 +661,8 @@ export function CandidatePreview({
                 onClick={() => setOpinionsSubTab('pareceres')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
  opinionsSubTab === 'pareceres'
-                    ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
- : 'text-gray-500 hover:text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50'
+                    ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
+ : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50'
                 }`}
               >
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -678,7 +678,7 @@ export function CandidatePreview({
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
  opinionsSubTab === 'analises'
                     ? 'bg-wedo-purple/10 text-wedo-purple border-b-2 border-wedo-purple/30'
- : 'text-gray-500 hover:text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50'
+ : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50'
                 }`}
               >
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -719,7 +719,7 @@ export function CandidatePreview({
                 {!isLoadingHistory && opinionsHistory.length === 0 && (
                   <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
-                      <FileText className="w-6 h-6 text-gray-400" />
+                      <FileText className="w-6 h-6 text-lia-text-disabled" />
                     </div>
                     <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
                     <p className={textStyles.description}>
@@ -734,7 +734,7 @@ export function CandidatePreview({
                     {opinionsHistory.map((opinion: Record<string, unknown>) => (
                       <div key={opinion.id} className="relative">
                         {!opinion.is_current && (
-                          <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-lia-text-tertiary z-10">
+                          <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-tertiary dark:text-lia-text-tertiary z-10">
                             v{opinion.version} - Histórico
                           </Badge>
                         )}
@@ -851,7 +851,7 @@ export function CandidatePreview({
                                     {copiedItemId === `analysis-${analysis.id}` ? (
                                       <Check className="w-3.5 h-3.5 text-status-success" />
                                     ) : (
-                                      <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-lia-text-tertiary" />
+                                      <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary dark:text-lia-text-tertiary" />
                                     )}
                                   </button>
                                 </TooltipTrigger>
@@ -864,7 +864,7 @@ export function CandidatePreview({
                           {/* Card Content - Expandable */}
                           {isExpanded && (
                             <div className="px-3 pb-3 border-t border-gray-50">
-                              <div className={`${textStyles.description} text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 mt-2`}>
+                              <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 mt-2`}>
                                 {cleanTextForCopy(analysis.content)}
                               </div>
                               {/* Delete button */}

@@ -346,7 +346,7 @@ export function InteractiveChart({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+            <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             {title}
           </CardTitle>
           {showControls && (
@@ -408,13 +408,13 @@ export function InteractiveChart({
         {/* Selected Data Point Details */}
         {selectedDataPoint && (
           <div className="mt-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-            <h4 className="font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+            <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
               Detalhes - {String(selectedDataPoint.month ?? selectedDataPoint.stage ?? '')}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               {Object.entries(selectedDataPoint).map(([key, value]) => (
                 key !== 'month' && key !== 'stage' && (
-                  <div key={key} className="text-gray-600 dark:text-lia-text-tertiary">
+                  <div key={key} className="text-lia-text-secondary dark:text-lia-text-tertiary">
                     <span className="font-medium">{key}:</span> {String(value)}
                   </div>
                 )
@@ -636,11 +636,11 @@ export function PredictiveAnalyticsChart() {
         <Card className="border-lia-border-default dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Target className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">Precisão Modelo</p>
-                <p className="text-lg font-bold text-gray-900">92.4%</p>
-                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Últimos 6 meses</p>
+                <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Precisão Modelo</p>
+                <p className="text-lg font-bold text-lia-text-primary">92.4%</p>
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Últimos 6 meses</p>
               </div>
             </div>
           </CardContent>

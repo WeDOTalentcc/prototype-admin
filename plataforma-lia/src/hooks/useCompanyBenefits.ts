@@ -82,7 +82,7 @@ export function useCompanyBenefits({
       setBenefits(benefitsList)
       setLastFetched(new Date())
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar benefícios')
+      setError(err instanceof Error ? err instanceof Error ? err.message : String(err) : 'Erro ao carregar benefícios')
     } finally {
       setIsLoading(false)
     }

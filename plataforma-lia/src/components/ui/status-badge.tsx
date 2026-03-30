@@ -467,8 +467,8 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
 
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
-      <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-lia-text-tertiary" />
-      <span className="text-micro text-gray-600 dark:text-lia-text-secondary font-medium">
+      <Icon className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+      <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary font-medium">
         {label}
       </span>
     </div>
@@ -494,8 +494,8 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
         className
       )}
     >
-      <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-lia-text-secondary" />
-      <span className="text-micro text-gray-600 dark:text-lia-text-primary font-semibold">
+      <AlertCircle className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary dark:text-lia-text-secondary" />
+      <span className="text-micro text-lia-text-secondary dark:text-lia-text-primary font-semibold">
         {displayText}
       </span>
     </div>
@@ -549,7 +549,7 @@ export interface OriginBadgeProps {
 const originConfig: Record<string, { label: string; bg: string; border: string; text: string; icon: React.ElementType }> = {
   web: { label: 'Web', bg: 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15', border: 'border-wedo-cyan/30', text: 'text-wedo-cyan-dark dark:text-wedo-cyan', icon: Globe },
   whatsapp: { label: 'WhatsApp', bg: 'bg-wedo-green/15 dark:bg-wedo-green/20', border: 'border-wedo-green/30', text: 'text-wedo-green', icon: MessageCircle },
-  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-lia-bg-elevated', border: 'border-lia-border-subtle dark:border-lia-border-default', text: 'text-gray-700 dark:text-lia-text-secondary', icon: Search },
+  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-lia-bg-elevated', border: 'border-lia-border-subtle dark:border-lia-border-default', text: 'text-lia-text-secondary dark:text-lia-text-secondary', icon: Search },
   ats: { label: 'ATS', bg: 'bg-wedo-purple/15 dark:bg-wedo-purple/20', border: 'border-wedo-purple/30', text: 'text-wedo-purple', icon: Briefcase },
 }
 

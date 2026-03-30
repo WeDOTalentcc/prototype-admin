@@ -109,10 +109,10 @@ export function NextStepModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md rounded-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-gray-950">
+          <DialogTitle className="text-sm font-semibold text-lia-text-primary">
             Próxima Etapa
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+          <DialogDescription className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
             <span className="font-medium lia-text-strong">{candidateName}</span>
             <span className="mx-1.5">•</span>
             <span>{jobTitle}</span>
@@ -121,7 +121,7 @@ export function NextStepModal({
 
         <div className="space-y-5 py-4">
           <div className="space-y-3">
-            <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+            <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
               Qual é a sua decisão?
             </Label>
             <RadioGroup
@@ -142,14 +142,14 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "approve"
-                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      ? "bg-gray-200 text-lia-text-primary dark:text-lia-text-primary"
                       : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <CheckCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950">Aprovar</p>
+                  <p className="text-sm font-medium text-lia-text-primary">Aprovar</p>
                   <p className="text-xs lia-text-secondary">
                     Avançar para próxima etapa
                   </p>
@@ -169,14 +169,14 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "reject"
-                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      ? "bg-gray-200 text-lia-text-primary dark:text-lia-text-primary"
                       : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <XCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950">Reprovar</p>
+                  <p className="text-sm font-medium text-lia-text-primary">Reprovar</p>
                   <p className="text-xs lia-text-secondary">
                     Encerrar participação no processo
                   </p>
@@ -196,14 +196,14 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "pending"
-                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      ? "bg-gray-200 text-lia-text-primary dark:text-lia-text-primary"
                       : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <Clock className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950">Pendente</p>
+                  <p className="text-sm font-medium text-lia-text-primary">Pendente</p>
                   <p className="text-xs lia-text-secondary">Decidir depois</p>
                 </div>
               </label>
@@ -212,7 +212,7 @@ export function NextStepModal({
 
           {decisionType === "approve" && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Próxima etapa
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -225,7 +225,7 @@ export function NextStepModal({
                       <div className="flex items-center gap-2">
                         <span>{stage}</span>
                         {suggestedNextStage === stage && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
                             Sugestão LIA
                           </span>
@@ -246,7 +246,7 @@ export function NextStepModal({
 
           {decisionType === "reject" && (
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Enviar feedback ao candidato?
               </Label>
               <RadioGroup
@@ -273,14 +273,14 @@ export function NextStepModal({
                     className={cn(
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "send_now"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary"
                         : "bg-gray-100 lia-text-secondary"
                     )}
                   >
                     <Mail className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950">
+                    <p className="text-sm font-medium text-lia-text-primary">
                       Enviar agora
                     </p>
                   </div>
@@ -303,14 +303,14 @@ export function NextStepModal({
                     className={cn(
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "schedule"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary"
                         : "bg-gray-100 lia-text-secondary"
                     )}
                   >
                     <Calendar className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950">
+                    <p className="text-sm font-medium text-lia-text-primary">
                       Agendar para depois
                     </p>
                   </div>
@@ -336,7 +336,7 @@ export function NextStepModal({
                     <XCircle className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950">
+                    <p className="text-sm font-medium text-lia-text-primary">
                       Não enviar
                     </p>
                   </div>
@@ -347,7 +347,7 @@ export function NextStepModal({
                 <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <Label
                     htmlFor="scheduled-date"
-                    className="text-xs font-medium text-gray-800 dark:text-lia-text-primary"
+                    className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
                   >
                     Data de envio
                   </Label>
@@ -369,7 +369,7 @@ export function NextStepModal({
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
           >
             Cancelar
           </Button>

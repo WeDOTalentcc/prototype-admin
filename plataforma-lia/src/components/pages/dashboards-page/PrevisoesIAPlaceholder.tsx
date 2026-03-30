@@ -111,17 +111,17 @@ export function PrevisoesIAPlaceholder() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-sm leading-tight font-semibold font-['Open_Sans',sans-serif] text-gray-950 dark:text-gray-50 flex items-center gap-2">
+        <h1 className="text-sm leading-tight font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Previsões & Inteligência Artificial
         </h1>
-        <p className="text-gray-600 dark:text-lia-text-tertiary mt-1 font-open-sans text-xs">
+        <p className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1 font-open-sans text-xs">
           Machine Learning, previsões de demanda, alertas inteligentes e scoring preditivo
         </p>
       </div>
 
       {/* ML Predictions - Próximos 30 dias */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -134,7 +134,7 @@ export function PrevisoesIAPlaceholder() {
  <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <p className={`${textStyles.description} dark:text-lia-text-tertiary mb-1`}>Candidaturas Esperadas</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">2.847</span>
+                <span className="text-2xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">2.847</span>
                 <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   +12%
                 </Badge>
@@ -146,8 +146,8 @@ export function PrevisoesIAPlaceholder() {
             <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className={`${textStyles.description} dark:text-lia-text-tertiary mb-1`}>Contratações Previstas</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">127</span>
- <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary text-xs font-inter">
+                <span className="text-2xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">127</span>
+ <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-secondary text-xs font-inter">
                   +8%
                 </Badge>
               </div>
@@ -158,8 +158,8 @@ export function PrevisoesIAPlaceholder() {
             <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-wedo-orange/30 dark:border-wedo-orange/30">
               <p className={`${textStyles.description} dark:text-lia-text-tertiary mb-1`}>Time-to-Fill Médio</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">18</span>
-                <span className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">dias</span>
+                <span className="text-2xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">18</span>
+                <span className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">dias</span>
               </div>
               <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-3 dias vs. anterior</p>
             </div>
@@ -168,7 +168,7 @@ export function PrevisoesIAPlaceholder() {
             <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-status-success/30 dark:border-status-success/30">
               <p className={`${textStyles.description} dark:text-lia-text-tertiary mb-1`}>Custo por Contratação</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">R$ 3.2k</span>
+                <span className="text-2xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">R$ 3.2k</span>
               </div>
               <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-R$ 420 vs. anterior</p>
             </div>
@@ -179,7 +179,7 @@ export function PrevisoesIAPlaceholder() {
       {/* Scoring Inteligente & Alertas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
         {/* Scoring Inteligente - Top Performers */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
             <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <Award className="w-3.5 h-3.5 text-wedo-purple" />
@@ -189,7 +189,7 @@ export function PrevisoesIAPlaceholder() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
-                <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Ana Silva</p>
+                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary text-sm">Ana Silva</p>
                 <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Senior Developer • React/Node</p>
               </div>
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
@@ -199,7 +199,7 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
-                <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Carlos Mendes</p>
+                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary text-sm">Carlos Mendes</p>
                 <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Product Manager • SaaS</p>
               </div>
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
@@ -209,20 +209,20 @@ export function PrevisoesIAPlaceholder() {
 
  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
-                <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Beatriz Costa</p>
+                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary text-sm">Beatriz Costa</p>
                 <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>UX Designer • Figma Expert</p>
               </div>
- <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary font-inter font-bold">
+ <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-secondary font-inter font-bold">
                 94/100
               </Badge>
             </div>
 
  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
-                <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Rafael Santos</p>
+                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary text-sm">Rafael Santos</p>
                 <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Data Scientist • Python/ML</p>
               </div>
- <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary font-inter font-bold">
+ <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-secondary font-inter font-bold">
                 93/100
               </Badge>
             </div>
@@ -230,7 +230,7 @@ export function PrevisoesIAPlaceholder() {
         </Card>
 
         {/* Alertas em Tempo Real */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
             <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
@@ -241,7 +241,7 @@ export function PrevisoesIAPlaceholder() {
             <div className="flex items-start gap-3 p-3 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-error" />
               <div>
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #2847 em risco</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Vaga #2847 em risco</p>
                 <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
                   45 dias sem candidatos qualificados. LIA sugere ajustar requisitos.
                 </p>
@@ -251,7 +251,7 @@ export function PrevisoesIAPlaceholder() {
             <div className="flex items-start gap-3 p-3 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
               <div>
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Pipeline lento - Tech Lead</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Pipeline lento - Tech Lead</p>
                 <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
                   Tempo médio de resposta: 8 dias. Meta: 3 dias.
                 </p>
@@ -261,17 +261,17 @@ export function PrevisoesIAPlaceholder() {
             <div className="flex items-start gap-3 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border-l-4 border-status-success/30">
               <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-success" />
               <div>
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Candidato ideal identificado</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Candidato ideal identificado</p>
                 <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
                   Ana Silva (98/100) corresponde perfeitamente à vaga #2941.
                 </p>
               </div>
             </div>
 
- <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border-l-4 border-gray-900 dark:border-gray-50">
+ <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border-l-4 border-gray-900 dark:border-lia-border-medium">
               <Brain className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-cyan" />
               <div>
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Recomendação automática</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Recomendação automática</p>
                 <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
                   LIA agendou 3 triagens para amanhã baseado em disponibilidade.
                 </p>
@@ -284,19 +284,19 @@ export function PrevisoesIAPlaceholder() {
       {/* Skills em Alta & Demanda Prevista */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
         {/* Skills em Alta */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
             <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
-              <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Skills Mais Demandadas
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">React.js</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">React.js</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">287 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">287 vagas</span>
                   <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     +18%
                   </Badge>
@@ -309,9 +309,9 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Python</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Python</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">243 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">243 vagas</span>
                   <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     +22%
                   </Badge>
@@ -324,10 +324,10 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Node.js</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Node.js</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">218 vagas</span>
- <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary text-xs font-inter">
+                  <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">218 vagas</span>
+ <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-secondary text-xs font-inter">
                     +15%
                   </Badge>
                 </div>
@@ -339,9 +339,9 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">AWS</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">AWS</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">194 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">194 vagas</span>
                   <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs font-inter">
                     +28%
                   </Badge>
@@ -354,9 +354,9 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Machine Learning</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Machine Learning</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">156 vagas</span>
+                  <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">156 vagas</span>
                   <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs font-inter">
                     +34%
                   </Badge>
@@ -370,7 +370,7 @@ export function PrevisoesIAPlaceholder() {
         </Card>
 
         {/* Demanda por Área - Previsão */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
             <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <BarChart3 className="w-3.5 h-3.5 text-wedo-purple" />
@@ -380,7 +380,7 @@ export function PrevisoesIAPlaceholder() {
           <CardContent className="space-y-4">
             <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Tecnologia</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Tecnologia</p>
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                   +42 vagas
                 </Badge>
@@ -392,7 +392,7 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vendas</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Vendas</p>
  <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
                   +28 vagas
                 </Badge>
@@ -404,7 +404,7 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Marketing</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Marketing</p>
                 <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   +15 vagas
                 </Badge>
@@ -416,7 +416,7 @@ export function PrevisoesIAPlaceholder() {
 
             <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Operações</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Operações</p>
                 <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                   +8 vagas
                 </Badge>
@@ -430,7 +430,7 @@ export function PrevisoesIAPlaceholder() {
       </div>
 
       {/* Insights da LIA */}
-      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-gray-800`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -440,19 +440,19 @@ export function PrevisoesIAPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green-bright" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Antecipação de demanda:</strong> Tecnologia terá pico em 30 dias. Inicie sourcing proativo para React e AWS.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-purple" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Machine Learning em alta:</strong> Demanda cresceu 34% este mês. Considere parcerias com bootcamps especializados.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <Activity className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <Activity className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Otimização de custos:</strong> Pipeline automatizado reduziu custo por contratação em 12% este mês.
             </p>
           </div>

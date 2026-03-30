@@ -21,6 +21,7 @@ const mockSendRaw = vi.fn()
 const mockConnect = vi.fn()
 const mockDisconnect = vi.fn()
 const mockClearTokens = vi.fn()
+let mockIsConnected = false
 
 let capturedOnEvent: ((event: Record<string, unknown>) => void) | undefined
 
@@ -34,7 +35,7 @@ vi.mock('../use-agent-streaming', () => ({
     return {
       tokens: '',
       isStreaming: false,
-      isConnected: false,
+      isConnected: mockIsConnected,
       error: null,
       connect: mockConnect,
       disconnect: mockDisconnect,
@@ -49,6 +50,7 @@ describe('useFloatStreaming', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     capturedOnEvent = undefined
+    mockIsConnected = false
   })
 
   it('estado inicial: sem pending, sem erro', () => {
@@ -236,6 +238,7 @@ describe('useFloatStreaming', () => {
   })
 
   it('sendMessage chama wsSend com domain e clearTokens', () => {
+    mockIsConnected = true
     const onComplete = vi.fn()
     const { result } = renderHook(() =>
       useFloatStreaming('session-8', onComplete)

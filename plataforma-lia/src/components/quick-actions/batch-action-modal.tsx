@@ -19,7 +19,7 @@ interface BatchActionModalProps {
   isOpen: boolean
   onClose: () => void
   selectedCandidates: Candidate[]
-  onBatchAction: (action: string, data: any) => void
+  onBatchAction: (action: string, data: Record<string, unknown>) => void
 }
 
 export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchAction }: BatchActionModalProps) {
@@ -100,7 +100,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
       <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">
+            <h3 className="text-lg font-semibold text-lia-text-primary">
               Ações em Lote
             </h3>
             <p className="text-sm lia-text-secondary">
@@ -127,7 +127,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                       <AvatarFallback className="text-xs">{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{candidate.name}</span>
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">- {candidate.role}</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">- {candidate.role}</span>
                   </div>
                 ))}
               </div>
@@ -161,7 +161,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
           {/* Configurações específicas por ação */}
           {action === 'move_stage' && (
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                 Nova Etapa
               </label>
               <select
@@ -179,7 +179,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {action === 'assign' && (
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                 Atribuir para
               </label>
               <select
@@ -197,7 +197,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Comentário */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
               Comentário (opcional)
             </label>
             <textarea

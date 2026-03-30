@@ -206,7 +206,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <div className="font-medium lia-text-strong text-base-ui">
                 {candidateContext.name}
               </div>
-              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                 {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
@@ -234,13 +234,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     {candidate.name?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                   {candidate.name || `Candidato ${index + 1}`}
                 </span>
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-lia-text-primary">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary dark:text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}
@@ -270,7 +270,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               onFocus={() => !isProcessing && setIsExpanded(true)}
               placeholder={isProcessing ? "LIA processando..." : getPlaceholder()}
               disabled={isProcessing}
-              className={`flex-1 bg-transparent text-gray-950 placeholder-gray-500 text-xs focus:outline-none ${
+              className={`flex-1 bg-transparent text-lia-text-primary placeholder-gray-500 text-xs focus:outline-none ${
  isProcessing ? 'opacity-60 cursor-not-allowed' : ''
               }`}
             />
@@ -722,7 +722,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               {/* Dica contextual */}
               <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-md mb-3 border border-lia-border-subtle">
                 <Lightbulb className="w-3.5 h-3.5 lia-text-base mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                   {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
                   {activeSearchTab === 'similar' && 'Dica: Cole o link do LinkedIn de um candidato que você considera ideal.'}
                   {activeSearchTab === 'job-description' && 'Dica: Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.'}
@@ -738,7 +738,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <LIAIcon size="sm" />
-                  <span className="text-sm font-medium text-gray-950">💡 Sugestões Inteligentes</span>
+                  <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões Inteligentes</span>
                   <Badge variant="outline" className="text-xs">
                     {suggestions.length} disponíveis
                   </Badge>
@@ -757,7 +757,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               {/* Histórico de Comandos */}
               {showHistory && commandHistory.length > 0 && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
+                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
                   <div className="space-y-1">
                     {commandHistory.map((command, index) => (
                       <button
@@ -797,7 +797,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         {suggestion.description}
                       </div>
                       {suggestion.category && (
-                        <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-lia-text-primary border-0">
+                        <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-0">
                           {suggestion.category}
                         </Badge>
                       )}
@@ -819,13 +819,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               {/* Processing Indicator */}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-lia-text-tertiary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
+                <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
                   <div className="w-2 h-2 bg-gray-900 rounded-full animate-pulse"></div>
                   <span>🧠 LIA processando: "{lastCommand}"</span>
                 </div>
               )}
 
-              <div className="text-xs text-gray-800 dark:text-lia-text-primary text-center pt-2 space-y-1">
+              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary text-center pt-2 space-y-1">
                 <div>💡 LIA aprende com seus padrões para sugerir ações mais precisas</div>
                 <div className="flex justify-center gap-4">
                   <span>⌨️ Esc para fechar</span>
@@ -882,9 +882,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           onClick={closeEditArchetype}
         >
           <div 
-            className="bg-lia-bg-primary rounded-md p-5 w-full max-w-md mx-4"
+            className="bg-lia-bg-primary rounded-md p-5 w-full max-w-md mx-4 border border-lia-border-subtle"
             onClick={(e) => e.stopPropagation()}
-            className="border border-lia-border-subtle"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold" style={{color: "var(--gray-950)"}}>
@@ -955,7 +954,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       <Badge 
                         key={index} 
                         variant="secondary" 
-                        className="text-xs bg-gray-100 text-gray-800 dark:text-lia-text-primary pr-1 flex items-center gap-1"
+                        className="text-xs bg-gray-100 text-lia-text-primary dark:text-lia-text-primary pr-1 flex items-center gap-1"
                       >
                         {tag}
                         <button
@@ -1106,7 +1105,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 <span className="font-medium text-status-warning">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-micro pt-1 border-t border-lia-border-subtle">
-                <span className="font-medium text-gray-800 dark:text-lia-text-primary">Total estimado:</span>
+                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Total estimado:</span>
                 <span className="font-semibold text-status-warning">1 cr/candidato</span>
               </div>
             </div>

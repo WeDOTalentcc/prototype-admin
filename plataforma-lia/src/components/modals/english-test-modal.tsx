@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 interface EnglishTestModalProps {
   isOpen: boolean
   onClose: () => void
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 type TestStatus = 'pending' | 'in_progress' | 'completed'
@@ -109,13 +109,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             </div>
             <div>
               <h2 
-                className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
+                className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary"
                
               >
                 Teste de Inglês
               </h2>
               <p 
-                className="text-xs text-gray-500"
+                className="text-xs text-lia-text-tertiary"
                
               >
                 {candidate?.name ?? 'Candidato'}
@@ -124,7 +124,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -149,7 +149,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             </div>
             {testData.completedAt && status === 'completed' && (
               <span 
-                className="text-micro text-gray-500"
+                className="text-micro text-lia-text-tertiary"
                
               >
                 Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
@@ -164,9 +164,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     <span 
-                      className="text-micro text-gray-500"
+                      className="text-micro text-lia-text-tertiary"
                      
                     >
                       Score Geral
@@ -179,7 +179,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     {testData.score}
                   </span>
                   <span 
-                    className="text-sm ml-1 text-gray-400"
+                    className="text-sm ml-1 text-lia-text-disabled"
                    
                   >
                     / 100
@@ -192,7 +192,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span 
-                      className="text-micro text-gray-500"
+                      className="text-micro text-lia-text-tertiary"
                      
                     >
                       Nível CEFR
@@ -205,7 +205,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     {testData.level}
                   </span>
                   <p 
-                    className="text-micro mt-0.5 text-gray-600"
+                    className="text-micro mt-0.5 text-lia-text-secondary"
                    
                   >
                     {levelInfo.description}
@@ -215,7 +215,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
               <div className="mb-4">
                 <p 
-                  className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
+                  className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
                  
                 >
                   Breakdown por Habilidade
@@ -234,9 +234,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                            <Icon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             <span 
-                              className="text-xs font-medium text-gray-950 dark:text-gray-50"
+                              className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
                              
                             >
                               {skill.label}
@@ -270,13 +270,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
               <div className="p-3 rounded-md bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <p 
-                  className="text-micro font-medium mb-1 text-gray-700 dark:text-lia-text-secondary"
+                  className="text-micro font-medium mb-1 text-lia-text-secondary dark:text-lia-text-secondary"
                  
                 >
                   Sobre o nível CEFR
                 </p>
                 <p 
-                  className="text-micro text-gray-600"
+                  className="text-micro text-lia-text-secondary"
                  
                 >
                   O CEFR (Quadro Europeu Comum de Referência) é um padrão internacional para descrever habilidades linguísticas em uma escala de A1 (iniciante) a C2 (proficiente).
@@ -287,17 +287,17 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
           {status === 'pending' && (
             <div 
-              className="flex flex-col items-center justify-center py-8 text-gray-400"
+              className="flex flex-col items-center justify-center py-8 text-lia-text-disabled"
             >
               <AlertCircle className="w-12 h-12 mb-3" />
               <p 
-                className="text-xs font-medium mb-1 text-gray-500"
+                className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
                 Teste ainda não iniciado
               </p>
               <p 
-                className="text-micro text-center text-gray-400"
+                className="text-micro text-center text-lia-text-disabled"
                
               >
                 O candidato receberá um convite para realizar o teste de inglês.
@@ -312,13 +312,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 
-                className="text-xs font-medium mb-1 text-gray-500"
+                className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
                 Teste em andamento
               </p>
               <p 
-                className="text-micro text-center text-gray-400"
+                className="text-micro text-center text-lia-text-disabled"
                
               >
                 O candidato está realizando o teste de inglês neste momento.
@@ -333,7 +333,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             Fechar
           </Button>

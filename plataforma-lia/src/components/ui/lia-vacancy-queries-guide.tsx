@@ -195,7 +195,7 @@ export function LiaVacancyQueriesGuide({
                   border: '1px solid var(--gray-100)'}}
               >
                 <div className="p-1.5 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
-                  <query.icon className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                  <query.icon className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <span
                   className="text-xs leading-snug"

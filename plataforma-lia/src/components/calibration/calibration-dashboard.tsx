@@ -75,7 +75,7 @@ interface Suggestion {
   title: string
   description?: string
   rationale?: string
-  supporting_evidence?: Array<{ metric: string; value: any }>
+  supporting_evidence?: Array<{ metric: string; value: unknown }>
   impact_score?: number
   confidence?: number
   status: string
@@ -244,7 +244,7 @@ export function CalibrationDashboard() {
   }
 
   const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 90) return "text-gray-600 dark:text-lia-text-tertiary"
+    if (accuracy >= 90) return "text-lia-text-secondary dark:text-lia-text-tertiary"
     if (accuracy >= 80) return "text-status-success"
     if (accuracy >= 70) return "text-status-warning"
     return "text-status-error"
@@ -253,9 +253,9 @@ export function CalibrationDashboard() {
   const getDivergenceIcon = (type: string) => {
     switch (type) {
       case "implicit_reject":
-        return <TrendingDown className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+        return <TrendingDown className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
       case "implicit_advance":
-        return <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+        return <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
       case "explicit_disagree":
         return <ThumbsDown className="w-4 h-4 lia-text-base" />
       default:
@@ -280,11 +280,11 @@ export function CalibrationDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Scale className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
-          <h2 className="text-lg font-semibold font-sans text-gray-950">
+          <Scale className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <h2 className="text-lg font-semibold font-sans text-lia-text-primary">
             Calibração do Modelo LIA
           </h2>
-          <Badge variant="outline" className="text-gray-600 dark:text-lia-text-tertiary border-gray-900">
+          <Badge variant="outline" className="text-lia-text-secondary dark:text-lia-text-tertiary border-gray-900">
             Últimos {data.stats.period_days} dias
           </Badge>
         </div>
@@ -320,7 +320,7 @@ export function CalibrationDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Taxa de Concordância</p>
-                <p className="text-2xl font-bold text-gray-950">
+                <p className="text-2xl font-bold text-lia-text-primary">
                   {data.stats.explicit_feedback.agreement_rate.toFixed(1)}%
                 </p>
                 <p className="text-xs lia-text-base">
@@ -337,7 +337,7 @@ export function CalibrationDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Divergências</p>
-                <p className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                   {data.stats.divergences.total}
                 </p>
                 <p className="text-xs lia-text-base">
@@ -354,7 +354,7 @@ export function CalibrationDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Ações Capturadas</p>
-                <p className="text-2xl font-bold text-gray-950">
+                <p className="text-2xl font-bold text-lia-text-primary">
                   {data.stats.total_events}
                 </p>
                 <p className="text-xs lia-text-base">
@@ -371,7 +371,7 @@ export function CalibrationDashboard() {
         <Card className="bg-gray-50 dark:bg-lia-bg-secondary/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 font-sans">
-              <Lightbulb className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Lightbulb className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Sugestões de Calibração
               <Badge className="bg-gray-900 text-white">
                 {data.suggestions.length} pendente{data.suggestions.length > 1 ? "s" : ""}
@@ -387,10 +387,10 @@ export function CalibrationDashboard() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h4 className="font-medium font-sans text-gray-950">
+                      <h4 className="font-medium font-sans text-lia-text-primary">
                         {suggestion.title}
                       </h4>
-                      <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
+                      <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
                         {suggestion.description}
                       </p>
                       {suggestion.dimension && (
@@ -448,7 +448,7 @@ export function CalibrationDashboard() {
           <CardContent>
             {data.divergences.length === 0 ? (
               <div className="text-center py-8 lia-text-base">
-                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-600 dark:text-lia-text-tertiary opacity-50" />
+                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-lia-text-secondary dark:text-lia-text-tertiary opacity-50" />
                 <p>Nenhuma divergência significativa</p>
                 <p className="text-sm">LIA e recrutadores estão alinhados</p>
               </div>
@@ -461,7 +461,7 @@ export function CalibrationDashboard() {
                   >
                     {getDivergenceIcon(divergence.type)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-950">
+                      <p className="text-sm font-medium text-lia-text-primary">
                         {getDivergenceLabel(divergence.type)}
                       </p>
                       <p className="text-xs lia-text-base mt-0.5">
@@ -473,7 +473,7 @@ export function CalibrationDashboard() {
                         )}
                       </p>
                       {divergence.feedback_reason && (
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1 italic">
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1 italic">
                           "{divergence.feedback_reason}"
                         </p>
                       )}
@@ -494,7 +494,7 @@ export function CalibrationDashboard() {
         <Card className="">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 font-sans">
-              <Scale className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Scale className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Pesos Atuais
             </CardTitle>
           </CardHeader>
@@ -503,10 +503,10 @@ export function CalibrationDashboard() {
               {data.weights.map((weight) => (
                 <div key={weight.id}>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm text-gray-800 dark:text-lia-text-primary capitalize">
+                    <span className="text-sm text-lia-text-primary dark:text-lia-text-primary capitalize">
                       {weight.dimension.replace(/_/g, " ")}
                     </span>
-                    <span className="text-sm font-medium text-gray-950">
+                    <span className="text-sm font-medium text-lia-text-primary">
                       {(weight.adjusted_weight * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -535,23 +535,23 @@ export function CalibrationDashboard() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-sans">
-              <Lightbulb className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Lightbulb className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               {selectedSuggestion?.title}
             </DialogTitle>
           </DialogHeader>
           
           {selectedSuggestion && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                 {selectedSuggestion.description}
               </p>
               
               {selectedSuggestion.rationale && (
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-1">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                     Racional:
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                     {selectedSuggestion.rationale}
                   </p>
                 </div>
@@ -559,7 +559,7 @@ export function CalibrationDashboard() {
 
               {selectedSuggestion.supporting_evidence && (
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                     Evidências:
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -576,14 +576,14 @@ export function CalibrationDashboard() {
                 <div className="flex items-center gap-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                   <div>
                     <p className="text-xs lia-text-base">Peso Atual</p>
-                    <p className="text-lg font-bold text-gray-950">
+                    <p className="text-lg font-bold text-lia-text-primary">
                       {((selectedSuggestion.current_weight || 0) * 100).toFixed(0)}%
                     </p>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <ArrowRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   <div>
                     <p className="text-xs lia-text-base">Peso Sugerido</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-lia-text-primary">
                       {((selectedSuggestion.suggested_weight || 0) * 100).toFixed(0)}%
                     </p>
                   </div>
@@ -591,7 +591,7 @@ export function CalibrationDashboard() {
               )}
 
               <div>
-                <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Motivo para rejeitar (opcional):
                 </p>
                 <Textarea

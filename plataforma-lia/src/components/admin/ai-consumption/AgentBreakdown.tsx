@@ -31,7 +31,7 @@ export function AgentBreakdown({
   return (
     <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader>
-        <CardTitle className="text-base font-semibold text-gray-800 dark:text-lia-text-primary">
+        <CardTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
           {title}
         </CardTitle>
       </CardHeader>
@@ -43,22 +43,22 @@ export function AgentBreakdown({
               <div key={agent.agent}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+                    <Icon className="w-4 h-4 text-lia-text-disabled" />
+                    <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {agent.label}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+                    <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {(agent.tokens / 1000).toFixed(0)}K
                     </span>
-                    <span className="text-xs ml-2 text-gray-400">
+                    <span className="text-xs ml-2 text-lia-text-disabled">
                       ({agent.percentage}%)
                     </span>
                   </div>
                 </div>
                 <Progress value={agent.percentage} className="h-2" />
-                <p className="text-xs mt-1 text-gray-400">
+                <p className="text-xs mt-1 text-lia-text-disabled">
                   {agent.calls.toLocaleString('pt-BR')} chamadas
                 </p>
               </div>

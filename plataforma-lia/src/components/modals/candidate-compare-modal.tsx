@@ -37,7 +37,7 @@ function getScoreColor(score: number): string {
 }
 
 function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-micro text-gray-400">—</span>
+  if (value == null) return <span className="text-micro text-lia-text-disabled">—</span>
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-1.5">
@@ -91,13 +91,13 @@ export function CandidateCompareModal({
 
         {loading && (
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            <span className="ml-2 text-sm text-gray-500">Comparando...</span>
+            <Loader2 className="h-5 w-5 animate-spin text-lia-text-disabled" />
+            <span className="ml-2 text-sm text-lia-text-tertiary">Comparando...</span>
           </div>
         )}
 
         {error && !loading && (
-          <div className="flex items-center gap-2 py-4 text-sm text-gray-500">
+          <div className="flex items-center gap-2 py-4 text-sm text-lia-text-tertiary">
             <AlertCircle className="h-4 w-4 text-status-warning" />
             <span>{error}</span>
           </div>
@@ -122,14 +122,14 @@ export function CandidateCompareModal({
 
             {/* Scores gerais */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary mb-2">
+              <p className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-2">
                 Score Geral
               </p>
               <div className="grid gap-1.5">
                 {Object.entries(data.candidate_scores).map(([cId, score]) => (
                   <div key={cId} className="grid grid-cols-[1fr_auto] items-center gap-2">
                     <div>
-                      <p className="text-micro font-medium text-gray-800 dark:text-lia-text-primary truncate">
+                      <p className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                         {nameById[cId] || cId}
                       </p>
                       <ScoreBar value={score} />
@@ -145,7 +145,7 @@ export function CandidateCompareModal({
             {/* Dimensões */}
             {Object.keys(data.dimension_comparison).length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary mb-2">
+                <p className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-2">
                   Por Dimensão
                 </p>
                 <div className="space-y-2">
@@ -153,7 +153,7 @@ export function CandidateCompareModal({
                     .slice(0, 5)
                     .map(([dim, scores]) => (
                       <div key={dim}>
-                        <p className="text-micro text-gray-500 capitalize mb-1">
+                        <p className="text-micro text-lia-text-tertiary capitalize mb-1">
                           {dim.replace(/_/g, " ")}
                         </p>
                         <div className="grid gap-0.5">
@@ -161,7 +161,7 @@ export function CandidateCompareModal({
                             .filter(([, v]) => typeof v === "number")
                             .map(([cId, v]) => (
                               <div key={cId} className="flex items-center gap-2">
-                                <span className="text-micro text-gray-500 w-20 truncate">
+                                <span className="text-micro text-lia-text-tertiary w-20 truncate">
                                   {nameById[cId] || cId}
                                 </span>
                                 <div className="flex-1">
@@ -179,7 +179,7 @@ export function CandidateCompareModal({
             {/* Análise */}
             {data.analysis && (
               <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <p className="text-micro text-gray-600 dark:text-lia-text-tertiary leading-relaxed line-clamp-4">
+                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed line-clamp-4">
                   {data.analysis}
                 </p>
               </div>

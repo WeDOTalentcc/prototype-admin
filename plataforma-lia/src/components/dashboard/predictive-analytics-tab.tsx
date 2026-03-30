@@ -231,7 +231,7 @@ export function PredictiveAnalyticsTab() {
 
   const getProbabilityColor = (prob: number) => {
     if (prob >= 80) return "text-status-success"
-    if (prob >= 60) return "text-gray-600 dark:text-lia-text-tertiary"
+    if (prob >= 60) return "text-lia-text-secondary dark:text-lia-text-tertiary"
     if (prob >= 40) return "text-status-warning"
     return "text-status-error"
   }
@@ -241,10 +241,10 @@ export function PredictiveAnalyticsTab() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-wedo-cyan" />
-          <h2 className="text-lg font-sans font-semibold text-gray-950">
+          <h2 className="text-lg font-sans font-semibold text-lia-text-primary">
             Analytics Preditivo
           </h2>
-          <Badge variant="outline" className="text-gray-600 dark:text-lia-text-tertiary border-gray-900">
+          <Badge variant="outline" className="text-lia-text-secondary dark:text-lia-text-tertiary border-gray-900">
             Powered by LIA
           </Badge>
         </div>
@@ -266,7 +266,7 @@ export function PredictiveAnalyticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Vagas Ativas</p>
-                <p className="text-2xl font-bold text-gray-950">{data.summary.total_active_jobs}</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{data.summary.total_active_jobs}</p>
               </div>
               <BarChart3 className="w-8 h-8 lia-text-base opacity-50" />
             </div>
@@ -278,9 +278,9 @@ export function PredictiveAnalyticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">No Prazo</p>
-                <p className="text-2xl font-bold text-gray-900">{data.summary.jobs_on_track}</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{data.summary.jobs_on_track}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary opacity-50" />
+              <CheckCircle className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -290,7 +290,7 @@ export function PredictiveAnalyticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Em Risco</p>
-                <p className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">{data.summary.jobs_at_risk}</p>
+                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.jobs_at_risk}</p>
               </div>
               <AlertTriangle className="w-8 h-8 lia-text-base opacity-50" />
             </div>
@@ -302,7 +302,7 @@ export function PredictiveAnalyticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Candidatos em Risco</p>
-                <p className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">{data.summary.high_risk_candidates}</p>
+                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.high_risk_candidates}</p>
               </div>
               <XCircle className="w-8 h-8 lia-text-base opacity-50" />
             </div>
@@ -314,9 +314,9 @@ export function PredictiveAnalyticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs lia-text-base">Quick Wins</p>
-                <p className="text-2xl font-bold text-gray-900">{data.summary.quick_win_opportunities}</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{data.summary.quick_win_opportunities}</p>
               </div>
-              <Zap className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary opacity-50" />
+              <Zap className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -351,7 +351,7 @@ export function PredictiveAnalyticsTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-sans flex items-center gap-2">
-                <Activity className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <Activity className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Insights da LIA
               </CardTitle>
             </CardHeader>
@@ -371,10 +371,10 @@ export function PredictiveAnalyticsTab() {
                     ) : insight.type === "success" ? (
                       <CheckCircle className="w-5 h-5 text-status-success mt-0.5" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mt-0.5" />
+                      <AlertCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
                     )}
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-gray-950">{insight.title}</p>
+                      <p className="font-medium text-sm text-lia-text-primary">{insight.title}</p>
                       <p className="text-xs lia-text-base mt-0.5">{insight.description}</p>
                       <Button variant="link" size="sm" className="h-auto p-0 mt-1 text-xs">
                         {insight.action} <ChevronRight className="w-3 h-3 ml-1" />
@@ -501,7 +501,7 @@ export function PredictiveAnalyticsTab() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-sans flex items-center gap-2">
-              <Zap className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Quick Wins - Alta Probabilidade de Contratação
             </CardTitle>
           </CardHeader>

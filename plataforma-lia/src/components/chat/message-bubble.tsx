@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { memo, useMemo } from "react"
 import { User, Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ActionResultCard } from "@/components/chat/action-result-card"
@@ -33,7 +33,7 @@ function RichTextContent({ html, className }: { html: string; className?: string
   )
 }
 
-export function MessageBubble({
+const MessageBubbleComponent = memo(function MessageBubble({
   sender,
   content,
   timestamp,
@@ -131,4 +131,8 @@ export function MessageBubble({
       )}
     </div>
   )
-}
+})
+
+MessageBubbleComponent.displayName = "MessageBubble"
+
+export const MessageBubble = MessageBubbleComponent

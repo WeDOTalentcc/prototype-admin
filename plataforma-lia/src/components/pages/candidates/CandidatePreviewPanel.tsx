@@ -27,18 +27,18 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Informações Básicas</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Informações Básicas</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Cargo:</span>
-                    <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{candidate.position}</span>
+                    <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Cargo:</span>
+                    <span className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>{candidate.position}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Localização:</span>
-                    <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{candidate.location}</span>
+                    <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Localização:</span>
+                    <span className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>{candidate.location}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <span className={`${textStyles.bodySmall} dark:text-gray-500`}>Status:</span>
+                    <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Status:</span>
                     <Badge className={`${
                       candidate.status === 'active' ? badgeStyles.success :
                       candidate.status === 'prospect' ? badgeStyles.info :
@@ -54,11 +54,11 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Score LIA</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Score LIA</h4>
                 <div className="bg-gray-100 dark:bg-lia-bg-secondary p-3 rounded-md">
                   <div className="flex items-center justify-between mb-2">
                     <span className={`${textStyles.label} dark:text-lia-text-primary`}>Compatibilidade</span>
-                    <span className="text-base font-bold text-gray-900 dark:text-gray-50">{formatScorePercent(candidate.score)}</span>
+                    <span className="text-base font-bold text-lia-text-primary dark:text-lia-text-primary">{formatScorePercent(candidate.score)}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
@@ -87,10 +87,10 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Experiência Profissional</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Experiência Profissional</h4>
                 <div className="space-y-3">
                   <div className="border-l-4 border-wedo-green pl-3 py-2 bg-wedo-green/10 dark:bg-wedo-green/20 rounded-r-lg">
-                    <div className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>
+                    <div className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>
                       Senior Developer
                     </div>
                     <div className={`${textStyles.bodySmall} text-wedo-green dark:text-wedo-green`}>
@@ -101,10 +101,10 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     </div>
                   </div>
                   <div className="border-l-4 border-lia-border-default pl-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-r-lg">
-                    <div className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>
+                    <div className={`${textStyles.label} text-lia-text-primary dark:text-lia-text-primary`}>
                       Full Stack Developer
                     </div>
-                    <div className={`${textStyles.bodySmall} dark:text-gray-500`}>
+                    <div className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                       Startup XYZ • 2019 - 2021
                     </div>
                     <div className={`${textStyles.bodySmall} mt-1 dark:text-lia-text-tertiary`}>
@@ -120,20 +120,20 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 mb-2">Habilidades Técnicas</h4>
+                <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Habilidades Técnicas</h4>
                 <div className="space-y-3">
                   <div>
                     <h5 className={`${textStyles.label} dark:text-lia-text-primary mb-1`}>Frontend</h5>
                     <div className="flex flex-wrap gap-1">
                       {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0">
+                        <Badge key={index} className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0">
                           {skill}
                         </Badge>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <h5 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Backend</h5>
+                    <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
                         <Badge key={index} className="text-xs bg-status-success/15 text-status-success border-0">
@@ -143,7 +143,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     </div>
                   </div>
                   <div>
-                    <h5 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Soft Skills</h5>
+                    <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Soft Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
                         <Badge key={index} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
@@ -161,39 +161,39 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
           return (
             <div className="space-y-6">
               <div>
-                <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Informações de Contato</h4>
+                <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Informações de Contato</h4>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <Mail className="w-4 h-4 text-gray-800" />
+                    <Mail className="w-4 h-4 text-lia-text-primary" />
                     <div>
-                      <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{candidate.email}</div>
-                      <div className="text-xs text-gray-800">Email principal</div>
+                      <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{candidate.email}</div>
+                      <div className="text-xs text-lia-text-primary">Email principal</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <Phone className="w-4 h-4 text-gray-800" />
+                    <Phone className="w-4 h-4 text-lia-text-primary" />
                     <div>
-                      <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{candidate.phone}</div>
-                      <div className="text-xs text-gray-800">Telefone/WhatsApp</div>
+                      <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{candidate.phone}</div>
+                      <div className="text-xs text-lia-text-primary">Telefone/WhatsApp</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <Linkedin className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
+                    <Linkedin className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" />
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-lia-text-primary">Ver perfil LinkedIn</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Perfil profissional</div>
+                      <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Ver perfil LinkedIn</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Perfil profissional</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Histórico de Interações</h4>
+                <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Histórico de Interações</h4>
                 <div className="space-y-2">
-                  <div className="text-xs text-gray-800 dark:text-lia-text-tertiary p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-xs text-lia-text-primary dark:text-lia-text-tertiary p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                     📧 Email enviado há 2 dias
                   </div>
-                  <div className="text-xs text-gray-800 dark:text-lia-text-tertiary p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                  <div className="text-xs text-lia-text-primary dark:text-lia-text-tertiary p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                     📞 Ligação agendada para amanhã às 14h
                   </div>
                 </div>
@@ -216,13 +216,13 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                   src={candidate.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(candidate.name)}&background=60BED1&color=fff&size=150`}
                   alt={candidate.name}
                 />
-                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary font-semibold">
+                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary font-semibold">
                   {candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50">{candidate.name}</h3>
-                <p className="text-sm text-gray-800 dark:text-gray-500">{candidate.position}</p>
+                <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h3>
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">{candidate.position}</p>
               </div>
             </div>
             <Button
@@ -237,22 +237,22 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
 
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-              <div className="font-semibold text-gray-950 dark:text-gray-50">{formatScorePercent(candidate.score)}</div>
-              <div className="text-gray-800">Score LIA</div>
+              <div className="font-semibold text-lia-text-primary dark:text-lia-text-primary">{formatScorePercent(candidate.score)}</div>
+              <div className="text-lia-text-primary">Score LIA</div>
             </div>
             <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-              <div className="font-semibold text-gray-950 dark:text-gray-50 flex items-center justify-center gap-1">
+              <div className="font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center justify-center gap-1">
                 <Star className="w-3 h-3 text-status-warning" />
                 4.8
               </div>
-              <div className="text-gray-800">Avaliação</div>
+              <div className="text-lia-text-primary">Avaliação</div>
             </div>
             <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <Badge className={`text-xs ${
                 candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
-                candidate.status === 'prospect' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary' :
+                candidate.status === 'prospect' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary' :
                 candidate.status === 'interview' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
-                'bg-gray-200 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary'
+                'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary'
               }`}>
                 {candidate.status === 'active' ? 'Ativo' :
                  candidate.status === 'prospect' ? 'Prospect' :
@@ -270,8 +270,8 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
                   activeTab === tab.id
-                    ? 'border-gray-950 text-gray-950 dark:border-gray-50 dark:text-gray-50'
-                    : 'border-transparent text-gray-800 hover:text-gray-950 hover:border-lia-border-default dark:text-lia-text-tertiary dark:hover:text-gray-300'
+                    ? 'border-gray-950 text-lia-text-primary dark:border-lia-border-medium dark:text-lia-text-primary'
+                    : 'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
                 }`}
               >
                 <tab.icon className="w-3 h-3 mx-auto mb-1" />

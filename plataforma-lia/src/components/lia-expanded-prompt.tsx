@@ -117,7 +117,7 @@ export function LiaExpandedPrompt({
               style={{backgroundColor: colors.iconBg}}
               className="p-2 rounded-md"
             >
-              <LIAIcon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <LIAIcon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div className="flex-1">
               <h3

@@ -193,14 +193,14 @@ export function AddColumnPopover({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
+          <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-            <X className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <X className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
           </button>
         </div>
 
         <div className="space-y-3 mb-4">
-          <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Nome da Etapa</label>
+          <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Nome da Etapa</label>
           <input
             type="text"
             value={columnName}
@@ -211,7 +211,7 @@ export function AddColumnPopover({
           {columnName.length >= 3 && !inferredBehavior && (
             <button
               onClick={handleInferBehavior}
-              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-lia-text-tertiary transition-colors"
+              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary transition-colors"
             >
               Sugerir tipo de ação
             </button>
@@ -221,7 +221,7 @@ export function AddColumnPopover({
               <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
                 {inferredBehavior.suggested_behavior}
               </span>
-              <span className="text-micro text-gray-400">
+              <span className="text-micro text-lia-text-disabled">
                 {Math.round(inferredBehavior.confidence * 100)}% confiança
               </span>
             </div>
@@ -239,7 +239,7 @@ export function AddColumnPopover({
 
         {availableCatalog.length > 0 && (
           <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <label className="text-xs font-medium text-gray-500 dark:text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
+            <label className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
             <div className="grid grid-cols-2 gap-2">
               {availableCatalog.map(cat => (
                 <button
@@ -249,7 +249,7 @@ export function AddColumnPopover({
                   className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
-                  <span className="text-xs text-gray-700 dark:text-lia-text-secondary font-medium">{cat.name}</span>
+                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary font-medium">{cat.name}</span>
                 </button>
               ))}
             </div>

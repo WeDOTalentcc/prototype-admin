@@ -182,7 +182,7 @@ export function ColumnConfigurationModal({
               <Settings className="w-4 h-4" />
               Columns
             </SheetTitle>
-            <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+            <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
               {visibleCount} de {columns.length} colunas visíveis
             </div>
           </SheetHeader>
@@ -190,7 +190,7 @@ export function ColumnConfigurationModal({
           {/* Search */}
           <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-disabled" />
               <Input
                 placeholder="Search"
                 value={searchTerm}
@@ -203,19 +203,19 @@ export function ColumnConfigurationModal({
           {/* Saved Views */}
           {savedViews.length > 0 && (
             <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-              <h4 className="text-sm font-medium text-gray-950 mb-2">Visualizações Salvas</h4>
+              <h4 className="text-sm font-medium text-lia-text-primary mb-2">Visualizações Salvas</h4>
               <div className="space-y-1">
                 {savedViews.map(view => (
                   <div key={view.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <button
                       onClick={() => onLoadView(view)}
-                      className="flex-1 text-left text-sm text-gray-800 dark:text-lia-text-primary hover:text-gray-950 dark:hover:text-gray-50"
+                      className="flex-1 text-left text-sm text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                     >
                       {view.name}
                     </button>
                     <button
                       onClick={() => onDeleteView(view.id)}
-                      className="text-gray-400 hover:text-status-error p-1"
+                      className="text-lia-text-disabled hover:text-status-error p-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -279,7 +279,7 @@ export function ColumnConfigurationModal({
                       : 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
                   } hover:bg-gray-100 dark:hover:bg-gray-700`}
                 >
-                  <GripVertical className="w-4 h-4 text-gray-400" />
+                  <GripVertical className="w-4 h-4 text-lia-text-disabled" />
 
                   <button
                     onClick={() => handleToggleColumn(column.id)}
@@ -298,16 +298,16 @@ export function ColumnConfigurationModal({
                     </div>
 
                     <span className={`text-sm ${
- column.visible ? 'text-gray-950 font-medium' : 'text-gray-600'
+ column.visible ? 'text-lia-text-primary font-medium' : 'text-lia-text-secondary'
                     }`}>
                       {column.label}
                     </span>
                   </button>
 
                   {column.visible ? (
-                    <Eye className="w-4 h-4 text-gray-900" />
+                    <Eye className="w-4 h-4 text-lia-text-primary" />
                   ) : (
-                    <EyeOff className="w-4 h-4 text-gray-400" />
+                    <EyeOff className="w-4 h-4 text-lia-text-disabled" />
                   )}
                 </div>
               ))}

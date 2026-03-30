@@ -21,7 +21,7 @@ export interface KanbanBoardProps {
   onSelectCandidates?: (candidateIds: string[], selected: boolean) => void
   onToggleCandidateSelect?: (candidateId: string) => void
   onCandidateClick: (candidate: KanbanCandidate) => void
-  onCandidateQuickAction: (action: QuickActionType, candidate: KanbanCandidate, extra?: any) => void
+  onCandidateQuickAction: (action: QuickActionType, candidate: KanbanCandidate, extra?: Record<string, unknown>) => void
   onTransitionRequired?: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   onSubStatusChange?: (candidateId: string, newSubStatus: string, stage: string) => void
   subStatusOptions?: Array<{ code: string; display_name: string }>

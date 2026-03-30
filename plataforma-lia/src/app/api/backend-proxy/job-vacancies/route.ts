@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { validateBody } from '@/lib/api/validate'
+import { jobCreateSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -7,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/job-vacancies${queryString ? `?${queryString}` : ''}`, {
       method: 'GET',
       headers: getAuthHeaders(request),
@@ -33,12 +35,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
+    const bodyResult = await validateBody(request, jobCreateSchema)
+    if (!bodyResult.success) return bodyResult.response
+
     const response = await fetch(`${BACKEND_URL}/api/v1/job-vacancies`, {
       method: 'POST',
       headers: getAuthHeaders(request),
-      body: JSON.stringify(body),
+      body: JSON.stringify(bodyResult.data),
     })
 
     if (!response.ok) {

@@ -356,11 +356,11 @@ export function RubricEvaluationModal({
               <Target className="w-4 h-4 lia-text-base" />
             </div>
             <div>
-              <h2 className="text-base-ui font-semibold text-gray-950">
+              <h2 className="text-base-ui font-semibold text-lia-text-primary">
                 Análise CV vs Vaga
               </h2>
               <div className="flex items-center gap-2 text-xs">
-                <span className="flex items-center gap-1 text-gray-800 dark:text-lia-text-primary">
+                <span className="flex items-center gap-1 text-lia-text-primary dark:text-lia-text-primary">
                   <User className="w-3 h-3 lia-text-secondary" />
                   {displayName}
                 </span>
@@ -407,7 +407,7 @@ export function RubricEvaluationModal({
               {/* Score Card */}
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-gray-950">Score de Aderência</span>
+                  <span className="text-xs font-semibold text-lia-text-primary">Score de Aderência</span>
                   <div className="flex items-center gap-2">
                     <span 
                       className="text-micro font-medium px-2 py-0.5 rounded-full"
@@ -436,7 +436,7 @@ export function RubricEvaluationModal({
                         backgroundColor: getScoreColor(score)}}
                     />
                   </div>
-                  <span className="text-xl font-bold min-w-[55px] text-right text-gray-950">
+                  <span className="text-xl font-bold min-w-[55px] text-right text-lia-text-primary">
                     {score}%
                   </span>
                 </div>
@@ -466,7 +466,7 @@ export function RubricEvaluationModal({
 
               {/* Parecer da LIA - Expandido */}
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-gray-950">
+                <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Parecer da LIA
                 </h3>
@@ -477,7 +477,7 @@ export function RubricEvaluationModal({
                     <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold bg-wedo-cyan/[.12]">1</span>
                     Contexto e Fit
                   </div>
-                  <p className="text-xs leading-relaxed pl-5 text-gray-800 dark:text-lia-text-primary">
+                  <p className="text-xs leading-relaxed pl-5 text-lia-text-primary dark:text-lia-text-primary">
                     {mockParecer.contexto_fit}
                   </p>
                 </div>
@@ -498,7 +498,7 @@ export function RubricEvaluationModal({
                           <div className="flex items-start gap-2">
                             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
                             <div>
-                              <span className="text-xs font-medium text-gray-950">
+                              <span className="text-xs font-medium text-lia-text-primary">
                                 {pf.ponto}
                               </span>
                               <p className="text-micro mt-0.5 lia-text-secondary">
@@ -535,7 +535,7 @@ export function RubricEvaluationModal({
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <span className="text-xs font-medium text-gray-950">
+                                <span className="text-xs font-medium text-lia-text-primary">
                                   {rm.risco}
                                 </span>
                                 <p className="text-micro mt-0.5 lia-text-secondary">
@@ -572,7 +572,7 @@ export function RubricEvaluationModal({
                       Recomendação Final
                     </div>
                     <div className="pl-5 p-2.5 rounded-md border border-lia-border-subtle" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)'}}>
-                      <p className="text-xs leading-relaxed mb-2 text-gray-800 dark:text-lia-text-primary">
+                      <p className="text-xs leading-relaxed mb-2 text-lia-text-primary dark:text-lia-text-primary">
                         {mockParecer.recomendacao_final.justificativa}
                       </p>
                       {mockParecer.recomendacao_final.proximos_passos && mockParecer.recomendacao_final.proximos_passos.length > 0 && (
@@ -580,7 +580,7 @@ export function RubricEvaluationModal({
                           <span className="text-micro font-medium lia-text-secondary">Próximos Passos:</span>
                           <ul className="mt-1 space-y-0.5">
                             {mockParecer.recomendacao_final.proximos_passos.map((ps, idx) => (
-                              <li key={idx} className="text-micro flex items-start gap-1.5 text-gray-800 dark:text-lia-text-primary">
+                              <li key={idx} className="text-micro flex items-start gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
                                 <span className="lia-text-base">→</span>
                                 {ps}
                               </li>
@@ -595,7 +595,7 @@ export function RubricEvaluationModal({
 
               {/* Why This Candidate */}
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                   <Lightbulb className="w-4 h-4 lia-text-base" />
                   Por que este candidato?
                 </h3>
@@ -606,7 +606,7 @@ export function RubricEvaluationModal({
                       className="flex items-start gap-2 p-2 rounded-md bg-gray-50"
                     >
                       <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
-                      <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                         {reason}
                       </span>
                     </div>
@@ -621,7 +621,7 @@ export function RubricEvaluationModal({
             <div className="space-y-3">
               {/* Avaliação por Requisito */}
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                   <FileText className="w-4 h-4 lia-text-base" />
                   Matriz de Avaliação por Requisito
                 </h3>
@@ -644,7 +644,7 @@ export function RubricEvaluationModal({
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                              <span className="text-xs font-medium text-gray-950">
+                              <span className="text-xs font-medium text-lia-text-primary">
                                 {reqName}
                               </span>
                               {req.priority && (
@@ -690,7 +690,7 @@ export function RubricEvaluationModal({
 
               {/* Red Flags */}
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                   <Shield className="w-4 h-4 lia-text-base" />
                   Verificação de Red Flags
                 </h3>
@@ -703,7 +703,7 @@ export function RubricEvaluationModal({
                         key={idx} 
                         className="flex items-center justify-between p-2 rounded-md bg-gray-50"
                       >
-                        <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                        <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                           {flag.type}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -724,7 +724,7 @@ export function RubricEvaluationModal({
               <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)', borderRadius: '8px'}}>
                 <button
                   onClick={() => setShowAudit(!showAudit)}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-gray-950"
+                  className="w-full flex items-center justify-between text-xs font-semibold text-lia-text-primary"
                  
                 >
                   <span className="flex items-center gap-2">
@@ -743,7 +743,7 @@ export function RubricEvaluationModal({
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro lia-text-secondary">Total Requisitos</div>
-                        <div className="text-sm font-bold text-gray-950">
+                        <div className="text-sm font-bold text-lia-text-primary">
                           {requirements.length}
                         </div>
                       </div>
@@ -761,7 +761,7 @@ export function RubricEvaluationModal({
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro lia-text-secondary">Tempo Análise</div>
-                        <div className="text-sm font-bold text-gray-950">
+                        <div className="text-sm font-bold text-lia-text-primary">
                           {evaluation.audit_metrics?.analysis_time || '2.3'}s
                         </div>
                       </div>
@@ -796,7 +796,7 @@ export function RubricEvaluationModal({
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between">
                           <span className="text-micro lia-text-secondary">{item.label}</span>
-                          <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">{item.value}</span>
+                          <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{item.value}</span>
                         </div>
                       ))}
                     </div>

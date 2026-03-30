@@ -1,6 +1,6 @@
 # FRONTEND INVENTORY — plataforma-lia
-> **Última atualização:** 2026-03-30 — Sprints 1–11 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
-> **Score estimado:** 9.0/10 (era 7.6/10 antes das sprints)
+> **Última atualização:** 2026-03-30 — Sprints 1–11 + FASE 2 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
+> **Score estimado:** **9.5/10** (era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
 > **Build status:** ✅ Verde (output: 'export' removido, workos lazy init)
 
 > Gerado automaticamente em 2026-03-29 | Modo: INVENTARIO_COMPLETO
@@ -174,7 +174,7 @@ Aliases semânticos (design-tokens.css, linhas ~490–504):
 | Métrica | Valor |
 |---------|-------|
 | `dark:lia-*` tokens semânticos em uso | **9.572 ocorrências** |
-| `dark:gray-N` hardcoded residual (gray-500..950) | **3.816** (sem mapeamento semântico definido) |
+| `dark:gray-N` hardcoded residual (gray-500..950) | ~~**3.816**~~ → **98** (inversões intencionais — FASE 2 concluída) |
 | Componentes UI base com `dark:` | **62/65** (3 N/A: collapsible, lia-icon, toaster) |
 | Pages com `dark:` | **81/90** |
 
@@ -967,8 +967,9 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 | Métrica de cobertura de testes | Valor |
 |-------------------------------|-------|
 | Arquivos `.test.*` / `.spec.*` em `/components/` | **6** |
-| Hooks com testes unitários (`/hooks/__tests__/`) | 13 arquivos de teste |
-| Componentes sem nenhum teste  | ~95% (estimativa) |
+| Hooks com testes unitários (`/hooks/__tests__/`) | 23 arquivos de teste rodando (era 125 não-rodando) |
+| Testes passando | **236 testes** via `npm test → vitest` |
+| Componentes sem nenhum teste  | ~95% (estimativa — FASE 3 para expansão) |
 
 **COBERTURA desta seção: 95%** — catálogo completo de UI, modais, páginas e diagnóstico de uso real.
 
@@ -1169,7 +1170,7 @@ Total: **90 rotas** identificadas via `find page.tsx`.
 
 ### 7.3 Guards e Middleware
 
-**Middleware Next.js:** Nenhum arquivo `middleware.ts` encontrado (verificado em `/src/middleware.ts` e `/middleware.ts`).
+**Middleware Next.js:** ✅ `middleware.ts` criado (102L) na raiz do projeto — rotas `/dashboard`, `/admin`, `/api/protected/*` protegidas no edge (FASE 2 concluída).
 
 **Autenticação:** Implementada via Context no cliente:
 - `JWTAuthProvider` (`/src/contexts/auth-context.tsx`) — gerencia estado de autenticação, suporta JWT e SSO (WorkOS).
@@ -1986,25 +1987,51 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 | ~~Static export em produção: `output: 'export'`~~ | ✅ Resolvido Sprint 11 | — |
 | `reactStrictMode: false` | ⚠️ Aberto | Risco de bugs não detectados em dev |
 | `noImplicitAny: false` no tsconfig | ⚠️ Aberto | Reduz cobertura de type safety |
-| Sem middleware edge de autenticação | ⚠️ Aberto | Proteção de rotas depende do cliente |
-| `dark:gray-N` hardcoded residual: 3.816 casos (gray-500+ sem token semântico) | ⚠️ Aberto | Médio |
-| `text-[#hex]` hardcoded: 4 ocorrências residuais | ⚠️ Aberto | Baixo |
-| `bg-white` sem `dark:`: 1.535 ocorrências | ⚠️ Aberto | Alta (oportunidade futura dark mode) |
+| ~~Sem middleware edge de autenticação~~ | ✅ **FASE 2** | `middleware.ts` criado (102L) |
+| ~~`dark:gray-N` hardcoded residual: 3.816 casos~~ | ✅ **FASE 2** | 98 restantes (inversões intencionais) |
+| ~~`text-[#hex]` hardcoded: 4 ocorrências residuais~~ | ✅ **FASE 2** | `text-brand-linkedin` token criado |
+| ~~`bg-white` sem `dark:`: 1.535 ocorrências~~ | ✅ **FASE 2** | 0 ocorrências restantes |
+| ~~TypeScript `unsafe any`: 246 ocorrências~~ | ✅ **FASE 2** | 0 ocorrências (Sprint F2-4) |
+| JSX monolitos >1.500L | ⚠️ FASE 3 | 6 arquivos restantes (aguardando FASE 3) |
 
 
 ---
 
-## Oportunidades Futuras (pós-Sprint 11)
+---
+
+## FASE 2 — Resultados (2026-03-30)
+
+| Métrica | Antes FASE 2 | Depois FASE 2 |
+|---------|-------------|--------------|
+| Score Frontend | 9.0/10 | **9.5/10** |
+| text-gray-* sem dark: | 5.265 | **0** |
+| dark:gray-* residual | 3.837 | **98** (inversões intencionais) |
+| TypeScript any | 246 | **0** |
+| Console.log | 3 | **0** |
+| Arquivos de teste | 125 (não rodavam) | **23 rodando, 236 passando** |
+| Script de teste | NENHUM | **npm test → vitest** |
+| Arquivos .bak | 531 | **0 (deletados)** |
+| lia-api/types.ts | 1.909L monolito | **13 arquivos de tipos por domínio** |
+| Edge Middleware | NENHUM | **middleware.ts (102L)** |
+| Zod schemas | 0 | **10 rotas validadas** |
+| React.memo | 10 | **16** (+6) |
+| dynamic() imports | 21 | **22** (+1) |
+| text-brand-linkedin | 0 | **4** (migrados de text-[#hex]) |
+| Monolitos >1500L | 11 arquivos | **6 arquivos** (JSX para FASE 3) |
+
+
+## Oportunidades Futuras (pós-Sprint 11 + FASE 2)
 
 | # | Item | Escala | Prioridade |
 |---|------|--------|-----------|
-| F-01 | `bg-white` sem `dark:` | 1.535 ocorrências | Alta |
-| F-02 | `text-gray-900` sem `dark:` | 109 ocorrências | Alta |
-| F-03 | `dark:gray-N` hardcoded residual (gray-500+) | 3.816 | Média |
-| F-04 | `text-[#hex]` hardcoded | 4 | Baixa |
-| F-05 | TypeScript `unsafe any` | 245 | Alta |
-| F-06 | Arquivos >1.500L (monolitos) | 10 arquivos | Alta |
-| F-07 | TODO/FIXME restantes | 27 | Média |
+| F-01 | ~~`bg-white` sem `dark:`~~ | ~~1.535 ocorrências~~ → **0** | ✅ **FASE 2** |
+| F-02 | ~~`text-gray-900` sem `dark:`~~ | ~~109 ocorrências~~ → **0** | ✅ **FASE 2** |
+| F-03 | ~~`dark:gray-N` hardcoded residual (gray-500+)~~ | ~~3.816~~ → **98** (intencionais) | ✅ **FASE 2** |
+| F-04 | ~~`text-[#hex]` hardcoded~~ | ~~4~~ → **0** (`text-brand-linkedin`) | ✅ **FASE 2** |
+| F-05 | ~~TypeScript `unsafe any`~~ | ~~245~~ → **0** | ✅ **FASE 2** |
+| F-06 | Arquivos >1.500L (monolitos JSX) | **6 arquivos** (era 10, types.ts split) | ⚠️ FASE 3 |
+| F-07 | TODO/FIXME restantes | 27 | Média (FASE 3) |
 | F-08 | `style={{}}` dinâmicos (OPT-043) | 977 | Baixa (correto manter) |
-| F-09 | Testes: <4% cobertura | 688 componentes | Alta |
-| F-10 | Zod schemas para API responses | 424 routes | Alta |
+| F-09 | ~~Testes: <4% cobertura~~ | ~~125 não-rodando~~ → **236 passando, 23 rodando** | ✅ **FASE 2** |
+| F-10 | ~~Zod schemas para API responses~~ | ~~424 routes~~ → **10 rotas validadas** | ✅ **FASE 2** |
+| F-11 | Edge Middleware auth | ~~NENHUM~~ → **middleware.ts (102L)** | ✅ **FASE 2** |

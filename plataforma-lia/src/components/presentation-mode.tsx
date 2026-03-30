@@ -55,10 +55,10 @@ const mockData = {
 const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
   <Card key={index} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors">
     <CardContent className="p-8 text-center">
-      <div className="text-5xl font-bold text-gray-950 mb-4">
+      <div className="text-5xl font-bold text-lia-text-primary mb-4">
         {kpi.value}
       </div>
-      <div className="text-xl font-medium text-gray-800 dark:text-lia-text-primary mb-4">
+      <div className="text-xl font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
         {kpi.label}
       </div>
       <div className="flex items-center justify-center gap-2">
@@ -84,10 +84,10 @@ const KPISlide = React.memo(({ data }: { data: Record<string, unknown> }) => {
 
   return (
     <div className="h-full flex flex-col justify-center p-16">
-      <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
+      <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
         Indicadores Principais
       </h1>
-      <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
+      <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
         Performance de Recrutamento - {currentDate}
       </p>
 
@@ -107,30 +107,30 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
   <Card key={index} className="bg-white dark:bg-lia-bg-secondary border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
-        <h3 className="text-3xl font-bold text-gray-950 mb-2">
+        <h3 className="text-3xl font-bold text-lia-text-primary mb-2">
           {dept.name}
         </h3>
-        <div className="text-6xl font-bold text-gray-900 mb-4">
+        <div className="text-6xl font-bold text-lia-text-primary mb-4">
           {dept.efficiency}%
         </div>
-        <div className="text-lg text-gray-600 dark:text-lia-text-tertiary">
+        <div className="text-lg text-lia-text-secondary dark:text-lia-text-tertiary">
           Eficiência
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 text-center">
         <div>
-          <div className="text-2xl font-bold text-gray-950">
+          <div className="text-2xl font-bold text-lia-text-primary">
             {dept.jobs}
           </div>
-          <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+          <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             Vagas
           </div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-gray-950">
+          <div className="text-2xl font-bold text-lia-text-primary">
             {dept.hires}
           </div>
-          <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+          <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             Contratações
           </div>
         </div>
@@ -143,10 +143,10 @@ DepartmentCard.displayName = 'DepartmentCard'
 
 const DepartmentSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
+    <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
       Performance por Departamento
     </h1>
-    <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
+    <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
       Eficiência de Recrutamento por Área
     </p>
 
@@ -167,7 +167,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
       case "success": return <CheckCircle className="w-8 h-8 text-status-success" />
       case "warning": return <AlertTriangle className="w-8 h-8 text-status-warning" />
       case "error": return <AlertTriangle className="w-8 h-8 text-status-error" />
-      default: return <Activity className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
+      default: return <Activity className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
     }
   }, [alert.type])
 
@@ -184,7 +184,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
     <Card key={index} className={`border ${getBgColor}`}>
       <CardContent className="p-6 flex items-center gap-4">
         {getIcon}
-        <div className="text-xl font-medium text-gray-950">
+        <div className="text-xl font-medium text-lia-text-primary">
           {alert.message}
         </div>
       </CardContent>
@@ -196,10 +196,10 @@ AlertItem.displayName = 'AlertItem'
 
 const AlertsSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
+    <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
       Alertas e Status
     </h1>
-    <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
+    <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
       Monitoramento em Tempo Real
     </p>
 
@@ -353,7 +353,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
+            <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
               {currentSlide + 1} / {slides.length}
             </span>
 
@@ -369,7 +369,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-lg font-semibold text-gray-950">
+          <div className="text-lg font-semibold text-lia-text-primary">
             {slides[currentSlide]?.title}
           </div>
 

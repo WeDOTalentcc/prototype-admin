@@ -249,7 +249,7 @@ export function CompetenciesStage() {
           </span>
           <select 
             value={skill.level}
-            onChange={(e) => updateSkillLevel(skill.id, e.target.value as any)}
+            onChange={(e) => updateSkillLevel(skill.id, e.target.value as TechnicalSkill['level'])}
             className="px-1.5 py-0.5 text-micro border border-lia-border-subtle rounded-full bg-lia-bg-primary"
           >
             <option value="Básico">Básico</option>
@@ -278,7 +278,7 @@ export function CompetenciesStage() {
             <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors">
               <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
-                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary" : "text-gray-200"
+                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
               )} />
             </button>
           ))}
@@ -294,7 +294,7 @@ export function CompetenciesStage() {
                   <div className="flex items-start gap-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">Sugerido por LIA</span>
+                      <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Sugerido por LIA</span>
                       <p className="lia-text-secondary mt-0.5">{skill.weightJustification || inference.justificativa}</p>
                     </div>
                   </div>
@@ -335,7 +335,7 @@ export function CompetenciesStage() {
               <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors">
                 <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
-                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary" : "text-gray-200"
+                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
                 )} />
               </button>
             ))}
@@ -352,7 +352,7 @@ export function CompetenciesStage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <Code className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Code className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-micro lia-text-secondary">Técnicas:</span>
               <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {technicalSkills.length}/3
@@ -404,7 +404,7 @@ export function CompetenciesStage() {
           {/* Add Skill Button */}
           <button
             onClick={() => setShowAddSkillModal(true)}
-            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-gray-600 dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Adicionar Competência Técnica
@@ -423,7 +423,7 @@ export function CompetenciesStage() {
               />
               <select
                 value={newSkillCategory}
-                onChange={(e) => setNewSkillCategory(e.target.value as any)}
+                onChange={(e) => setNewSkillCategory(e.target.value as Parameters<typeof setNewSkillCategory>[0])}
                 className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
               >
                 <option value="language">Linguagem</option>

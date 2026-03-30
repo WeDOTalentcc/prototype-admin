@@ -142,7 +142,7 @@ export function CandidatePage({
               </Avatar>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-base font-semibold text-gray-950">{candidate.name}</h1>
+                  <h1 className="text-base font-semibold text-lia-text-primary">{candidate.name}</h1>
                   <Badge variant="outline" className="text-xs px-1.5 py-0">
                     {candidate.candidateId || candidate.id}
                   </Badge>
@@ -150,7 +150,7 @@ export function CandidatePage({
                     {liaScore}% Match
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   <span>{candidate.position}</span>
                   <span className="lia-text-secondary">•</span>
                   <MapPin className="w-3 h-3" />
@@ -187,7 +187,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Github className="w-4 h-4 text-gray-950" />
+                        <Github className="w-4 h-4 text-lia-text-primary" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">GitHub</TooltipContent>
@@ -202,7 +202,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Globe className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -221,7 +221,7 @@ export function CandidatePage({
                       onClick={() => onSendEmail ? onSendEmail(candidate) : (candidate.email && window.open(`mailto:${candidate.email}`, '_self'))}
                       disabled={!candidate.email && !onSendEmail}
                     >
-                      <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
@@ -242,7 +242,7 @@ export function CandidatePage({
                       }}
                       disabled={!candidate.phone && !onSendWhatsApp}
                     >
-                      <Phone className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Phone className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">WhatsApp</TooltipContent>
@@ -270,7 +270,7 @@ export function CandidatePage({
                       className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => onWSIScreening?.(candidate)}
                     >
-                      <ClipboardCheck className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                      <ClipboardCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">Triagem WSI</TooltipContent>
@@ -284,7 +284,7 @@ export function CandidatePage({
                       className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => onAddToVacancy?.(candidate)}
                     >
-                      <Briefcase className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Briefcase className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">Adicionar à Vaga</TooltipContent>
@@ -365,7 +365,7 @@ export function CandidatePage({
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
  activeTab === tab.id
                   ? 'border-b-2 lia-text-secondary border-gray-400'
-                  : 'text-gray-800 dark:text-lia-text-primary hover:text-gray-950 dark:hover:text-gray-50'
+                  : 'text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
               <tab.icon className="w-3 h-3" />
@@ -447,7 +447,7 @@ export function CandidatePage({
                       input.click()
                     }}
                   >
-                    <Upload className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-3" />
+                    <Upload className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-3" />
                     <h3 className="text-sm font-medium mb-2">
                       {isDragging ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
                     </h3>
@@ -469,10 +469,10 @@ export function CandidatePage({
                       <FileText className="w-5 h-5 text-status-error" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">CV_{candidate.name.replace(' ', '_')}_2025.pdf</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">2.1 MB • há 3 dias</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">2.1 MB • há 3 dias</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
-                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-xs">LIA: 95%</Badge>
+                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">LIA: 95%</Badge>
                         </div>
                       </div>
                     </div>
@@ -503,7 +503,7 @@ export function CandidatePage({
                       <FileText className="w-5 h-5 text-wedo-purple" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Portfolio_UX_2025.pdf</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">12.3 MB • há 1 dia</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">12.3 MB • há 1 dia</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                           <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destacado</Badge>
@@ -528,7 +528,7 @@ export function CandidatePage({
                       <Video className="w-5 h-5 text-status-error" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Apresentacao_Pessoal.mp4</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">25.4 MB • 3:45 min</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">25.4 MB • 3:45 min</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-status-success/15 text-status-success text-xs">✓ Analisado</Badge>
                           <Badge className="bg-status-error/15 text-status-error text-xs">Triagem</Badge>
@@ -559,7 +559,7 @@ export function CandidatePage({
                       <Video className="w-5 h-5 text-wedo-purple" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Case_UX_Design.mp4</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">45.2 MB • 8:20 min</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">45.2 MB • 8:20 min</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destaque</Badge>
                           <Badge className="bg-status-success/15 text-status-success text-xs">Score: 88%</Badge>
@@ -587,12 +587,12 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Mic className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Mic className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Triagem_Voz_{candidate.name.split(' ')[0]}.mp3</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-xs">Triagem WSI</Badge>
+                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">Triagem WSI</Badge>
                           <Badge className="bg-status-success/15 text-status-success text-xs">Score: 92%</Badge>
                         </div>
                       </div>
@@ -635,7 +635,7 @@ export function CandidatePage({
                       <Image className="w-5 h-5 text-status-success" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">foto_perfil.jpg</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">456 KB • há 2 horas</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">456 KB • há 2 horas</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                         </div>
@@ -669,7 +669,7 @@ export function CandidatePage({
                       <Award className="w-5 h-5 text-wedo-orange" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Certificados.zip</h4>
-                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">3.2 MB • há 1 semana</p>
+                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">3.2 MB • há 1 semana</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-wedo-orange/15 text-wedo-orange text-xs">5 arquivos</Badge>
                         </div>
@@ -696,8 +696,8 @@ export function CandidatePage({
                     onClick={() => setOpinionsSubTab('pareceres')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
  opinionsSubTab === 'pareceres'
-                        ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
-                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
+                        : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -713,7 +713,7 @@ export function CandidatePage({
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
  opinionsSubTab === 'analises'
                         ? 'bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30'
-                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -838,12 +838,12 @@ export function CandidatePage({
                                         {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
                                       </span>
                                       {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
                                         </Badge>
                                       ) : !opinion.job_vacancy_id ? (
-                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle">
                                           Sem vaga vinculada
                                         </Badge>
                                       ) : null}
@@ -900,7 +900,7 @@ export function CandidatePage({
                                 <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle space-y-3">
                                   {opinion.summary && (
                                     <div className="pt-3">
-                                      <p className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed">
+                                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
                                         {opinion.summary}
                                       </p>
                                     </div>
@@ -917,7 +917,7 @@ export function CandidatePage({
                                           value !== null && value !== undefined && (
                                             <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
                                               <span className="lia-text-base capitalize">{key.replace(/_/g, ' ')}</span>
-                                              <span className="font-medium text-gray-800 dark:text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
+                                              <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
                                             </div>
                                           )
                                         ))}
@@ -1087,7 +1087,7 @@ export function CandidatePage({
                               {/* Card Content */}
                               {isExpanded && (
                                 <div className="px-3 pb-3 border-t border-gray-50">
-                                  <div className={`${textStyles.description} text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
+                                  <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
                                     {cleanTextForCopy(analysis.content)}
                                   </div>
                                   {/* Delete button */}

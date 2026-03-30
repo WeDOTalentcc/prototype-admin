@@ -181,7 +181,7 @@ export function PromptSuggestionsPanel({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <LIAIcon size="sm" />
-          <span className="text-sm font-medium text-gray-950">💡 Sugestões Inteligentes</span>
+          <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões Inteligentes</span>
           <Badge variant="outline" className="text-xs">
             {suggestions.length} disponíveis
           </Badge>
@@ -199,7 +199,7 @@ export function PromptSuggestionsPanel({
 
       {showHistory && commandHistory.length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-          <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
+          <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
           <div className="space-y-1">
             {commandHistory.map((command, index) => (
               <button
@@ -238,7 +238,7 @@ export function PromptSuggestionsPanel({
                 {suggestion.description}
               </div>
               {suggestion.category && (
-                <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-lia-text-primary border-0">
+                <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-0">
                   {suggestion.category}
                 </Badge>
               )}

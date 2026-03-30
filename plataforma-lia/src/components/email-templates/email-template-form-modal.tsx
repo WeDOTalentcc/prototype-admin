@@ -181,7 +181,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
-          category: formData.category as any || undefined,
+          category: formData.category || undefined,
           variables,
         }
         await liaApi.updateEmailTemplate(template.id, updateData)
@@ -191,7 +191,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
-          category: formData.category as any || undefined,
+          category: formData.category || undefined,
           variables,
         }
         await liaApi.createEmailTemplate(createData)
@@ -211,7 +211,7 @@ export function EmailTemplateFormModal({
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Mail className="w-5 h-5 text-gray-900" />
+            <Mail className="w-5 h-5 text-lia-text-primary" />
             {isEditing ? "Editar Template" : "Novo Template de Email"}
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
@@ -305,7 +305,7 @@ export function EmailTemplateFormModal({
                     <div className="space-y-4">
                       <div className="p-3 bg-gray-50 rounded-md">
                         <span className="text-sm font-medium lia-text-base">Assunto:</span>
-                        <p className="text-gray-950">{renderPreview(formData.subject)}</p>
+                        <p className="text-lia-text-primary">{renderPreview(formData.subject)}</p>
                       </div>
                       <div className="border rounded-md overflow-hidden">
                         <div className="bg-gray-100 px-4 py-2 text-sm font-medium lia-text-base border-b flex items-center gap-2">
@@ -345,7 +345,7 @@ export function EmailTemplateFormModal({
 
                   <Card>
                     <CardContent className="pt-4">
-                      <h4 className="font-medium text-gray-950 mb-3">
+                      <h4 className="font-medium text-lia-text-primary mb-3">
                         Variáveis disponíveis (clique para copiar):
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -356,7 +356,7 @@ export function EmailTemplateFormModal({
                             className="flex items-center justify-between p-2 rounded-md border hover:bg-gray-50 transition-colors text-left"
                           >
                             <div>
-                              <code className="text-sm font-mono text-gray-900">
+                              <code className="text-sm font-mono text-lia-text-primary">
                                 {`{{${variable.name}}}`}
                               </code>
                               <p className="text-xs lia-text-base mt-0.5">
@@ -372,14 +372,14 @@ export function EmailTemplateFormModal({
 
                   <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
                     <CardContent className="pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">
+                      <h4 className="font-medium text-lia-text-primary mb-2">
                         Dados de exemplo para preview:
                       </h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {Object.entries(MOCK_DATA).map(([key, value]) => (
                           <div key={key} className="flex">
-                            <span className="font-mono text-gray-900">{key}:</span>
-                            <span className="text-gray-800 dark:text-lia-text-primary ml-2 truncate">{value}</span>
+                            <span className="font-mono text-lia-text-primary">{key}:</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary ml-2 truncate">{value}</span>
                           </div>
                         ))}
                       </div>

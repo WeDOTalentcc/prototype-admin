@@ -125,7 +125,7 @@ export function ModelosTrabalhoPlaceholder() {
         {/* Distribuição Geral */}
         <Card className="border-lia-border-subtle dark:border-lia-border-subtle lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
+            <CardTitle className="text-base font-sans font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Distribuição Geral de Modelos de Trabalho
             </CardTitle>
           </CardHeader>
@@ -135,9 +135,9 @@ export function ModelosTrabalhoPlaceholder() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-gray-900"></div>
-                  <span className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">Remoto</span>
+                  <span className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">Remoto</span>
                 </div>
-                <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">42%</span>
+                <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">42%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                 <div className="h-3 rounded-full bg-gray-900 w-[42%]"></div>
@@ -149,9 +149,9 @@ export function ModelosTrabalhoPlaceholder() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-wedo-green-bright"></div>
-                  <span className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">Híbrido</span>
+                  <span className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">Híbrido</span>
                 </div>
-                <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">35%</span>
+                <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">35%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                 <div className="h-3 rounded-full bg-wedo-green-bright w-[35%]"></div>
@@ -163,9 +163,9 @@ export function ModelosTrabalhoPlaceholder() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-wedo-orange"></div>
-                  <span className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">Presencial</span>
+                  <span className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">Presencial</span>
                 </div>
-                <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">23%</span>
+                <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">23%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                 <div className="h-3 rounded-full bg-wedo-orange w-[23%]"></div>
@@ -175,17 +175,17 @@ export function ModelosTrabalhoPlaceholder() {
         </Card>
 
         {/* Satisfação Geral */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+        <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
+            <CardTitle className="text-base font-sans font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Satisfação Geral
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-6">
-            <div className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50 mb-2">
-              8.4<span className="text-sm text-gray-800 dark:text-lia-text-primary">/10</span>
+            <div className="text-2xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary mb-2">
+              8.4<span className="text-sm text-lia-text-primary dark:text-lia-text-primary">/10</span>
             </div>
-            <p className="text-sm font-open-sans text-gray-600 dark:text-lia-text-tertiary text-center mb-4">
+            <p className="text-sm font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-4">
               Média de satisfação com modelo de trabalho
             </p>
             <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-open-sans">
@@ -197,10 +197,10 @@ export function ModelosTrabalhoPlaceholder() {
       </div>
 
       {/* Análise Regional */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="pb-3">
           <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
-            <MapPin className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+            <MapPin className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
             Distribuição por Região
           </CardTitle>
         </CardHeader>
@@ -209,21 +209,21 @@ export function ModelosTrabalhoPlaceholder() {
             {/* São Paulo */}
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
-                <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">São Paulo</h4>
+                <h4 className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">São Paulo</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">523 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Remoto</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">48%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Remoto</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">48%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Híbrido</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">35%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Híbrido</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">35%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Presencial</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">17%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Presencial</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">17%</span>
                 </div>
               </div>
             </div>
@@ -231,21 +231,21 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Rio de Janeiro */}
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
-                <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Rio de Janeiro</h4>
+                <h4 className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Rio de Janeiro</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">287 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Remoto</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">38%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Remoto</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">38%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Híbrido</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">42%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Híbrido</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">42%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Presencial</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">20%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Presencial</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">20%</span>
                 </div>
               </div>
             </div>
@@ -253,21 +253,21 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Minas Gerais */}
             <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
-                <h4 className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Minas Gerais</h4>
+                <h4 className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Minas Gerais</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">194 vagas</Badge>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Remoto</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">35%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Remoto</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">35%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Híbrido</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">28%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Híbrido</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">28%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-open-sans text-gray-600 dark:text-lia-text-tertiary">Presencial</span>
-                  <span className="font-inter font-bold text-gray-950 dark:text-gray-50">37%</span>
+                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Presencial</span>
+                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">37%</span>
                 </div>
               </div>
             </div>
@@ -276,10 +276,10 @@ export function ModelosTrabalhoPlaceholder() {
       </Card>
 
       {/* Análise por Departamento */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="pb-3">
           <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
-            <Building className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+            <Building className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
             Distribuição por Departamento
           </CardTitle>
         </CardHeader>
@@ -288,8 +288,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Tecnologia */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Tecnologia</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">78% Remoto • 18% Híbrido • 4% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Tecnologia</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">78% Remoto • 18% Híbrido • 4% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[78%]"></div>
@@ -301,8 +301,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Vendas */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Vendas</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">15% Remoto • 62% Híbrido • 23% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Vendas</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">15% Remoto • 62% Híbrido • 23% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[15%]"></div>
@@ -314,8 +314,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Financeiro */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Financeiro</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">32% Remoto • 51% Híbrido • 17% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Financeiro</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">32% Remoto • 51% Híbrido • 17% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[32%]"></div>
@@ -327,8 +327,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Operações */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Operações</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">8% Remoto • 25% Híbrido • 67% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Operações</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">8% Remoto • 25% Híbrido • 67% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[8%]"></div>
@@ -340,8 +340,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* Marketing */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Marketing</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">55% Remoto • 38% Híbrido • 7% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Marketing</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">55% Remoto • 38% Híbrido • 7% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[55%]"></div>
@@ -353,8 +353,8 @@ export function ModelosTrabalhoPlaceholder() {
             {/* RH */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">Recursos Humanos</span>
-                <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-lia-text-primary">42% Remoto • 45% Híbrido • 13% Presencial</span>
+                <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Recursos Humanos</span>
+                <span className="text-xs tracking-tight font-inter text-lia-text-primary dark:text-lia-text-primary">42% Remoto • 45% Híbrido • 13% Presencial</span>
               </div>
               <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
                 <div className="bg-gray-900 w-[42%]"></div>
@@ -367,7 +367,7 @@ export function ModelosTrabalhoPlaceholder() {
       </Card>
 
       {/* Insights e Recomendações */}
-      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-gray-800`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Lightbulb className="w-3.5 h-3.5 text-wedo-purple" />
@@ -377,19 +377,19 @@ export function ModelosTrabalhoPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green-bright" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Tecnologia lidera em trabalho remoto:</strong> 78% das vagas tech são remotas, refletindo tendência do mercado
             </p>
           </div>
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Operações predominantemente presencial:</strong> 67% exigem presença física - considere otimizar processos
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
+            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
               <strong>Modelo híbrido em alta:</strong> Vendas (62%) e Financeiro (51%) preferem equilíbrio entre remoto e presencial
             </p>
           </div>

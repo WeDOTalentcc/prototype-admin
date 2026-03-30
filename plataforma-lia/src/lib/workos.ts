@@ -17,7 +17,7 @@ export function getWorkOS(): WorkOS {
 // Legacy export for backwards compatibility — resolves lazily
 export const workos = new Proxy({} as WorkOS, {
   get(_target, prop) {
-    return (getWorkOS() as any)[prop]
+    return (getWorkOS() as Record<string, unknown>)[prop]
   }
 })
 

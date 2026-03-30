@@ -32,9 +32,9 @@ export function JobActionsBar({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-              <Briefcase className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <span className="text-sm font-semibold text-gray-950">
+            <span className="text-sm font-semibold text-lia-text-primary">
               {selectedCount} vaga{selectedCount > 1 ? 's' : ''} selecionada{selectedCount > 1 ? 's' : ''}
             </span>
           </div>
@@ -45,10 +45,10 @@ export function JobActionsBar({
             variant="outline"
             size="sm"
             onClick={onPublish}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
             title="Publicar em Canais"
           >
-            <Share2 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span>Publicar</span>
           </Button>
 
@@ -56,7 +56,7 @@ export function JobActionsBar({
             variant="outline"
             size="sm"
             onClick={onInsights}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
             title="Métricas + Análise LIA"
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -67,10 +67,10 @@ export function JobActionsBar({
             variant="outline"
             size="sm"
             onClick={onDuplicate}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
             title="Duplicar Vaga"
           >
-            <Copy className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <Copy className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span>Duplicar</span>
           </Button>
 
@@ -78,13 +78,13 @@ export function JobActionsBar({
             variant="outline"
             size="sm"
             onClick={onToggleStatus}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
             title={hasActiveJobs ? "Pausar Vagas" : "Ativar Vagas"}
           >
             {hasActiveJobs ? (
-              <Pause className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Pause className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             ) : (
-              <Play className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Play className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             )}
             <span>{hasActiveJobs ? "Pausar" : "Ativar"}</span>
           </Button>
@@ -93,10 +93,10 @@ export function JobActionsBar({
             variant="outline"
             size="sm"
             onClick={onAssignRecruiter}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-tertiary"
             title="Atribuir Recrutador"
           >
-            <UserPlus className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <UserPlus className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span>Recrutador</span>
           </Button>
         </div>
@@ -105,7 +105,7 @@ export function JobActionsBar({
           variant="ghost"
           size="sm"
           onClick={onDeselectAll}
-          className="h-8 px-2 text-xs text-gray-800 hover:text-gray-950 dark:text-lia-text-tertiary dark:hover:text-gray-200"
+          className="h-8 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
           title="Limpar seleção"
         >
           <X className="w-3 h-3" />

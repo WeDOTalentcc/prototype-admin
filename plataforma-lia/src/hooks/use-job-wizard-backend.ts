@@ -261,7 +261,7 @@ export function useJobWizardBackend(options: UseJobWizardBackendOptions = {}) {
   const processStep = useCallback(async (
     stage: number,
     userInput: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<WizardStepResponse | null> => {
     setIsProcessing(true)
     setError(null)

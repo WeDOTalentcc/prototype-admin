@@ -37,17 +37,17 @@ export function MetricCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-gray-500 dark:text-lia-text-tertiary">
+        <CardTitle className="text-sm font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
           {title}
         </CardTitle>
-        <Icon className="w-4 h-4 text-gray-400" />
+        <Icon className="w-4 h-4 text-lia-text-disabled" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">
+        <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
           {value}
         </div>
         {(trend || subtitle) && (
-          <p className="text-xs mt-1 text-gray-400">
+          <p className="text-xs mt-1 text-lia-text-disabled">
             {trend && <span className={getTrendColor()}>{trend}</span>}
             {trend && trendLabel && " "}
             {trendLabel || subtitle}

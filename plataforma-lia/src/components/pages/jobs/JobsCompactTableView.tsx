@@ -194,7 +194,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             ))}
           </tbody>
         </table>
-        <div className="flex items-center justify-center py-6 text-sm text-gray-800 dark:text-gray-500">
+        <div className="flex items-center justify-center py-6 text-sm text-lia-text-primary dark:text-lia-text-tertiary">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full animate-spin bg-gray-600" />
             <span>Carregando vagas...</span>
@@ -246,11 +246,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 return (
                   <th 
                     key={columnId} 
-                    className="text-center py-3 px-3 text-xs font-semibold text-gray-950 dark:text-lia-text-primary"
+                    className="text-center py-3 px-3 text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary"
                     style={{width: jobsColumnWidths.acoes}} /* dynamic */
                   >
                     <span className="sr-only">Ações</span>
-                    <MoreVertical className="w-4 h-4 text-gray-800 dark:text-lia-text-primary mx-auto" aria-hidden="true" />
+                    <MoreVertical className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary mx-auto" aria-hidden="true" />
                   </th>
                 )
               }
@@ -263,7 +263,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 <th
                   key={columnId}
                   className={`
-                    text-${config.align} py-3 px-3 text-xs font-semibold text-gray-950 dark:text-lia-text-primary 
+                    text-${config.align} py-3 px-3 text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary 
                     relative group select-none
                     ${isDragging ? 'opacity-50' : ''}
                     ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
@@ -279,19 +279,19 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   onClick={() => config.sortable && onSort(columnId)}
                 >
                   <div className="flex items-center gap-1">
-                    <GripVertical className="w-3 h-3 text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                    <GripVertical className="w-3 h-3 text-lia-text-primary opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
                     <span>{config.label}</span>
                     {config.sortable && (
                       jobsSortColumn === columnId 
                         ? (jobsSortDirection === 'asc' 
-                            ? <ArrowUp className="w-3 h-3 text-gray-800" />
-                            : <ArrowDown className="w-3 h-3 text-gray-800" />)
-                        : <ArrowUpDown className="w-3 h-3 text-gray-800" />
+                            ? <ArrowUp className="w-3 h-3 text-lia-text-primary" />
+                            : <ArrowDown className="w-3 h-3 text-lia-text-primary" />)
+                        : <ArrowUpDown className="w-3 h-3 text-lia-text-primary" />
                     )}
                   </div>
                   
                   <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-gray-300 dark:bg-gray-600 hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors"
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-gray-300 dark:bg-lia-bg-elevated hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors"
                     onMouseDown={(e) => onColumnResize(columnId, e)}
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -342,7 +342,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'id') {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-gray-800 dark:text-lia-text-primary">
+                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                 V{job.id.toString().padStart(4, '0')}
                               </span>
                             </td>
@@ -353,9 +353,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div>
-                                <div className="font-semibold text-xs text-gray-950 dark:text-gray-50 flex items-center gap-1">
+                                <div className="font-semibold text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1">
                                   {pinnedJobs.has(job.id) && (
-                                    <Pin className="w-3 h-3 text-gray-800 dark:text-lia-text-primary fill-current" />
+                                    <Pin className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary fill-current" />
                                   )}
                                   {job.title}
                                   {(job.visibility === 'confidential' || job.isConfidential) && (
@@ -365,12 +365,12 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   )}
                                   {job.visibility === 'internal' && (
                                     <span title="Vaga Interna" className="flex items-center">
-                                      <Building className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                                      <Building className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                                     </span>
                                   )}
                                   {job.visibility === 'hidden' && (
                                     <span title="Vaga Oculta" className="flex items-center">
-                                      <Lock className="w-3.5 h-3.5 text-gray-600" />
+                                      <Lock className="w-3.5 h-3.5 text-lia-text-secondary" />
                                     </span>
                                   )}
                                 </div>
@@ -392,7 +392,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                         ? 'var(--status-error)'
                                         : 'var(--status-warning)'}} /* dynamic */
                                   />
-                                  <span className="text-sm font-normal text-gray-800 dark:text-gray-50">
+                                  <span className="text-sm font-normal text-lia-text-primary dark:text-lia-text-primary">
                                     {job.funnel.total}
                                   </span>
                                 </div>
@@ -401,29 +401,29 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     <div className="font-semibold mb-2">Funil de Candidatos</div>
                                     <div className="space-y-1.5 mb-2">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-300">Total</span>
+                                        <span className="text-xs text-lia-text-disabled">Total</span>
                                         <span className="text-xs font-semibold text-white">{job.funnel.total}</span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-300">Triagem</span>
-                                        <span className="text-xs font-semibold text-gray-200">
+                                        <span className="text-xs text-lia-text-disabled">Triagem</span>
+                                        <span className="text-xs font-semibold text-lia-text-inverse">
                                           {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-300">Entrevistas</span>
-                                        <span className="text-xs font-semibold text-gray-200">
+                                        <span className="text-xs text-lia-text-disabled">Entrevistas</span>
+                                        <span className="text-xs font-semibold text-lia-text-inverse">
                                           {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-300">Finalistas</span>
-                                        <span className="text-xs font-semibold text-gray-200">
+                                        <span className="text-xs text-lia-text-disabled">Finalistas</span>
+                                        <span className="text-xs font-semibold text-lia-text-inverse">
                                           {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between pt-1">
-                                        <span className="text-xs text-gray-300">✓ Contratados</span>
+                                        <span className="text-xs text-lia-text-disabled">✓ Contratados</span>
                                         <span className="text-xs font-bold text-white">
                                           {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
                                         </span>
@@ -431,11 +431,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     </div>
                                     <div className="pt-2">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-300">Taxa conversão final</span>
+                                        <span className="text-xs text-lia-text-disabled">Taxa conversão final</span>
                                         <span className={`text-xs ${
                                           job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold text-white' :
-                                          job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold text-gray-200' :
-                                          'font-medium text-gray-300'
+                                          job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold text-lia-text-inverse' :
+                                          'font-medium text-lia-text-disabled'
                                         }`}>
                                           {job.funnel.total > 0 ? ((job.funnel.hired / job.funnel.total) * 100).toFixed(1) : 0}%
                                         </span>
@@ -482,7 +482,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
                                       style={{width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                         {liaTriages.pipeline}
                                       </span>
                                     </div>
@@ -492,61 +492,61 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           Pipeline LIA
                                         </div>
-                                        <div className="text-xs text-gray-500">{liaTriages.pipeline} candidatos contatados</div>
+                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.pipeline} candidatos contatados</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
-                                  <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
+                                  <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-300" 
                                       style={{width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                         {liaTriages.agendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Agendadas</div>
-                                        <div className="text-xs text-gray-500">{liaTriages.agendadas} triagens marcadas</div>
+                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.agendadas} triagens marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
-                                  <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
+                                  <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                         {liaTriages.realizadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Completas</div>
-                                        <div className="text-xs text-gray-500">{liaTriages.realizadas} triagens finalizadas</div>
+                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.realizadas} triagens finalizadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
-                                  <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
+                                  <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
                                       className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
                                       style={{width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Entrevistas Agendadas</div>
-                                        <div className="text-xs text-gray-500">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
+                                        <div className="text-xs text-lia-text-tertiary">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
@@ -563,7 +563,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="space-y-1">
                                 <Badge
                                   variant="outline"
-                                  className="border-0 text-xs font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50"
+                                  className="border-0 text-xs font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary"
                                   style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
                                   {job.status}
@@ -587,7 +587,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <Badge
                                 variant="outline"
-                                className="border-0 text-micro font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
+                                className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity"
                                 style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}} /* dynamic */
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -606,11 +606,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
-                                  <AvatarFallback className="text-xs bg-gray-200 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary">
+                                  <AvatarFallback className="text-xs bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary">
                                     {job.recruiter.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div className="text-xs font-normal text-gray-800 dark:text-gray-50">
+                                <div className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                   {job.recruiter}
                                 </div>
                               </div>
@@ -621,7 +621,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'gestor') {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <div className="text-xs font-normal text-gray-800 dark:text-gray-50">
+                              <div className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                 {job.manager}
                               </div>
                             </td>
@@ -631,7 +631,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'prazoTriagem') {
                           return (
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
+                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                 {job.openDate 
                                   ? new Date(job.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                                   : '—'}
@@ -643,7 +643,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'prazoShortlist' || columnId === 'prazoEncerramento') {
                           return (
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-gray-800 dark:text-gray-50">
+                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
                                 {job.deadline 
                                   ? new Date(job.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                                   : '—'}
@@ -677,7 +677,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors ${
                                     isUrgent 
                                       ? 'text-status-error fill-red-100' 
-                                      : 'text-gray-800 dark:text-lia-text-primary'
+                                      : 'text-lia-text-primary dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -696,8 +696,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 >
                                   <Pin className={`w-3 h-3 transition-colors ${
                                     isPinned 
-                                      ? 'text-gray-950 dark:text-gray-50 fill-current' 
-                                      : 'text-gray-800 dark:text-lia-text-primary'
+                                      ? 'text-lia-text-primary dark:text-lia-text-primary fill-current' 
+                                      : 'text-lia-text-primary dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -717,7 +717,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <Star className={`w-3 h-3 transition-colors ${
                                     isFavorite 
                                       ? 'text-status-warning fill-yellow-400' 
-                                      : 'text-gray-800 dark:text-lia-text-primary'
+                                      : 'text-lia-text-primary dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -744,7 +744,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Compartilhar vaga (copiar link público)"
                                 >
-                                  <Share2 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                                  <Share2 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -757,7 +757,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Abrir Kanban da vaga"
                                 >
-                                  <ChevronRight className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                                  <ChevronRight className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
                                 </Button>
                               </div>
                             </td>

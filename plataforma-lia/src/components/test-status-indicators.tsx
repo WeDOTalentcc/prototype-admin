@@ -4,7 +4,7 @@ import React from "react"
 import { CheckCircle, FileText, Globe, User } from "lucide-react"
 
 interface TestStatusIndicatorsProps {
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
@@ -18,7 +18,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
  candidate.technicalTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <FileText className="w-4 h-4" />
         </div>
@@ -39,7 +39,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
  candidate.englishTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <Globe className="w-4 h-4" />
         </div>
@@ -60,7 +60,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
  candidate.bigFiveScores
             ? 'bg-wedo-magenta/15 dark:bg-wedo-magenta/30 text-wedo-magenta dark:text-wedo-magenta'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <User className="w-4 h-4" />
         </div>

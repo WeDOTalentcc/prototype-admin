@@ -77,7 +77,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
           className={cn(
  "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-md",
             isLia
-              ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-900 dark:text-lia-text-primary"
+              ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary"
               : "bg-gray-900 text-white"
           )}
           dangerouslySetInnerHTML={{ __html: parseSimpleMarkdown(message.content) }}
@@ -94,7 +94,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
         )}
         <span
           className={cn(
- "text-micro font-['Inter',sans-serif] text-gray-400",
+ "text-micro font-['Inter',sans-serif] text-lia-text-disabled",
             isLia ? "text-left" : "text-right"
           )}
         >
@@ -105,7 +105,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
       {!isLia && (
         <div className="flex-shrink-0 mt-1">
           <div
-            className="w-8 h-8 rounded-md bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-lia-text-secondary font-['Inter',sans-serif]"
+            className="w-8 h-8 rounded-md bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary font-['Inter',sans-serif]"
             aria-hidden="true"
           >
             {getInitials(candidateName)}

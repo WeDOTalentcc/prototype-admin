@@ -144,13 +144,13 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-950 truncate">
+                    <div className="text-sm font-medium text-lia-text-primary truncate">
                       {currentUser.name}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
+                    <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                       {currentUser.email}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-0.5">
+                    <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-0.5">
                       {currentUser.role}
                     </div>
                   </div>

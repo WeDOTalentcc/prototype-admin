@@ -357,7 +357,7 @@ export function UnifiedCandidateTable({
                   <th
                     key={column.id}
                     className={`
- px-3 py-3 relative group select-none text-xs font-semibold text-gray-800 dark:text-lia-text-primary
+ px-3 py-3 relative group select-none text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                       ${isDragging ? 'opacity-50' : ''}
                       ${isDropTarget ? 'bg-wedo-cyan/10' : ''}
@@ -381,12 +381,12 @@ export function UnifiedCandidateTable({
                         column.id === 'acoes' || column.id === 'actions' ? (
                           <>
                             <span className="sr-only">Ações</span>
-                            <MoreVertical className="w-4 h-4 text-gray-600 dark:text-lia-text-secondary" aria-hidden="true" />
+                            <MoreVertical className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" aria-hidden="true" />
                           </>
                         ) : (
                           <span className="flex items-center gap-1">
                             {column.isGlobalSearch && (
-                              <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                              <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             )}
                             {column.label}
                           </span>
@@ -510,7 +510,7 @@ export function UnifiedCandidateTable({
             >
               Anterior
             </button>
-            <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+            <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
               Página {currentPage} de {totalPages}
             </span>
             <button

@@ -90,10 +90,9 @@ export function SearchFeedbackButtons({
         disabled={isSubmitting}
         className={cn(
           btnSize,
-          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity",
+          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity bg-wedo-coral",
           isSubmitting && "opacity-50 pointer-events-none"
         )}
-        className="bg-wedo-coral"
         title="Reprovar candidato"
       >
         <XCircle className={cn(iconSize, "text-white")} strokeWidth={2} />

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import {
   Loader2, Clock, Globe, CheckCircle, XCircle
 } from "lucide-react"
@@ -41,7 +41,7 @@ interface Props {
 // Component
 // ──────────────────────────────────────────────────────────────────────────────
 
-export function ChatMessageList({
+const ChatMessageListComponent = memo(function ChatMessageList({
   messages,
   isLoading,
   searchTerm,
@@ -577,4 +577,8 @@ export function ChatMessageList({
       )}
     </div>
   )
-}
+})
+
+ChatMessageListComponent.displayName = "ChatMessageList"
+
+export const ChatMessageList = ChatMessageListComponent

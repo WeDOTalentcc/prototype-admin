@@ -300,7 +300,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
               )}
             </div>
-            <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
             {promptEnhancement.explanation && (
               <p className="text-xs lia-text-secondary mb-2">{promptEnhancement.explanation}</p>
             )}
@@ -415,14 +415,14 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 </span>
               </div>
               <div>
-                <span className="font-medium text-sm text-gray-800 dark:text-lia-text-primary">
+                <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
                   Assistente de Busca Inteligente
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                 Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
               </p>
-              <ul className="text-xs space-y-1 text-gray-500 dark:text-lia-text-tertiary">
+              <ul className="text-xs space-y-1 text-lia-text-tertiary dark:text-lia-text-tertiary">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
                   <span>Indica critérios faltantes</span>
@@ -436,7 +436,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                   <span>Alerta sobre buscas muito amplas ou restritivas</span>
                 </li>
               </ul>
-              <p className="text-micro pt-1 border-t text-gray-500 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+              <p className="text-micro pt-1 border-t text-lia-text-tertiary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                 {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
               </p>
             </div>
@@ -473,7 +473,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-gray-500 dark:text-lia-text-tertiary">
+              <span className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
                 Qualidade da busca
               </span>
               <span 
@@ -515,7 +515,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
               <div 
                 key={index}
-                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-lia-text-tertiary"
+                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary dark:text-lia-text-tertiary"
                 style={{backgroundColor: alert.severity === 'warning'
                     ? 'var(--status-warning-bg-08)'
                     : 'var(--wedo-cyan-bg-08)'}}
@@ -643,7 +643,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
               style={{backgroundColor: 'var(--gray-100)'}}
             >
-              <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+              <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
               <span className="max-w-[150px] truncate">{file.name}</span>
               <button onClick={() => removeCvFile(index)} className="hover:text-status-error">
                 <X className="w-3 h-3" />
@@ -664,7 +664,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
       ) : (
         <button
           onClick={() => cvFileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 transition-colors border border-lia-border-subtle"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 transition-colors border border-lia-border-subtle"
           style={{backgroundColor: 'var(--gray-100)'}}
         >
           <Upload className="w-3.5 h-3.5" />
@@ -731,7 +731,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
           Baseado em {similarUrls.filter(u => u.trim()).length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
         </p>
       </div>
@@ -759,7 +759,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
     <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
       <div className="flex items-start gap-2">
         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
-        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
           <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
         </p>
       </div>
@@ -770,7 +770,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
 {/* Aba: Job Description */}
 {activeSearchTab === 'job-description' && (
   <div className="space-y-3">
-    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Cole a descrição da vaga para extrair requisitos automaticamente</p>
+    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Cole a descrição da vaga para extrair requisitos automaticamente</p>
     <textarea
       value={jobDescriptionText}
       onChange={(e) => setJobDescriptionText(e.target.value)}
@@ -965,7 +965,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
     <div className="p-2.5 rounded-md" style={{backgroundColor: 'var(--wedo-cyan-bg-06)'}}>
       <div className="flex items-start gap-2">
         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
-        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
           <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
         </p>
       </div>
@@ -995,7 +995,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
       return activeCount > 0 ? (
         <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+            <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
               {activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}
             </span>
             <button
@@ -1009,7 +1009,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 education: {},
                 languages: {}
               })}
-              className="text-xs text-gray-800 dark:text-lia-text-primary hover:text-status-error"
+              className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:text-status-error"
             >
               Limpar
             </button>
@@ -1046,9 +1046,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Seção: Criar Arquétipo com contexto de busca */}
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Criar Novo Arquétipo</span>
+        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Criar Novo Arquétipo</span>
         {naturalSearchValue && (
-          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-gray-600 dark:text-lia-text-tertiary border-gray-900">
+          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary dark:text-lia-text-tertiary border-gray-900">
             Busca ativa detectada
           </Badge>
         )}
@@ -1120,7 +1120,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               onClick={() => {
                 setNewArchetypeDescription(naturalSearchValue)
               }}
-              className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-gray-800 dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
+              className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
             >
               <Plus className="w-3 h-3" />
               Usar como base para novo arquétipo
@@ -1178,7 +1178,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Lista de Arquétipos Existentes */}
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Meus Arquétipos</span>
+        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Meus Arquétipos</span>
         <Badge variant="outline" className="text-micro">
           {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
         </Badge>

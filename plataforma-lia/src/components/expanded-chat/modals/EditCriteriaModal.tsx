@@ -56,7 +56,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                   <span className="flex-1 text-sm lia-text-strong">{criterion.text}</span>
                   <span className={cn(
  "text-xs px-2 py-0.5 rounded-md",
-                    criterion.source === 'technical' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary' : 'bg-wedo-purple/10 text-wedo-purple'
+                    criterion.source === 'technical' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary' : 'bg-wedo-purple/10 text-wedo-purple'
                   )}>
                     {criterion.source === 'technical' ? 'Técnico' : 'Comportamental'}
                   </span>

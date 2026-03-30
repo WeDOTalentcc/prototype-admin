@@ -33,7 +33,7 @@ interface WSIVoiceScreeningStatusProps {
     competencies?: WSICompetency[]
   }
   sessionId?: string
-  onComplete?: (result: any) => void
+  onComplete?: (result: Record<string, unknown>) => void
   autoStart?: boolean
 }
 
@@ -49,13 +49,13 @@ const STATUS_CONFIG: Record<VoiceStatus, {
   idle: {
     icon: Phone,
     label: 'Pronto para iniciar',
-    color: 'text-gray-800 dark:text-lia-text-primary',
+    color: 'text-lia-text-primary dark:text-lia-text-primary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
   },
   initiating: {
     icon: Loader2,
     label: 'Iniciando chamada...',
-    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     animate: true
   },
@@ -242,7 +242,7 @@ export function WSIVoiceScreeningStatus({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />
+            <Phone className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
             Triagem por Voz WSI
           </DialogTitle>
           <DialogDescription>

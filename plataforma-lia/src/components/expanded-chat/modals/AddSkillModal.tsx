@@ -130,7 +130,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
                     className={cn(
  'w-2.5 h-2.5',
                       w <= skill.weight!
-                        ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary'
+                        ? 'fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary'
                         : 'lia-text-muted'
                     )}
                   />
@@ -148,7 +148,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
           <button
             onClick={() => onAdd(skill)}
             disabled={isSelected}
-            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-900 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height] flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height] flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label={`Adicionar ${skill.name}`}
           >
             <Plus className="w-3 h-3" />
@@ -348,7 +348,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
                 className={cn(
  'w-5 h-5 transition-colors',
                   w <= weight
-                    ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary'
+                    ? 'fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary'
                     : 'lia-text-muted'
                 )}
               />
@@ -431,7 +431,7 @@ export function AddSkillModal({
           <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold lia-text-strong">
             Adicionar Skill: {CATEGORY_LABELS[category]}
           </DialogTitle>
-          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
             Selecione uma skill do catálogo, sugestões de mercado ou crie uma customizada
           </p>
         </DialogHeader>
@@ -440,19 +440,19 @@ export function AddSkillModal({
           <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-md mb-4">
             <TabsTrigger
               value="catalog"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
             >
               Catálogo da Empresa
             </TabsTrigger>
             <TabsTrigger
               value="market"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
             >
               Sugestões de Mercado
             </TabsTrigger>
             <TabsTrigger
               value="custom"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
             >
               Skill Customizado
             </TabsTrigger>

@@ -97,7 +97,7 @@ export function InputBar({
                 className={cn(
  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
                   isMuted
-                    ? "bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary hover:bg-gray-300 dark:hover:bg-gray-600"
+                    ? "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-300 dark:hover:bg-gray-600"
                     : "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
                 )}
               >
@@ -130,7 +130,7 @@ export function InputBar({
           disabled={isDisabled}
           rows={1}
           aria-label="Campo de resposta"
-          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-primary text-gray-900 dark:text-lia-text-primary placeholder-gray-400 dark:placeholder-gray-500 focus:border-gray-900 dark:focus:border-lia-border-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
+          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary placeholder-gray-400 dark:placeholder-gray-500 focus:border-gray-900 dark:focus:border-lia-border-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
         />
 
         {audioEnabled && (

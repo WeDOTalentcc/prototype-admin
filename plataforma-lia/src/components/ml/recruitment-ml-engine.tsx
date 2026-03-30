@@ -445,7 +445,7 @@ export function RecruitmentMLDashboard({
                 <Brain className="w-5 h-5 text-wedo-cyan" />
                 Inteligência Artificial em Recrutamento
               </CardTitle>
-              <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
+              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
                 Análises preditivas e insights baseados em Machine Learning
               </p>
             </div>
@@ -497,7 +497,7 @@ export function RecruitmentMLDashboard({
                     {prediction.predictedValue}
                   </span>
                 </div>
-                <div className="text-xs text-gray-800 dark:text-lia-text-primary">
+                <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                   Variação: {prediction.trend === 'up' ? '+' : prediction.trend === 'down' ? '-' : ''}
                   {Math.abs(prediction.predictedValue - prediction.currentValue)}
                 </div>
@@ -509,7 +509,7 @@ export function RecruitmentMLDashboard({
 
               {/* Fatores influenciadores */}
               <div className="mt-2">
-                <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-1">Fatores chave:</p>
+                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Fatores chave:</p>
                 <div className="flex flex-wrap gap-1">
                   {prediction.factors.slice(0, 2).map((factor, i) => (
                     <Badge key={i} variant="outline" className="text-xs">
@@ -613,7 +613,7 @@ export function RecruitmentMLDashboard({
               {candidateScores.slice(0, 6).map((score, index) => (
                 <div key={index} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-950">{score.name}</h4>
+                    <h4 className="font-medium text-lia-text-primary">{score.name}</h4>
                     <Badge className={`${
  score.overallScore >= 85 ? 'bg-status-success/10 text-status-success' :
                       score.overallScore >= 70 ? 'bg-status-warning/10 text-status-warning' :

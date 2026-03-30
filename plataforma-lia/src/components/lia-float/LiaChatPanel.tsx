@@ -253,7 +253,7 @@ export function LiaChatPanel() {
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
           </div>
-          <span className="text-base-ui font-bold text-gray-900" >LIA</span>
+          <span className="text-base-ui font-bold text-lia-text-primary" >LIA</span>
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}
@@ -261,7 +261,7 @@ export function LiaChatPanel() {
         <div className="flex items-center gap-1">
           <button
             onClick={handleNewChat}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Novo chat"
             aria-label="Iniciar novo chat"
           >
@@ -270,7 +270,7 @@ export function LiaChatPanel() {
           <button
             onClick={handleClear}
             disabled={messages.length === 0}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Limpar mensagens"
             aria-label="Limpar mensagens"
           >
@@ -282,7 +282,7 @@ export function LiaChatPanel() {
  "p-1.5 rounded-md transition-colors",
               showHistory
                 ? "text-chat-cyan bg-gray-100 dark:bg-lia-bg-secondary"
-                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                : "text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
             title="Histórico de conversas"
             aria-label="Ver histórico de conversas"
@@ -293,7 +293,7 @@ export function LiaChatPanel() {
           <div className="w-px h-4 bg-gray-200 dark:bg-lia-bg-elevated mx-0.5" />
           <button
             onClick={handleExpand}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Expandir para chat completo"
             aria-label="Expandir chat"
           >
@@ -301,7 +301,7 @@ export function LiaChatPanel() {
           </button>
           <button
             onClick={close}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Fechar"
             aria-label="Fechar chat"
           >
@@ -313,7 +313,7 @@ export function LiaChatPanel() {
       {/* Action mode banner */}
       {activeActionType && actionLabel && (
         <div className="px-4 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between flex-shrink-0">
-          <span className="text-xs text-gray-500 dark:text-lia-text-tertiary font-medium">
+          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary font-medium">
             {actionLabel}
           </span>
           <button
@@ -338,11 +338,11 @@ export function LiaChatPanel() {
       {/* History panel */}
       {showHistory && (
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-          <p className="text-xs font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wide mb-2" >
+          <p className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide mb-2" >
             Conversas recentes
           </p>
           {recentChats.length === 0 ? (
-            <p className="text-sm-ui text-gray-400 text-center mt-6">
+            <p className="text-sm-ui text-lia-text-disabled text-center mt-6">
               Nenhuma conversa anterior encontrada.
             </p>
           ) : (
@@ -354,10 +354,10 @@ export function LiaChatPanel() {
               >
                 <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm-ui text-gray-700 dark:text-lia-text-secondary truncate group-hover:text-gray-900 dark:group-hover:lia-text-subtle transition-colors">
+                  <p className="text-sm-ui text-lia-text-secondary dark:text-lia-text-secondary truncate group-hover:text-lia-text-primary dark:group-hover:lia-text-subtle transition-colors">
                     {chat.title}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-lia-text-disabled mt-0.5">
                     {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -388,7 +388,7 @@ export function LiaChatPanel() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >LIA</span>
+                      <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
                     </div>
                     <HITLConfirmCard
                       action={hitlPending.action}
@@ -427,7 +427,7 @@ export function LiaChatPanel() {
                 clearIntent()
               }
             }}
-            className="flex items-center gap-2 text-sm-ui text-gray-500 dark:text-lia-text-tertiary hover:text-gray-800 dark:hover:text-gray-200 transition-colors group w-full text-left"
+            className="flex items-center gap-2 text-sm-ui text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors group w-full text-left"
             aria-label={`Abrir ${navIntent.page}`}
           >
             <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-chat-cyan group-hover:translate-x-0.5 transition-transform" />
@@ -454,7 +454,7 @@ export function LiaChatPanel() {
             disabled={isCreating || isStreaming || !!hitlPending}
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
-            className="flex-1 text-base-ui bg-transparent focus:outline-none text-gray-950 placeholder:text-gray-400 disabled:opacity-50 min-w-0"
+            className="flex-1 text-base-ui bg-transparent focus:outline-none text-lia-text-primary placeholder:text-lia-text-disabled disabled:opacity-50 min-w-0"
            
           />
           <AudioRecordButton
@@ -470,7 +470,7 @@ export function LiaChatPanel() {
  "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
               canSend
                 ? "bg-chat-cyan text-white hover:opacity-90"
-                : "bg-gray-200 dark:bg-lia-bg-elevated text-gray-400"
+                : "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-disabled"
             )}
           >
             {isCreating || isStreaming
@@ -496,10 +496,10 @@ function EmptyState() {
         <Brain className="w-5 h-5 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-gray-700 dark:text-lia-text-secondary" >
+        <p className="text-base-ui font-medium text-lia-text-secondary dark:text-lia-text-secondary" >
           Como posso ajudar?
         </p>
-        <p className="text-sm-ui text-gray-400 mt-1">
+        <p className="text-sm-ui text-lia-text-disabled mt-1">
           Pergunte sobre vagas, candidatos, relatórios e muito mais.
         </p>
       </div>
@@ -515,7 +515,7 @@ function ThinkingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >LIA</span>
+          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
           <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "0ms"}} />
@@ -547,12 +547,12 @@ function StreamingBubble({ content }: { content: string }) {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >LIA</span>
+          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
         </div>
         <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={html}
-            className="text-base-ui text-gray-700 dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+            className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
           />
           <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse align-middle" />
         </div>
@@ -577,15 +577,15 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
           <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px] px-3.5 py-2.5">
             <RichContent
               html={renderedHtml}
-              className="text-base-ui text-gray-700 dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+              className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
             />
           </div>
-          <span className="text-xs text-gray-400 font-['Inter',sans-serif] tabular-nums px-1">
+          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
             {msg.timestamp}
           </span>
         </div>
         <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0 mt-0.5">
-          <User className="w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
+          <User className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
         </div>
       </div>
     )
@@ -598,13 +598,13 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" >LIA</span>
-          <span className="text-xs text-gray-400 font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
+          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
+          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
         <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={renderedHtml}
-            className="text-base-ui text-gray-700 dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+            className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
           />
         </div>
         {conversationId && (

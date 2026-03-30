@@ -74,9 +74,9 @@ export function TableFiltersPanel({
         <div className="flex-shrink-0 p-4 border-b border-b-gray-100 bg-gray-50 dark:bg-lia-bg-secondary/50">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-gray-600" />
+              <Target className="w-4 h-4 text-lia-text-secondary" />
               <div>
-                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                   Filtros Avançados
                 </h3>
                 <p className={textStyles.bodySmall}>
@@ -92,7 +92,7 @@ export function TableFiltersPanel({
               onClick={onClose}
               className="h-7 w-7 p-0 rounded-full hover:opacity-70 transition-opacity"
             >
-              <X className="w-4 h-4 text-gray-950 dark:text-gray-50" />
+              <X className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
             </Button>
           </div>
         </div>
@@ -100,7 +100,7 @@ export function TableFiltersPanel({
         {/* Search */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-b-gray-100">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-800" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-primary" />
             <input
               type="text"
               placeholder="Buscar por título, ID, departamento..."
@@ -111,7 +111,7 @@ export function TableFiltersPanel({
             {searchTerm && (
               <button
                 onClick={() => onSearchTermChange('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800 hover:text-gray-800"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lia-text-primary hover:text-lia-text-primary"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -124,8 +124,8 @@ export function TableFiltersPanel({
 
           {/* Filtros Rápidos */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-gray-600" />
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               Filtros Rápidos
             </h4>
             <div className="grid grid-cols-2 gap-2">
@@ -133,7 +133,7 @@ export function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('status', 'statuses', 'Ativa')}
-                className={`h-8 text-xs justify-start ${jobFilters.status?.statuses?.includes('Ativa') ? 'bg-gray-100 border-gray-900 text-gray-950 font-semibold dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.status?.statuses?.includes('Ativa') ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-semibold dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary' : ''}`}
               >
                 <CheckCircle className="w-3 h-3 mr-1.5" />
                 Ativas
@@ -151,7 +151,7 @@ export function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('position', 'workModels', 'remoto')}
-                className={`h-8 text-xs justify-start ${jobFilters.position?.workModels?.includes('remoto') ? 'bg-gray-100 border-gray-900 text-gray-900 font-semibold' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.position?.workModels?.includes('remoto') ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-semibold' : ''}`}
               >
                 <Globe className="w-3 h-3 mr-1.5" />
                 Remotas
@@ -160,7 +160,7 @@ export function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('funnel', 'emptyPipeline', true)}
-                className={`h-8 text-xs justify-start ${jobFilters.funnel?.emptyPipeline ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-700 dark:text-lia-text-secondary font-semibold' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.funnel?.emptyPipeline ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-semibold' : ''}`}
               >
                 <Users className="w-3 h-3 mr-1.5" />
                 Sem Candidatos
@@ -170,7 +170,7 @@ export function TableFiltersPanel({
 
           {/* Status */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5" />
               Status da Vaga
             </h4>
@@ -181,8 +181,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.status?.statuses?.includes(status)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('status', 'statuses', status)}
                 >
@@ -194,7 +194,7 @@ export function TableFiltersPanel({
 
           {/* Etapa do Processo */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <Layers3 className="w-3.5 h-3.5" />
               Etapa do Processo
             </h4>
@@ -205,8 +205,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.status?.stages?.includes(stage)
-                      ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-700 dark:text-lia-text-secondary font-medium'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('status', 'stages', stage)}
                 >
@@ -218,7 +218,7 @@ export function TableFiltersPanel({
 
           {/* Prioridade */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" />
               Prioridade
             </h4>
@@ -234,7 +234,7 @@ export function TableFiltersPanel({
                   className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
                     jobFilters.status?.priorities?.includes(priority.value)
                       ? priority.color + ' font-medium'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('status', 'priorities', priority.value)}
                 >
@@ -246,7 +246,7 @@ export function TableFiltersPanel({
 
           {/* Modelo de Trabalho */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5" />
               Modelo de Trabalho
             </h4>
@@ -257,8 +257,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
                     jobFilters.position?.workModels?.includes(model)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'workModels', model)}
                 >
@@ -270,7 +270,7 @@ export function TableFiltersPanel({
 
           {/* Senioridade */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5" />
               Senioridade
             </h4>
@@ -281,8 +281,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.position?.levels?.includes(level)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'levels', level)}
                 >
@@ -294,7 +294,7 @@ export function TableFiltersPanel({
 
           {/* Localização */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               Localização
             </h4>
@@ -305,8 +305,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'locations', loc)}
                 >
@@ -318,7 +318,7 @@ export function TableFiltersPanel({
 
           {/* Departamento */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5" />
               Departamento
             </h4>
@@ -329,8 +329,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.team?.departments?.includes(dept)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('team', 'departments', dept)}
                 >
@@ -342,7 +342,7 @@ export function TableFiltersPanel({
 
           {/* Publicação */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5" />
               Publicação
             </h4>
@@ -357,8 +357,8 @@ export function TableFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
-                      ? 'bg-gray-100 border-gray-900 text-gray-950 font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-gray-50'
-                      : 'bg-lia-bg-primary text-gray-800'
+                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('publishing', 'channels', channel.value)}
                 >
@@ -370,8 +370,8 @@ export function TableFiltersPanel({
                 variant="outline"
                 className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                   jobFilters.publishing?.unpublished
-                    ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-700 dark:text-lia-text-secondary font-medium'
-                    : 'bg-lia-bg-primary text-gray-800'
+                    ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
+                    : 'bg-lia-bg-primary text-lia-text-primary'
                 }`}
                 onClick={() => onToggleFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
               >
@@ -382,7 +382,7 @@ export function TableFiltersPanel({
 
           {/* Métricas */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5" />
               Métricas
             </h4>
@@ -394,7 +394,7 @@ export function TableFiltersPanel({
                   checked={jobFilters.funnel?.emptyPipeline || false}
                   onChange={(e) => onToggleFilter('funnel', 'emptyPipeline', e.target.checked)}
                 />
-                <span className="text-gray-700">Pipeline vazio (sem candidatos)</span>
+                <span className="text-lia-text-secondary">Pipeline vazio (sem candidatos)</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md bg-gray-50">
                 <input
@@ -403,7 +403,7 @@ export function TableFiltersPanel({
                   checked={jobFilters.metrics?.lowConversion || false}
                   onChange={(e) => onToggleFilter('metrics', 'lowConversion', e.target.checked)}
                 />
-                <span className="text-gray-700">Baixa conversão</span>
+                <span className="text-lia-text-secondary">Baixa conversão</span>
               </label>
             </div>
           </div>
@@ -411,7 +411,7 @@ export function TableFiltersPanel({
           {/* Buscas Salvas */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
                 <Bookmark className="w-3.5 h-3.5" />
                 Buscas Salvas
               </h4>
@@ -423,7 +423,7 @@ export function TableFiltersPanel({
                     const name = prompt("Nome da busca:")
                     if (name) onSaveSearch(name)
                   }}
-                  className="h-6 text-xs px-2 text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100"
+                  className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   Salvar Busca
@@ -440,12 +440,12 @@ export function TableFiltersPanel({
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <Search className="w-3 h-3 text-gray-600 flex-shrink-0" />
-                        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary truncate">
+                        <Search className="w-3 h-3 text-lia-text-secondary flex-shrink-0" />
+                        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                           {search.name}
                         </span>
                       </div>
-                      <p className="text-micro text-gray-600 mt-0.5 truncate">
+                      <p className="text-micro text-lia-text-secondary mt-0.5 truncate">
                         {new Date(search.createdAt).toLocaleDateString('pt-BR')}
                         {search.query && ` - "${search.query}"`}
                       </p>
@@ -462,7 +462,7 @@ export function TableFiltersPanel({
                         className="h-6 w-6 p-0"
                         title="Renomear"
                       >
-                        <Edit2 className="w-3 h-3 text-gray-600" />
+                        <Edit2 className="w-3 h-3 text-lia-text-secondary" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -482,9 +482,9 @@ export function TableFiltersPanel({
               </div>
             ) : (
               <div className="text-center py-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                <Bookmark className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                <p className="text-xs text-gray-500">Nenhuma busca salva</p>
-                <p className="text-micro text-gray-600 mt-0.5">Aplique filtros e clique em "Salvar Busca"</p>
+                <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
+                <p className="text-xs text-lia-text-tertiary">Nenhuma busca salva</p>
+                <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em "Salvar Busca"</p>
               </div>
             )}
           </div>
@@ -501,7 +501,7 @@ export function TableFiltersPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onClearAllFilters}
-                className="h-7 text-xs text-gray-800 hover:text-gray-950"
+                className="h-7 text-xs text-lia-text-primary hover:text-lia-text-primary"
               >
                 <X className="w-3 h-3 mr-1" />
                 Limpar

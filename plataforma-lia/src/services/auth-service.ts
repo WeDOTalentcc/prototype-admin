@@ -42,7 +42,7 @@ export interface TokenResponse {
 
 export interface AuthError {
   error: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 export interface SSOSessionResponse {

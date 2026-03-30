@@ -64,7 +64,7 @@ function AceitarConviteContent() {
         const data = await response.json()
         setInvitationInfo(data)
         setPageState("valid")
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError("Erro ao conectar com o servidor")
         setPageState("error")
       }
@@ -97,8 +97,8 @@ function AceitarConviteContent() {
       setTimeout(() => {
         router.push("/login")
       }, 2000)
-    } catch (err: any) {
-      setError(err.message || "Erro ao aceitar convite. Tente novamente.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Erro ao aceitar convite. Tente novamente.")
     } finally {
       setIsAccepting(false)
     }

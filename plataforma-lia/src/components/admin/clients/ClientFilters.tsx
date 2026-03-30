@@ -83,7 +83,7 @@ export function ClientFilters({
           )}
         </div>
       </div>
-      <div className="mt-3 text-xs text-gray-500 dark:text-lia-text-tertiary">
+      <div className="mt-3 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
         {isLoading ? (
           <span>Carregando...</span>
         ) : (

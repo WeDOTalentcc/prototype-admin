@@ -94,7 +94,7 @@ interface StageTransitionActionsModalProps {
     templateId?: string
     subject?: string
     message?: string
-    metadata?: any
+    metadata?: Record<string, unknown>
   }) => Promise<void>
 }
 
@@ -102,16 +102,16 @@ const COLOR_CLASSES = {
   cyan: {
     bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
     border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    text: 'text-gray-700 dark:text-lia-text-secondary',
-    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    text: 'text-lia-text-secondary dark:text-lia-text-secondary',
+    icon: 'text-lia-text-secondary dark:text-lia-text-tertiary',
     selectedBg: 'bg-gray-100 dark:bg-lia-bg-secondary',
-    selectedBorder: 'border-gray-900 dark:border-gray-50',
+    selectedBorder: 'border-gray-900 dark:border-lia-border-medium',
   },
   blue: {
     bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
     border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    text: 'text-gray-700 dark:text-lia-text-secondary',
-    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    text: 'text-lia-text-secondary dark:text-lia-text-secondary',
+    icon: 'text-lia-text-secondary dark:text-lia-text-tertiary',
     selectedBg: 'bg-gray-50 dark:bg-lia-bg-elevated',
     selectedBorder: 'border-gray-900 dark:border-lia-border-default',
   },
@@ -142,8 +142,8 @@ const COLOR_CLASSES = {
   gray: {
     bg: 'bg-gray-50',
     border: 'border-lia-border-subtle',
-    text: 'text-gray-800',
-    icon: 'text-gray-600',
+    text: 'text-lia-text-primary',
+    icon: 'text-lia-text-secondary',
     selectedBg: 'bg-gray-50',
     selectedBorder: 'border-gray-900',
   },
@@ -566,7 +566,7 @@ export function StageTransitionActionsModal({
             )}>
               <ArrowRight className={cn(
                 "w-4 h-4",
-                headerColor === 'red' ? 'text-status-error' : 'text-gray-600'
+                headerColor === 'red' ? 'text-status-error' : 'text-lia-text-secondary'
               )} />
             </div>
             <div>
@@ -578,7 +578,7 @@ export function StageTransitionActionsModal({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -593,7 +593,7 @@ export function StageTransitionActionsModal({
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar} />
-                    <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
+                    <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xs">
                       {candidate.name?.charAt(0) || '?'}
                     </AvatarFallback>
                   </Avatar>
@@ -609,7 +609,7 @@ export function StageTransitionActionsModal({
                   <Badge className={badgeStyles.default}>
                     {getStageDisplayName(currentStage)}
                   </Badge>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
                   <Badge className={cn(
                     "text-white",
                     headerColor === 'red' ? 'bg-status-error' : 'bg-gray-900'
@@ -632,7 +632,7 @@ export function StageTransitionActionsModal({
               )}
 
               {job && (
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-lia-text-secondary">
                   <span className={textStyles.caption}>Vaga:</span>
                   <span className={textStyles.label}>{job.title}</span>
                   {job.department && (
@@ -672,7 +672,7 @@ export function StageTransitionActionsModal({
                               {action.name}
                             </span>
                             {action.recommended && (
-                              <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-gray-50 text-micro px-1.5 py-0">
+                              <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-micro px-1.5 py-0">
                                 <Brain className="h-3 w-3 mr-0.5 text-wedo-cyan" />
                                 Recomendado
                               </Badge>
@@ -699,8 +699,8 @@ export function StageTransitionActionsModal({
                       className={cn(
                         "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'email'
-                          ? 'border-gray-900 bg-gray-50 text-gray-900'
-                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                          ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                       )}
                     >
                       <Mail className="w-4 h-4" />
@@ -715,7 +715,7 @@ export function StageTransitionActionsModal({
                         "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'whatsapp'
                           ? 'border-status-success/30 bg-status-success/10 text-status-success'
-                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                       )}
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -729,8 +729,8 @@ export function StageTransitionActionsModal({
                       className={cn(
                         "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'both'
-                          ? 'border-gray-900 bg-gray-50 text-gray-900'
-                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                          ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                       )}
                     >
                       <div className="flex items-center -space-x-1">
@@ -798,14 +798,14 @@ export function StageTransitionActionsModal({
                   <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs text-gray-900 dark:text-gray-50 font-medium">
+                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium">
                         LIA personalizou esta mensagem considerando:
                       </p>
-                      <p className="text-micro text-gray-600 mt-0.5">
+                      <p className="text-micro text-lia-text-secondary mt-0.5">
                         nome, cargo, vaga e contexto do candidato
                       </p>
                       {isMessageEdited && (
-                        <p className="text-micro text-gray-600 mt-1 flex items-center gap-1">
+                        <p className="text-micro text-lia-text-secondary mt-1 flex items-center gap-1">
                           <Edit3 className="w-3 h-3" />
                           (mensagem editada por você)
                         </p>
@@ -817,10 +817,10 @@ export function StageTransitionActionsModal({
                     <p className={cn(textStyles.label, "flex items-center gap-2")}>
                       {channel === 'both' ? (
                         <span className="flex items-center -space-x-1">
-                          <Mail className="h-4 w-4 text-gray-500" />
+                          <Mail className="h-4 w-4 text-lia-text-tertiary" />
                           <MessageSquare className="h-4 w-4 text-status-success" />
                         </span>
-                      ) : channel === 'email' ? <Mail className="h-4 w-4 text-gray-500" /> : <MessageSquare className="h-4 w-4 text-status-success" />}
+                      ) : channel === 'email' ? <Mail className="h-4 w-4 text-lia-text-tertiary" /> : <MessageSquare className="h-4 w-4 text-status-success" />}
                       Preview da Mensagem
                     </p>
                     <Button
@@ -837,7 +837,7 @@ export function StageTransitionActionsModal({
 
                   {isLoadingTemplates ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      <Loader2 className="h-5 w-5 animate-spin text-lia-text-disabled" />
                     </div>
                   ) : (
                     <div className="relative">
@@ -845,8 +845,8 @@ export function StageTransitionActionsModal({
                       {isRegenerating && (
                         <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-md flex items-center justify-center z-10">
                           <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
-                            <span className="text-xs text-gray-600 font-medium">LIA regenerando mensagem...</span>
+                            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary" />
+                            <span className="text-xs text-lia-text-secondary font-medium">LIA regenerando mensagem...</span>
                           </div>
                         </div>
                       )}
@@ -882,7 +882,7 @@ export function StageTransitionActionsModal({
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <ArrowRight className="w-6 h-6 text-gray-400" />
+                    <ArrowRight className="w-6 h-6 text-lia-text-disabled" />
                   </div>
                   <p className={textStyles.subtitle}>Apenas mover candidato</p>
                   <p className={cn(textStyles.caption, "mt-1 max-w-[250px]")}>
@@ -900,7 +900,7 @@ export function StageTransitionActionsModal({
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
           >
             Cancelar
           </Button>
@@ -911,7 +911,7 @@ export function StageTransitionActionsModal({
               "gap-2 h-9 px-4 text-xs font-medium",
               selectedActionData?.color === 'red'
                 ? "bg-status-error hover:bg-status-error text-white"
-                : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
             )}
           >
             {isLoading ? (

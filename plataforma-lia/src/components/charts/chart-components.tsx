@@ -13,9 +13,9 @@ export function ChartContainer({ title, description, children, className = "" }:
   return (
     <div className={`bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors duration-200 ${className}`}>
       <div className="mb-4">
-        <h3 className="text-sm font-semibold font-sans text-gray-950">{title}</h3>
+        <h3 className="text-sm font-semibold font-sans text-lia-text-primary">{title}</h3>
         {description && (
-          <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">{description}</p>
+          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">{description}</p>
         )}
       </div>
       {children}
@@ -35,7 +35,7 @@ export function BarChart({ data, maxValue }: BarChartProps) {
     <div className="space-y-3">
       {data.map((item, index) => (
         <div key={index} className="flex items-center gap-3">
-          <div className="w-20 text-xs text-gray-600 font-medium">
+          <div className="w-20 text-xs text-lia-text-secondary font-medium">
             {item.label}
           </div>
           <div className="flex-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-full h-2">
@@ -46,7 +46,7 @@ export function BarChart({ data, maxValue }: BarChartProps) {
               style={{width: `${(item.value / max) * 100}%`}}
             />
           </div>
-          <div className="w-12 text-xs text-gray-950 font-semibold text-right">
+          <div className="w-12 text-xs text-lia-text-primary font-semibold text-right">
             {item.value}
           </div>
         </div>
@@ -77,10 +77,10 @@ export function MetricCard({ title, value, trend, trendValue, icon, description 
     <div className="bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors duration-200">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <p className="text-xs text-gray-800 dark:text-lia-text-primary font-medium uppercase tracking-wide">
+          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium uppercase tracking-wide">
             {title}
           </p>
-          <p className="text-2xl font-semibold text-gray-950 mt-1">
+          <p className="text-2xl font-semibold text-lia-text-primary mt-1">
             {value}
           </p>
         </div>
@@ -95,12 +95,12 @@ export function MetricCard({ title, value, trend, trendValue, icon, description 
         <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
           <span>{trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}</span>
           <span className="font-medium">{trendValue}</span>
-          <span className="text-gray-800 dark:text-lia-text-primary">vs período anterior</span>
+          <span className="text-lia-text-primary dark:text-lia-text-primary">vs período anterior</span>
         </div>
       )}
 
       {description && (
-        <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-2">
+        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-2">
           {description}
         </p>
       )}
@@ -154,7 +154,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
         </svg>
         {centerText && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-semibold text-gray-950">
+            <span className="text-lg font-semibold text-lia-text-primary">
               {centerText}
             </span>
           </div>
@@ -168,10 +168,10 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
               className="w-3 h-3 rounded-full"
               style={{backgroundColor: item.color}}
             />
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-lia-text-secondary">
               {item.label}
             </span>
-            <span className="text-xs font-semibold text-gray-950">
+            <span className="text-xs font-semibold text-lia-text-primary">
               {item.value}
             </span>
           </div>
@@ -225,10 +225,10 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
       <div className="flex justify-between mt-2">
         {data.map((item, index) => (
           <div key={index} className="text-center">
-            <div className="text-xs text-gray-800 dark:text-lia-text-primary">
+            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
               {item.label}
             </div>
-            <div className="text-xs font-semibold text-gray-950">
+            <div className="text-xs font-semibold text-lia-text-primary">
               {item.value}
             </div>
           </div>

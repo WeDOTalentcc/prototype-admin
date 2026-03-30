@@ -9,7 +9,7 @@ import { INDUSTRIES, INDUSTRY_CATEGORIES } from "@/lib/industry-constants"
 import { useSemanticSearch } from "@/hooks/useSemanticSearch"
 
 interface EditArchetypeModalProps {
-  editingArchetype: any
+  editingArchetype: Record<string, unknown>
   editArchetypeName: string
   onEditArchetypeNameChange: (v: string) => void
   editArchetypeQuery: string
@@ -559,8 +559,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
-                    className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                    className={editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 lia-text-950" : "bg-gray-100 lia-text-400"}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 lia-text-950" : "bg-gray-100 lia-text-400"}`}
                     title="Buscar skills similares com IA"
                   >
                     {isFindingSimilarSkills ? (
@@ -642,9 +641,8 @@ export function EditArchetypeModal({
                           }}
                           className={cn(
                             "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-dark",
-                            isSelected ? "ring-2 ring-gray-900/20" : ""
+                            isSelected ? "ring-2 ring-gray-900/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                           )}
-                          className={isSelected ? "bg-wedo-cyan/25" : "bg-wedo-cyan/15"}
                         >
                           {skill}
                         </button>
@@ -854,9 +852,8 @@ export function EditArchetypeModal({
                           }}
                           className={cn(
                             "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-dark",
-                            isSelected ? "ring-2 ring-gray-900/20" : ""
+                            isSelected ? "ring-2 ring-gray-900/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                           )}
-                          className={isSelected ? "bg-wedo-cyan/25" : "bg-wedo-cyan/15"}
                         >
                           {tag}
                         </button>

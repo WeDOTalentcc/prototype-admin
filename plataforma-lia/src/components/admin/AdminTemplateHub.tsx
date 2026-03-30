@@ -40,7 +40,7 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
   'whatsapp': { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
- 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-gray-900 dark:bg-lia-bg-secondary dark:text-lia-text-secondary' },
+ 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-secondary' },
   'parecer': { label: 'Parecer', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   'report': { label: 'Report', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
   'chat_lia': { label: 'Chat LIA', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' }
@@ -203,7 +203,7 @@ export function AdminTemplateHub() {
         if (templatesResponse.ok) {
           const result = await templatesResponse.json()
           const templatesArray = result.items || (Array.isArray(result) ? result : [])
-          setTemplates(templatesArray.map((t: any) => ({
+          setTemplates(templatesArray.map((t: Record<string, unknown>) => ({
             id: t.id,
             name: t.name,
             category: t.category || 'system',
@@ -344,10 +344,10 @@ export function AdminTemplateHub() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-lia-text-primary">
+        <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
           Templates de Sistema
         </h2>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-lia-text-disabled">
           Gerencie templates automáticos, alertas e notificações internas
         </p>
       </div>
@@ -393,7 +393,7 @@ export function AdminTemplateHub() {
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
  channelFilter === key 
                     ? 'text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'
+                    : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'
                 }`}
                 style={channelFilter === key ? { backgroundColor: 'var(--gray-950)' } : {}}
               >
@@ -407,7 +407,7 @@ export function AdminTemplateHub() {
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary"
+              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -480,7 +480,7 @@ export function AdminTemplateHub() {
                       <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
-                          <span className="text-sm font-semibold text-gray-950">
+                          <span className="text-sm font-semibold text-lia-text-primary">
                             {group.label}
                           </span>
                           <Badge variant="outline" className="text-xs ml-1">
@@ -509,7 +509,7 @@ export function AdminTemplateHub() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <p className="text-xs font-medium text-gray-950 truncate">
+                                        <p className="text-xs font-medium text-lia-text-primary truncate">
                                           {template.name}
                                         </p>
                                         {template.priority && (
@@ -548,7 +548,7 @@ export function AdminTemplateHub() {
             {selectedTemplate ? (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-950">
+                  <h3 className="text-sm font-semibold text-lia-text-primary">
                     {editingTemplate ? 'Editando Template' : 'Visualização'}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -601,7 +601,7 @@ export function AdminTemplateHub() {
                             className="w-full px-3 py-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
-                          <p className="text-sm text-gray-950 bg-gray-50 rounded-md px-3 py-2">{selectedTemplate.subject}</p>
+                          <p className="text-sm text-lia-text-primary bg-gray-50 rounded-md px-3 py-2">{selectedTemplate.subject}</p>
                         )}
                       </div>
                     )}
@@ -626,7 +626,7 @@ export function AdminTemplateHub() {
                         />
                       ) : (
                         <div className="bg-gray-50 rounded-md p-3">
-                          <pre className="text-sm text-gray-950 whitespace-pre-wrap font-sans">
+                          <pre className="text-sm text-lia-text-primary whitespace-pre-wrap font-sans">
                             {selectedTemplate.body}
                           </pre>
                         </div>

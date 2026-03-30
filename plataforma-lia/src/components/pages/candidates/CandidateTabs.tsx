@@ -32,8 +32,8 @@ export function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsPro
               role="tab"
               className={`group inline-flex items-center gap-2 py-2 px-1 border-b-2 tab-button ${
                 activeTab === tab.id
-                  ? 'border-gray-950 text-gray-950 dark:border-gray-50 dark:text-gray-50'
-                  : 'border-transparent text-gray-800 hover:text-gray-950 hover:border-lia-border-default dark:text-lia-text-tertiary dark:hover:text-gray-300'
+                  ? 'border-gray-950 text-lia-text-primary dark:border-lia-border-medium dark:text-lia-text-primary'
+                  : 'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
               }`}
             >
               <span>{tab.label}</span>

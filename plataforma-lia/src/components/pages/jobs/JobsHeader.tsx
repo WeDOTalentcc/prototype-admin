@@ -29,13 +29,13 @@ export function JobsHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Vagas</h1>
+            <Briefcase className="h-5 w-5 text-lia-text-disabled dark:text-lia-text-tertiary" />
+            <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">Vagas</h1>
           </div>
           
           {metrics && (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary">
+              <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary">
                 {metrics.totalJobs} total
               </Badge>
               <Badge className="bg-status-success/20 text-status-success dark:text-status-success border-status-success/30/30">
@@ -53,7 +53,7 @@ export function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-900' : 'text-gray-500 dark:text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary dark:text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('list')}
             >
               <List className="h-4 w-4" />
@@ -61,7 +61,7 @@ export function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'cards' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-900' : 'text-gray-500 dark:text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'cards' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary dark:text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('cards')}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -69,7 +69,7 @@ export function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'kanban' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-900' : 'text-gray-500 dark:text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'kanban' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary dark:text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('kanban')}
             >
               <Kanban className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function JobsHeader({
           
           <Button
             onClick={onCreateJob}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova Vaga
@@ -90,25 +90,25 @@ export function JobsHeader({
         <TabsList className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
           <TabsTrigger 
             value="all" 
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-50"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Todas
           </TabsTrigger>
           <TabsTrigger 
             value="active"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-50"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Ativas
           </TabsTrigger>
           <TabsTrigger 
             value="drafts"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-50"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Rascunhos
           </TabsTrigger>
           <TabsTrigger 
             value="closed"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-50"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Encerradas
           </TabsTrigger>

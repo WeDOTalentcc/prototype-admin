@@ -40,7 +40,7 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   manual: {
     label: 'Manual',
     icon: PenLine,
-    className: 'bg-gray-100 text-gray-600 border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle',
+    className: 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle',
     description: 'Editado manualmente'
   },
   suggested: {

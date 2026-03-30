@@ -70,7 +70,7 @@ const getStatusBadge = (status: string) => {
     case "Rejeitado":
       return "bg-status-error/10 text-status-error border-status-error/30"
     default:
-      return "bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle"
+      return "bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -78,8 +78,8 @@ export function InterviewsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-sans font-semibold text-gray-950">Últimas Triagens</h2>
-        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800 dark:text-lia-text-tertiary dark:hover:text-gray-200">
+        <h2 className="text-sm font-sans font-semibold text-lia-text-primary">Últimas Triagens</h2>
+        <Button variant="ghost" size="sm" className="text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse">
           Ver mais
         </Button>
       </div>
@@ -103,12 +103,12 @@ export function InterviewsSection() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-semibold text-gray-950 text-sm leading-tight">
+                    <h3 className="font-semibold text-lia-text-primary text-sm leading-tight">
                       {candidate.name}
                     </h3>
                     {getStatusIcon(candidate.status)}
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-2">{candidate.position}</p>
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">{candidate.position}</p>
 
                   <Badge
                     variant="outline"
@@ -121,10 +121,10 @@ export function InterviewsSection() {
 
               {/* Informações da vaga */}
               <div className="space-y-2">
-                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
-                  <span className="font-medium text-gray-800 dark:text-lia-text-primary">Vaga:</span> {candidate.job}
+                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Vaga:</span> {candidate.job}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   <Calendar className="w-3 h-3 lia-text-base" />
                   <span>{candidate.date} às {candidate.time}</span>
                 </div>
@@ -134,7 +134,7 @@ export function InterviewsSection() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-status-warning fill-current" />
-                  <span className="text-sm font-semibold text-gray-950">
+                  <span className="text-sm font-semibold text-lia-text-primary">
                     {candidate.score}
                   </span>
                   <span className="text-xs lia-text-base">/10</span>
@@ -158,7 +158,7 @@ export function InterviewsSection() {
               <div className="space-y-2 py-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center gap-2">
                   <Phone className="w-3 h-3 lia-text-base" />
-                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary flex-1">{candidate.phone}</span>
+                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex-1">{candidate.phone}</span>
                   <Button
                     size="sm"
                     variant="outline"
@@ -170,7 +170,7 @@ export function InterviewsSection() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3 h-3 lia-text-base" />
-                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary flex-1 truncate">{candidate.email}</span>
+                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex-1 truncate">{candidate.email}</span>
                   <Button
                     size="sm"
                     variant="outline"

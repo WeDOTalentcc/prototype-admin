@@ -115,7 +115,7 @@ function MiniSalaryBar({
           className="absolute top-0 w-0.5 h-6 bg-gray-900"
           style={{left: `${percentile}%`}}
         >
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-gray-600 dark:text-lia-text-tertiary whitespace-nowrap">
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary whitespace-nowrap">
             P{percentile}
           </div>
         </div>
@@ -171,7 +171,7 @@ export function CompensationChatMessage({
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Analisando remuneração...</span>
           </div>
         </div>
@@ -226,7 +226,7 @@ export function CompensationChatMessage({
               </div>
               <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                 <p className="text-micro text-muted-foreground mb-0.5">Mercado</p>
-                <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary">
+                <p className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
                   {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
                 </p>
               </div>

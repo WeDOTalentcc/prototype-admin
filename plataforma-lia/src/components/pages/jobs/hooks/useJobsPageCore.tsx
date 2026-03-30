@@ -281,10 +281,10 @@ export function useJobsPageCore(props: JobsPageProps) {
 
   if (showKanban && !selectedJob) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-base-ui text-gray-500 dark:text-lia-text-tertiary">Carregando vaga...</p>
+          <p className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando vaga...</p>
         </div>
       </div>
     )

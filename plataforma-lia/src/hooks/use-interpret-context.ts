@@ -41,7 +41,7 @@ interface InterpretContextResult {
   confidence?: number
   tasks?: TaskItem[]
   out_of_scope?: boolean
-  candidate_info?: Record<string, any>
+  candidate_info?: Record<string, unknown>
   learned_suggestions?: LearnedSuggestion[]
   fairness_result?: {
     is_fair: boolean
@@ -64,7 +64,7 @@ export interface ChatMessage {
     confidence?: number
     tasks?: TaskItem[]
     out_of_scope?: boolean
-    candidate_info?: Record<string, any>
+    candidate_info?: Record<string, unknown>
     learned_suggestions?: LearnedSuggestion[]
     fairness_result?: {
       is_fair: boolean

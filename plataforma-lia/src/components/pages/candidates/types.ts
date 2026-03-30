@@ -120,7 +120,7 @@ export interface Candidate {
     startDate?: string
     endDate?: string
   }>
-  experiences?: any[]
+  experiences?: Record<string, unknown>[]
   workHistory?: Array<{
     company: string
     title?: string

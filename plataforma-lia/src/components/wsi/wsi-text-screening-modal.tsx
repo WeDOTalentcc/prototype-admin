@@ -37,7 +37,7 @@ interface WSITextScreeningModalProps {
   }
   jobVacancyId?: string
   jobTitle?: string
-  onComplete?: (result: any) => void
+  onComplete?: (result: Record<string, unknown>) => void
 }
 
 interface WSIQuestion {
@@ -83,14 +83,14 @@ interface WSIResult {
   archetype_indicators: ArchetypeIndicator[]
   summary: string
   recommendations: string[]
-  response_analyses: any[]
+  response_analyses: Record<string, unknown>[]
 }
 
 type ScreeningStep = 'loading' | 'questions' | 'processing' | 'completed' | 'error'
 
 const BLOOM_COLORS: Record<number, string> = {
-  1: 'bg-gray-100 text-gray-800 dark:text-lia-text-primary',
-  2: 'bg-gray-200 text-gray-800 dark:text-lia-text-primary',
+  1: 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary',
+  2: 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary',
   3: 'bg-status-success/15 text-status-success',
   4: 'bg-status-warning/15 text-status-warning',
   5: 'bg-wedo-orange/15 text-wedo-orange',
@@ -277,7 +277,7 @@ export function WSITextScreeningModal({
     return (
       <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <BarChart3 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Matriz Bloom × Dreyfus
         </h4>
         <div className="grid grid-cols-6 gap-1 text-micro">
@@ -328,7 +328,7 @@ export function WSITextScreeningModal({
     return (
       <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <User className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <User className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Perfil Big Five
         </h4>
         <div className="space-y-2">
@@ -337,7 +337,7 @@ export function WSITextScreeningModal({
             const displayValue = key === 'neuroticism' ? 100 - value : value
             return (
               <div key={key} className="flex items-center gap-2">
-                <span className="text-xs w-28 text-gray-800 dark:text-lia-text-primary">{trait.label}</span>
+                <span className="text-xs w-28 text-lia-text-primary dark:text-lia-text-primary">{trait.label}</span>
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-[width,height] duration-500"
@@ -345,7 +345,7 @@ export function WSITextScreeningModal({
                       backgroundColor: trait.color}}
                   />
                 </div>
-                <span className="text-xs w-8 text-right text-gray-800 dark:text-lia-text-primary">{displayValue}%</span>
+                <span className="text-xs w-8 text-right text-lia-text-primary dark:text-lia-text-primary">{displayValue}%</span>
               </div>
             )
           })}
@@ -360,7 +360,7 @@ export function WSITextScreeningModal({
     return (
       <div className="bg-lia-bg-primary rounded-md p-4 border border-lia-border-subtle">
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-          <Award className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <Award className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Arquétipos Identificados
         </h4>
         <div className="space-y-2">
@@ -370,7 +370,7 @@ export function WSITextScreeningModal({
                 <div className="text-sm font-medium">{arch.archetype}</div>
                 <div className="text-xs lia-text-base">{arch.description}</div>
               </div>
-              <Badge className="bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle">
+              <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle">
                 {arch.match_score}%
               </Badge>
             </div>
@@ -393,19 +393,19 @@ export function WSITextScreeningModal({
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-semibold text-gray-950 flex items-center gap-2">
+                <DialogTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   Triagem WSI (Texto)
                   <Badge variant="outline" className="text-micro font-normal">
                     Bloom + Dreyfus + Big Five
                   </Badge>
                 </DialogTitle>
-                <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
+                <DialogDescription className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                   {candidate.name} • {effectiveJobVacancy.title}
                 </DialogDescription>
               </div>
             </div>
             {step === 'questions' && (
-              <Badge className="bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle">
+              <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle">
                 {currentQuestionIndex + 1} de {questions.length}
               </Badge>
             )}
@@ -424,8 +424,8 @@ export function WSITextScreeningModal({
         <div className="flex-1 overflow-y-auto py-4 space-y-4">
           {step === 'loading' && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
-              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+              <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                 Gerando perguntas baseadas em Bloom's Taxonomy...
               </p>
             </div>
@@ -436,11 +436,11 @@ export function WSITextScreeningModal({
               <AlertCircle className="w-12 h-12 text-status-error" />
               <div className="text-center">
                 <p className="font-medium text-status-error">Erro na triagem</p>
-                <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">{error}</p>
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">{error}</p>
               </div>
               <Button 
                 onClick={initializeScreening} 
-                className="border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50"
+                className="border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50"
               >
                 Tentar novamente
               </Button>
@@ -498,12 +498,12 @@ export function WSITextScreeningModal({
           {step === 'processing' && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="relative">
-                <Loader2 className="w-12 h-12 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+                <Loader2 className="w-12 h-12 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
                 <Brain className="w-5 h-5 text-status-warning absolute -top-1 -right-1 animate-pulse" />
               </div>
               <div className="text-center">
-                <p className="font-medium text-gray-800 dark:text-lia-text-primary">Analisando com Claude AI...</p>
-                <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
+                <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">Analisando com Claude AI...</p>
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
                   Avaliando níveis Bloom, Dreyfus e indicadores Big Five
                 </p>
               </div>
@@ -514,7 +514,7 @@ export function WSITextScreeningModal({
             <div className="space-y-4">
               <div className="text-center py-4">
                 <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-gray-950">Triagem WSI Concluída</h3>
+                <h3 className="text-sm font-semibold text-lia-text-primary">Triagem WSI Concluída</h3>
               </div>
 
               <Card className="bg-lia-bg-primary border-lia-border-subtle">
@@ -540,14 +540,14 @@ export function WSITextScreeningModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                      <Target className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-1" />
-                      <div className="text-lg font-semibold text-gray-800 dark:text-lia-text-primary">{BLOOM_NAMES[result.cognitive_level.level]}</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Nível Cognitivo (B{result.cognitive_level.level})</div>
+                      <Target className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-1" />
+                      <div className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{BLOOM_NAMES[result.cognitive_level.level]}</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nível Cognitivo (B{result.cognitive_level.level})</div>
                     </div>
                     <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                      <TrendingUp className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-1" />
-                      <div className="text-lg font-semibold text-gray-800 dark:text-lia-text-primary">{DREYFUS_NAMES[result.proficiency_level.level]}</div>
-                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">Proficiência (D{result.proficiency_level.level})</div>
+                      <TrendingUp className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-1" />
+                      <div className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{DREYFUS_NAMES[result.proficiency_level.level]}</div>
+                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Proficiência (D{result.proficiency_level.level})</div>
                     </div>
                   </div>
                 </CardContent>
@@ -560,11 +560,11 @@ export function WSITextScreeningModal({
               {result.summary && (
                 <Card className="bg-lia-bg-primary border border-lia-border-subtle">
                   <CardContent className="p-4">
-                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-gray-800 dark:text-lia-text-primary">
-                      <MessageSquare className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
+                      <MessageSquare className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       Resumo da Avaliação
                     </h4>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                       {result.summary}
                     </p>
                   </CardContent>
@@ -574,11 +574,11 @@ export function WSITextScreeningModal({
               {result.recommendations?.length > 0 && (
                 <Card className="bg-lia-bg-primary border border-lia-border-subtle">
                   <CardContent className="p-4">
-                    <h4 className="text-sm font-medium mb-2 text-gray-800 dark:text-lia-text-primary">Recomendações</h4>
-                    <ul className="text-sm text-gray-800 dark:text-lia-text-primary space-y-1">
+                    <h4 className="text-sm font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">Recomendações</h4>
+                    <ul className="text-sm text-lia-text-primary dark:text-lia-text-primary space-y-1">
                       {result.recommendations.map((rec, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-gray-600 dark:text-lia-text-tertiary">•</span>
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">•</span>
                           {rec}
                         </li>
                       ))}
@@ -607,7 +607,7 @@ export function WSITextScreeningModal({
               />
             </div>
             <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+              <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                 Ctrl + Enter para enviar
               </span>
               <Button 

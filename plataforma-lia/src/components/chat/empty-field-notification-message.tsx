@@ -10,7 +10,7 @@ import type { EmptyFieldNotification, FieldValueSuggestion } from "@/hooks/use-e
 interface EmptyFieldNotificationMessageProps {
   notification: EmptyFieldNotification
   onAction: (action: string) => Promise<void>
-  onSuggestionAccepted?: (fieldKey: string, value: any) => void
+  onSuggestionAccepted?: (fieldKey: string, value: unknown) => void
   onSuggestionRejected?: () => void
   suggestion?: FieldValueSuggestion | null
   isLoadingSuggestion?: boolean

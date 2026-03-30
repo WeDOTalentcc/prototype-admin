@@ -74,7 +74,7 @@ export function WSIQuestionsStage() {
 
   const updateCategory = (id: string, category: string) => {
     setWsiCandidates(prev => prev.map(q => 
-      q.id === id ? { ...q, category: category as any } : q
+      q.id === id ? { ...q, category: category as WSIQuestionCandidate['category'] } : q
     ))
   }
 
@@ -101,7 +101,7 @@ export function WSIQuestionsStage() {
       selected: selectedCount < 5,
       batch: 0,
       isWSI: true,
-      category: customQuestionCategory as any
+      category: customQuestionCategory as WSIQuestionCandidate['category']
     }
     
     setWsiCandidates(prev => [...prev, newQuestion])
@@ -214,7 +214,7 @@ export function WSIQuestionsStage() {
         <div className="flex items-center gap-1 flex-wrap justify-end">
           <span className={cn(
  "text-xs font-semibold",
-            selectedCount === 5 ? "text-status-success" : "text-gray-600 dark:text-lia-text-tertiary"
+            selectedCount === 5 ? "text-status-success" : "text-lia-text-secondary dark:text-lia-text-tertiary"
           )}>
             {selectedCount}
           </span>
@@ -222,7 +222,7 @@ export function WSIQuestionsStage() {
           {enabledCompanyQuestionsCount > 0 && (
             <>
               <span className="text-micro lia-text-secondary">(+</span>
-              <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{enabledCompanyQuestionsCount}</span>
+              <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{enabledCompanyQuestionsCount}</span>
               <span className="text-micro lia-text-secondary">da empresa)</span>
             </>
           )}
@@ -246,7 +246,7 @@ export function WSIQuestionsStage() {
         <div className="mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
@@ -256,7 +256,7 @@ export function WSIQuestionsStage() {
             </div>
             <button
               onClick={() => setCompanyDefaultQuestions(prev => prev.map(q => ({ ...q, enabled: false })))}
-              className="text-micro text-gray-600 dark:text-lia-text-tertiary hover:underline"
+              className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:underline"
             >
               Desabilitar todas
             </button>
@@ -301,8 +301,8 @@ export function WSIQuestionsStage() {
       {/* Loading indicator */}
       {isGeneratingWSI && (
         <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2">
-          <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
-          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
             Gerando perguntas personalizadas para esta vaga...
           </span>
         </div>
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-gray-600 dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada
@@ -344,7 +344,7 @@ export function WSIQuestionsStage() {
           <div className="flex gap-2">
             <select
               value={customQuestionType}
-              onChange={(e) => setCustomQuestionType(e.target.value as any)}
+              onChange={(e) => setCustomQuestionType(e.target.value as WSIQuestionCandidate['type'])}
               className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
             >
               <option value="open">Aberta</option>

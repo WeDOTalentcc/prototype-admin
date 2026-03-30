@@ -129,7 +129,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
     onChangesUpdate?.(hasChanges)
   }, [hasChanges, onChangesUpdate])
 
-  const handleSettingChange = (key: keyof GlobalSearchSettings, value: any) => {
+  const handleSettingChange = (key: keyof GlobalSearchSettings, value: unknown) => {
     setSettings(prev => ({ ...prev, [key]: value }))
     setHasChanges(true)
     setSuccessMessage(null)

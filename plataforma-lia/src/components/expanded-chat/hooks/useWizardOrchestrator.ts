@@ -26,7 +26,7 @@ export interface OrchestratorResult {
   targetStage?: WizardStage
   confidence: number
   reasoning?: string
-  suggestions?: Array<{ field: string; value: any; reason: string }>
+  suggestions?: Array<{ field: string; value: unknown; reason: string }>
   validationErrors?: string[]
 }
 
@@ -91,7 +91,7 @@ const BACKEND_TO_FRONTEND_STAGE_MAP: Record<string, WizardStage> = {
   'candidate-search': 'search-calibration',
 }
 
-function mapBackendFieldsToFrontend(updates: Record<string, any>): OrchestratorFieldUpdates {
+function mapBackendFieldsToFrontend(updates: Record<string, unknown>): OrchestratorFieldUpdates {
   const result: OrchestratorFieldUpdates = {
     salaryInfo: {},
     basicInfoFields: {},
@@ -180,7 +180,7 @@ export interface UseWizardOrchestratorReturn {
   sendMessage: (
     message: string,
     currentStage: WizardStage,
-    collectedData: Record<string, any>,
+    collectedData: Record<string, unknown>,
     conversationHistory?: Array<{ role: string; content: string }>
   ) => Promise<OrchestratorResult>
   clearError: () => void
@@ -203,7 +203,7 @@ export function useWizardOrchestrator(
     async (
       message: string,
       currentStage: WizardStage,
-      collectedData: Record<string, any>,
+      collectedData: Record<string, unknown>,
       conversationHistory?: Array<{ role: string; content: string }>
     ): Promise<OrchestratorResult> => {
       setIsLoading(true)

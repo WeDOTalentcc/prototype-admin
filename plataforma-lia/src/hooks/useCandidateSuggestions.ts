@@ -8,7 +8,7 @@ export interface AISuggestion {
   suggested_action: string
   confidence_score: number
   status: string
-  payload?: Record<string, any>
+  payload?: Record<string, unknown>
   created_at: string
 }
 

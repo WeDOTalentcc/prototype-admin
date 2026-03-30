@@ -239,7 +239,7 @@ export function TriagemDetailsModal({
       setFeedbackStatus({ ...feedbackStatus, feedback_sent: true })
       setTimeout(() => setFeedbackSuccess(false), 5000)
     } catch (err: unknown) {
-      setFeedbackError(err instanceof Error ? err.message : 'Erro ao enviar feedback')
+      setFeedbackError(err instanceof Error ? err instanceof Error ? err.message : String(err) : 'Erro ao enviar feedback')
     } finally {
       setSendingFeedback(false)
     }
@@ -291,7 +291,7 @@ export function TriagemDetailsModal({
               <Brain className="w-4 h-4 text-wedo-cyan" />
             </div>
             <div>
-              <h2 className="text-base-ui font-semibold text-gray-950">
+              <h2 className="text-base-ui font-semibold text-lia-text-primary">
                 Detalhes da Triagem WSI - {candidate.name}
               </h2>
               <p className="text-xs lia-text-secondary">
@@ -340,7 +340,7 @@ export function TriagemDetailsModal({
                 printWindow.document.close()
                 printWindow.print()
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100 text-gray-800 dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50 rounded-md"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50 rounded-md"
             >
               <Download className="w-3 h-3" />
               Exportar
@@ -366,7 +366,7 @@ export function TriagemDetailsModal({
                 <Trophy className="w-4 h-4 lia-text-secondary" />
                 <div>
                   <p className="text-micro lia-text-secondary">Ranking</p>
-                  <p className="text-sm font-bold text-gray-950">
+                  <p className="text-sm font-bold text-lia-text-primary">
                     {ranking?.ranked ? `#${ranking.rank} de ${ranking.total}` : 'N/A'}
                   </p>
                 </div>
@@ -387,7 +387,7 @@ export function TriagemDetailsModal({
                   <Clock className="w-4 h-4 lia-text-secondary" />
                   <div>
                     <p className="text-micro lia-text-secondary">Duração</p>
-                    <p className="text-xs font-medium text-gray-950">{sessionInfo.duration_minutes} min</p>
+                    <p className="text-xs font-medium text-lia-text-primary">{sessionInfo.duration_minutes} min</p>
                   </div>
                 </div>
               )}
@@ -425,23 +425,23 @@ export function TriagemDetailsModal({
           {activeTab === 'triagem' && (
             <div className="space-y-4">
               <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-gray-950">
+                <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Scores por Dimensão
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-gray-950">{scores.overall_wsi.toFixed(1)}</p>
+                    <p className="text-xl font-bold text-lia-text-primary">{scores.overall_wsi.toFixed(1)}</p>
                     <p className="text-micro lia-text-secondary">Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                   <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-gray-950">{scores.technical_wsi.toFixed(1)}</p>
+                    <p className="text-xl font-bold text-lia-text-primary">{scores.technical_wsi.toFixed(1)}</p>
                     <p className="text-micro lia-text-secondary">Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                   <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-gray-950">{scores.behavioral_wsi.toFixed(1)}</p>
+                    <p className="text-xl font-bold text-lia-text-primary">{scores.behavioral_wsi.toFixed(1)}</p>
                     <p className="text-micro lia-text-secondary">Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
                     <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
                   </div>
@@ -488,7 +488,7 @@ export function TriagemDetailsModal({
 
               <div className="border border-lia-border-subtle bg-gray-50 rounded-lg overflow-hidden">
                 <div className={cn("cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors", expandedSections.has('responses') && "border-b border-lia-border-subtle")} onClick={() => toggleSection('responses')}>
-                  <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950">
+                  <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                     <MessageSquare className="w-4 h-4 lia-text-base" />
                     Respostas por Competência ({responses.length})
                   </h3>
@@ -666,7 +666,7 @@ export function TriagemDetailsModal({
               {report && (
                 <>
                   <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                    <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                    <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Sumário Executivo
                     </h3>
@@ -675,7 +675,7 @@ export function TriagemDetailsModal({
 
                   {report.technical_analysis && Object.keys(report.technical_analysis).length > 0 && (
                     <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                      <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                      <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                         <Target className="w-4 h-4 lia-text-base" />
                         Análise Técnica
                       </h3>
@@ -743,7 +743,7 @@ export function TriagemDetailsModal({
                     if (!isBigFive) {
                       return (
                         <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                          <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                          <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                             <User className="w-4 h-4 lia-text-base" />
                             Análise Comportamental
                           </h3>
@@ -766,7 +766,7 @@ export function TriagemDetailsModal({
                     return (
                       <div className="p-3 border border-lia-border-subtle space-y-4 bg-gray-50 rounded-lg">
                         <div>
-                          <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950">
+                          <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                             <User className="w-4 h-4 lia-text-base" />
                             Perfil de Personalidade
                           </h3>
@@ -829,7 +829,7 @@ export function TriagemDetailsModal({
 
                   {report.recommendation && Object.keys(report.recommendation).length > 0 && (
                     <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                      <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                      <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                         <Award className="w-4 h-4 lia-text-base" />
                         Recomendação
                       </h3>
@@ -857,7 +857,7 @@ export function TriagemDetailsModal({
               {f11Report?.cbi_questions && f11Report.cbi_questions.length > 0 && (
                 <div className="p-3 border border-lia-border-subtle space-y-3 bg-gray-50 rounded-lg">
                   <div>
-                    <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950">
+                    <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                       <Mic2 className="w-4 h-4 lia-text-secondary" /> Perguntas sugeridas para a entrevista
                     </h3>
                     <p className="text-micro lia-text-secondary mt-0.5">
@@ -882,7 +882,7 @@ export function TriagemDetailsModal({
 
               {isPendingDecision && !!details && (
                 <div className="p-3 border border-lia-border-subtle space-y-3 bg-gray-50 rounded-lg">
-                  <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950">
+                  <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                     <BookOpen className="w-4 h-4 text-wedo-cyan-dark" /> Feedback para o Candidato
                   </h3>
                   <p className="text-xs lia-text-secondary italic">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
@@ -895,7 +895,7 @@ export function TriagemDetailsModal({
 
               {canTriggerFeedback && (
                 <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950">
+                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                     <MessageSquare className="w-4 h-4 text-wedo-cyan" />
                     Envio de Feedback Automático
                   </h3>
@@ -933,7 +933,7 @@ export function TriagemDetailsModal({
               {(feedback || (f11Report?.response_analyses && f11Report.response_analyses.length > 0)) && (
                 <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950">
+                    <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                       <BookOpen className="w-4 h-4 text-wedo-cyan-dark" />
                       Feedback para o Candidato
                     </h3>
@@ -1046,7 +1046,7 @@ export function TriagemDetailsModal({
                           <Icon className="w-3.5 h-3.5 lia-text-secondary" />
                           <span className="text-micro lia-text-secondary uppercase tracking-wide">{label}</span>
                         </div>
-                        <p className="text-lg font-semibold text-gray-900 dark:text-lia-text-primary">
+                        <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                           {value.toFixed(1)}<span className="text-xs lia-text-secondary">/10</span>
                         </p>
                       </div>
@@ -1058,7 +1058,7 @@ export function TriagemDetailsModal({
                     <div className="bg-gray-50 dark:bg-lia-bg-secondary px-3 py-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Trophy className="w-3.5 h-3.5 lia-text-secondary" />
-                        <span className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary">
+                        <span className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
                           Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -1082,7 +1082,7 @@ export function TriagemDetailsModal({
                             </div>
                             {/* Name */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-medium truncate ${isCurrent ? 'text-white' : 'text-gray-800 dark:text-lia-text-primary'}`}>
+                              <p className={`text-xs font-medium truncate ${isCurrent ? 'text-white' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                                 {isCurrent ? `${entry.candidate_name} (você)` : entry.candidate_name}
                               </p>
                               {entry.candidate_title && (
@@ -1093,15 +1093,15 @@ export function TriagemDetailsModal({
                             <div className="flex items-center gap-3 flex-shrink-0">
                               <div className="text-right">
                                 <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>Tec</p>
-                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-lia-text-secondary'}`}>{entry.technical_wsi.toFixed(1)}</p>
+                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>{entry.technical_wsi.toFixed(1)}</p>
                               </div>
                               <div className="text-right">
                                 <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>Comp</p>
-                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-lia-text-secondary'}`}>{entry.behavioral_wsi.toFixed(1)}</p>
+                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>{entry.behavioral_wsi.toFixed(1)}</p>
                               </div>
                               <div className="text-right min-w-[36px]">
                                 <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>WSI</p>
-                                <p className={`text-sm-ui font-bold ${isCurrent ? 'text-white' : 'text-gray-900 dark:text-lia-text-primary'}`}>{entry.overall_wsi.toFixed(1)}</p>
+                                <p className={`text-sm-ui font-bold ${isCurrent ? 'text-white' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{entry.overall_wsi.toFixed(1)}</p>
                               </div>
                             </div>
                           </div>

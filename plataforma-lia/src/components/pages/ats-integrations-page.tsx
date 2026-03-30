@@ -242,9 +242,9 @@ export function ATSIntegrationsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RotateCw className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+      case 'connecting': return <RotateCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      case 'disabled': return <Minus className="w-4 h-4 text-gray-600" />
+      case 'disabled': return <Minus className="w-4 h-4 text-lia-text-secondary" />
       default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
     }
   }
@@ -252,9 +252,9 @@ export function ATSIntegrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'connecting': return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      case 'connecting': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
-      case 'disabled': return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
+      case 'disabled': return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
       default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
@@ -264,7 +264,7 @@ export function ATSIntegrationsPage() {
       case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
       case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      default: return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
     }
   }
 
@@ -294,13 +294,13 @@ export function ATSIntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={textStyles.label}>Registros Sincronizados</p>
-                <p className={`${textStyles.titleXl} text-2xl text-gray-700 dark:text-lia-text-secondary`}>
+                <p className={`${textStyles.titleXl} text-2xl text-lia-text-secondary dark:text-lia-text-secondary`}>
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
                 <p className={`${textStyles.caption} text-status-success`}>+47 hoje</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <Database className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+                <Database className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -351,10 +351,10 @@ export function ATSIntegrationsPage() {
               className="h-auto p-4 justify-start gap-3"
               onClick={() => setSelectedView('systems')}
             >
-              <Plus className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Plus className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div className="text-left">
                 <div className="font-medium">Adicionar Sistema</div>
-                <div className="text-sm text-gray-600">Conectar novo ATS</div>
+                <div className="text-sm text-lia-text-secondary">Conectar novo ATS</div>
               </div>
             </Button>
 
@@ -366,7 +366,7 @@ export function ATSIntegrationsPage() {
               <Settings className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Configurar Sync</div>
-                <div className="text-sm text-gray-600">Gerenciar integrações</div>
+                <div className="text-sm text-lia-text-secondary">Gerenciar integrações</div>
               </div>
             </Button>
 
@@ -378,7 +378,7 @@ export function ATSIntegrationsPage() {
               <FileText className="w-5 h-5 text-wedo-orange" />
               <div className="text-left">
                 <div className="font-medium">Ver Logs</div>
-                <div className="text-sm text-gray-600">Histórico de operações</div>
+                <div className="text-sm text-lia-text-secondary">Histórico de operações</div>
               </div>
             </Button>
           </div>
@@ -396,7 +396,7 @@ export function ATSIntegrationsPage() {
               <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                    <Server className="w-6 h-6 text-gray-600" />
+                    <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
                     <h4 className={textStyles.subtitle}>{system.name}</h4>
@@ -409,7 +409,7 @@ export function ATSIntegrationsPage() {
                          system.status === 'error' ? 'Erro' : 'Desabilitado'}
                       </span>
                       {system.lastSync && (
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-lia-text-secondary">
                           Última sync: {new Date(system.lastSync).toLocaleString('pt-BR')}
                         </span>
                       )}
@@ -428,7 +428,7 @@ export function ATSIntegrationsPage() {
                         <p className="font-medium text-status-success">
                           {Math.round((system.syncedRecords / system.totalRecords) * 100)}%
                         </p>
-                        <p className="text-gray-600">Sincronizado</p>
+                        <p className="text-lia-text-secondary">Sincronizado</p>
                       </div>
                     </>
                   )}
@@ -468,7 +468,7 @@ export function ATSIntegrationsPage() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right text-xs text-gray-600">
+                <div className="text-right text-xs text-lia-text-secondary">
                   <p>{log.records} registros</p>
                   <p>{log.duration}ms</p>
                 </div>
@@ -510,11 +510,11 @@ export function ATSIntegrationsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                    <Server className="w-6 h-6 text-gray-600" />
+                    <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
                     <CardTitle className="text-base">{system.name}</CardTitle>
-                    <p className="text-sm text-gray-600">{system.type.toUpperCase()}</p>
+                    <p className="text-sm text-lia-text-secondary">{system.type.toUpperCase()}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export function ATSIntegrationsPage() {
 
                 {/* Features */}
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">Funcionalidades:</p>
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Funcionalidades:</p>
                   <div className="flex flex-wrap gap-1">
                     {system.features.map(feature => (
                       <Badge key={feature} variant="outline" className="text-xs">
@@ -551,24 +551,24 @@ export function ATSIntegrationsPage() {
                 {system.status === 'connected' && (
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-600">Registros sincronizados:</p>
+                      <p className="text-lia-text-secondary">Registros sincronizados:</p>
                       <p className="font-medium">{system.syncedRecords.toLocaleString()}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">Última sincronização:</p>
+                      <p className="text-lia-text-secondary">Última sincronização:</p>
                       <p className="font-medium">
                         {system.lastSync ? new Date(system.lastSync).toLocaleString('pt-BR') : 'N/A'}
                       </p>
                     </div>
                     {system.version && (
                       <div>
-                        <p className="text-gray-600">Versão da API:</p>
+                        <p className="text-lia-text-secondary">Versão da API:</p>
                         <p className="font-medium">{system.version}</p>
                       </div>
                     )}
                     {system.errorCount > 0 && (
                       <div>
-                        <p className="text-gray-600">Erros:</p>
+                        <p className="text-lia-text-secondary">Erros:</p>
                         <p className="font-medium text-status-error">{system.errorCount}</p>
                       </div>
                     )}
@@ -651,7 +651,7 @@ export function ATSIntegrationsPage() {
                     integration.isActive ? 'bg-status-success/15' : 'bg-gray-100'
                   }`}>
                     <Database className={`w-6 h-6 ${
-                      integration.isActive ? 'text-status-success' : 'text-gray-600'
+                      integration.isActive ? 'text-status-success' : 'text-lia-text-secondary'
                     }`} />
                   </div>
 
@@ -677,24 +677,24 @@ export function ATSIntegrationsPage() {
 
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-center">
-                    <p className="font-medium text-gray-950 dark:text-gray-50">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {integration.mappedFields}/{integration.totalFields}
                     </p>
-                    <p className="text-gray-600">Campos</p>
+                    <p className="text-lia-text-secondary">Campos</p>
                   </div>
 
                   <div className="text-center">
-                    <p className="font-medium text-gray-950 dark:text-gray-50">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {new Date(integration.lastRun).toLocaleDateString('pt-BR')}
                     </p>
-                    <p className="text-gray-600">Última exec.</p>
+                    <p className="text-lia-text-secondary">Última exec.</p>
                   </div>
 
                   <div className="text-center">
-                    <p className="font-medium text-gray-950 dark:text-gray-50">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {new Date(integration.nextRun).toLocaleDateString('pt-BR')}
                     </p>
-                    <p className="text-gray-600">Próxima</p>
+                    <p className="text-lia-text-secondary">Próxima</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -742,13 +742,13 @@ export function ATSIntegrationsPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Sistema</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Operação</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Registros</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Duração</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Data/Hora</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Ações</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Sistema</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Operação</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Registros</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Duração</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Data/Hora</th>
+                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -761,7 +761,7 @@ export function ATSIntegrationsPage() {
                           log.status === 'success' ? 'bg-status-success/15 text-status-success' :
                           log.status === 'warning' ? 'bg-status-warning/15 text-status-warning' :
                           log.status === 'error' ? 'bg-status-error/15 text-status-error' :
-                          'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary'
+                          'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary'
                         }`}>
                           {log.status === 'success' ? 'Sucesso' :
                            log.status === 'warning' ? 'Aviso' :
@@ -770,13 +770,13 @@ export function ATSIntegrationsPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-medium text-gray-950 dark:text-gray-50">{log.system}</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{log.system}</span>
                     </td>
                     <td className="py-3 px-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-950 dark:text-gray-50">{log.message}</p>
+                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{log.message}</p>
                         {log.details && (
-                          <p className="text-xs text-gray-600">{log.details}</p>
+                          <p className="text-xs text-lia-text-secondary">{log.details}</p>
                         )}
                       </div>
                     </td>
@@ -812,7 +812,7 @@ export function ATSIntegrationsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className={`${textStyles.titleLarge} flex items-center gap-1.5`}>
-                <Link2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+                <Link2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Integrações ATS Enterprise
               </h1>
               <p className={textStyles.body}>
@@ -845,11 +845,11 @@ export function ATSIntegrationsPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedView(tab.id as any)}
+                onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -1079,10 +1079,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       {system.type === 'sap' && (
         <>
           <div>
-            <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração SAP SuccessFactors</h4>
+            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração SAP SuccessFactors</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   URL do Servidor
                 </label>
                 <input
@@ -1092,7 +1092,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Company ID
                 </label>
                 <input
@@ -1102,7 +1102,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Client ID
                 </label>
                 <input
@@ -1112,7 +1112,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Client Secret
                 </label>
                 <input
@@ -1125,12 +1125,12 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
           </div>
 
           <div className="border border-lia-border-subtle rounded-md p-4">
-            <h5 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Módulos para Sincronização</h5>
+            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Módulos para Sincronização</h5>
             <div className="grid grid-cols-2 gap-2">
               {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(module => (
                 <label key={module} className="flex items-center gap-2">
                   <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
-                  <span className="text-sm text-gray-800 dark:text-lia-text-primary">{module}</span>
+                  <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{module}</span>
                 </label>
               ))}
             </div>
@@ -1141,10 +1141,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       {system.type === 'workday' && (
         <>
           <div>
-            <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração Workday HCM</h4>
+            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração Workday HCM</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Tenant URL
                 </label>
                 <input
@@ -1154,7 +1154,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Username
                 </label>
                 <input
@@ -1164,7 +1164,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Password
                 </label>
                 <input
@@ -1181,10 +1181,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       {system.type === 'bamboohr' && (
         <>
           <div>
-            <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração BambooHR</h4>
+            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração BambooHR</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Subdomain
                 </label>
                 <input
@@ -1194,7 +1194,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   API Key
                 </label>
                 <input
@@ -1210,19 +1210,19 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
         <div className="flex items-center gap-3">
-          {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-gray-600" />}
-          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />}
+          {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
+          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />}
           {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
           {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
 
           <div>
-            <p className="font-medium text-gray-950 dark:text-gray-50">
+            <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
               {connectionStatus === 'idle' && 'Pronto para testar conexão'}
               {connectionStatus === 'testing' && 'Testando conexão...'}
               {connectionStatus === 'success' && 'Conexão estabelecida com sucesso!'}
               {connectionStatus === 'error' && 'Erro na conexão - verifique as credenciais'}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-lia-text-secondary">
               {connectionStatus === 'idle' && 'Clique em "Testar Conexão" para validar as configurações'}
               {connectionStatus === 'testing' && 'Verificando credenciais e conectividade...'}
               {connectionStatus === 'success' && 'Sistema pronto para sincronização'}
@@ -1256,21 +1256,21 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
     <div className="space-y-6">
       {/* Template Selection */}
       <div>
-        <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Templates de Mapeamento</h4>
+        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Templates de Mapeamento</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {mappingTemplates.map(template => (
             <div
               key={template.id}
               className={`p-4 border rounded-md cursor-pointer transition-colors ${
                 selectedTemplate === template.id
-                  ? 'border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                  ? 'border-gray-900 dark:border-lia-border-medium bg-gray-100 dark:bg-lia-bg-secondary'
                   : 'border-lia-border-subtle hover:border-lia-border-default'
               }`}
               onClick={() => applyTemplate(template.id)}
             >
-              <h5 className="font-medium text-gray-950 dark:text-gray-50">{template.name}</h5>
-              <p className="text-sm text-gray-600 mt-1">{template.description}</p>
-              <p className="text-xs text-gray-600 mt-2">{template.mappings.length} campos mapeados</p>
+              <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{template.name}</h5>
+              <p className="text-sm text-lia-text-secondary mt-1">{template.description}</p>
+              <p className="text-xs text-lia-text-secondary mt-2">{template.mappings.length} campos mapeados</p>
             </div>
           ))}
         </div>
@@ -1278,11 +1278,11 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
       {/* Field Mapping Interface */}
       <div>
-        <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Mapeamento de Campos</h4>
+        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Mapeamento de Campos</h4>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Source Fields */}
           <div>
-            <h5 className="font-medium text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
+            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
               <Server className="w-4 h-4" />
               {system.name} (Origem)
             </h5>
@@ -1304,8 +1304,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       <div className="flex items-center gap-2">
                         <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
                         <div>
-                          <p className="font-medium text-gray-950 dark:text-gray-50 text-sm">{field.name}</p>
-                          <p className="text-xs text-gray-600">{field.description}</p>
+                          <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                          <p className="text-xs text-lia-text-secondary">{field.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1327,7 +1327,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
           {/* Target Fields */}
           <div>
-            <h5 className="font-medium text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
+            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
               <Database className="w-4 h-4" />
               Plataforma LIA (Destino)
             </h5>
@@ -1349,10 +1349,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       <div className="flex items-center gap-2">
                         <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
                         <div>
-                          <p className="font-medium text-gray-950 dark:text-gray-50 text-sm">{field.name}</p>
-                          <p className="text-xs text-gray-600">{field.description}</p>
+                          <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                          <p className="text-xs text-lia-text-secondary">{field.description}</p>
                           {mapping && (
-                            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
+                            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                               ← Mapeado de: {mapping.sourceFieldName}
                             </p>
                           )}
@@ -1392,23 +1392,23 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       {/* Mapping Summary */}
       {mappings.length > 0 && (
         <div className="border border-lia-border-subtle rounded-md p-4">
-          <h5 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Resumo do Mapeamento</h5>
+          <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{mappings.length}</p>
-              <p className="text-sm text-gray-600">Campos Mapeados</p>
+              <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{mappings.length}</p>
+              <p className="text-sm text-lia-text-secondary">Campos Mapeados</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-status-success">
                 {mappings.filter(m => m.confidence >= 90).length}
               </p>
-              <p className="text-sm text-gray-600">Alta Confiança (≥90%)</p>
+              <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-wedo-orange">
                 {liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}
               </p>
-              <p className="text-sm text-gray-600">Obrigatórios Pendentes</p>
+              <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
             </div>
           </div>
 
@@ -1441,8 +1441,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
       {/* Instructions */}
       <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
-        <h5 className="font-medium text-gray-700 dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
-        <ul className="text-sm text-gray-700 dark:text-lia-text-secondary space-y-1">
+        <h5 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
+        <ul className="text-sm text-lia-text-secondary dark:text-lia-text-secondary space-y-1">
           <li>• Arraste campos da origem para os campos de destino correspondentes</li>
           <li>• Use templates pré-configurados para mapeamentos comuns</li>
           <li>• Verifique a porcentagem de confiança de cada mapeamento</li>
@@ -1455,17 +1455,17 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
   const renderSyncTab = () => (
     <div className="text-center py-12">
-      <RefreshCw className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-      <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Configuração de Sincronização</h3>
-      <p className="text-gray-600">Configurações de frequência e filtros em desenvolvimento</p>
+      <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+      <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Sincronização</h3>
+      <p className="text-lia-text-secondary">Configurações de frequência e filtros em desenvolvimento</p>
     </div>
   )
 
   const renderWebhooksTab = () => (
     <div className="text-center py-12">
-      <Zap className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-      <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Configuração de Webhooks</h3>
-      <p className="text-gray-600">Sistema de eventos em tempo real em desenvolvimento</p>
+      <Zap className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+      <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Webhooks</h3>
+      <p className="text-lia-text-secondary">Sistema de eventos em tempo real em desenvolvimento</p>
     </div>
   )
 
@@ -1474,8 +1474,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">{system.name}</h2>
-            <p className="text-sm text-gray-600">Configuração de integração</p>
+            <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{system.name}</h2>
+            <p className="text-sm text-lia-text-secondary">Configuração de integração</p>
           </div>
           <Button variant="ghost" onClick={onClose}>×</Button>
         </div>
@@ -1490,11 +1490,11 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setSelectedTab(tab.id as any)}
+              onClick={() => setSelectedTab(tab.id as Parameters<typeof setSelectedTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 selectedTab === tab.id
-                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary bg-lia-bg-primary'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                  ? 'border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary bg-lia-bg-primary'
+                  : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary'
               }`}
             >
               <tab.icon className="w-4 h-4" />

@@ -45,7 +45,7 @@ export interface UseWizardStateOptions {
   initialStage?: WizardStage
   onStageChange?: (stage: WizardStage, index: number) => void
   onPendingChanges?: (hasPendingChanges: boolean) => void
-  onFieldChange?: (field: string, oldValue: any, newValue: any, source?: 'panel' | 'chat' | 'orchestrator') => void
+  onFieldChange?: (field: string, oldValue: unknown, newValue: unknown, source?: 'panel' | 'chat' | 'orchestrator') => void
 }
 
 export interface UseWizardStateReturn extends ExpandedChatContextValue {}

@@ -109,8 +109,8 @@ function mapApiVacancyToDisplay(vacancy: JobVacancy): VacancyDisplay {
     department: vacancy.department,
     location: vacancy.location,
     status: vacancy.status,
-    priority: (vacancy as any).priority,
-    candidates_count: (vacancy as any).candidates_count,
+    priority: (vacancy as Record<string, unknown>).priority as string | undefined,
+    candidates_count: (vacancy as Record<string, unknown>).candidates_count as number | undefined,
     recruiter_name: vacancy.recruiter,
     recruiter_email: vacancy.recruiter_email
   }
@@ -324,7 +324,7 @@ export function AddCandidatesToVacancyModal({
                 {vacancy.title}
               </span>
               {selectedVacancyId === vacancy.id && (
-                <Check className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary flex-shrink-0" />
+                <Check className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary flex-shrink-0" />
               )}
               {isOwn && (
                 <Star className="w-3 h-3 text-status-warning flex-shrink-0" fill="var(--status-warning)" />
@@ -384,14 +384,14 @@ export function AddCandidatesToVacancyModal({
         <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <h2 id="add-vacancy-modal-title" className={textStyles.title}>
                 Adicionar à Vaga
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -404,7 +404,7 @@ export function AddCandidatesToVacancyModal({
 
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           <div className={`flex items-center gap-2 p-2 ${cardStyles.flat}`}>
-            <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className={textStyles.bodySmall}>
               {candidateNames.slice(0, 2).join(', ')}
               {candidateNames.length > 2 && ` e mais ${candidateNames.length - 2}`}
@@ -412,25 +412,25 @@ export function AddCandidatesToVacancyModal({
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
               ref={firstFocusableRef}
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-lia-border-subtle text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
 
           <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[250px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-[250px] text-gray-600">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-500 mb-2" />
+              <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
+                <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary mb-2" />
                 <p className={textStyles.bodySmall}>Carregando vagas...</p>
               </div>
             ) : loadError ? (
-              <div className="flex flex-col items-center justify-center h-[250px] text-gray-600">
+              <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
                 <AlertCircle className="w-8 h-8 mb-2 text-status-error" />
                 <p className={`${textStyles.bodySmall} text-status-error`}>{loadError}</p>
                 <Button
@@ -443,7 +443,7 @@ export function AddCandidatesToVacancyModal({
                 </Button>
               </div>
             ) : sortedAndFilteredVacancies.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[250px] text-gray-600">
+              <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
                 <Briefcase className="w-8 h-8 mb-2 opacity-50" />
                 <p className={textStyles.bodySmall}>Nenhuma vaga encontrada</p>
                 {searchTerm && (
@@ -474,7 +474,7 @@ export function AddCandidatesToVacancyModal({
                   <div>
                     {recruiterVacancies.length > 0 && (
                       <div className="flex items-center gap-2 px-2 py-1.5 mb-1 mt-2">
-                        <Briefcase className="w-3 h-3 text-gray-500" />
+                        <Briefcase className="w-3 h-3 text-lia-text-tertiary" />
                         <span className={`${textStyles.caption} font-medium uppercase tracking-wider`}>
                           Outras Vagas
                         </span>
@@ -497,14 +497,14 @@ export function AddCandidatesToVacancyModal({
             variant="outline" 
             onClick={onClose} 
             disabled={isSubmitting}
-            className="bg-white border border-lia-border-default text-gray-800 hover:bg-gray-50 text-xs dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="bg-white border border-lia-border-default text-lia-text-primary hover:bg-gray-50 text-xs dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={!selectedVacancyId || isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             {isSubmitting ? (
               <>

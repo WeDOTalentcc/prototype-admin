@@ -107,7 +107,7 @@ export function ChatMessageList({
             )}>
               <CheckCircle2 className="w-3 h-3 text-wedo-green flex-shrink-0" />
               <span
-                className="text-micro text-gray-600 dark:text-lia-text-tertiary"
+                className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary"
                 style={{fontFamily: '"Inter", sans-serif'}}
               >
                 {message.content}
@@ -121,14 +121,14 @@ export function ChatMessageList({
                   className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-gray-100 dark:bg-lia-bg-secondary"
                  
                 >
-                  <p className="text-base-ui text-gray-700 dark:text-lia-text-primary leading-relaxed">{message.content}</p>
+                  <p className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary leading-relaxed">{message.content}</p>
                 </div>
                 <span className="text-xs lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
                   {formatTimestamp(message.timestamp)}
                 </span>
               </div>
               <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
-                <User className="w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
+                <User className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
               </div>
             </div>
           ) : message.messageType === 'parecer-lia' && message.parecerData ? (
@@ -138,10 +138,10 @@ export function ChatMessageList({
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                  <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                   <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
-                <p className="text-base-ui text-gray-700 dark:text-lia-text-secondary mb-3">{message.content}</p>
+                <p className="text-base-ui text-lia-text-secondary dark:text-lia-text-secondary mb-3">{message.content}</p>
                 <ParecerLIACard
                   data={message.parecerData}
                   onAcceptSuggestion={(suggestion) => {
@@ -364,7 +364,7 @@ export function ChatMessageList({
                   result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
                 />
                 {message.content && (
-                  <p className="text-base-ui text-gray-600 dark:text-lia-text-tertiary mt-1.5 leading-relaxed">
+                  <p className="text-base-ui text-lia-text-secondary dark:text-lia-text-tertiary mt-1.5 leading-relaxed">
                     {message.content}
                   </p>
                 )}
@@ -394,7 +394,7 @@ export function ChatMessageList({
                   message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
                   "border-l-chat-cyan bg-chat-cyan/5"
                 )}>
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed">{message.content}</p>
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">{message.content}</p>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
                   <button
@@ -463,7 +463,7 @@ export function ChatMessageList({
                     <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                   </div>
                   <div className="px-3.5 py-2.5 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px]">
-                    <div className="text-base-ui text-gray-700 dark:text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
+                    <div className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                       {formatMessageContent(message.content, message.isTyping || false, message.id)}
                       {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
                         <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse ml-0.5" />

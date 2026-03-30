@@ -72,7 +72,7 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
     }
 
     if (tableFilters.industries.length > 0) {
-      const industry = (candidate as any).industry || ''
+      const industry = (candidate as Candidate & { industry?: string }).industry || ''
       const matchesIndustry = tableFilters.industries.some(filterIndustry =>
         industry.toLowerCase().includes(filterIndustry.toLowerCase())
       )
@@ -323,8 +323,8 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
   })
 
   const sortedCandidates = [...filteredCandidates].sort((a, b) => {
-    let aValue: any = a[sortBy as keyof Candidate]
-    let bValue: any = b[sortBy as keyof Candidate]
+    let aValue: string | number | boolean | undefined = a[sortBy as keyof Candidate] as string | number | boolean | undefined
+    let bValue: string | number | boolean | undefined = b[sortBy as keyof Candidate] as string | number | boolean | undefined
 
     if (sortBy === 'score_lia') {
       aValue = a.liaAnalysis?.score || a.score

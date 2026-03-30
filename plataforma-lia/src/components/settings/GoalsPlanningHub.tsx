@@ -63,8 +63,8 @@ interface WorkforceEntry {
 }
 
 interface GoalsPlanningHubProps {
-  users?: any[]
-  onGoalUpdate?: (userId: string, goals: any) => void
+  users?: { id: string; name?: string; email?: string; role?: string; [key: string]: unknown }[]
+  onGoalUpdate?: (userId: string, goals: Record<string, unknown>) => void
   activeSubsection?: string
 }
 
@@ -138,7 +138,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             const existingPositionsMap = new Map(prevDepts.map(d => [d.id, d.positions]))
             const existingByName = new Map(prevDepts.map(d => [d.name.toLowerCase(), d.positions]))
             
-            return backendDepts.map((d: any) => ({
+            return backendDepts.map((d: Record<string, unknown>) => ({
               id: d.id,
               name: d.name,
               positions: existingPositionsMap.get(d.id) || existingByName.get(d.name.toLowerCase()) || [],
@@ -182,7 +182,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       const response = await fetch('/api/backend-proxy/company/users')
       if (response.ok) {
         const data = await response.json()
-        const mappedUsers = data.map((u: any) => ({
+        const mappedUsers = data.map((u: Record<string, unknown>) => ({
           id: u.id,
           name: u.name,
           email: u.email,
@@ -215,7 +215,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       if (workforceRes.ok) {
         const workforceResult = await workforceRes.json()
         if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-          setWorkforce(workforceResult.map((w: any) => ({
+          setWorkforce(workforceResult.map((w: Record<string, unknown>) => ({
             month: w.month,
             department: w.department,
             planned: w.planned || 0,
@@ -246,7 +246,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         if (alertsRes.ok) {
           const alertsResult = await alertsRes.json()
           if (alertsResult && Array.isArray(alertsResult.alerts)) {
-            setAlerts(alertsResult.alerts.map((a: any) => ({
+            setAlerts(alertsResult.alerts.map((a: Record<string, unknown>) => ({
               id: a.id,
               name: a.name,
               description: a.description,
@@ -262,7 +262,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         if (workforceRes.ok) {
           const workforceResult = await workforceRes.json()
           if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-            setWorkforce(workforceResult.map((w: any) => ({
+            setWorkforce(workforceResult.map((w: Record<string, unknown>) => ({
               month: w.month,
               department: w.department,
               planned: w.planned || 0,
@@ -645,7 +645,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                 <div className="flex items-center gap-3">
                   <select
                     value={alert.channel}
-                    onChange={(e) => handleChangeChannel(alert.id, e.target.value as any)}
+                    onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
                     className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-600 dark:disabled:lia-text-400 dark:border-lia-border-default dark:text-lia-text-primary`}
                   >

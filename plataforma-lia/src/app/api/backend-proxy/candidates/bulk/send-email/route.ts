@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
+import { bulkSendEmailSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || 'dev-service-token'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
+    const bodyResult = await validateBody(request, bulkSendEmailSchema)
+    if (!bodyResult.success) return bodyResult.response
+
+    const { candidate_ids, template_id, custom_variables, custom_data } = bodyResult.data
+
     const requestBody = {
-      candidate_ids: body.candidate_ids,
-      template_id: body.template_id,
-      custom_variables: body.custom_variables || body.custom_data
+      candidate_ids,
+      template_id,
+      custom_variables: custom_variables || custom_data,
     }
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/candidates/bulk/send-email`, {
       method: 'POST',
       headers: {

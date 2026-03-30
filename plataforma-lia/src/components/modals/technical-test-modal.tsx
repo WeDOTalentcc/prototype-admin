@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 interface TechnicalTestModalProps {
   isOpen: boolean
   onClose: () => void
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 type TestStatus = 'pending' | 'in_progress' | 'completed'
@@ -70,7 +70,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
     const diff = candidateScore - avgScore
     if (diff > 5) return <TrendingUp className="w-3 h-3 text-status-success"  />
     if (diff < -5) return <TrendingDown className="w-3 h-3 text-status-error"  />
-    return <Minus className="w-3 h-3 text-gray-400" />
+    return <Minus className="w-3 h-3 text-lia-text-disabled" />
   }
 
   const getComparisonLabel = (candidateScore: number, avgScore: number) => {
@@ -95,17 +95,17 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
-              <Code className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Code className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h2 
-                className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
+                className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary"
                
               >
                 Teste Técnico
               </h2>
               <p 
-                className="text-xs text-gray-600"
+                className="text-xs text-lia-text-secondary"
                
               >
                 {candidate?.name ?? 'Candidato'}
@@ -114,7 +114,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 rounded-full text-gray-500"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 rounded-full text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -139,7 +139,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             </div>
             {testData.completedAt && status === 'completed' && (
               <span 
-                className="text-micro text-gray-600"
+                className="text-micro text-lia-text-secondary"
                
               >
                 Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
@@ -154,9 +154,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Trophy className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Trophy className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     <span 
-                      className="text-micro text-gray-600"
+                      className="text-micro text-lia-text-secondary"
                      
                     >
                       Score Geral
@@ -169,7 +169,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     {testData.score}
                   </span>
                   <span 
-                    className="text-sm ml-1 text-gray-400"
+                    className="text-sm ml-1 text-lia-text-disabled"
                    
                   >
                     / 100
@@ -180,22 +180,22 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     <span 
-                      className="text-micro text-gray-600"
+                      className="text-micro text-lia-text-secondary"
                      
                     >
                       Tempo de Conclusão
                     </span>
                   </div>
                   <span 
-                    className="text-2xl font-bold text-gray-950 dark:text-gray-50"
+                    className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary"
                    
                   >
                     {testData.duration}
                   </span>
                   <span 
-                    className="text-sm ml-1 text-gray-400"
+                    className="text-sm ml-1 text-lia-text-disabled"
                    
                   >
                     / {testData.maxDuration} min
@@ -204,9 +204,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               </div>
 
               <div className="flex items-center gap-2 p-3 rounded-md mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
-                <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span 
-                  className="text-xs text-gray-600 dark:text-lia-text-tertiary"
+                  className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary"
                  
                 >
                   Comparação com outros candidatos:
@@ -221,21 +221,21 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
               <div className="mb-4">
                 <p 
-                  className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
+                  className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
                  
                 >
                   Breakdown por Categoria
                 </p>
 
                 <div className="space-y-2.5">
-                  {testData.categories?.map((category: any, index: number) => (
+                  {testData.categories?.map((category: Record<string, unknown>, index: number) => (
                     <div 
                       key={index}
                       className="p-3 rounded-md border border-lia-border-subtle"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span 
-                          className="text-xs font-medium text-gray-950 dark:text-gray-50"
+                          className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
                          
                         >
                           {category.name}
@@ -261,7 +261,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <span 
-                          className="text-micro text-gray-600"
+                          className="text-micro text-lia-text-secondary"
                          
                         >
                           Média dos candidatos: {category.avgScore}
@@ -282,17 +282,17 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
           {status === 'pending' && (
             <div 
-              className="flex flex-col items-center justify-center py-8 text-gray-400"
+              className="flex flex-col items-center justify-center py-8 text-lia-text-disabled"
             >
               <AlertCircle className="w-12 h-12 mb-3" />
               <p 
-                className="text-xs font-medium mb-1 text-gray-500"
+                className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
                 Teste ainda não iniciado
               </p>
               <p 
-                className="text-micro text-center text-gray-400"
+                className="text-micro text-center text-lia-text-disabled"
                
               >
                 O candidato receberá um convite para realizar o teste técnico.
@@ -307,13 +307,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             >
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 
-                className="text-xs font-medium mb-1 text-gray-500"
+                className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
               >
                 Teste em andamento
               </p>
               <p 
-                className="text-micro text-center text-gray-400"
+                className="text-micro text-center text-lia-text-disabled"
                
               >
                 O candidato está realizando o teste técnico neste momento.

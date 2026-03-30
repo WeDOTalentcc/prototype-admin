@@ -35,7 +35,7 @@ export interface VacancyFullDetails {
   benefits: (string | CompanyBenefit)[]
   technical_skills: Array<{ name: string; level: string; weight: number; required: boolean }>
   behavioral_competencies: Array<{ name: string; weight: number }>
-  screening_questions: Array<{ question: string; type: string; expected_answer: any }>
+  screening_questions: Array<{ question: string; type: string; expected_answer: unknown }>
   job_description: string
   manager: string
   manager_email: string
@@ -61,7 +61,7 @@ function SectionHeader({
   icon: Icon, 
   title, 
   isLocked = false,
-  iconColor = "text-gray-600 dark:text-lia-text-tertiary"
+  iconColor = "text-lia-text-secondary dark:text-lia-text-tertiary"
 }: { 
   icon: React.ElementType
   title: string
@@ -72,14 +72,14 @@ function SectionHeader({
     <div className="flex items-center justify-between gap-2 mb-2">
       <div className="flex items-center gap-2">
         <Icon className={cn("h-4 w-4", iconColor)} />
-        <span className="text-xs font-semibold text-gray-800 dark:text-white">{title}</span>
+        <span className="text-xs font-semibold text-lia-text-primary dark:text-white">{title}</span>
       </div>
       <Badge 
         variant="outline" 
         className={cn(
  "text-micro h-4 px-1.5 border",
           isLocked 
-            ? "bg-gray-100 text-gray-600 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-default"
+            ? "bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-default"
             : "bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30"
         )}
       >
@@ -103,7 +103,7 @@ function WeightStars({ weight }: { weight: number }) {
  "h-2.5 w-2.5",
             i <= weight 
               ? "fill-amber-400 text-status-warning" 
-              : "text-gray-300"
+              : "text-lia-text-disabled"
           )}
         />
       ))}
@@ -156,7 +156,7 @@ export function VacancyFullSummary({
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Carregando detalhes da vaga...</span>
           </div>
         </div>
@@ -181,7 +181,7 @@ export function VacancyFullSummary({
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <div className="pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-white">{vacancy.title}</h3>
+            <h3 className="text-sm font-bold text-lia-text-primary dark:text-white">{vacancy.title}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Resumo completo da vaga baseada em processo anterior
             </p>
@@ -258,14 +258,14 @@ export function VacancyFullSummary({
             </div>
 
             <div>
-              <SectionHeader icon={Wrench} title="🔧 Competências Técnicas" isLocked={true} iconColor="text-gray-600 dark:text-lia-text-tertiary" />
+              <SectionHeader icon={Wrench} title="🔧 Competências Técnicas" isLocked={true} iconColor="text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
                 {vacancy.technical_skills.map((skill, idx) => {
                   const levelConfig = LEVEL_CONFIG[skill.level] || LEVEL_CONFIG['Intermediário']
                   return (
                     <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Wrench className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+                        <Wrench className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
                           <Badge variant="outline" className="text-micro h-3.5 px-1 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
@@ -305,7 +305,7 @@ export function VacancyFullSummary({
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.screening_questions.map((q, idx) => (
                   <div key={idx} className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <p className="text-xs text-gray-800 dark:text-white">{idx + 1}. {q.question}</p>
+                    <p className="text-xs text-lia-text-primary dark:text-white">{idx + 1}. {q.question}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className="text-micro h-3.5 px-1">
                         {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'multiple-choice' ? 'Múltipla escolha' : q.type === 'numeric' ? 'Numérico' : 'Aberta'}
@@ -328,12 +328,12 @@ export function VacancyFullSummary({
 
           <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
-              <p className="text-xs text-gray-800 dark:text-white leading-relaxed">
+              <p className="text-xs text-lia-text-primary dark:text-white leading-relaxed">
                 <span className="font-semibold">📌 O que você pode fazer:</span>
               </p>
               <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-lia-bg-elevated px-1 rounded-md">'confirmar'</span></li>
-                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">fazer ajustes</span>, me diga o que quer mudar</li>
+                <li>• Se quiser <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-lia-bg-elevated px-1 rounded-md">'confirmar'</span></li>
+                <li>• Se quiser <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
               <p className="text-micro text-muted-foreground mt-2 italic">
                 Exemplos: "salário para 18 a 23k", "modelo híbrido", "adicionar benefício vale alimentação"

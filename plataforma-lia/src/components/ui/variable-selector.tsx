@@ -128,7 +128,7 @@ export function VariableSelector({
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                <Variable className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Variable className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
               <h3 className="text-xs font-semibold lia-text-strong">
                 Variáveis Disponíveis
@@ -234,13 +234,13 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           >
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
-                <code className="text-micro font-mono text-gray-600 dark:text-lia-text-tertiary">
+                <code className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
                   {"{{}}"}
                 </code>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-lia-text-secondary">
+                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-lia-text-secondary dark:text-lia-text-secondary">
                     {`{{${variable.key}}}`}
                   </code>
                   <span className="text-xs font-medium lia-text-strong truncate">

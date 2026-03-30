@@ -72,7 +72,7 @@ export function CreditCostDisplay({
   }
 
   return (
-    <div className={`rounded-md border p-4 ${costBgColor} ${className}`} className="border-lia-border-default dark:border-lia-border-default">
+    <div className={`rounded-md border p-4 border-lia-border-default dark:border-lia-border-default ${costBgColor} ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Coins className="w-5 h-5 lia-text-700" />

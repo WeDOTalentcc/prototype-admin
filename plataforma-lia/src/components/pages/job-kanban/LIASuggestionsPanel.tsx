@@ -63,11 +63,11 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-1">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+              <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 Perguntas Recomendadas para Triagem
               </h3>
             </div>
-            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
               Clique em "Substituir" para trocar a pergunta selecionada
             </p>
           </div>
@@ -76,15 +76,15 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
             {suggestions.map((pergunta, index) => (
               <div key={index} className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors group">
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-950 group-hover:text-gray-950">
+                  <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}
                   </h4>
-                  <Badge className="bg-gray-200 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs">
+                  <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs">
                     {index === 0 ? 'Recomendada' : index === 1 ? 'Popular' : 'Sugerida'}
                   </Badge>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-lia-text-primary">
+                  <div className="flex items-center gap-4 text-xs text-lia-text-primary dark:text-lia-text-primary">
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
                       Relevância: {index === 0 ? 'Muito Alta' : index < 3 ? 'Alta' : 'Média'}
@@ -92,7 +92,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                   </div>
                   <Button
                     size="sm"
-                    className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-white"
+                    className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
                     onClick={onClose}
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
@@ -118,7 +118,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-gray-50 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />
               Baseado no perfil da vaga
             </p>

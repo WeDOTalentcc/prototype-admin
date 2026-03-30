@@ -72,10 +72,10 @@ export function ScreeningSettingsModal({
         <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <Settings className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Settings className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Configurações de Triagem
               </DialogTitle>
               <p className="text-xs lia-text-base mt-0.5">
@@ -89,10 +89,10 @@ export function ScreeningSettingsModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                <Label className="text-xs font-medium text-gray-950">Score Mínimo para Aprovação</Label>
+                <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Label className="text-xs font-medium text-lia-text-primary">Score Mínimo para Aprovação</Label>
               </div>
-              <span className="text-xs font-semibold text-gray-900 bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
                 {minScore}%
               </span>
             </div>
@@ -111,8 +111,8 @@ export function ScreeningSettingsModal({
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-              <Label className="text-xs font-medium text-gray-950">Tempo de Resposta</Label>
+              <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Label className="text-xs font-medium text-lia-text-primary">Tempo de Resposta</Label>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -126,17 +126,17 @@ export function ScreeningSettingsModal({
                 max={168}
                 className="w-24 h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
               />
-              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">horas</span>
+              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">horas</span>
             </div>
-            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">
+            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
               Tempo máximo de espera para resposta do candidato (1-168h)
             </p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-              <Label className="text-xs font-medium text-gray-950">Máximo de Retentativas</Label>
+              <RefreshCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Label className="text-xs font-medium text-lia-text-primary">Máximo de Retentativas</Label>
             </div>
             <div className="flex items-center gap-2">
               <Input

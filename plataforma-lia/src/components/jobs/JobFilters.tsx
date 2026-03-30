@@ -18,7 +18,7 @@ export interface JobFiltersProps {
   isOpen: boolean
   jobFilters: JobFiltersType
   savedSearches: SavedSearch[]
-  toggleJobFilter: (category: keyof JobFiltersType, field: string, value: any) => void
+  toggleJobFilter: (category: keyof JobFiltersType, field: string, value: unknown) => void
   clearAllJobFilters: () => void
   hasActiveFilters: () => boolean
   getActiveJobFiltersCount: () => number

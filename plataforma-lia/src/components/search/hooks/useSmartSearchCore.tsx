@@ -690,7 +690,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
     
     setIsSavingArchetype(true)
     try {
-      const filters: Record<string, any> = {}
+      const filters: Record<string, unknown> = {}
       if (editArchetypeSkills.length > 0) filters.skills = editArchetypeSkills
       if (editArchetypeSeniority) filters.seniority = editArchetypeSeniority
       if (editArchetypeExperienceMin !== null && editArchetypeExperienceMin > 0) {

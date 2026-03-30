@@ -192,11 +192,11 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan" />
           <div>
-            <span className="text-base-ui font-semibold text-gray-900 block leading-tight">
+            <span className="text-base-ui font-semibold text-lia-text-primary block leading-tight">
               LIA
             </span>
             {splitView.page && (
-              <span className="text-xs text-gray-400 leading-tight">
+              <span className="text-xs text-lia-text-disabled leading-tight">
                 {splitView.page}
               </span>
             )}
@@ -234,9 +234,9 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       {/* Page hint banner */}
       {splitView.page && (
         <div className="px-4 py-2 bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
-          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
             Contexto atual:{" "}
-            <span className="font-medium text-gray-700 dark:text-lia-text-secondary">
+            <span className="font-medium text-lia-text-secondary dark:text-lia-text-secondary">
               {splitView.page}
             </span>
           </p>
@@ -279,7 +279,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             aria-label="Mensagem para a LIA"
             className={cn(
  "flex-1 resize-none bg-transparent text-base-ui",
-              "text-gray-900 placeholder:text-gray-400 dark:placeholder:text-gray-500",
+              "text-lia-text-primary placeholder:text-lia-text-disabled dark:placeholder:text-lia-text-tertiary",
               "focus:outline-none py-1.5 px-1 max-h-[120px] leading-relaxed"
             )}
           />
@@ -292,7 +292,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
  "flex-shrink-0 p-2 rounded-md transition-colors",
               canSend
                 ? "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
-                : "bg-gray-100 dark:bg-lia-bg-elevated text-gray-400 cursor-not-allowed"
+                : "bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-disabled cursor-not-allowed"
             )}
           >
             {isCreating || isStreaming ? (
@@ -321,10 +321,10 @@ function SplitEmptyState({ page }: { page: string | null }) {
         <Brain className="w-5 h-5 text-wedo-cyan" />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-gray-700 dark:text-lia-text-secondary">
+        <p className="text-base-ui font-medium text-lia-text-secondary dark:text-lia-text-secondary">
           {page ? `Explorando ${page}` : "Como posso ajudar?"}
         </p>
-        <p className="text-sm-ui text-gray-400 mt-1">
+        <p className="text-sm-ui text-lia-text-disabled mt-1">
           Continue a conversa enquanto navega pela página.
         </p>
       </div>
@@ -346,7 +346,7 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
  "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
           isUser
             ? "bg-gray-900 text-white"
-            : "bg-gray-50 dark:bg-lia-bg-secondary text-gray-900"
+            : "bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary"
         )}
       >
         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -362,7 +362,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
       </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-gray-900">
+      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "0ms"}} />

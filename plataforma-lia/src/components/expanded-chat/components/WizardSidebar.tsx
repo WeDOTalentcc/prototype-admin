@@ -56,7 +56,7 @@ export function WizardSidebar({
                   className={cn(
  "text-micro font-semibold uppercase tracking-wide",
                     isPhaseActive 
-                      ? "text-gray-600 dark:text-lia-text-tertiary" 
+                      ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
                       : isPhaseCompleted 
                         ? "lia-text-secondary" 
                         : "lia-text-secondary"
@@ -111,7 +111,7 @@ export function WizardSidebar({
                         className={cn(
  "text-xs font-medium",
                           isActive 
-                            ? "text-gray-600 dark:text-lia-text-tertiary" 
+                            ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
                             : isCompleted 
                               ? "lia-text-base" 
                               : "lia-text-secondary"
@@ -153,7 +153,7 @@ export function WizardSidebar({
                 className={cn(
  "text-micro font-semibold uppercase tracking-wide",
                   isPhaseActive 
-                    ? "text-gray-600 dark:text-lia-text-tertiary" 
+                    ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
                     : isPhaseCompleted 
                       ? "lia-text-secondary" 
                       : "lia-text-secondary"
@@ -197,7 +197,7 @@ export function WizardSidebar({
                         className={cn(
  "text-micro mt-1 truncate max-w-full px-0.5 text-center leading-tight",
                           isActive 
-                            ? "font-semibold text-gray-900" 
+                            ? "font-semibold text-lia-text-primary" 
                             : isCompleted 
                               ? "lia-text-secondary" 
                               : "lia-text-secondary"

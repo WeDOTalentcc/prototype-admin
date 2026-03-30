@@ -121,7 +121,7 @@ export function SalaryStage() {
       {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
         <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-wedo-green-bright/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-xs font-medium lia-text-strong">
               Benchmark de Mercado
             </span>
@@ -193,7 +193,7 @@ export function SalaryStage() {
       {/* Loading Benchmark */}
       {isLoadingBenchmark && (
         <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2">
-          <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
           <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
         </div>
       )}
@@ -201,7 +201,7 @@ export function SalaryStage() {
       {/* Salary Range */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <DollarSign className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
+          <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Salário Base (CLT)
         </label>
         <div className="flex gap-2">
@@ -239,7 +239,7 @@ export function SalaryStage() {
       {/* Bonus */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <Star className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
+          <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Bônus Anual
         </label>
         <div className="flex gap-2 mb-1.5">
@@ -285,10 +285,10 @@ export function SalaryStage() {
       {/* Benefits */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
+          <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
           Benefícios
           {companyConfig?.benefits && companyConfig.benefits.length > 0 && (
-            <Settings className="w-3 h-3 inline ml-1.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <Settings className="w-3 h-3 inline ml-1.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           )}
         </label>
         <div className="space-y-3">
@@ -357,7 +357,7 @@ export function SalaryStage() {
         {/* Add Benefit Button */}
         <button 
           onClick={() => setShowAddBenefitModal(true)}
-          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-gray-600 dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar benefício
         </button>
@@ -423,7 +423,7 @@ export function SalaryStage() {
           <span className="lia-text-secondary">
             Benefícios selecionados:
           </span>
-          <span className="font-semibold text-gray-900">{enabledBenefitsCount}</span>
+          <span className="font-semibold text-lia-text-primary">{enabledBenefitsCount}</span>
         </div>
       </div>
     </div>

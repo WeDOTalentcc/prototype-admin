@@ -35,45 +35,45 @@ const BULK_ACTIONS: BulkAction[] = [
     id: 'add_to_vacancy',
     label: 'Adicionar à Vaga',
     shortLabel: 'Vaga',
-    icon: <Briefcase className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['funnel'],
   },
   {
     id: 'move_stage',
     label: 'Mover Etapa',
-    icon: <ArrowRight className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <ArrowRight className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['vacancy'],
   },
   {
     id: 'add_to_list',
     label: 'Adicionar à Lista',
     shortLabel: 'Lista',
-    icon: <List className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <List className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['funnel', 'vacancy'],
   },
   {
     id: 'share_search',
     label: 'Compartilhar',
     shortLabel: 'Compartilhar',
-    icon: <Share2 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['funnel', 'vacancy'],
   },
   {
     id: 'wsi_screening',
     label: 'Triagem WSI',
-    icon: <Fingerprint className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <Fingerprint className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['funnel', 'vacancy'],
   },
   {
     id: 'request_data',
     label: 'Solicitar Dados',
-    icon: <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['vacancy'],
   },
   {
     id: 'send_message',
     label: 'Mensagem',
-    icon: <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />,
+    icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
     contexts: ['funnel', 'vacancy'],
   },
   {
@@ -132,20 +132,20 @@ export function UnifiedBulkActionsBar({
                 onCheckedChange={onSelectAll}
                 className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:border-lia-border-subtle"
               />
-              <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+              <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                 Selecionar todos
               </span>
             </div>
           )}
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-              <Users className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <span className="text-sm font-semibold text-gray-950">
+            <span className="text-sm font-semibold text-lia-text-primary">
               {selectedCount} candidato{selectedCount > 1 ? 's' : ''} selecionado{selectedCount > 1 ? 's' : ''}
             </span>
             {totalCount !== undefined && totalCount > 0 && (
-              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                 de {totalCount}
               </span>
             )}
@@ -169,7 +169,7 @@ export function UnifiedBulkActionsBar({
                 className={`h-7 px-2.5 text-xs gap-1 bg-white hover:bg-gray-50 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 ${
  isDestructive 
                     ? 'border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:hover:bg-status-error/20' 
-                    : 'border-lia-border-subtle text-gray-700 dark:text-lia-text-primary'
+                    : 'border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-primary'
                 }`}
                 title={action.label}
               >
@@ -185,7 +185,7 @@ export function UnifiedBulkActionsBar({
           variant="ghost"
           size="sm"
           onClick={onDeselectAll}
-          className="h-7 px-2 text-xs text-gray-600 hover:text-gray-900 dark:text-lia-text-tertiary dark:hover:text-gray-100"
+          className="h-7 px-2 text-xs text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
           title="Limpar seleção"
         >
           <X className="w-3.5 h-3.5" />

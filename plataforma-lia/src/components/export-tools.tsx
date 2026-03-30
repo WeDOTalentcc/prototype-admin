@@ -20,7 +20,7 @@ interface ExportConfig {
 }
 
 interface ExportToolsProps {
-  data?: any
+  data?: Record<string, unknown> | Record<string, unknown>[]
   className?: string
 }
 
@@ -123,7 +123,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+            <Download className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Exportação de Dados
           </CardTitle>
         </CardHeader>
@@ -132,7 +132,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Formatos de exportação */}
           <div>
-            <h3 className="text-sm font-medium text-gray-950 mb-3">
+            <h3 className="text-sm font-medium text-lia-text-primary mb-3">
               Formatos Disponíveis
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -155,12 +155,12 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
                   <div className="flex items-center gap-3 mb-2">
                     {getFormatIcon(format.format)}
-                    <span className="font-medium text-gray-950">
+                    <span className="font-medium text-lia-text-primary">
                       {format.label}
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-3">
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-3">
                     {format.description}
                   </p>
 
@@ -170,7 +170,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                     </Badge>
 
                     {isExporting ? (
-                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                      <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
                         Exportando...
                       </div>
@@ -185,7 +185,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Configurações de exportação */}
           <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
-            <h3 className="text-sm font-medium text-gray-950 mb-3">
+            <h3 className="text-sm font-medium text-lia-text-primary mb-3">
               Configurações de Exportação
             </h3>
 
@@ -193,7 +193,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Período */}
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
                   Período dos Dados
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -217,7 +217,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Conteúdo */}
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
                   Incluir no Relatório
                 </label>
                 <div className="space-y-2">
@@ -236,7 +236,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                         }))}
                         className="w-3 h-3 rounded-md border-lia-border-default"
                       />
-                      <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                      <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         {option.label}
                       </span>
                     </label>
@@ -248,7 +248,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Ações rápidas */}
           <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
-            <h3 className="text-sm font-medium text-gray-950 mb-3">
+            <h3 className="text-sm font-medium text-lia-text-primary mb-3">
               Ações Rápidas
             </h3>
 
@@ -298,7 +298,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
                 <div>
  <h4 className="text-sm font-medium text-wedo-cyan-dark dark:text-lia-text-secondary mb-1">
                     Dicas de Exportação

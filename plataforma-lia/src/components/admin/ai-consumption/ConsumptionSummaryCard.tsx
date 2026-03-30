@@ -27,14 +27,14 @@ export function ConsumptionSummaryCard({
   return (
     <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2 text-gray-400">
+        <CardTitle className="text-sm font-medium flex items-center gap-2 text-lia-text-disabled">
           <Icon className="w-4 h-4" />
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div
-          className={`text-2xl font-bold ${!valueColor ? 'text-gray-800 dark:text-lia-text-primary' : ''}`}
+          className={`text-2xl font-bold ${!valueColor ? 'text-lia-text-primary dark:text-lia-text-primary' : ''}`}
           style={valueColor ? { color: valueColor } : undefined}
         >
           {value}
@@ -43,14 +43,14 @@ export function ConsumptionSummaryCard({
           <div className="mt-2">
             <Progress value={progress} className="h-2" />
             {progressLabel && (
-              <p className="text-xs mt-1 text-gray-400">
+              <p className="text-xs mt-1 text-lia-text-disabled">
                 {progressLabel}
               </p>
             )}
           </div>
         )}
         {subtitle && progress === undefined && (
-          <p className="text-xs mt-2 text-gray-400">
+          <p className="text-xs mt-2 text-lia-text-disabled">
             {subtitle}
           </p>
         )}

@@ -296,7 +296,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar candidatos, vagas, conversas..."
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-lia-border-default dark:focus:border-gray-600 placeholder:lia-text-base"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-lia-border-default dark:focus:border-gray-600 placeholder:lia-text-base"
                
               />
               {isLoading && (
@@ -319,13 +319,13 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
  selectedType === type.id
                     ? 'bg-gray-900 text-white'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-lia-text-tertiary'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary'
                 }`}
               >
                 <type.icon className="w-3.5 h-3.5" />
                 {type.label}
                 {type.count > 0 && (
-                  <span className="text-xs px-1 py-0.5 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
+                  <span className="text-xs px-1 py-0.5 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
                     {type.count}
                   </span>
                 )}
@@ -341,7 +341,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+                <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                   Sugestões da LIA {selectedType !== "all" && `para ${searchTypes.find(t => t.id === selectedType)?.label}`}
                 </span>
               </div>
@@ -350,7 +350,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                   <button
                     key={index}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="flex items-center gap-2 p-2 text-left text-xs text-gray-600 dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
+                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
                   >
                     <ArrowRight className="w-3 h-3 opacity-40" />
                     {suggestion}
@@ -374,12 +374,12 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                          <IconComponent className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-950 truncate">
+                            <h3 className="font-medium text-lia-text-primary truncate">
                               {result.title}
                             </h3>
                             {result.metadata?.score && (
@@ -389,11 +389,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                             )}
                           </div>
 
-                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-1">
+                          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                             {result.subtitle}
                           </p>
 
-                          <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">
+                          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-2">
                             {result.description}
                           </p>
 
@@ -408,14 +408,14 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                             )}
 
                             {result.metadata?.location && (
-                              <div className="flex items-center gap-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                              <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                                 <MapPin className="w-3 h-3" />
                                 {result.metadata.location}
                               </div>
                             )}
 
                             {result.metadata?.date && (
-                              <div className="flex items-center gap-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                              <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                                 <Clock className="w-3 h-3" />
                                 {result.metadata.date}
                               </div>
@@ -436,10 +436,10 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           {query && !isLoading && results.length === 0 && (
             <div className="p-8 text-center">
               <Search className="w-12 h-12 lia-text-base mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-950 mb-2">
+              <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 Nenhum resultado encontrado
               </h3>
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-4">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-4">
                 Tente ajustar sua busca ou usar termos diferentes
               </p>
               <Button variant="outline" size="sm" onClick={() => setQuery("")}>
@@ -452,10 +452,10 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           {!query && !showAISuggestions && (
             <div className="p-8 text-center">
               <Search className="w-12 h-12 lia-text-base mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-950 mb-2">
+              <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 Busca Global
               </h3>
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 Digite para buscar em candidatos, vagas, conversas e muito mais
               </p>
             </div>
@@ -464,7 +464,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
 
         {/* Footer */}
         <div className="px-3 py-2 bg-white dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
-          <div className="flex items-center justify-between text-xs text-gray-600">
+          <div className="flex items-center justify-between text-xs text-lia-text-secondary">
             <div className="flex items-center gap-3">
               <span>↑↓ navegar</span>
               <span>Enter selecionar</span>

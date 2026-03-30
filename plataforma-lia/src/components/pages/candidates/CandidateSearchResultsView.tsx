@@ -476,16 +476,16 @@ export function CandidateSearchResultsView({
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
                 {crossTabFilter.type === 'company' ? (
-                  <Building className="w-5 h-5 text-white dark:text-gray-900" />
+                  <Building className="w-5 h-5 text-white dark:text-lia-text-disabled" />
                 ) : (
-                  <Target className="w-5 h-5 text-white dark:text-gray-900" />
+                  <Target className="w-5 h-5 text-white dark:text-lia-text-disabled" />
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
+                <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                   🎯 Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
                 </h3>
-                <p className="text-sm text-gray-800 dark:text-lia-text-tertiary mb-3">
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary mb-3">
                   {crossTabFilter.type === 'company' && crossTabFilter.company && (
                     `Mostrando candidatos da empresa "${crossTabFilter.company}" mapeada`
                   )}
@@ -524,10 +524,10 @@ export function CandidateSearchResultsView({
                 <List className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
+                <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                   📋 Visualizando Lista: {viewingList.name}
                 </h3>
-                <p className="text-sm text-gray-800 dark:text-lia-text-tertiary">
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
                   {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
                 </p>
               </div>
@@ -577,7 +577,7 @@ export function CandidateSearchResultsView({
                 value={liaPromptValue}
                 onChange={(e) => setLiaPromptValue(e.target.value)}
                 disabled={isLIAThinking}
-                className="flex-1 h-full text-base-ui bg-transparent focus:outline-none text-gray-950 placeholder:text-gray-600"
+                className="flex-1 h-full text-base-ui bg-transparent focus:outline-none text-lia-text-primary placeholder:text-lia-text-secondary"
 
                 onFocus={(e) => {
                   // Focus state: borda cyan + shadow
@@ -613,7 +613,7 @@ export function CandidateSearchResultsView({
                   title="Expandir"
                   aria-label="Expandir chat da LIA"
                 >
-                  <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                  <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                 </button>
                 <button
                   className={`p-1.5 rounded-full transition-colors ${
@@ -630,9 +630,9 @@ export function CandidateSearchResultsView({
                   aria-label="Enviar mensagem para a LIA"
                 >
                   {isLIAThinking ? (
-                    <div className="w-4 h-4 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                    <div className="w-4 h-4 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin" aria-hidden="true" />
                   ) : (
-                    <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                    <Send className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                   )}
                 </button>
               </div>
@@ -642,7 +642,7 @@ export function CandidateSearchResultsView({
             {isLIAThinking && (
               <div className="mt-2 flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in bg-gray-200/30 border border-wedo-cyan/20">
                 <Brain className="w-3 h-3 animate-pulse text-wedo-cyan" />
-                <span className="font-medium text-gray-800">LIA está pensando</span>
+                <span className="font-medium text-lia-text-primary">LIA está pensando</span>
                 <div className="flex gap-0.5">
                   <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
                   <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
@@ -656,14 +656,14 @@ export function CandidateSearchResultsView({
         <div className="flex items-center gap-3">
           {/* Badge de seleção */}
           {selectedCandidatesForBatch.size > 0 && (
-            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0 text-xs font-medium">
+            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0 text-xs font-medium">
               🎯 {selectedCandidatesForBatch.size}
             </Badge>
           )}
 
           {/* Sort indicator - mostra ordenação ativa (configuração dentro dos filtros) */}
           {searchSortBy !== 'relevance' && (
-            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0 text-xs font-medium gap-1">
+            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0 text-xs font-medium gap-1">
               <ArrowUpDown className="w-3 h-3" />
               {searchSortBy === 'score_desc' ? 'Maior Score' :
                searchSortBy === 'score_asc' ? 'Menor Score' :
@@ -677,10 +677,10 @@ export function CandidateSearchResultsView({
           {selectedCandidatesForBatch.size === 0 && sortedCandidates.length > 0 && (
             <button
               onClick={selectAllCandidates}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
 
             >
-              <CheckCircle className="w-4 h-4 text-gray-500" />
+              <CheckCircle className="w-4 h-4 text-lia-text-tertiary" />
               Selecionar Todos
             </button>
           )}
@@ -691,14 +691,14 @@ export function CandidateSearchResultsView({
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
               showTableFiltersPanel
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'text-gray-800 bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
+                : 'text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
             }`}
 
           >
             <Target className="w-4 h-4" />
             Filtros
             {getActiveTableFiltersCount() > 0 && (
-              <span className={`text-xs font-medium ${showTableFiltersPanel ? 'text-gray-300' : 'text-gray-500'}`}>
+              <span className={`text-xs font-medium ${showTableFiltersPanel ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
                 {getActiveTableFiltersCount()}
               </span>
             )}
@@ -710,13 +710,13 @@ export function CandidateSearchResultsView({
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
               showColumnConfig
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'text-gray-800 bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
+                : 'text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
             }`}
 
           >
             <ChevronsLeftRight className="w-4 h-4" />
             Colunas
-            <span className={`text-xs font-medium ${showColumnConfig ? 'text-gray-300' : 'text-gray-500'}`}>
+            <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
               {tableColumns.filter(col => col.visible && col.id !== 'acoes').length}
             </span>
           </button>
@@ -727,7 +727,7 @@ export function CandidateSearchResultsView({
       {/* Badge de Filtros Ativos - Simplificado */}
       {(quickFilters.size > 0 || searchTerm || getActiveAdvancedFiltersCount() > 0) && (
         <div className="mb-1.5 flex items-center gap-2">
-          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0">
+          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0">
             filtros ativos
           </Badge>
           {selectedCandidatesForBatch.size > 0 && (
@@ -735,7 +735,7 @@ export function CandidateSearchResultsView({
               variant="ghost"
               size="sm"
               onClick={deselectAllCandidates}
-              className="h-6 px-2 text-xs text-gray-800 hover:text-gray-900"
+              className="h-6 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary"
             >
               <X className="w-3 h-3 mr-1" />
               Limpar seleção
@@ -838,11 +838,11 @@ export function CandidateSearchResultsView({
                 className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                 title="Expandir tabela de candidatos"
               >
-                <ChevronRight className="w-5 h-5 text-gray-800 dark:text-lia-text-tertiary" />
+                <ChevronRight className="w-5 h-5 text-lia-text-primary dark:text-lia-text-tertiary" />
               </Button>
 
               {/* Ícone da tabela */}
-              <div className="flex flex-col items-center gap-2 text-gray-800">
+              <div className="flex flex-col items-center gap-2 text-lia-text-primary">
                 <Users className="w-5 h-5" />
                 <span className="text-xs font-medium" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
                   Candidatos ({sortedCandidates.length})
@@ -869,7 +869,7 @@ export function CandidateSearchResultsView({
               <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-lia-bg-primary">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"></div>
-                  <p className="text-gray-800 text-sm">Carregando candidatos...</p>
+                  <p className="text-lia-text-primary text-sm">Carregando candidatos...</p>
                 </div>
               </div>
             )}
@@ -926,7 +926,7 @@ export function CandidateSearchResultsView({
             {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
               <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3 mt-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-800 dark:text-lia-text-tertiary">
+                  <div className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
                   </div>
                   <div className="flex items-center gap-2">
@@ -960,7 +960,7 @@ export function CandidateSearchResultsView({
                         .map((page, index, array) => (
                           <React.Fragment key={page}>
                             {index > 0 && page - array[index - 1] > 1 && (
-                              <span className="px-2 text-gray-800">...</span>
+                              <span className="px-2 text-lia-text-primary">...</span>
                             )}
                             <Button
                               variant={currentPage === page ? 'default' : 'outline'}
@@ -1001,11 +1001,11 @@ export function CandidateSearchResultsView({
             {/* Empty State */}
             {!isLoading && sortedCandidates.length === 0 && (
               <div className="bg-white dark:bg-lia-bg-primary rounded-md p-8 text-center">
-                <Users className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
+                <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Nenhum candidato encontrado
                 </h3>
-                <p className="text-gray-800 dark:text-lia-text-tertiary mb-4">
+                <p className="text-lia-text-primary dark:text-lia-text-tertiary mb-4">
                   Tente ajustar os filtros ou termos de busca
                 </p>
                 <Button
@@ -1034,14 +1034,14 @@ export function CandidateSearchResultsView({
                   )}
                   {isLoadingMore ? 'Carregando...' : 'Carregar mais 10 candidatos'}
                 </Button>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-lia-text-tertiary">
                   {Math.min(displayedResultsCount, sortedCandidates.length)} de {sortedCandidates.length} candidatos
                 </span>
               </div>
             </div>
           )}
           {showSearchResults && displayedResultsCount >= sortedCandidates.length && sortedCandidates.length > 10 && (
-            <p className="flex-shrink-0 text-center text-sm text-gray-500 py-3">
+            <p className="flex-shrink-0 text-center text-sm text-lia-text-tertiary py-3">
               Todos os {sortedCandidates.length} candidatos carregados
             </p>
           )}
@@ -1057,13 +1057,13 @@ export function CandidateSearchResultsView({
                 <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
                   <div>
                     <h3
-                      className="text-sm font-semibold text-gray-950 dark:text-gray-50"
+                      className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary"
 
                     >
                       Configurar Colunas
                     </h3>
                     <p
-                      className="text-xs mt-0.5 text-gray-800"
+                      className="text-xs mt-0.5 text-lia-text-primary"
 
                     >
                       {tableColumns.filter(c => c.visible && c.id !== 'acoes').length} de {tableColumns.filter(c => c.id !== 'acoes').length} colunas ativas
@@ -1071,7 +1071,7 @@ export function CandidateSearchResultsView({
                   </div>
                   <button
                     onClick={() => setShowColumnConfig(false)}
-                    className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-gray-800 hover:text-gray-950 hover:bg-gray-100"
+                    className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1080,19 +1080,19 @@ export function CandidateSearchResultsView({
                 {/* Search and Actions */}
                 <div className="p-3 space-y-3 border-b border-lia-border-subtle">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-800" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-primary" />
                     <input
                       type="text"
                       placeholder="Buscar coluna..."
                       value={columnSearchTerm}
                       onChange={(e) => setColumnSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-950 dark:text-gray-50"
+                      className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
 
                     />
                   </div>
                   <div className="flex gap-2">
                     <button
-                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
+                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
                       onClick={() => {
                         setTableColumns(prev => prev.map((col, idx) => ({
                           ...col,
@@ -1104,7 +1104,7 @@ export function CandidateSearchResultsView({
                       Restaurar Padrão
                     </button>
                     <button
-                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
+                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
                       onClick={() => {
                         setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
                       }}
@@ -1163,7 +1163,7 @@ export function CandidateSearchResultsView({
                         <div key={category} className="mb-5">
                           <div className="flex items-center justify-between mb-2 px-1">
                             <h4
-                              className="text-xs font-semibold uppercase tracking-wider text-gray-800"
+                              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary"
 
                             >
                               {categoryLabels[category] || category}
@@ -1205,7 +1205,7 @@ export function CandidateSearchResultsView({
                                     fontWeight: col.visible ? 500 : 400}}
                                 >
                                   {col.isGlobalSearch && (
-                                    <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                                    <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                                   )}
                                   {col.label}
                                 </span>
@@ -1231,7 +1231,7 @@ export function CandidateSearchResultsView({
                 title="Arraste para redimensionar"
               >
                 <div className="absolute inset-0 -left-1 -right-1"></div>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
               </div>
               <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                 <CandidatePreview

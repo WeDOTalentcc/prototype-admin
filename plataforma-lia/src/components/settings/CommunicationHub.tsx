@@ -563,7 +563,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
         if (templatesResponse.ok) {
           const result = await templatesResponse.json()
           const templatesArray = result.items || (Array.isArray(result) ? result : [])
-          setTemplates(templatesArray.map((t: any) => ({
+          setTemplates(templatesArray.map((t: Record<string, unknown>) => ({
             id: t.id,
             name: t.name,
             category: t.category || 'followup',
@@ -601,7 +601,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
         if (alertsResponse.ok) {
           const alertsResult = await alertsResponse.json()
           if (alertsResult && Array.isArray(alertsResult.alerts)) {
-            setAlerts(alertsResult.alerts.map((a: any) => ({
+            setAlerts(alertsResult.alerts.map((a: Record<string, unknown>) => ({
               id: a.id,
               name: a.name,
               description: a.description,
@@ -1628,7 +1628,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                 <div className="flex items-center gap-3">
                   <select
                     value={alert.channel}
-                    onChange={(e) => handleChangeChannel(alert.id, e.target.value as any)}
+                    onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
                     className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary disabled:bg-gray-50 disabled:lia-text-600"
                     

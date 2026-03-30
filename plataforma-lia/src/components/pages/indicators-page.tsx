@@ -288,19 +288,19 @@ export function IndicatorsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'exceeded': return 'text-status-success bg-status-success/15'
-      case 'achieved': return 'text-gray-600 dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary'
+      case 'achieved': return 'text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary'
       case 'on_track': return 'text-status-warning bg-status-warning/15'
       case 'behind': return 'text-status-error bg-status-error/15'
-      default: return 'text-gray-600 bg-gray-100'
+      default: return 'text-lia-text-secondary bg-gray-100'
     }
   }
 
   const getRankingIcon = (ranking: number) => {
     switch (ranking) {
       case 1: return <Trophy className="w-5 h-5 text-status-warning" />
-      case 2: return <Medal className="w-5 h-5 text-gray-600" />
+      case 2: return <Medal className="w-5 h-5 text-lia-text-secondary" />
       case 3: return <Medal className="w-5 h-5 text-status-warning" />
-      default: return <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-800 dark:text-lia-text-primary">{ranking}</div>
+      default: return <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">{ranking}</div>
     }
   }
 
@@ -343,10 +343,10 @@ export function IndicatorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+          <h1 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
             Indicadores e Analytics
           </h1>
-          <p className="text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
             Dashboard executivo com insights estratégicos e performance de recrutadores
           </p>
         </div>
@@ -380,11 +380,11 @@ export function IndicatorsPage() {
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary'
- : 'border-transparent text-gray-800 hover:text-gray-800 dark:hover:text-gray-300'
+                  ? 'border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary'
+ : 'border-transparent text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-disabled'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -402,7 +402,7 @@ export function IndicatorsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Filter className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Filtros Avançados
                 </CardTitle>
                 <Button
@@ -421,13 +421,13 @@ export function IndicatorsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Período */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-950 dark:text-gray-50">
+                    <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
                       Período
                     </label>
                     <select
                       value={selectedPeriod}
                       onChange={(e) => setSelectedPeriod(e.target.value)}
-                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
+                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
                     >
                       <option value="current_month">Este Mês</option>
                       <option value="last_month">Mês Passado</option>
@@ -438,7 +438,7 @@ export function IndicatorsPage() {
 
                   {/* Departamentos */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-950 dark:text-gray-50">
+                    <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
                       Departamentos
                     </label>
                     <div className="space-y-2">
@@ -464,13 +464,13 @@ export function IndicatorsPage() {
 
                   {/* Ordenação */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-950 dark:text-gray-50">
+                    <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
                       Ordenar por
                     </label>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
+                      className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
                     >
                       <option value="totalScore">Score Total</option>
                       <option value="npsScore">NPS</option>
@@ -481,7 +481,7 @@ export function IndicatorsPage() {
                     <select
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
+                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
                     >
                       <option value="desc">Maior para Menor</option>
                       <option value="asc">Menor para Maior</option>
@@ -490,7 +490,7 @@ export function IndicatorsPage() {
 
                   {/* Ações Rápidas */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block text-gray-950 dark:text-gray-50">
+                    <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
                       Ações Rápidas
                     </label>
                     <div className="space-y-2">
@@ -543,10 +543,10 @@ export function IndicatorsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Total Recrutadores</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{teamMetrics.totalRecruiters}</p>
+                    <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">Total Recrutadores</p>
+                    <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{teamMetrics.totalRecruiters}</p>
                   </div>
-                  <Users className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Users className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
                   <TrendingUp className="w-3 h-3 text-status-success" />
@@ -615,7 +615,7 @@ export function IndicatorsPage() {
                       key={mode.id}
                       variant={viewMode === mode.id ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setViewMode(mode.id as any)}
+                      onClick={() => setViewMode(mode.id as Parameters<typeof setViewMode>[0])}
                       className="gap-2"
                     >
                       <mode.icon className="w-4 h-4" />
@@ -648,9 +648,9 @@ export function IndicatorsPage() {
                   <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
                 </div>
                 <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">12</div>
-                  <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Monitoramentos</div>
-                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">KPIs em observação</div>
+                  <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">12</div>
+                  <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Monitoramentos</div>
+                  <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">KPIs em observação</div>
                 </div>
               </div>
               <div className="mt-4">
@@ -687,28 +687,28 @@ export function IndicatorsPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-950 dark:text-gray-50">
+                            <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">
                               {recruiter.name}
                             </h3>
                             {getRankingIcon(recruiter.ranking)}
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">{recruiter.role}</p>
+                          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{recruiter.role}</p>
                           <Badge variant="outline" className="mt-1 text-xs">
                             {recruiter.department}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+                        <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                           {recruiter.totalScore}
                         </div>
-                        <div className="text-xs text-gray-800 dark:text-lia-text-primary">Score Total</div>
+                        <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Score Total</div>
                       </div>
                     </div>
                   </CardHeader>
@@ -716,46 +716,46 @@ export function IndicatorsPage() {
                     {/* KPIs Principais */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                        <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                        <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                           {recruiter.totalHires}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Contratações</div>
+                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Contratações</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                        <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                        <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                           {recruiter.avgTimeToFill}d
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Time to Fill</div>
+                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Time to Fill</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                        <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                        <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                           {recruiter.npsScore}%
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">NPS Score</div>
+                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">NPS Score</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                        <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                        <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                           {recruiter.conversionRate}%
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Conversão</div>
+                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Conversão</div>
                       </div>
                     </div>
 
                     {/* Metas Mensais */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">
+                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                         Metas Mensais
                       </h4>
                       <div className="space-y-2">
                         {Object.entries(recruiter.goals.monthly).map(([key, goal]) => (
                           <div key={key} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600 dark:text-lia-text-tertiary capitalize">
+                            <span className="text-lia-text-secondary dark:text-lia-text-tertiary capitalize">
                               {key === 'hires' ? 'Contratações' :
                                key === 'timeToFill' ? 'Time to Fill' :
                                key === 'nps' ? 'NPS' : 'Entrevistas'}:
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-950 dark:text-gray-50">
+                              <span className="text-lia-text-primary dark:text-lia-text-primary">
                                 {goal.current}/{goal.target}
                               </span>
                               <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
@@ -771,25 +771,25 @@ export function IndicatorsPage() {
 
                     {/* Distribuição de Sourcing */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">
+                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                         Fontes de Candidatos
                       </h4>
                       <div className="grid grid-cols-4 gap-2 text-xs">
                         <div className="text-center">
-                          <div className="font-medium text-gray-600 dark:text-lia-text-tertiary">{recruiter.sourcing.linkedin}%</div>
-                          <div className="text-gray-800 dark:text-lia-text-primary">LinkedIn</div>
+                          <div className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{recruiter.sourcing.linkedin}%</div>
+                          <div className="text-lia-text-primary dark:text-lia-text-primary">LinkedIn</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-status-success">{recruiter.sourcing.referrals}%</div>
-                          <div className="text-gray-800 dark:text-lia-text-primary">Indicações</div>
+                          <div className="text-lia-text-primary dark:text-lia-text-primary">Indicações</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-wedo-orange">{recruiter.sourcing.jobBoards}%</div>
-                          <div className="text-gray-800 dark:text-lia-text-primary">Job Boards</div>
+                          <div className="text-lia-text-primary dark:text-lia-text-primary">Job Boards</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-wedo-purple">{recruiter.sourcing.headhunting}%</div>
-                          <div className="text-gray-800 dark:text-lia-text-primary">Headhunt</div>
+                          <div className="text-lia-text-primary dark:text-lia-text-primary">Headhunt</div>
                         </div>
                       </div>
                     </div>
@@ -832,36 +832,36 @@ export function IndicatorsPage() {
                         {getRankingIcon(recruiter.ranking)}
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-semibold text-gray-950 dark:text-gray-50">{recruiter.name}</div>
-                          <div className="text-sm text-gray-600">{recruiter.role} • {recruiter.department}</div>
+                          <div className="font-semibold text-lia-text-primary dark:text-lia-text-primary">{recruiter.name}</div>
+                          <div className="text-sm text-lia-text-secondary">{recruiter.role} • {recruiter.department}</div>
                         </div>
                       </div>
 
                       <div className="flex-1 grid grid-cols-5 gap-4 text-center">
                         <div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-gray-50">{recruiter.totalScore}</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Score Total</div>
+                          <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">{recruiter.totalScore}</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Score Total</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-status-success">{recruiter.totalHires}</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Contratações</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-wedo-purple">{recruiter.avgTimeToFill}d</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Time to Fill</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Time to Fill</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-wedo-orange">{recruiter.npsScore}%</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">NPS</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">NPS</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-status-error">{recruiter.conversionRate}%</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Conversão</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Conversão</div>
                         </div>
                       </div>
 
@@ -869,7 +869,7 @@ export function IndicatorsPage() {
                         {index < 3 && (
                           <Badge className={`${
                             index === 0 ? 'bg-status-warning/15 text-status-warning' :
-                            index === 1 ? 'bg-gray-100 text-gray-800' :
+                            index === 1 ? 'bg-gray-100 text-lia-text-primary' :
                             'bg-status-warning/15 text-status-warning'
                           }`}>
                             #{recruiter.ranking}
@@ -891,13 +891,13 @@ export function IndicatorsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                        <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
+                        <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
                           {recruiter.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <CardTitle>{recruiter.name}</CardTitle>
-                        <p className="text-sm text-gray-600">{recruiter.role} • {recruiter.department}</p>
+                        <p className="text-sm text-lia-text-secondary">{recruiter.role} • {recruiter.department}</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -905,8 +905,8 @@ export function IndicatorsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Metas Mensais */}
                       <div>
-                        <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                           Metas Mensais
                         </h4>
                         <div className="space-y-4">
@@ -919,7 +919,7 @@ export function IndicatorsPage() {
                                    key === 'nps' ? 'NPS Score' : 'Entrevistas'}
                                 </span>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-gray-950 dark:text-gray-50">{goal.current}/{goal.target}</span>
+                                  <span className="text-lia-text-primary dark:text-lia-text-primary">{goal.current}/{goal.target}</span>
                                   <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
                                     {goal.status === 'exceeded' ? 'Superou' :
                                      goal.status === 'achieved' ? 'Atingiu' :
@@ -944,7 +944,7 @@ export function IndicatorsPage() {
 
                       {/* Metas Trimestrais */}
                       <div>
-                        <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
+                        <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
                           <Target className="w-4 h-4 text-wedo-purple" />
                           Metas Trimestrais
                         </h4>
@@ -956,7 +956,7 @@ export function IndicatorsPage() {
                                   {key === 'qualityScore' ? 'Score de Qualidade' : 'Taxa de Conversão (%)'}
                                 </span>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-gray-950 dark:text-gray-50">{goal.current}/{goal.target}</span>
+                                  <span className="text-lia-text-primary dark:text-lia-text-primary">{goal.current}/{goal.target}</span>
                                   <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
                                     {goal.status === 'exceeded' ? 'Superou' :
                                      goal.status === 'achieved' ? 'Atingiu' :
@@ -1014,13 +1014,13 @@ export function IndicatorsPage() {
                   {/* Comparação por Métricas */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4">Contratações por Recrutador</h4>
+                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Contratações por Recrutador</h4>
                       <div className="space-y-3">
                         {filteredRecruiters.map((recruiter) => (
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1041,13 +1041,13 @@ export function IndicatorsPage() {
                     </div>
 
                     <div>
-                      <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4">NPS Score por Recrutador</h4>
+                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">NPS Score por Recrutador</h4>
                       <div className="space-y-3">
                         {filteredRecruiters.map((recruiter) => (
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1070,13 +1070,13 @@ export function IndicatorsPage() {
 
                   {/* Gráfico de Tendências (simulado) */}
                   <div>
-                    <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4">Tendências de Performance (Últimos 6 Meses)</h4>
+                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Tendências de Performance (Últimos 6 Meses)</h4>
                     <div className="bg-gray-50 p-6 rounded-md text-center">
-                      <LineChart className="w-12 h-12 text-gray-600 mx-auto mb-2" />
-                      <p className="text-gray-600 text-sm">
+                      <LineChart className="w-12 h-12 text-lia-text-secondary mx-auto mb-2" />
+                      <p className="text-lia-text-secondary text-sm">
                         Gráfico interativo de tendências seria exibido aqui
                       </p>
-                      <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
+                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
                         Mostrando evolução de KPIs, sazonalidades e comparações
                       </p>
                     </div>
@@ -1113,7 +1113,7 @@ export function IndicatorsPage() {
               <CardContent>
                 <div className="text-2xl font-bold text-status-success">+24.8%</div>
                 <div className="text-xs text-status-success mt-1">vs trimestre anterior</div>
-                <div className="mt-3 text-xs text-gray-600">
+                <div className="mt-3 text-xs text-lia-text-secondary">
                   Contratações cresceram 35% e pipeline aumentou 18%
                 </div>
               </CardContent>
@@ -1122,14 +1122,14 @@ export function IndicatorsPage() {
             <Card className="border-lia-border-default dark:border-lia-border-default">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Eficiência Operacional
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">87.3%</div>
-                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Metas atingidas</div>
-                <div className="mt-3 text-xs text-gray-600">
+                <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">87.3%</div>
+                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">Metas atingidas</div>
+                <div className="mt-3 text-xs text-lia-text-secondary">
                   94% das vagas preenchidas dentro do prazo
                 </div>
               </CardContent>
@@ -1145,7 +1145,7 @@ export function IndicatorsPage() {
               <CardContent>
                 <div className="text-2xl font-bold text-wedo-purple">4.6/5.0</div>
                 <div className="text-xs text-wedo-purple mt-1">Score médio</div>
-                <div className="mt-3 text-xs text-gray-600">
+                <div className="mt-3 text-xs text-lia-text-secondary">
                   89% dos contratados ainda na empresa após 6 meses
                 </div>
               </CardContent>
@@ -1161,7 +1161,7 @@ export function IndicatorsPage() {
               <CardContent>
                 <div className="text-2xl font-bold text-wedo-orange">325%</div>
                 <div className="text-xs text-wedo-orange mt-1">Retorno sobre investimento</div>
-                <div className="mt-3 text-xs text-gray-600">
+                <div className="mt-3 text-xs text-lia-text-secondary">
                   Economia de R$ 2.4M em terceirização
                 </div>
               </CardContent>
@@ -1228,7 +1228,7 @@ export function IndicatorsPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Distribuição por Gênero</h4>
+                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Distribuição por Gênero</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span>Feminino</span>
@@ -1255,7 +1255,7 @@ export function IndicatorsPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Representatividade Étnica</h4>
+                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Representatividade Étnica</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span>Branca</span>
@@ -1277,11 +1277,11 @@ export function IndicatorsPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Inclusão PCD</h4>
+                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Inclusão PCD</h4>
                   <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">8.2%</div>
-                    <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Pessoas com Deficiência</div>
-                    <div className="text-xs text-gray-600 mt-2">
+                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">8.2%</div>
+                    <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Pessoas com Deficiência</div>
+                    <div className="text-xs text-lia-text-secondary mt-2">
                       Acima da cota legal de 5%
                     </div>
                   </div>
@@ -1307,10 +1307,10 @@ export function IndicatorsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Remoto</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">42%</p>
+                    <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">Remoto</p>
+                    <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">42%</p>
                   </div>
-                  <Home className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Home className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
                   <TrendingUp className="w-3 h-3 text-status-success" />
@@ -1373,7 +1373,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Modelos por Departamento
                 </CardTitle>
               </CardHeader>
@@ -1388,9 +1388,9 @@ export function IndicatorsPage() {
                   ].map((item, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-950 dark:text-gray-50">{item.dept}</span>
+                        <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{item.dept}</span>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-600 dark:text-lia-text-tertiary">{item.remote}% Remoto</span>
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">{item.remote}% Remoto</span>
                           <span className="text-wedo-purple">{item.hybrid}% Híbrido</span>
                           <span className="text-wedo-orange">{item.office}% Presencial</span>
                         </div>
@@ -1428,7 +1428,7 @@ export function IndicatorsPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-bold">{item.count}</div>
-                        <div className="text-xs text-gray-800 dark:text-lia-text-primary">{item.percentage}%</div>
+                        <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">{item.percentage}%</div>
                       </div>
                     </div>
                   ))}
@@ -1448,8 +1448,8 @@ export function IndicatorsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                  <h4 className="font-medium text-gray-700 dark:text-lia-text-secondary mb-2">🚀 Tendência Crescente</h4>
-                  <p className="text-sm text-gray-700 dark:text-lia-text-secondary">
+                  <h4 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">🚀 Tendência Crescente</h4>
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
                     Modelo remoto cresceu 8% no trimestre, especialmente em Tech e Design.
                     Considere expandir políticas de trabalho remoto.
                   </p>
@@ -1497,7 +1497,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-status-success font-medium">Previsão Q4</p>
                     <p className="text-2xl font-bold text-status-success">156</p>
-                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</p>
+                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Contratações</p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-status-success" />
                 </div>
@@ -1511,13 +1511,13 @@ export function IndicatorsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Time to Fill</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">24 dias</p>
-                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Previsão média</p>
+                    <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">Time to Fill</p>
+                    <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">24 dias</p>
+                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Previsão média</p>
                   </div>
-                  <Clock className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Clock className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
-                <div className="mt-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                <div className="mt-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   -8% vs atual (IA: 92% confiança)
                 </div>
               </CardContent>
@@ -1529,7 +1529,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-wedo-purple font-medium">Turnover Risk</p>
                     <p className="text-2xl font-bold text-wedo-purple">8.2%</p>
-                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Próximos 6 meses</p>
+                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Próximos 6 meses</p>
                   </div>
                   <AlertTriangle className="w-8 h-8 text-wedo-purple" />
                 </div>
@@ -1545,7 +1545,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
                     <p className="text-2xl font-bold text-wedo-orange">R$ 2.8M</p>
-                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Economia prevista</p>
+                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Economia prevista</p>
                   </div>
                   <DollarSign className="w-8 h-8 text-wedo-orange" />
                 </div>
@@ -1576,9 +1576,9 @@ export function IndicatorsPage() {
                   ].map((item, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-950 dark:text-gray-50">{item.area}</span>
+                        <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{item.area}</span>
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-600">{item.current} → {item.predicted}</span>
+                          <span className="text-lia-text-secondary">{item.current} → {item.predicted}</span>
                           <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">
                             {item.confidence}% confiança
                           </Badge>
@@ -1623,7 +1623,7 @@ export function IndicatorsPage() {
                   ].map((item, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                       <div>
-                        <div className="font-medium text-gray-950 dark:text-gray-50">{item.skill}</div>
+                        <div className="font-medium text-lia-text-primary dark:text-lia-text-primary">{item.skill}</div>
                         <div className="text-sm text-status-success">{item.growth} crescimento</div>
                       </div>
                       <Badge className={
@@ -1704,7 +1704,7 @@ export function IndicatorsPage() {
                           💡 Ação recomendada: {alert.action}
                         </p>
                       </div>
-                      <Badge className="ml-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">
+                      <Badge className="ml-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
                         {alert.confidence}% confiança
                       </Badge>
                     </div>

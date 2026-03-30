@@ -39,7 +39,7 @@ const getStatusIcon = (status: string) => {
     case 'read':
       return <Check className="w-3 h-3 text-status-success" />
     case 'sent':
-      return <Send className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+      return <Send className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
     case 'failed':
       return <AlertCircle className="w-3 h-3 text-status-error" />
     case 'pending':
@@ -70,7 +70,7 @@ const getChannelIcon = (channel: string) => {
       return <MessageSquare className="w-3.5 h-3.5 text-status-success" />
     case 'email':
     default:
-      return <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+      return <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
   }
 }
 
@@ -149,7 +149,7 @@ export function CandidateCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-semibold text-base truncate text-gray-800 dark:text-lia-text-primary">
+              <h4 className="font-semibold text-base truncate text-lia-text-primary dark:text-lia-text-primary">
                 {name}
               </h4>
               <Badge variant="secondary" className={`text-xs shrink-0 border-0 lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
@@ -158,14 +158,14 @@ export function CandidateCard({
             </div>
             
             {title && (
-              <div className="flex items-center gap-1.5 text-sm mb-1 text-gray-500 dark:text-lia-text-tertiary">
+              <div className="flex items-center gap-1.5 text-sm mb-1 text-lia-text-tertiary dark:text-lia-text-tertiary">
                 <Building className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{title} {company && `• ${company}`}</span>
               </div>
             )}
             
             {location && (
-              <div className="flex items-center gap-1.5 text-sm mb-3 text-gray-400">
+              <div className="flex items-center gap-1.5 text-sm mb-3 text-lia-text-disabled">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{location}</span>
               </div>
@@ -192,8 +192,8 @@ export function CandidateCard({
             
             {match_score !== null && match_score !== undefined && (
               <div className="flex items-center gap-1.5 mb-3">
-                <Award className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
-                <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
+                <Award className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                   {match_score}% match
                 </span>
               </div>
@@ -246,9 +246,8 @@ export function CandidateCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full h-8 text-xs justify-between px-2"
+                  className="w-full h-8 text-xs justify-between px-2 text-lia-text-tertiary dark:text-lia-text-tertiary"
                   onClick={handleToggleHistory}
-                  className="text-gray-500 dark:text-lia-text-tertiary"
                 >
                   <span className="flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -273,7 +272,7 @@ export function CandidateCard({
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
                       </div>
                     ) : communications.length === 0 ? (
-                      <div className="text-center py-3 text-xs text-gray-400">
+                      <div className="text-center py-3 text-xs text-lia-text-disabled">
                         Nenhuma comunicação registrada
                       </div>
                     ) : (
@@ -288,11 +287,11 @@ export function CandidateCard({
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-xs font-medium truncate text-gray-800 dark:text-lia-text-primary">
+                                <span className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-micro text-gray-400">
+                              <div className="flex items-center gap-2 text-micro text-lia-text-disabled">
                                 <span>{formatDate(comm.sent_at || comm.created_at)}</span>
                                 <span className="flex items-center gap-0.5">
                                   {getStatusIcon(comm.status)}
@@ -307,9 +306,8 @@ export function CandidateCard({
                           <Button
                             variant="link"
                             size="sm"
-                            className="w-full h-6 text-xs"
+                            className="w-full h-6 text-xs text-wedo-cyan"
                             onClick={onViewMoreCommunications}
-                            className="text-wedo-cyan"
                           >
                             Ver mais ({totalCommunications - 5} comunicações)
                           </Button>

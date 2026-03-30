@@ -30,8 +30,8 @@ interface EmailTemplate {
 interface EmailTemplateModalProps {
   isOpen: boolean
   onClose: () => void
-  jobData: any
-  onSend: (template: EmailTemplate, recipients: string[], customizations: any) => void
+  jobData: Record<string, unknown>
+  onSend: (template: EmailTemplate, recipients: string[], customizations: Record<string, unknown>) => void
 }
 
 const emailTemplates: EmailTemplate[] = [
@@ -408,10 +408,10 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
         {/* Header */}
         <div className="flex items-center justify-between p-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950">
+            <h2 className="text-xl font-semibold text-lia-text-primary">
               Templates de Email para Relatórios
             </h2>
-            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
               Vaga: {jobData.title} ({jobData.jobId})
             </p>
           </div>
@@ -447,10 +447,10 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as EmailTemplate['category'])}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
  activeTab === tab.id
-                  ? 'text-gray-600 dark:text-lia-text-tertiary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
+                  ? 'text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
                   : 'lia-text-base hover:lia-text-strong'
               }`}
             >
@@ -479,19 +479,19 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-950">{template.name}</h3>
+                      <h3 className="font-medium text-lia-text-primary">{template.name}</h3>
                       {template.isDefault && (
                         <Badge variant="secondary" className="text-xs">Padrão</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-3">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-3">
                       {processTemplate(template.subject, getTemplateVariables())}
                     </p>
                     <div className="flex items-center justify-between">
                       <Badge
                         className={`text-xs ${
  template.type === 'executive' ? 'bg-wedo-purple/10 text-wedo-purple' :
-                          template.type === 'detailed' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary' :
+                          template.type === 'detailed' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary' :
                           template.type === 'weekly' ? 'bg-status-success/10 text-status-success' :
                           'bg-gray-100 lia-text-strong'
                         }`}
@@ -513,7 +513,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           {activeTab === 'recipients' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-950 mb-4">Destinatários Sugeridos</h3>
+                <h3 className="text-lg font-medium text-lia-text-primary mb-4">Destinatários Sugeridos</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {suggestedRecipients.map((person) => (
                     <div
@@ -522,13 +522,13 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                     >
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-xs">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
                             {person.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-800 dark:text-lia-text-primary text-sm">{person.name}</div>
-                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">{person.role} • {person.department}</div>
+                          <div className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{person.name}</div>
+                          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">{person.role} • {person.department}</div>
                         </div>
                       </div>
                       <Button
@@ -561,7 +561,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-950 mb-4">Adicionar Email Personalizado</h3>
+                <h3 className="text-lg font-medium text-lia-text-primary mb-4">Adicionar Email Personalizado</h3>
                 <div className="flex gap-2">
                   <input
                     type="email"
@@ -585,13 +585,13 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               {recipients.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-950 mb-4">
+                  <h3 className="text-lg font-medium text-lia-text-primary mb-4">
                     Destinatários Selecionados ({recipients.length})
                   </h3>
                   <div className="space-y-2">
                     {recipients.map((email) => (
                       <div key={email} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">{email}</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{email}</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -610,7 +610,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           {activeTab === 'customize' && (
             <div className="space-y-6">
               <div>
-                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
+                <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
                   Assunto do Email
                 </label>
                 <input
@@ -626,7 +626,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
+                <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
                   Variáveis Personalizadas
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -652,7 +652,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
                 <h4 className="font-medium text-wedo-cyan-dark mb-2">💡 Dicas de Personalização</h4>
-                <ul className="text-sm text-gray-600 dark:text-lia-text-tertiary space-y-1">
+                <ul className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary space-y-1">
                   <li>• Use variáveis para tornar o email mais relevante</li>
                   <li>• Personalize o assunto para aumentar taxa de abertura</li>
                   <li>• Adicione insights específicos sobre a performance</li>

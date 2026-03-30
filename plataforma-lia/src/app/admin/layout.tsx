@@ -193,10 +193,9 @@ function AdminSidebar({
   return (
     <aside
       className={cn(
-        "flex flex-col border-r transition-colors duration-300",
+        "flex flex-col border-r transition-colors duration-300 border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950",
         sidebarCollapsed ? "w-16" : "w-64"
       )}
-      className="border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950" 
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-lia-border-subtle dark:border-lia-border-subtle" >
         {!sidebarCollapsed && (

@@ -138,13 +138,13 @@ export function ScreeningStatusModal({
         <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <BrainCircuit className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Status da Triagem
               </DialogTitle>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate mt-0.5">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate mt-0.5">
                 {jobTitle}
               </p>
             </div>
@@ -158,11 +158,11 @@ export function ScreeningStatusModal({
         <div className="py-4 space-y-4">
           {screeningStatus === 'not_configured' && (
             <div className="text-center py-6">
-              <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-base-ui text-gray-600 dark:text-lia-text-tertiary mb-1">
+              <AlertCircle className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
+              <p className="text-base-ui text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                 Triagem não configurada
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-lia-text-disabled">
                 Configure as perguntas de triagem na aba &quot;Roteiro de Triagem&quot; da vaga para poder iniciar.
               </p>
             </div>
@@ -171,12 +171,12 @@ export function ScreeningStatusModal({
           {screeningStatus === 'not_started' && !showPauseForm && (
             <div className="space-y-4">
               <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
-                <p className="text-xs text-gray-700 dark:text-lia-text-secondary mb-3">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-3">
                   A triagem está configurada mas ainda não foi iniciada. Ao ativar, candidatos poderão ser triados automaticamente.
                 </p>
                 
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+                  <Label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                     <Calendar className="w-3 h-3 inline mr-1" />
                     Data de término (opcional)
                   </Label>
@@ -213,31 +213,31 @@ export function ScreeningStatusModal({
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
                     <Users className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900">{metrics.screened_count || 0}</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
                     <p className="text-micro lia-text-secondary">Triados</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
                     <BarChart3 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900">{metrics.completion_rate || 0}%</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
                     <p className="text-micro lia-text-secondary">Conclusão</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
                     <CheckCircle2 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900">{metrics.average_rating?.toFixed(1) || '—'}</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
                     <p className="text-micro lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
               )}
 
               {screeningConfig?.status?.scheduled_end_date && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary rounded-lg px-3 py-2">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Término previsto: {new Date(screeningConfig.status.scheduled_end_date).toLocaleDateString('pt-BR')}</span>
                 </div>
               )}
 
               {screeningConfig?.status?.activated_at && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-2 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   <Clock className="w-3 h-3" />
                   <span>Ativa desde {new Date(screeningConfig.status.activated_at).toLocaleDateString('pt-BR')}</span>
                 </div>
@@ -287,15 +287,15 @@ export function ScreeningStatusModal({
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900">{metrics.screened_count || 0}</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
                     <p className="text-micro lia-text-secondary">Triados</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900">{metrics.completion_rate || 0}%</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
                     <p className="text-micro lia-text-secondary">Conclusão</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900">{metrics.average_rating?.toFixed(1) || '—'}</p>
+                    <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
                     <p className="text-micro lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
@@ -305,9 +305,9 @@ export function ScreeningStatusModal({
 
           {showPauseForm && (
             <div className="space-y-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
-              <p className="text-xs font-medium text-gray-700 dark:text-lia-text-secondary">Pausar Triagem</p>
+              <p className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary">Pausar Triagem</p>
               <div className="space-y-2">
-                <Label className="text-xs text-gray-600 dark:text-lia-text-tertiary">Motivo (opcional)</Label>
+                <Label className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Motivo (opcional)</Label>
                 <Textarea
                   value={pauseReason}
                   onChange={(e) => setPauseReason(e.target.value)}
@@ -374,7 +374,7 @@ export function ScreeningStatusModal({
             <Button
               variant="outline"
               onClick={() => { onNavigateToJob(); onClose() }}
-              className="w-full h-9 text-xs font-medium border-lia-border-default text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800 gap-1.5"
+              className="w-full h-9 text-xs font-medium border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800 gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ir para Vaga

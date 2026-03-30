@@ -141,19 +141,19 @@ export function AddToListModal({
       <DialogContent className={`max-w-md ${cardStyles.default}`}>
         <DialogHeader>
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
-            <List className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+            <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Adicionar à Lista
           </DialogTitle>
           <DialogDescription className={textStyles.bodySmall} asChild>
             <div>
               <span className="flex items-center gap-2 mt-1">
-                <Users className="w-4 h-4 text-gray-500" />
+                <Users className="w-4 h-4 text-lia-text-tertiary" />
                 <span>
                   {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} selecionado{candidateCount !== 1 ? 's' : ''}
                 </span>
               </span>
               {displayNames.length > 0 && (
-                <span className="block mt-2 text-gray-800 dark:text-lia-text-primary">
+                <span className="block mt-2 text-lia-text-primary dark:text-lia-text-primary">
                   {displayNames.join(', ')}
                   {remainingCount > 0 && ` e mais ${remainingCount}`}
                 </span>
@@ -165,7 +165,7 @@ export function AddToListModal({
         <div className="py-4 space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
             </div>
           ) : (
             <>
@@ -205,7 +205,7 @@ export function AddToListModal({
                           </span>
                         </div>
                         {selectedListId === list.id && (
-                          <Check className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-lia-text-tertiary" />
+                          <Check className="w-4 h-4 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         )}
                       </div>
                     ))}
@@ -218,7 +218,7 @@ export function AddToListModal({
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-dashed border-lia-border-default text-gray-800 dark:text-lia-text-primary hover:border-gray-400 hover:text-gray-800"
+                    className="w-full border-dashed border-lia-border-default text-lia-text-primary dark:text-lia-text-primary hover:border-gray-400 hover:text-lia-text-primary"
                     onClick={() => {
                       setIsCreatingNew(true)
                       setSelectedListId(null)
@@ -241,7 +241,7 @@ export function AddToListModal({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-xs text-gray-800 dark:text-lia-text-primary hover:text-gray-800"
+                        className="h-6 px-2 text-xs text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary"
                         onClick={() => {
                           setIsCreatingNew(false)
                           setNewListName('')
@@ -306,7 +306,7 @@ export function AddToListModal({
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>
@@ -314,7 +314,7 @@ export function AddToListModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || !canSubmit}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             {isSubmitting ? (
               <>

@@ -172,19 +172,19 @@ function MissingFieldCard({
     <div className="border rounded-md p-3 bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
-          <div className="font-medium text-sm text-gray-800 dark:text-lia-text-primary">{label}</div>
+          <div className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{label}</div>
           
           {suggestion && (
             <div className="mt-2">
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary mb-1">
+              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-1">
                 <SourceIcon className={cn("h-3 w-3", sourceInfo?.color)} />
                 <span className={sourceInfo?.color}>{sourceInfo?.label}</span>
                 <ConfidenceIndicator confidence={suggestion.confidence} size="sm" showPercentage />
               </div>
               
-              <div className="bg-gray-50 dark:bg-lia-bg-primary rounded-md p-2 text-sm text-gray-700 dark:text-lia-text-secondary">
+              <div className="bg-gray-50 dark:bg-lia-bg-primary rounded-md p-2 text-sm text-lia-text-secondary dark:text-lia-text-secondary">
                 <div className="font-medium dark:text-lia-text-primary">{formatFieldValue(fieldKey, suggestion.value)}</div>
-                <div className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">{suggestion.explanation}</div>
+                <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">{suggestion.explanation}</div>
               </div>
               
               <Button
@@ -248,8 +248,8 @@ function FilledFieldCard({
 }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle last:border-0">
-      <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">{label}</span>
-      <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary max-w-[60%] truncate text-right">
+      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{label}</span>
+      <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary max-w-[60%] truncate text-right">
         {formatFieldValue(fieldKey, value)}
       </span>
     </div>
@@ -321,7 +321,7 @@ export function FinalReviewPanel({
         
         <div className="mt-3">
           <div className="flex items-center justify-between text-sm mb-1.5">
-            <span className="text-gray-600 dark:text-lia-text-tertiary">Completude</span>
+            <span className="text-lia-text-secondary dark:text-lia-text-tertiary">Completude</span>
             <span className="font-semibold dark:text-lia-text-primary">{completeness_score}%</span>
           </div>
           <Progress value={completeness_score} className={cn("h-2", getScoreColor())} />
@@ -440,8 +440,8 @@ export function FinalReviewPanel({
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-gray-500 dark:text-lia-text-tertiary" />
-                  <span className="font-medium text-gray-600 dark:text-lia-text-secondary">
+                  <Info className="h-4 w-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                  <span className="font-medium text-lia-text-secondary dark:text-lia-text-secondary">
                     Campos Desativados ({toggled_off.length})
                   </span>
                 </div>
@@ -452,7 +452,7 @@ export function FinalReviewPanel({
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
-                <div className="bg-white dark:bg-lia-bg-secondary rounded-md border dark:border-lia-border-subtle p-3 text-sm text-gray-500 dark:text-lia-text-tertiary">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md border dark:border-lia-border-subtle p-3 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
                   <p className="mb-2">
                     Estes campos foram desativados nas configurações da empresa:
                   </p>

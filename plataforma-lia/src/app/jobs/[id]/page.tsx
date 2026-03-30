@@ -48,7 +48,7 @@ export default function JobPage() {
           nps: vacancy.nps_score,
           priority: vacancy.priority,
           urgencyLevel: vacancy.urgency_level,
-          hiringProcess: vacancy.interview_stages?.map((s: any) => s.name) || [],
+          hiringProcess: vacancy.interview_stages?.map((s: { name?: string }) => s.name) || [],
           interviewStages: vacancy.interview_stages,
           avgTimePerStage: vacancy.avg_time_per_stage,
           screeningConfig: vacancy.screening_config,

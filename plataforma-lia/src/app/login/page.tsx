@@ -40,8 +40,8 @@ export default function LoginPage() {
     try {
       await login(email, password)
       router.push("/login/welcome")
-    } catch (err: any) {
-      setError(err.message || "Senha incorreta. Verifique suas credenciais.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Senha incorreta. Verifique suas credenciais.")
     } finally {
       setIsSubmitting(false)
     }

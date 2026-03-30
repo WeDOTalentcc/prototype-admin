@@ -21,7 +21,7 @@ interface SaveArchetypeModalProps {
   onClose: () => void
   searchSpec: SearchSpec | null
   query: string
-  onSuccess?: (archetype: any) => void
+  onSuccess?: (archetype: Record<string, unknown>) => void
 }
 
 const EMOJI_OPTIONS = ["🎯", "🚀", "💎", "⚡", "🧠", "📊", "🎨", "🔧", "🔍", "📱"]

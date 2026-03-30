@@ -37,23 +37,23 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Plus className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Briefcase className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Building2 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                 Ver todas as vagas
               </button>
               <button
@@ -61,9 +61,9 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                 Resumo das vagas
               </button>
               <LiaVacancyQueriesGuide
@@ -83,7 +83,7 @@ export function JobsDashboardView({
                 value={liaPromptValue}
                 onChange={(e) => onSetLiaPromptValue(e.target.value)}
                
-                className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-gray-950 dark:text-gray-50"
+                className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && liaPromptValue.trim()) {
                     onSetActiveFilter('todas')
@@ -118,14 +118,14 @@ export function JobsDashboardView({
                 }}
                 title="Buscar"
               >
-                <Search className="w-4 h-4 text-gray-600" />
+                <Search className="w-4 h-4 text-lia-text-secondary" />
               </button>
             </div>
           </div>
 
           <div className="px-4 pb-4">
             <div className="flex flex-wrap items-start gap-2 pt-3">
-              <span className="text-xs text-gray-800 font-medium mt-0.5">Sugestões:</span>
+              <span className="text-xs text-lia-text-primary font-medium mt-0.5">Sugestões:</span>
               {(orchestratorSuggestions.length > 0 ? orchestratorSuggestions : getContextualSuggestions()).slice(0, 4).map((suggestion, index) => (
                 <button
                   key={`suggestion-${index}`}
@@ -133,7 +133,7 @@ export function JobsDashboardView({
                     onSetActiveFilter('todas')
                     setTimeout(() => onOpenGeneralChat(suggestion), 100)
                   }}
-                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-gray-800 border border-lia-border-subtle hover:text-gray-900 hover:bg-gray-100"
+                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-gray-100"
                  
                 >
                   {suggestion}

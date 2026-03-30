@@ -79,7 +79,7 @@ export function KanbanColumnConfigPanel({
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Columns className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Columns className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <h3 className={textStyles.title}>Configurar Colunas</h3>
             </div>
             <Button
@@ -88,30 +88,30 @@ export function KanbanColumnConfigPanel({
               onClick={onClose}
               className="h-7 w-7 p-0 hover:bg-gray-100"
             >
-              <X className="w-4 h-4 text-gray-600" />
+              <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
           </div>
 
           <div className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
               <input
                 type="text"
                 placeholder="Buscar coluna..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 dark:bg-lia-bg-secondary placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-gray-950 dark:text-gray-50"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 dark:bg-lia-bg-secondary placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-lia-text-primary dark:text-lia-text-primary"
               />
             </div>
             <div className="flex gap-2">
               <button
-                className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
+                className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
                 onClick={onResetColumns}
               >
                 Restaurar Padrão
               </button>
               <button
-                className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
+                className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
                 onClick={showAll}
               >
                 Todas
@@ -131,11 +131,11 @@ export function KanbanColumnConfigPanel({
             return (
               <div key={category} className="mb-5">
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-secondary">
                     {CATEGORY_LABELS[category] || category}
                   </h4>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-gray-900/10 text-gray-800' : 'bg-gray-200 text-gray-400'}`}
+                    className={`text-xs px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-gray-900/10 text-lia-text-primary' : 'bg-gray-200 text-lia-text-disabled'}`}
                   >
                     {visibleCount}/{columns.length}
                   </span>

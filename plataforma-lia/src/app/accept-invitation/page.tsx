@@ -39,8 +39,8 @@ function AcceptInvitationContent() {
         }
         const data = await response.json()
         setInvitationInfo(data)
-      } catch (err: any) {
-        setError(err.message || "Convite inválido ou expirado")
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err) || "Convite inválido ou expirado")
       } finally {
         setIsLoadingInfo(false)
       }
@@ -83,8 +83,8 @@ function AcceptInvitationContent() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || "Erro ao aceitar convite. Tente novamente.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Erro ao aceitar convite. Tente novamente.")
     } finally {
       setIsLoading(false)
     }

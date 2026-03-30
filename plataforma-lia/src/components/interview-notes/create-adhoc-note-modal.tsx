@@ -101,7 +101,7 @@ export function CreateAdhocNoteModal({
         <div className="space-y-5 py-4">
           {/* Candidate Selection */}
           <div className="space-y-2">
-            <Label htmlFor="candidate" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <Label htmlFor="candidate" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Candidato *
             </Label>
             <div className="relative">
@@ -125,7 +125,7 @@ export function CreateAdhocNoteModal({
 
           {/* Interview Date */}
           <div className="space-y-2">
-            <Label htmlFor="interview-date" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <Label htmlFor="interview-date" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Data da Entrevista *
             </Label>
             <div className="relative">
@@ -144,7 +144,7 @@ export function CreateAdhocNoteModal({
 
           {/* Job Link (Optional) */}
           <div className="space-y-2">
-            <Label htmlFor="job" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <Label htmlFor="job" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Vincular a uma vaga
             </Label>
             <div className="relative">
@@ -183,7 +183,7 @@ export function CreateAdhocNoteModal({
 
           {/* Initial Notes */}
           <div className="space-y-2">
-            <Label htmlFor="initial-notes" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <Label htmlFor="initial-notes" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Observações iniciais
             </Label>
             <Textarea
@@ -204,7 +204,7 @@ export function CreateAdhocNoteModal({
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 disabled:bg-gray-300 disabled:text-lia-text-tertiary"
           >
             <Plus className="w-4 h-4 mr-2" />
             Criar Nota

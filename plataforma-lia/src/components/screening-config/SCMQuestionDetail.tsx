@@ -60,8 +60,8 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           </Badge>
         )}
       </div>
-      <p className="text-xs text-gray-950 leading-relaxed">{item.question || item.text}</p>
-      <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-lia-text-tertiary">
+      <p className="text-xs text-lia-text-primary leading-relaxed">{item.question || item.text}</p>
+      <div className="flex items-center gap-3 mt-2 text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{estTime}</span>
         {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
         {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
@@ -73,15 +73,15 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
       {isDetailsExpanded && (
         <div className="mt-2 p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg space-y-1.5 text-micro">
           <div className="flex gap-4 flex-wrap">
-            <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
-            <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
-            <div><span className="text-gray-400">Tipo:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
+            <div><span className="text-lia-text-disabled">Framework:</span><span className="ml-1 text-lia-text-secondary dark:text-lia-text-secondary font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
+            <div><span className="text-lia-text-disabled">Dreyfus:</span><span className="ml-1 text-lia-text-secondary dark:text-lia-text-secondary font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
+            <div><span className="text-lia-text-disabled">Tipo:</span><span className="ml-1 text-lia-text-secondary dark:text-lia-text-secondary font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
           </div>
           {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
-            <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-lia-text-secondary mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
+            <div><span className="text-lia-text-disabled">Resposta esperada:</span><p className="text-lia-text-secondary dark:text-lia-text-secondary mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
           )}
           {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric || {}).length > 0 && (
-            <div><span className="lia-text-secondary">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric || {}).map(([level, desc]: [string, unknown]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-lia-text-secondary">{String(desc)}</span></div>))}</div></div>
+            <div><span className="lia-text-secondary">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric || {}).map(([level, desc]: [string, unknown]) => (<div key={level} className="flex gap-1"><span className="text-lia-text-tertiary font-medium shrink-0">{level}:</span><span className="text-lia-text-secondary dark:text-lia-text-secondary">{String(desc)}</span></div>))}</div></div>
           )}
         </div>
       )}

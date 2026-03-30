@@ -177,16 +177,16 @@ export interface SearchFilters {
 }
 
 export function convertToPearchFilters(filters: SearchFilters): {
-  customFilters: Record<string, any>
-  apiOptions: Record<string, any>
+  customFilters: Record<string, unknown>
+  apiOptions: Record<string, unknown>
   hideViewedOptions?: {
     enabled: boolean
     scope: HideViewedScope
     period: HideViewedPeriod
   }
 } {
-  const customFilters: Record<string, any> = {}
-  const apiOptions: Record<string, any> = {}
+  const customFilters: Record<string, unknown> = {}
+  const apiOptions: Record<string, unknown> = {}
 
   if (filters.ppiOptions) {
     apiOptions.type = filters.ppiOptions.searchType || "fast"
@@ -363,8 +363,8 @@ export function convertToPearchFilters(filters: SearchFilters): {
   return { customFilters, apiOptions, hideViewedOptions }
 }
 
-export function normalizeFiltersFromServer(filters: SearchFilters & Record<string, any>): SearchFilters {
-  const normalized: SearchFilters & Record<string, any> = JSON.parse(JSON.stringify(filters))
+export function normalizeFiltersFromServer(filters: SearchFilters & Record<string, unknown>): SearchFilters {
+  const normalized: SearchFilters & Record<string, unknown> = JSON.parse(JSON.stringify(filters))
   
   if (!normalized.company) {
     normalized.company = {}

@@ -28,7 +28,7 @@ interface ScreeningQuestionsPanelProps {
   behavioralCompetencies?: string[]
   isAffirmative?: boolean
   affirmativeType?: string
-  onQuestionsChange?: (questions: any[]) => void
+  onQuestionsChange?: (questions: Record<string, unknown>[]) => void
   className?: string
 }
 
@@ -164,7 +164,7 @@ const BLOOM_COLORS: Record<number, string> = {
 
 const DREYFUS_COLORS: Record<number, string> = {
   1: "bg-gray-100 lia-text-base border-lia-border-subtle",
-  2: "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
+  2: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
   3: "bg-status-success/10 text-status-success border-status-success/30",
   4: "bg-status-warning/10 text-status-warning border-status-warning/30",
   5: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30"
@@ -622,7 +622,7 @@ export function ScreeningQuestionsPanel({
                     </p>
                   </div>
                   <div className="p-3">
-                    <div className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-line">
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-line">
                       {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                     </div>
                   </div>

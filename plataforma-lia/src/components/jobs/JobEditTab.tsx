@@ -140,7 +140,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
   const [activeSection, setActiveSection] = useState("info-geral")
   const isScreeningSection = SCREENING_SECTIONS.some(s => s.id === activeSection)
   const [editingSection, setEditingSection] = useState<string | null>(isCreationMode ? "info-geral" : null)
-  const formBackupRef = useRef<Record<string, any> | null>(null)
+  const formBackupRef = useRef<Record<string, unknown> | null>(null)
 
   // Pipeline da empresa carregado do backend (substitui constante hardcoded)
   const { pipeline: companyPipelineFallback, loading: loadingCompanyPipeline } = useCompanyPipeline()

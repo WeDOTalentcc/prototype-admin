@@ -112,7 +112,7 @@ export function BulkSelectionBar({
             
             <div className="flex items-center gap-2">
               <Badge 
-                className="bg-gray-200 text-gray-700 border-lia-border-default hover:bg-gray-300 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default"
+                className="bg-gray-200 text-lia-text-secondary border-lia-border-default hover:bg-gray-300 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default"
               >
                 <Users className="w-3 h-3 mr-1" />
                 {selectedCount}
@@ -223,13 +223,13 @@ export function BulkSelectionBarInline({
               onCheckedChange={onSelectAll}
               className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+            <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
               Todos
             </span>
           </div>
           
           <Badge 
-            className="bg-gray-200 text-gray-700 border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default"
+            className="bg-gray-200 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default"
           >
             {selectedCount} selecionado{selectedCount !== 1 && 's'}
           </Badge>
@@ -245,7 +245,7 @@ export function BulkSelectionBarInline({
               disabled={action.disabled}
               className={cn(
  "h-7 text-xs",
-                action.variant !== 'destructive' && "text-gray-700 dark:text-lia-text-secondary"
+                action.variant !== 'destructive' && "text-lia-text-secondary dark:text-lia-text-secondary"
               )}
             >
               {action.icon}

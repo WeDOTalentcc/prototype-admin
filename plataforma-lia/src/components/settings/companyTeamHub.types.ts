@@ -117,8 +117,8 @@ export interface CompanyData {
 
 export interface CompanyTeamHubProps {
   activeSubsection?: string;
-  onUserUpdate?: (user: any) => void;
-  onGoalUpdate?: (userId: string, goals: any) => void;
+  onUserUpdate?: (user: Record<string, unknown>) => void;
+  onGoalUpdate?: (userId: string, goals: Record<string, unknown>) => void;
 }
 
 export type TechStackByCategory = Record<string, string[]>;

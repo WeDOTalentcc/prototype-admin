@@ -320,8 +320,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'email' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -336,8 +336,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'whatsapp' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
         <MessageSquare className="w-3.5 h-3.5" />
@@ -352,8 +352,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'both' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -428,7 +428,7 @@ export function CloseVacancyModal({
         {hiredMessage && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-gray-500" />
+              <Eye className="h-4 w-4 text-lia-text-tertiary" />
               <label className={textStyles.label}>Preview da mensagem</label>
             </div>
             <div className={cn(cardStyles.flat, 'p-4 max-h-48 overflow-y-auto')}>
@@ -447,7 +447,7 @@ export function CloseVacancyModal({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-500" />
+            <Users className="h-4 w-4 text-lia-text-tertiary" />
             <span className={textStyles.label}>
               Demais candidatos ({otherCandidates.length})
             </span>
@@ -457,7 +457,7 @@ export function CloseVacancyModal({
             variant="ghost"
             size="sm"
             onClick={toggleAllCandidates}
-            className="text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             {selectedCandidateIds.length === otherCandidates.length
               ? 'Desmarcar todos'
@@ -468,7 +468,7 @@ export function CloseVacancyModal({
         <ScrollArea className="h-40 border rounded-md">
           <div className="p-2 space-y-1">
             {otherCandidates.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-gray-500">
+              <div className="flex items-center justify-center h-32 text-lia-text-tertiary">
                 <p className={textStyles.description}>Não há outros candidatos na pipeline</p>
               </div>
             ) : (
@@ -488,7 +488,7 @@ export function CloseVacancyModal({
                     onCheckedChange={() => toggleCandidateSelection(candidate.id)}
                   />
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
+                    <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xs">
                       {getInitials(candidate.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -510,7 +510,7 @@ export function CloseVacancyModal({
         </ScrollArea>
         
         {selectedCandidateIds.length > 0 && (
-          <p className={cn(textStyles.caption, 'text-gray-600 dark:text-lia-text-tertiary')}>
+          <p className={cn(textStyles.caption, 'text-lia-text-secondary dark:text-lia-text-tertiary')}>
             {selectedCandidateIds.length} candidato(s) selecionado(s) para receber feedback
           </p>
         )}
@@ -551,7 +551,7 @@ export function CloseVacancyModal({
           {othersMessage && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-gray-500" />
+                <Eye className="h-4 w-4 text-lia-text-tertiary" />
                 <label className={textStyles.label}>Preview da mensagem</label>
               </div>
               <div className={cn(cardStyles.flat, 'p-4 max-h-40 overflow-y-auto')}>
@@ -572,13 +572,13 @@ export function CloseVacancyModal({
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
-              <PartyPopper className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <PartyPopper className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 Fechar Vaga
               </DialogTitle>
-              <DialogDescription className="text-xs text-gray-600">
+              <DialogDescription className="text-xs text-lia-text-secondary">
                 {vacancy.title}
                 {vacancy.department && ` • ${vacancy.department}`}
               </DialogDescription>
@@ -590,20 +590,20 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 1
-                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                  : 'bg-gray-100 text-gray-600'
+                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled'
+                  : 'bg-gray-100 text-lia-text-secondary'
               )}
             >
               <span className="font-medium">1</span>
               <span className="hidden sm:inline">Parabéns</span>
             </div>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
             <div
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 2
-                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                  : 'bg-gray-100 text-gray-600'
+                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled'
+                  : 'bg-gray-100 text-lia-text-secondary'
               )}
             >
               <span className="font-medium">2</span>
@@ -623,7 +623,7 @@ export function CloseVacancyModal({
               variant="outline"
               onClick={handlePreviousStep}
               disabled={isSubmitting}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Voltar
@@ -637,7 +637,7 @@ export function CloseVacancyModal({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
           >
             Cancelar
           </Button>
@@ -647,7 +647,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleNextStep}
               disabled={!hiredTemplateId || templatesLoading}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
             >
               Próximo
               <ArrowRight className="w-3.5 h-3.5" />
@@ -657,7 +657,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleConfirm}
               disabled={isSubmitting || (selectedCandidateIds.length > 0 && !othersTemplateId)}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
             >
               {isSubmitting ? (
                 <>

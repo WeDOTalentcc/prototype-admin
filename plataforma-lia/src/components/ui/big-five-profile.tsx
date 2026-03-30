@@ -211,7 +211,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div key={dimension.key} className="space-y-1">
                 {/* Header compacto com nome e percentual */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+                  <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {dimension.shortName}
                   </span>
                   <span className="text-xs font-bold" style={{color: dimension.color}}>
@@ -230,16 +230,16 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
                 {/* Labels minimalistas */}
                 <div className="flex justify-between">
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-lia-text-disabled">
                     {dimension.labels.low.split(',')[0]}
                   </span>
-                  <span className="text-xs text-gray-400 text-right">
+                  <span className="text-xs text-lia-text-disabled text-right">
                     {dimension.labels.high.split(',')[0]}
                   </span>
                 </div>
 
                 {/* Traits compactos */}
-                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary line-clamp-1">
+                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary line-clamp-1">
                   {relevantTraits.slice(0, 3).join(', ')}
                 </div>
               </div>
@@ -255,10 +255,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+                  <div className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                     Insight Comportamental
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
+                  <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed">
                     {generatePersonalityInsight()}
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
             {/* Fit para funções super compacto */}
             <div className="flex flex-wrap gap-1">
-              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">Fit:</span>
+              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Fit:</span>
               {scores.conscientiousness > 70 && (
                 <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-success" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   Gestão

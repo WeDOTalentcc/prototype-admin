@@ -213,7 +213,7 @@ export function BenefitsTab() {
     }
   }
 
-  const normalizeBenefit = (benefit: any): Benefit => ({
+  const normalizeBenefit = (benefit: Record<string, unknown>): Benefit => ({
     ...benefit,
     description: benefit.description || "",
     value_type: benefit.value_type || "informative",

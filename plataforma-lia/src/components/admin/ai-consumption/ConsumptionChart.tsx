@@ -20,7 +20,7 @@ export function ConsumptionChart({
   return (
     <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader>
-        <CardTitle className="text-base font-semibold text-gray-800 dark:text-lia-text-primary">
+        <CardTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
           {title}
         </CardTitle>
       </CardHeader>
@@ -39,7 +39,7 @@ export function ConsumptionChart({
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-400">
+        <div className="flex justify-between mt-2 text-xs text-lia-text-disabled">
           <span>30 dias atrás</span>
           <span>Hoje</span>
         </div>

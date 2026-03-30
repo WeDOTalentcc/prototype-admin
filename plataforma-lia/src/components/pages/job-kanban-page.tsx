@@ -2,6 +2,8 @@
 
 import React from "react"
 import dynamic from "next/dynamic"
+
+const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => m.BigFiveModal), { ssr: false })
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { liaApi } from "@/services/lia-api"
 import {
@@ -43,7 +45,6 @@ import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal
 import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
 import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
 import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
-import { BigFiveModal } from "@/components/big-five-modal"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { GeneralScoreModal } from "@/components/modals/general-score-modal"
@@ -349,7 +350,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-          <span className="text-sm text-gray-500 font-['Open_Sans']">Carregando...</span>
+          <span className="text-sm text-lia-text-tertiary font-['Open_Sans']">Carregando...</span>
         </div>
       </div>
     )
@@ -389,9 +390,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         }
       `}</style>
 
-    <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-50 dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       {/* Header Principal */}
-      <div className="bg-gray-50 dark:bg-gray-950 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="bg-gray-50 dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="w-full px-4">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-4 mb-4">
             {/* Left: Título e Informações Principais */}
@@ -400,20 +401,20 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 <ArrowLeft className="w-4 h-4" />
                 Voltar
               </Button>
-              <div className="h-8 w-px bg-gray-300 dark:bg-gray-600 mt-1 flex-shrink-0"></div>
+              <div className="h-8 w-px bg-gray-300 dark:bg-lia-bg-elevated mt-1 flex-shrink-0"></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-semibold text-gray-950 dark:text-gray-50 whitespace-nowrap">
+                  <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary whitespace-nowrap">
                     {currentJob.title}
                   </h1>
                   {currentJob.jobId && (
-                    <span className="text-micro font-mono text-gray-700 dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                    <span className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
                       {currentJob.jobId}
                     </span>
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
+                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
                         {jobEditForm.status || currentJob.status}
                       </Badge>
                     </PopoverTrigger>
@@ -421,7 +422,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       {(() => { const st = jobEditForm.status || currentJob.status; return st === 'Ativa' || st === 'active' })() ? (
                         <>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
                             onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
                           >
                             <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
@@ -461,7 +462,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
                     ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
-                      not_configured: 'bg-gray-100 text-gray-700 border border-lia-border-default',
+                      not_configured: 'bg-gray-100 text-lia-text-secondary border border-lia-border-default',
                       not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
                       active: 'bg-status-success/10 text-status-success border border-status-success/30',
                       paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
@@ -489,10 +490,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         <PopoverContent className="w-48 p-1" align="start">
                           {scrStatus === 'not_configured' && (
                             <button
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
                               onClick={() => setActiveTab('edit')}
                             >
-                              <Settings className="w-3.5 h-3.5 text-gray-500" />
+                              <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
                               Configurar Triagem
                             </button>
                           )}
@@ -506,10 +507,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                                 Iniciar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
                                 onClick={() => setActiveTab('edit')}
                               >
-                                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                                <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
                                 Configurar
                               </button>
                             </>
@@ -533,10 +534,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                                 Retomar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
                                 onClick={() => setActiveTab('edit')}
                               >
-                                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                                <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
                                 Configurar
                               </button>
                             </>
@@ -552,34 +553,34 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       Rascunho
                     </Badge>
                   )}
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.workModel || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.type || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.department}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location}
                   </Badge>
                   {currentJob.salary && currentJob.salary !== 'A combinar' && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary}
                     </Badge>
                   )}
                   {currentJob.publishedLinkedIn && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       Publicada
                     </Badge>
                   )}
-                  <span className="text-micro text-gray-300 dark:text-gray-600 mx-0.5">|</span>
+                  <span className="text-micro text-lia-text-disabled dark:text-lia-text-tertiary mx-0.5">|</span>
                   {currentJob.openDate && (
-                    <span className="text-micro text-gray-700 dark:text-lia-text-secondary whitespace-nowrap">
+                    <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                       {new Date(currentJob.openDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
@@ -589,30 +590,30 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
-                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-gray-700 dark:text-lia-text-secondary'}`}>
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>
                         {days}d {isLate ? 'de atraso' : 'aberta'}
                       </span>
                     )
                   })()}
                   {currentJob.updatedAt && (
-                    <span className="text-micro text-gray-600 dark:text-lia-text-tertiary whitespace-nowrap">
+                    <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary whitespace-nowrap">
                       Atualizada: {new Date(currentJob.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {currentJob.deadlineScreening && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo triagem: {new Date(currentJob.deadlineScreening).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineShortlist && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo short: {new Date(currentJob.deadlineShortlist).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineClosing && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Encerramento: {new Date(currentJob.deadlineClosing).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
@@ -671,13 +672,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'management'
-                  ? 'border-gray-900 text-gray-900 dark:border-lia-border-subtle dark:text-lia-text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300'
+                  ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
+                  : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
               }`}
             >
               <Layers3 className="w-3.5 h-3.5" />
               Gestão da Vaga
-              <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary text-micro px-1.5 py-0 ml-1">
+              <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary text-micro px-1.5 py-0 ml-1">
                 {allTableCandidates?.length || 0}
               </Badge>
             </button>
@@ -685,8 +686,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'edit'
-                  ? 'border-gray-900 text-gray-900 dark:border-lia-border-subtle dark:text-lia-text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300'
+                  ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
+                  : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -708,7 +709,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300 bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
                    
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -716,7 +717,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-micro text-gray-400 dark:text-gray-500">
+                <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled dark:text-lia-text-tertiary">
                   <Link2 className="w-3 h-3" />
                   Herdado da empresa
                 </span>
@@ -736,7 +737,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
                 insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
                 insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
-                'bg-gray-50 border-lia-border-subtle text-gray-700'
+                'bg-gray-50 border-lia-border-subtle text-lia-text-secondary'
               }`}
             >
               <span className="font-medium flex-shrink-0">{insight.title}</span>
@@ -853,7 +854,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         placeholder="Ex: Analisar candidatos com maior fit..."
                         value={liaPromptValue}
                         onChange={(e) => setLiaPromptValue(e.target.value)}
-                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-colors border"
+                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors border"
                         style={{backgroundColor: 'var(--gray-50)',
                           color: 'var(--gray-950)'}}
                         onFocus={(e) => {
@@ -878,7 +879,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           title="Expandir chat"
                           aria-label="Expandir chat da LIA"
                         >
-                          <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                          <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                         </button>
                         <button
                           className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
@@ -889,7 +890,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           }}
                           aria-label="Enviar mensagem para a LIA"
                         >
-                          <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                          <Send className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -901,7 +902,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               <div className="flex items-center gap-2">
                 {/* Barra de Busca - Primeiro elemento */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                   <Input
                     type="text"
                     placeholder="Buscar..."
@@ -916,7 +917,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
                       aria-label="Limpar busca"
                     >
-                      <X className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" aria-hidden="true" />
+                      <X className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -927,8 +928,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     onClick={() => setViewMode("kanban")}
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       viewMode === "kanban"
-                        ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
-                        : "text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                        ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
+                        : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -940,8 +941,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     onClick={() => setViewMode("table")}
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       viewMode === "table"
-                        ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
-                        : "text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                        ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
+                        : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -1025,7 +1026,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       setSelectedCandidates(allIds)
                     }
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
                  
                 >
                   {/* Calcular candidatos visíveis para o texto do botão */}
@@ -1090,12 +1091,12 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     
                     return allSelected ? (
                       <>
-                        <XCircle className="w-4 h-4 text-gray-500" />
+                        <XCircle className="w-4 h-4 text-lia-text-tertiary" />
                         Desmarcar Todos
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="w-4 h-4 text-gray-500" />
+                        <CheckCircle className="w-4 h-4 text-lia-text-tertiary" />
                         Selecionar Todos ({visibleCandidates.length})
                       </>
                     )
@@ -1113,8 +1114,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   }}
                   className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
                     (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
-                      ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-                      : 'text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+                      : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                  
                 >
@@ -1128,14 +1129,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     title="Configurar colunas da tabela"
                     className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
                       showColumnConfig 
-                        ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-                        : 'text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                        ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+                        : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                    
                   >
                     <ChevronsLeftRight className="w-4 h-4" />
                     Colunas
-                    <span className={`text-xs font-medium ${showColumnConfig ? 'text-gray-300' : 'text-gray-500'}`}>
+                    <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
                       {tableColumns.filter(col => col.visible).length}
                     </span>
                   </button>
@@ -1189,7 +1190,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     className="h-8 w-8 p-0 rounded-md hover:bg-gray-100"
                     title="Expandir visualização"
                   >
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                    <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
                   </Button>
                   
                   <div className="w-6 h-px bg-gray-200 my-1" />
@@ -1212,12 +1213,12 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   
                   {/* Candidatos - Texto Vertical */}
                   <div 
-                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors border-r-2 border-gray-900 dark:border-gray-50"
+                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors border-r-2 border-gray-900 dark:border-lia-border-medium"
                     onClick={() => setShowSuperChat(false)}
                   >
-                    <Users className="w-4 h-4 text-gray-600" />
+                    <Users className="w-4 h-4 text-lia-text-secondary" />
                     <span 
-                      className="text-micro font-medium text-gray-600 tracking-wide"
+                      className="text-micro font-medium text-lia-text-secondary tracking-wide"
                       style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
                     >
                       Candidatos ({Object.values(candidatesData).flat().length})
@@ -1283,12 +1284,12 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           <div className="flex-shrink-0 p-2.5 pb-1.5">
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: stage.color}}></div>
-                              <h3 className="font-medium text-xs text-gray-400">{stage.displayName}</h3>
-                              <span className="text-micro text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
+                              <h3 className="font-medium text-xs text-lia-text-disabled">{stage.displayName}</h3>
+                              <span className="text-micro text-lia-text-disabled bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
                             </div>
                           </div>
                           <div className="flex-1 flex items-center justify-center">
-                            <div className="animate-pulse text-gray-400 text-xs" suppressHydrationWarning>Carregando...</div>
+                            <div className="animate-pulse text-lia-text-disabled text-xs" suppressHydrationWarning>Carregando...</div>
                           </div>
                         </div>
                       ))}
@@ -1328,9 +1329,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           onClick={() => setShowAddColumnPopover(true)}
                         >
                           <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
-                            <Plus className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
                           </div>
-                          <span className="text-xs text-gray-400 group-hover:text-gray-600 font-medium transition-colors">
+                          <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors">
                             Adicionar Coluna
                           </span>
                         </div>

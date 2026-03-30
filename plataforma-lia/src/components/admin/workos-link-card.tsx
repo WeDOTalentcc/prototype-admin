@@ -34,7 +34,7 @@ export const WorkOSLinkCard = React.forwardRef<
         <div className="flex items-start gap-4 flex-1">
           <Icon className="h-5 w-5 lia-text-base mt-1 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-950">{title}</h3>
+            <h3 className="font-semibold text-lia-text-primary">{title}</h3>
             <p className="text-sm lia-text-base mt-1">{description}</p>
           </div>
         </div>

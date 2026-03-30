@@ -99,7 +99,7 @@ export function DataBlockingModal({
       case 'never_requested':
       default:
         return (
-          <span className="text-micro bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-gray-100 text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
             Não solicitado
           </span>
         )
@@ -147,8 +147,8 @@ export function DataBlockingModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Campos Pendentes</span>
-              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">{pendingFields.length} campos</span>
+              <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Campos Pendentes</span>
+              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{pendingFields.length} campos</span>
             </div>
             <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-200 dark:divide-gray-700 max-h-[200px] overflow-y-auto">
               {pendingFields.map((field) => (
@@ -157,13 +157,13 @@ export function DataBlockingModal({
                   className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-gray-400 dark:text-gray-500">
+                    <div className="text-lia-text-disabled dark:text-lia-text-tertiary">
                       {getFieldIcon(field.id)}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-lia-text-primary">{field.displayName}</p>
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{field.displayName}</p>
                       {field.lastRequestedAt && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-lia-text-tertiary">
                           Solicitado em {new Date(field.lastRequestedAt).toLocaleDateString('pt-BR')}
                         </p>
                       )}
@@ -180,13 +180,13 @@ export function DataBlockingModal({
               {candidate.avatar ? (
                 <img src={candidate.avatar} alt="" className="w-10 h-10 rounded-full" />
               ) : (
-                <User className="w-5 h-5 text-gray-500" />
+                <User className="w-5 h-5 text-lia-text-tertiary" />
               )}
             </div>
             <div>
-              <p className="font-medium text-sm text-gray-900 dark:text-lia-text-primary">{candidate.name}</p>
+              <p className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</p>
               {candidate.email && (
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">{candidate.email}</p>
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{candidate.email}</p>
               )}
             </div>
           </div>
@@ -196,7 +196,7 @@ export function DataBlockingModal({
           <Button
             onClick={handleResendRequest}
             disabled={isResending || isProceeding}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="w-full h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             {isResending ? (
               <>
@@ -214,7 +214,7 @@ export function DataBlockingModal({
             variant="outline"
             onClick={handleProceedAnyway}
             disabled={isResending || isProceeding}
-            className="w-full bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="w-full bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             {isProceeding ? (
               <>

@@ -5,7 +5,7 @@ import { CheckCircle, Clock, XCircle, Calendar, Phone, MessageCircle, Target, Tr
 import { Badge } from "@/components/ui/badge"
 
 interface LiaPerformanceIndicatorsProps {
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicatorsProps) {
@@ -60,7 +60,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'not-started',
         label: 'Não Contatado',
         icon: <Phone className="w-3.5 h-3.5" />,
-        color: 'bg-gray-100 text-gray-600 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary'
+        color: 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary'
       }
     }
 
@@ -68,7 +68,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
       status: 'unknown',
       label: 'Status Indefinido',
       icon: <MessageCircle className="w-3.5 h-3.5" />,
-      color: 'bg-gray-100 text-gray-600 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary'
+      color: 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary'
     }
   }
 
@@ -101,7 +101,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
  className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center"
             title="Contato realizado pela LIA"
           >
- <Phone className="w-3 h-3 text-gray-600 dark:text-lia-text-secondary" />
+ <Phone className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-secondary" />
           </div>
         )}
 

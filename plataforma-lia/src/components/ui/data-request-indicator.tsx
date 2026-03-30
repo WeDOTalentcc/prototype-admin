@@ -146,7 +146,7 @@ export function DataRequestIndicator({
                 >
                   {effectiveConfig.icon}
                 </span>
-                <span className="text-xs font-medium text-gray-900 dark:text-lia-text-primary">
+                <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                   {effectiveConfig.label}
                 </span>
               </div>
@@ -160,7 +160,7 @@ export function DataRequestIndicator({
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wide">
+              <p className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide">
                 Campos Solicitados
               </p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
@@ -174,8 +174,8 @@ export function DataRequestIndicator({
                     <span className={cn(
  "truncate",
                       field.status === 'completed' 
-                        ? "text-gray-700 dark:text-lia-text-secondary" 
-                        : "text-gray-500 dark:text-lia-text-tertiary"
+                        ? "text-lia-text-secondary dark:text-lia-text-secondary" 
+                        : "text-lia-text-tertiary dark:text-lia-text-tertiary"
                     )}>
                       {field.displayName}
                     </span>
@@ -189,10 +189,10 @@ export function DataRequestIndicator({
 
             {expiresAt && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-lia-text-tertiary">Expira em:</span>
+                <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">Expira em:</span>
                 <span className={cn(
  "font-medium",
-                  expired ? "text-status-error" : "text-gray-700 dark:text-lia-text-secondary"
+                  expired ? "text-status-error" : "text-lia-text-secondary dark:text-lia-text-secondary"
                 )}>
                   {formatDate(expiresAt)}
                   {expired && " (expirado)"}

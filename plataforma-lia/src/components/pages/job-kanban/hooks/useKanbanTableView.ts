@@ -170,10 +170,10 @@ export function useKanbanTableView({
     const allCandidates: Record<string, unknown>[] = []
     const stageMapping: Record<string, { name: string; color: string }> = {}
     dynamicStages.forEach(stage => {
-      let color = 'bg-gray-100 text-gray-800 dark:text-gray-200'
-      if (stage.isHired) color = 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 font-bold'
-      else if (stage.isRejection || stage.id === 'offer_declined') color = 'bg-gray-400 text-gray-950 dark:bg-gray-600 dark:text-gray-100 font-medium'
-      else if (stage.stageType === 'final') color = 'bg-gray-300 text-gray-950 dark:bg-gray-600 dark:text-gray-50 font-bold'
+      let color = 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
+      if (stage.isHired) color = 'bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled font-bold'
+      else if (stage.isRejection || stage.id === 'offer_declined') color = 'bg-gray-400 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-medium'
+      else if (stage.stageType === 'final') color = 'bg-gray-300 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-bold'
       stageMapping[stage.id] = { name: stage.displayName, color }
     })
     Object.entries(candidatesData).forEach(([stage, candidates]) => {
@@ -182,7 +182,7 @@ export function useKanbanTableView({
           allCandidates.push({
             ...candidate,
             stage: stageMapping[stage]?.name || stage,
-            stageColor: stageMapping[stage]?.color || 'bg-gray-100 text-gray-800 dark:text-gray-200'
+            stageColor: stageMapping[stage]?.color || 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
           })
         })
       }
@@ -251,7 +251,7 @@ export function useKanbanTableView({
     const rate = Math.round((currentCount / previousCount) * 100)
     return {
       rate, previousStage,
-      color: rate >= 70 ? 'text-gray-600 dark:text-gray-400' : rate >= 50 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-500'
+      color: rate >= 70 ? 'text-lia-text-secondary dark:text-lia-text-secondary' : rate >= 50 ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'
     }
   }
 
@@ -259,7 +259,7 @@ export function useKanbanTableView({
   const pipelineStages = useMemo(() =>
     dynamicStages.map(stage => ({
       id: stage.id, name: stage.displayName,
-      color: stage.isHired ? 'bg-gray-100 text-gray-800 dark:text-gray-200 font-medium' : 'bg-gray-100 text-gray-800 dark:text-gray-200',
+      color: stage.isHired ? 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary font-medium' : 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary',
       count: candidatesData[stage.id]?.length || 0
     })),
     [dynamicStages, candidatesData]

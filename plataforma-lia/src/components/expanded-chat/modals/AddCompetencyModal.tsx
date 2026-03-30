@@ -59,7 +59,7 @@ export function AddCompetencyModal({
                   className={cn(
  "px-3 py-1.5 text-xs rounded-md border transition-colors",
                     competencyName === comp.competency
-                      ? "bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 text-gray-600 dark:text-lia-text-tertiary"
+                      ? "bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary"
                       : "bg-gray-50 border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle"
                   )}
                 >

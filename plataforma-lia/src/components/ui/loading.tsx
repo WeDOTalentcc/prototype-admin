@@ -37,7 +37,7 @@ export function Loading({
           )}
         />
         {text && (
-          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
+          <span className={cn('text-lia-text-secondary dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}
@@ -61,7 +61,7 @@ export function Loading({
           ))}
         </div>
         {text && (
-          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
+          <span className={cn('text-lia-text-secondary dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}
@@ -89,7 +89,7 @@ export function Loading({
           )}
         />
         {text && (
-          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
+          <span className={cn('text-lia-text-secondary dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}

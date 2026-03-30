@@ -38,7 +38,7 @@ export function SCMWSIStepDetails({
         <div className="pt-2">
           <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
           <p className="text-xs lia-text-strong">
-            {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-gray-600 dark:text-lia-text-tertiary"> · {wsiGenerationContext.seniority}</span> : ''}
+            {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary dark:text-lia-text-tertiary"> · {wsiGenerationContext.seniority}</span> : ''}
           </p>
         </div>
       )}
@@ -50,7 +50,7 @@ export function SCMWSIStepDetails({
               <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
               <div className="flex flex-wrap gap-1">
                 {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
-                  <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">
+                  <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">
                     {resp.length > 35 ? resp.slice(0, 35) + '...' : resp}
                   </span>
                 ))}
@@ -62,17 +62,17 @@ export function SCMWSIStepDetails({
               <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
               <div className="flex flex-wrap gap-1">
                 {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
-                  <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{skill}</span>
+                  <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{skill}</span>
                 ))}
               </div>
             </div>
           )}
           {wsiGenerationContext.behavioralCompetencies.length > 0 && (
             <div>
-              <p className="text-micro font-semibold text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
+              <p className="text-micro font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
               <div className="flex flex-wrap gap-1">
                 {wsiGenerationContext.behavioralCompetencies.map((comp: string, i: number) => (
-                  <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{comp}</span>
+                  <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{comp}</span>
                 ))}
               </div>
             </div>
@@ -96,7 +96,7 @@ export function SCMWSIStepDetails({
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {['CBI', 'Bloom', 'Big Five', 'Dreyfus'].map(m => (
-                <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{m}</span>
+                <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{m}</span>
               ))}
             </div>
           )}
@@ -118,7 +118,7 @@ export function SCMWSIStepDetails({
             <div className="space-y-1.5 pl-1">
               {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
                 <div className="flex items-start gap-2">
-                  <span className="text-gray-400 mt-0.5">•</span>
+                  <span className="text-lia-text-disabled mt-0.5">•</span>
                   <p className="text-base-ui lia-text-strong">
                     <span className="font-semibold">{wsiGenerationContext.blockBreakdown![2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo
                   </p>
@@ -126,7 +126,7 @@ export function SCMWSIStepDetails({
               )}
               {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
                 <div className="flex items-start gap-2">
-                  <span className="text-gray-400 mt-0.5">•</span>
+                  <span className="text-lia-text-disabled mt-0.5">•</span>
                   <p className="text-base-ui lia-text-strong">
                     <span className="font-semibold">{wsiGenerationContext.blockBreakdown![3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática
                   </p>
@@ -134,7 +134,7 @@ export function SCMWSIStepDetails({
               )}
               {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
                 <div className="flex items-start gap-2">
-                  <span className="text-gray-400 mt-0.5">•</span>
+                  <span className="text-lia-text-disabled mt-0.5">•</span>
                   <p className="text-base-ui lia-text-strong">
                     <span className="font-semibold">{wsiGenerationContext.blockBreakdown![4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga
                   </p>
@@ -152,7 +152,7 @@ export function SCMWSIStepDetails({
             </div>
 
             {!wsiSummaryExpanded ? (
-              <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 transition-colors">
+              <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors">
                 <ChevronDown className="w-3.5 h-3.5" />
                 Ver detalhes completos
               </button>
@@ -164,7 +164,7 @@ export function SCMWSIStepDetails({
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-base-ui lia-text-strong">
-                    As perguntas foram geradas com base na metodologia <span className="font-semibold text-gray-900">WeDoTalent Skill Index</span>, considerando:
+                    As perguntas foram geradas com base na metodologia <span className="font-semibold text-lia-text-primary">WeDoTalent Skill Index</span>, considerando:
                   </p>
                   <div className="space-y-0.5 pl-1">
                     <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Senioridade do cargo</p></div>
@@ -193,7 +193,7 @@ export function SCMWSIStepDetails({
                     <span className="text-xs lia-text-base">Perguntas padrão da empresa incluídas</span>
                   </div>
                 )}
-                <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 transition-colors pt-1">
+                <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors pt-1">
                   <ChevronUp className="w-3.5 h-3.5" />
                   Recolher detalhes
                 </button>

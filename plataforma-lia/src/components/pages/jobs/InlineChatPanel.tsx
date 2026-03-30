@@ -212,10 +212,10 @@ export function InlineChatPanel({
                   <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
+                  <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">
                     Olá! Sou a Lia.
                   </h3>
-                  <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
+                  <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
                     Como posso te ajudar hoje?
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export function InlineChatPanel({
                   title="Expandir chat"
                   className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                 >
-                  <Maximize2 className="w-4 h-4 text-gray-500" />
+                  <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -240,7 +240,7 @@ export function InlineChatPanel({
                   title="Fechar"
                   className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                 >
-                  <X className="w-4 h-4 text-gray-500" />
+                  <X className="w-4 h-4 text-lia-text-tertiary" />
                 </Button>
               </div>
             </div>
@@ -250,8 +250,8 @@ export function InlineChatPanel({
           {selectedJobsForBatch.size > 0 && (
             <div className="flex-shrink-0 px-4 py-2">
               <div className="px-3 py-2 bg-gray-100 rounded-md border border-lia-border-subtle flex items-center gap-2">
-                <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                <span className="text-xs text-gray-600 font-medium">
+                <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+                <span className="text-xs text-lia-text-secondary font-medium">
                   {selectedJobsForBatch.size} vaga{selectedJobsForBatch.size > 1 ? "s" : ""} selecionada
                   {selectedJobsForBatch.size > 1 ? "s" : ""}
                 </span>
@@ -275,7 +275,7 @@ export function InlineChatPanel({
                         className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                       />
                       <div className="px-2.5 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-elevated">
-                        <p className="text-xs text-gray-800 leading-relaxed">{message.content}</p>
+                        <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
                       </div>
                     </div>
                   ) : (
@@ -287,12 +287,12 @@ export function InlineChatPanel({
                         <div className="pt-0.5 flex-1">
                           <div className="flex items-center gap-1 mb-0.5">
                             <span
-                              className="text-micro font-medium text-gray-800"
+                              className="text-micro font-medium text-lia-text-primary"
                             >
                               LIA
                             </span>
                           </div>
-                          <div className="text-xs text-gray-800 space-y-1 leading-relaxed">
+                          <div className="text-xs text-lia-text-primary space-y-1 leading-relaxed">
                             {message.content.split("\n").map((line, i) => {
                               if (line.startsWith("•")) {
                                 return (
@@ -321,10 +321,10 @@ export function InlineChatPanel({
                               return line ? <p key={i}>{line}</p> : null
                             })}
                           </div>
-                          {(message as any).action_executed && (message as any).action_result && (
+                          {(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_executed && (message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_result && (
                             <ActionResultCard
-                              actionType={(message as any).action_type || "pause_job"}
-                              result={(message as any).action_result}
+                              actionType={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_type || "pause_job"}
+                              result={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_result}
                             />
                           )}
                         </div>
@@ -338,9 +338,9 @@ export function InlineChatPanel({
                 <div className="flex justify-start">
                   <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                     <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center">
-                      <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+                      <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </div>
-                    <span className="text-micro text-gray-500">Pensando...</span>
+                    <span className="text-micro text-lia-text-tertiary">Pensando...</span>
                   </div>
                 </div>
               )}
@@ -368,7 +368,7 @@ export function InlineChatPanel({
                   }
                 }}
                 disabled={liaInlineLoading}
-                className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
+                className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary dark:text-lia-text-primary disabled:opacity-50"
               />
               <AudioRecordButton
                 onTranscription={(text) => onSetLiaPromptValue((prev) => (prev ? `${prev} ${text}` : text))}
@@ -396,7 +396,7 @@ export function InlineChatPanel({
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "ia-natural"
                     ? "text-white bg-gray-900"
-                    : "text-gray-700 hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -409,7 +409,7 @@ export function InlineChatPanel({
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "job-description"
                     ? "text-white bg-gray-900"
-                    : "text-gray-700 hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -422,7 +422,7 @@ export function InlineChatPanel({
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "templates"
                     ? "text-white bg-gray-900"
-                    : "text-gray-700 hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -435,15 +435,15 @@ export function InlineChatPanel({
             {/* Tags de Ações Rápidas - Abaixo das abas (só visíveis em IA Natural) */}
             {activeSearchTab === "ia-natural" && (
               <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="text-micro font-medium text-gray-500">Sugestões:</span>
+                <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
                 <button
                   onClick={() => {
                     onSetShowExpandedLIA(false)
                     onOpenJobCreationChat()
                   }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
                 >
-                  <Plus className="w-2.5 h-2.5 text-gray-500" />
+                  <Plus className="w-2.5 h-2.5 text-lia-text-tertiary" />
                   Criar vaga
                 </button>
                 <LiaVacancyQueriesGuide
@@ -476,7 +476,7 @@ export function InlineChatPanel({
                       placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)..."
                       value={jobDescriptionText}
                       onChange={(e) => setJobDescriptionText(e.target.value)}
-                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-colors resize-none text-gray-950 dark:text-gray-50 border border-lia-border-subtle"
+                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-colors resize-none text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
                       style={{backgroundColor: "var(--gray-50)"}}
                     />
                     {/* Botões de Anexo */}
@@ -500,7 +500,7 @@ export function InlineChatPanel({
                         onClick={() => jdFileInputRef.current?.click()}
                       >
                         {isUploadingJD ? (
-                          <svg className="w-3.5 h-3.5 text-gray-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 text-lia-text-tertiary animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle
                               className="opacity-25"
                               cx="12"
@@ -516,7 +516,7 @@ export function InlineChatPanel({
                             />
                           </svg>
                         ) : (
-                          <Paperclip className="w-3.5 h-3.5 text-gray-500" />
+                          <Paperclip className="w-3.5 h-3.5 text-lia-text-tertiary" />
                         )}
                       </button>
                     </div>
@@ -528,7 +528,7 @@ export function InlineChatPanel({
                   )}
 
                   {/* Aviso LGPD */}
-                  <p className="text-micro text-gray-400 px-1">
+                  <p className="text-micro text-lia-text-disabled px-1">
                     O arquivo pode conter dados pessoais. Revise o conteúdo antes de importar. (LGPD)
                   </p>
 
@@ -556,7 +556,7 @@ export function InlineChatPanel({
                 <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-20rem)]">
                   {/* Seção 1: Criar a partir de Template */}
                   <div>
-                    <h4 className="text-xs font-medium mb-0.5 text-gray-800">
+                    <h4 className="text-xs font-medium mb-0.5 text-lia-text-primary">
                       Criar Vaga a Partir de Template
                     </h4>
                     <p className={`${textStyles.caption} mb-2`}>
@@ -585,12 +585,12 @@ export function InlineChatPanel({
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm">{template.icon}</span>
                             <div className="flex-1 min-w-0">
-                              <h5 className="text-xs font-medium truncate text-gray-800">{template.title}</h5>
+                              <h5 className="text-xs font-medium truncate text-lia-text-primary">{template.title}</h5>
                               <div className="flex gap-1 mt-0.5">
                                 {template.tags.map((tag) => (
                                   <span
                                     key={tag}
-                                    className="text-micro px-1 py-0.5 rounded-full text-gray-400"
+                                    className="text-micro px-1 py-0.5 rounded-full text-lia-text-disabled"
                                     style={{backgroundColor: "var(--gray-50)"}}
                                   >
                                     {tag}
@@ -606,18 +606,18 @@ export function InlineChatPanel({
 
                   {/* Seção 2: Criar a partir de Vaga Existente */}
                   <div className="pt-2">
-                    <h4 className="text-xs font-medium mb-0.5 text-gray-800">
+                    <h4 className="text-xs font-medium mb-0.5 text-lia-text-primary">
                       Criar a Partir de Vaga Existente
                     </h4>
                     <p className={`${textStyles.caption} mb-2`}>Copie uma vaga já criada e faça ajustes</p>
 
                     {/* Campo de Busca de Vagas */}
                     <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
                       <input
                         type="text"
                         placeholder="Buscar vaga por título ou ID..."
-                        className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-lia-border-subtle"
+                        className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-lia-text-primary border border-lia-border-subtle"
                         style={{backgroundColor: "var(--gray-50)"}}
                         onFocus={(e) => (e.target.style.borderColor = "var(--gray-400)")}
                         onBlur={(e) => (e.target.style.borderColor = "var(--gray-50)")}
@@ -648,8 +648,8 @@ export function InlineChatPanel({
                           >
                             {job.id}
                           </span>
-                          <span className="text-xs truncate flex-1 text-gray-800">{job.title}</span>
-                          <Copy className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-xs truncate flex-1 text-lia-text-primary">{job.title}</span>
+                          <Copy className="w-3.5 h-3.5 text-lia-text-disabled" />
                         </div>
                       ))}
                     </div>
@@ -657,18 +657,18 @@ export function InlineChatPanel({
 
                   {/* Seção 3: Criar Novo Template */}
                   <div className="pt-2">
-                    <h4 className="text-xs font-medium mb-0.5 text-gray-800">Salvar Template</h4>
+                    <h4 className="text-xs font-medium mb-0.5 text-lia-text-primary">Salvar Template</h4>
                     <p className={`${textStyles.caption} mb-2`}>
                       Transforme uma vaga existente em template reutilizável
                     </p>
 
                     <Button
                       variant="outline"
-                      className="w-full h-9 !text-xs font-medium rounded-md text-gray-800 border border-lia-border-subtle"
+                      className="w-full h-9 !text-xs font-medium rounded-md text-lia-text-primary border border-lia-border-subtle"
                       onClick={() => {
                       }}
                     >
-                      <Plus className="w-3.5 h-3.5 mr-1.5 text-gray-600" />
+                      <Plus className="w-3.5 h-3.5 mr-1.5 text-lia-text-secondary" />
                       Criar Template a Partir de Vaga
                     </Button>
                   </div>

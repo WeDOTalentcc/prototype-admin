@@ -409,10 +409,10 @@ export function WizardRightPanel({
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">
+              <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">
                 LIA está analisando...
               </p>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
                 Preparando sugestões personalizadas
               </p>
             </div>
@@ -479,12 +479,12 @@ export function WizardRightPanel({
         {/* Stage 5: Salary and Benefits */}
         {currentStage === 'salary' && (
           <SalaryStage
-            salaryInfo={salaryInfo as any}
+            salaryInfo={salaryInfo}
             highlightedFields={highlightedFields}
-            onSalaryChange={onSalaryChange as any}
+            onSalaryChange={onSalaryChange}
             salaryBenchmark={salaryBenchmark}
             isLoadingBenchmark={isLoadingBenchmark}
-            companyConfig={companyConfig as any}
+            companyConfig={companyConfig}
             isCollapsed={!salaryPanelExpanded}
             onExpandEdit={onExpandEditSalary}
             isFieldRequired={isFieldRequiredForWizard('salario')}
@@ -583,11 +583,11 @@ export function WizardRightPanel({
             onSetShowCalibrationModal={onSetShowCalibrationModal}
           />
         ) : currentStage === 'input-evaluation' ? (
-          <div className="text-center text-micro text-gray-500 dark:text-lia-text-tertiary">
+          <div className="text-center text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
             Continue descrevendo a vaga para detectar mais critérios
           </div>
         ) : currentStage === 'jd-enrichment' ? (
-          <div className="text-center text-micro text-gray-500 dark:text-lia-text-tertiary">
+          <div className="text-center text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
             Revise as sugestões no chat e responda o que deseja aceitar ou modificar
           </div>
         ) : (
@@ -613,7 +613,7 @@ export function WizardRightPanel({
                     ? "bg-gray-900 text-white"
                     : canAdvanceToNextStage()
                       ? "bg-gray-900 text-white"
-                      : "bg-gray-200 text-gray-400 dark:bg-lia-bg-secondary"
+                      : "bg-gray-200 text-lia-text-disabled dark:bg-lia-bg-secondary"
                 )}
                 disabled={!canAdvanceToNextStage()}
                 onClick={currentStage === 'review-publish' ? onPublishJob : onGoToNextStage}

@@ -58,22 +58,22 @@ export function ScreeningNotificationCard({
           <div className="p-1.5 rounded-md bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900">
+          <h3 className="text-sm font-semibold text-lia-text-primary">
             Triagem Automática Concluída
           </h3>
         </div>
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">Candidato</p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Candidato</p>
+            <p className="text-sm font-medium text-lia-text-primary">
               {candidateName}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">Vaga</p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Vaga</p>
+            <p className="text-sm font-medium text-lia-text-primary">
               {jobTitle}
             </p>
           </div>
@@ -81,10 +81,10 @@ export function ScreeningNotificationCard({
           {wsiScore !== undefined && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Pontuação WSI
                 </p>
-                <p className="font-['Inter',sans-serif] text-sm font-semibold text-gray-900">
+                <p className="font-['Inter',sans-serif] text-sm font-semibold text-lia-text-primary">
                   {wsiScore}/100
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function ScreeningNotificationCard({
 
           {wsiBlocks && wsiBlocks.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mb-2">
+              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-2">
                 Dimensões
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -114,10 +114,10 @@ export function ScreeningNotificationCard({
                     key={index}
                     className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-elevated/50"
                   >
-                    <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
+                    <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
                       {block.name}
                     </p>
-                    <p className="font-['Inter',sans-serif] text-xs font-semibold text-gray-900">
+                    <p className="font-['Inter',sans-serif] text-xs font-semibold text-lia-text-primary">
                       {block.score}
                     </p>
                   </div>
@@ -135,7 +135,7 @@ export function ScreeningNotificationCard({
           </div>
 
           <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">
+            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
               Triagem automática via inscrição pelo website
             </p>
           </div>

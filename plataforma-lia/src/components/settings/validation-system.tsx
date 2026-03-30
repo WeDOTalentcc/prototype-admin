@@ -18,7 +18,7 @@ interface ValidationRule {
   pattern?: string
   minLength?: number
   maxLength?: number
-  validator?: (value: any) => boolean | Promise<boolean>
+  validator?: (value: unknown) => boolean | Promise<boolean>
   severity: 'error' | 'warning' | 'info'
   category: 'required' | 'format' | 'business' | 'security' | 'compliance'
 }
@@ -33,7 +33,7 @@ interface ValidationResult {
 }
 
 interface ValidationSystemProps {
-  data: {[key: string]: any}
+  data: {[key: string]: unknown}
   section: string
   onValidationChange: (results: ValidationResult[]) => void
   onAutoCorrect?: (field: string, correctedValue: string) => void

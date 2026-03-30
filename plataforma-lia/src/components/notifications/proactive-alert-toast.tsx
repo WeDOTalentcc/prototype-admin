@@ -32,7 +32,7 @@ const categoryConfig = {
   pipeline: {
     icon: TrendingDown,
     label: 'Pipeline',
-    color: 'text-gray-600 dark:text-lia-text-tertiary'
+    color: 'text-lia-text-secondary dark:text-lia-text-tertiary'
   },
   productivity: {
     icon: Clock,
@@ -52,7 +52,7 @@ const categoryConfig = {
   system: {
     icon: Settings,
     label: 'Sistema',
-    color: 'text-gray-600 dark:text-lia-text-tertiary'
+    color: 'text-lia-text-secondary dark:text-lia-text-tertiary'
   }
 }
 
@@ -60,7 +60,7 @@ const severityConfig = {
   info: {
     bg: 'bg-gray-100 dark:bg-lia-bg-secondary',
     border: 'border-lia-border-default dark:border-lia-border-default',
-    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    icon: 'text-lia-text-secondary dark:text-lia-text-tertiary',
     progressBg: 'bg-gray-700'
   },
   warning: {
@@ -170,7 +170,7 @@ export function ProactiveAlertToast({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <CategoryIcon className={cn("w-3.5 h-3.5", category.color)} />
-            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
               {category.label}
             </span>
             <span className="text-xs lia-text-base">
@@ -178,11 +178,11 @@ export function ProactiveAlertToast({
             </span>
           </div>
           
-          <h4 className="font-sans text-sm font-semibold text-gray-950 mb-1">
+          <h4 className="font-sans text-sm font-semibold text-lia-text-primary mb-1">
             {alert.title}
           </h4>
           
-          <p className="text-sm text-gray-600 dark:text-lia-text-secondary leading-relaxed">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">
             {alert.message}
           </p>
 
@@ -255,7 +255,7 @@ export function ProactiveAlertContainer({
       
       {alerts.length > 3 && (
         <div className="pointer-events-auto text-center">
-          <span className="text-xs text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary px-2 py-1 rounded-full border">
+          <span className="text-xs text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary px-2 py-1 rounded-full border">
             +{alerts.length - 3} alertas adicionais
           </span>
         </div>

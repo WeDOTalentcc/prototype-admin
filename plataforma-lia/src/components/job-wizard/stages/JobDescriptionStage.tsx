@@ -65,7 +65,7 @@ export function JobDescriptionStage() {
           Cargo *
           {fieldOrigins['job_title'] && (
             <FieldOriginBadge 
-              origin={fieldOrigins['job_title'].source as any} 
+              origin={fieldOrigins['job_title'].source as import('@/components/job-creation/field-origin-badge').FieldOrigin} 
               confidence={fieldOrigins['job_title'].confidence}
               size="sm"
             />
@@ -89,7 +89,7 @@ export function JobDescriptionStage() {
           Área/Departamento *
           {fieldOrigins['department'] && (
             <FieldOriginBadge 
-              origin={fieldOrigins['department'].source as any} 
+              origin={fieldOrigins['department'].source as import('@/components/job-creation/field-origin-badge').FieldOrigin} 
               confidence={fieldOrigins['department'].confidence}
               size="sm"
             />
@@ -132,7 +132,7 @@ export function JobDescriptionStage() {
           Localidade
           {fieldOrigins['location'] && (
             <FieldOriginBadge 
-              origin={fieldOrigins['location'].source as any} 
+              origin={fieldOrigins['location'].source as import('@/components/job-creation/field-origin-badge').FieldOrigin} 
               confidence={fieldOrigins['location'].confidence}
               size="sm"
             />
@@ -158,7 +158,7 @@ export function JobDescriptionStage() {
           Modelo de Trabalho
           {fieldOrigins['work_model'] && (
             <FieldOriginBadge 
-              origin={fieldOrigins['work_model'].source as any} 
+              origin={fieldOrigins['work_model'].source as import('@/components/job-creation/field-origin-badge').FieldOrigin} 
               confidence={fieldOrigins['work_model'].confidence}
               size="sm"
             />

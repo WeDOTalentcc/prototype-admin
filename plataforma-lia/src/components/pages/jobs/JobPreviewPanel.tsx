@@ -120,7 +120,7 @@ export function JobPreviewPanel({
                       <div className="flex-1 min-w-0">
                         {/* Row 1: Título + Código (lado direito) */}
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
+                          <h3 className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary truncate">
                             {previewJob.title}
                           </h3>
                           <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'var(--gray-bg-15)', border: '1px solid var(--gray-border)'}}>
@@ -134,14 +134,14 @@ export function JobPreviewPanel({
                         </div>
 
                         {/* Row 2: Datas em texto simples (como no candidato) */}
-                        <div className="flex items-center gap-3 mb-1 text-micro text-gray-500">
+                        <div className="flex items-center gap-3 mb-1 text-micro text-lia-text-tertiary">
                           <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-gray-400" />
+                            <Calendar className="w-3 h-3 text-lia-text-disabled" />
                             {previewJob.openDate ? new Date(previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </span>
                           {previewJob.deadline && (
                             <span className={`flex items-center gap-1 ${
-                              new Date(previewJob.deadline) < new Date() ? 'text-status-error' : 'text-gray-500'
+                              new Date(previewJob.deadline) < new Date() ? 'text-status-error' : 'text-lia-text-tertiary'
                             }`}>
                               <Clock className="w-3 h-3" />
                               {(() => {
@@ -153,7 +153,7 @@ export function JobPreviewPanel({
                         </div>
 
                         {/* Row 2b: Histórico inline */}
-                        <div className="flex items-center gap-3 mb-1.5 text-micro text-gray-400">
+                        <div className="flex items-center gap-3 mb-1.5 text-micro text-lia-text-disabled">
                           <span>Criado: {previewJob.createdAt 
                             ? new Date(previewJob.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
                             : previewJob.openDate 
@@ -173,7 +173,7 @@ export function JobPreviewPanel({
                         {/* Row 3: Badges de informação */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {previewJob.department && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-lia-border-subtle">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
                               {previewJob.department}
                             </Badge>
                           )}
@@ -189,12 +189,12 @@ export function JobPreviewPanel({
                             </Badge>
                           )}
                           {previewJob.workModel && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-lia-border-subtle">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
                               {previewJob.workModel === 'remoto' ? 'Remoto' : previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
                             </Badge>
                           )}
                           {previewJob.type && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 border border-lia-border-subtle">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
                               {previewJob.type}
                             </Badge>
                           )}
@@ -211,7 +211,7 @@ export function JobPreviewPanel({
                             </Badge>
                           )}
                           {previewJob.visibility === 'hidden' && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-800 border-lia-border-subtle">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-lia-text-primary border-lia-border-subtle">
                               <Lock className="w-2.5 h-2.5 mr-0.5" />
                               Oculta
                             </Badge>
@@ -223,7 +223,7 @@ export function JobPreviewPanel({
                               Publicada
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-500 border-lia-border-subtle flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-lia-text-tertiary border-lia-border-subtle flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Não publicada
                             </Badge>
@@ -262,7 +262,7 @@ export function JobPreviewPanel({
                             }
                             return (
                               <Badge 
-                                className="text-micro px-1.5 py-0 h-4 font-medium text-gray-800"
+                                className="text-micro px-1.5 py-0 h-4 font-medium text-lia-text-primary"
                                 style={{backgroundColor: scrColors[scrStatus] || 'var(--gray-200)'}}
                               >
                                 {scrLabels[scrStatus] || 'Triagem: N/C'}
@@ -302,14 +302,14 @@ export function JobPreviewPanel({
                         {previewJob.hiringProcess.map((step, idx) => (
                           <React.Fragment key={idx}>
                             <div className={`px-1.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                              idx === 0 ? 'bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
-                              idx === (previewJob.hiringProcess?.length || 0) - 1 ? 'bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
-                              'bg-gray-100 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
+                              idx === 0 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
+                              idx === (previewJob.hiringProcess?.length || 0) - 1 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
+                              'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary'
                             }`}>
                               {step}
                             </div>
                             {idx < (previewJob.hiringProcess?.length || 0) - 1 && (
-                              <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
+                              <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                             )}
                           </React.Fragment>
                         ))}
@@ -325,8 +325,8 @@ export function JobPreviewPanel({
                       onClick={() => onTabChange('screening')}
                       className={`px-2 py-2 text-micro font-medium border-b transition-colors ${
                         activePreviewTab === 'screening'
-                          ? 'border-gray-900 text-gray-700 font-semibold'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                          ? 'border-gray-900 text-lia-text-secondary font-semibold'
+                          : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary'
                       }`}
                     >
                       <div className="flex items-center gap-1">
@@ -350,17 +350,17 @@ export function JobPreviewPanel({
                         {/* Score de Sucesso */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Sucesso de Fechamento</span>
-                            <Target className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Sucesso de Fechamento</span>
+                            <Target className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-xl font-bold text-gray-950 dark:text-gray-50 font-semibold">
+                          <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary font-semibold">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.performance?.conversion_rate != null 
                               ? `${Math.round(jobMetrics.performance.conversion_rate)}%` 
                               : previewJob.funnel.hired > 0 
                                 ? `${Math.round((previewJob.funnel.hired / Math.max(previewJob.funnel.total, 1)) * 100)}%`
                                 : '—'}
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             Pipeline: {jobMetrics?.funnel.total ?? previewJob.funnel.total} candidatos
                           </div>
                         </div>
@@ -368,13 +368,13 @@ export function JobPreviewPanel({
                         {/* Atividade 7d */}
                         <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Atividade 7d</span>
-                            <TrendingUp className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Atividade 7d</span>
+                            <TrendingUp className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                           </div>
-                          <div className="text-xl font-bold text-gray-900 dark:text-gray-50">
+                          <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {isLoadingJobMetrics ? '...' : jobMetrics ? jobMetrics.activity.applications_7d : 0}
                           </div>
-                          <div className="mt-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                          <div className="mt-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                             {isLoadingJobMetrics ? '...' : jobMetrics ? `${jobMetrics.activity.views_7d} visualizações` : 'Sem dados'}
                           </div>
                         </div>
@@ -382,13 +382,13 @@ export function JobPreviewPanel({
                         {/* Time to Fill */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Time to Fill</span>
-                            <Clock className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Time to Fill</span>
+                            <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-xl font-bold text-gray-950 dark:text-gray-50 font-semibold">
+                          <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary font-semibold">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.performance.time_to_fill_days != null ? `${jobMetrics.performance.time_to_fill_days}d` : (previewJob.urgencyLevel > 3 ? '15d' : previewJob.urgencyLevel > 2 ? '25d' : '35d')}
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.activity.interviews_scheduled ? `${jobMetrics.activity.interviews_scheduled} entrevistas agendadas` : 'Sem entrevistas'}
                           </div>
                         </div>
@@ -396,13 +396,13 @@ export function JobPreviewPanel({
                         {/* SLA Status */}
                         <div className={`rounded-md p-3 ${jobMetrics?.sla.within_sla === false ? 'bg-status-error/10 dark:bg-status-error/20' : 'bg-gray-50 dark:bg-lia-bg-secondary'}`}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Status SLA</span>
-                            <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-status-error' : 'text-gray-800 dark:text-lia-text-primary'}`} />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Status SLA</span>
+                            <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-status-error' : 'text-lia-text-primary dark:text-lia-text-primary'}`} />
                           </div>
-                          <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-gray-950 dark:text-gray-50'}`}>
+                          <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.within_sla ? 'OK' : 'Atrasado'}
                           </div>
-                          <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-gray-800 dark:text-lia-text-primary'}`}>
+                          <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.days_remaining != null ? `${jobMetrics.sla.days_remaining} dias restantes` : 'Sem prazo definido'}
                           </div>
                         </div>
@@ -411,12 +411,12 @@ export function JobPreviewPanel({
                       {/* Insights e Recomendações da LIA */}
                       <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                         <div className="flex items-start gap-2">
-                          <Lightbulb className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary mt-0.5" />
+                          <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-xs font-medium text-gray-950 dark:text-lia-text-primary font-semibold mb-1">
+                            <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-semibold mb-1">
                               Insights da LIA
                             </p>
-                            <ul className="space-y-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                            <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
@@ -436,28 +436,28 @@ export function JobPreviewPanel({
 
                       {/* Análise Comparativa */}
                       <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
+                          <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Comparativo com Mercado
                         </h4>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Salário</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Candidatos</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Atratividade</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               #—
                             </p>
                             <p className={textStyles.bodySmall}>ranking</p>
@@ -467,13 +467,13 @@ export function JobPreviewPanel({
 
                       {/* Fatores de Risco */}
                       <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
                           <Shield className="w-3.5 h-3.5 text-status-error" />
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Competitividade salarial</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Competitividade salarial</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
@@ -486,7 +486,7 @@ export function JobPreviewPanel({
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Escassez de talentos</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Escassez de talentos</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
@@ -499,13 +499,13 @@ export function JobPreviewPanel({
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Tempo de processo</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Tempo de processo</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-gray-600' : 'bg-gray-300'
+                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-lia-bg-elevated' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -524,7 +524,7 @@ export function JobPreviewPanel({
                         <div className="flex items-start gap-2">
                           <Brain className="w-4 h-4 text-wedo-cyan mt-0.5" />
                           <div className="flex-1">
-                            <h4 className={`${textStyles.title} dark:text-gray-50 mb-1`}>
+                            <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-1`}>
                               Performance LIA - Triagens Automatizadas
                             </h4>
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
@@ -539,13 +539,13 @@ export function JobPreviewPanel({
                         {/* Horas Economizadas */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Triagens Realizadas</span>
-                            <Clock className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Triagens Realizadas</span>
+                            <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.liaMetrics?.triagens_realizadas ?? 0}
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
@@ -553,13 +553,13 @@ export function JobPreviewPanel({
                         {/* Pipeline LIA */}
                         <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Pipeline LIA</span>
-                            <TrendingUp className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Pipeline LIA</span>
+                            <TrendingUp className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.liaMetrics?.pipeline_lia ?? 0}
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             candidatos em triagem
                           </div>
                         </div>
@@ -567,13 +567,13 @@ export function JobPreviewPanel({
                         {/* Sem Resposta */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Sem Resposta</span>
-                            <Zap className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Sem Resposta</span>
+                            <Zap className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.liaMetrics?.sem_resposta ?? 0}
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             candidatos
                           </div>
                         </div>
@@ -581,17 +581,17 @@ export function JobPreviewPanel({
                         {/* Taxa de Conclusão */}
                         <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Taxa de Conclusão</span>
-                            <CheckCircle className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Taxa de Conclusão</span>
+                            <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {(() => {
                               const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
                               const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                               return agendadas > 0 ? Math.round((realizadas / agendadas) * 100) : 0
                             })()}%
                           </div>
-                          <div className="mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.liaMetrics?.triagens_realizadas ?? 0} de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
@@ -599,30 +599,30 @@ export function JobPreviewPanel({
 
                       {/* Funil LIA Detalhado */}
                       <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-3 flex items-center gap-1`}>
-                          <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-3 flex items-center gap-1`}>
+                          <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Funil de Triagem LIA
                         </h4>
 
                         <div className="space-y-2">
                           {/* Pipeline LIA */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-800 dark:text-lia-text-primary w-24">Pipeline LIA</span>
+                            <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-24">Pipeline LIA</span>
                             <div className="flex-1 mx-2">
-                              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1 w-full">
+                              <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                <div className="bg-gray-400 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1 w-full">
                                   <span className="text-xs text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
                                 </div>
                               </div>
                             </div>
-                            <span className="text-xs text-gray-800 w-10 text-right">100%</span>
+                            <span className="text-xs text-lia-text-primary w-10 text-right">100%</span>
                           </div>
 
                           {/* Agendadas */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-800 dark:text-lia-text-primary w-24">Agendadas</span>
+                            <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-24">Agendadas</span>
                             <div className="flex-1 mx-2">
-                              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                              <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
                                   const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                   const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
@@ -636,7 +636,7 @@ export function JobPreviewPanel({
                                 })()}
                               </div>
                             </div>
-                            <span className="text-xs text-gray-800 w-10 text-right">
+                            <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
@@ -647,9 +647,9 @@ export function JobPreviewPanel({
 
                           {/* Realizadas */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-800 dark:text-lia-text-primary w-24">Realizadas</span>
+                            <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-24">Realizadas</span>
                             <div className="flex-1 mx-2">
-                              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                              <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
                                   const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                   const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -657,13 +657,13 @@ export function JobPreviewPanel({
                                   return (
                                     <div className="bg-gray-600 dark:bg-gray-300 h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
-                                      <span className="text-xs text-white dark:text-gray-50 font-medium">{triagensRealizadas}</span>
+                                      <span className="text-xs text-white dark:text-lia-text-primary font-medium">{triagensRealizadas}</span>
                                     </div>
                                   )
                                 })()}
                               </div>
                             </div>
-                            <span className="text-xs text-gray-800 w-10 text-right">
+                            <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -674,9 +674,9 @@ export function JobPreviewPanel({
 
                           {/* Entrevistas Agendadas */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-800 dark:text-lia-text-primary w-24">Entrevistas</span>
+                            <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-24">Entrevistas</span>
                             <div className="flex-1 mx-2">
-                              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                              <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
                                   const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                   const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
@@ -684,13 +684,13 @@ export function JobPreviewPanel({
                                   return (
                                     <div className="bg-gray-900 dark:bg-gray-100 h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
-                                      <span className="text-xs text-white dark:text-gray-50 font-bold">{entrevistasAgendadas}</span>
+                                      <span className="text-xs text-white dark:text-lia-text-primary font-bold">{entrevistasAgendadas}</span>
                                     </div>
                                   )
                                 })()}
                               </div>
                             </div>
-                            <span className="text-xs text-gray-800 w-10 text-right">
+                            <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
@@ -703,16 +703,16 @@ export function JobPreviewPanel({
 
                       {/* Média de Notas por Pergunta */}
                       <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-3 flex items-center gap-1`}>
-                          <Star className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-3 flex items-center gap-1`}>
+                          <Star className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Média de Notas por Critério
                         </h4>
 
                         <div className="text-center py-4">
-                          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                             Sem dados disponíveis
                           </p>
-                          <p className="text-micro text-gray-400 dark:text-gray-500 mt-1">
+                          <p className="text-micro text-lia-text-disabled dark:text-lia-text-tertiary mt-1">
                             As médias serão exibidas após as triagens serem concluídas
                           </p>
                         </div>
@@ -720,41 +720,41 @@ export function JobPreviewPanel({
 
                       {/* Comparação com Outras Vagas */}
                       <div className="bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md p-3 border border-wedo-purple/30 dark:border-wedo-purple/30">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-3 flex items-center gap-1`}>
-                          <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-3 flex items-center gap-1`}>
+                          <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Resumo do Funil
                         </h4>
 
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
-                            <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-1">Total no Funil</p>
-                            <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Total no Funil</p>
+                            <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.total}
                             </p>
-                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
 
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
-                            <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-1">Em Triagem</p>
-                            <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Em Triagem</p>
+                            <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.screening}
                             </p>
-                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
 
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
-                            <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-1">Em Entrevista</p>
-                            <p className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Em Entrevista</p>
+                            <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.interview}
                             </p>
-                            <p className="text-micro text-gray-500 mt-1">candidatos</p>
+                            <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Candidatos Sem Resposta */}
                       <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 border border-status-warning/30 dark:border-status-warning/30">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
                           <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                           Candidatos Sem Resposta
                         </h4>
@@ -767,7 +767,7 @@ export function JobPreviewPanel({
                                 {previewJob.liaMetrics?.sem_resposta ?? 0}
                               </span>
                             </div>
-                            <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                            <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
@@ -775,7 +775,7 @@ export function JobPreviewPanel({
                                 return <div className="bg-status-warning h-1.5 rounded-full" style={{width: `${percent}%`}}></div>
                               })()}
                             </div>
-                            <p className="text-xs text-gray-800 mt-1">
+                            <p className="text-xs text-lia-text-primary mt-1">
                               {(() => {
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
@@ -795,7 +795,7 @@ export function JobPreviewPanel({
                                 })()}
                               </span>
                             </div>
-                            <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                            <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
                               {(() => {
                                 const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                                 const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -803,7 +803,7 @@ export function JobPreviewPanel({
                                 return <div className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full" style={{width: `${Math.max(0, percent)}%`}}></div>
                               })()}
                             </div>
-                            <p className="text-xs text-gray-800 mt-1">triagens pendentes</p>
+                            <p className="text-xs text-lia-text-primary mt-1">triagens pendentes</p>
                           </div>
                         </div>
                       </div>
@@ -811,12 +811,12 @@ export function JobPreviewPanel({
                       {/* Resumo LIA */}
                       <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                         <div className="flex items-start gap-2">
-                          <Lightbulb className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary mt-0.5" />
+                          <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-xs font-medium text-gray-950 dark:text-lia-text-primary font-semibold mb-1">
+                            <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-semibold mb-1">
                               Resumo da Triagem LIA
                             </p>
-                            <ul className="space-y-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                            <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                               <li>• {previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>
                               <li>• {previewJob.liaMetrics?.entrevistas_agendadas ?? 0} entrevistas agendadas</li>
                               <li>• {previewJob.liaMetrics?.sem_resposta ?? 0} candidatos sem resposta</li>
@@ -884,18 +884,18 @@ export function JobPreviewPanel({
                       {previewJob.description && (
                         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                           <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('descricao')}>
-                            <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                            <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                               Descrição da Vaga
                             </h5>
                             {collapsedPreviewSections.includes('descricao') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                             )}
                           </div>
                           {!collapsedPreviewSections.includes('descricao') && (
-                            <p className="text-micro text-gray-600 dark:text-lia-text-secondary leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
+                            <p className="text-micro text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
                               {previewJob.description}
                             </p>
                           )}
@@ -905,14 +905,14 @@ export function JobPreviewPanel({
                       {/* 3. Competências Avaliadas */}
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('competencias')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                             Competências Avaliadas
                           </h5>
                           {collapsedPreviewSections.includes('competencias') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
@@ -927,7 +927,7 @@ export function JobPreviewPanel({
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string, idx: number) => (
-                                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-micro px-1.5 py-0.5 h-[18px] font-medium">
+                                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro px-1.5 py-0.5 h-[18px] font-medium">
                                     {skill}
                                   </Badge>
                                 ))}
@@ -939,7 +939,7 @@ export function JobPreviewPanel({
                             <div className="space-y-2">
                               {technicalSkills.length > 0 && (
                                 <div>
-                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Técnicas</span>
+                                  <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {technicalSkills.map((skill: string, idx: number) => (
                                       <Badge key={idx} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-cyan/30">
@@ -951,7 +951,7 @@ export function JobPreviewPanel({
                               )}
                               {behavioralSkills.length > 0 && (
                                 <div>
-                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Comportamentais</span>
+                                  <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {behavioralSkills.map((skill: string, idx: number) => (
                                       <Badge key={idx} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-purple/30">
@@ -963,7 +963,7 @@ export function JobPreviewPanel({
                               )}
                               {responsibilitySkills.length > 0 && (
                                 <div>
-                                  <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Responsabilidades</span>
+                                  <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {responsibilitySkills.slice(0, 8).map((skill: string, idx: number) => (
                                       <Badge key={idx} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-micro px-1.5 py-0.5 h-[18px] font-medium border border-status-warning/30">
@@ -976,7 +976,7 @@ export function JobPreviewPanel({
                             </div>
                           )
                         })()}
-                        <p className="text-micro text-gray-400 mt-2 flex items-center gap-1">
+                        <p className="text-micro text-lia-text-disabled mt-2 flex items-center gap-1">
                           <Lightbulb className="w-3 h-3" />
                           Extraídas automaticamente do perfil da vaga via metodologia WSI
                         </p>
@@ -985,14 +985,14 @@ export function JobPreviewPanel({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('idiomas')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             Idiomas
                           </h5>
                           {collapsedPreviewSections.includes('idiomas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('idiomas') && (
@@ -1000,11 +1000,11 @@ export function JobPreviewPanel({
                             <div className="space-y-1.5 mt-2">
                               {previewJob.languages.map((lang: Language, idx: number) => (
                                 <div key={idx} className="flex items-center gap-2">
-                                  <span className="text-micro text-gray-600 dark:text-lia-text-tertiary font-medium">
+                                  <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                                     {lang.language}
                                   </span>
                                   {lang.level && (
-                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">
+                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
                                       {lang.level}
                                     </Badge>
                                   )}
@@ -1017,7 +1017,7 @@ export function JobPreviewPanel({
                               ))}
                             </div>
                           ) : (
-                            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary italic mt-2">
+                            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic mt-2">
                               Nenhum idioma configurado
                             </p>
                           )
@@ -1026,14 +1026,14 @@ export function JobPreviewPanel({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('remuneracao')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             Remuneração e Benefícios
                           </h5>
                           {collapsedPreviewSections.includes('remuneracao') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('remuneracao') && (
@@ -1055,30 +1055,30 @@ export function JobPreviewPanel({
                                 <>
                                   {hasSalary ? (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary">Salário:</span>
-                                      <span className="text-micro font-medium text-gray-950 dark:text-gray-50">
+                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Salário:</span>
+                                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">
                                         {fmt(salaryMin)}{salaryMax ? ` - ${fmt(salaryMax)}` : ''}
                                       </span>
                                     </div>
                                   ) : (
-                                    <p className="text-micro text-gray-500 dark:text-lia-text-tertiary italic">
+                                    <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic">
                                       Faixa salarial não informada
                                     </p>
                                   )}
                                   {hasBonus && (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary">Bônus:</span>
-                                      <span className="text-micro font-medium text-gray-950 dark:text-gray-50">
+                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Bônus:</span>
+                                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">
                                         {fmt(bonusMin)}{bonusMax ? ` - ${fmt(bonusMax)}` : ''}
                                       </span>
                                     </div>
                                   )}
                                   {benefits.length > 0 && (
                                     <div>
-                                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary block mb-1">Benefícios:</span>
+                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
-                                          <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">
+                                          <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
                                         ))}
@@ -1094,14 +1094,14 @@ export function JobPreviewPanel({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('etapas')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <Layers3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             Etapas do Processo
                           </h5>
                           {collapsedPreviewSections.includes('etapas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('etapas') && (
@@ -1111,10 +1111,10 @@ export function JobPreviewPanel({
                                 {previewJob.hiringProcess.map((step: string, idx: number) => (
                                   <React.Fragment key={idx}>
                                     {idx > 0 && (
-                                      <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                                      <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                     )}
                                     <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-lia-border-subtle rounded-md flex-shrink-0">
-                                      <span className="text-micro font-medium text-gray-700">{step}</span>
+                                      <span className="text-micro font-medium text-lia-text-secondary">{step}</span>
                                     </div>
                                   </React.Fragment>
                                 ))}
@@ -1126,19 +1126,19 @@ export function JobPreviewPanel({
                                   .map((stage: InterviewStage, idx: number) => (
                                     <React.Fragment key={idx}>
                                       {idx > 0 && (
-                                        <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                                        <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                       )}
                                       <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-lia-border-subtle rounded-md flex-shrink-0">
                                         {stage.liaAssisted && (
                                           <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                                         )}
-                                        <span className="text-micro font-medium text-gray-700">{stage.stageName}</span>
+                                        <span className="text-micro font-medium text-lia-text-secondary">{stage.stageName}</span>
                                       </div>
                                     </React.Fragment>
                                   ))}
                               </div>
                             ) : (
-                              <p className="text-micro text-gray-500 dark:text-lia-text-tertiary italic">
+                              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic">
                                 Nenhuma etapa configurada
                               </p>
                             )}
@@ -1151,10 +1151,10 @@ export function JobPreviewPanel({
                           {/* Roteiro de Triagem Automática */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <ClipboardList className="w-4 h-4 text-gray-600" />
-                              <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Roteiro de Triagem Automática</h4>
+                              <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
+                              <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Roteiro de Triagem Automática</h4>
                               <Badge 
-                                className={`text-micro px-1.5 py-0 h-4 text-gray-950 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
+                                className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
                               >
                                 {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                               </Badge>
@@ -1163,31 +1163,31 @@ export function JobPreviewPanel({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('fluxo-resumido')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <ClipboardList className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             Resumo da Triagem
                             <Badge
-                              className={`text-micro px-1.5 py-0 h-4 text-gray-800 ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
+                              className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
                             >
                               {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                             </Badge>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-resumido') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('fluxo-resumido') && (
                           <div className="mt-2">
                             <div className="grid grid-cols-2 gap-2">
                               <div className="text-center p-2 bg-gray-50 rounded-md">
-                                <div className="text-base-ui font-semibold text-gray-800">{(previewJob.screeningQuestions || []).length}</div>
-                                <p className="text-micro text-gray-500">Perguntas</p>
+                                <div className="text-base-ui font-semibold text-lia-text-primary">{(previewJob.screeningQuestions || []).length}</div>
+                                <p className="text-micro text-lia-text-tertiary">Perguntas</p>
                               </div>
                               <div className="text-center p-2 bg-gray-50 rounded-md">
-                                <div className="text-base-ui font-semibold text-gray-800">{Math.ceil((previewJob.screeningQuestions || [] as ScreeningQuestion[]).reduce((acc: number, q: ScreeningQuestion) => acc + ((q.time_limit as number) || 120), 0) / 60)}min</div>
-                                <p className="text-micro text-gray-500">Tempo Est.</p>
+                                <div className="text-base-ui font-semibold text-lia-text-primary">{Math.ceil((previewJob.screeningQuestions || [] as ScreeningQuestion[]).reduce((acc: number, q: ScreeningQuestion) => acc + ((q.time_limit as number) || 120), 0) / 60)}min</div>
+                                <p className="text-micro text-lia-text-tertiary">Tempo Est.</p>
                               </div>
                             </div>
                           </div>
@@ -1197,17 +1197,17 @@ export function JobPreviewPanel({
                       {/* 5. Blocos WSI do Roteiro de Triagem */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('fluxo-wsi')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <Layers3 className="w-3.5 h-3.5 text-gray-600" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Fluxo de Triagem WSI
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-gray-800">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-lia-text-primary">
                               6 Blocos
                             </Badge>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-wsi') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
 
@@ -1282,13 +1282,13 @@ export function JobPreviewPanel({
                                       {block.id}
                                     </span>
                                     <div>
-                                      <span className={`text-xs font-semibold ${block.editable ? 'text-gray-950' : 'text-gray-600'}`}>
+                                      <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>
                                         {block.name}
                                       </span>
-                                      <span className="text-micro text-gray-500 ml-1.5">({block.duration})</span>
+                                      <span className="text-micro text-lia-text-tertiary ml-1.5">({block.duration})</span>
                                     </div>
                                     {!block.editable && (
-                                      <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-200 text-gray-500">
+                                      <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-200 text-lia-text-tertiary">
                                         Auto
                                       </Badge>
                                     )}
@@ -1302,16 +1302,16 @@ export function JobPreviewPanel({
                                           </Badge>
                                         )}
                                         {informativeCount > 0 && (
-                                          <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600">
+                                          <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-secondary">
                                             {informativeCount} Info.
                                           </Badge>
                                         )}
                                       </>
                                     )}
                                     {isExpanded ? (
-                                      <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+                                      <ChevronUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
                                     ) : (
-                                      <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                                      <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
                                     )}
                                   </div>
                                 </div>
@@ -1323,28 +1323,28 @@ export function JobPreviewPanel({
                                     {!block.editable ? (
                                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
                                         <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50 overflow-hidden">
-                                          <div className="px-2.5 py-2 border-b border-gray-900 dark:border-gray-50/10 bg-gray-100 dark:bg-lia-bg-secondary">
-                                            <p className="text-xs font-medium text-gray-800">
+                                          <div className="px-2.5 py-2 border-b border-gray-900 dark:border-lia-border-medium/10 bg-gray-100 dark:bg-lia-bg-secondary">
+                                            <p className="text-xs font-medium text-lia-text-primary">
                                               {WSI_AUTOMATIC_MESSAGES[block.id].title}
                                             </p>
                                           </div>
                                           <div className="p-2.5">
-                                            <div className="text-micro text-gray-800 leading-relaxed whitespace-pre-line">
+                                            <div className="text-micro text-lia-text-primary leading-relaxed whitespace-pre-line">
                                               {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                                             </div>
                                           </div>
-                                          <div className="px-2.5 py-2 border-t border-gray-900 dark:border-gray-50/10 bg-gray-50">
-                                            <p className="text-micro text-gray-500 italic">
+                                          <div className="px-2.5 py-2 border-t border-gray-900 dark:border-lia-border-medium/10 bg-gray-50">
+                                            <p className="text-micro text-lia-text-tertiary italic">
                                               {WSI_AUTOMATIC_MESSAGES[block.id].note}
                                             </p>
                                           </div>
                                         </div>
                                       ) : (
                                         <div className="p-2.5 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-md">
-                                          <p className="text-micro text-gray-600 italic">
+                                          <p className="text-micro text-lia-text-secondary italic">
                                             {block.description}
                                           </p>
-                                          <p className="text-micro text-gray-400 mt-1">
+                                          <p className="text-micro text-lia-text-disabled mt-1">
                                             Gerenciado automaticamente pela LIA
                                           </p>
                                         </div>
@@ -1353,7 +1353,7 @@ export function JobPreviewPanel({
                                       <>
                                         {blockQuestions.length === 0 ? (
                                           <div className="p-3 bg-gray-50 border border-lia-border-subtle border-dashed rounded-md text-center">
-                                            <p className="text-micro text-gray-500">
+                                            <p className="text-micro text-lia-text-tertiary">
                                               Nenhuma pergunta neste bloco
                                             </p>
                                           </div>
@@ -1371,7 +1371,7 @@ export function JobPreviewPanel({
                                                     ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30'
                                                     : item.category === 'eligibility' || item.category === 'Elegibilidade'
                                                     ? 'bg-status-success/15 text-status-success border border-status-success/30'
-                                                    : 'bg-gray-100 text-gray-700 border border-lia-border-subtle'
+                                                    : 'bg-gray-100 text-lia-text-secondary border border-lia-border-subtle'
                                                 }`}>
                                                   {item.category === 'behavioral' ? 'Comport.' 
                                                     : item.category === 'technical' ? 'Técnica' 
@@ -1385,30 +1385,30 @@ export function JobPreviewPanel({
                                                   </Badge>
                                                 )}
                                               </div>
-                                              <p className="text-micro text-gray-950 leading-relaxed mb-1.5">
+                                              <p className="text-micro text-lia-text-primary leading-relaxed mb-1.5">
                                                 {item.question}
                                               </p>
                                               <div className="flex items-center gap-2 flex-wrap">
                                                 {item.skill_targeted && (
-                                                  <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
-                                                    <Target className="w-2.5 h-2.5 text-gray-400" />
+                                                  <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
+                                                    <Target className="w-2.5 h-2.5 text-lia-text-disabled" />
                                                     {item.skill_targeted}
                                                   </span>
                                                 )}
-                                                <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
-                                                  <MessageSquare className="w-2.5 h-2.5 text-gray-400" />
+                                                <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
+                                                  <MessageSquare className="w-2.5 h-2.5 text-lia-text-disabled" />
                                                   {item.type === 'eliminatory' ? 'Sim/Não' 
                                                     : item.options?.length ? 'Múltipla escolha'
                                                     : 'Texto livre'}
                                                 </span>
                                                 {item.weight != null && (
-                                                  <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
-                                                    <BarChart3 className="w-2.5 h-2.5 text-gray-400" />
+                                                  <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
+                                                    <BarChart3 className="w-2.5 h-2.5 text-lia-text-disabled" />
                                                     Peso {typeof item.weight === 'number' ? item.weight.toFixed(2) : item.weight}
                                                   </span>
                                                 )}
-                                                <span className="inline-flex items-center gap-0.5 text-micro text-gray-500">
-                                                  <Clock className="w-2.5 h-2.5 text-gray-400" />
+                                                <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
+                                                  <Clock className="w-2.5 h-2.5 text-lia-text-disabled" />
                                                   {item.type === 'eliminatory' ? '30s' : '2 min'}
                                                 </span>
                                               </div>
@@ -1430,27 +1430,27 @@ export function JobPreviewPanel({
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('agendamento')}>
                           <div className="flex items-center gap-2">
-                            <CalendarCheck className="w-3.5 h-3.5 text-gray-600" />
-                            <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50">Agendamento Automático</h5>
+                            <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
+                            <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Agendamento Automático</h5>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-gray-600' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
+                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-lia-bg-elevated' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
                             </Badge>
                             {collapsedPreviewSections.includes('agendamento') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                             )}
                           </div>
                         </div>
                         {!collapsedPreviewSections.includes('agendamento') && (<>
-                        <p className="text-micro text-gray-500 mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
+                        <p className="text-micro text-lia-text-tertiary mb-2 mt-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
-                            <span className="text-micro text-gray-500">Score Mínimo</span>
-                            <span className="text-micro font-medium text-gray-700">{(() => {
+                            <span className="text-micro text-lia-text-tertiary">Score Mínimo</span>
+                            <span className="text-micro font-medium text-lia-text-secondary">{(() => {
                               const preset = screeningConfig?.scheduling?.min_score_for_auto_preset
                               switch(preset) {
                                 case 'rigorous': return 'Rigoroso'
@@ -1460,16 +1460,16 @@ export function JobPreviewPanel({
                             })()}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
-                            <span className="text-micro text-gray-500">Calendário</span>
-                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
+                            <span className="text-micro text-lia-text-tertiary">Calendário</span>
+                            <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
-                            <span className="text-micro text-gray-500">Horários</span>
-                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
+                            <span className="text-micro text-lia-text-tertiary">Horários</span>
+                            <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
                           </div>
                           <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md">
-                            <span className="text-micro text-gray-500">Duração</span>
-                            <span className="text-micro font-medium text-gray-700">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
+                            <span className="text-micro text-lia-text-tertiary">Duração</span>
+                            <span className="text-micro font-medium text-lia-text-secondary">{screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
                           </div>
                         </div>
                         </>)}
@@ -1478,33 +1478,33 @@ export function JobPreviewPanel({
                           {/* 1. Canais + Configurações Agrupados */}
                           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => togglePreviewSection('canais')}>
-                          <h5 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5">
-                            <Settings className="w-3.5 h-3.5 text-gray-600" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                            <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Canais de Comunicação
                           </h5>
                           {collapsedPreviewSections.includes('canais') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
                           )}
                         </div>
 
                         {!collapsedPreviewSections.includes('canais') && (<>
                         {/* Canais em linha */}
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-lia-border-subtle">
-                          <span className="text-micro text-gray-500">Canais:</span>
+                          <span className="text-micro text-lia-text-tertiary">Canais:</span>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-lia-text-secondary'}`}>
                               <MessageSquare className="w-3 h-3" />
                               <span className="text-micro font-medium">WhatsApp</span>
                               {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-lia-text-secondary'}`}>
                               <Globe className="w-3 h-3" />
                               <span className="text-micro font-medium">Chat Web</span>
                               {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-lia-text-secondary'}`}>
                               <Phone className="w-3 h-3" />
                               <span className="text-micro font-medium">Ligação</span>
                               {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -1515,7 +1515,7 @@ export function JobPreviewPanel({
                         {/* Configurações em grid */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-500">Score Mínimo Aprovação</span>
+                            <span className="text-micro text-lia-text-tertiary">Score Mínimo Aprovação</span>
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-700 text-white">{(() => {
                               const preset = screeningConfig?.settings?.min_score_preset
                               switch(preset) {
@@ -1526,15 +1526,15 @@ export function JobPreviewPanel({
                             })()}</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-500">Timeout Resposta</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+                            <span className="text-micro text-lia-text-tertiary">Timeout Resposta</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-500">Re-tentativas</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-800">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+                            <span className="text-micro text-lia-text-tertiary">Re-tentativas</span>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-500">Fallback</span>
+                            <span className="text-micro text-lia-text-tertiary">Fallback</span>
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
                           </div>
                         </div>
@@ -1556,13 +1556,13 @@ export function JobPreviewPanel({
                         {/* Score de Sucesso */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Sucesso de Fechamento</span>
-                            <Target className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Sucesso de Fechamento</span>
+                            <Target className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                          <div className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.funnel.total > 20 ? '85%' : previewJob.funnel.total > 10 ? '60%' : '35%'}
                           </div>
-                          <div className="mt-0.5 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-0.5 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             Pipeline: {previewJob.funnel.total} candidatos
                           </div>
                         </div>
@@ -1570,13 +1570,13 @@ export function JobPreviewPanel({
                         {/* Time to Fill */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Time to Fill</span>
-                            <Clock className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Time to Fill</span>
+                            <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
-                          <div className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                          <div className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.urgencyLevel > 3 ? '15' : previewJob.urgencyLevel > 2 ? '25' : '35'}d
                           </div>
-                          <div className="mt-0.5 text-xs text-gray-800 dark:text-lia-text-primary">
+                          <div className="mt-0.5 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             Velocidade: {previewJob.funnel.interview > 0 ? '3.2' : '1.5'} cv/dia
                           </div>
                         </div>
@@ -1584,13 +1584,13 @@ export function JobPreviewPanel({
                         {/* Qualidade Pipeline */}
                         <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Qualidade Pipeline</span>
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Qualidade Pipeline</span>
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                           </div>
-                          <div className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                          <div className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.funnel.final > 3 ? 'A+' : previewJob.funnel.interview > 5 ? 'B+' : 'C'}
                           </div>
- <div className="mt-0.5 text-xs text-gray-800">
+ <div className="mt-0.5 text-xs text-lia-text-primary">
                             Conversão: {previewJob.funnel.interview > 0 ? Math.round((previewJob.funnel.interview / previewJob.funnel.total) * 100) : 0}%
                           </div>
                         </div>
@@ -1598,7 +1598,7 @@ export function JobPreviewPanel({
                         {/* Risco de Recusa */}
                         <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Risco de Recusa</span>
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Risco de Recusa</span>
                             <AlertCircle className="w-3 h-3 text-status-error" />
                           </div>
                           <div className="text-base-ui font-semibold text-status-error dark:text-status-error">
@@ -1612,8 +1612,8 @@ export function JobPreviewPanel({
 
                       {/* Funil de Recrutamento Visual */}
                       <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-3 flex items-center gap-1`}>
-                          <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-3 flex items-center gap-1`}>
+                          <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Funil de Recrutamento
                         </h4>
 
@@ -1621,10 +1621,10 @@ export function JobPreviewPanel({
                         <div className="space-y-2">
                           <div className="relative">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-800 dark:text-lia-text-primary w-20">Total</span>
+                              <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-20">Total</span>
                               <div className="flex-1 mx-2">
-                                <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1 w-full">
+                                <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                  <div className="bg-gray-500 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1 w-full">
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.total}</span>
                                   </div>
                                 </div>
@@ -1634,16 +1634,16 @@ export function JobPreviewPanel({
 
                           <div className="relative">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-800 dark:text-lia-text-primary w-20">Triagem</span>
+                              <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-20">Triagem</span>
                               <div className="flex-1 mx-2">
-                                <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
+                                <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                  <div className="bg-gray-400 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{width: `${(previewJob.funnel.screening / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.screening}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs text-gray-800 w-10 text-right">
+                              <span className="text-xs text-lia-text-primary w-10 text-right">
                                 {Math.round((previewJob.funnel.screening / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -1651,16 +1651,16 @@ export function JobPreviewPanel({
 
                           <div className="relative">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-800 dark:text-lia-text-primary w-20">Entrevistas</span>
+                              <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-20">Entrevistas</span>
                               <div className="flex-1 mx-2">
-                                <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
+                                <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                  <div className="bg-gray-400 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{width: `${(previewJob.funnel.interview / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.interview}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs text-gray-800 w-10 text-right">
+                              <span className="text-xs text-lia-text-primary w-10 text-right">
                                 {Math.round((previewJob.funnel.interview / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -1668,16 +1668,16 @@ export function JobPreviewPanel({
 
                           <div className="relative">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-800 dark:text-lia-text-primary w-20">Finalistas</span>
+                              <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-20">Finalistas</span>
                               <div className="flex-1 mx-2">
-                                <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-400 dark:bg-gray-500 h-3 rounded-full flex items-center justify-end pr-1"
+                                <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                  <div className="bg-gray-400 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{width: `${(previewJob.funnel.final / previewJob.funnel.total) * 100}%`}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.final}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs text-gray-800 w-10 text-right">
+                              <span className="text-xs text-lia-text-primary w-10 text-right">
                                 {Math.round((previewJob.funnel.final / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -1685,16 +1685,16 @@ export function JobPreviewPanel({
 
                           <div className="relative">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-800 dark:text-lia-text-primary w-20">Contratados</span>
+                              <span className="text-xs text-lia-text-primary dark:text-lia-text-primary w-20">Contratados</span>
                               <div className="flex-1 mx-2">
-                                <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-                                  <div className="bg-gray-500 dark:bg-gray-600 h-3 rounded-full flex items-center justify-end pr-1"
+                                <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+                                  <div className="bg-gray-500 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1"
                                        style={{width: previewJob.funnel.hired > 0 ? `${(previewJob.funnel.hired / previewJob.funnel.total) * 100}%` : '5%'}}>
                                     <span className="text-xs text-white font-medium">{previewJob.funnel.hired}</span>
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-xs text-gray-800 w-10 text-right">
+                              <span className="text-xs text-lia-text-primary w-10 text-right">
                                 {Math.round((previewJob.funnel.hired / previewJob.funnel.total) * 100)}%
                               </span>
                             </div>
@@ -1706,25 +1706,25 @@ export function JobPreviewPanel({
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-2">
                           <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>CV → Triagem</p>
-                          <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {Math.round((previewJob.funnel.screening / previewJob.funnel.total) * 100)}%
                           </p>
                         </div>
                         <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-2">
                           <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Triagem → Entrevista</p>
-                          <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.funnel.screening > 0 ? Math.round((previewJob.funnel.interview / previewJob.funnel.screening) * 100) : 0}%
                           </p>
                         </div>
                         <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-2">
                           <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Entrevista → Final</p>
-                          <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.funnel.interview > 0 ? Math.round((previewJob.funnel.final / previewJob.funnel.interview) * 100) : 0}%
                           </p>
                         </div>
                         <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-2">
                           <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Final → Contratação</p>
-                          <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {previewJob.funnel.final > 0 ? Math.round((previewJob.funnel.hired / previewJob.funnel.final) * 100) : 0}%
                           </p>
                         </div>
@@ -1733,12 +1733,12 @@ export function JobPreviewPanel({
                       {/* Insights e Recomendações da LIA */}
                       <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
                         <div className="flex items-start gap-2">
-                          <Lightbulb className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary mt-0.5" />
+                          <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-xs font-medium text-gray-950 dark:text-lia-text-primary font-semibold mb-1">
+                            <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-semibold mb-1">
                               Insights da LIA
                             </p>
-                            <ul className="space-y-1 text-xs text-gray-800 dark:text-lia-text-primary">
+                            <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
@@ -1758,28 +1758,28 @@ export function JobPreviewPanel({
 
                       {/* Análise Comparativa */}
                       <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
+                          <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Comparativo com Mercado
                         </h4>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Salário</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Candidatos</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Atratividade</p>
-                            <p className="text-sm font-bold text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
                               #—
                             </p>
                             <p className={textStyles.bodySmall}>ranking</p>
@@ -1789,8 +1789,8 @@ export function JobPreviewPanel({
 
                       {/* KPIs da Vaga com Budget */}
                       <div className="bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <TrendingUp className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
+                          <TrendingUp className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           KPIs e Orçamento
                         </h4>
                         <div className="grid grid-cols-2 gap-2">
@@ -1811,13 +1811,13 @@ export function JobPreviewPanel({
                             <>
                               <div className="flex items-center justify-between">
                                 <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Budget</span>
-                                <span className="text-xs font-bold text-gray-950 dark:text-gray-50">
+                                <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary">
                                   R$ {(previewJob.budget / 1000).toFixed(0)}k
                                 </span>
                               </div>
                               <div className="flex items-center justify-between">
                                 <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Usado</span>
-                                <span className="text-xs font-bold text-gray-950 dark:text-gray-50">
+                                <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary">
                                   {previewJob.budgetUsed ? Math.round((previewJob.budgetUsed / previewJob.budget) * 100) : 0}%
                                 </span>
                               </div>
@@ -1828,13 +1828,13 @@ export function JobPreviewPanel({
 
                       {/* Fatores de Risco */}
                       <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
                           <Shield className="w-3.5 h-3.5 text-status-error" />
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Competitividade salarial</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Competitividade salarial</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
@@ -1847,7 +1847,7 @@ export function JobPreviewPanel({
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Escassez de talentos</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Escassez de talentos</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
@@ -1860,13 +1860,13 @@ export function JobPreviewPanel({
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-800 dark:text-lia-text-primary">Tempo de processo</span>
+                            <span className="text-lia-text-primary dark:text-lia-text-primary">Tempo de processo</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-gray-600' : 'bg-gray-300'
+                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-lia-bg-elevated' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -1877,43 +1877,43 @@ export function JobPreviewPanel({
 
                       {/* Canais de Divulgação */}
                       <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3">
-                        <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <Share2 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                        <h4 className={`${textStyles.title} dark:text-lia-text-primary mb-2 flex items-center gap-1`}>
+                          <Share2 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                           Canais de Divulgação
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1">
-                              <Linkedin className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                              <Linkedin className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                               <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>LinkedIn</span>
                             </div>
                             {previewJob.publishedLinkedIn ? (
-                              <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
                             ) : (
-                              <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-lia-text-primary">Não publicado</Badge>
                             )}
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1">
-                              <Globe className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                              <Globe className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                               <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Site</span>
                             </div>
                             {previewJob.publishedWebsite ? (
-                              <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
                             ) : (
-                              <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
+                              <Badge className="text-xs bg-gray-100 text-lia-text-primary">Não publicado</Badge>
                             )}
                           </div>
                           {previewJob.publishedIndeed !== undefined && (
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1">
-                                <Briefcase className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                                <Briefcase className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                                 <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Indeed</span>
                               </div>
                               {previewJob.publishedIndeed ? (
-                                <Badge className="text-xs bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
+                                <Badge className="text-xs bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary">Publicado</Badge>
                               ) : (
-                                <Badge className="text-xs bg-gray-100 text-gray-800">Não publicado</Badge>
+                                <Badge className="text-xs bg-gray-100 text-lia-text-primary">Não publicado</Badge>
                               )}
                             </div>
                           )}

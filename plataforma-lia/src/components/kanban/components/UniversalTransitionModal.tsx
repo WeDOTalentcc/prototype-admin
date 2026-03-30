@@ -62,7 +62,7 @@ interface UniversalTransitionModalProps {
   actionBehavior: string
   subStatusOptions: Array<{ code: string; display_name: string }>
   onConfirm: (data: UniversalTransitionConfirmData) => Promise<void>
-  onOpenSpecializedModal?: (modalType: string, context: any) => void
+  onOpenSpecializedModal?: (modalType: string, context: Record<string, unknown>) => void
   companyId?: string
   jobTitle?: string
   initialPrompt?: string

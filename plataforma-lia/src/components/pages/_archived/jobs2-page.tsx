@@ -191,7 +191,7 @@ export function Jobs2Page() {
     setSearchTerm(query)
   }
 
-  const handleAISearch = (query: string, aiResults: any) => {
+  const handleAISearch = (query: string, aiResults: Record<string, unknown>) => {
     setSearchTerm(query)
 
     // Aplicar filtros inteligentes baseados nos resultados da IA

@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
+import { bulkExportSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
+    const bodyResult = await validateBody(request, bulkExportSchema)
+    if (!bodyResult.success) return bodyResult.response
+
     const response = await fetch(`${BACKEND_URL}/api/v1/candidates/bulk/export`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyResult.data),
     })
 
     if (!response.ok) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const contentType = response.headers.get('content-type')
-    
+
     if (contentType?.includes('text/csv') || contentType?.includes('application/vnd.openxmlformats')) {
       const blob = await response.blob()
       const headers = new Headers()

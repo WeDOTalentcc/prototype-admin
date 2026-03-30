@@ -42,7 +42,7 @@ function formatCurrency(value: number): string {
 function confidenceColor(level: string): string {
   if (level === "high") return "text-status-success dark:text-status-success"
   if (level === "medium") return "text-status-warning dark:text-status-warning"
-  return "text-gray-500 dark:text-lia-text-tertiary"
+  return "text-lia-text-tertiary dark:text-lia-text-tertiary"
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
       {/* Header — sempre visível */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
        
       >
         <span className="flex items-center gap-1.5">
@@ -127,10 +127,10 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex items-start gap-2">
               <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Tempo estimado de preenchimento
                 </p>
-                <p className="text-sm font-semibold text-gray-900" >
+                <p className="text-sm font-semibold text-lia-text-primary" >
                   {timeToFill.predicted_days} dias
                   <span className="text-micro font-normal lia-text-secondary ml-1">
                     ({timeToFill.range_min}–{timeToFill.range_max})
@@ -148,10 +148,10 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex items-start gap-2">
               <DollarSign className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Faixa salarial sugerida
                 </p>
-                <p className="text-sm font-semibold text-gray-900" >
+                <p className="text-sm font-semibold text-lia-text-primary" >
                   {formatCurrency(salary.suggested_min)} – {formatCurrency(salary.suggested_max)}
                 </p>
                 <p className={`text-micro ${confidenceColor(salary.confidence_level)}`}>

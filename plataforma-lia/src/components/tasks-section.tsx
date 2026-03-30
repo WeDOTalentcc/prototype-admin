@@ -92,7 +92,7 @@ export function TasksSection() {
       case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
       case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
       case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-gray-50 text-gray-800 dark:text-lia-text-primary"
+      default: return "border-lia-border-subtle bg-gray-50 text-lia-text-primary dark:text-lia-text-primary"
     }
   }
 
@@ -102,10 +102,10 @@ export function TasksSection() {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-gray-950">
+          <h2 className="text-sm font-semibold text-lia-text-primary">
             Próximas Tarefas
           </h2>
-          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
             {activeTasks.length} tarefas pendentes
           </p>
         </div>
@@ -132,10 +132,10 @@ export function TasksSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
- <h3 className="text-xs font-medium text-gray-950 group-hover:text-gray-600 dark:text-lia-text-tertiary transition-colors">
+ <h3 className="text-xs font-medium text-lia-text-primary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors">
                           {task.title}
                         </h3>
-                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5 line-clamp-2">
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 line-clamp-2">
                           {task.description}
                         </p>
                       </div>
@@ -147,7 +147,7 @@ export function TasksSection() {
                         >
                           {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
                         </Badge>
-                        <ArrowRight className="w-2.5 h-2.5 text-gray-600 group-hover:text-gray-600 dark:text-lia-text-tertiary transition-colors" />
+                        <ArrowRight className="w-2.5 h-2.5 text-lia-text-secondary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors" />
                       </div>
                     </div>
                   </div>
@@ -159,17 +159,17 @@ export function TasksSection() {
       ) : (
         <Card className="p-6 text-center">
           <CheckCircle2 className="w-8 h-8 mx-auto mb-3 text-status-success" />
-          <h3 className="text-base font-medium text-gray-950 mb-1">
+          <h3 className="text-base font-medium text-lia-text-primary mb-1">
             Todas as tarefas concluídas!
           </h3>
-          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             Excelente trabalho! Você completou todas as suas tarefas.
           </p>
         </Card>
       )}
 
       {activeTasks.length > 6 && (
-        <Button variant="ghost" className="w-full text-sm text-gray-600 hover:text-gray-950 dark:text-lia-text-tertiary dark:hover:text-gray-50">
+        <Button variant="ghost" className="w-full text-sm text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse">
           Ver mais {activeTasks.length - 6} tarefas
         </Button>
       )}

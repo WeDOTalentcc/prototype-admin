@@ -1134,7 +1134,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       
       // Apply draft_updates to form fields if present
       if (orchestratorResult.draft_updates && Object.keys(orchestratorResult.draft_updates).length > 0) {
-        const updates = orchestratorResult.draft_updates as Record<string, any>
+        const updates = orchestratorResult.draft_updates as Record<string, unknown>
         if (updates.cargo || updates.job_title || updates.title) {
           const title = updates.cargo || updates.job_title || updates.title
           ctx.setBasicInfoFields(prev => ({ ...prev, cargo: title }))

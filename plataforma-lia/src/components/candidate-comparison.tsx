@@ -111,7 +111,7 @@ export function CandidateComparison({
     const secondCandidate = sortedCandidates[1]
 
     // Gerar análise comparativa detalhada
-    const comparison: any = {}
+    const comparison: Record<string, Record<string, { verdict: string; score: number; insights: string[] }>> = {}
 
     candidates.forEach(candidate => {
       const isTop = candidate.id === topCandidate.id
@@ -260,16 +260,16 @@ export function CandidateComparison({
   const getVerdictIcon = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return <Trophy className="w-4 h-4 text-status-warning" />
-      case 'close': return <Star className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-      case 'lower': return <Flame className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+      case 'close': return <Star className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      case 'lower': return <Flame className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
     }
   }
 
   const getVerdictColor = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
-      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary'
-      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-600 dark:text-lia-text-tertiary'
+      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary'
+      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-tertiary'
     }
   }
 
@@ -281,11 +281,11 @@ export function CandidateComparison({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h3 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+            <h3 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
+              <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Comparação Inteligente de Candidatos
             </h3>
-            <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
               Análise comparativa com insights da LIA • {candidates.length} candidatos
             </p>
           </div>
@@ -358,11 +358,11 @@ export function CandidateComparison({
                     {Object.entries(liaAnalysis.scenarios).map(([key, scenario]) => (
                       <button
                         key={key}
-                        onClick={() => setSelectedScenario(key as any)}
+                        onClick={() => setSelectedScenario(key as 'shortTerm' | 'longTerm' | 'leadership' | 'innovation' | 'stability')}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
  selectedScenario === key
                             ? 'bg-status-success/15 text-status-success border border-status-success/30'
-                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
+                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
                         {key === 'shortTerm' ? 'Curto Prazo' :
@@ -434,14 +434,14 @@ export function CandidateComparison({
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-950 mb-1">
+                      <h4 className="font-semibold text-lia-text-primary mb-1">
                         {candidate.name}
                       </h4>
-                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2">
+                      <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
                         {candidate.role} • {candidate.seniority}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                           {candidate.matchPercentage}% Match
                         </Badge>
                         <Badge variant="outline" className={
@@ -459,15 +459,15 @@ export function CandidateComparison({
                 <CardContent className="space-y-4">
                   {/* Quick Info */}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
                       <MapPin className="w-3 h-3" />
                       {candidate.location}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
                       <Briefcase className="w-3 h-3" />
                       {candidate.experience}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
                       <Clock className="w-3 h-3" />
                       {candidate.availability}
                     </div>
@@ -475,7 +475,7 @@ export function CandidateComparison({
 
                   {/* Skills */}
                   <div>
-                    <h6 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">
+                    <h6 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                       Principais Skills
                     </h6>
                     <div className="flex flex-wrap gap-1">
@@ -523,9 +523,9 @@ export function CandidateComparison({
                       {/* Top insights */}
                       <div className="space-y-1">
                         {Object.values(liaAnalysis.comparison[candidate.id])
-                          .filter((data: any) => data.verdict === 'winner')
+                          .filter((data: { verdict: string; insights: string[]; score: number }) => data.verdict === 'winner')
                           .slice(0, 2)
-                          .map((data: any, idx: number) => (
+                          .map((data: { verdict: string; insights: string[]; score: number }, idx: number) => (
                           <div key={idx} className="text-xs text-status-success dark:text-status-success flex items-start gap-1">
                             <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                             {data.insights[0]}

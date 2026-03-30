@@ -48,7 +48,7 @@ interface KanbanLIASidebarProps {
   showLiaSuggestionsPanel: boolean
   selectedCandidates: Set<string>
   isResizingLIA: boolean
-  candidatesData: Record<string, any[]>
+  candidatesData: Record<string, unknown[]>
   chatScrollRef: React.RefObject<HTMLDivElement>
   setLiaMessages: (messages: LIAMessage[] | ((prev: LIAMessage[]) => LIAMessage[])) => void
   setLiaPromptValue: (value: string | ((prev: string) => string)) => void
@@ -58,7 +58,7 @@ interface KanbanLIASidebarProps {
   setShowLiaSuggestionsPanel: (value: boolean | ((prev: boolean) => boolean)) => void
   setSelectedCandidates: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void
   setIsResizingLIA: (value: boolean) => void
-  setSelectedCandidate: (candidate: any) => void
+  setSelectedCandidate: (candidate: Record<string, unknown>) => void
   setShowCandidatePage: (value: boolean) => void
   openSuperChat: () => void
   handleAICommand: (command: string) => void
@@ -106,10 +106,10 @@ export function KanbanLIASidebar({
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
+                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">
                   Olá! Sou a Lia.
                 </h3>
-                <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
+                <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
                   Como posso te ajudar hoje?
                 </p>
               </div>
@@ -123,7 +123,7 @@ export function KanbanLIASidebar({
                   title="Nova conversa"
                   className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 text-gray-400" />
+                  <RotateCcw className="w-3.5 h-3.5 text-lia-text-disabled" />
                 </Button>
               )}
               <Button
@@ -133,7 +133,7 @@ export function KanbanLIASidebar({
                 title="Expandir chat"
                 className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
               >
-                <Maximize2 className="w-4 h-4 text-gray-500" />
+                <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
               <Button
                 variant="ghost"
@@ -144,7 +144,7 @@ export function KanbanLIASidebar({
                 }}
                 className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
             </div>
           </div>
@@ -154,15 +154,15 @@ export function KanbanLIASidebar({
         {selectedCandidates.size > 0 && (
           <div className="flex-shrink-0 px-4 py-2">
             <div className="px-3 py-2 bg-gray-100 rounded-md border border-lia-border-subtle flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-              <span className="text-xs text-gray-700 font-medium">
+              <Users className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+              <span className="text-xs text-lia-text-secondary font-medium">
                 {selectedCandidates.size} candidato{selectedCandidates.size > 1 ? 's' : ''} selecionado{selectedCandidates.size > 1 ? 's' : ''}
               </span>
               <button
                 onClick={() => setSelectedCandidates(new Set())}
                 className="ml-auto p-1 rounded-md hover:bg-gray-200"
               >
-                <X className="w-3 h-3 text-gray-500" />
+                <X className="w-3 h-3 text-lia-text-tertiary" />
               </button>
             </div>
           </div>
@@ -177,15 +177,15 @@ export function KanbanLIASidebar({
             >
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-semibold text-gray-700">Sugestões da LIA</span>
+                <span className="text-xs font-semibold text-lia-text-secondary">Sugestões da LIA</span>
                 <Badge className="bg-wedo-cyan text-white border-0 text-micro px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
                   {computedSuggestions.length}
                 </Badge>
               </div>
               {showLiaSuggestionsPanel ? (
-                <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+                <ChevronUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
               ) : (
-                <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
               )}
             </button>
             {showLiaSuggestionsPanel && (
@@ -199,13 +199,13 @@ export function KanbanLIASidebar({
                       <div className="flex items-start gap-2">
                         <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-700 leading-tight">{suggestion.message}</p>
-                          <p className="text-micro text-gray-500 mt-0.5">{suggestion.suggested_action}</p>
+                          <p className="text-xs text-lia-text-secondary leading-tight">{suggestion.message}</p>
+                          <p className="text-micro text-lia-text-tertiary mt-0.5">{suggestion.suggested_action}</p>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            const candidate = Object.values(candidatesData).flat().find((c: any) => c.id === suggestion.candidate_id)
+                            const candidate = Object.values(candidatesData).flat().find((c: { id?: string }) => c.id === suggestion.candidate_id)
                             if (candidate) {
                               setSelectedCandidate(candidate)
                               setShowCandidatePage(true)
@@ -239,7 +239,7 @@ export function KanbanLIASidebar({
                     <div
                       className="px-2.5 py-2 rounded-md bg-gray-100"
                     >
-                      <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
+                      <p className="text-xs text-lia-text-primary leading-relaxed">{msg.content}</p>
                     </div>
                   </div>
                 ) : (
@@ -252,9 +252,9 @@ export function KanbanLIASidebar({
                       </div>
                       <div className="pt-0.5 flex-1">
                         <div className="flex items-center gap-1 mb-0.5">
-                          <span className="text-micro font-bold text-gray-800" >LIA</span>
+                          <span className="text-micro font-bold text-lia-text-primary" >LIA</span>
                         </div>
-                        <div className="text-xs text-gray-800 space-y-1 leading-relaxed">
+                        <div className="text-xs text-lia-text-primary space-y-1 leading-relaxed">
                           {msg.content.split('\n').map((line, i) => {
                             if (line.startsWith('•')) {
                               return <p key={i} className="pl-2">{line}</p>
@@ -275,17 +275,17 @@ export function KanbanLIASidebar({
                             return line ? <p key={i}>{line}</p> : null
                           })}
                         </div>
-                        {(msg as any).metadata?.action_executed && (msg as any).metadata?.action_result && (
+                        {(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_executed && (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_result && (
                           <ActionResultCard
-                            actionType={(msg as any).metadata.action_type || 'move_candidate'}
-                            result={(msg as any).metadata.action_result}
+                            actionType={(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.action_type || 'move_candidate'}
+                            result={(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.action_result}
                           />
                         )}
-                        {(msg as any).metadata?.is_fallback && (
+                        {(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.is_fallback && (
                           <button
                             onClick={() => handleLiaUiAction(
-                              (msg as any).metadata.ui_action,
-                              (msg as any).metadata.ui_action_params || {}
+                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action,
+                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action_params || {}
                             )}
                             className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition-colors"
                             
@@ -304,9 +304,9 @@ export function KanbanLIASidebar({
               <div className="flex justify-start">
                 <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                   <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center">
-                    <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+                    <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
-                  <span className="text-micro text-gray-500">Pensando...</span>
+                  <span className="text-micro text-lia-text-tertiary">Pensando...</span>
                 </div>
               </div>
             )}
@@ -334,7 +334,7 @@ export function KanbanLIASidebar({
                 }
               }}
               disabled={isLiaLoading}
-              className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
+              className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary dark:text-lia-text-primary disabled:opacity-50"
             />
             <AudioRecordButton
               onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
@@ -351,25 +351,25 @@ export function KanbanLIASidebar({
               disabled={!liaPromptValue.trim() || isLiaLoading}
               className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200"
             >
-              <Send className="w-3.5 h-3.5 text-white dark:text-gray-900" />
+              <Send className="w-3.5 h-3.5 text-white dark:text-lia-text-disabled" />
             </button>
           </div>
 
           {/* Sugestões de Análises - Abaixo do input */}
           <div className="flex items-center gap-1.5 mt-2">
-            <span className="text-micro font-medium text-gray-500">Sugestões:</span>
+            <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
             <button
               onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
             >
-              <Star className="w-2.5 h-2.5 text-gray-500" />
+              <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
               Rankear
             </button>
             <button
               onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
             >
-              <Users className="w-2.5 h-2.5 text-gray-500" />
+              <Users className="w-2.5 h-2.5 text-lia-text-tertiary" />
               Comparar
             </button>
             <CandidateQueriesGuide

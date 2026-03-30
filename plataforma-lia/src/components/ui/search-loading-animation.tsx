@@ -55,28 +55,28 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
           <div 
             className="pulse-animation relative w-10 h-10 rounded-full flex items-center justify-center z-10 bg-wedo-cyan/20"
           >
-            <Search className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />
+            <Search className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
           </div>
         </div>
         <div className="text-left">
-          <p className="text-sm font-semibold text-gray-950">
+          <p className="text-sm font-semibold text-lia-text-primary">
             Processando busca...
           </p>
-          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
             Analisando critérios e perfis
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
           <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-green">
             <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
           </div>
           <span>Interpretando</span>
         </div>
         <span className="lia-text-secondary text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
           <div 
             className="spin-animation w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-900"
           >
@@ -85,7 +85,7 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
           <span>Buscando</span>
         </div>
         <span className="lia-text-secondary text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
           <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
           <span>Rankeando</span>
         </div>

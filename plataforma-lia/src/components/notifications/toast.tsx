@@ -36,8 +36,8 @@ const typeConfig = {
     icon: Info,
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     borderColor: 'border-lia-border-default dark:border-lia-border-default',
-    iconColor: 'text-gray-600 dark:text-lia-text-tertiary',
-    titleColor: 'text-gray-700 dark:text-lia-text-secondary'
+    iconColor: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+    titleColor: 'text-lia-text-secondary dark:text-lia-text-secondary'
   }
 }
 
@@ -87,10 +87,10 @@ export function Toast({ notification }: ToastProps) {
             <h4 className={cn("text-sm font-semibold", config.titleColor)}>
               {notification.title}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-lia-text-secondary mt-1">
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary mt-1">
               {notification.message}
             </p>
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-2">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-2">
               {formatTime(notification.timestamp)}
             </p>
           </div>

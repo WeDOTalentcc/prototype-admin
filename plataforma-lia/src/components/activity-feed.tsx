@@ -109,11 +109,11 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'urgent':
         return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
-        return 'bg-gray-100 text-gray-700 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default'
+        return 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default'
       case 'low':
-        return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
+        return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
       default:
-        return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
+        return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -338,19 +338,19 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       {activity.extra_data.overall_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Geral:</span>
-                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.overall_score}/100</span>
+                          <span className={`${textStyles.label} text-lia-text-primary`}>{activity.extra_data.overall_score}/100</span>
                         </div>
                       )}
                       {activity.extra_data.tech_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Técnico:</span>
-                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.tech_score}/100</span>
+                          <span className={`${textStyles.label} text-lia-text-primary`}>{activity.extra_data.tech_score}/100</span>
                         </div>
                       )}
                       {activity.extra_data.comm_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Comunicação:</span>
-                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.comm_score}/100</span>
+                          <span className={`${textStyles.label} text-lia-text-primary`}>{activity.extra_data.comm_score}/100</span>
                         </div>
                       )}
                     </div>
@@ -466,7 +466,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                     </p>
                   )}
                   {activity.description && (
-                    <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary line-clamp-2`}>
+                    <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary line-clamp-2`}>
                       {activity.description}
                     </p>
                   )}

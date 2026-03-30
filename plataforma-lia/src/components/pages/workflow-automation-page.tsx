@@ -18,7 +18,7 @@ interface WorkflowNode {
   type: 'trigger' | 'condition' | 'action' | 'delay'
   title: string
   description: string
-  config: any
+  config: Record<string, unknown>
   position: { x: number; y: number }
   inputs: string[]
   outputs: string[]
@@ -193,7 +193,7 @@ const nodeTypes = [
     type: 'condition',
     title: 'Condições',
     icon: GitBranch,
-    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary',
+    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary',
     items: [
       { id: 'department_check', name: 'Verificar Departamento', description: 'Condição baseada no departamento' },
       { id: 'score_check', name: 'Verificar Score', description: 'Condição baseada no score LIA' },
@@ -242,12 +242,12 @@ export function WorkflowAutomationPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Workflows Ativos</p>
-                <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{workflows.filter(w => w.status === 'active').length}</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Workflows Ativos</p>
+                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{workflows.filter(w => w.status === 'active').length}</p>
                 <p className="text-xs text-status-success">+2 esta semana</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <Workflow className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+                <Workflow className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -257,7 +257,7 @@ export function WorkflowAutomationPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Execuções Hoje</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Execuções Hoje</p>
                 <p className="text-2xl font-bold text-status-success">847</p>
                 <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
@@ -272,7 +272,7 @@ export function WorkflowAutomationPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Taxa de Sucesso</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold text-wedo-purple">94.2%</p>
                 <p className="text-xs text-wedo-purple">+0.8% vs semana</p>
               </div>
@@ -287,7 +287,7 @@ export function WorkflowAutomationPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
+                <p className="text-sm font-medium text-lia-text-secondary">Tempo Médio</p>
                 <p className="text-2xl font-bold text-wedo-orange">2.3s</p>
                 <p className="text-xs text-wedo-orange">-0.2s vs semana</p>
               </div>
@@ -325,13 +325,13 @@ export function WorkflowAutomationPage() {
                     }`}>
                       <Workflow className={`w-6 h-6 ${
                         workflow.status === 'active' ? 'text-status-success' :
-                        workflow.status === 'inactive' ? 'text-gray-600' : 'text-status-warning'
+                        workflow.status === 'inactive' ? 'text-lia-text-secondary' : 'text-status-warning'
                       }`} />
                     </div>
 
                     <div>
-                      <h4 className="font-medium text-gray-950 dark:text-gray-50">{workflow.name}</h4>
-                      <p className="text-sm text-gray-600">{workflow.description}</p>
+                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{workflow.name}</h4>
+                      <p className="text-sm text-lia-text-secondary">{workflow.description}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">{workflow.category}</Badge>
                         <Badge variant={
@@ -347,21 +347,21 @@ export function WorkflowAutomationPage() {
 
                   <div className="flex items-center gap-6 text-sm">
                     <div className="text-center">
-                      <p className="font-medium text-gray-950 dark:text-gray-50">{workflow.executions}</p>
-                      <p className="text-gray-600">Execuções</p>
+                      <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{workflow.executions}</p>
+                      <p className="text-lia-text-secondary">Execuções</p>
                     </div>
 
                     <div className="text-center">
                       <p className="font-medium text-status-success">{workflow.successRate}%</p>
-                      <p className="text-gray-600">Sucesso</p>
+                      <p className="text-lia-text-secondary">Sucesso</p>
                     </div>
 
                     {workflow.lastExecution && (
                       <div className="text-center">
-                        <p className="font-medium text-gray-950 dark:text-gray-50">
+                        <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {new Date(workflow.lastExecution).toLocaleDateString('pt-BR')}
                         </p>
-                        <p className="text-gray-600">Última exec.</p>
+                        <p className="text-lia-text-secondary">Última exec.</p>
                       </div>
                     )}
 
@@ -405,8 +405,8 @@ export function WorkflowAutomationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50">Templates de Automação</h3>
-          <p className="text-sm text-gray-600">Use templates prontos para criar workflows rapidamente</p>
+          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Templates de Automação</h3>
+          <p className="text-sm text-lia-text-secondary">Use templates prontos para criar workflows rapidamente</p>
         </div>
         <Button className="gap-2">
           <Upload className="w-4 h-4" />
@@ -421,26 +421,26 @@ export function WorkflowAutomationPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base">{template.name}</CardTitle>
-                  <p className="text-sm text-gray-600">{template.category}</p>
+                  <p className="text-sm text-lia-text-secondary">{template.category}</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
                       <div
                         key={star}
-                        className={`w-3 h-3 ${star <= template.rating ? 'text-status-warning' : 'text-gray-300'}`}
+                        className={`w-3 h-3 ${star <= template.rating ? 'text-status-warning' : 'text-lia-text-disabled'}`}
                       >
                         ⭐
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-600">{template.usageCount} usos</p>
+                  <p className="text-xs text-lia-text-secondary">{template.usageCount} usos</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-gray-800 dark:text-lia-text-primary">{template.description}</p>
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.description}</p>
 
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="outline" className="text-xs">
@@ -476,8 +476,8 @@ export function WorkflowAutomationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50">Workflow Builder</h3>
-          <p className="text-sm text-gray-600">Arraste e solte componentes para criar seu workflow</p>
+          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Workflow Builder</h3>
+          <p className="text-sm text-lia-text-secondary">Arraste e solte componentes para criar seu workflow</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">
@@ -494,7 +494,7 @@ export function WorkflowAutomationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-96">
         {/* Palette */}
         <div className="space-y-4">
-          <h4 className="font-medium text-gray-950 dark:text-gray-50">Componentes</h4>
+          <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Componentes</h4>
           {nodeTypes.map(nodeType => (
             <Card key={nodeType.type}>
               <CardHeader className="pb-2">
@@ -511,7 +511,7 @@ export function WorkflowAutomationPage() {
                     draggable
                   >
                     <p className="text-xs font-medium">{item.name}</p>
-                    <p className="text-xs text-gray-600">{item.description}</p>
+                    <p className="text-xs text-lia-text-secondary">{item.description}</p>
                   </div>
                 ))}
               </CardContent>
@@ -523,8 +523,8 @@ export function WorkflowAutomationPage() {
         <div className="lg:col-span-3">
           <div className="w-full h-full border-2 border-dashed border-lia-border-default rounded-md bg-gray-50 flex items-center justify-center">
             <div className="text-center">
-              <Workflow className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-600">Arraste componentes aqui para começar</p>
+              <Workflow className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+              <p className="text-lia-text-secondary">Arraste componentes aqui para começar</p>
             </div>
           </div>
         </div>
@@ -539,11 +539,11 @@ export function WorkflowAutomationPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold font-sans text-gray-950 dark:text-gray-50 mb-1 flex items-center gap-1.5">
-                <Workflow className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
+              <h1 className="text-sm font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
+                <Workflow className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Automação Avançada de Workflows
               </h1>
-              <p className="text-gray-600">
+              <p className="text-lia-text-secondary">
                 Crie fluxos automatizados inteligentes para otimizar processos
               </p>
             </div>
@@ -569,11 +569,11 @@ export function WorkflowAutomationPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedView(tab.id as any)}
+                onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -590,8 +590,8 @@ export function WorkflowAutomationPage() {
         {selectedView === 'analytics' && (
           <div className="text-center py-12">
             <Brain className="w-12 h-12 text-wedo-cyan mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Analytics de Automação</h3>
-            <p className="text-gray-600">Métricas detalhadas de performance em desenvolvimento</p>
+            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Analytics de Automação</h3>
+            <p className="text-lia-text-secondary">Métricas detalhadas de performance em desenvolvimento</p>
           </div>
         )}
 
@@ -621,7 +621,7 @@ function WorkflowBuilderModal({ workflow, onClose }: WorkflowBuilderModalProps) 
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+          <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
             {workflow ? `Editar: ${workflow.name}` : 'Novo Workflow'}
           </h2>
           <Button variant="ghost" onClick={onClose}>×</Button>
@@ -629,9 +629,9 @@ function WorkflowBuilderModal({ workflow, onClose }: WorkflowBuilderModalProps) 
 
         <div className="flex-1 p-6">
           <div className="text-center py-12">
-            <Code className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-2">Workflow Builder Avançado</h3>
-            <p className="text-gray-600">Interface visual de drag-and-drop em desenvolvimento</p>
+            <Code className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Workflow Builder Avançado</h3>
+            <p className="text-lia-text-secondary">Interface visual de drag-and-drop em desenvolvimento</p>
           </div>
         </div>
       </div>

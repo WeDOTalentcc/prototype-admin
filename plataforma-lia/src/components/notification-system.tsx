@@ -97,7 +97,7 @@ const NotificationItem = React.memo(({
       case "success": return <CheckCircle className="w-4 h-4 text-status-success" />
       case "warning": return <AlertCircle className="w-4 h-4 text-status-warning" />
       case "error": return <AlertCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      default: return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
     }
   }, [notification.type])
 
@@ -140,7 +140,7 @@ const NotificationItem = React.memo(({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h4 className={`text-xs font-medium leading-tight ${
- !notification.read ? "text-gray-950" : "text-gray-600 dark:text-lia-text-tertiary"
+ !notification.read ? "text-lia-text-primary" : "text-lia-text-secondary dark:text-lia-text-tertiary"
  }`}>
               {notification.title}
             </h4>
@@ -154,12 +154,12 @@ const NotificationItem = React.memo(({
             </Button>
           </div>
           <p className={`text-xs mt-0.5 leading-relaxed ${
- !notification.read ? "text-gray-600" : "text-gray-800 dark:text-lia-text-primary"
+ !notification.read ? "text-lia-text-secondary" : "text-lia-text-primary dark:text-lia-text-primary"
  }`}>
             {notification.message}
           </p>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-xs text-gray-600 flex items-center gap-1">
+            <span className="text-xs text-lia-text-secondary flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {timeAgo}
             </span>
@@ -308,7 +308,7 @@ export function NotificationSystem({
         variant="ghost"
         size="sm"
         onClick={toggleOpen}
-        className="h-7 w-7 p-0 relative text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="h-7 w-7 p-0 relative text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
       >
         <Bell className="w-3.5 h-3.5" />
         {unreadCount > 0 && (
@@ -325,10 +325,10 @@ export function NotificationSystem({
           <CardContent className="p-0">
             <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-950">
+                <h3 className="text-sm font-semibold text-lia-text-primary">
                   Notificações
                   {unreadCount > 0 && (
-                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                       {unreadCount} nova{unreadCount > 1 ? 's' : ''}
                     </span>
                   )}
@@ -342,7 +342,7 @@ export function NotificationSystem({
                       variant="ghost"
                       size="sm"
                       onClick={markAllAsRead}
-                      className="text-xs h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:text-gray-800 dark:hover:text-gray-200"
+                      className="text-xs h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                      
                     >
                       Marcar lidas
@@ -388,8 +388,8 @@ export function NotificationSystem({
                 </div>
               ) : (
                 <div className="py-10 px-4 text-center">
-                  <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+                  <Bell className="w-8 h-8 mx-auto mb-2 text-lia-text-disabled" />
+                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                     {isLoading ? "Carregando..." : "Nenhuma notificação"}
                   </p>
                 </div>

@@ -144,7 +144,7 @@ export function JobsPage(props: JobsPageProps) {
 
   if (!hasMounted) {
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
@@ -166,7 +166,7 @@ export function JobsPage(props: JobsPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden relative">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
       {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
         <div className="absolute inset-0 z-50 bg-white dark:bg-lia-bg-primary flex flex-col">
@@ -189,13 +189,13 @@ export function JobsPage(props: JobsPageProps) {
       )}
       
       {/* Header Fixo - Título e Tabs (oculto em fullscreen) */}
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-gray-950 ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-lia-bg-primary ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
         {/* Header Principal - Padrão Funil de Talentos */}
         <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-3">
               <div>
                 <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Gestão de Vagas
                 </h1>
               </div>
@@ -226,8 +226,8 @@ export function JobsPage(props: JobsPageProps) {
                   role="tab"
                   className={`group inline-flex items-center py-2 px-1 border-b-2 tab-button ${
                     activeFilter === filter.id
-                      ?'border-gray-900 text-gray-950 dark:border-lia-border-subtle dark:text-gray-50 font-semibold'
-                      :'border-transparent text-gray-800 hover:text-gray-950 hover:border-lia-border-default dark:text-lia-text-primary dark:hover:text-gray-600'
+                      ?'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary font-semibold'
+                      :'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default dark:text-lia-text-primary dark:hover:text-lia-text-secondary'
                   }`}
                 >
                   <span>{filter.label}</span>
@@ -236,12 +236,12 @@ export function JobsPage(props: JobsPageProps) {
                       variant="secondary"
                       className={`ml-2 text-xs ${
                         activeFilter === filter.id
-                          ?'bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold'
-                          :'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary'
+                          ?'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold'
+                          :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary'
                       }`}
                     >
                       {isLoadingJobs ? (
-                        <span className="inline-block w-4 h-3 bg-gray-300 dark:bg-gray-600 rounded-md animate-pulse" />
+                        <span className="inline-block w-4 h-3 bg-gray-300 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
                       ) : (
                         filter.count
                       )}
@@ -275,25 +275,25 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openJobCreationChat('Criar nova vaga'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
                     >
-                      <Plus className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                      <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                       Criar nova vaga
                     </button>
                     {/* Tag 2: Ver minhas vagas */}
                     <button
                       onClick={() => setActiveFilter('ativas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
                     >
-                      <Briefcase className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                      <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                       Ver minhas vagas
                     </button>
                     {/* Tag 3: Ver todas as vagas */}
                     <button
                       onClick={() => setActiveFilter('todas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
                     >
-                      <Building2 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                      <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                       Ver todas as vagas
                     </button>
                     {/* Tag 4: Resumo das vagas */}
@@ -302,9 +302,9 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openGeneralChat('Resumo das minhas vagas ativas'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
                     >
-                      <BarChart3 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
+                      <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
                       Resumo das vagas
                     </button>
                     {/* Botão Mais ideias - Modal com tabs igual ao prompt expandido */}
@@ -327,7 +327,7 @@ export function JobsPage(props: JobsPageProps) {
                       value={liaPromptValue}
                       onChange={(e) => setLiaPromptValue(e.target.value)}
                      
-                      className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-gray-950 dark:text-gray-50"
+                      className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
                       onKeyDown={(e) => {
                         if (e.key ==='Enter' && liaPromptValue.trim()) {
                           setActiveFilter('todas')
@@ -365,7 +365,7 @@ export function JobsPage(props: JobsPageProps) {
                       }}
                       title="Buscar"
                     >
-                      <Search className="w-4 h-4 text-gray-600" />
+                      <Search className="w-4 h-4 text-lia-text-secondary" />
                     </button>
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export function JobsPage(props: JobsPageProps) {
                 {/* Segunda linha de tags - Sugestões Dinâmicas (estilo Funil) */}
                 <div className="px-4 pb-4">
                   <div className="flex flex-wrap items-start gap-2 pt-3">
-                    <span className="text-xs text-gray-800 font-medium mt-0.5">Sugestões:</span>
+                    <span className="text-xs text-lia-text-primary font-medium mt-0.5">Sugestões:</span>
                     {/* Renderiza sugestões do orquestrador quando disponíveis, senão usa contextuais baseadas no estado */}
                     {(orchestratorSuggestions.length > 0 ? orchestratorSuggestions : getContextualSuggestions()).slice(0, 4).map((suggestion, index) => (
                       <button
@@ -382,7 +382,7 @@ export function JobsPage(props: JobsPageProps) {
                           setActiveFilter('todas')
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
-                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-gray-800 border border-lia-border-subtle hover:text-gray-900 hover:bg-gray-100"
+                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-gray-100"
                        
                       >
                         {suggestion}
@@ -411,7 +411,7 @@ export function JobsPage(props: JobsPageProps) {
                   placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-colors border bg-lia-bg-primary"
+                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors border bg-lia-bg-primary"
                   style={{color:"var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor ="var(--gray-800)"
@@ -435,7 +435,7 @@ export function JobsPage(props: JobsPageProps) {
                     onClick={() => openGeneralChat()}
                     title="Expandir chat"
                   >
-                    <Maximize2 className="w-4 h-4 text-gray-700" />
+                    <Maximize2 className="w-4 h-4 text-lia-text-secondary" />
                   </button>
                   <button
                     className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
@@ -446,7 +446,7 @@ export function JobsPage(props: JobsPageProps) {
                       }
                     }}
                   >
-                    <Send className="w-4 h-4 text-gray-700" />
+                    <Send className="w-4 h-4 text-lia-text-secondary" />
                   </button>
                 </div>
               </div>
@@ -457,7 +457,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               {/* Badge de seleção */}
               {selectedJobsForBatch.size > 0 && (
-                <Badge className="bg-gray-100 text-gray-950 border-lia-border-default dark:bg-lia-bg-secondary dark:text-gray-50 dark:border-lia-border-default text-xs font-bold">
+                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default text-xs font-bold">
                   🎯 {selectedJobsForBatch.size}
                 </Badge>
               )}
@@ -479,14 +479,14 @@ export function JobsPage(props: JobsPageProps) {
               <Button
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900 text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-lia-text-disabled text-white' :''}`}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
                 title="Filtrar resultados da tabela"
               >
                 <Target className="w-3 h-3" />
                 Filtros
                 {getActiveJobFiltersCount() > 0 && (
-                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 ml-1 text-xs font-bold">
+                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-disabled ml-1 text-xs font-bold">
                     {getActiveJobFiltersCount()}
                   </Badge>
                 )}
@@ -495,7 +495,7 @@ export function JobsPage(props: JobsPageProps) {
               <Button
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-lia-text-disabled text-white' :''}`}
                 onClick={handleToggleColumnConfig}
                 title="Configurar colunas da tabela"
               >
@@ -505,8 +505,8 @@ export function JobsPage(props: JobsPageProps) {
                   variant="secondary"
                   className={`ml-1 text-xs ${
                     showColumnConfig
-                      ?'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900 font-bold'
-                      :'bg-gray-100 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
+                      ?'bg-gray-800 text-white dark:bg-gray-200 dark:text-lia-text-disabled font-bold'
+                      :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary'
                   }`}
                 >
                   6
@@ -518,9 +518,9 @@ export function JobsPage(props: JobsPageProps) {
 
           {/* Results Summary */}
           <div className="flex-shrink-0 flex items-center justify-between mb-2">
-            <div className="text-xs text-gray-800 dark:text-lia-text-primary flex items-center gap-3">
+            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-3">
               {(searchTerm || selectedDaysFilter !=='todas') && (
-                <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default font-medium">
+                <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default font-medium">
                   filtros ativos
                 </Badge>
               )}
@@ -614,11 +614,11 @@ export function JobsPage(props: JobsPageProps) {
                     className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                     title="Expandir tabela de vagas"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-800 dark:text-lia-text-primary" />
+                    <ChevronRight className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary" />
                   </Button>
                   
                   {/* Ícone da tabela */}
-                  <div className="flex flex-col items-center gap-2 text-gray-800">
+                  <div className="flex flex-col items-center gap-2 text-lia-text-primary">
                     <Briefcase className="w-5 h-5" />
                     <span className="text-xs font-medium writing-mode-vertical" style={{writingMode:'vertical-rl', textOrientation:'mixed'}}>
                       Vagas ({filteredJobs.length})
@@ -639,8 +639,8 @@ export function JobsPage(props: JobsPageProps) {
                   {showInlineChat && (
                     <div className="flex-shrink-0 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-gray-800" />
-                        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+                        <Briefcase className="w-4 h-4 text-lia-text-primary" />
+                        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                           Vagas ({filteredJobs.length})
                         </span>
                       </div>
@@ -651,7 +651,7 @@ export function JobsPage(props: JobsPageProps) {
                         className="h-7 w-7 p-0 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
                         title="Contrair tabela"
                       >
-                        <ChevronLeft className="w-4 h-4 text-gray-800" />
+                        <ChevronLeft className="w-4 h-4 text-lia-text-primary" />
                       </Button>
                     </div>
                   )}
@@ -659,7 +659,7 @@ export function JobsPage(props: JobsPageProps) {
                   <div className="flex-1 overflow-y-auto">
                     {isLoadingJobs ? (
                       <div className="flex items-center justify-center py-12">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-lia-text-tertiary">
                           <Loader2 className="w-5 h-5 animate-spin" />
                           <span>Carregando vagas...</span>
                         </div>
@@ -1333,19 +1333,19 @@ export function JobsPage(props: JobsPageProps) {
           <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && setShowReactivateScreeningDialog(false)}>
             <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
               <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+                <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Reativar Triagem?
                 </DialogTitle>
               </DialogHeader>
               <div className="py-4 space-y-3">
-                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   {reactivateScreeningJobs.length === 1 
                     ? `A vaga"${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
                     : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
                   }
                 </p>
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+                  <Label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                     Nova data de término (opcional)
                   </Label>
                   <Input
@@ -1386,7 +1386,7 @@ export function JobsPage(props: JobsPageProps) {
                     setReactivateScreeningJobs([])
                     setReactivateEndDate('')
                   }}
-                  className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
                 >
                   Sim, reativar triagem
                 </Button>

@@ -141,7 +141,7 @@ export function useAllStagesValidation() {
   const { detectedCriteria, basicInfoFields, technicalSkills, behavioralCompetencies, salaryInfo, wsiCandidates } = useWizardContext()
   
   return useMemo(() => {
-    const results: Record<WizardStage, { isValid: boolean; hasWarnings: boolean }> = {} as any
+    const results: Record<WizardStage, { isValid: boolean; hasWarnings: boolean }> = {} as Record<WizardStage, { isValid: boolean; hasWarnings: boolean }>
     
     results['input-evaluation'] = {
       isValid: detectedCriteria.cargo !== null,

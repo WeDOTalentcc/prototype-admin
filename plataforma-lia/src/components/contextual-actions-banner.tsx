@@ -43,9 +43,9 @@ export function ContextualActionsBanner({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-              <Users className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <span className="text-sm font-semibold text-gray-950">
+            <span className="text-sm font-semibold text-lia-text-primary">
               {selectedCount} candidato{selectedCount > 1 ? 's' : ''} selecionado{selectedCount > 1 ? 's' : ''}
             </span>
           </div>
@@ -57,7 +57,7 @@ export function ContextualActionsBanner({
             variant="outline"
             size="sm"
             onClick={onAddToVacancy}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Adicionar à Vaga"
           >
             <Briefcase className="w-3.5 h-3.5 lia-text-base" />
@@ -69,7 +69,7 @@ export function ContextualActionsBanner({
             size="sm"
             onClick={onAddToList}
             disabled={isAddingToList}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Adicionar à Lista"
           >
             {isAddingToList ? (
@@ -85,7 +85,7 @@ export function ContextualActionsBanner({
               variant="outline"
               size="sm"
               onClick={onShareSearch}
-              className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+              className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
               title="Compartilhar Busca"
             >
               <Share2 className="w-3.5 h-3.5 lia-text-base" />
@@ -97,7 +97,7 @@ export function ContextualActionsBanner({
             variant="outline"
             size="sm"
             onClick={onSendMessage}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Enviar Mensagem"
           >
             <Mail className="w-3.5 h-3.5 lia-text-base" />
@@ -108,10 +108,10 @@ export function ContextualActionsBanner({
             variant="outline"
             size="sm"
             onClick={onWSIScreening}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Triagem WSI"
           >
-            <ClipboardCheck className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+            <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span>Triagem WSI</span>
           </Button>
 
@@ -119,7 +119,7 @@ export function ContextualActionsBanner({
             variant="outline"
             size="sm"
             onClick={onToggleFavorite}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Adicionar aos Favoritos"
           >
             <Star className="w-3.5 h-3.5 text-wedo-green" />
@@ -130,7 +130,7 @@ export function ContextualActionsBanner({
             variant="outline"
             size="sm"
             onClick={onHide}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
             title="Ocultar Candidatos"
           >
             <EyeOff className="w-3.5 h-3.5 lia-text-secondary" />
@@ -143,7 +143,7 @@ export function ContextualActionsBanner({
               size="sm"
               onClick={onSaveToLocalBase}
               disabled={isSavingToBase}
-              className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-gray-800 dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+              className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
               title="Salvar na Base Local"
             >
               {isSavingToBase ? (
@@ -161,7 +161,7 @@ export function ContextualActionsBanner({
           variant="ghost"
           size="sm"
           onClick={onDeselectAll}
-          className="h-8 px-2 text-xs text-gray-800 hover:text-gray-950 dark:text-lia-text-primary dark:hover:text-gray-50"
+          className="h-8 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary dark:text-lia-text-primary dark:hover:text-lia-text-inverse"
           title="Limpar seleção"
         >
           <X className="w-3 h-3" />

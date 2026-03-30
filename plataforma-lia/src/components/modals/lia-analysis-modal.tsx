@@ -19,7 +19,7 @@ interface LiaAnalysisModalProps {
   isOpen: boolean
   onClose: () => void
   onOpen?: () => void
-  candidate: any
+  candidate: Record<string, unknown>
   onTransportToOpinions?: (analysis: LiaAnalysis) => void
   children?: React.ReactNode
 }
@@ -169,9 +169,9 @@ export function LiaAnalysisModal({
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <div className="relative">
             <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
-            <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-micro text-gray-600">
+          <p className="text-micro text-lia-text-secondary">
             LIA está gerando a análise...
           </p>
         </div>
@@ -182,7 +182,7 @@ export function LiaAnalysisModal({
       return (
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <Brain className="w-6 h-6 text-wedo-cyan" />
-          <p className="text-micro text-gray-600">
+          <p className="text-micro text-lia-text-secondary">
             Clique na aba para gerar a análise
           </p>
         </div>
@@ -212,8 +212,8 @@ export function LiaAnalysisModal({
     }
 
     return (
-      <div className="text-xs text-gray-800 leading-relaxed">
-        <p className="font-semibold text-gray-950 mb-2 text-xs">{candidate?.name || candidate?.nome}</p>
+      <div className="text-xs text-lia-text-primary leading-relaxed">
+        <p className="font-semibold text-lia-text-primary mb-2 text-xs">{candidate?.name || candidate?.nome}</p>
         <div className="space-y-0">
           {formatContent(analysis.content)}
         </div>
@@ -242,13 +242,13 @@ export function LiaAnalysisModal({
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-lia-border-subtle bg-gray-50/50 rounded-t-lg">
             <div className="flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <span className="text-xs font-semibold text-gray-950">Resumo do Perfil</span>
+              <span className="text-xs font-semibold text-lia-text-primary">Resumo do Perfil</span>
             </div>
             <button
               onClick={onClose}
               className="p-1 hover:bg-gray-200 rounded-md transition-colors"
             >
-              <X className="w-4 h-4 text-gray-600" />
+              <X className="w-4 h-4 text-lia-text-secondary" />
             </button>
           </div>
 
@@ -260,7 +260,7 @@ export function LiaAnalysisModal({
                 className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                   activeTab === tab.id
                     ? 'bg-gray-800 text-white'
-                    : 'text-gray-800 hover:bg-gray-100'
+                    : 'text-lia-text-primary hover:bg-gray-100'
                 }`}
               >
                 {tab.label}
@@ -274,7 +274,7 @@ export function LiaAnalysisModal({
 
           <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50/50 rounded-b-lg space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-micro text-gray-600">Análise gerada pela LIA. Confirme informações.</p>
+              <p className="text-micro text-lia-text-secondary">Análise gerada pela LIA. Confirme informações.</p>
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
@@ -310,7 +310,7 @@ export function LiaAnalysisModal({
                   variant="outline"
                   size="sm"
                   onClick={handleTransport}
-                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   Transportar "{ANALYSIS_TABS.find(t => t.id === activeTab)?.label}" para Pareceres

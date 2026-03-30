@@ -117,10 +117,10 @@ export function CandidatesFilterPanel({
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
           <div>
-            <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+            <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Refinar Resultados
             </h3>
-            <p className="text-xs mt-0.5 text-gray-800">
+            <p className="text-xs mt-0.5 text-lia-text-primary">
               {activeFiltersCount > 0
                 ? `${activeFiltersCount} filtro${activeFiltersCount > 1 ? "s" : ""} ativo${activeFiltersCount > 1 ? "s" : ""}`
                 : "Filtre os resultados exibidos"}
@@ -128,7 +128,7 @@ export function CandidatesFilterPanel({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-gray-800 hover:text-gray-950 hover:bg-gray-100"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -138,7 +138,7 @@ export function CandidatesFilterPanel({
           {/* Ordenação */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <ArrowUpDown className="w-3 h-3" />
@@ -158,14 +158,14 @@ export function CandidatesFilterPanel({
                   className={cn(
                     "flex items-center gap-2.5 px-3 py-2 rounded-md border cursor-pointer transition-colors text-xs",
                     searchSortBy === option.value
-                      ? "border-gray-900 bg-gray-50 font-medium text-gray-900"
-                      : "border-lia-border-subtle hover:border-lia-border-default text-gray-700"
+                      ? "border-gray-900 bg-gray-50 font-medium text-lia-text-primary"
+                      : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                   )}
                  
                 >
                   <RadioGroupItem
                     value={option.value}
-                    className="w-3.5 h-3.5 border-gray-400 data-[state=checked]:border-gray-900 data-[state=checked]:text-gray-900"
+                    className="w-3.5 h-3.5 border-gray-400 data-[state=checked]:border-gray-900 data-[state=checked]:text-lia-text-primary"
                   />
                   {option.label}
                 </label>
@@ -176,7 +176,7 @@ export function CandidatesFilterPanel({
           {/* Filtros Rápidos */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Zap className="w-3 h-3" />
@@ -190,7 +190,7 @@ export function CandidatesFilterPanel({
                 { key: "remoteOnly" as const, label: "Apenas Remoto" },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-gray-800">
+                  <span className="text-xs text-lia-text-primary">
                     {label}
                   </span>
                   <Switch
@@ -208,7 +208,7 @@ export function CandidatesFilterPanel({
           {/* Experiência */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Briefcase className="w-3 h-3" />
@@ -216,7 +216,7 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-gray-800 mb-1 block">Mín. Anos</label>
+                <label className="text-xs text-lia-text-primary mb-1 block">Mín. Anos</label>
                 <Input
                   type="number"
                   min={0}
@@ -233,7 +233,7 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-800 mb-1 block">Máx. Anos</label>
+                <label className="text-xs text-lia-text-primary mb-1 block">Máx. Anos</label>
                 <Input
                   type="number"
                   min={0}
@@ -255,7 +255,7 @@ export function CandidatesFilterPanel({
           {/* Score LIA */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Star className="w-3 h-3" />
@@ -263,7 +263,7 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-gray-800 mb-1 block">Mín. Score</label>
+                <label className="text-xs text-lia-text-primary mb-1 block">Mín. Score</label>
                 <Input
                   type="number"
                   min={0}
@@ -280,7 +280,7 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-800 mb-1 block">Máx. Score</label>
+                <label className="text-xs text-lia-text-primary mb-1 block">Máx. Score</label>
                 <Input
                   type="number"
                   min={0}
@@ -302,7 +302,7 @@ export function CandidatesFilterPanel({
           {/* Senioridade */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Crown className="w-3 h-3" />
@@ -332,7 +332,7 @@ export function CandidatesFilterPanel({
           {/* Modelo de Trabalho */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <MapPin className="w-3 h-3" />
@@ -360,7 +360,7 @@ export function CandidatesFilterPanel({
           {/* Tipo de Contrato */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <FileText className="w-3 h-3" />
@@ -384,7 +384,7 @@ export function CandidatesFilterPanel({
           {/* Localização */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <MapPin className="w-3 h-3" />
@@ -403,7 +403,7 @@ export function CandidatesFilterPanel({
           {/* Salário */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <DollarSign className="w-3 h-3" />
@@ -448,7 +448,7 @@ export function CandidatesFilterPanel({
           {/* Indicadores de Perfil */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Crown className="w-3 h-3" />
@@ -462,7 +462,7 @@ export function CandidatesFilterPanel({
                 { key: "isStartup" as const, label: "Trabalha em Startup" },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-gray-800">
+                  <span className="text-xs text-lia-text-primary">
                     {label}
                   </span>
                   <Switch
@@ -480,7 +480,7 @@ export function CandidatesFilterPanel({
           {/* Fonte */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Globe className="w-3 h-3" />
@@ -510,7 +510,7 @@ export function CandidatesFilterPanel({
           {/* Tags */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Bookmark className="w-3 h-3" />
@@ -529,7 +529,7 @@ export function CandidatesFilterPanel({
           {/* Empresa */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Building className="w-3 h-3" />
@@ -548,7 +548,7 @@ export function CandidatesFilterPanel({
           {/* Setor/Indústria */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Layers className="w-3 h-3" />
@@ -570,7 +570,7 @@ export function CandidatesFilterPanel({
           {/* Idiomas */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Globe className="w-3 h-3" />
@@ -592,7 +592,7 @@ export function CandidatesFilterPanel({
           {/* Status */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <CheckCircle className="w-3 h-3" />
@@ -623,7 +623,7 @@ export function CandidatesFilterPanel({
           {/* Presença Online */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Github className="w-3 h-3" />
@@ -635,7 +635,7 @@ export function CandidatesFilterPanel({
                 { key: "hasPortfolio" as const, label: "Com Portfólio" },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-gray-800">
+                  <span className="text-xs text-lia-text-primary">
                     {label}
                   </span>
                   <Switch
@@ -653,7 +653,7 @@ export function CandidatesFilterPanel({
           {/* Soft Skills */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
@@ -704,7 +704,7 @@ export function CandidatesFilterPanel({
           {/* Certificações */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Code className="w-3 h-3" />
@@ -755,7 +755,7 @@ export function CandidatesFilterPanel({
           {/* Disponibilidade */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <MapPin className="w-3 h-3" />
@@ -816,7 +816,7 @@ export function CandidatesFilterPanel({
           {/* Shortlisted */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Bookmark className="w-3 h-3" />
@@ -871,7 +871,7 @@ export function CandidatesFilterPanel({
           {/* Placement */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <CheckCircle className="w-3 h-3" />
@@ -941,7 +941,7 @@ export function CandidatesFilterPanel({
           {/* Vaga Específica */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Bookmark className="w-3 h-3" />
@@ -964,7 +964,7 @@ export function CandidatesFilterPanel({
           {/* Data de Cadastro */}
           <div className="mb-5">
             <h4
-              className="text-xs font-semibold uppercase tracking-wider text-gray-800 mb-3 flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
              
             >
               <Calendar className="w-3 h-3" />

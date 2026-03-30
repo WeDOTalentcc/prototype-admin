@@ -46,7 +46,7 @@ export function LikertScaleCard({
       role="group"
       aria-label={question}
     >
-      <p className="text-sm text-gray-700 dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
         {question}
       </p>
 
@@ -65,7 +65,7 @@ export function LikertScaleCard({
  "flex-1 min-w-[44px] h-11 flex items-center justify-center rounded-md text-sm font-semibold font-['Inter',sans-serif] transition-colors duration-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none",
                 isSelected
                   ? "bg-gray-900 text-white border border-gray-900"
-                  : "bg-white dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700",
+                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700",
                 (disabled || (selectedValue !== null && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -76,10 +76,10 @@ export function LikertScaleCard({
       </div>
 
       <div className="flex justify-between">
-        <span className="text-micro text-gray-400 font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-lia-text-disabled font-['Open_Sans',sans-serif]">
           {labels[0]}
         </span>
-        <span className="text-micro text-gray-400 font-['Open_Sans',sans-serif]">
+        <span className="text-micro text-lia-text-disabled font-['Open_Sans',sans-serif]">
           {labels[labels.length - 1]}
         </span>
       </div>

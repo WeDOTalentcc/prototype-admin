@@ -100,7 +100,7 @@ export function TemplateSuggestionToast({
     } else if (suggestion.complexity >= 8) {
       return <Brain className="w-4 h-4 text-wedo-cyan" />
     } else {
-      return <Lightbulb className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      return <Lightbulb className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
     }
   }
 
@@ -111,7 +111,7 @@ export function TemplateSuggestionToast({
     } else if (suggestion.complexity >= 8) {
       return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
     } else {
-      return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+      return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
     }
   }
 
@@ -127,7 +127,7 @@ export function TemplateSuggestionToast({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               {getReasonIcon()}
-              <span className="font-medium text-gray-950 text-sm">
+              <span className="font-medium text-lia-text-primary text-sm">
                 Sugestão de Template
               </span>
             </div>
@@ -149,17 +149,17 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Comando */}
-          <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-elevated rounded-md text-xs font-mono text-gray-800 dark:text-lia-text-primary line-clamp-2">
+          <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-elevated rounded-md text-xs font-mono text-lia-text-primary dark:text-lia-text-primary line-clamp-2">
             "{suggestion.command}"
           </div>
 
           {/* Benefícios */}
           <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-            <div className="flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
+            <div className="flex items-center gap-1 text-lia-text-secondary dark:text-lia-text-tertiary">
               <Clock className="w-3 h-3" />
               <span>~{Math.round(suggestion.estimatedTime/60)}min economia</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
+            <div className="flex items-center gap-1 text-lia-text-secondary dark:text-lia-text-tertiary">
               <FileText className="w-3 h-3" />
               <span>Complexidade {suggestion.complexity}/10</span>
             </div>
@@ -197,7 +197,7 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Footer */}
-          <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-default flex items-center justify-between text-xs text-gray-800 dark:text-lia-text-primary">
+          <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-default flex items-center justify-between text-xs text-lia-text-primary dark:text-lia-text-primary">
             <span>💡 LIA Intelligence</span>
             <button
               onClick={() => {/* Abrir configurações */}}

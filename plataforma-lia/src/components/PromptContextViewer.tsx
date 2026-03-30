@@ -16,8 +16,8 @@ interface ContextPillData {
 }
 
 interface PromptContextViewerProps {
-  candidateContext: any
-  selectedCandidates: any[]
+  candidateContext: Record<string, unknown>
+  selectedCandidates: Record<string, unknown>[]
   contextPill?: ContextPillData
   quickActions?: QuickAction[]
 }
@@ -48,7 +48,7 @@ export function PromptContextViewer({
               <div className="font-medium lia-text-strong text-base-ui">
                 {candidateContext.name}
               </div>
-              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                 {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
@@ -75,13 +75,13 @@ export function PromptContextViewer({
                     {candidate.name?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
+                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                   {candidate.name || `Candidato ${index + 1}`}
                 </span>
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-lia-text-primary">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary dark:text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}

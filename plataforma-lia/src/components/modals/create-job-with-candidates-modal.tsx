@@ -141,7 +141,7 @@ export function CreateJobWithCandidatesModal({
       aria-labelledby="create-job-with-candidates-modal-title"
     >
       <div
-        className="absolute inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 dark:bg-lia-bg-primary/70 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -159,19 +159,19 @@ export function CreateJobWithCandidatesModal({
               <div>
                 <h2 
                   id="create-job-with-candidates-modal-title" 
-                  className="text-sm font-semibold text-gray-100"
+                  className="text-sm font-semibold text-lia-text-inverse"
                  
                 >
                   Criar vaga com candidatos
                 </h2>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-lia-text-disabled">
                   Os candidatos serão adicionados após a criação
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-md hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
+              className="p-2 rounded-md hover:bg-gray-800 text-lia-text-disabled hover:text-lia-text-inverse transition-colors"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -182,13 +182,13 @@ export function CreateJobWithCandidatesModal({
         <div className="p-5 space-y-5 flex-1 overflow-hidden flex flex-col">
           <div className="bg-gray-800/50 border border-gray-700 rounded-md p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-              <span className="text-xs font-medium text-gray-200">
+              <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <span className="text-xs font-medium text-lia-text-inverse">
                 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} selecionado{candidateCount !== 1 ? 's' : ''}
               </span>
             </div>
             
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-xs text-lia-text-disabled mb-3">
               Serão adicionados automaticamente à vaga após sua criação
             </p>
             
@@ -201,18 +201,18 @@ export function CreateJobWithCandidatesModal({
                       className="flex items-center gap-2 p-2 bg-gray-800 rounded-md border border-gray-700"
                     >
                       <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-gray-200 truncate flex-1">
+                      <span className="text-xs text-lia-text-inverse truncate flex-1">
                         {name}
                       </span>
                       <Check className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                     </div>
                   ))}
                   {remainingCount > 0 && (
-                    <div className="text-xs text-gray-500 text-center py-1">
+                    <div className="text-xs text-lia-text-tertiary text-center py-1">
                       +{remainingCount} candidato{remainingCount !== 1 ? 's' : ''}
                     </div>
                   )}
@@ -223,11 +223,11 @@ export function CreateJobWithCandidatesModal({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-300">
+              <Label className="text-xs font-medium text-lia-text-disabled">
                 Etapa inicial
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
-                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-gray-200 text-xs focus:ring-gray-900 focus:ring-offset-0">
+                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-lia-text-inverse text-xs focus:ring-gray-900 focus:ring-offset-0">
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
@@ -235,7 +235,7 @@ export function CreateJobWithCandidatesModal({
                     <SelectItem 
                       key={stage} 
                       value={stage} 
-                      className="text-xs text-gray-200 focus:bg-gray-700 focus:text-gray-100"
+                      className="text-xs text-lia-text-inverse focus:bg-gray-700 focus:text-lia-text-inverse"
                     >
                       {stage}
                     </SelectItem>
@@ -255,12 +255,12 @@ export function CreateJobWithCandidatesModal({
                 <div className="flex-1">
                   <Label
                     htmlFor="include-comments"
-                    className="text-xs font-medium text-gray-200 cursor-pointer flex items-center gap-1.5"
+                    className="text-xs font-medium text-lia-text-inverse cursor-pointer flex items-center gap-1.5"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
+                    <MessageSquare className="w-3.5 h-3.5 text-lia-text-disabled" />
                     Incluir comentários como notas
                   </Label>
-                  <p className="text-micro text-gray-500 mt-1">
+                  <p className="text-micro text-lia-text-tertiary mt-1">
                     Os feedbacks serão adicionados como notas iniciais dos candidatos
                   </p>
                 </div>
@@ -270,12 +270,12 @@ export function CreateJobWithCandidatesModal({
 
           <div className="bg-gray-100 border border-lia-border-subtle rounded-md p-3 mt-auto">
             <div className="flex items-start gap-2">
-              <Briefcase className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+              <Briefcase className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                   Próximo passo
                 </p>
-                <p className="text-micro text-gray-400 mt-1">
+                <p className="text-micro text-lia-text-disabled mt-1">
                   A LIA vai te guiar na criação da vaga. Após finalizar, os candidatos serão adicionados automaticamente.
                 </p>
               </div>
@@ -287,13 +287,13 @@ export function CreateJobWithCandidatesModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-gray-100 hover:border-gray-500"
+            className="h-9 px-4 text-xs font-medium bg-transparent border-gray-600 text-lia-text-disabled hover:bg-gray-800 hover:text-lia-text-inverse hover:border-gray-500"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleProceed}
-            className="h-9 px-5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             Criar Vaga
             <ChevronRight className="w-4 h-4 ml-1" />

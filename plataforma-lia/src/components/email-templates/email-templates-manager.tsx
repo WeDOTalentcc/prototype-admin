@@ -30,9 +30,9 @@ import { EmailTemplateFormModal } from "./email-template-form-modal"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
-  rejection: { label: "Rejeição", color: "bg-gray-100 text-gray-800 dark:text-lia-text-primary" },
+  rejection: { label: "Rejeição", color: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary" },
   offer: { label: "Proposta", color: "bg-status-success/10 text-status-success" },
-  followup: { label: "Follow-up", color: "bg-gray-100 text-gray-800 dark:text-lia-text-primary" },
+  followup: { label: "Follow-up", color: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary" },
   screening: { label: "Triagem", color: "bg-status-warning/10 text-status-warning" },
 }
 
@@ -274,7 +274,7 @@ export function EmailTemplatesManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-sans font-semibold text-gray-950">Templates de Email</h2>
+          <h2 className="text-2xl font-sans font-semibold text-lia-text-primary">Templates de Email</h2>
           <p className="lia-text-base mt-1">
             Gerencie os templates de email para comunicação com candidatos
           </p>
@@ -331,7 +331,7 @@ export function EmailTemplatesManager() {
           <CardContent className="py-12">
             <div className="text-center">
               <FileText className="w-12 h-12 lia-text-base mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-950 mb-2">
+              <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 {searchQuery || categoryFilter !== "all"
                   ? "Nenhum template encontrado"
                   : "Nenhum template cadastrado"}
@@ -362,7 +362,7 @@ export function EmailTemplatesManager() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Mail className="w-4 h-4 lia-text-base flex-shrink-0" />
-                      <h3 className="font-medium text-gray-950 truncate">
+                      <h3 className="font-medium text-lia-text-primary truncate">
                         {template.name}
                       </h3>
                     </div>
@@ -473,7 +473,7 @@ export function EmailTemplatesManager() {
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 rounded-md">
                 <span className="text-sm font-medium lia-text-base">Assunto:</span>
-                <p className="text-gray-950">{selectedTemplate?.subject}</p>
+                <p className="text-lia-text-primary">{selectedTemplate?.subject}</p>
               </div>
               <div className="border rounded-md overflow-hidden">
                 <div className="bg-gray-100 px-4 py-2 text-sm font-medium lia-text-base border-b">
@@ -488,7 +488,7 @@ export function EmailTemplatesManager() {
               </div>
               {selectedTemplate?.variables && selectedTemplate.variables.length > 0 && (
                 <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                  <span className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Variáveis:</span>
+                  <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (
                       <Badge key={v} variant="outline" className="bg-lia-bg-primary">

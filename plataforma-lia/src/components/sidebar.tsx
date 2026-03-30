@@ -1,6 +1,8 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo } from "react"
+import React, { useState, useCallback, useEffect } from "react"
+import type { MenuItemType, JobFilterItemType, SidebarProps } from "@/lib/sidebar/sidebar.types"
+import { useSidebarState } from "@/lib/sidebar/useSidebarState"
 import { cn } from "@/lib/utils"
 import {
   Users,
@@ -33,16 +35,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LIATipsModal } from "@/components/lia-tips-modal"
 import Image from "next/image"
 
-// Definir tipo para os itens de menu
-interface MenuItemType {
-  icon: any
-  label: string
-  isCore?: boolean
-  moduleId?: string
-  isPremium?: boolean
-  subItems?: MenuItemType[]
-}
-
 // Memoizar os dados estáticos para evitar recriações
 // Menu principal - apenas páginas operacionais do dia-a-dia
 const menuItems: MenuItemType[] = [
@@ -51,14 +43,6 @@ const menuItems: MenuItemType[] = [
   { icon: Users, label: "Funil de Talentos", isCore: true },
 ]
 
-
-// Menu de filtros para a página de Vagas
-interface JobFilterItemType {
-  icon: any
-  label: string
-  value: string
-  count?: number
-}
 
 const jobFilterItems: JobFilterItemType[] = [
   { icon: Filter, label: "Todas", value: "todas", count: 10 },
@@ -69,18 +53,6 @@ const jobFilterItems: JobFilterItemType[] = [
   { icon: Target, label: "Por Estágio", value: "por-estagio", count: 0 }
 ]
 
-
-interface SidebarProps {
-  currentPage: string
-  onNavigate: (page: string) => void
-  jobFilter?: string
-  onJobFilterChange?: (filter: string) => void
-  recentItems?: RecentItem[]
-  onRecentItemClick?: (item: RecentItem) => void
-  onRecentItemRemove?: (id: string, type: RecentItem['type']) => void
-  onRecentItemsClear?: () => void
-  onShowSearch?: () => void
-}
 
 // Componente de item de menu memoizado
 const MenuItem = React.memo(({
@@ -127,13 +99,13 @@ const MenuItem = React.memo(({
         className={cn(
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
           isLocked
-            ? "text-gray-800 cursor-default opacity-60"
+            ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-gray-50 dark:hover:bg-gray-800",
           isActive && canAccess
-            ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
+            ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
             : canAccess
-            ? "text-gray-800 dark:text-lia-text-primary font-normal"
-            : "text-gray-800 dark:text-lia-text-primary font-normal",
+            ? "text-lia-text-primary dark:text-lia-text-primary font-normal"
+            : "text-lia-text-primary dark:text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
         title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -148,7 +120,7 @@ const MenuItem = React.memo(({
             <span className="text-base-ui">{item.label}</span>
             <div className="flex items-center gap-1">
               {item.isPremium && !isLocked && (
-                <Crown className="w-2 h-2 text-gray-800 dark:text-lia-text-primary" />
+                <Crown className="w-2 h-2 text-lia-text-primary dark:text-lia-text-primary" />
               )}
               {isLocked && (
                 <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">
@@ -183,13 +155,13 @@ const MenuItem = React.memo(({
                 className={cn(
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
                   subIsLocked
-                    ? "text-gray-800 cursor-default opacity-60"
+                    ? "text-lia-text-primary cursor-default opacity-60"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
                     : subCanAccess
-                    ? "text-gray-800 dark:text-lia-text-primary font-normal"
-                    : "text-gray-800 dark:text-lia-text-primary font-normal"
+                    ? "text-lia-text-primary dark:text-lia-text-primary font-normal"
+                    : "text-lia-text-primary dark:text-lia-text-primary font-normal"
                 )}
                 disabled={subIsLocked || false}
               >
@@ -200,7 +172,7 @@ const MenuItem = React.memo(({
                 <div className="flex items-center justify-between flex-1">
                   <span className="text-base-ui">{subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
-                    <Crown className="w-2 h-2 text-gray-800 dark:text-lia-text-primary" />
+                    <Crown className="w-2 h-2 text-lia-text-primary dark:text-lia-text-primary" />
                   )}
                   {subIsLocked && (
                     <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1 py-0.5 rounded-full">
@@ -244,8 +216,8 @@ const JobFilterItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-gray-50 dark:hover:bg-gray-800",
         isActive
-          ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
-          : "text-gray-800 dark:text-lia-text-primary font-normal",
+          ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
+          : "text-lia-text-primary dark:text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
       title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -270,9 +242,9 @@ const JobFilterItem = React.memo(({
 JobFilterItem.displayName = 'JobFilterItem'
 
 const RECENT_TYPE_CONFIG = {
-  vaga: { icon: Briefcase, color: 'text-gray-600 dark:text-lia-text-tertiary' },
+  vaga: { icon: Briefcase, color: 'text-lia-text-secondary dark:text-lia-text-tertiary' },
   chat: { icon: Brain, color: 'text-wedo-cyan' },
-  candidato: { icon: User, color: 'text-gray-600 dark:text-lia-text-tertiary' },
+  candidato: { icon: User, color: 'text-lia-text-secondary dark:text-lia-text-tertiary' },
 } as const
 
 const RecentItemRow = React.memo(({
@@ -291,7 +263,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-lia-text-secondary"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-secondary"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
@@ -305,7 +277,7 @@ const RecentItemRow = React.memo(({
         className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
         title="Remover dos recentes"
       >
-        <X className="w-3 h-3 text-gray-400" />
+        <X className="w-3 h-3 text-lia-text-disabled" />
       </button>
     </div>
   )
@@ -314,119 +286,30 @@ const RecentItemRow = React.memo(({
 RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
-  const [isMounted, setIsMounted] = useState(false)
-  const [showTipsModal, setShowTipsModal] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [isTemporaryExpanded, setIsTemporaryExpanded] = useState(false)
-  const [sidebarWidth, setSidebarWidth] = useState(256)
-  const [isResizing, setIsResizing] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  const toggleCollapse = useCallback(() => {
-    setIsCollapsed(prev => !prev)
-  }, [])
-
-  const handleMouseEnter = useCallback(() => {
-    if (isCollapsed) {
-      setIsTemporaryExpanded(true)
-    }
-  }, [isCollapsed])
-
-  const handleMouseLeave = useCallback(() => {
-    setIsTemporaryExpanded(false)
-  }, [])
-
-  const handleShowTipsModal = useCallback(() => {
-    setShowTipsModal(true)
-  }, [])
-
-  const handleCloseTipsModal = useCallback(() => {
-    setShowTipsModal(false)
-  }, [])
+  // State, persistence, resize, keyboard shortcut and computed values
+  // extracted to useSidebarState (src/lib/sidebar/useSidebarState.ts).
+  // Vue 3 migration: replace with the equivalent composable — same return shape.
+  const {
+    isMounted,
+    showTipsModal,
+    isCollapsed,
+    isTemporaryExpanded,
+    sidebarWidth,
+    isResizing,
+    shouldShowContent,
+    dynamicWidth,
+    toggleCollapse,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleShowTipsModal,
+    handleCloseTipsModal,
+    startResize,
+  } = useSidebarState()
 
   const handleNavigateFromTips = useCallback((page: string) => {
     onNavigate(page)
-    setShowTipsModal(false)
-  }, [onNavigate])
-
-  useEffect(() => {
-    if (!isMounted) return
-    const savedState = localStorage.getItem('sidebar-collapsed')
-    if (savedState !== null) {
-      setIsCollapsed(JSON.parse(savedState))
-    }
-
-    const savedWidth = localStorage.getItem('sidebar-width')
-    if (savedWidth !== null) {
-      setSidebarWidth(parseInt(savedWidth))
-    }
-  }, [isMounted])
-
-  useEffect(() => {
-    if (!isMounted) return
-    localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed))
-  }, [isCollapsed, isMounted])
-
-  useEffect(() => {
-    if (!isMounted) return
-    localStorage.setItem('sidebar-width', sidebarWidth.toString())
-  }, [sidebarWidth, isMounted])
-
-  // Handlers para redimensionamento
-  const startResize = useCallback((e: React.MouseEvent) => {
-    setIsResizing(true)
-    e.preventDefault()
-  }, [])
-
-  useEffect(() => {
-    if (!isResizing) return
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = Math.max(200, Math.min(450, e.clientX))
-      setSidebarWidth(newWidth)
-    }
-
-    const handleMouseUp = () => {
-      setIsResizing(false)
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-  }, [isResizing])
-
-  // Atalho de teclado Ctrl+B
-  useEffect(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'b') {
-        event.preventDefault()
-        setIsCollapsed(prev => !prev)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeydown)
-    return () => window.removeEventListener('keydown', handleKeydown)
-  }, [])
-
-  // Valores computados memoizados
-  const shouldShowContent = useMemo(() => !isCollapsed || isTemporaryExpanded, [isCollapsed, isTemporaryExpanded])
-
-  // Dynamic width usando CSS variable
-  const dynamicWidth = useMemo(() => 
-    isCollapsed && !isTemporaryExpanded ? '64px' : `${sidebarWidth}px`,
-    [isCollapsed, isTemporaryExpanded, sidebarWidth]
-  )
+    handleCloseTipsModal()
+  }, [onNavigate, handleCloseTipsModal])
 
   return (
     <div
@@ -471,7 +354,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           variant="ghost"
           size="sm"
           onClick={toggleCollapse}
-          className="h-7 w-7 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="h-7 w-7 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
           title={`${isCollapsed ? "Expandir" : "Retrair"} menu (Ctrl+B)`}
         >
           {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
@@ -482,7 +365,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
         <div className="mb-4">
           {shouldShowContent && (
-            <h3 className="text-xs font-semibold text-gray-800 mb-2 tracking-[0.2em] uppercase">
+            <h3 className="text-xs font-semibold text-lia-text-primary mb-2 tracking-[0.2em] uppercase">
               MENU
             </h3>
           )}
@@ -503,7 +386,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
         {shouldShowContent && recentItems && recentItems.length > 0 && onRecentItemClick && onRecentItemRemove && (
           <div className="mt-5">
-            <h3 className="text-xs font-semibold text-gray-800 mb-2 tracking-[0.2em] uppercase">
+            <h3 className="text-xs font-semibold text-lia-text-primary mb-2 tracking-[0.2em] uppercase">
               RECENTES
             </h3>
             <div className="space-y-0.5 max-h-[280px] overflow-y-auto">
@@ -519,7 +402,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 Limpar recentes
@@ -540,7 +423,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Busca Global"
           >
             <Search className="w-3 h-3" />
@@ -550,7 +433,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Configurações"
           >
             <Settings className="w-3 h-3" />
@@ -564,7 +447,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Ajuda e Dicas LIA"
           >
             <HelpCircle className="w-3 h-3" />

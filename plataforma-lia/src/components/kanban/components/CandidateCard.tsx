@@ -61,7 +61,7 @@ export interface CandidateCardProps {
   isViewed?: boolean
   onSelect?: (candidateId: string) => void
   onClick?: (candidate: KanbanCandidate) => void
-  onQuickAction?: (action: QuickActionType, candidate: KanbanCandidate, extra?: any) => void
+  onQuickAction?: (action: QuickActionType, candidate: KanbanCandidate, extra?: Record<string, unknown>) => void
   onOverrideApproved?: (candidateId: string) => void
   onSubStatusChange?: (candidateId: string, newSubStatus: string, stage: string) => void
   subStatusOptions?: Array<{ code: string; display_name: string }>
@@ -146,7 +146,7 @@ export function CandidateCard({
     }
   }
 
-  const handleQuickAction = (action: QuickActionType, extra?: any) => (e: React.MouseEvent) => {
+  const handleQuickAction = (action: QuickActionType, extra?: Record<string, unknown>) => (e: React.MouseEvent) => {
     e.stopPropagation()
     if (onQuickAction) {
       onQuickAction(action, candidate, extra)

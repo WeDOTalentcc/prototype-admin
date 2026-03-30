@@ -185,7 +185,7 @@ export function SetupAlertBadge() {
         </div>
       </div>
       <div className="flex flex-col items-start">
-        <span className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary leading-tight">
+        <span className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary leading-tight">
           Setup Incompleto
         </span>
         <div className="flex items-center gap-1.5">

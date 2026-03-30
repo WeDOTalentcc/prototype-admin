@@ -76,7 +76,7 @@ export const mockJobData: MockJobData = {
   }
 }
 
-export const mockCandidates: Record<string, any[]> = {
+export const mockCandidates: Record<string, unknown[]> = {
   sourcing: [
     {
       id: '1',

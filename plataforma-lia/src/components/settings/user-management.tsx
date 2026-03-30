@@ -68,7 +68,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
       const usersData = data.data || data.users || data || []
-      const mappedUsers = (Array.isArray(usersData) ? usersData : []).map((u: any) => ({
+      const mappedUsers = (Array.isArray(usersData) ? usersData : []).map((u: Record<string, unknown>) => ({
         id: u.id,
         name: u.name || '',
         email: u.email || '',
@@ -219,7 +219,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       setIsEditing(false)
       setSelectedUser(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao salvar usuário')
+      alert(err instanceof Error ? err instanceof Error ? err.message : String(err) : 'Erro ao salvar usuário')
     }
   }
 
@@ -238,7 +238,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       setSuccessMessage(`Convite reenviado com sucesso para ${userEmail}!`)
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao reenviar convite')
+      alert(err instanceof Error ? err instanceof Error ? err.message : String(err) : 'Erro ao reenviar convite')
     } finally {
       setResendingInvite(null)
     }
@@ -425,7 +425,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <label className={textStyles.label + " block mb-1.5"}>Status</label>
                   <select
                     value={formData.status || 'ativo'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as typeof prev.status }))}
                     className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                   >
                     <option value="ativo">Ativo</option>

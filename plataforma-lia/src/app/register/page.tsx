@@ -52,8 +52,8 @@ export default function RegisterPage() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || "Erro ao criar conta. Tente novamente.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || "Erro ao criar conta. Tente novamente.")
     } finally {
       setIsLoading(false)
     }

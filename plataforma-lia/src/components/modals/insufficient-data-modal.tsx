@@ -69,15 +69,15 @@ export function InsufficientDataModal({
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-gray-800 dark:text-lia-text-primary">
+              <p className="text-lia-text-primary dark:text-lia-text-primary">
                 {hasEnoughData ? (
                   <>
-                    Para gerar um parecer mais preciso para <strong className="text-gray-950 dark:text-gray-50">{candidateName || 'este candidato'}</strong>, 
+                    Para gerar um parecer mais preciso para <strong className="text-lia-text-primary dark:text-lia-text-primary">{candidateName || 'este candidato'}</strong>, 
                     seria ideal ter mais informações disponíveis.
                   </>
                 ) : (
                   <>
-                    Não é possível gerar um parecer de qualidade para <strong className="text-gray-950 dark:text-gray-50">{candidateName || 'este candidato'}</strong> 
+                    Não é possível gerar um parecer de qualidade para <strong className="text-lia-text-primary dark:text-lia-text-primary">{candidateName || 'este candidato'}</strong> 
                     {' '}sem as informações essenciais abaixo.
                   </>
                 )}
@@ -144,7 +144,7 @@ export function InsufficientDataModal({
                 </div>
               )}
 
-              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                 {hasEnoughData 
                   ? 'Você pode prosseguir, mas o parecer terá qualidade limitada.'
                   : 'Complete o perfil do candidato com as informações obrigatórias para gerar um parecer.'}
@@ -164,7 +164,7 @@ export function InsufficientDataModal({
           {hasEnoughData && onProceedAnyway && (
             <Button
               onClick={onProceedAnyway}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
             >
               <AlertTriangle className="w-4 h-4" />
               Gerar mesmo assim
@@ -176,7 +176,7 @@ export function InsufficientDataModal({
   )
 }
 
-export function validateCandidateDataForOpinion(candidate: any): {
+export function validateCandidateDataForOpinion(candidate: Record<string, unknown>): {
   isValid: boolean
   canProceedWithWarning: boolean
   requirements: DataRequirement[]

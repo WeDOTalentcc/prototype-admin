@@ -16,7 +16,7 @@ interface SettingsSection {
   id: string
   title: string
   description: string
-  icon: any
+  icon: React.ElementType
   status: 'completed' | 'incomplete' | 'pending'
   priority: 'high' | 'medium' | 'low'
   category: 'basic' | 'advanced' | 'integrations'

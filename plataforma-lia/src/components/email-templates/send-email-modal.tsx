@@ -18,7 +18,7 @@ import {
 import { liaApi, type EmailTemplate, type CandidateLocal } from "@/services/lia-api"
 import { MessageComposer } from "@/components/communication"
 
-const api = liaApi as any
+const api = liaApi as typeof liaApi & Record<string, unknown>
 
 interface SendEmailModalProps {
   isOpen: boolean
@@ -93,7 +93,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
     setEditedBody(message)
   }, [])
 
-  const handleTemplateSelect = useCallback((template: any) => {
+  const handleTemplateSelect = useCallback((template: Record<string, unknown>) => {
     setSelectedTemplateId(template.id)
   }, [])
 
@@ -152,10 +152,10 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               <div className="w-14 h-14 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-7 h-7 text-status-success" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-950 mb-1">
+              <h3 className="text-sm font-semibold text-lia-text-primary mb-1">
                 Email Enviado!
               </h3>
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 Enviado para {recipientEmail}
               </p>
             </div>
@@ -168,7 +168,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   <Mail className="w-3.5 h-3.5 lia-text-base" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-950">
+                  <h2 className="text-sm font-semibold text-lia-text-primary">
                     Enviar Email
                   </h2>
                   {candidate && (
@@ -183,7 +183,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   variant="outline"
                   size="sm"
                   onClick={onClose}
-                  className="h-9 px-4 text-sm-ui font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+                  className="h-9 px-4 text-sm-ui font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </Button>

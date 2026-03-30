@@ -104,7 +104,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       running: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
       completed: 'bg-status-success/10 text-status-success dark:text-status-success',
       failed: 'bg-status-error/10 text-status-error dark:text-status-error',
-      cancelled: 'bg-gray-500/10 text-gray-600 dark:text-lia-text-tertiary'
+      cancelled: 'bg-gray-500/10 text-lia-text-secondary dark:text-lia-text-tertiary'
     }
     return styles[status] || styles.pending
   }
@@ -145,10 +145,10 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-lia-text-primary">
+          <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
             Jobs Autônomos
           </h2>
-          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
             Gerencie tarefas de background executadas pela LIA
           </p>
         </div>
@@ -200,7 +200,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+          <Loader2 className="h-8 w-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
         </div>
       ) : filteredJobs.length === 0 ? (
         <Card>
@@ -208,10 +208,10 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
               <Calendar className="h-6 w-6 lia-text-secondary" />
             </div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-lia-text-primary mb-1">
+            <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
               Nenhum job encontrado
             </h3>
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center max-w-sm">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-sm">
               {searchTerm || statusFilter !== 'all'
                 ? 'Tente ajustar os filtros de busca'
                 : 'Crie seu primeiro job autônomo para a LIA executar tarefas em background'}
@@ -245,7 +245,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                        <TypeIcon className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary" />
+                        <TypeIcon className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="truncate">{job.name}</CardTitle>
@@ -275,7 +275,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   )}
 
                   {job.result_summary && job.status === 'completed' && (
-                    <p className="text-micro text-gray-600 dark:text-lia-text-tertiary line-clamp-2">
+                    <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary line-clamp-2">
                       {job.result_summary}
                     </p>
                   )}

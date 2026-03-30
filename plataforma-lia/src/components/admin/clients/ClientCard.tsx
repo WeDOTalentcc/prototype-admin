@@ -51,10 +51,10 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-950 truncate group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+            <h3 className="text-sm font-medium text-lia-text-primary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors">
               {client.name}
             </h3>
-            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
               {formatCNPJ(client.cnpj)}
             </p>
           </div>
@@ -67,8 +67,8 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
               <Users className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-gray-500 dark:text-lia-text-tertiary uppercase">Usuários</p>
-              <p className="text-xs font-medium text-gray-950">
+              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase">Usuários</p>
+              <p className="text-xs font-medium text-lia-text-primary">
                 {client.active_users}/{client.user_limit}
               </p>
             </div>
@@ -78,8 +78,8 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
               <Calendar className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-gray-500 dark:text-lia-text-tertiary uppercase">Início</p>
-              <p className="text-xs font-medium text-gray-950">
+              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase">Início</p>
+              <p className="text-xs font-medium text-lia-text-primary">
                 {formatDate(client.start_date)}
               </p>
             </div>
@@ -93,7 +93,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
             </Badge>
           </div>
           {client.account_manager && (
-            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-lia-text-tertiary">
+            <div className="flex items-center gap-1 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
               <UserCircle className="w-3 h-3" />
               <span className="truncate max-w-[100px]">{client.account_manager}</span>
             </div>

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    const backendPayload: Record<string, any> = {
+    const backendPayload: Record<string, unknown> = {
       job_title: body.job_title,
       technical_skills: body.technical_skills || [],
       behavioral_competencies: body.behavioral_competencies || [],

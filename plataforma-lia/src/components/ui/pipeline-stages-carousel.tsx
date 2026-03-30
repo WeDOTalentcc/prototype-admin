@@ -95,7 +95,7 @@ export function PipelineStagesCarousel({
           className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-[width,height]"
           aria-label="Scroll esquerda"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-lia-text-primary" />
+          <ChevronLeft className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-primary" />
         </button>
       )}
 
@@ -135,7 +135,7 @@ export function PipelineStagesCarousel({
                         : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle dark:hover:border-gray-600'
                     )}
                   >
-                    <div className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary mb-0.5 whitespace-nowrap">
+                    <div className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-0.5 whitespace-nowrap">
                       {displayName}
                     </div>
 
@@ -144,13 +144,13 @@ export function PipelineStagesCarousel({
                         className={cn(
  'text-xl font-bold leading-none',
                           isSelected
-                            ? 'text-gray-900 dark:text-lia-text-primary'
-                            : 'text-gray-800 dark:text-lia-text-primary'
+                            ? 'text-lia-text-primary dark:text-lia-text-primary'
+                            : 'text-lia-text-primary dark:text-lia-text-primary'
                         )}
                       >
                         {stage.count}
                       </span>
-                      <span className="text-micro font-medium text-gray-400">
+                      <span className="text-micro font-medium text-lia-text-disabled">
                         candidatos
                       </span>
                     </div>
@@ -175,7 +175,7 @@ export function PipelineStagesCarousel({
 
                 {index < stages.length - 1 && (
                   <div className="flex-shrink-0 flex items-center">
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-lia-text-disabled" />
                   </div>
                 )}
               </React.Fragment>
@@ -194,7 +194,7 @@ export function PipelineStagesCarousel({
           className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-[width,height]"
           aria-label="Scroll direita"
         >
-          <ChevronRight className="w-5 h-5 text-gray-700 dark:text-lia-text-primary" />
+          <ChevronRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-primary" />
         </button>
       )}
     </div>

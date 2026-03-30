@@ -197,7 +197,7 @@ export function useCandidatesTableConfig() {
     setShowColumnConfig(false)
   }
 
-  const handleSaveColumnView = (view: any) => {
+  const handleSaveColumnView = (view: Record<string, unknown>) => {
     const newView = {
       ...view,
       id: Date.now().toString(),
@@ -208,7 +208,7 @@ export function useCandidatesTableConfig() {
     localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
   }
 
-  const handleLoadColumnView = (view: any) => {
+  const handleLoadColumnView = (view: Record<string, unknown>) => {
     setTableColumns(view.columns)
   }
 

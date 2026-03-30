@@ -61,7 +61,7 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   platform_config: {
     icon: Settings,
     label: '⚙️ configurações da plataforma',
-    className: 'text-gray-600 dark:text-lia-text-tertiary'
+    className: 'text-lia-text-secondary dark:text-lia-text-tertiary'
   }
 }
 
@@ -97,7 +97,7 @@ function WeightStars({ weight }: { weight: number }) {
  "h-3 w-3",
             i <= weight 
               ? "fill-amber-400 text-status-warning" 
-              : "text-gray-300"
+              : "text-lia-text-disabled"
           )}
         />
       ))}
@@ -113,7 +113,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
     <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Code className="h-3.5 w-3.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+          <Code className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
             <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
@@ -202,7 +202,7 @@ export function CompetenciesChatMessage({
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Analisando competências...</span>
           </div>
         </div>
@@ -232,7 +232,7 @@ export function CompetenciesChatMessage({
           {technicalSkills.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Code className="h-3.5 w-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Code className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <span>Competências Técnicas</span>
                 <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {technicalSkills.length}

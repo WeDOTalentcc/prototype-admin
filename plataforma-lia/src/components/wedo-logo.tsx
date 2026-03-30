@@ -7,7 +7,7 @@ interface WeDOLogoProps {
 export function WeDOLogo({ className = "" }: WeDOLogoProps) {
   return (
     <span className={`font-bold tracking-tight ${className}`}>
-      WeDO<span className="text-gray-600 dark:text-lia-text-tertiary">Talent</span>
+      WeDO<span className="text-lia-text-secondary dark:text-lia-text-tertiary">Talent</span>
     </span>
   )
 }

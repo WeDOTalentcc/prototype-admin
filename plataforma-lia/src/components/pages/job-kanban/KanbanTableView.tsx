@@ -242,7 +242,7 @@ export function KanbanTableView({
           <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-600" />
+                <Filter className="w-4 h-4 text-lia-text-secondary" />
                 <h3 className={textStyles.title}>
                   Filtros Avançados
                 </h3>
@@ -253,7 +253,7 @@ export function KanbanTableView({
                 onClick={() => onShowTableFiltersPanelChange(false)}
                 className="h-7 w-7 p-0 hover:bg-gray-100"
               >
-                <X className="w-4 h-4 text-gray-600" />
+                <X className="w-4 h-4 text-lia-text-secondary" />
               </Button>
             </div>
             <p className={`${textStyles.description} mt-1`}>
@@ -265,7 +265,7 @@ export function KanbanTableView({
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Filtro por Etapa */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Etapa do Pipeline
               </label>
               <div className="space-y-1.5">
@@ -281,9 +281,9 @@ export function KanbanTableView({
                           onTableStageFilterChange(tableStageFilter.filter(s => s !== stage.id))
                         }
                       }}
-                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                     />
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-lia-text-secondary">
                       {stage.displayName}
                     </span>
                   </label>
@@ -293,7 +293,7 @@ export function KanbanTableView({
 
             {/* Filtro por Score LIA */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Score LIA Mínimo
               </label>
               <div className="flex items-center gap-2">
@@ -304,13 +304,13 @@ export function KanbanTableView({
                   defaultValue="0"
                   className="flex-1 h-1.5 bg-gray-200 rounded-md appearance-none cursor-pointer accent-gray-900"
                 />
-                <span className="text-xs text-gray-600 w-8 text-right">0%</span>
+                <span className="text-xs text-lia-text-secondary w-8 text-right">0%</span>
               </div>
             </div>
 
             {/* Filtro por Status */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Status
               </label>
               <div className="space-y-1.5">
@@ -318,9 +318,9 @@ export function KanbanTableView({
                   <label key={status} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                     />
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-lia-text-secondary">
                       {status}
                     </span>
                   </label>
@@ -330,7 +330,7 @@ export function KanbanTableView({
 
             {/* Filtro por Modelo de Trabalho */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
+              <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Modelo de Trabalho
               </label>
               <div className="space-y-1.5">
@@ -338,9 +338,9 @@ export function KanbanTableView({
                   <label key={modelo} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
                     />
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-lia-text-secondary">
                       {modelo}
                     </span>
                   </label>
@@ -356,7 +356,7 @@ export function KanbanTableView({
                 onClick={() => {
                   onTableStageFilterChange([])
                 }}
-                className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
 
               >
                 Limpar
@@ -374,7 +374,7 @@ export function KanbanTableView({
     )}
 
     {/* Conteúdo da Tabela */}
-    <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-950 flex flex-col min-w-0">
+    <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary flex flex-col min-w-0">
       <div className="flex-1 overflow-auto px-4 py-2">
       {/* Tabela Elegante - Unified Component */}
       {(() => {
@@ -452,7 +452,7 @@ export function KanbanTableView({
               switch (columnId) {
                 case 'id':
                   return (
-                    <div className="text-xs font-mono text-gray-600 dark:text-lia-text-tertiary">
+                    <div className="text-xs font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
                       {candidate.candidateCode || candidate.id?.substring(0, 6).toUpperCase()}
                     </div>
                   )
@@ -472,7 +472,7 @@ export function KanbanTableView({
                       title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
                     >
                       <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
+ <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
                         {hasNotaGeral ? ranking : '—'}
                       </span>
                     </div>
@@ -492,8 +492,8 @@ export function KanbanTableView({
                       }}
                       title={hasTriagem ? 'Clique para ver Triagem LIA' : 'Não avaliado'}
                     >
-                      <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-gray-400'}`} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasTriagem ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
+                      <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
+ <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
                         {hasTriagem ? formatScorePercent(triagemValue, 0) : '—'}
                       </span>
                     </div>
@@ -514,7 +514,7 @@ export function KanbanTableView({
                       title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
                     >
                       <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasFitScore ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
+ <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
                         {hasFitScore ? formatScorePercent(fitValue, 0) : '—'}
                       </span>
                     </div>
@@ -536,7 +536,7 @@ export function KanbanTableView({
                     >
                       <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasTechnical && (
-                        <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                        <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
                           {formatScorePercent(candidate.technicalTestScore, 0)}
                         </span>
                       )}
@@ -559,7 +559,7 @@ export function KanbanTableView({
                     >
                       <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasEnglish && (
-                        <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                        <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
                           {formatScorePercent(candidate.englishTestScore, 0)}
                         </span>
                       )}
@@ -584,7 +584,7 @@ export function KanbanTableView({
                       title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
                     >
                       <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasBigFive ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
+ <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
                         {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
                       </span>
                     </div>
@@ -671,9 +671,9 @@ export function KanbanTableView({
                       </div>
                       <div className="flex items-center gap-1.5">
                         {isDemo && (
-                          <span className="text-micro font-medium text-gray-400 dark:text-gray-500">[D]</span>
+                          <span className="text-micro font-medium text-lia-text-disabled dark:text-lia-text-tertiary">[D]</span>
                         )}
-                        <span className="font-medium text-sm text-gray-950 dark:text-gray-50">
+                        <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
                           {candidate.name}
                         </span>
                         {(() => {
@@ -698,14 +698,14 @@ export function KanbanTableView({
 
                 case 'role':
                   return (
-                    <div className="text-xs text-gray-950 dark:text-gray-50">
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                       {candidate.role || candidate.position || 'UX Designer'}
                     </div>
                   )
 
                 case 'currentCompany':
                   return (
-                    <div className="text-xs text-gray-950 dark:text-gray-50">
+                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                       {candidate.currentCompany || (candidate.source === 'LinkedIn' ? 'TechCorp' : 'Digital Agency')}
                     </div>
                   )
@@ -718,12 +718,12 @@ export function KanbanTableView({
                       <PopoverTrigger asChild>
                         <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
                           <Badge
-                            className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50 cursor-pointer"
+                            className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary dark:text-lia-text-primary cursor-pointer"
                             style={{backgroundColor: currentStageObj?.color || 'var(--gray-200)'}}
                           >
                             {currentStageObj?.displayName || candidate.stage}
                           </Badge>
-                          <ChevronDown className="w-3 h-3 text-gray-400 group-hover/stage:text-gray-600 transition-colors" />
+                          <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-44 p-1.5" align="start" sideOffset={4}>
@@ -749,7 +749,7 @@ export function KanbanTableView({
                                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                   style={{backgroundColor: stage.color}}
                                 />
-                                <span className="flex-1 text-left text-gray-800 dark:text-lia-text-primary truncate">
+                                <span className="flex-1 text-left text-lia-text-primary dark:text-lia-text-primary truncate">
                                   {stage.displayName}
                                 </span>
                                 {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />}
@@ -800,44 +800,44 @@ export function KanbanTableView({
                   const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
                   return isOpenToWork ? (
                     <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'is_decision_maker':
                   return candidate.is_decision_maker ? (
                     <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'is_top_universities':
                   return candidate.is_top_universities ? (
-                    <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary">Top University</Badge>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary">Top University</Badge>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'is_hiring':
                   return candidate.is_hiring ? (
                     <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'headline':
-                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.headline || ''}</span>
+                  return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.headline || ''}</span>
 
                 case 'expertise':
                   const expertiseArray = candidate.expertise
-                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
+                  return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
 
                 case 'linkedin_followers_count':
                   return candidate.linkedin_followers_count ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.linkedin_followers_count.toLocaleString('pt-BR')}</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.linkedin_followers_count.toLocaleString('pt-BR')}</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'linkedin_connections_count':
                   return candidate.linkedin_connections_count ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.linkedin_connections_count.toLocaleString('pt-BR')}</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.linkedin_connections_count.toLocaleString('pt-BR')}</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'outreach_message':
                   return candidate.outreach_message ? (
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -846,50 +846,50 @@ export function KanbanTableView({
                         className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                         title="Copiar mensagem"
                       >
-                        <Copy className="w-3 h-3 text-gray-500" />
+                        <Copy className="w-3 h-3 text-lia-text-tertiary" />
                       </button>
                     </div>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'best_personal_email':
                   return candidate.best_personal_email ? (
-                    <a href={`mailto:${candidate.best_personal_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-lia-text-secondary dark:hover:text-gray-100">
+                    <a href={`mailto:${candidate.best_personal_email}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
                       {candidate.best_personal_email}
                     </a>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'phone_types':
                   if (!candidate.phone_types || Object.keys(candidate.phone_types).length === 0) {
-                    return <span className="text-xs text-gray-400">—</span>
+                    return <span className="text-xs text-lia-text-disabled">—</span>
                   }
                   const activePhoneTypes = Object.entries(candidate.phone_types)
                     .filter(([_, active]) => active)
                     .map(([type]) => type)
-                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary">{activePhoneTypes.join(', ') || '—'}</span>
+                  return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{activePhoneTypes.join(', ') || '—'}</span>
 
                 case 'estimated_age':
                   return candidate.estimated_age ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.estimated_age} anos</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.estimated_age} anos</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'match_reasoning':
                   return candidate.pearch_insights?.match_reasoning ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={candidate.pearch_insights.match_reasoning}>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={candidate.pearch_insights.match_reasoning}>
                       {candidate.pearch_insights.match_reasoning.slice(0, 60)}...
                     </span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'overall_summary':
                   return candidate.pearch_insights?.overall_summary ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={candidate.pearch_insights.overall_summary}>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={candidate.pearch_insights.overall_summary}>
                       {candidate.pearch_insights.overall_summary.slice(0, 60)}...
                     </span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'query_insights':
                   const queryInsightsData = candidate.pearch_insights?.query_insights
                   if (!queryInsightsData || queryInsightsData.length === 0) {
-                    return <span className="text-xs text-gray-400">—</span>
+                    return <span className="text-xs text-lia-text-disabled">—</span>
                   }
                   return (
                     <div className="flex flex-col gap-0.5">
@@ -903,7 +903,7 @@ export function KanbanTableView({
                           }`}>
                             {insight.match_level}
                           </Badge>
-                          <span className={`${textStyles.caption} dark:!text-gray-400 truncate max-w-[150px]`} title={insight.subquery}>
+                          <span className={`${textStyles.caption} dark:!text-lia-text-disabled truncate max-w-[150px]`} title={insight.subquery}>
                             {insight.subquery?.slice(0, 25)}...
                           </span>
                         </div>
@@ -916,28 +916,28 @@ export function KanbanTableView({
 
                 case 'pearch_insights':
                   return candidate.pearch_insights?.overall_summary ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'middle_name':
                   return candidate.middle_name ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.middle_name}</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.middle_name}</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'best_business_email':
                   return candidate.best_business_email ? (
-                    <a href={`mailto:${candidate.best_business_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-lia-text-secondary dark:hover:text-gray-100">
+                    <a href={`mailto:${candidate.best_business_email}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
                       {candidate.best_business_email}
                     </a>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'personal_emails':
                   const personalEmails = candidate.personal_emails
                   if (!personalEmails || personalEmails.length === 0) {
-                    return <span className="text-xs text-gray-400">—</span>
+                    return <span className="text-xs text-lia-text-disabled">—</span>
                   }
                   return (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={personalEmails.join(', ')}>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={personalEmails.join(', ')}>
                       {personalEmails.length === 1 ? personalEmails[0] : `${personalEmails[0]} (+${personalEmails.length - 1})`}
                     </span>
                   )
@@ -945,28 +945,28 @@ export function KanbanTableView({
                 case 'business_emails':
                   const businessEmails = candidate.business_emails
                   if (!businessEmails || businessEmails.length === 0) {
-                    return <span className="text-xs text-gray-400">—</span>
+                    return <span className="text-xs text-lia-text-disabled">—</span>
                   }
                   return (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={businessEmails.join(', ')}>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={businessEmails.join(', ')}>
                       {businessEmails.length === 1 ? businessEmails[0] : `${businessEmails[0]} (+${businessEmails.length - 1})`}
                     </span>
                   )
 
                 case 'company_followers_count':
                   return candidate.company_followers_count != null ? (
-                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.company_followers_count.toLocaleString('pt-BR')}</span>
-                  ) : <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.company_followers_count.toLocaleString('pt-BR')}</span>
+                  ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'company_keywords':
                   const companyKeywords = candidate.company_keywords
                   if (!companyKeywords || companyKeywords.length === 0) {
-                    return <span className="text-xs text-gray-400">—</span>
+                    return <span className="text-xs text-lia-text-disabled">—</span>
                   }
                   return (
                     <div className="flex flex-wrap gap-1">
                       {companyKeywords.slice(0, 3).map((keyword: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                        <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                           {keyword}
                         </Badge>
                       ))}
@@ -985,7 +985,7 @@ export function KanbanTableView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 cursor-not-allowed'}`}
+                        className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100' : 'text-lia-text-disabled cursor-not-allowed'}`}
                         title={hasAnalysisData ? "Ver Análise CV vs Vaga" : "Análise pendente"}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -998,7 +998,7 @@ export function KanbanTableView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 cursor-not-allowed'}`}
+                        className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100' : 'text-lia-text-disabled cursor-not-allowed'}`}
                         title={hasTriagemData ? "Ver Detalhes da Triagem" : "Triagem pendente"}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -1022,7 +1022,7 @@ export function KanbanTableView({
                             className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             title="Mais ações"
                           >
-                            <MoreVertical className="w-4 h-4 text-gray-500" />
+                            <MoreVertical className="w-4 h-4 text-lia-text-tertiary" />
                           </button>
                         </PopoverTrigger>
                         <PopoverContent align="end" className="w-48 p-1">
@@ -1031,7 +1031,7 @@ export function KanbanTableView({
                               e.stopPropagation()
                               onOpenAnalysis(candidate)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <Eye className="w-4 h-4" />
                             Ver perfil completo
@@ -1041,7 +1041,7 @@ export function KanbanTableView({
                               e.stopPropagation()
                               onOpenTriagem(candidate)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <Brain className="w-4 h-4 text-wedo-cyan" />
                             Ver triagem LIA
@@ -1053,9 +1053,9 @@ export function KanbanTableView({
                               onSetScoreModalCandidate(candidate)
                               onSetShowBigFiveModal(true)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
-                            <Fingerprint className="w-4 h-4 text-gray-600" />
+                            <Fingerprint className="w-4 h-4 text-lia-text-secondary" />
                             Ver BigFive
                           </button>
                           <div className="my-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
@@ -1069,7 +1069,7 @@ export function KanbanTableView({
                                 openDecisionFlowModal(candidate, 'approve')
                               }
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <ThumbsUp className="w-4 h-4" />
                             Aprovar
@@ -1112,7 +1112,7 @@ export function KanbanTableView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-semibold"
+                        className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-semibold"
                         title="Aprovar candidato"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -1144,7 +1144,7 @@ export function KanbanTableView({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MoreVertical className="w-4 h-4 text-gray-500 hover:text-gray-800 dark:text-lia-text-primary" />
+                        <MoreVertical className="w-4 h-4 text-lia-text-tertiary hover:text-lia-text-primary dark:text-lia-text-primary" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
@@ -1201,7 +1201,7 @@ export function KanbanTableView({
       {getPaginatedCandidates().totalPages > 1 && (
         <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+            <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
               Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
             </div>
             <div className="flex items-center gap-2">
@@ -1237,7 +1237,7 @@ export function KanbanTableView({
                     <React.Fragment key={page}>
                       {/* Show ellipsis if there's a gap */}
                       {index > 0 && page - array[index - 1] > 1 && (
-                        <span className="px-2 text-gray-600">...</span>
+                        <span className="px-2 text-lia-text-secondary">...</span>
                       )}
                       <Button
                         variant={currentPage === page ? 'default' : 'outline'}

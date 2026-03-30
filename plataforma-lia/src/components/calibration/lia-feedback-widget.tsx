@@ -96,8 +96,8 @@ export function LIAFeedbackWidget({
             size="sm"
             className={cn(
  "h-6 px-2 gap-1 text-xs",
-              feedbackState === "agree" && "text-gray-600 dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary",
-              feedbackState === "disagree" && "text-gray-800 dark:text-lia-text-primary bg-gray-100",
+              feedbackState === "agree" && "text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary",
+              feedbackState === "disagree" && "text-lia-text-primary dark:text-lia-text-primary bg-gray-100",
               className
             )}
           >
@@ -113,7 +113,7 @@ export function LIAFeedbackWidget({
         </PopoverTrigger>
         <PopoverContent className="w-64 p-3" align="end">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               A avaliação da LIA está correta?
             </div>
@@ -187,7 +187,7 @@ export function LIAFeedbackWidget({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {showLabel && (
-        <span className="text-xs text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
+        <span className="text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1">
           <Brain className="w-3 h-3 text-wedo-cyan" />
           LIA acertou?
         </span>
@@ -199,7 +199,7 @@ export function LIAFeedbackWidget({
           size="sm"
           className={cn(
  "h-7 w-7 p-0 rounded-full",
-            feedbackState === "agree" && "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary"
+            feedbackState === "agree" && "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary"
           )}
           onClick={() => handleFeedback(true)}
           disabled={isSubmitting || feedbackState !== "none"}
@@ -226,7 +226,7 @@ export function LIAFeedbackWidget({
           </PopoverTrigger>
           <PopoverContent className="w-64 p-3" align="end">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Por que você discorda?
               </p>
               <Textarea

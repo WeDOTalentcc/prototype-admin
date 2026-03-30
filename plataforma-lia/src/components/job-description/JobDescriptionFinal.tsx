@@ -148,7 +148,7 @@ export function JobDescriptionFinal({
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-gray-700 dark:text-lia-text-secondary mt-1">•</span>
+                  <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
                   <span>{resp}</span>
                 </li>
               ))}
@@ -169,13 +169,13 @@ export function JobDescriptionFinal({
               <ul className="space-y-1">
                 {data.required_technical.map((skill, index) => (
                   <li key={`tech-${index}`} className="flex items-center gap-2">
-                    <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
                 {data.required_behavioral.map((skill, index) => (
                   <li key={`beh-${index}`} className="flex items-center gap-2">
-                    <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
@@ -191,7 +191,7 @@ export function JobDescriptionFinal({
               <ul className="space-y-1">
                 {data.nice_to_have.map((skill, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    <span className="text-gray-700 dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
@@ -275,7 +275,7 @@ export function JobDescriptionFinal({
             <ol className="space-y-3">
               {data.interview_process.map((stage) => (
                 <li key={stage.order} className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 flex items-center justify-center text-sm font-medium">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary flex items-center justify-center text-sm font-medium">
                     {stage.order}
                   </span>
                   <div className="flex-1">
@@ -296,7 +296,7 @@ export function JobDescriptionFinal({
             </ol>
             {data.total_timeline && (
               <div className="mt-4 flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
+                <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" />
                 <strong>Timeline total:</strong> {data.total_timeline}
               </div>
             )}
@@ -321,7 +321,7 @@ export function JobDescriptionFinal({
                 href={data.apply_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-900 hover:underline"
+                className="text-lia-text-primary hover:underline"
               >
                 {data.apply_url}
               </a>
@@ -333,7 +333,7 @@ export function JobDescriptionFinal({
               <strong>Dúvidas?</strong>
               <a 
                 href={`mailto:${data.contact_email}`}
-                className="text-gray-900 hover:underline"
+                className="text-lia-text-primary hover:underline"
               >
                 {data.contact_email}
               </a>

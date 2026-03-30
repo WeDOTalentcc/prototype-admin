@@ -102,7 +102,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('input-evaluation')}
-              className="p-1.5 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1.5 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
@@ -120,14 +120,14 @@ export function ReviewPublishStage({
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Code className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Code className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-xs font-medium lia-text-strong">
                 Requisitos Técnicos
               </span>
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('technical') }}
-              className="p-1 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -139,7 +139,7 @@ export function ReviewPublishStage({
                 className={cn(
  "px-1.5 py-0.5 rounded-full text-micro",
                   skill.required
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default"
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default"
                     : "bg-gray-50 lia-text-secondary"
                 )}
               >
@@ -165,7 +165,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('behavioral') }}
-              className="p-1 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -177,7 +177,7 @@ export function ReviewPublishStage({
                 className="px-1.5 py-0.5 bg-gray-50 rounded-full text-micro lia-text-secondary flex items-center gap-1"
               >
                 {comp.name}
-                <span className="text-gray-600 dark:text-lia-text-tertiary">({comp.weight}/5)</span>
+                <span className="text-lia-text-secondary dark:text-lia-text-tertiary">({comp.weight}/5)</span>
               </span>
             ))}
           </div>
@@ -187,14 +187,14 @@ export function ReviewPublishStage({
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="text-xs font-medium lia-text-strong">
                 Remuneração
               </span>
             </div>
             <button
               onClick={() => onGoToStage('salary')}
-              className="p-1 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -225,7 +225,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('wsi-questions')}
-              className="p-1 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -244,7 +244,7 @@ export function ReviewPublishStage({
                 Descrição do Anúncio
               </span>
               {companyConfig && (
-                <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
                   <Settings className="w-3 h-3" />
                   <span>Tom da empresa</span>
                 </div>
@@ -252,7 +252,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={onGenerateJobDescription}
-              className="p-1 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
               title="Regenerar descrição"
             >
               <RefreshCw className="w-3 h-3" />
@@ -261,7 +261,7 @@ export function ReviewPublishStage({
 
           {isGeneratingDescription ? (
             <div className="flex items-center gap-2 py-4">
-              <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
               <span className="text-xs lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : (
@@ -304,7 +304,7 @@ export function ReviewPublishStage({
           <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center">
-                <Globe className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
               <div>
                 <h3 className="text-xs font-semibold lia-text-strong">
@@ -327,7 +327,7 @@ export function ReviewPublishStage({
                 <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-lia-bg-primary rounded-md flex items-center justify-center border border-lia-border-subtle">
-                      <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Building2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </div>
                     <span className="text-xs lia-text-strong">{platform.name}</span>
                   </div>
@@ -398,7 +398,7 @@ export function ReviewPublishStage({
                 <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center border border-lia-border-default dark:border-lia-border-default">
-                      <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </div>
                     <span className="text-xs lia-text-strong">{platform.name}</span>
                   </div>
@@ -566,7 +566,7 @@ export function ReviewPublishStage({
                     </div>
 
                     <p className="text-micro lia-text-secondary flex items-center gap-1">
-                      <Heart className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                      <Heart className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       Candidatos elegíveis terão 24h para enviar documentação comprobatória
                     </p>
                   </div>
@@ -616,7 +616,7 @@ export function ReviewPublishStage({
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
             <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
               <Globe className="w-3 h-3" />
-              Idiomas {jobConfig.languages.length > 0 && <span className="text-gray-600 dark:text-lia-text-tertiary">({jobConfig.languages.length})</span>}
+              Idiomas {jobConfig.languages.length > 0 && <span className="text-lia-text-secondary dark:text-lia-text-tertiary">({jobConfig.languages.length})</span>}
             </h4>
             {jobConfig.languages.length > 0 ? (
               <div className="space-y-1">
@@ -673,7 +673,7 @@ export function ReviewPublishStage({
             )}
             <button
               onClick={() => onUpdateLanguages([...jobConfig.languages, { name: 'Inglês', level: 'Intermediário' }])}
-              className="mt-2 text-micro text-gray-600 dark:text-lia-text-tertiary hover:underline"
+              className="mt-2 text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:underline"
             >
               + Adicionar idioma
             </button>

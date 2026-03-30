@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         const issueKeys = keys.split(',').map(k => k.trim());
         const issues = await jiraService.getMultipleIssuesStatus(issueKeys);
         
-        const result: Record<string, any> = {};
+        const result: Record<string, unknown> = {};
         const notFound: string[] = [];
         
         for (const key of issueKeys) {
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
           }
         }, { status: 400 });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ 
       success: false, 
       error: error.message || 'Jira API error' 
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 400 });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ 
       success: false, 
       error: error.message || 'Jira API error' 

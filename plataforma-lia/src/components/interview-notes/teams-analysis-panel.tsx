@@ -87,10 +87,10 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-3xl font-bold text-lia-text-primary">
               {result.overall_wsi_score.toFixed(1)}
             </div>
-            <div className="text-xs text-gray-500 dark:text-lia-text-tertiary">Score WSI</div>
+            <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Score WSI</div>
           </div>
           <div
             className={cn(
@@ -103,8 +103,8 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-500 dark:text-lia-text-tertiary">STAR Completeness</div>
-          <div className="text-lg font-semibold text-gray-900">
+          <div className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">STAR Completeness</div>
+          <div className="text-lg font-semibold text-lia-text-primary">
             {(result.star_completeness * 100).toFixed(0)}%
           </div>
         </div>
@@ -112,12 +112,12 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
 
       {result.key_insights.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Pontos Fortes</h4>
+          <h4 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Pontos Fortes</h4>
           <ul className="space-y-1">
             {result.key_insights.map((insight, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2 text-sm text-gray-600 dark:text-lia-text-tertiary"
+                className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary"
               >
                 <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                 <span>{insight}</span>
@@ -129,12 +129,12 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
 
       {result.concerns.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Pontos de Atenção</h4>
+          <h4 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Pontos de Atenção</h4>
           <ul className="space-y-1">
             {result.concerns.map((concern, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2 text-sm text-gray-600 dark:text-lia-text-tertiary"
+                className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary"
               >
                 <AlertCircle className="h-4 w-4 text-status-warning mt-0.5 flex-shrink-0" />
                 <span>{concern}</span>
@@ -170,7 +170,7 @@ export function TeamsAnalysisPanel({
       <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin lia-text-secondary" />
-          <span className="ml-2 text-sm text-gray-500 dark:text-lia-text-tertiary">Carregando status...</span>
+          <span className="ml-2 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando status...</span>
         </CardContent>
       </Card>
     )
@@ -185,7 +185,7 @@ export function TeamsAnalysisPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-wedo-cyan" />
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-lia-text-primary">
               Análise de Entrevista Teams
             </h3>
           </div>
@@ -213,7 +213,7 @@ export function TeamsAnalysisPanel({
         {!status && (
           <div className="text-center py-6 bg-gray-50 rounded-md">
             <Video className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-lia-text-tertiary">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
               Nenhuma análise disponível para esta entrevista.
             </p>
           </div>

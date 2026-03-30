@@ -162,7 +162,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                 <CardTitle className="text-center font-sans">Dashboard Não Encontrado</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-gray-600 dark:text-lia-text-tertiary">
+                <p className="text-center text-lia-text-secondary dark:text-lia-text-tertiary">
                   O dashboard solicitado não está disponível. 
                   Por favor, selecione uma das opções disponíveis no menu lateral.
                 </p>
@@ -206,7 +206,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
     <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
-        className={`bg-gray-50 dark:bg-gray-850 border border-lia-border-subtle dark:border-gray-800 rounded-md p-4 space-y-4 shrink-0 transition-colors duration-300 ${
+        className={`bg-gray-50 dark:bg-gray-850 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors duration-300 ${
           shouldExpand ? 'w-64' : 'w-16'
         }`}
         onMouseEnter={handleMouseEnter}
@@ -218,7 +218,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
               {shouldExpand && (
                 <div className="flex-1">
                   <h2 className={`${textStyles.label} uppercase tracking-[0.08em] flex items-center gap-2 mb-1`}>
-                    <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Activity className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     Dashboards
                   </h2>
                   <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>
@@ -232,9 +232,9 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                 title={isMenuLocked ? "Destravar menu (auto-expand habilitado)" : "Travar menu expandido"}
               >
                 {isMenuLocked ? (
-                  <Lock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Lock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 ) : (
-                  <Unlock className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <Unlock className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
                 )}
               </button>
             </div>
@@ -284,7 +284,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                           <div className="flex-1 min-w-0">
                             <h3 className={`${textStyles.label} mb-0.5 ${
                               isActive
-                                ? 'text-gray-950 dark:text-gray-50'
+                                ? 'text-lia-text-primary dark:text-lia-text-primary'
                                 : ''
                             }`}>
                               {item.label}

@@ -81,7 +81,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
 
       // Update candidates with results if available
       if (data.candidates && data.candidates.length > 0) {
-        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
+        const mappedCandidates: Candidate[] = data.candidates.map((c: Record<string, unknown>) => ({
           id: c.id || `cv-${Date.now()}-${Math.random()}`,
           candidateId: c.id || '',
           name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),

@@ -240,7 +240,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               >
                 <ChevronLeft className="w-4 h-4 lia-text-base" />
               </button>
-              <span className="text-sm font-medium text-gray-950">
+              <span className="text-sm font-medium text-lia-text-primary">
                 {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </span>
               <button
@@ -282,8 +282,8 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                       ${isSelected
                         ? "bg-gray-900 text-white font-medium"
                         : isInRange
-                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950"
-                          : "hover:bg-gray-100 text-gray-800 dark:text-lia-text-primary"
+                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                          : "hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary"
                       }
                       ${isToday && !isSelected ? "ring-1 ring-gray-900/20" : ""}
                     `}
@@ -298,7 +298,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
             {tempStart && tempEnd && (
               <div className="mt-3 pt-3 border-t border-lia-border-subtle">
                 <p className="text-xs lia-text-base mb-2">
-                  Selecionado: <span className="font-medium text-gray-950">
+                  Selecionado: <span className="font-medium text-lia-text-primary">
                     {formatDateFull(tempStart)} - {formatDateFull(tempEnd)}
                   </span>
                 </p>

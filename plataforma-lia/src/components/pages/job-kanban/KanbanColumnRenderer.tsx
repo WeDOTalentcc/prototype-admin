@@ -321,7 +321,7 @@ export function KanbanColumnRenderer({
               }`}
             ></div>
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-            <span className="text-micro text-gray-800 dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
@@ -409,7 +409,7 @@ export function KanbanColumnRenderer({
               <div className="px-2 py-0.5 border-b bg-gray-100">
                 <div className="flex items-center gap-1">
                   <Flag className="w-3 h-3 text-status-warning" />
-                  <span className="text-micro font-bold text-gray-500">Ação Necessária</span>
+                  <span className="text-micro font-bold text-lia-text-tertiary">Ação Necessária</span>
                 </div>
               </div>
             )}
@@ -426,7 +426,7 @@ export function KanbanColumnRenderer({
                       title="Mais opções"
                       aria-label="Mais opções do candidato"
                     >
-                      <MoreVertical className="w-3 h-3 text-gray-600" aria-hidden="true" />
+                      <MoreVertical className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
@@ -435,9 +435,9 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendEmail(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
-                      <Mail className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                      <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
                       Enviar Email
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -445,9 +445,9 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendWhatsApp(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
-                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
                       Enviar WhatsApp
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -455,9 +455,9 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onScheduleInterview(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
-                      <Calendar className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                      <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
                       Agendar Entrevista
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -465,9 +465,9 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendWSIInvite(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
-                      <ClipboardList className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                      <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
                       Triagem WSI
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -475,9 +475,9 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendFeedback(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
-                      <MessageSquareText className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                      <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
                       Enviar Feedback
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -486,13 +486,13 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onToggleShortList(candidate.id)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Bookmark
                         className={`w-3.5 h-3.5 mr-2 ${
                           shortListedCandidateIds.has(candidate.id)
-                            ? "fill-gray-900 text-gray-900 dark:fill-gray-50 dark:text-gray-50"
-                            : "text-gray-500"
+                            ? "fill-gray-900 text-lia-text-primary dark:fill-gray-50 dark:text-lia-text-primary"
+                            : "text-lia-text-tertiary"
                         }`}
                       />
                       {shortListedCandidateIds.has(candidate.id)
@@ -504,13 +504,13 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onToggleFavorite(candidate.id)
                       }}
-                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Heart
                         className={`w-3.5 h-3.5 mr-2 ${
                           favoriteCandidates.has(candidate.id)
                             ? "fill-red-500 text-status-error"
-                            : "text-gray-500"
+                            : "text-lia-text-tertiary"
                         }`}
                       />
                       {favoriteCandidates.has(candidate.id)
@@ -530,7 +530,7 @@ export function KanbanColumnRenderer({
                   title="Ver detalhes do candidato"
                   aria-label={`Ver detalhes de ${candidate.name}`}
                 >
-                  <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" aria-hidden="true" />
+                  <Eye className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" aria-hidden="true" />
                 </button>
               </div>
 
@@ -602,7 +602,7 @@ export function KanbanColumnRenderer({
                     return (
                       <Avatar className="w-7 h-7">
                         <AvatarImage src={kanbanAvatarUrl} alt={candidate.name} />
-                        <AvatarFallback className="text-micro font-medium text-gray-600">
+                        <AvatarFallback className="text-micro font-medium text-lia-text-secondary">
                           {candidate.name
                             .split(" ")
                             .map((n: string) => n[0])
@@ -624,7 +624,7 @@ export function KanbanColumnRenderer({
 
                 {/* Nome do candidato + Data Request Indicator */}
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50">
+                  <h4 className="font-medium text-xs truncate text-lia-text-primary dark:text-lia-text-primary">
                     {candidate.name}
                   </h4>
                   {(() => {
@@ -1030,7 +1030,7 @@ export function KanbanColumnRenderer({
                 {stageId === "sourcing" && (
                   <div className="flex gap-1">
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         onOpenDecisionFlowModal(candidate, "approve")
@@ -1056,7 +1056,7 @@ export function KanbanColumnRenderer({
                 {stageId === "screening" && (
                   <div className="flex gap-1">
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         onApproveFromScreening(candidate)
@@ -1086,7 +1086,7 @@ export function KanbanColumnRenderer({
                     {candidate.agendada ? (
                       <>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                           onClick={(e) => {
                             e.stopPropagation()
                             const teamsUrl =
@@ -1098,7 +1098,7 @@ export function KanbanColumnRenderer({
                             new Date(candidate.agendada).toLocaleDateString("pt-BR")
                           }`}
                         >
-                          <Video className="w-3 h-3 text-gray-600" />
+                          <Video className="w-3 h-3 text-lia-text-secondary" />
                           <span>
                             {candidate.interviewDate ||
                               new Date(candidate.agendada).toLocaleDateString("pt-BR", {
@@ -1172,7 +1172,7 @@ export function KanbanColumnRenderer({
                           <span>Urgência</span>
                         </button>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
                           onClick={(e) => {
                             e.stopPropagation()
                             setDecisionFlowCandidate(candidate)
@@ -1190,7 +1190,7 @@ export function KanbanColumnRenderer({
 
                 {stageId === "offer" && (
                   <button
-                    className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-gray-900 rounded-full text-micro transition-colors"
+                    className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-lia-text-disabled rounded-full text-micro transition-colors"
                     onClick={(e) => {
                       e.stopPropagation()
                     }}

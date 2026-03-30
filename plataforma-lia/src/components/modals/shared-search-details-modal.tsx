@@ -271,9 +271,9 @@ export function SharedSearchDetailsModal({
             <div className="flex items-center gap-3">
               <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
                 {sharedSearch?.share_type === 'search' ? (
-                  <Search className="w-5 h-5 text-gray-400" />
+                  <Search className="w-5 h-5 text-lia-text-disabled" />
                 ) : (
-                  <List className="w-5 h-5 text-gray-400" />
+                  <List className="w-5 h-5 text-lia-text-disabled" />
                 )}
                 {sharedSearch?.title || 'Carregando...'}
               </DialogTitle>

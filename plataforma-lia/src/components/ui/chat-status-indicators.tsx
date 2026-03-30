@@ -28,12 +28,12 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-950">
+          <span className="text-sm font-medium text-lia-text-primary">
             Pensando{dots}
           </span>
         </div>
         {message && (
-          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
             {message}
           </p>
         )}
@@ -79,7 +79,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
  isCompleted ? 'bg-gray-700 text-white' :
                 isProcessing ? 'bg-gray-600 text-white' :
                 isError ? 'bg-gray-500 text-white dark:text-white' :
-                'bg-gray-300 text-gray-600 dark:text-lia-text-secondary'
+                'bg-gray-300 text-lia-text-secondary dark:text-lia-text-secondary'
               }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-4 h-4" />
@@ -93,21 +93,21 @@ export const ProgressSteps = ({ steps, currentStep }: {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className={`text-sm font-medium ${
- isCompleted ? 'text-gray-950' :
-                    isProcessing ? 'text-gray-950' :
-                    isError ? 'text-gray-800 dark:text-lia-text-primary' :
-                    'text-gray-600 dark:text-lia-text-tertiary'
+ isCompleted ? 'text-lia-text-primary' :
+                    isProcessing ? 'text-lia-text-primary' :
+                    isError ? 'text-lia-text-primary dark:text-lia-text-primary' :
+                    'text-lia-text-secondary dark:text-lia-text-tertiary'
                   }`}>
                     {step.label}
                   </span>
                   {isProcessing && (
-                    <Badge variant="outline" className="text-xs bg-gray-200 text-gray-800 border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-primary dark:border-lia-border-default">
+                    <Badge variant="outline" className="text-xs bg-gray-200 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-primary dark:border-lia-border-default">
                       Em andamento
                     </Badge>
                   )}
                 </div>
                 {step.details && (
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
                     {step.details}
                   </p>
                 )}
@@ -140,23 +140,23 @@ export const CommandExecution = ({
           status === "completed" ? 'bg-gray-700' :
           'bg-gray-600'
         }`} />
-        <span className="text-gray-800 dark:text-lia-text-primary text-xs">Executando comando:</span>
+        <span className="text-lia-text-primary dark:text-lia-text-primary text-xs">Executando comando:</span>
       </div>
 
-      <div className="text-gray-950 mb-2">
+      <div className="text-lia-text-primary mb-2">
         $ {command}
       </div>
 
       {output && (
-        <div className="text-gray-600 dark:text-lia-text-tertiary text-xs">
+        <div className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
           {output}
         </div>
       )}
 
       {status === "executing" && (
         <div className="flex items-center gap-2 mt-2">
-          <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
-          <span className="text-xs text-gray-800 dark:text-lia-text-primary">Processando...</span>
+          <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Processando...</span>
         </div>
       )}
     </div>
@@ -179,19 +179,19 @@ export const FileCreationIndicator = ({
     >
       <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
         {status === "creating" ? (
-          <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
         ) : (
-          <CheckCircle className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+          <CheckCircle className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
         )}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-          <span className="text-sm font-medium text-gray-950">
+          <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="text-sm font-medium text-lia-text-primary">
             {status === "creating" ? "Criando" : "Criado"}: {fileName}
           </span>
         </div>
-        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
           Tipo: {fileType}
         </p>
       </div>
@@ -231,9 +231,9 @@ export const CompletionMessage = ({
     >
       {/* Completion Message */}
       <div className="flex items-start gap-3 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-        <CheckCircle className="w-5 h-5 text-gray-800 dark:text-lia-text-primary mt-0.5" />
+        <CheckCircle className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-950">
+          <p className="text-sm font-medium text-lia-text-primary">
             ✅ {message}
           </p>
         </div>
@@ -241,7 +241,7 @@ export const CompletionMessage = ({
 
       {/* Rating System */}
       <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-        <p className="text-sm font-medium text-gray-950 mb-3">
+        <p className="text-sm font-medium text-lia-text-primary mb-3">
           Como você avalia este resultado?
         </p>
         <div className="flex items-center gap-2 mb-4">
@@ -250,14 +250,14 @@ export const CompletionMessage = ({
               key={star}
               onClick={() => handleRating(star)}
               className={`p-1 rounded-md transition-colors ${
- star <= rating ? 'text-gray-800 dark:text-lia-text-primary' : 'text-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
+ star <= rating ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
               <Star className={`w-5 h-5 ${star <= rating ? 'fill-current' : ''}`} />
             </button>
           ))}
           {hasRated && (
-            <span className="text-sm text-gray-600 dark:text-lia-text-tertiary ml-2">
+            <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary ml-2">
               Obrigada pelo feedback!
             </span>
           )}
@@ -265,7 +265,7 @@ export const CompletionMessage = ({
 
         {/* Follow-up Actions */}
         <div>
-          <p className="text-sm font-medium text-gray-950 mb-3">
+          <p className="text-sm font-medium text-lia-text-primary mb-3">
             Próximos passos sugeridos:
           </p>
           <div className="space-y-2">
@@ -277,11 +277,11 @@ export const CompletionMessage = ({
                   onClick={() => onFollowUp?.(action.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors group"
                 >
-                  <Icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700 dark:group-hover:text-gray-300" />
-                  <span className="text-sm text-gray-800 dark:text-lia-text-primary group-hover:text-gray-950 dark:group-hover:text-gray-50">
+                  <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
+                  <span className="text-sm text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700 dark:group-hover:text-gray-300 ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
                 </button>
               )
             })}
@@ -311,7 +311,7 @@ export const ProgressiveDisclosure = ({
         className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-lia-bg-elevated rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-        <span className="text-sm font-medium text-gray-950">
+        <span className="text-sm font-medium text-lia-text-primary">
           {title}
         </span>
       </button>

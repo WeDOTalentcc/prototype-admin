@@ -39,7 +39,7 @@ interface ExportConfig {
 interface AdvancedReportExporterProps {
   isOpen: boolean
   onClose: () => void
-  data: any
+  data: Record<string, unknown>
   userRole: 'executive' | 'hr' | 'recruiter'
 }
 
@@ -206,7 +206,7 @@ export function AdvancedReportExporter({
     }
   }
 
-  const downloadFile = (content: any, filename: string, type: 'pdf' | 'excel') => {
+  const downloadFile = (content: unknown, filename: string, type: 'pdf' | 'excel') => {
     // Mock de download - integraria com geração real de arquivo
 
     // Simulação de download
@@ -227,7 +227,7 @@ export function AdvancedReportExporter({
   const getTemplateIcon = (type: string) => {
     switch (type) {
       case 'executive': return <Target className="w-5 h-5 text-wedo-purple" />
-      case 'operational': return <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+      case 'operational': return <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
       case 'analytical': return <PieChart className="w-5 h-5 text-status-success" />
       default: return <FileText className="w-5 h-5 lia-text-base" />
     }
@@ -247,7 +247,7 @@ export function AdvancedReportExporter({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950">
+            <h2 className="text-xl font-semibold text-lia-text-primary">
               Exportação Avançada de Relatórios
             </h2>
             <p className="text-sm lia-text-base">
@@ -282,7 +282,7 @@ export function AdvancedReportExporter({
                         {getTemplateIcon(template.type)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-gray-950">{template.name}</h4>
+                            <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
                             <Badge variant="outline" className="text-xs">
                               {template.format.toUpperCase()}
                             </Badge>
@@ -319,7 +319,7 @@ export function AdvancedReportExporter({
 
                   {/* Período */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                       Período dos Dados
                     </label>
                     <select
@@ -339,7 +339,7 @@ export function AdvancedReportExporter({
 
                   {/* Departamentos */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                       Departamentos (deixe vazio para todos)
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -364,7 +364,7 @@ export function AdvancedReportExporter({
 
                   {/* Métricas */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                       Métricas Específicas
                     </label>
                     <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
@@ -389,7 +389,7 @@ export function AdvancedReportExporter({
 
                   {/* Opções Adicionais */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                       Opções de Conteúdo
                     </label>
                     <div className="space-y-2">
@@ -498,7 +498,7 @@ export function AdvancedReportExporter({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-800 dark:text-lia-text-primary">
+                <div className="flex items-center justify-center h-full text-lia-text-primary dark:text-lia-text-primary">
                   <div className="text-center">
                     <FileText className="w-12 h-12 mx-auto mb-4 lia-text-base" />
                     <p>Selecione um template para configurar a exportação</p>

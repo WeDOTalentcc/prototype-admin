@@ -121,10 +121,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           {/* Centro do donut */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-950">
+              <div className="text-2xl font-bold text-lia-text-primary">
                 {total}
               </div>
-              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                 Total
               </div>
             </div>
@@ -140,10 +140,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 {item.icon}
               </div>
               <div>
-                <div className="font-medium text-gray-950">
+                <div className="font-medium text-lia-text-primary">
                   {item.label}
                 </div>
-                <div className="text-sm text-gray-800 dark:text-lia-text-primary">
+                <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                   {item.value} ({item.percentage}%)
                 </div>
               </div>
@@ -160,10 +160,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       {cargoData.map((item, index) => (
         <div key={index} className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-950">
+            <h4 className="font-medium text-lia-text-primary">
               {item.cargo}
             </h4>
-            <span className="text-sm text-gray-800 dark:text-lia-text-primary">
+            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
               {item.remoto + item.hibrido + item.presencial} candidatos
             </span>
           </div>
@@ -189,7 +189,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             {/* Híbrido */}
             <div className="flex items-center gap-3">
               <div className="w-16 text-xs lia-text-base flex items-center gap-1">
-                <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Híbrido
               </div>
               <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
@@ -234,7 +234,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <div className="grid grid-cols-5 gap-4">
           {trendData.map((item, index) => (
             <div key={index} className="text-center">
-              <div className="mb-2 text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
+              <div className="mb-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                 {item.period}
               </div>
 
@@ -341,7 +341,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Visualizações Interativas
             </CardTitle>
 

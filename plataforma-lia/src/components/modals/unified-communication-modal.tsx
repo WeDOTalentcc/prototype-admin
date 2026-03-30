@@ -56,7 +56,7 @@ interface CommunicationResult {
   message: string
   subject?: string
   recipient: string
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 interface Template {
@@ -478,7 +478,7 @@ export function UnifiedCommunicationModal({
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[(.*?)\]/g, '<span class="text-gray-600 dark:text-lia-text-tertiary underline cursor-pointer">$1</span>')
+      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary dark:text-lia-text-tertiary underline cursor-pointer">$1</span>')
       .replace(/•/g, '&bull;')
       .replace(/\n/g, '<br>')
   }
@@ -493,7 +493,7 @@ export function UnifiedCommunicationModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center">
-              <modalInfo.icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <modalInfo.icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h3 className={textStyles.title}>
@@ -506,7 +506,7 @@ export function UnifiedCommunicationModal({
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -527,8 +527,8 @@ export function UnifiedCommunicationModal({
                     onClick={() => setChannel('email')}
                     className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
                       channel === 'email'
-                        ? 'border-gray-900 bg-gray-50 text-gray-900'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                        ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                     }`}
                     aria-label="Enviar por Email"
                   >
@@ -543,7 +543,7 @@ export function UnifiedCommunicationModal({
                     className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
                       channel === 'whatsapp'
                         ? 'border-status-success/30 bg-status-success/10 text-status-success'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                     }`}
                     aria-label="Enviar por WhatsApp"
                   >
@@ -557,8 +557,8 @@ export function UnifiedCommunicationModal({
                     onClick={() => setChannel('both')}
                     className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
                       channel === 'both'
-                        ? 'border-gray-900 bg-gray-50 text-gray-900'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
+                        ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                     }`}
                     aria-label="Enviar por Email e WhatsApp"
                   >
@@ -578,7 +578,7 @@ export function UnifiedCommunicationModal({
               {type === 'agendamento' && (
                 <div className={`space-y-4 p-4 ${cardStyles.flat} dark:bg-lia-bg-secondary dark:border-lia-border-subtle`}>
                   <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                    <Calendar className="w-3.5 h-3.5 text-gray-600" />
+                    <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                     Configurações da Entrevista
                   </h4>
                   
@@ -589,7 +589,7 @@ export function UnifiedCommunicationModal({
                       {interviewTypes.map((iType) => (
                         <button
                           key={iType.id}
-                          onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as any }))}
+                          onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
                           className={`p-2 rounded-md border text-left transition-colors ${
                             interviewSettings.interviewType === iType.id
                               ? 'border-gray-900 bg-gray-50'
@@ -597,9 +597,9 @@ export function UnifiedCommunicationModal({
                           }`}
                         >
                           <iType.icon className={`w-3.5 h-3.5 mb-1 ${
-                            interviewSettings.interviewType === iType.id ? 'text-gray-900' : 'text-gray-600'
+                            interviewSettings.interviewType === iType.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
                           }`} />
-                          <div className="text-micro font-medium text-gray-800">{iType.name}</div>
+                          <div className="text-micro font-medium text-lia-text-primary">{iType.name}</div>
                         </button>
                       ))}
                     </div>
@@ -612,7 +612,7 @@ export function UnifiedCommunicationModal({
                       {platforms.map((plat) => (
                         <button
                           key={plat.id}
-                          onClick={() => setInterviewSettings(prev => ({ ...prev, platform: plat.id as any }))}
+                          onClick={() => setInterviewSettings(prev => ({ ...prev, platform: plat.id as typeof prev.platform }))}
                           className={`p-2 rounded-md border text-center transition-colors ${
                             interviewSettings.platform === plat.id
                               ? 'border-gray-900 bg-gray-50'
@@ -620,9 +620,9 @@ export function UnifiedCommunicationModal({
                           }`}
                         >
                           <plat.icon className={`w-3.5 h-3.5 mx-auto mb-1 ${
-                            interviewSettings.platform === plat.id ? 'text-gray-900' : 'text-gray-600'
+                            interviewSettings.platform === plat.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
                           }`} />
-                          <div className="text-micro text-gray-800">{plat.name}</div>
+                          <div className="text-micro text-lia-text-primary">{plat.name}</div>
                         </button>
                       ))}
                     </div>
@@ -708,7 +708,7 @@ export function UnifiedCommunicationModal({
               <div className={`${cardStyles.default} dark:bg-lia-bg-secondary dark:border-lia-border-subtle p-4`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                    <Briefcase className="w-4 h-4 text-gray-600" />
+                    <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                     Vincular à Vaga
                   </h4>
                   <Switch
@@ -818,7 +818,7 @@ export function UnifiedCommunicationModal({
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                  <Eye className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Eye className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Preview da Mensagem
                 </h4>
                 <Badge variant="outline" className={badgeStyles.default}>
@@ -844,7 +844,7 @@ export function UnifiedCommunicationModal({
                         </div>
                       </div>
                       <div className={textStyles.caption}>
-                        Para: <span className="text-gray-800">{safeCandidate.email}</span>
+                        Para: <span className="text-lia-text-primary">{safeCandidate.email}</span>
                       </div>
                     </div>
                     {/* Email Subject */}
@@ -857,7 +857,7 @@ export function UnifiedCommunicationModal({
                     <div className="px-4 py-4">
                       <div 
                         className={`${textStyles.body} leading-relaxed`}
-                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-600">A mensagem aparecerá aqui...</span>' }}
+                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
                       />
                     </div>
                   </div>
@@ -868,7 +868,7 @@ export function UnifiedCommunicationModal({
                       <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                         <div 
                           className={`${textStyles.body} leading-relaxed whitespace-pre-wrap`}
-                          dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-600">A mensagem aparecerá aqui...</span>' }}
+                          dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
                         />
                         <div className={`${textStyles.caption} text-right mt-1`}>
                           {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
@@ -903,7 +903,7 @@ export function UnifiedCommunicationModal({
               {type === 'agendamento' && (
                 <div className="mt-4 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-3">
                   <div className="flex items-start gap-2">
-                    <CalendarDays className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
+                    <CalendarDays className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
                     <div className="text-micro text-wedo-cyan-dark">
                       <strong>Após Confirmação:</strong>
                       <ul className="mt-1 space-y-0.5 ml-2">
@@ -959,7 +959,7 @@ export function UnifiedCommunicationModal({
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 text-gray-700 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
             >
               Cancelar
             </Button>
@@ -967,7 +967,7 @@ export function UnifiedCommunicationModal({
               size="sm"
               onClick={handleSend}
               disabled={isSending || !message.trim() || ((channel === 'email' || channel === 'both') && !subject.trim())}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-2"
+              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 gap-2"
             >
               {isSending ? (
                 <>

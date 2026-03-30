@@ -71,10 +71,10 @@ export function ScreeningChannelsModal({
         <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <MessageSquare className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <MessageSquare className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Canais de Comunicação
               </DialogTitle>
               <p className="text-xs lia-text-base mt-0.5">
@@ -91,8 +91,8 @@ export function ScreeningChannelsModal({
                 <MessageSquare className="w-4 h-4 text-status-success" />
               </div>
               <div>
-                <Label className="text-xs font-medium text-gray-950">WhatsApp</Label>
-                <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">Canal principal de triagem</p>
+                <Label className="text-xs font-medium text-lia-text-primary">WhatsApp</Label>
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Canal principal de triagem</p>
               </div>
             </div>
             <Switch
@@ -107,8 +107,8 @@ export function ScreeningChannelsModal({
                 <Globe className="w-4 h-4 text-wedo-cyan-dark" />
               </div>
               <div>
-                <Label className="text-xs font-medium text-gray-950">Chat Web</Label>
-                <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">Widget integrado no site</p>
+                <Label className="text-xs font-medium text-lia-text-primary">Chat Web</Label>
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Widget integrado no site</p>
               </div>
             </div>
             <Switch
@@ -123,8 +123,8 @@ export function ScreeningChannelsModal({
                 <Phone className="w-4 h-4 text-wedo-orange" />
               </div>
               <div>
-                <Label className="text-xs font-medium text-gray-950">Ligação</Label>
-                <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">Chamada de voz automatizada</p>
+                <Label className="text-xs font-medium text-lia-text-primary">Ligação</Label>
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Chamada de voz automatizada</p>
               </div>
             </div>
             <Switch

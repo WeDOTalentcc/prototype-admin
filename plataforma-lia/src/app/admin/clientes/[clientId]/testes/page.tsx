@@ -514,10 +514,9 @@ export default function ClientTestesPage({
                   return (
                     <div 
                       key={test.id}
-                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors ${
+                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle ${
                         !test.enabled ? 'opacity-60' : ''
                       }`}
-                      className="border-lia-border-subtle dark:border-lia-border-subtle"
                     >
                       <div className={`w-10 h-10 rounded-md ${category.bgColor} flex items-center justify-center shrink-0`}>
                         <CategoryIcon className={`w-5 h-5 ${category.color}`} />

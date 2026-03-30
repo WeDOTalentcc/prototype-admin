@@ -6,7 +6,7 @@ export function useJobAnalytics() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<jobAnalyticsApi.AnalyticsResponse | null>(null);
   
-  const executeCommand = useCallback(async (commandId: string, context: Record<string, any>) => {
+  const executeCommand = useCallback(async (commandId: string, context: Record<string, unknown>) => {
     setLoading(true);
     setError(null);
     try {
@@ -25,7 +25,7 @@ export function useJobAnalytics() {
     }
   }, []);
   
-  const analyzeNatural = useCallback(async (query: string, context: Record<string, any>) => {
+  const analyzeNatural = useCallback(async (query: string, context: Record<string, unknown>) => {
     setLoading(true);
     setError(null);
     try {

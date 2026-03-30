@@ -77,7 +77,7 @@ interface WizardContextValue {
   setWsiCandidates: React.Dispatch<React.SetStateAction<WSIQuestionCandidate[]>>
   toggleWSIQuestionSelection: (id: string) => void
   deleteWSIQuestion: (id: string) => void
-  updateWSIQuestionExpectedAnswer: (id: string, answer: any) => void
+  updateWSIQuestionExpectedAnswer: (id: string, answer: unknown) => void
   isGeneratingWSI: boolean
   setIsGeneratingWSI: React.Dispatch<React.SetStateAction<boolean>>
   companyDefaultQuestions: CompanyDefaultQuestion[]
@@ -339,7 +339,7 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
     setWsiCandidates(prev => prev.filter(q => q.id !== id))
   }, [])
   
-  const updateWSIQuestionExpectedAnswer = useCallback((id: string, answer: any) => {
+  const updateWSIQuestionExpectedAnswer = useCallback((id: string, answer: unknown) => {
     setWsiCandidates(prev => prev.map(q => q.id === id ? { ...q, expectedAnswer: answer } : q))
   }, [])
   

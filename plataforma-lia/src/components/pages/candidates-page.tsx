@@ -133,15 +133,15 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
-      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-gray-950">
+      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-lia-bg-primary">
         {/* Header Principal - Padrão Gestão de Vagas */}
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>
               <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
-                <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+                <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Funil de Talentos
               </h1>
             </div>
@@ -470,7 +470,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   title="Arraste para redimensionar"
                 >
                   <div className="absolute inset-0 -left-1 -right-1"></div>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
                 </div>
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview

@@ -86,10 +86,10 @@ export function ScreeningSchedulingModal({
         <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <CalendarCheck className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <CalendarCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Agendamento Automático
               </DialogTitle>
               <p className="text-xs lia-text-base mt-0.5">
@@ -102,9 +102,9 @@ export function ScreeningSchedulingModal({
         <div className="space-y-5 py-4">
           <div className="flex items-center justify-between p-3 rounded-md bg-gray-50 border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
             <div className="flex items-center gap-3">
-              <CalendarCheck className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <CalendarCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div>
-                <Label className="text-xs font-medium text-gray-950">Agendamento Automático</Label>
+                <Label className="text-xs font-medium text-lia-text-primary">Agendamento Automático</Label>
                 <p className="text-micro lia-text-secondary">Agendar entrevistas automaticamente</p>
               </div>
             </div>
@@ -118,10 +118,10 @@ export function ScreeningSchedulingModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                  <Label className="text-xs font-medium text-gray-950">Score Mínimo para Auto-agendar</Label>
+                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Label className="text-xs font-medium text-lia-text-primary">Score Mínimo para Auto-agendar</Label>
                 </div>
-                <span className="text-xs font-semibold text-gray-900 bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
+                <span className="text-xs font-semibold text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
                   {minScoreForAuto}%
                 </span>
               </div>
@@ -137,8 +137,8 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                <Label className="text-xs font-medium text-gray-950">Provedor de Calendário</Label>
+                <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Label className="text-xs font-medium text-lia-text-primary">Provedor de Calendário</Label>
               </div>
               <Select value={calendarProvider} onValueChange={setCalendarProvider}>
                 <SelectTrigger className="h-9 text-xs border-lia-border-subtle dark:border-lia-border-default">
@@ -153,8 +153,8 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                <Label className="text-xs font-medium text-gray-950">Horários Disponíveis</Label>
+                <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Label className="text-xs font-medium text-lia-text-primary">Horários Disponíveis</Label>
               </div>
               <Input
                 value={availableHours}
@@ -169,8 +169,8 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                <Label className="text-xs font-medium text-gray-950">Duração da Entrevista</Label>
+                <Timer className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Label className="text-xs font-medium text-lia-text-primary">Duração da Entrevista</Label>
               </div>
               <Select value={String(interviewDuration)} onValueChange={(v) => setInterviewDuration(Number(v))}>
                 <SelectTrigger className="h-9 text-xs border-lia-border-subtle dark:border-lia-border-default">

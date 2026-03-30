@@ -96,8 +96,8 @@ export default function PrivacidadePage() {
       const data = await response.json()
       setSubmittedId(data.id)
       setSubmitted(true)
-    } catch (err: any) {
-      setError(err.message || 'Erro ao enviar solicitação. Tente novamente.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err) || 'Erro ao enviar solicitação. Tente novamente.')
     } finally {
       setSubmitting(false)
     }
@@ -121,8 +121,8 @@ export default function PrivacidadePage() {
 
       const data = await response.json()
       setTrackingResult(data)
-    } catch (err: any) {
-      setTrackingError(err.message || 'Erro ao consultar solicitação')
+    } catch (err: unknown) {
+      setTrackingError(err instanceof Error ? err.message : String(err) || 'Erro ao consultar solicitação')
     } finally {
       setTracking(false)
     }

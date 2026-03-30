@@ -110,21 +110,21 @@ export function SaveAsArchetypeModal({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-sm font-semibold">
-            <Bookmark className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />
+            <Bookmark className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
             Salvar como Arquétipo
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4 pt-2">
-              <p className="text-xs text-gray-800 dark:text-gray-500">
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
                 Transforme esta busca em um arquétipo reutilizável para encontrar candidatos similares rapidamente.
               </p>
 
               {/* Query atual */}
               <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-1">
+                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                   {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary line-clamp-3">
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary line-clamp-3">
                   {queryToDisplay}
                 </p>
               </div>
@@ -139,7 +139,7 @@ export function SaveAsArchetypeModal({
                       onClick={() => setEmojiInput(emoji)}
                       className={`w-10 h-10 rounded-md text-xl flex items-center justify-center transition-colors ${
                         emojiInput === emoji
-                          ? 'bg-gray-100 dark:bg-lia-bg-secondary border-2 border-gray-900 dark:border-gray-50'
+                          ? 'bg-gray-100 dark:bg-lia-bg-secondary border-2 border-gray-900 dark:border-lia-border-medium'
                           : 'bg-gray-100 dark:bg-lia-bg-elevated hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >

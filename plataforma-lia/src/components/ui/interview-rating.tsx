@@ -64,7 +64,7 @@ const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
  "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900/20 rounded-sm disabled:pointer-events-none disabled:opacity-50",
               value !== null && star <= value
                 ? "text-status-warning dark:text-status-warning"
-                : "text-gray-300 hover:text-status-warning dark:hover:text-status-warning"
+                : "text-lia-text-disabled hover:text-status-warning dark:hover:text-status-warning"
             )}
           >
             <Star
@@ -128,7 +128,7 @@ const LikertRating = React.forwardRef<HTMLDivElement, LikertRatingProps>(
               buttonSizeClasses[size],
               value === option.value
                 ? "bg-gray-900 text-white border-gray-900"
-                : "border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50"
+                : "border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50"
             )}
           >
             {option.label}

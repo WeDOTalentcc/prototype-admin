@@ -32,7 +32,7 @@ export function SearchResultsHeader({
 }: SearchResultsHeaderProps) {
   // DS v4.2.1: Tailwind tokens — sem hex hardcoded
   const pillStyles: Record<string, { pill: string; icon: string }> = {
-    job_title:        { pill: 'bg-gray-100 text-gray-700',      icon: 'text-gray-600' },
+    job_title:        { pill: 'bg-gray-100 text-lia-text-secondary',      icon: 'text-lia-text-secondary' },
     location:         { pill: 'bg-wedo-purple/10 text-wedo-purple',   icon: 'text-wedo-purple' },
     years_experience: { pill: 'bg-status-warning/10 text-status-warning',     icon: 'text-status-warning' },
     skill:            { pill: 'bg-status-success/10 text-status-success', icon: 'text-status-success' },
@@ -150,7 +150,7 @@ export function SearchResultsHeader({
         result.push(<span key={`t${idx}`}>{query.substring(pos, span.start)}</span>)
       }
 
-      const style = pillStyles[span.type] || { pill: 'bg-gray-200 text-gray-700', icon: 'text-gray-500' }
+      const style = pillStyles[span.type] || { pill: 'bg-gray-200 text-lia-text-secondary', icon: 'text-lia-text-tertiary' }
       result.push(
         <span
           key={`p${idx}`}
@@ -181,7 +181,7 @@ export function SearchResultsHeader({
               onClick={onBack}
               className="flex items-center justify-center hover:opacity-70 transition-opacity flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" strokeWidth={2.5} />
+              <ArrowLeft className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="left" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -195,10 +195,10 @@ export function SearchResultsHeader({
         {/* Ícone de Search + Frase completa com pills inline */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Ícone de Search para identificar prompt de busca */}
-          <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
+          <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
 
           {/* Frase completa com pills coloridos nas palavras-chave */}
-          <div className="flex items-center flex-wrap text-sm text-gray-800 font-sans leading-loose">
+          <div className="flex items-center flex-wrap text-sm text-lia-text-primary font-sans leading-loose">
             {renderQueryWithPills()}
 
             {/* Ações de edição - Logo após os termos de busca */}
@@ -209,7 +209,7 @@ export function SearchResultsHeader({
                     onClick={() => onOpenEditQueryModal(lastSearchQuery || '')}
                     className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-200 transition-[width,height] ml-1"
                   >
-                    <Edit className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                    <Edit className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -220,7 +220,7 @@ export function SearchResultsHeader({
 
             <button
               onClick={onOpenAdvancedSearch}
-              className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-100 font-bold inline-flex items-center gap-1 transition-colors ml-2 font-sans"
+              className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors ml-2 font-sans"
             >
               Editar Filtros
               <ChevronRight className="w-3 h-3" />

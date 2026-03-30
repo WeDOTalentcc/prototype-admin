@@ -451,24 +451,24 @@ Boa sorte com as triagens! 🚀`,
             <Card className="">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Visão Geral da Triagem
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Objetivo:</label>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-gray-50 p-2 rounded-md">
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Objetivo:</label>
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-gray-50 p-2 rounded-md">
                       {screeningData.overview.objective}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Duração:</label>
-                    <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">{screeningData.overview.duration}</p>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Duração:</label>
+                    <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{screeningData.overview.duration}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Critérios de Avaliação:</label>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Critérios de Avaliação:</label>
                     <div className="space-y-1">
                       {screeningData.overview.criteria.map((criterion, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
@@ -497,11 +497,11 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Tom da Conversa:</label>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Tom da Conversa:</label>
                     <p className="text-sm text-status-success font-medium">{screeningData.approach.tone}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Estrutura:</label>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Estrutura:</label>
                     <div className="space-y-2">
                       {screeningData.approach.structure.map((step, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
@@ -590,19 +590,19 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium lia-text-base">Empresa:</label>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Líder em inovação tecnológica, focada em soluções impactantes
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium lia-text-base">Vaga:</label>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       {jobData?.title} - Projetos desafiadores e de grande impacto
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium lia-text-base">Time:</label>
-                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Equipe multidisciplinar, colaborativa e de excelência
                     </p>
                   </div>
@@ -672,7 +672,7 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Timeline de Execução
                 </CardTitle>
               </CardHeader>
@@ -685,12 +685,12 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
                   ].map((item, index) => (
                     <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-gray-600 dark:text-lia-text-tertiary text-xs font-bold">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-wedo-cyan-dark">{item.step}</div>
-                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">{item.time}</div>
+                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{item.time}</div>
                         <div className="text-xs lia-text-base">{item.desc}</div>
                       </div>
                     </div>
@@ -765,10 +765,10 @@ Boa sorte com as triagens! 🚀`,
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold font-sans text-gray-950">
+              <h3 className="text-lg font-semibold font-sans text-lia-text-primary">
                 Construção de Roteiro de Triagem
               </h3>
-              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
+              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                 {jobData?.title} • Criando roteiro personalizado
               </p>
             </div>
@@ -797,7 +797,7 @@ Boa sorte com as triagens! 🚀`,
                   <div className={`max-w-[80%] ${
  message.sender === 'user'
                       ? 'bg-gray-900 text-white rounded-l-2xl rounded-tr-2xl'
-                      : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-950 rounded-r-2xl rounded-tl-2xl'
+                      : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary rounded-r-2xl rounded-tl-2xl'
                   } p-3`}>
                     <div className="text-sm whitespace-pre-line">{message.content}</div>
 
@@ -823,7 +823,7 @@ Boa sorte com as triagens! 🚀`,
                   <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-status-success" />
-                      <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">LIA está digitando...</span>
+                      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">LIA está digitando...</span>
                     </div>
                   </div>
                 </div>
@@ -842,7 +842,7 @@ Boa sorte com as triagens! 🚀`,
                     onChange={(e) => setCurrentInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Digite sua resposta..."
-                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white dark:bg-lia-bg-elevated text-gray-950"
+                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -859,7 +859,7 @@ Boa sorte com as triagens! 🚀`,
           {/* Right Panel */}
           <div className="w-96 bg-gray-50 dark:bg-lia-bg-secondary p-4 overflow-y-auto">
             <div className="mb-4">
-              <h4 className="font-medium font-sans text-gray-950 mb-2">
+              <h4 className="font-medium font-sans text-lia-text-primary mb-2">
                 {currentStep === 'overview' && '📋 Configurando Visão Geral'}
                 {currentStep === 'approach' && '🗣️ Definindo Abordagem'}
                 {currentStep === 'questions' && '❓ Criando Perguntas'}

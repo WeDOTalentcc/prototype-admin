@@ -73,11 +73,11 @@ export function EditQueryModal({
       >
         {/* Header */}
         <div className="flex-shrink-0 p-6 pb-4">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
+          <h2 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
+            <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" />
             Editar sua busca
           </h2>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-lia-text-tertiary mt-1">
             Refine sua busca com linguagem natural. A LIA irá analisar e sugerir melhorias.
           </p>
         </div>
@@ -113,7 +113,7 @@ export function EditQueryModal({
         <div className="flex-shrink-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-6 pt-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
+            className="px-4 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
           >
             Cancelar
           </button>

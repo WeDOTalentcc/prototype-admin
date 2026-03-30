@@ -97,7 +97,7 @@ export interface SearchMetadata {
   archetypeVacancyId?: string
   archetypeCandidateId?: string
   archetypeProfile?: ArchetypeCandidate
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
   searchText?: string
 }
 

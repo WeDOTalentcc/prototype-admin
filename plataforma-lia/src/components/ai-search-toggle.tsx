@@ -23,7 +23,7 @@ import {
 interface AISearchToggleProps {
   placeholder?: string
   onSearch?: (query: string) => void
-  onAISearch?: (query: string, aiResults: any) => void
+  onAISearch?: (query: string, aiResults: Record<string, unknown>) => void
   contextType?: 'candidates' | 'jobs' | 'dashboard' | 'general' | 'indicators'
   inline?: boolean // Novo prop para modo in-line
 }
@@ -208,7 +208,7 @@ export function AISearchToggle({
           className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors duration-200"
         >
           <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
-          <span className="text-sm text-gray-800 dark:text-lia-text-primary flex-1">
+          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary flex-1">
             {placeholder}
           </span>
           <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export function AISearchToggle({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Digite seu comando ou escolha uma sugestão abaixo..."
-                className="flex-1 border-0 focus:ring-0 focus:outline-none text-sm bg-transparent text-gray-950"
+                className="flex-1 border-0 focus:ring-0 focus:outline-none text-sm bg-transparent text-lia-text-primary"
                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
               <Button
@@ -383,7 +383,7 @@ export function AISearchToggle({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Digite seu comando ou escolha uma sugestão abaixo..."
-              className="flex-1 border-0 focus:ring-0 focus:outline-none text-base bg-transparent text-gray-950"
+              className="flex-1 border-0 focus:ring-0 focus:outline-none text-base bg-transparent text-lia-text-primary"
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             />
             <Button
@@ -425,7 +425,7 @@ export function AISearchToggle({
                 <p className="text-xs text-status-success dark:text-status-success mb-2">
                   {suggestion.description}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary italic">
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary italic">
                   "{suggestion.command}"
                 </p>
               </button>

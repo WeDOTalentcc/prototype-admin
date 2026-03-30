@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody, validateParams } from '@/lib/api/validate'
+import { candidateDecisionSchema } from '@/lib/schemas'
+import { idSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
@@ -7,17 +10,21 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const body = await request.json()
-    
+    const rawParams = await params
+    const paramsResult = validateParams(rawParams, idSchema)
+    if (!paramsResult.success) return paramsResult.response
+
+    const bodyResult = await validateBody(request, candidateDecisionSchema)
+    if (!bodyResult.success) return bodyResult.response
+
+    const { id } = paramsResult.data
+
     const backendUrl = `${BACKEND_URL}/api/v1/candidates/${id}/screening-decision`
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyResult.data),
     })
 
     if (!response.ok) {

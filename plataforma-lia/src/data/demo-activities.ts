@@ -21,13 +21,13 @@ import {
 } from "lucide-react"
 
 export interface ActivityDetail {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface Activity {
   id: string
   type: string
-  icon: any
+  icon: React.ElementType
   iconColor: string
   title: string
   author: string

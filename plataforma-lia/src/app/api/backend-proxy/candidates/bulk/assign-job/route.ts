@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
+import { bulkAssignJobSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || 'dev-service-token'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
+    const bodyResult = await validateBody(request, bulkAssignJobSchema)
+    if (!bodyResult.success) return bodyResult.response
+
+    const { candidate_ids, job_vacancy_id, job_id, notes, analyze_match, use_pearch, use_gemini } = bodyResult.data
+
     const requestBody = {
-      candidate_ids: body.candidate_ids,
-      job_vacancy_id: body.job_vacancy_id || body.job_id,
-      notes: body.notes,
-      analyze_match: body.analyze_match,
-      use_pearch: body.use_pearch !== undefined ? body.use_pearch : true,
-      use_gemini: body.use_gemini !== undefined ? body.use_gemini : true
+      candidate_ids,
+      job_vacancy_id: job_vacancy_id || job_id,
+      notes,
+      analyze_match,
+      use_pearch: use_pearch !== undefined ? use_pearch : true,
+      use_gemini: use_gemini !== undefined ? use_gemini : true,
     }
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/candidates/bulk/assign-job`, {
       method: 'POST',
       headers: {

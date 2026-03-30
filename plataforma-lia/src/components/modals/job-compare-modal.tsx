@@ -55,8 +55,8 @@ interface JobCompareModalProps {
     screening_count?: number
     performance_score?: number
     benefits?: string[]
-    technical_requirements?: any[]
-    behavioral_competencies?: any[]
+    technical_requirements?: Record<string, unknown>[]
+    behavioral_competencies?: Record<string, unknown>[]
   }>
 }
 
@@ -130,7 +130,7 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
 }
 
 const JOB_COLORS = [
- { bar: "bg-gray-900", text: "text-gray-600 dark:text-lia-text-tertiary", light: "bg-gray-100 dark:bg-lia-bg-secondary" },
+ { bar: "bg-gray-900", text: "text-lia-text-secondary dark:text-lia-text-tertiary", light: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { bar: "bg-wedo-purple", text: "text-wedo-purple", light: "bg-wedo-purple/15" },
   { bar: "bg-status-success", text: "text-status-success", light: "bg-status-success/15" },
   { bar: "bg-wedo-orange", text: "text-wedo-orange", light: "bg-wedo-orange/15" },
@@ -186,10 +186,10 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "text-gray-500"
-    if (score >= 80) return "text-gray-600 dark:text-lia-text-tertiary font-semibold"
-    if (score >= 60) return "text-gray-950"
-    return "text-gray-800"
+    if (!score) return "text-lia-text-tertiary"
+    if (score >= 80) return "text-lia-text-secondary dark:text-lia-text-tertiary font-semibold"
+    if (score >= 60) return "text-lia-text-primary"
+    return "text-lia-text-primary"
   }
 
   const liaAnalysis = useMemo<LiaAnalysisData | null>(() => {
@@ -543,13 +543,13 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
-                <Scale className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <Scale className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                   Comparar Vagas
                 </DialogTitle>
-                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
                   {jobs.length} vaga{jobs.length > 1 ? "s" : ""} selecionada{jobs.length > 1 ? "s" : ""}
                 </p>
               </div>
@@ -559,7 +559,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
               >
                 <Share2 className="w-3 h-3" />
                 Compartilhar
@@ -569,7 +569,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 size="sm"
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-gray-700 hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
               >
                 <Download className="w-3 h-3" />
                 {isExporting ? "Gerando..." : "Exportar PDF"}
@@ -582,7 +582,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
           <div className="grid grid-cols-[240px_1fr] gap-4">
             <div className="space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Vagas Selecionadas
                 </h4>
                 <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
@@ -593,17 +593,17 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
-                          <Briefcase className="w-3 h-3 text-gray-600" />
+                          <Briefcase className="w-3 h-3 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
                             {job.code && (
-                              <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1 py-0.5 rounded-full">
+                              <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1 py-0.5 rounded-full">
                                 {job.code}
                               </span>
                             )}
                           </div>
-                          <span className="text-xs font-medium text-gray-950 truncate block">
+                          <span className="text-xs font-medium text-lia-text-primary truncate block">
                             {job.title}
                           </span>
                         </div>
@@ -614,7 +614,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Dimensões
                 </h4>
                 <div className="space-y-1.5 p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
@@ -628,8 +628,8 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         onCheckedChange={() => toggleDimension(dim.id)}
                         className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                       />
-                      <dim.icon className="w-3 h-3 text-gray-500 group-hover:text-gray-900" />
-                      <span className="text-xs text-gray-800 group-hover:text-gray-950">
+                      <dim.icon className="w-3 h-3 text-lia-text-tertiary group-hover:text-lia-text-primary" />
+                      <span className="text-xs text-lia-text-primary group-hover:text-lia-text-primary">
                         {dim.label}
                       </span>
                     </label>
@@ -642,27 +642,27 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
               <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left font-semibold text-gray-600 uppercase tracking-wide p-2.5 border border-lia-border-subtle w-[100px]">
+                    <th className="text-left font-semibold text-lia-text-secondary uppercase tracking-wide p-2.5 border border-lia-border-subtle w-[100px]">
                       Métrica
                     </th>
                     {jobs.map((job) => (
                       <th
                         key={job.id}
-                        className="text-left font-semibold text-gray-950 p-2.5 border border-lia-border-subtle min-w-[180px]"
+                        className="text-left font-semibold text-lia-text-primary p-2.5 border border-lia-border-subtle min-w-[180px]"
                       >
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {job.code && (
-                              <span className="text-micro text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="text-micro text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
                                 {job.code}
                               </span>
                             )}
-                            <span className="text-gray-950 text-xs font-semibold">
+                            <span className="text-lia-text-primary text-xs font-semibold">
                               {job.title}
                             </span>
                           </div>
                           {job.department && (
-                            <span className="text-micro font-normal text-gray-500">{job.department}</span>
+                            <span className="text-micro font-normal text-lia-text-tertiary">{job.department}</span>
                           )}
                         </div>
                       </th>
@@ -671,42 +671,42 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                 </thead>
                 <tbody>
                   <tr className="hover:bg-gray-50">
-                    <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-gray-500" />
+                        <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
                         Candidatos
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle font-medium text-base-ui">
+                      <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle font-medium text-base-ui">
                         {job.candidates_count ?? "-"}
                       </td>
                     ))}
                   </tr>
 
                   <tr className="hover:bg-gray-50">
-                    <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
                         <CheckCircle className="w-3.5 h-3.5 text-status-success" />
                         Aprovados
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-700 p-2.5 border border-lia-border-subtle font-semibold text-base-ui">
+                      <td key={job.id} className="text-lia-text-secondary p-2.5 border border-lia-border-subtle font-semibold text-base-ui">
                         {job.approved_count ?? "-"}
                       </td>
                     ))}
                   </tr>
 
                   <tr className="hover:bg-gray-50">
-                    <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-gray-600" />
+                        <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
                         Triagem
                       </div>
                     </td>
                     {jobs.map((job) => (
-                      <td key={job.id} className="text-gray-800 p-2.5 border border-lia-border-subtle font-medium text-base-ui">
+                      <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle font-medium text-base-ui">
                         {job.screening_count ?? "-"}
                       </td>
                     ))}
@@ -714,14 +714,14 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("salary_range") && (
                     <tr className="hover:bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
-                          <DollarSign className="w-3.5 h-3.5 text-gray-500" />
+                          <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
                           Salário
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle text-xs">
+                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle text-xs">
                           {formatSalaryRange(job.salary_range)}
                         </td>
                       ))}
@@ -730,14 +730,14 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("location") && (
                     <tr className="hover:bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                          <MapPin className="w-3.5 h-3.5 text-lia-text-tertiary" />
                           Local
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle text-xs">
+                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle text-xs">
                           {job.location || "-"} {job.work_model && `(${job.work_model})`}
                         </td>
                       ))}
@@ -746,7 +746,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("performance") && (
                     <tr className="hover:bg-gray-50 bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                           Performance
@@ -764,29 +764,29 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("technical_requirements") && (
                     <tr className="hover:bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle align-top">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
-                          <Target className="w-3.5 h-3.5 text-gray-500" />
+                          <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
                           Requisitos
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle align-top">
+                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                           {job.technical_requirements && job.technical_requirements.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {typeof req === "string" ? req : req.name || req.skill || "-"}
                                 </span>
                               ))}
                               {job.technical_requirements.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
                                   +{job.technical_requirements.length - 4}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-lia-text-disabled">-</span>
                           )}
                         </td>
                       ))}
@@ -795,29 +795,29 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("competencies") && (
                     <tr className="hover:bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle align-top">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-gray-500" />
+                          <Award className="w-3.5 h-3.5 text-lia-text-tertiary" />
                           Competências
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle align-top">
+                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                           {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {typeof comp === "string" ? comp : comp.name || comp.competency || "-"}
                                 </span>
                               ))}
                               {job.behavioral_competencies.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
                                   +{job.behavioral_competencies.length - 4}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-lia-text-disabled">-</span>
                           )}
                         </td>
                       ))}
@@ -826,29 +826,29 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                   {selectedDimensions.has("benefits") && (
                     <tr className="hover:bg-gray-50">
-                      <td className="text-gray-800 p-2.5 border border-lia-border-subtle align-top">
+                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
-                          <Gift className="w-3.5 h-3.5 text-gray-500" />
+                          <Gift className="w-3.5 h-3.5 text-lia-text-tertiary" />
                           Benefícios
                         </div>
                       </td>
                       {jobs.map((job) => (
-                        <td key={job.id} className="text-gray-950 p-2.5 border border-lia-border-subtle align-top">
+                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                           {job.benefits && job.benefits.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.benefits.slice(0, 4).map((benefit, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700">
+                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {benefit}
                                 </span>
                               ))}
                               {job.benefits.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-500">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
                                   +{job.benefits.length - 4}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-lia-text-disabled">-</span>
                           )}
                         </td>
                       ))}
@@ -864,9 +864,9 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
               <div className="bg-gray-50 border-b border-lia-border-subtle px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
-                    <Filter className="w-3.5 h-3.5 text-gray-600" />
+                    <Filter className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-950">Funil de Candidatos</h3>
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary">Funil de Candidatos</h3>
                 </div>
               </div>
               
@@ -883,7 +883,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                     <div key={job.id} className="space-y-2">
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-2.5 h-2.5 rounded-full ${jobColor.bar}`} />
-                        <span className="text-xs font-semibold text-gray-950">
+                        <span className="text-xs font-semibold text-lia-text-primary">
                           {job.code && <span className={`${jobColor.text} mr-1.5`}>[{job.code}]</span>}
                           {job.title}
                         </span>
@@ -891,7 +891,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                       
                       <div className="space-y-1.5 pl-4">
                         <div className="flex items-center gap-3">
-                          <span className="text-micro text-gray-600 w-[70px]">Candidatos</span>
+                          <span className="text-micro text-lia-text-secondary w-[70px]">Candidatos</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} transition-[width,height] duration-300`}
@@ -904,27 +904,27 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-micro text-gray-600 w-[70px]">Em Triagem</span>
+                          <span className="text-micro text-lia-text-secondary w-[70px]">Em Triagem</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-70 transition-[width,height] duration-300`}
                               style={{width: `${Math.max(screeningPct, 0)}%`}}
                             />
                           </div>
-                          <span className={`text-xs font-medium w-20 text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-20 text-right text-lia-text-secondary`}>
                             {screening} ({screeningPct.toFixed(0)}%)
                           </span>
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-micro text-gray-600 w-[70px]">Aprovados</span>
+                          <span className="text-micro text-lia-text-secondary w-[70px]">Aprovados</span>
                           <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
                             <div
                               className={`h-full ${jobColor.bar} opacity-50 transition-[width,height] duration-300`}
                               style={{width: `${Math.max(approvedPct, 0)}%`}}
                             />
                           </div>
-                          <span className={`text-xs font-medium w-20 text-right text-gray-700`}>
+                          <span className={`text-xs font-medium w-20 text-right text-lia-text-secondary`}>
                             {approved} ({approvedPct.toFixed(0)}%)
                           </span>
                         </div>
@@ -943,17 +943,17 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-950">Análise LIA</h3>
+                  <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>
                 </div>
               </div>
               
               <div className="p-4 space-y-4">
-                <p className="text-xs text-gray-700 leading-relaxed">
+                <p className="text-xs text-lia-text-secondary leading-relaxed">
                   {liaAnalysis.summary}
                 </p>
 
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
                     <BarChart3 className="w-3 h-3" />
                     Indicadores-Chave
                   </h4>
@@ -967,12 +967,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             : "bg-gray-50 border-lia-border-subtle"
                         }`}
                       >
-                        <p className="text-micro text-gray-500 uppercase tracking-wide mb-1">
+                        <p className="text-micro text-lia-text-tertiary uppercase tracking-wide mb-1">
                           {metric.label}
                         </p>
                         <div className="flex items-center gap-1.5">
                           <span className={`text-lg font-semibold ${
-                            metric.highlight ? "text-gray-600 dark:text-lia-text-tertiary" : "text-gray-950"
+                            metric.highlight ? "text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-primary"
                           }`}>
                             {metric.value}
                           </span>
@@ -990,7 +990,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                 {liaAnalysis.insights.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
                       <Lightbulb className="w-3 h-3" />
                       Insights
                     </h4>
@@ -1006,12 +1006,12 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             <IconComponent className={`w-4 h-4 ${style.iconColor} flex-shrink-0 mt-0.5`} />
                             <div className="flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-xs font-semibold text-gray-950">{insight.title}</p>
+                                <p className="text-xs font-semibold text-lia-text-primary">{insight.title}</p>
                                 <span className={`text-micro font-semibold px-1.5 py-0.5 rounded-full ${style.badgeBg}`}>
                                   {style.badgeText}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-700 mt-0.5 leading-relaxed">
+                              <p className="text-xs text-lia-text-secondary mt-0.5 leading-relaxed">
                                 {insight.description}
                               </p>
                             </div>
@@ -1024,14 +1024,14 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
                 {liaAnalysis.recommendations.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
                       <Target className="w-3 h-3" />
                       Recomendações
                     </h4>
                     <ul className="space-y-1.5">
                       {liaAnalysis.recommendations.map((rec, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs text-gray-700">
-                          <span className="text-gray-400 mt-0.5">•</span>
+                        <li key={idx} className="flex items-start gap-2 text-xs text-lia-text-secondary">
+                          <span className="text-lia-text-disabled mt-0.5">•</span>
                           <span className="leading-relaxed">{rec}</span>
                         </li>
                       ))}
@@ -1046,7 +1046,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
         <DialogFooter className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <Button
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
           >
             Fechar
           </Button>

@@ -82,7 +82,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         </div>
         <span className={cn(
  "text-micro font-medium",
-          isCurrent && "text-gray-600 dark:text-lia-text-tertiary",
+          isCurrent && "text-lia-text-secondary dark:text-lia-text-tertiary",
           isPast && "text-status-success",
           !isCurrent && !isPast && "lia-text-secondary"
         )}>
@@ -193,7 +193,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
  "flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-medium transition-colors",
             isFirstStage
               ? "lia-text-secondary cursor-not-allowed"
-              : "text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+              : "text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
           )}
          
         >

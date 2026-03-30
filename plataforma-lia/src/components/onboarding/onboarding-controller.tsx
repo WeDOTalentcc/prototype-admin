@@ -236,7 +236,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-md p-8 max-w-md w-full text-center">
-        <h2 className="text-2xl font-bold text-gray-950 mb-4">
+        <h2 className="text-2xl font-bold text-lia-text-primary mb-4">
           Acesso Restrito
         </h2>
         <p className="lia-text-strong mb-6">
@@ -530,7 +530,7 @@ export function generateInviteLink(companyData: {
 
 export function validateInviteToken(token: string): {
   isValid: boolean
-  data?: any
+  data?: Record<string, unknown>
   error?: string
 } {
   try {

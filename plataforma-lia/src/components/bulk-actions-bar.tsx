@@ -518,7 +518,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Briefcase className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Atribuir à Vaga
             </DialogTitle>
             <DialogDescription>
@@ -563,7 +563,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Mail className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Enviar Email
             </DialogTitle>
             <DialogDescription>

@@ -25,7 +25,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
       aria-label={`Etapa ${progress.currentBlock} de ${progress.totalBlocks}: ${progress.currentBlockName}`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-gray-700 dark:text-lia-text-secondary">
+        <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-lia-text-secondary dark:text-lia-text-secondary">
           Etapa{" "}
           <span className="font-['Inter',sans-serif]">{progress.currentBlock}</span>
           {" "}de{" "}
@@ -33,7 +33,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
           {" · "}
           {progress.currentBlockName}
         </span>
-        <span className="text-micro font-['Inter',sans-serif] text-gray-400">
+        <span className="text-micro font-['Inter',sans-serif] text-lia-text-disabled">
           {percentage}%
         </span>
       </div>

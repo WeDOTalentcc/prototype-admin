@@ -15,7 +15,7 @@ import type {
 
 export function mapApiTemplateToLocal(apiTemplate: ApiTemplate): SystemTemplate {
   const validCategories = ['approval', 'rejection', 'scheduling', 'followup', 'feedback', 'system'] as const
-  const category = validCategories.includes(apiTemplate.category as any) 
+  const category = validCategories.includes(apiTemplate.category as (typeof validCategories)[number]) 
     ? (apiTemplate.category as SystemTemplate['category'])
     : 'system'
   

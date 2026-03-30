@@ -213,7 +213,7 @@ export function AlertSettingsModal({
     switch (severity) {
       case 'critical': return <AlertTriangle className="w-4 h-4 text-status-error" />
       case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
-      case 'info': return <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      case 'info': return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
       default: return <Info className="w-4 h-4 lia-text-base" />
     }
   }
@@ -222,7 +222,7 @@ export function AlertSettingsModal({
     switch (severity) {
       case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
       default: return 'bg-gray-100 lia-text-strong border-lia-border-subtle'
     }
   }
@@ -233,10 +233,10 @@ export function AlertSettingsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h2 className="text-lg font-semibold font-['Open_Sans'] text-gray-950">
+            <h2 className="text-lg font-semibold font-['Open_Sans'] text-lia-text-primary">
               Configurações de Alertas KPI
             </h2>
-            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-['Open_Sans']">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans']">
               Gerencie regras de monitoramento e notificações automáticas
             </p>
           </div>
@@ -269,7 +269,7 @@ export function AlertSettingsModal({
             {/* Lista de Regras */}
             <div className="p-6 border-r border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Regras de Alerta ({rules.length})</h3>
+                <h3 className="text-lg font-medium text-lia-text-primary">Regras de Alerta ({rules.length})</h3>
                 <Button
                   size="sm"
                   onClick={handleAddNewRule}
@@ -292,7 +292,7 @@ export function AlertSettingsModal({
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-medium text-gray-950">{rule.name}</h4>
+                          <h4 className="font-medium text-lia-text-primary">{rule.name}</h4>
                           {getSeverityIcon(rule.severity)}
                           <Badge className={`text-xs ${getSeverityColor(rule.severity)}`}>
                             {rule.severity}
@@ -325,11 +325,11 @@ export function AlertSettingsModal({
                         </div>
                       </div>
 
-                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2">
+                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
                         {metrics.find(m => m.value === rule.metric)?.label} {rule.operator} {rule.threshold}
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                      <div className="flex items-center gap-4 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         <span className="flex items-center gap-1">
                           <RefreshCw className="w-3 h-3" />
                           {rule.frequency}
@@ -339,7 +339,7 @@ export function AlertSettingsModal({
                           {rule.departments.includes('all') ? 'Todos' : rule.departments.join(', ')}
                         </span>
                         <div className="flex items-center gap-1">
-                          {rule.notifications.email && <Mail className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />}
+                          {rule.notifications.email && <Mail className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />}
                           {rule.notifications.push && <Smartphone className="w-3 h-3 text-status-success" />}
                           {rule.notifications.inApp && <Monitor className="w-3 h-3 text-wedo-purple" />}
                         </div>
@@ -363,7 +363,7 @@ export function AlertSettingsModal({
               {editingRule ? (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-900">Editar Regra</h3>
+                    <h3 className="text-lg font-medium text-lia-text-primary">Editar Regra</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -380,7 +380,7 @@ export function AlertSettingsModal({
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                           Nome da Regra
                         </label>
                         <input
@@ -393,7 +393,7 @@ export function AlertSettingsModal({
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                           Métrica
                         </label>
                         <select
@@ -411,12 +411,12 @@ export function AlertSettingsModal({
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                             Operador
                           </label>
                           <select
                             value={editingRule.operator}
-                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, operator: e.target.value as any } : null)}
+                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, operator: e.target.value as AlertRule['operator'] } : null)}
                             className="w-full p-2 border border-lia-border-default rounded-md"
                           >
                             <option value=">">Maior que (&gt;)</option>
@@ -428,7 +428,7 @@ export function AlertSettingsModal({
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                             Valor Limite
                           </label>
                           <input
@@ -442,12 +442,12 @@ export function AlertSettingsModal({
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                             Severidade
                           </label>
                           <select
                             value={editingRule.severity}
-                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, severity: e.target.value as any } : null)}
+                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, severity: e.target.value as AlertRule['severity'] } : null)}
                             className="w-full p-2 border border-lia-border-default rounded-md"
                           >
                             <option value="critical">Crítico</option>
@@ -457,12 +457,12 @@ export function AlertSettingsModal({
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
                             Frequência
                           </label>
                           <select
                             value={editingRule.frequency}
-                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, frequency: e.target.value as any } : null)}
+                            onChange={(e) => setEditingRule(prev => prev ? { ...prev, frequency: e.target.value as AlertRule['frequency'] } : null)}
                             className="w-full p-2 border border-lia-border-default rounded-md"
                           >
                             <option value="realtime">Tempo Real</option>
@@ -512,7 +512,7 @@ export function AlertSettingsModal({
                       <div className="space-y-4">
                         <label className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                            <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             Email
                           </span>
                           <button
@@ -592,8 +592,8 @@ export function AlertSettingsModal({
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-600 dark:text-lia-text-tertiary">
-                  <Settings className="w-12 h-12 mx-auto mb-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <div className="text-center py-12 text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <Settings className="w-12 h-12 mx-auto mb-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   <p className="dark:text-lia-text-secondary">Selecione uma regra para editar</p>
                   <p className="text-sm dark:text-lia-text-tertiary">ou adicione uma nova regra para começar</p>
                 </div>

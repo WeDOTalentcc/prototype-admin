@@ -12,7 +12,7 @@ import {
 import { FilePreviewModal } from "@/components/candidate-preview/FilePreviewModal"
 
 interface CandidateFilesTabProps {
-  candidate: any
+  candidate: Record<string, unknown>
 }
 
 export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
@@ -232,11 +232,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
   }
 
   const getFileIcon = (fileType: string, mimeType?: string) => {
-    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
     if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
     if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
     if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
-    return <File className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+    return <File className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
   }
 
   const getCategoryColor = (fileType: string) => {
@@ -256,8 +256,8 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
       {/* Header com botão de adicionar */}
       <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+          <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
             Arquivos e Documentos
             <Badge className="text-xs px-1 py-0">{candidateFiles.length}</Badge>
             {isLoadingFiles && (
@@ -266,7 +266,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </h4>
           <Button
             size="sm"
-            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
+            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-lia-text-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
             onClick={() => {
               const input = document.createElement('input')
               input.type = 'file'
@@ -346,7 +346,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-400 border-t-gray-700"></div>
                 </div>
-                <p className="text-xs text-gray-800 dark:text-lia-text-primary font-medium mb-1">
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium mb-1">
                   Enviando... {uploadProgress}%
                 </p>
                 <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -363,7 +363,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     ? 'bg-gray-200'
                     : 'bg-gray-100 group-hover:bg-gray-200'
                 }`}>
-                  <Upload className={`w-5 h-5 ${isDragging ? 'text-gray-700' : 'text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700'}`} />
+                  <Upload className={`w-5 h-5 ${isDragging ? 'text-lia-text-secondary' : 'text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary'}`} />
                 </div>
                 <p className={`${textStyles.bodySmall} mb-1`}>
                   {isDragging ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
@@ -452,7 +452,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
 
         {/* Empty state when no files */}
         {candidateFiles.length === 0 && !isLoadingFiles && (
-          <div className="text-center py-6 text-gray-500 dark:text-lia-text-tertiary">
+          <div className="text-center py-6 text-lia-text-tertiary dark:text-lia-text-tertiary">
             <FileText className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
             <p className="text-xs">Nenhum arquivo enviado</p>
             <p className={textStyles.description}>Arraste arquivos ou clique acima para enviar</p>
@@ -467,7 +467,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           >
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -511,7 +511,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Download className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${
+                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${
  expandedActivity === 'cv' ? 'rotate-180' : ''
                       }`}
                     />
@@ -526,10 +526,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
               <div className="mt-2 space-y-2">
                 {/* Mini Preview do PDF */}
                 <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">Preview do documento</p>
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-2">Preview do documento</p>
                   <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md h-32 flex items-center justify-center">
                     <div className="text-center">
-                      <FileText className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-1" />
+                      <FileText className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-1" />
                       <p className={textStyles.bodySmall}>PDF • 5 páginas</p>
                       <Button
                         size="sm"
@@ -563,7 +563,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                <Image className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                <Image className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -646,7 +646,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         25.4 MB • MP4 • 3:45
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Badge>
@@ -657,7 +657,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Analisado
                     </Badge>
                     <Button
@@ -679,7 +679,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Play className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${
+                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${
  expandedActivity === 'video1' ? 'rotate-180' : ''
                       }`}
                     />
@@ -694,7 +694,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
               <div className="mt-2 space-y-2">
                 {/* Preview do vídeo com thumbnail */}
                 <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">Preview do vídeo de triagem</p>
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-2">Preview do vídeo de triagem</p>
                   <div className="relative bg-gray-900 rounded-md h-24 flex items-center justify-center group cursor-pointer"
                        onClick={() => {
                          setSelectedFile({
@@ -723,27 +723,27 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <div className="grid grid-cols-2 gap-1 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-lia-text-tertiary">Confiança:</span>
-                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">92%</span>
+                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary">Confiança:</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">92%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-lia-text-tertiary">Comunicação:</span>
-                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">95%</span>
+                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary">Comunicação:</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">95%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-lia-text-tertiary">Clareza:</span>
-                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">88%</span>
+                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary">Clareza:</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">88%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-lia-text-tertiary">Entusiasmo:</span>
-                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">90%</span>
+                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary">Entusiasmo:</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">90%</span>
                     </div>
                   </div>
 
                   {/* Mini parecer */}
                   <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <p className={textStyles.bodySmall}>
-                      <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e fit cultural.
+                      <span className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e fit cultural.
                     </p>
                   </div>
                 </div>
@@ -757,7 +757,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                <Video className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -770,7 +770,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         45.2 MB • MP4 • 8:20
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Badge>
@@ -781,7 +781,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Destaque
                     </Badge>
                     <Button
@@ -813,7 +813,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                <Video className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -826,7 +826,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         120.5 MB • MP4 • 30:15
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Badge>
@@ -837,7 +837,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Completa
                     </Badge>
                     <Button

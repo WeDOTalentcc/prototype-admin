@@ -204,9 +204,9 @@ export function AddToJobModal({
           department: jv.department,
           location: jv.location,
           status: jv.status,
-          candidates_count: (jv as any).candidates_count || (jv as any).funnel_data?.total || 0,
-          pipeline_stages: (jv as any).pipeline_stages || DEFAULT_STAGES,
-          existing_candidate_ids: (jv as any).candidate_ids || []
+          candidates_count: (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).candidates_count || (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).funnel_data?.total || 0,
+          pipeline_stages: (jv as JobVacancy & { pipeline_stages?: typeof DEFAULT_STAGES; candidate_ids?: string[] }).pipeline_stages || DEFAULT_STAGES,
+          existing_candidate_ids: (jv as JobVacancy & { pipeline_stages?: typeof DEFAULT_STAGES; candidate_ids?: string[] }).candidate_ids || []
         }))
         setJobs(mapped)
       } else {
@@ -297,7 +297,7 @@ export function AddToJobModal({
             {onNavigateToJob && (
               <button
                 onClick={() => onNavigateToJob(selectedJobId)}
-                className="flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-50 hover:underline mt-1"
+                className="flex items-center gap-1 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary hover:underline mt-1"
               >
                 <ExternalLink className="w-3 h-3" />
                 Ver vaga
@@ -348,14 +348,14 @@ export function AddToJobModal({
         <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <h2 id="add-to-job-modal-title" className={textStyles.title}>
                 Adicionar candidatos à vaga
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -380,7 +380,7 @@ export function AddToJobModal({
 
           <div className={`${cardStyles.flat} p-3`}>
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className={textStyles.label}>
                 {effectiveCandidateIds.length} candidato{effectiveCandidateIds.length !== 1 ? 's' : ''} selecionado{effectiveCandidateIds.length !== 1 ? 's' : ''}
               </span>
@@ -390,7 +390,7 @@ export function AddToJobModal({
                 {displayNames.map((name, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-lia-bg-elevated rounded-full px-2 py-1 border border-lia-border-subtle dark:border-lia-border-default">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
+                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
                         {getInitials(name)}
                       </AvatarFallback>
                     </Avatar>
@@ -400,7 +400,7 @@ export function AddToJobModal({
                   </div>
                 ))}
                 {remainingCount > 0 && (
-                  <span className={`${textStyles.caption} text-gray-500`}>
+                  <span className={`${textStyles.caption} text-lia-text-tertiary`}>
                     +{remainingCount} mais
                   </span>
                 )}
@@ -409,25 +409,25 @@ export function AddToJobModal({
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled" />
             <Input
               ref={searchInputRef}
               placeholder="Buscar vaga..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-lia-border-subtle text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
 
           <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[180px] max-h-[220px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-gray-600">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-500 mb-2" />
+              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary">
+                <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary mb-2" />
                 <p className={textStyles.bodySmall}>Carregando...</p>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-gray-600">
+              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary">
                 <Briefcase className="w-8 h-8 mb-2 opacity-50" />
                 <p className={textStyles.bodySmall}>Nenhuma vaga encontrada</p>
                 {searchTerm && (
@@ -463,7 +463,7 @@ export function AddToJobModal({
                           {job.title}
                         </Label>
                         {selectedJobId === job.id && (
-                          <Check className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary flex-shrink-0" />
+                          <Check className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary flex-shrink-0" />
                         )}
                       </div>
                       <div className={`flex items-center gap-3 mt-1 ${textStyles.caption}`}>
@@ -540,7 +540,7 @@ export function AddToJobModal({
                     htmlFor="notify-manager"
                     className={`${textStyles.bodySmall} cursor-pointer flex items-center gap-1.5`}
                   >
-                    <Bell className="w-3.5 h-3.5 text-gray-500" />
+                    <Bell className="w-3.5 h-3.5 text-lia-text-tertiary" />
                     Notificar gestor da vaga
                   </Label>
                 </div>
@@ -556,7 +556,7 @@ export function AddToJobModal({
                       htmlFor="include-comments"
                       className={`${textStyles.bodySmall} cursor-pointer flex items-center gap-1.5`}
                     >
-                      <MessageSquare className="w-3.5 h-3.5 text-gray-500" />
+                      <MessageSquare className="w-3.5 h-3.5 text-lia-text-tertiary" />
                       Incluir comentários como notas do candidato
                     </Label>
                   </div>
@@ -567,7 +567,7 @@ export function AddToJobModal({
         </div>
 
         <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 flex items-center justify-between gap-2">
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-lia-text-tertiary">
             {finalCandidateIds.length} candidato{finalCandidateIds.length !== 1 ? 's' : ''} será{finalCandidateIds.length !== 1 ? 'ão' : ''} adicionado{finalCandidateIds.length !== 1 ? 's' : ''}
           </div>
           <div className="flex items-center gap-2">
@@ -575,14 +575,14 @@ export function AddToJobModal({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={!selectedJobId || isSubmitting || finalCandidateIds.length === 0}
-              className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
             >
               {isSubmitting ? (
                 <>

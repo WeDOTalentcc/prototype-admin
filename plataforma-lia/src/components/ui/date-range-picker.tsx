@@ -178,8 +178,8 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
         onClick={() => setIsOpen(!isOpen)}
         className="gap-2 text-xs font-['Open_Sans'] min-w-sidebar-content justify-start"
       >
-        <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-        <span className={value?.start_date ? 'text-gray-950' : 'lia-text-secondary'}>
+        <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <span className={value?.start_date ? 'text-lia-text-primary' : 'lia-text-secondary'}>
           {displayValue}
         </span>
         {value?.start_date && (
@@ -204,7 +204,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-medium text-gray-950 font-['Open_Sans']">
+                <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans']">
                   {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </span>
                 <button 
@@ -242,8 +242,8 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                         ${isSelected 
                           ? 'bg-gray-900 text-white font-medium' 
                           : isInRange 
-                            ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-950' 
-                            : 'hover:bg-gray-100 text-gray-800 dark:text-lia-text-primary'
+                            ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' 
+                            : 'hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
                         }
                         ${isToday && !isSelected ? 'ring-1 ring-gray-400' : ''}
                       `}
@@ -281,7 +281,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-lia-text-primary font-['Open_Sans'] transition-colors"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans'] transition-colors"
                   >
                     {preset.label}
                   </button>

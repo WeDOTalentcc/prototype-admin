@@ -52,10 +52,10 @@ export function QuickActions({
                   style={{color: action.iconColor}}
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {action.title}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-lia-text-disabled">
                     {action.subtitle}
                   </p>
                 </div>

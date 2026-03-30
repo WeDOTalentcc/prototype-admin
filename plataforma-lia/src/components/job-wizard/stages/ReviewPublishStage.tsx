@@ -137,12 +137,12 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         className="w-full px-3 py-2 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="text-xs font-semibold lia-text-strong">
             {title}
           </span>
           {count !== undefined && (
-            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-micro font-medium rounded-full">
+            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro font-medium rounded-full">
               {count}
             </span>
           )}
@@ -163,7 +163,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <div className="rounded-md border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-xs font-semibold lia-text-strong">
               Descrição da Vaga
             </span>
@@ -171,7 +171,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           <button
             onClick={generateDescription}
             disabled={isGeneratingDescription}
-            className="flex items-center gap-1 px-2 py-1 text-micro text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors"
           >
             {isGeneratingDescription ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -184,7 +184,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle">
           {isGeneratingDescription ? (
             <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+              <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
               <span className="text-sm lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : jobDescription ? (
@@ -196,7 +196,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           ) : (
             <button
               onClick={generateDescription}
-              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-gray-600 dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex flex-col items-center gap-2"
+              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex flex-col items-center gap-2"
             >
               <FileText className="w-6 h-6" />
               <span className="text-xs font-medium">Clique para gerar a descrição da vaga</span>
@@ -293,7 +293,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           )}
           <div className="flex justify-between">
             <span className="lia-text-secondary">Benefícios:</span>
-            <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">{enabledBenefits.length} selecionados</span>
+            <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{enabledBenefits.length} selecionados</span>
           </div>
         </div>
       </SectionCard>
@@ -315,7 +315,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       {/* Publishing Platforms */}
       <div className="rounded-md border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-gray-50 flex items-center gap-2">
-          <Rocket className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <Rocket className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="text-xs font-semibold lia-text-strong">
             Publicar em
           </span>

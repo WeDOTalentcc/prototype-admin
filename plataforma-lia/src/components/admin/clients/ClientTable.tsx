@@ -52,10 +52,10 @@ function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => vo
       <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
         <Building2 className="w-8 h-8 lia-text-secondary" />
       </div>
-      <h3 className="text-lg font-medium text-gray-950 mb-1">
+      <h3 className="text-lg font-medium text-lia-text-primary mb-1">
         Nenhum cliente encontrado
       </h3>
-      <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center max-w-md mb-4">
+      <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-md mb-4">
         {message || 'Não encontramos clientes com os filtros selecionados. Tente ajustar sua busca ou adicione um novo cliente.'}
       </p>
       {onRetry && (
@@ -74,10 +74,10 @@ function ErrorState({ message, onRetry }: { message: string, onRetry?: () => voi
       <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
         <AlertCircle className="w-8 h-8 text-status-error" />
       </div>
-      <h3 className="text-lg font-medium text-gray-950 mb-1">
+      <h3 className="text-lg font-medium text-lia-text-primary mb-1">
         Erro ao carregar clientes
       </h3>
-      <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center max-w-md mb-4">
+      <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-md mb-4">
         {message}
       </p>
       {onRetry && (

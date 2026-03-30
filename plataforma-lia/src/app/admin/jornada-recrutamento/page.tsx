@@ -82,7 +82,7 @@ export default function JornadaRecrutamentoPage() {
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.name === 'AbortError') return
     } finally {
       if (isMountedRef.current) {
@@ -176,7 +176,7 @@ export default function JornadaRecrutamentoPage() {
   }
 
   const activeStages = stages.filter(s => s.isActive).length
-  const automatedStages = stages.filter(s => (s as any).automations?.emailFeedback || (s as any).automations?.whatsappNotification).length
+  const automatedStages = stages.filter(s => (s as { automations?: { emailFeedback?: boolean; whatsappNotification?: boolean } }).automations?.emailFeedback || (s as { automations?: { emailFeedback?: boolean; whatsappNotification?: boolean } }).automations?.whatsappNotification).length
 
   if (isLoading) {
     return (

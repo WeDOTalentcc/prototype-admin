@@ -102,7 +102,7 @@ export function CandidateSummaryCard({
                   variant="outline"
                   className="shrink-0 border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
                 >
-                  <Star className="h-3 w-3 mr-1 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Star className="h-3 w-3 mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   {data.match_score}%
                 </Badge>
               )}
@@ -130,7 +130,7 @@ export function CandidateSummaryCard({
                 )}
                 {data.salary_expectation && (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-3.5 w-3.5 text-gray-700 dark:text-lia-text-secondary" />
+                    <DollarSign className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
                     <span>{data.salary_expectation}</span>
                   </div>
                 )}
@@ -180,7 +180,7 @@ export function CandidateSummaryCard({
                     key={index}
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                   >
-                    <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-lia-text-secondary" />
+                    <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
                     <span>{concern}</span>
                   </div>
                 ))}

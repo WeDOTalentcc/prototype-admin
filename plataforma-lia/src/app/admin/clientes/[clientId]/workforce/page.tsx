@@ -159,7 +159,7 @@ export default function ClientWorkforcePage({
         }
         
         if (headcounts && Array.isArray(headcounts)) {
-          headcounts.forEach((hc: any) => {
+          headcounts.forEach((hc: Record<string, unknown>) => {
             vacancies.push({
               id: hc.id || `${planItem.id}-${vacancies.length}`,
               title: hc.title || 'Posição Planejada',

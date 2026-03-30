@@ -51,7 +51,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Telefônica',
       icon: Phone,
       description: 'Conversa por telefone',
-      color: 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
+      color: 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
     },
     {
       id: 'video',
@@ -364,7 +364,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   onClick={generateLiaRecommendations}
                   disabled={isLiaAnalyzing}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {isLiaAnalyzing ? (
                     <>
@@ -387,7 +387,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 {isLiaAnalyzing ? (
                   <div className="flex items-center justify-center py-6">
                     <div className="text-center">
-                      <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-lia-text-tertiary mx-auto mb-2" />
+                      <RefreshCw className="w-8 h-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
                       <p className="text-xs lia-text-base">LIA analisando perfil para recomendações...</p>
                     </div>
                   </div>
@@ -396,31 +396,31 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     {/* Quick Recommendations */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-gray-900">{liaRecommendations.recommendedDuration}min</div>
+                        <div className="text-lg font-semibold text-lia-text-primary">{liaRecommendations.recommendedDuration}min</div>
                         <div className="text-micro lia-text-base">Duração sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('duration')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
                       </div>
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-gray-900 capitalize">{liaRecommendations.recommendedType}</div>
+                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{liaRecommendations.recommendedType}</div>
                         <div className="text-micro lia-text-base">Tipo recomendado</div>
                         <button
                           onClick={() => applyLiaRecommendation('type')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
                       </div>
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-gray-900 capitalize">{liaRecommendations.recommendedPlatform}</div>
+                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{liaRecommendations.recommendedPlatform}</div>
                         <div className="text-micro lia-text-base">Plataforma sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('platform')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
@@ -439,7 +439,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                             </div>
                             <button
                               onClick={() => setTime(timeRec.time)}
-                              className="text-micro h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                              className="text-micro h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                             >
                               Usar
                             </button>
@@ -461,7 +461,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           <div key={key} className="p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-micro font-medium lia-text-strong capitalize">{key}</span>
-                              <span className="text-micro text-gray-600 dark:text-lia-text-tertiary">{v.weight}%</span>
+                              <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">{v.weight}%</span>
                             </div>
                             <p className="text-micro lia-text-base">{v.approach}</p>
                           </div>
@@ -470,7 +470,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                       </div>
                       <button
                         onClick={() => applyLiaRecommendation('notes')}
-                        className="text-micro mt-2 px-2 py-1 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                        className="text-micro mt-2 px-2 py-1 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                       >
                         Aplicar foco nas observações
                       </button>
@@ -481,7 +481,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                       <h5 className="text-xs font-medium lia-text-strong mb-2">Insights Principais:</h5>
                       <div className="grid grid-cols-1 gap-2">
                         <div>
-                          <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">Pontos Fortes:</span>
+                          <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">Pontos Fortes:</span>
                           <ul className="text-micro lia-text-base ml-2">
                             {liaRecommendations.attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
                               <li key={idx}>• {strength}</li>
@@ -591,7 +591,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     }`}
                   >
                     <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'lia-text-strong' : 'lia-text-secondary'}`} />
-                    <div className="text-micro text-gray-800 dark:text-lia-text-primary">{plat.name}</div>
+                    <div className="text-micro text-lia-text-primary dark:text-lia-text-primary">{plat.name}</div>
                   </button>
                 ))}
               </div>
@@ -659,14 +659,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           <div className="flex justify-end gap-3 pt-5 border-t border-lia-border-subtle">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
             {createdInterviewId && (
               <button
                 onClick={handleDownloadIcs}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Baixar .ICS

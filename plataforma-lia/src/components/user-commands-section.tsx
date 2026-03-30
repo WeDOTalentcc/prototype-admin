@@ -217,7 +217,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
             />
           </button>
         ))}
-        <span className="text-xs text-gray-800 dark:text-lia-text-primary ml-1">
+        <span className="text-xs text-lia-text-primary dark:text-lia-text-primary ml-1">
           ({command.rating > 0 ? command.rating.toFixed(1) : 'Sem avaliação'})
         </span>
       </div>
@@ -253,10 +253,10 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-950">
+          <h2 className="text-lg font-semibold text-lia-text-primary">
             Meus Comandos Personalizados
           </h2>
-          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             {filteredCommands.length} {filteredCommands.length === 1 ? 'comando' : 'comandos'}
             {searchTerm && ` encontrado${filteredCommands.length !== 1 ? 's' : ''} para "${searchTerm}"`}
           </p>
@@ -273,7 +273,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       {/* Lista de Comandos */}
       {filteredCommands.length === 0 ? (
         <Card className="bg-white dark:bg-lia-bg-secondary p-8 text-center">
-          <div className="text-gray-800 dark:text-lia-text-primary">
+          <div className="text-lia-text-primary dark:text-lia-text-primary">
             <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-medium mb-2">
               {searchTerm ? 'Nenhum comando encontrado' : 'Nenhum comando personalizado ainda'}
@@ -293,7 +293,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-base font-semibold text-gray-950 mb-2">
+                    <CardTitle className="text-base font-semibold text-lia-text-primary mb-2">
                       {command.title}
                     </CardTitle>
                     <div className="flex flex-wrap gap-1 mb-2">
@@ -343,7 +343,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageCircle className="w-4 h-4 text-wedo-purple" />
-                    <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Comando:</span>
+                    <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Comando:</span>
                   </div>
                   <code className="text-sm text-wedo-purple dark:text-wedo-purple font-mono">
                     {command.command}
@@ -351,12 +351,12 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 </div>
 
                 {/* Descrição */}
-                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed">
                   {command.description}
                 </p>
 
                 {/* Estatísticas */}
-                <div className="flex items-center justify-between text-xs text-gray-800 dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2">
+                <div className="flex items-center justify-between text-xs text-lia-text-primary dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -404,16 +404,16 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md bg-white dark:bg-lia-bg-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-950 flex items-center gap-2">
+              <CardTitle className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-status-error" />
                 Confirmar Exclusão
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 Tem certeza que deseja excluir o comando <strong>"{commandToDelete.title}"</strong>?
               </p>
-              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                 Esta ação não pode ser desfeita. O comando foi usado {commandToDelete.usageCount} vezes.
               </p>
 

@@ -98,7 +98,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   timestamp: Date
-  contextData?: any
+  contextData?: Record<string, unknown>
   isTyping?: boolean
   isProcessing?: boolean
   processingState?: 'thinking' | 'analyzing' | 'searching' | 'generating' | 'completed'
@@ -116,7 +116,7 @@ export interface Message {
     actionId: string
     severity: string
     actionLabel: string
-    suggestedAction: Record<string, any>
+    suggestedAction: Record<string, unknown>
   }
   isFieldUpdate?: boolean
   awaitingStageConfirmation?: string

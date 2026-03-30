@@ -82,7 +82,7 @@ export interface InterviewStage {
   scheduling_window?: string
   hasScript?: boolean
   has_script?: boolean
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface ScreeningQuestion {
@@ -232,10 +232,10 @@ export interface Job {
   targetAudience?: string
   screeningQuestions?: ScreeningQuestion[]
   interviewStages?: InterviewStage[]
-  technicalRequirements?: TechnicalRequirement[] | Record<string, any>[]
-  languages?: Language[] | Record<string, any>[]
-  behavioralCompetencies?: BehavioralCompetency[] | Record<string, any>[]
-  salaryRange?: SalaryRange | Record<string, any>
+  technicalRequirements?: TechnicalRequirement[] | Record<string, unknown>[]
+  languages?: Language[] | Record<string, unknown>[]
+  behavioralCompetencies?: BehavioralCompetency[] | Record<string, unknown>[]
+  salaryRange?: SalaryRange | Record<string, unknown>
   organizationalStructure?: OrganizationalStructure
   timeline?: Timeline
   governanceRules?: GovernanceRules

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -91,7 +91,7 @@ function SkeletonRow() {
   )
 }
 
-export function CandidatesTable({
+const CandidatesTableComponent = memo(function CandidatesTable({
   candidates,
   selectedIds,
   onToggleSelect,
@@ -108,11 +108,11 @@ export function CandidatesTable({
 
   const getSortIcon = (column: string) => {
     if (sortConfig.column !== column) {
-      return <ArrowUpDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+      return <ArrowUpDown className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
     }
     return sortConfig.direction === "asc" 
-      ? <ArrowUp className="h-4 w-4 text-gray-900 dark:text-gray-50" />
-      : <ArrowDown className="h-4 w-4 text-gray-900 dark:text-gray-50" />
+      ? <ArrowUp className="h-4 w-4 text-lia-text-primary dark:text-lia-text-primary" />
+      : <ArrowDown className="h-4 w-4 text-lia-text-primary dark:text-lia-text-primary" />
   }
 
   const formatScore = (score: number) => {
@@ -132,13 +132,13 @@ export function CandidatesTable({
           <thead className="bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <tr>
               <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" /></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Candidato</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Cargo Atual</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Localização</span></th>
-              <th className="text-center p-4"><span className="text-sm font-medium text-gray-400">Score LIA</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Skills</span></th>
-              <th className="text-center p-4"><span className="text-sm font-medium text-gray-400">Atividade</span></th>
-              <th className="text-right p-4"><span className="text-sm font-medium text-gray-400">Ações</span></th>
+              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Candidato</span></th>
+              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Cargo Atual</span></th>
+              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Localização</span></th>
+              <th className="text-center p-4"><span className="text-sm font-medium text-lia-text-disabled">Score LIA</span></th>
+              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Skills</span></th>
+              <th className="text-center p-4"><span className="text-sm font-medium text-lia-text-disabled">Atividade</span></th>
+              <th className="text-right p-4"><span className="text-sm font-medium text-lia-text-disabled">Ações</span></th>
             </tr>
           </thead>
           <tbody>
@@ -153,7 +153,7 @@ export function CandidatesTable({
 
   if (candidates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-600 dark:text-lia-text-tertiary bg-white dark:bg-lia-bg-primary">
+      <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary dark:text-lia-text-tertiary bg-white dark:bg-lia-bg-primary">
         <p className="text-lg">Nenhum candidato encontrado</p>
         <p className="text-sm mt-2">Tente ajustar os filtros ou fazer uma nova busca</p>
       </div>
@@ -175,7 +175,7 @@ export function CandidatesTable({
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("name")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               >
                 Candidato
                 {getSortIcon("name")}
@@ -184,7 +184,7 @@ export function CandidatesTable({
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("current_title")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               >
                 Cargo Atual
                 {getSortIcon("current_title")}
@@ -193,7 +193,7 @@ export function CandidatesTable({
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("location")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               >
                 Localização
                 {getSortIcon("location")}
@@ -202,26 +202,26 @@ export function CandidatesTable({
             <th className="text-center p-4">
               <button 
                 onClick={() => onSort("lia_score")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               >
                 Score LIA
                 {getSortIcon("lia_score")}
               </button>
             </th>
             <th className="text-left p-4">
-              <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">Skills</span>
+              <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Skills</span>
             </th>
             <th className="text-center p-4">
               <button 
                 onClick={() => onSort("last_activity_at")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               >
                 Atividade
                 {getSortIcon("last_activity_at")}
               </button>
             </th>
             <th className="text-right p-4">
-              <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">Ações</span>
+              <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Ações</span>
             </th>
           </tr>
         </thead>
@@ -243,35 +243,35 @@ export function CandidatesTable({
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary">
+                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
                       {candidate.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-50">{candidate.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-lia-text-tertiary">{candidate.email}</div>
+                    <div className="font-medium text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</div>
+                    <div className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">{candidate.email}</div>
                   </div>
                 </div>
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  <span className="text-gray-800 dark:text-lia-text-primary">{candidate.current_title || "Não informado"}</span>
+                  <Briefcase className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
+                  <span className="text-lia-text-primary dark:text-lia-text-primary">{candidate.current_title || "Não informado"}</span>
                 </div>
                 {candidate.current_company && (
                   <div className="flex items-center gap-2 mt-1">
-                    <Building className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                    <span className="text-sm text-gray-500 dark:text-lia-text-tertiary">{candidate.current_company}</span>
+                    <Building className="h-3 w-3 text-lia-text-disabled dark:text-lia-text-tertiary" />
+                    <span className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">{candidate.current_company}</span>
                   </div>
                 )}
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  <span className="text-gray-800 dark:text-lia-text-primary">{candidate.location || "Não informado"}</span>
+                  <MapPin className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
+                  <span className="text-lia-text-primary dark:text-lia-text-primary">{candidate.location || "Não informado"}</span>
                 </div>
                 {candidate.is_remote && (
-                  <Badge variant="outline" className="mt-1 text-xs border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary">
+                  <Badge variant="outline" className="mt-1 text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary">
                     Remoto
                   </Badge>
                 )}
@@ -282,7 +282,7 @@ export function CandidatesTable({
                     {formatScore(candidate.lia_score)}
                   </div>
                 ) : (
-                  <span className="text-gray-400 dark:text-gray-500">-</span>
+                  <span className="text-lia-text-disabled dark:text-lia-text-tertiary">-</span>
                 )}
               </td>
               <td className="p-4">
@@ -291,13 +291,13 @@ export function CandidatesTable({
                     <Badge 
                       key={skill} 
                       variant="outline" 
-                      className="text-xs border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary"
+                      className="text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary"
                     >
                       {skill}
                     </Badge>
                   ))}
                   {(candidate.technical_skills?.length || 0) > 3 && (
-                    <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default text-gray-500 dark:text-lia-text-tertiary">
+                    <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary dark:text-lia-text-tertiary">
                       +{(candidate.technical_skills?.length || 0) - 3}
                     </Badge>
                   )}
@@ -307,7 +307,7 @@ export function CandidatesTable({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-lia-text-tertiary">
+                      <div className="flex items-center justify-center gap-1 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
                         <Clock className="h-3.5 w-3.5" />
                         <span>{formatRelativeDate(candidate.last_activity_at || candidate.updated_at)}</span>
                       </div>
@@ -334,7 +334,7 @@ export function CandidatesTable({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -343,7 +343,7 @@ export function CandidatesTable({
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
                           <Mail className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -356,7 +356,7 @@ export function CandidatesTable({
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-600"
+                            className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary"
                             onClick={() => window.open(candidate.linkedin_url, "_blank")}
                           >
                             <Linkedin className="h-4 w-4" />
@@ -368,7 +368,7 @@ export function CandidatesTable({
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-status-warning">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-status-warning">
                           <Star className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -383,4 +383,8 @@ export function CandidatesTable({
       </table>
     </div>
   )
-}
+})
+
+CandidatesTableComponent.displayName = "CandidatesTable"
+
+export const CandidatesTable = CandidatesTableComponent

@@ -286,7 +286,7 @@ export function JobStatusModal({
               const candidatesData = data.candidates || data.items || data || []
               
               if (Array.isArray(candidatesData)) {
-                allFetched.push(...candidatesData.map((c: any) => ({
+                allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
                   id: c.id || c.candidate_id,
                   name: c.name || c.full_name || 'Candidato',
                   email: c.email,
@@ -494,24 +494,24 @@ export function JobStatusModal({
                 step.done 
                   ? "bg-gray-900 text-white" 
                   : currentStep === 'options' && index === 0 
-                    ? "bg-gray-100 text-gray-900 border border-gray-900"
+                    ? "bg-gray-100 text-lia-text-primary border border-gray-900"
                     : currentStep === 'communication' && index === 1
-                      ? "bg-gray-100 text-gray-900 border border-gray-900"
+                      ? "bg-gray-100 text-lia-text-primary border border-gray-900"
                       : currentStep === 'confirmation' && index === 1
-                        ? "bg-gray-100 text-gray-900 border border-gray-900"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                        : "bg-gray-100 text-lia-text-tertiary"
               )}>
                 {step.done ? <Check className="w-3 h-3" /> : index + 1}
               </div>
               <span className={cn(
                 "text-xs font-medium",
-                step.done ? "text-gray-900" : "text-gray-600"
+                step.done ? "text-lia-text-primary" : "text-lia-text-secondary"
               )}>
                 {step.label}
               </span>
             </div>
             {index < steps.length - 1 && (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400 mx-1" />
+              <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled mx-1" />
             )}
           </React.Fragment>
         ))}
@@ -522,7 +522,7 @@ export function JobStatusModal({
   const renderPauseOptionsStep = () => (
     <div className="space-y-4">
       <div>
-        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[100px]">
@@ -530,13 +530,13 @@ export function JobStatusModal({
             {jobs.map((job) => (
               <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                  <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    {job.code && <span className="text-micro font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
-                    <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
+                    {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                    <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-micro text-gray-500">
+                <div className="flex items-center gap-2 text-micro text-lia-text-tertiary">
                   <span className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
                     {job.candidates_count || 0}
@@ -584,7 +584,7 @@ export function JobStatusModal({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+          <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
             Motivo (Opcional)
           </h4>
           <Select value={pauseReason} onValueChange={setPauseReason}>
@@ -610,23 +610,23 @@ export function JobStatusModal({
         </div>
 
         <div>
-          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+          <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
             Impacto
           </h4>
           <div className="space-y-1.5 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
-            <div className="flex items-start gap-2 text-xs text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-lia-text-primary">
               <span className="flex-shrink-0">⏸️</span>
               <span>Triagens em andamento serão pausadas</span>
             </div>
-            <div className="flex items-start gap-2 text-xs text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-lia-text-primary">
               <span className="flex-shrink-0">📅</span>
               <span>{totalInterviews} entrevista(s) agendada(s)</span>
             </div>
-            <div className="flex items-start gap-2 text-xs text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-lia-text-primary">
               <span className="flex-shrink-0">📢</span>
               <span>Publicações serão desativadas</span>
             </div>
-            <div className="flex items-start gap-2 text-xs text-gray-800">
+            <div className="flex items-start gap-2 text-xs text-lia-text-primary">
               <span className="flex-shrink-0">📧</span>
               <span>Novos candidatos → pool de talentos</span>
             </div>
@@ -635,8 +635,8 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-        <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
-          <CalendarOff className="w-3.5 h-3.5 text-gray-600" />
+        <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
+          <CalendarOff className="w-3.5 h-3.5 text-lia-text-secondary" />
           Ações ao Pausar
         </h4>
 
@@ -649,8 +649,8 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelScreenings" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <Filter className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="cancelScreenings" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <Filter className="w-3 h-3 text-lia-text-disabled" />
               Desmarcar triagens pendentes ({totalScreenings})
             </Label>
           </div>
@@ -663,8 +663,8 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelInterviews" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="cancelInterviews" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-lia-text-disabled" />
               Desmarcar entrevistas agendadas ({totalInterviews})
             </Label>
           </div>
@@ -677,8 +677,8 @@ export function JobStatusModal({
               disabled={hasProposalBlock}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="cancelTests" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <FileText className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="cancelTests" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <FileText className="w-3 h-3 text-lia-text-disabled" />
               Cancelar testes agendados ({totalTests})
             </Label>
           </div>
@@ -686,8 +686,8 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-        <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
-          <Megaphone className="w-3.5 h-3.5 text-gray-600" />
+        <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
+          <Megaphone className="w-3.5 h-3.5 text-lia-text-secondary" />
           Notificações
         </h4>
 
@@ -700,14 +700,14 @@ export function JobStatusModal({
               className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <div className="flex-1">
-              <Label htmlFor="notifyRecruiters" className="text-xs font-medium text-gray-950 cursor-pointer">
+              <Label htmlFor="notifyRecruiters" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                 Notificar recrutadores
               </Label>
-              <p className="text-micro text-gray-600">Enviar resumo das ações por email ou Teams</p>
+              <p className="text-micro text-lia-text-secondary">Enviar resumo das ações por email ou Teams</p>
               
               {notifyRecruiters && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Label className="text-micro text-gray-600">Canal:</Label>
+                  <Label className="text-micro text-lia-text-secondary">Canal:</Label>
                   <div className="flex gap-1">
                     {(['email', 'teams', 'bell'] as RecruiterChannel[]).map((channel) => (
                       <Button
@@ -720,7 +720,7 @@ export function JobStatusModal({
                           "h-6 px-2 text-micro gap-1",
                           recruiterChannel === channel 
                             ? "bg-gray-900 hover:bg-gray-800 text-white" 
-                            : "border border-lia-border-default text-gray-600"
+                            : "border border-lia-border-default text-lia-text-secondary"
                         )}
                       >
                         {channel === 'email' && <Mail className="w-3 h-3" />}
@@ -745,14 +745,14 @@ export function JobStatusModal({
                 className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
               />
               <div className="flex-1">
-                <Label htmlFor="notifyApplicants" className="text-xs font-medium text-gray-950 cursor-pointer">
+                <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                   Enviar email aos candidatos
                 </Label>
-                <p className="text-micro text-gray-600">
+                <p className="text-micro text-lia-text-secondary">
                   Comunicar candidatos sobre o congelamento da vaga
                 </p>
                 {notifyApplicants && (
-                  <p className="text-micro text-gray-500 mt-1 flex items-center gap-1">
+                  <p className="text-micro text-lia-text-tertiary mt-1 flex items-center gap-1">
                     <Activity className="w-3 h-3" />
                     Após pausar, você selecionará o template e canal
                   </p>
@@ -770,14 +770,14 @@ export function JobStatusModal({
       <div className="p-2.5 rounded-md border bg-gray-50 border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
-          <span className="text-xs text-gray-800 leading-relaxed">
+          <span className="text-xs text-lia-text-primary leading-relaxed">
             Você está prestes a ativar {jobs.length} vaga{jobs.length > 1 ? 's' : ''} pausada{jobs.length > 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[120px]">
@@ -785,10 +785,10 @@ export function JobStatusModal({
             {jobs.map((job) => (
               <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                  <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
+                  <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+                  <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                 </div>
-                <div className="flex items-center gap-2 text-micro text-gray-500">
+                <div className="flex items-center gap-2 text-micro text-lia-text-tertiary">
                   <Clock className="w-3 h-3" />
                   <span>Pausada há {formatPausedDuration(job.paused_since)}</span>
                 </div>
@@ -799,7 +799,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-        <h4 className="text-xs font-semibold text-gray-950">Ações ao Ativar</h4>
+        <h4 className="text-xs font-semibold text-lia-text-primary">Ações ao Ativar</h4>
         
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
@@ -809,8 +809,8 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setResumeScreening(checked === true)}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="resumeScreening" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <Filter className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="resumeScreening" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <Filter className="w-3 h-3 text-lia-text-disabled" />
               Retomar triagens pausadas
             </Label>
           </div>
@@ -822,8 +822,8 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setRepublish(checked === true)}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="republish" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <Megaphone className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="republish" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <Megaphone className="w-3 h-3 text-lia-text-disabled" />
               Republicar em job boards
             </Label>
           </div>
@@ -835,8 +835,8 @@ export function JobStatusModal({
               onCheckedChange={(checked) => setUpdateDeadlines(checked === true)}
               className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
-            <Label htmlFor="updateDeadlines" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-gray-400" />
+            <Label htmlFor="updateDeadlines" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-lia-text-disabled" />
               Atualizar deadlines (+15 dias)
             </Label>
           </div>
@@ -844,7 +844,7 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
-        <h4 className="text-xs font-semibold text-gray-950">Notificações</h4>
+        <h4 className="text-xs font-semibold text-lia-text-primary">Notificações</h4>
         
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -853,8 +853,8 @@ export function JobStatusModal({
             onCheckedChange={(checked) => setNotifyRecruiters(checked === true)}
             className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
-          <Label htmlFor="notifyRecruitersActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-            <Megaphone className="w-3 h-3 text-gray-400" />
+          <Label htmlFor="notifyRecruitersActivate" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+            <Megaphone className="w-3 h-3 text-lia-text-disabled" />
             Notificar recrutadores
           </Label>
         </div>
@@ -866,8 +866,8 @@ export function JobStatusModal({
             onCheckedChange={(checked) => setNotifyApplicants(checked === true)}
             className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
-          <Label htmlFor="notifyApplicantsActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
-            <Mail className="w-3 h-3 text-gray-400" />
+          <Label htmlFor="notifyApplicantsActivate" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
+            <Mail className="w-3 h-3 text-lia-text-disabled" />
             Notificar candidatos sobre retomada
           </Label>
         </div>
@@ -878,14 +878,14 @@ export function JobStatusModal({
   const renderCommunicationStep = () => (
     <div className="space-y-4">
       <div className="flex items-center gap-2 p-2.5 rounded-md bg-gray-100 border border-lia-border-subtle">
-        <Mail className="w-4 h-4 text-gray-600" />
-        <span className="text-xs text-gray-800">
+        <Mail className="w-4 h-4 text-lia-text-secondary" />
+        <span className="text-xs text-lia-text-primary">
           Configure a mensagem para {jobCandidates.length - candidatesInProposal.length} candidato(s)
         </span>
       </div>
 
       <div>
-        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 block">
           Canal de Comunicação
         </Label>
         <div className="flex gap-2">
@@ -900,7 +900,7 @@ export function JobStatusModal({
                 "h-8 px-3 text-xs gap-1.5",
                 notificationChannel === channel 
                   ? "bg-gray-900 hover:bg-gray-800 text-white" 
-                  : "border border-lia-border-default text-gray-600"
+                  : "border border-lia-border-default text-lia-text-secondary"
               )}
             >
               {channel === 'email' && <Mail className="w-3.5 h-3.5" />}
@@ -913,13 +913,13 @@ export function JobStatusModal({
       </div>
 
       <div>
-        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 block">
           Template
         </Label>
         {templatesLoading ? (
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
-            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-            <span className="text-xs text-gray-500">Carregando templates...</span>
+            <Loader2 className="w-4 h-4 animate-spin text-lia-text-disabled" />
+            <span className="text-xs text-lia-text-tertiary">Carregando templates...</span>
           </div>
         ) : (
           <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
@@ -939,7 +939,7 @@ export function JobStatusModal({
 
       {notificationChannel !== 'whatsapp' && (
         <div>
-          <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+          <Label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 block">
             Assunto do Email
           </Label>
           <Input
@@ -952,7 +952,7 @@ export function JobStatusModal({
       )}
 
       <div>
-        <Label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+        <Label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 block">
           Mensagem
         </Label>
         <Textarea
@@ -975,39 +975,39 @@ export function JobStatusModal({
       </div>
 
       <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
-        <h4 className="text-xs font-semibold text-gray-950 mb-2">Resumo das Ações</h4>
+        <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Resumo das Ações</h4>
         
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-xs">
             <Check className="w-3.5 h-3.5 text-status-success" />
-            <span className="text-gray-800">Pausar {jobs.length} vaga(s)</span>
+            <span className="text-lia-text-primary">Pausar {jobs.length} vaga(s)</span>
           </div>
           
           {cancelScreenings && totalScreenings > 0 && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-gray-800">Desmarcar {totalScreenings} triagem(ns)</span>
+              <span className="text-lia-text-primary">Desmarcar {totalScreenings} triagem(ns)</span>
             </div>
           )}
           
           {cancelInterviews && totalInterviews > 0 && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-gray-800">Desmarcar {totalInterviews} entrevista(s)</span>
+              <span className="text-lia-text-primary">Desmarcar {totalInterviews} entrevista(s)</span>
             </div>
           )}
           
           {cancelTests && totalTests > 0 && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-gray-800">Cancelar {totalTests} teste(s)</span>
+              <span className="text-lia-text-primary">Cancelar {totalTests} teste(s)</span>
             </div>
           )}
           
           {notifyApplicants && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-gray-800">
+              <span className="text-lia-text-primary">
                 Notificar {selectedCandidateIds.size} candidato(s) via {notificationChannel === 'both' ? 'Email e WhatsApp' : notificationChannel}
               </span>
             </div>
@@ -1016,7 +1016,7 @@ export function JobStatusModal({
           {notifyRecruiters && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-gray-800">
+              <span className="text-lia-text-primary">
                 Enviar resumo para recrutadores via {recruiterChannel === 'teams' ? 'Teams' : recruiterChannel === 'bell' ? 'Notificação interna' : 'Email'}
               </span>
             </div>
@@ -1026,8 +1026,8 @@ export function JobStatusModal({
 
       {pauseReason && (
         <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
-          <h4 className="text-xs font-semibold text-gray-600 mb-1">Motivo</h4>
-          <p className="text-xs text-gray-800">
+          <h4 className="text-xs font-semibold text-lia-text-secondary mb-1">Motivo</h4>
+          <p className="text-xs text-lia-text-primary">
             {pauseReason === 'other' ? customReason : PAUSE_REASONS.find(r => r.value === pauseReason)?.label}
           </p>
         </div>
@@ -1041,8 +1041,8 @@ export function JobStatusModal({
         <CheckCircle className="w-8 h-8 text-status-success" />
       </div>
       <div>
-        <h3 className="text-sm font-semibold text-gray-950">Processo Concluído!</h3>
-        <p className="text-xs text-gray-600 mt-1">
+        <h3 className="text-sm font-semibold text-lia-text-primary">Processo Concluído!</h3>
+        <p className="text-xs text-lia-text-secondary mt-1">
           {getSuccessMessage()}
         </p>
       </div>
@@ -1058,16 +1058,16 @@ export function JobStatusModal({
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100">
               {isPauseMode ? (
-                <Pause className="w-4 h-4 text-gray-600" />
+                <Pause className="w-4 h-4 text-lia-text-secondary" />
               ) : (
-                <Play className="w-4 h-4 text-gray-600" />
+                <Play className="w-4 h-4 text-lia-text-secondary" />
               )}
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-gray-950">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 {isPauseMode ? 'Pausar Vagas' : 'Ativar Vagas'}
               </DialogTitle>
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>
@@ -1097,7 +1097,7 @@ export function JobStatusModal({
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(currentStep === 'confirmation' ? (notifyApplicants ? 'communication' : 'options') : 'options')}
-                  className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
                 >
                   Voltar
                 </Button>
@@ -1105,7 +1105,7 @@ export function JobStatusModal({
               <Button
                 variant="outline"
                 onClick={handleClose}
-                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
+                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
               >
                 Cancelar
               </Button>

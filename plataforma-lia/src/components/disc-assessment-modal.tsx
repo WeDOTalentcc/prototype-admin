@@ -9,7 +9,7 @@ import { X, TrendingUp, Download, Brain, Users, Target, Zap, Shield } from "luci
 interface DISCModalProps {
   isOpen: boolean
   onClose: () => void
-  candidate: any
+  candidate: Record<string, unknown>
   assessmentData?: DISCAssessmentData
 }
 
@@ -325,16 +325,16 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
             <div className="flex items-center gap-4">
               <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
                 <AvatarImage src={candidate?.avatar} />
-                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
+                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                   {candidate?.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-sm font-semibold text-gray-950 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Relatório DISC
                 </h2>
-                <p className="text-gray-600 dark:text-lia-text-tertiary text-xs">
+                <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
                   {candidate?.name} • {data.assessmentProvider || 'Assessment Comportamental'}
                 </p>
               </div>
@@ -357,10 +357,10 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{profileInfo.icon}</span>
                 <div>
-                  <div className="text-lg font-bold text-gray-950">
+                  <div className="text-lg font-bold text-lia-text-primary">
                     {data.profile || profileType}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                  <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                     {profileInfo.title}
                   </div>
                 </div>
@@ -370,10 +370,10 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Match</span>
+                    <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Match</span>
                   </div>
-                  <div className="text-xl font-bold text-gray-900">
+                  <div className="text-xl font-bold text-lia-text-primary">
                     {data.comparisonToRole.matchPercentage}%
                   </div>
                 </div>
@@ -384,9 +384,9 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 lia-text-secondary" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Fit Cultural</span>
+                    <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Fit Cultural</span>
                   </div>
-                  <div className="text-xl font-bold text-gray-800 dark:text-lia-text-primary">
+                  <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                     {data.culturalFitScore}%
                   </div>
                 </div>
@@ -398,7 +398,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
                 <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
                 Dimensões DISC
               </h3>
@@ -417,7 +417,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                           {dim.letter}
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-950">{dim.name}</div>
+                          <div className="font-semibold text-lia-text-primary">{dim.name}</div>
                           <div className="text-xs lia-text-secondary">{levelData.label}</div>
                         </div>
                       </div>
@@ -433,7 +433,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                       />
                     </div>
 
-                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-2">{levelData.description}</p>
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">{levelData.description}</p>
 
                     <div className="flex flex-wrap gap-1">
                       {levelData.keywords.map((kw, i) => (
@@ -449,46 +449,46 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
             <div className="space-y-4">
               <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
                   <span className="text-lg">{profileInfo.icon}</span>
                   Perfil: {profileInfo.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-4">{profileInfo.description}</p>
+                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-4">{profileInfo.description}</p>
                 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Pontos Fortes</p>
+                    <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {profileInfo.strengths.map((s, i) => (
-                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                           ✓ {s}
                         </Badge>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Ambiente Ideal</p>
-                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{profileInfo.environment}</p>
+                    <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">Ambiente Ideal</p>
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{profileInfo.environment}</p>
                   </div>
                 </div>
               </div>
 
               {data.leadershipStyle && (
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3">Estilo de Liderança</h3>
+                  <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Estilo de Liderança</h3>
                   <div className="flex items-center gap-3 mb-3">
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                       {data.leadershipStyle}
                     </Badge>
                     {data.leadershipScore && (
-                      <span className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.leadershipScore}%</span>
+                      <span className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">{data.leadershipScore}%</span>
                     )}
                   </div>
                   {data.leadershipStrengths && data.leadershipStrengths.length > 0 && (
                     <ul className="space-y-1">
                       {data.leadershipStrengths.map((s: string, i: number) => (
-                        <li key={i} className="text-xs text-gray-600 dark:text-lia-text-tertiary flex items-start gap-2">
-                          <span className="text-gray-600 dark:text-lia-text-tertiary">✓</span> {s}
+                        <li key={i} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">✓</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -498,10 +498,10 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
               {data.developmentAreas && data.developmentAreas.length > 0 && (
                 <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3">Áreas de Desenvolvimento</h3>
+                  <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Áreas de Desenvolvimento</h3>
                   <ul className="space-y-1">
                     {data.developmentAreas.map((a: string, i: number) => (
-                      <li key={i} className="text-xs text-gray-600 dark:text-lia-text-tertiary flex items-start gap-2">
+                      <li key={i} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
                         <span className="lia-text-secondary">•</span> {a}
                       </li>
                     ))}
@@ -511,27 +511,27 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
               {data.recommendation && (
                 <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Recomendação</h3>
-                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{data.recommendation}</p>
+                  <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Recomendação</h3>
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{data.recommendation}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-3 gap-2">
                 {data.teamworkScore && (
                   <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.teamworkScore}%</p>
+                    <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">{data.teamworkScore}%</p>
                     <p className="text-micro lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
                   <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.adaptabilityScore}%</p>
+                    <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">{data.adaptabilityScore}%</p>
                     <p className="text-micro lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
                   <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.stressResilienceScore}%</p>
+                    <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">{data.stressResilienceScore}%</p>
                     <p className="text-micro lia-text-secondary">Resiliência</p>
                   </div>
                 )}

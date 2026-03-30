@@ -375,7 +375,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
  activeTab === 'email'
                     ? 'bg-gray-100 lia-text-strong border border-lia-border-subtle'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
+                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -390,7 +390,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
  activeTab === 'whatsapp'
                     ? 'bg-status-success/10 text-status-success border border-status-success/30'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
+                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -405,7 +405,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
  activeTab === 'phone'
                     ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
+                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Phone className="w-4 h-4" />
@@ -425,7 +425,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <h4 className={textStyles.label}>
                   Templates Rápidos
                 </h4>
-                <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   <span>LIA disponível abaixo</span>
                 </div>
@@ -472,7 +472,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
@@ -501,7 +501,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   {isLiaGenerating ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-lia-text-tertiary mx-auto mb-2" />
+                        <RefreshCw className="w-8 h-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
                         <p className="text-xs lia-text-base">LIA analisando perfil e gerando sugestões...</p>
                       </div>
                     </div>
@@ -517,7 +517,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                           </div>
                           <button
                             onClick={() => applyLiaSuggestion(suggestion)}
-                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
+                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
                           >
                             Usar Esta
                           </button>
@@ -526,7 +526,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                         {activeTab === 'email' && suggestion.content.subject && (
                           <div className="mb-2">
                             <span className="text-micro font-medium lia-text-base">Assunto:</span>
-                            <p className="text-micro text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
+                            <p className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
                               {suggestion.content.subject}
                             </p>
                           </div>
@@ -534,7 +534,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
                         <div className="mb-3">
                           <span className="text-micro font-medium lia-text-base">Mensagem:</span>
-                          <p className="text-micro text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
+                          <p className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
                             {suggestion.content.message}
                           </p>
                         </div>
@@ -544,7 +544,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                           <ul className="text-micro lia-text-base mt-1 space-y-1">
                             {suggestion.reasons.map((reason: string, idx: number) => (
                               <li key={idx} className="flex items-start gap-1">
-                                <span className="text-gray-600 dark:text-lia-text-tertiary mt-0.5">•</span>
+                                <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">•</span>
                                 {reason}
                               </li>
                             ))}
@@ -595,7 +595,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                       Ligação Telefônica
                     </span>
                   </div>
-                  <p className="text-xs text-gray-800 dark:text-lia-text-primary">
+                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                     Ligue para {candidate.phone} e registre as informações da conversa no campo de mensagem acima.
                   </p>
                 </div>
@@ -605,7 +605,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>

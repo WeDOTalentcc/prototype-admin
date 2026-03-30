@@ -62,8 +62,8 @@ const STATUS_CONFIG: Record<'hired' | 'cancelled', {
 const WORK_MODEL_CONFIG: Record<string, { label: string; className: string }> = {
   'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
   'hybrid': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
-  'onsite': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
-  'presencial': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
+  'onsite': { label: 'Presencial', className: 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
+  'presencial': { label: 'Presencial', className: 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
   'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
   'híbrido': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
 }
@@ -108,7 +108,7 @@ function VacancyCard({
         
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-white truncate group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+            <h4 className="text-sm font-semibold text-lia-text-primary dark:text-white truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors">
               {vacancy.title}
             </h4>
             <Badge 
@@ -121,19 +121,19 @@ function VacancyCard({
           
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Building2 className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <Building2 className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="truncate">{vacancy.department}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <User className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <User className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span className="truncate">{vacancy.manager}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <Calendar className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span>{formatDate(vacancy.date_closed)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <DollarSign className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <DollarSign className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <span>{formatCurrency(vacancy.salary_range.min)} - {formatCurrency(vacancy.salary_range.max)}</span>
             </div>
           </div>
@@ -174,7 +174,7 @@ export function VacancySearchResults({
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Buscando vagas anteriores...</span>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function VacancySearchResults({
       <div className="flex-1 space-y-3">
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <p className="text-xs text-muted-foreground">
-            Encontrei <span className="font-semibold text-gray-900">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
+            Encontrei <span className="font-semibold text-lia-text-primary">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
           </p>
 
           <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">

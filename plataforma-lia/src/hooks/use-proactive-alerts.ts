@@ -70,7 +70,7 @@ export function useProactiveAlerts({
       
       setLastCheck(new Date())
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erro ao verificar alertas')
+      setError(err instanceof Error ? err instanceof Error ? err.message : String(err) : 'Erro ao verificar alertas')
     } finally {
       setIsLoading(false)
     }

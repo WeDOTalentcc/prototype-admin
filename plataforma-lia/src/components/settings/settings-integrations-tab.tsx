@@ -36,7 +36,7 @@
     name: string
     type: 'slack' | 'teams'
     status: 'active' | 'inactive' | 'error'
-    icon: any
+    icon: React.ElementType
     color: string
     webhookUrl: string
     channels: string[]
@@ -507,7 +507,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                 ].map(tab => (
                   <button
                     key={tab.id}
-                    onClick={() => setSelectedView(tab.id as any)}
+                    onClick={() => setSelectedView(tab.id as 'overview' | 'systems' | 'mapping' | 'logs')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedView === tab.id
                         ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
@@ -702,7 +702,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setSelectedView(tab.id as any)}
+            onClick={() => setSelectedView(tab.id as 'overview' | 'systems' | 'mapping' | 'logs')}
             className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
               selectedView === tab.id
                 ? 'bg-lia-bg-primary lia-text-950'

@@ -299,15 +299,15 @@ export function AddCandidateToListModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg bg-white dark:bg-lia-bg-primary border-0 rounded-md">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
-          <DialogTitle className="font-['Open_Sans',sans-serif] text-lg text-gray-950">
+          <DialogTitle className="font-['Open_Sans',sans-serif] text-lg text-lia-text-primary">
             Adicionar Candidatos à Lista "{listName}"
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary">
-              <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Buscar na Base
             </div>
             
@@ -351,22 +351,22 @@ export function AddCandidateToListModal({
                       
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={undefined} />
-                        <AvatarFallback className="bg-gray-200 text-xs text-gray-600 dark:text-lia-text-secondary">
+                        <AvatarFallback className="bg-gray-200 text-xs text-lia-text-secondary dark:text-lia-text-secondary">
                           {getInitials(candidate.name)}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-950 truncate">
+                        <p className="text-sm font-medium text-lia-text-primary truncate">
                           {candidate.name || "Nome não disponível"}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                           {candidate.contact?.email || candidate.current_title || candidate.headline || ""}
                         </p>
                       </div>
 
                       {candidate.match_score && (
-                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary">
+                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
                           {Math.round(candidate.match_score)}%
                         </span>
                       )}
@@ -377,14 +377,14 @@ export function AddCandidateToListModal({
             )}
 
             {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center py-3">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center py-3">
                 Nenhum candidato encontrado para "{searchQuery}"
               </p>
             )}
 
             {selectedCandidates.size > 0 && (
               <div className="flex items-center justify-between pt-2">
-                <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
+                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                   {selectedCandidates.size} candidato(s) selecionado(s)
                 </span>
                 <Button
@@ -419,7 +419,7 @@ export function AddCandidateToListModal({
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               <Upload className="w-4 h-4 lia-text-base" />
               Importar Novo Candidato
             </div>
@@ -501,10 +501,10 @@ export function AddCandidateToListModal({
                 <Search className="w-5 h-5 lia-text-base" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-950">
+                <p className="text-sm font-medium text-lia-text-primary">
                   Ir para Busca Avançada
                 </p>
-                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
                   Usar filtros e busca inteligente
                 </p>
               </div>

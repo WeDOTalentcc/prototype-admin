@@ -167,14 +167,14 @@ export function useAutoFillWizard() {
 
   const autoFillFields = useCallback(async (
     context: WizardSuggestionContext,
-    currentData: Record<string, any>,
+    currentData: Record<string, unknown>,
     minConfidence: number = 0.7
-  ): Promise<Record<string, any>> => {
+  ): Promise<Record<string, unknown>> => {
     const suggestions = await getAllSuggestions(context);
     
     if (!suggestions) return currentData;
     
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
     const newAutoFilled = new Set<string>();
     
     Object.entries(suggestions.suggestions).forEach(([field, suggestion]) => {

@@ -137,7 +137,7 @@ export function useDepartmentManagement({
               manager_email: d.manager_email || undefined,
               manager_phone: d.manager_phone || undefined,
               headcount: d.headcount || 0,
-              color: d.color || "bg-gray-100 text-gray-800 dark:text-gray-200",
+              color: d.color || "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
             })),
           );
         } else {

@@ -141,14 +141,14 @@ export function ScreeningMediaModal({
         <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {type === 'audio' ? (
-              <Mic className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+              <Mic className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             ) : (
               <Video className="w-5 h-5 text-wedo-purple" />
             )}
             <DialogTitle className={`${textStyles.titleLarge} flex items-center gap-2`}>
               {title}
               {fileName && (
-                <span className="text-gray-500 font-normal text-sm">{fileName}</span>
+                <span className="text-lia-text-tertiary font-normal text-sm">{fileName}</span>
               )}
             </DialogTitle>
             <VisuallyHidden>
@@ -175,13 +175,13 @@ export function ScreeningMediaModal({
             <div className="flex flex-col items-center justify-center py-8 bg-gradient-to-b from-gray-50 to-white rounded-md border border-lia-border-subtle">
               <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
                 {type === 'audio' ? (
-                  <Mic className="w-10 h-10 text-gray-600 dark:text-lia-text-tertiary" />
+                  <Mic className="w-10 h-10 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 ) : (
                   <Video className="w-10 h-10 text-wedo-purple" />
                 )}
               </div>
-              <p className={`${textStyles.body} text-gray-600 mb-1`}>Clique para reproduzir</p>
-              {fileName && <p className={`${textStyles.bodySmall} text-gray-500`}>{fileName}</p>}
+              <p className={`${textStyles.body} text-lia-text-secondary mb-1`}>Clique para reproduzir</p>
+              {fileName && <p className={`${textStyles.bodySmall} text-lia-text-tertiary`}>{fileName}</p>}
 
               {type === 'audio' ? (
                 <audio
@@ -228,7 +228,7 @@ export function ScreeningMediaModal({
                       className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-gray-900 dark:accent-gray-50"
                     />
                   </div>
-                  <span className={`${textStyles.bodySmall} text-gray-600 min-w-20 text-right`}>
+                  <span className={`${textStyles.bodySmall} text-lia-text-secondary min-w-20 text-right`}>
                     {formatTime(currentTime)} / {duration}
                   </span>
                   <Button
@@ -238,9 +238,9 @@ export function ScreeningMediaModal({
                     className="w-8 h-8 p-0"
                   >
                     {isMuted ? (
-                      <VolumeX className="w-4 h-4 text-gray-500" />
+                      <VolumeX className="w-4 h-4 text-lia-text-tertiary" />
                     ) : (
-                      <Volume2 className="w-4 h-4 text-gray-800" />
+                      <Volume2 className="w-4 h-4 text-lia-text-primary" />
                     )}
                   </Button>
                 </div>
@@ -249,13 +249,13 @@ export function ScreeningMediaModal({
 
             <div className="space-y-4">
               <h3 className={`${textStyles.title} flex items-center gap-2`}>
-                <FileText className="w-4 h-4 text-gray-600" />
+                <FileText className="w-4 h-4 text-lia-text-secondary" />
                 Perguntas de Triagem
               </h3>
               <div className="space-y-2">
                 {questions.map((q, idx) => (
                   <div key={q.id} className="flex items-start gap-3 text-sm">
-                    <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-800 flex-shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-lia-text-primary flex-shrink-0 mt-0.5">
                       {idx + 1}
                     </span>
                     <p className={textStyles.body}>{q.question}</p>
@@ -281,12 +281,12 @@ export function ScreeningMediaModal({
 
           <div className="w-[380px] bg-gray-50 p-4 flex flex-col min-h-0">
             <h3 className={`${textStyles.title} flex items-center gap-2 mb-3`}>
-              <FileText className="w-4 h-4 text-gray-600" />
+              <FileText className="w-4 h-4 text-lia-text-secondary" />
               Transcrição
             </h3>
             
             <div className="mb-3">
-              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                 {type === 'audio' ? 'Áudio de Triagem' : 'Vídeo de Entrevista'}
               </Badge>
               <span className={`${textStyles.caption} ml-2`}>Duração: {duration}</span>
@@ -298,26 +298,26 @@ export function ScreeningMediaModal({
                   transcription.map((segment, idx) => (
                     <div key={idx} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{segment.timestamp}</span>
-                        <span className="text-micro text-gray-500">•</span>
-                        <span className="text-micro font-medium text-gray-800">{segment.speaker}</span>
+                        <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{segment.timestamp}</span>
+                        <span className="text-micro text-lia-text-tertiary">•</span>
+                        <span className="text-micro font-medium text-lia-text-primary">{segment.speaker}</span>
                       </div>
-                      <p className={`${textStyles.bodySmall} text-gray-800`}>"{segment.text}"</p>
+                      <p className={`${textStyles.bodySmall} text-lia-text-primary`}>"{segment.text}"</p>
                     </div>
                   ))
                 ) : questions.length > 0 ? (
                   questions.map((q, idx) => (
                     <div key={q.id} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{q.timestamp || `${idx}:00`}</span>
-                        <span className="text-micro text-gray-500">•</span>
-                        <span className="text-micro font-medium text-gray-800">Candidato</span>
+                        <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{q.timestamp || `${idx}:00`}</span>
+                        <span className="text-micro text-lia-text-tertiary">•</span>
+                        <span className="text-micro font-medium text-lia-text-primary">Candidato</span>
                       </div>
-                      <p className={`${textStyles.bodySmall} text-gray-800`}>"{q.transcription}"</p>
+                      <p className={`${textStyles.bodySmall} text-lia-text-primary`}>"{q.transcription}"</p>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-lia-text-tertiary">
                     <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p className={textStyles.bodySmall}>Transcrição não disponível</p>
                   </div>
@@ -334,7 +334,7 @@ export function ScreeningMediaModal({
                 <div className="space-y-1">
                   {highlights.map((h, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-xs">
-                      <ChevronRight className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
+                      <ChevronRight className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
                       <span className={textStyles.bodySmall}>{h}</span>
                     </div>
                   ))}

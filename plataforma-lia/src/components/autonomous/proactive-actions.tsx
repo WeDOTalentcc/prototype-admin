@@ -113,7 +113,7 @@ export function ProactiveActions({
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center py-8", className)}>
-        <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+        <Loader2 className="h-6 w-6 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -125,10 +125,10 @@ export function ProactiveActions({
           <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
             <Brain className="h-6 w-6 text-wedo-cyan" />
           </div>
-          <h3 className="text-sm font-medium text-gray-900 dark:text-lia-text-primary mb-1">
+          <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
             Tudo em dia!
           </h3>
-          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center max-w-sm">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-sm">
             Não há ações proativas pendentes no momento. A LIA está monitorando e notificará quando houver sugestões.
           </p>
         </CardContent>
@@ -156,10 +156,10 @@ export function ProactiveActions({
                 <PriorityIcon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-900 dark:text-lia-text-primary truncate">
+                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                   {action.title}
                 </p>
-                <p className="text-micro text-gray-500 dark:text-lia-text-tertiary truncate">
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
                     : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -201,7 +201,7 @@ export function ProactiveActions({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-wedo-cyan" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-lia-text-primary">
+          <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
             Sugestões da LIA
           </h3>
           <Badge variant="secondary">{actions.length}</Badge>
@@ -230,14 +230,14 @@ export function ProactiveActions({
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="text-xs font-medium text-gray-900 dark:text-lia-text-primary">
+                        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {action.title}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-micro lia-text-secondary">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
-                          <span className="text-micro text-gray-300">•</span>
+                          <span className="text-micro text-lia-text-disabled">•</span>
                           <span className="text-micro lia-text-secondary">
                             {formatTimeAgo(action.created_at)}
                           </span>
@@ -248,13 +248,13 @@ export function ProactiveActions({
                       </Badge>
                     </div>
 
-                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                       {action.description}
                     </p>
 
                     <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
-                      <ArrowRight className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary shrink-0" />
-                      <span className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
+                      <ArrowRight className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary shrink-0" />
+                      <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                         {typeof action.suggested_action === 'string' 
                           ? action.suggested_action 
                           : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}

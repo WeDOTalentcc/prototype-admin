@@ -62,10 +62,10 @@ export function MoveConfirmationModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-md">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
-          <DialogTitle className="text-gray-900 dark:text-gray-50 flex items-center gap-2">
+          <DialogTitle className="text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
             Confirmar Movimentação
           </DialogTitle>
-          <DialogDescription className="text-gray-600 dark:text-lia-text-tertiary">
+          <DialogDescription className="text-lia-text-secondary dark:text-lia-text-tertiary">
             Mover candidato para uma nova etapa do processo
           </DialogDescription>
         </DialogHeader>
@@ -77,24 +77,24 @@ export function MoveConfirmationModal({
                 className="w-3 h-3 rounded-full" 
                 style={{backgroundColor: fromStage.color}}
               />
-              <span className="text-gray-700 dark:text-lia-text-secondary">{fromStage.name}</span>
+              <span className="text-lia-text-secondary dark:text-lia-text-secondary">{fromStage.name}</span>
             </div>
             
-            <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            <ArrowRight className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
             
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
                 style={{backgroundColor: toStage.color}}
               />
-              <span className="text-gray-900 dark:text-gray-50 font-medium">{toStage.name}</span>
+              <span className="text-lia-text-primary dark:text-lia-text-primary font-medium">{toStage.name}</span>
             </div>
           </div>
 
           {substatusSuggestions.length > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-lia-text-secondary">
-                <LIAIcon className="h-4 w-4 text-gray-700 dark:text-lia-text-secondary" />
+              <div className="flex items-center gap-2 text-sm text-lia-text-secondary dark:text-lia-text-secondary">
+                <LIAIcon className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-secondary" />
                 <span>LIA sugere:</span>
               </div>
               
@@ -112,17 +112,17 @@ export function MoveConfirmationModal({
                     <RadioGroupItem 
                       value={suggestion.content} 
                       id={`substatus-${index}`}
-                      className="border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary"
+                      className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary"
                     />
                     <Label 
                       htmlFor={`substatus-${index}`}
-                      className="flex-1 cursor-pointer text-gray-800 dark:text-lia-text-primary"
+                      className="flex-1 cursor-pointer text-lia-text-primary dark:text-lia-text-primary"
                     >
                       {suggestion.content}
                     </Label>
                     <Badge 
                       variant="outline" 
- className="border-lia-border-default dark:border-lia-border-default text-gray-900 dark:text-lia-text-secondary text-xs"
+ className="border-lia-border-default dark:border-lia-border-default text-lia-text-primary dark:text-lia-text-secondary text-xs"
                     >
                       {Math.round(suggestion.confidence * 100)}%
                     </Badge>
@@ -134,7 +134,7 @@ export function MoveConfirmationModal({
 
           {toStage.substatuses && toStage.substatuses.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm text-gray-700 dark:text-lia-text-secondary">Sub-status disponíveis:</Label>
+              <Label className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">Sub-status disponíveis:</Label>
               <RadioGroup 
                 value={selectedSubstatus} 
                 onValueChange={setSelectedSubstatus}
@@ -152,7 +152,7 @@ export function MoveConfirmationModal({
                     />
                     <Label 
                       htmlFor={`sub-${substatus.id}`}
-                      className="cursor-pointer text-sm text-gray-700 dark:text-lia-text-secondary"
+                      className="cursor-pointer text-sm text-lia-text-secondary dark:text-lia-text-secondary"
                     >
                       {substatus.label}
                     </Label>
@@ -163,7 +163,7 @@ export function MoveConfirmationModal({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="reason" className="text-sm text-gray-700 dark:text-lia-text-secondary">
+            <Label htmlFor="reason" className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
               Motivo (opcional)
             </Label>
             <Textarea
@@ -171,7 +171,7 @@ export function MoveConfirmationModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Ex: Entrevista marcada para próxima terça..."
-              className="bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-900 dark:text-gray-50 placeholder:text-gray-500 dark:placeholder:text-gray-500 min-h-20"
+              className="bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-tertiary min-h-20"
             />
           </div>
         </div>
@@ -180,13 +180,13 @@ export function MoveConfirmationModal({
           <Button
             variant="ghost"
             onClick={handleClose}
-            className="text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50"
+            className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
-            className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white dark:text-gray-900"
+            className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white dark:text-lia-text-disabled"
           >
             <Check className="h-4 w-4 mr-2" />
             Confirmar

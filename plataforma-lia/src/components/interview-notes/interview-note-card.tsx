@@ -45,10 +45,10 @@ interface InterviewNoteCardProps {
 }
 
 const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
-  gap_analysis: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
-  fit_cultural: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
-  custom: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
+  vaga: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
+  gap_analysis: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
+  fit_cultural: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
+  custom: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
 }
 
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
@@ -109,7 +109,7 @@ function QuestionItem({
               </span>
             )}
           </div>
-          <p className="text-sm font-medium text-gray-950">{question.text}</p>
+          <p className="text-sm font-medium text-lia-text-primary">{question.text}</p>
         </div>
         <div className="flex items-center gap-2">
           <Checkbox
@@ -266,7 +266,7 @@ export function InterviewNoteCard({
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-gray-950">
+            <h2 className="text-lg font-semibold text-lia-text-primary">
               {note.candidateName}
             </h2>
             <div className="flex flex-wrap items-center gap-3 text-xs lia-text-base">
@@ -347,7 +347,7 @@ export function InterviewNoteCard({
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 lia-text-base" />
-            <h3 className="text-sm font-semibold text-gray-950">
+            <h3 className="text-sm font-semibold text-lia-text-primary">
               Perguntas da Entrevista
             </h3>
             <span className="text-xs lia-text-secondary">
@@ -367,7 +367,7 @@ export function InterviewNoteCard({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-950">
+          <label className="text-sm font-semibold text-lia-text-primary">
             Observações Gerais
           </label>
           <Textarea
@@ -384,7 +384,7 @@ export function InterviewNoteCard({
             <button
               type="button"
               onClick={() => setIsTranscriptionOpen(!isTranscriptionOpen)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-950 hover:text-gray-600"
+              className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary hover:text-lia-text-secondary"
             >
               {isTranscriptionOpen ? (
                 <ChevronUp className="h-4 w-4" />
@@ -400,7 +400,7 @@ export function InterviewNoteCard({
             </button>
             {isTranscriptionOpen && (
               <div className="bg-gray-50 rounded-md p-4 max-h-[300px] overflow-y-auto">
-                <p className="text-sm text-gray-800 dark:text-lia-text-primary whitespace-pre-wrap">
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>
               </div>
@@ -411,7 +411,7 @@ export function InterviewNoteCard({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-wedo-cyan" />
-            <h3 className="text-sm font-semibold text-gray-950">Parecer LIA</h3>
+            <h3 className="text-sm font-semibold text-lia-text-primary">Parecer LIA</h3>
             {note.liaParecerEditado && (
               <span className="text-micro text-status-warning">(editado)</span>
             )}
