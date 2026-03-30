@@ -1,7 +1,7 @@
 "use client"
 
-import useSWR from swr
-import { getDashboardSummary, DashboardSummary, ApiClientError } from @/services/admin/dashboard-service
+import useSWR from "swr"
+import { getDashboardSummary, DashboardSummary, ApiClientError } from "@/services/admin/dashboard-service"
 
 export interface UseDashboardSummaryResult {
   data: DashboardSummary | null
@@ -12,7 +12,7 @@ export interface UseDashboardSummaryResult {
 
 export function useDashboardSummary(startDate?: Date, endDate?: Date): UseDashboardSummaryResult {
   const { data, error, isLoading, mutate } = useSWR(
-    [adminDashboardSummary, startDate?.getTime() ?? 0, endDate?.getTime() ?? 0],
+    ["adminDashboardSummary", startDate?.getTime() ?? 0, endDate?.getTime() ?? 0],
     ([, , ]) => getDashboardSummary(startDate, endDate)
   )
 

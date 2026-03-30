@@ -1,4 +1,4 @@
-import useSWR from swr
+import useSWR from "swr"
 
 interface Company {
   id: string
@@ -25,7 +25,7 @@ const jsonFetcher = (url: string) =>
 
 export function useCurrentCompany(): UseCurrentCompanyReturn {
   const { data, error, isLoading, mutate } = useSWR<Company>(
-    /api/backend-proxy/company/profile,
+    "/api/backend-proxy/company/profile",
     jsonFetcher,
     { revalidateOnFocus: false }
   )

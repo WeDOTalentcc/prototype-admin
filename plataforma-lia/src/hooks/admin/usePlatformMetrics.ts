@@ -1,11 +1,11 @@
 "use client"
 
-import useSWR from swr
+import useSWR from "swr"
 import {
   saasMetricsClientService,
   PlatformAggregateMetrics,
   ApiClientError,
-} from @/services/admin/saas-metrics-service
+} from "@/services/admin/saas-metrics-service"
 
 export interface RevenueMetrics {
   mrr: number
@@ -53,7 +53,7 @@ export interface UsePlatformMetricsResult {
 
 export function usePlatformMetrics(): UsePlatformMetricsResult {
   const { data, error, isLoading, mutate } = useSWR(
-    adminPlatformMetrics,
+    "adminPlatformMetrics",
     () => saasMetricsClientService.getPlatformMetrics()
   )
 
