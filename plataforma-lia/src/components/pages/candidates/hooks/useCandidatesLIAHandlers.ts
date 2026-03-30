@@ -9,7 +9,8 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import type { CalibrationCandidate } from "@/components/calibration-card"
-import type { SearchTab } from "./candidates-core"
+
+type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
 export interface LIAChatMessage {
   id: string

@@ -10,9 +10,6 @@ import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
 /** Source of candidate data for a search run */
 export type SearchSource = 'local' | 'global' | 'hybrid'
 
-/** Which of the 6 LIA search tabs is active */
-export type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
-
 /** Props accepted by the page core hook */
 export interface CandidatesPageCoreProps {
   onAddRecentItem?: (item: {

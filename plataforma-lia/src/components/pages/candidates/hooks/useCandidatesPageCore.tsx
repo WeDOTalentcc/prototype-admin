@@ -57,7 +57,6 @@ import type { Candidate } from "@/components/pages/candidates/types"
 import {
   type CandidatesPageCoreProps,
   type SearchSource,
-  type SearchTab,
   type ChatMessage,
   type PearchSearchOptions,
   CANDIDATES_TABS,
@@ -78,6 +77,10 @@ import {
 } from "./candidates-core"
 
 export type { CandidatesPageCoreProps }
+
+// SearchTab is intentionally local — other files in the feature define their own
+// compatible union; exporting from a shared module would cause type-identity conflicts.
+type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
 // Alias for backward compat — consumers receive `tabs` from the hook's return value
 const tabs = CANDIDATES_TABS

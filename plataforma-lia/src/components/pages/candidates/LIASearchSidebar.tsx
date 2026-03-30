@@ -16,7 +16,8 @@ import {
   Star, FileText, Target, Send, Paperclip, Mic,
   Lightbulb, Users, Code, Filter, Check
 } from "lucide-react"
-import type { SearchTab } from "./hooks/candidates-core"
+
+type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
 interface ApiExperience {
   company_info?: { name?: string; location?: string; is_startup?: boolean }
