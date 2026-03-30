@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from react
+import useSWR from swr
 import {
   templatesService,
   DefaultTemplate,
@@ -9,7 +10,7 @@ import {
   UpdateTemplateData,
   TemplateListFilters,
   ApiClientError,
-} from "@/services/admin/templates-service"
+} from @/services/admin/templates-service
 
 export interface UseDefaultTemplatesFilters {
   category?: string
@@ -35,180 +36,119 @@ export interface UseDefaultTemplatesResult {
 }
 
 export function useDefaultTemplates(initialFilters?: UseDefaultTemplatesFilters): UseDefaultTemplatesResult {
-  const [templates, setTemplates] = useState<DefaultTemplate[]>([])
-  const [variables, setVariables] = useState<TemplateVariable[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [filters, setFilters] = useState<UseDefaultTemplatesFilters>(initialFilters || {})
 
-  const fetchTemplates = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
+  const buildApiFilters = (f: UseDefaultTemplatesFilters): TemplateListFilters => {
+    const apiFilters: TemplateListFilters = {}
+    if (f.category && f.category !== all) apiFilters.category = f.category
+    if (f.status && f.status !== all) apiFilters.status = f.status
+    if (f.search) apiFilters.search = f.search
+    return apiFilters
+  }
 
-    try {
-      const apiFilters: TemplateListFilters = {}
-      if (filters.category && filters.category !== 'all') apiFilters.category = filters.category
-      if (filters.status && filters.status !== 'all') apiFilters.status = filters.status
-      if (filters.search) apiFilters.search = filters.search
+  const { data: templatesData, error: templatesError, isLoading, mutate: mutateTemplates } = useSWR(
+    [adminDefaultTemplates, filters.category ?? , filters.status ?? , filters.search ?? ],
+    ([, , ,]) => templatesService.getTemplates(buildApiFilters(filters))
+  )
 
-      const response = await templatesService.getTemplates(apiFilters)
-      setTemplates(response.templates)
-      setTotal(response.total)
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar templates")
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters])
+  const { data: variablesData, mutate: mutateVariables } = useSWR(
+    adminTemplateVariables,
+    () => templatesService.getVariables()
+  )
 
-  const fetchVariables = useCallback(async () => {
-    try {
-      const variablesData = await templatesService.getVariables()
-      setVariables(variablesData)
-    } catch (err) {
-    }
-  }, [])
+  const fetchError = templatesError instanceof ApiClientError ? templatesError.message
+    : templatesError instanceof Error ? templatesError.message
+    : templatesError ? String(templatesError) : null
+
+  const error = submitError ?? fetchError
 
   const createTemplate = useCallback(async (data: CreateTemplateData): Promise<DefaultTemplate | null> => {
     setIsSubmitting(true)
-    setError(null)
-
+    setSubmitError(null)
     try {
       const newTemplate = await templatesService.createTemplate(data)
-      setTemplates(prev => [newTemplate, ...prev])
-      setTotal(prev => prev + 1)
+      await mutateTemplates()
       return newTemplate
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao criar template")
-      }
+      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao criar template)
       return null
     } finally {
       setIsSubmitting(false)
     }
-  }, [])
+  }, [mutateTemplates])
 
   const updateTemplate = useCallback(async (id: string, data: UpdateTemplateData): Promise<DefaultTemplate | null> => {
     setIsSubmitting(true)
-    setError(null)
-
-    const previousTemplates = [...templates]
-
-    setTemplates(prev => prev.map(t => 
-      t.id === id ? { ...t, ...data, updatedAt: new Date().toISOString() } : t
-    ))
-
+    setSubmitError(null)
     try {
       const updatedTemplate = await templatesService.updateTemplate(id, data)
-      setTemplates(prev => prev.map(t => t.id === id ? updatedTemplate : t))
+      await mutateTemplates()
       return updatedTemplate
     } catch (err) {
-      setTemplates(previousTemplates)
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao atualizar template")
-      }
+      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao atualizar template)
       return null
     } finally {
       setIsSubmitting(false)
     }
-  }, [templates])
+  }, [mutateTemplates])
 
   const deleteTemplate = useCallback(async (id: string): Promise<boolean> => {
     setIsSubmitting(true)
-    setError(null)
-
-    const previousTemplates = [...templates]
-    const previousTotal = total
-
-    setTemplates(prev => prev.filter(t => t.id !== id))
-    setTotal(prev => prev - 1)
-
+    setSubmitError(null)
     try {
       await templatesService.deleteTemplate(id)
+      await mutateTemplates()
       return true
     } catch (err) {
-      setTemplates(previousTemplates)
-      setTotal(previousTotal)
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao excluir template")
-      }
+      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao excluir template)
       return false
     } finally {
       setIsSubmitting(false)
     }
-  }, [templates, total])
+  }, [mutateTemplates])
 
   const duplicateTemplate = useCallback(async (id: string): Promise<DefaultTemplate | null> => {
     setIsSubmitting(true)
-    setError(null)
-
+    setSubmitError(null)
     try {
       const duplicatedTemplate = await templatesService.duplicateTemplate(id)
-      setTemplates(prev => [duplicatedTemplate, ...prev])
-      setTotal(prev => prev + 1)
+      await mutateTemplates()
       return duplicatedTemplate
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao duplicar template")
-      }
+      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao duplicar template)
       return null
     } finally {
       setIsSubmitting(false)
     }
-  }, [])
+  }, [mutateTemplates])
 
   const seedTemplates = useCallback(async (): Promise<{ success: boolean; count: number }> => {
     setIsSubmitting(true)
-    setError(null)
-
+    setSubmitError(null)
     try {
       const result = await templatesService.seedTemplates()
-      await fetchTemplates()
+      await mutateTemplates()
       return { success: true, count: result.count }
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao popular templates")
-      }
+      setSubmitError(err instanceof ApiClientError ? err.message : Erro ao popular templates)
       return { success: false, count: 0 }
     } finally {
       setIsSubmitting(false)
     }
-  }, [fetchTemplates])
-
-  useEffect(() => {
-    fetchTemplates()
-  }, [fetchTemplates])
-
-  useEffect(() => {
-    fetchVariables()
-  }, [fetchVariables])
+  }, [mutateTemplates])
 
   return {
-    templates,
-    variables,
-    total,
+    templates: templatesData?.templates ?? [],
+    variables: variablesData ?? [],
+    total: templatesData?.total ?? 0,
     isLoading,
     isSubmitting,
     error,
     filters,
     setFilters,
-    refetch: fetchTemplates,
+    refetch: () => mutateTemplates(),
     createTemplate,
     updateTemplate,
     deleteTemplate,
