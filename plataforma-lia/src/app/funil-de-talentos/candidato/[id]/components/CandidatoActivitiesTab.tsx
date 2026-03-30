@@ -13,7 +13,7 @@ import type { ActivityFilter, PeriodFilter, ActivityView, NoteCategory, Activity
 import type { CandidateLocal } from "@/services/lia-api"
 
 interface CandidatoActivitiesTabProps {
-  activities: ActivityItem[]
+  activities: Record<string, unknown>[]
   activityFilter: ActivityFilter
   activityView: ActivityView
   periodFilter: PeriodFilter
@@ -26,8 +26,8 @@ interface CandidatoActivitiesTabProps {
   setPeriodFilter: (v: PeriodFilter) => void
   setNewNoteContent: (v: string) => void
   setNewNoteCategory: (v: NoteCategory) => void
-  setActivities: React.Dispatch<React.SetStateAction<ActivityItem[]>>
-  formatRelativeTime: (v: unknown) => string
+  setActivities: React.Dispatch<React.SetStateAction<Record<string, unknown>[]>>
+  formatRelativeTime: (dateStr: string) => string
   toast: (opts: { title: string; description: string }) => void
 }
 
@@ -35,7 +35,7 @@ function getCategoryLabelLocal(cat: unknown): string {
   return NOTE_CATEGORY_LABELS[String(cat)] || "Geral"
 }
 
-function parseNotes(candidate: CandidateLocal): ActivityItem[] {
+function parseNotes(candidate: CandidateLocal): Record<string, unknown>[] {
   if (!candidate?.notes) return []
   if (typeof candidate.notes === "string") {
     return [{
@@ -50,8 +50,8 @@ function parseNotes(candidate: CandidateLocal): ActivityItem[] {
     return (candidate.notes as Record<string, unknown>[]).map((note, idx) => ({
       id: (note.id as string) || `note-${idx}`,
       type: "note",
-      category: note.category || "general",
-      content: note.content || note.text || note,
+      category: String(note.category || "general"),
+      content: String(note.content || (note.text as string) || ""),
       created_at: (note.created_at || note.date || candidate.updated_at) as string,
     }))
   }
@@ -78,8 +78,8 @@ export function CandidatoActivitiesTab({
 }: CandidatoActivitiesTabProps) {
   const candidateNotes = parseNotes(candidate)
 
-  const allItems = [
-    ...activities.map(a => ({ ...a, itemType: a.activity_type || a.type || "activity" })),
+  const allItems: Array<Record<string, unknown>> = [
+    ...activities.map((act) => ({ ...act, itemType: (act.activity_type as string) || (act.type as string) || "activity" })),
     ...candidateNotes.map(n => ({ ...n, itemType: "note" })),
   ].sort((a, b) => {
     const dateA = new Date((a.created_at || a.timestamp || 0) as string).getTime()
@@ -87,7 +87,7 @@ export function CandidatoActivitiesTab({
     return dateB - dateA
   })
 
-  const filteredItems = allItems.filter(item => {
+  const filteredItems: Array<Record<string, unknown>> = allItems.filter(item => {
     if (activityFilter === "all") return true
     if (activityFilter === "notes") return item.itemType === "note"
     if (activityFilter === "emails") return item.itemType === "email" || item.type === "email"

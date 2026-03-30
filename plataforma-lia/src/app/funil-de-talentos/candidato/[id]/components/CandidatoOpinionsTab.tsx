@@ -168,12 +168,12 @@ export function CandidatoOpinionsTab({
                                   {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
                                     <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
                                       <Briefcase className="w-2.5 h-2.5" />
-                                      #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title as string}
+                                      {`#${String(opinion.job_vacancy_id).slice(0, 6)} - ${String(opinion.job_vacancy_title)}`}
                                     </Badge>
                                   ) : opinion.job_vacancy_title ? (
                                     <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
                                       <Briefcase className="w-2.5 h-2.5" />
-                                      {opinion.job_vacancy_title as string}
+                                      {String(opinion.job_vacancy_title)}
                                     </Badge>
                                   ) : null}
                                 </div>
@@ -185,7 +185,7 @@ export function CandidatoOpinionsTab({
                                         : `Score: ${Math.round(displayScore as number)}/100`}
                                     </span>
                                   )}
-                                  {opinion.archetype && <><span className="text-lia-text-secondary">•</span><span className="text-xs text-lia-text-secondary">{opinion.archetype as string}</span></>}
+                                  {opinion.archetype && <><span className="text-lia-text-secondary">•</span><span className="text-xs text-lia-text-secondary">{String(opinion.archetype)}</span></>}
                                   <RecommendationBadge rec={opinion.recommendation} />
                                 </div>
                               </div>
@@ -197,10 +197,10 @@ export function CandidatoOpinionsTab({
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       const text = [
-                                        opinion.summary,
+                                        String(opinion.summary || ""),
                                         strengthsList?.length ? `Pontos Fortes:\n${strengthsList.join("\n")}` : "",
                                         gapsList?.length ? `Gaps:\n${gapsList.join("\n")}` : "",
-                                        opinion.next_steps ? `Próximos Passos: ${opinion.next_steps}` : "",
+                                        opinion.next_steps ? `Próximos Passos: ${String(opinion.next_steps)}` : "",
                                       ].filter(Boolean).join("\n\n")
                                       copyToClipboard(text, "Parecer")
                                     }}
@@ -211,7 +211,7 @@ export function CandidatoOpinionsTab({
                                 </TooltipTrigger>
                                 <TooltipContent>Copiar Parecer</TooltipContent>
                               </Tooltip>
-                              {opinion.created_at && <span className="text-xs text-lia-text-secondary">{formatDate(opinion.created_at)}</span>}
+                              {opinion.created_at && <span className="text-xs text-lia-text-secondary">{formatDate(String(opinion.created_at))}</span>}
                               {isExpanded ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                             </div>
                           </button>
@@ -220,7 +220,7 @@ export function CandidatoOpinionsTab({
                             <div className="px-4 pb-4 pt-0 border-t border-lia-border-subtle space-y-4">
                               {opinion.summary && (
                                 <div className="pt-4">
-                                  <p className="text-sm text-lia-text-primary leading-relaxed">{opinion.summary as string}</p>
+                                  <p className="text-sm text-lia-text-primary leading-relaxed">{String(opinion.summary)}</p>
                                 </div>
                               )}
                               {scoreBreakdown && Object.keys(scoreBreakdown).length > 0 && (
@@ -274,7 +274,7 @@ export function CandidatoOpinionsTab({
                                   <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
                                     <TrendingUp className="w-3.5 h-3.5" />Próximos Passos
                                   </h5>
-                                  <p className="text-xs text-lia-text-secondary">{opinion.next_steps as string}</p>
+                                  <p className="text-xs text-lia-text-secondary">{String(opinion.next_steps)}</p>
                                 </div>
                               )}
                             </div>

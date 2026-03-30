@@ -90,7 +90,7 @@ export function useChatPageCore() {
     if (initialConversation.length > 0) {
       const messageWithContext = initialConversation.slice().reverse().find(m => m.contextData)
       if (messageWithContext?.contextData) {
-        setContextData(messageWithContext.contextData as ContextPanelData)
+        setContextData(messageWithContext.contextData as unknown as ContextPanelData)
         setIsPanelOpen(true)
       }
     }

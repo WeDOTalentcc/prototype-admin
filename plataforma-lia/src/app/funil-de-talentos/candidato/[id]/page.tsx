@@ -97,7 +97,7 @@ export default function CandidateProfilePage() {
             <CardContent className="py-5 px-6">
               <div className="flex items-start gap-5">
                 <Avatar className="h-20 w-20 border-2 border-lia-border-subtle">
-                  {candidate.avatar_url && <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xl font-semibold"><AvatarImage src={candidate.avatar_url} alt={candidate.name} /></AvatarFallback>}
+                  {candidate.avatar_url && <AvatarImage src={candidate.avatar_url} alt={candidate.name} />}
                   <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xl font-semibold">
                     {getInitials(candidate.name)}
                   </AvatarFallback>
@@ -229,21 +229,21 @@ export default function CandidateProfilePage() {
                 {/* Right column — work prefs + dates */}
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {candidate.work_model && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{candidate.work_model}</Badge>}
-                    {candidate.work_mode && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{candidate.work_mode}</Badge>}
-                    {candidate.contract_type && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{candidate.contract_type}</Badge>}
+                    {candidate.work_model && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
+                    {candidate.work_mode && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
+                    {candidate.contract_type && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
                     {candidate.is_remote && <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
                     {candidate.willing_to_relocate && <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">✈️ Aceita Mudança</Badge>}
                     {candidate.mobility && <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">🚗 Mobilidade</Badge>}
-                    {candidate.availability && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{candidate.availability}</Badge>}
+                    {candidate.availability && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
                   </div>
                   <div className="text-xs text-lia-text-secondary space-y-0.5">
                     <p className="font-semibold text-lia-text-primary">Datas</p>
-                    {candidate.updated_at && <p>Atualizado: {formatDate(candidate.updated_at)}</p>}
-                    {candidate.last_contact_at && <p>Último contato: {formatDate(candidate.last_contact_at)}</p>}
-                    {candidate.last_activity_at && <p>Última atividade: {formatDate(candidate.last_activity_at)}</p>}
+                    {candidate.updated_at && <p>Atualizado: {formatDate(String(candidate.updated_at))}</p>}
+                    {candidate.last_contact_at && <p>Último contato: {formatDate(String(candidate.last_contact_at))}</p>}
+                    {candidate.last_activity_at && <p>Última atividade: {formatDate(String(candidate.last_activity_at))}</p>}
                     {!candidate.updated_at && !candidate.last_contact_at && !candidate.last_activity_at && candidate.created_at && (
-                      <p>Cadastro: {formatDate(candidate.created_at)}</p>
+                      <p>Cadastro: {formatDate(String(candidate.created_at))}</p>
                     )}
                   </div>
                 </div>
@@ -290,7 +290,7 @@ export default function CandidateProfilePage() {
                 <Tooltip><TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    variant={isFavorite ? "default" : "outline"}
+                    variant={isFavorite ? "secondary" : "outline"}
                     onClick={handleToggleFavorite}
                     className={`gap-1.5 ${isFavorite ? "bg-wedo-magenta hover:bg-wedo-magenta text-white" : ""}`}
                   >
@@ -308,7 +308,7 @@ export default function CandidateProfilePage() {
                 <Tooltip><TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    variant={isHidden ? "default" : "outline"}
+                    variant={isHidden ? "secondary" : "outline"}
                     onClick={handleHideCandidate}
                     className={`gap-1.5 ${isHidden ? "bg-gray-500 hover:bg-gray-600 text-white" : ""}`}
                   >

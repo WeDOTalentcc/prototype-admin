@@ -193,7 +193,7 @@ export function useChatSession({
           setContextData({
             type: "pipeline-report",
             title: "Pipeline - Candidatos Parados",
-            data: report,
+            data: report as unknown as Record<string, unknown>,
           })
           setIsPanelOpen(true)
           const totalStale = report.total_stale ||

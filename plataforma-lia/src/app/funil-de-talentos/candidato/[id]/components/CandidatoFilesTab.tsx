@@ -10,8 +10,8 @@ import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE_LABEL } from "../candidato-page.cons
 import type { CandidatoFileItem, FileCategoryItem } from "../candidato-page.types"
 
 interface CandidatoFilesTabProps {
-  candidateFiles: CandidatoFileItem[]
-  fileCategories: FileCategoryItem[]
+  candidateFiles: Record<string, unknown>[]
+  fileCategories: Record<string, unknown>[]
   isLoadingFiles: boolean
   isUploading: boolean
   uploadProgress: number
@@ -20,13 +20,13 @@ interface CandidatoFilesTabProps {
   setIsDragging: (v: boolean) => void
   setSelectedCategory: (v: string | null) => void
   handleFileUpload: (files: File[]) => void
-  handleDownloadFile: (url: unknown, name: unknown) => void
-  handleDeleteFile: (id: unknown) => void
-  formatFileSize: (v: unknown) => string
-  formatRelativeTime: (v: unknown) => string
-  getCategoryColor: (type: unknown) => { bg: string; text: string }
-  getCategoryLabel: (type: unknown) => string
-  getFileIcon: (type: unknown, mime: unknown) => React.ReactNode
+  handleDownloadFile: (fileUrl: string, fileName: string) => void
+  handleDeleteFile: (attachmentId: string) => Promise<void>
+  formatFileSize: (bytes: number) => string
+  formatRelativeTime: (dateStr: string) => string
+  getCategoryColor: (fileType: string) => { bg: string; text: string }
+  getCategoryLabel: (fileType: string) => string
+  getFileIcon: (fileType: string, mimeType?: string) => React.ReactNode
 }
 
 function triggerFileInput(
@@ -65,7 +65,7 @@ export function CandidatoFilesTab({
   getFileIcon,
 }: CandidatoFilesTabProps) {
   const visibleFiles = candidateFiles.filter(
-    (file) => !selectedCategory || file.file_type === selectedCategory
+    (file) => !selectedCategory || (file.file_type as string) === selectedCategory
   )
 
   return (
@@ -109,15 +109,15 @@ export function CandidatoFilesTab({
                   📁 Todos ({candidateFiles.length})
                 </Badge>
                 {fileCategories
-                  .filter((c) => c.count > 0)
-                  .map((cat) => (
+                  .filter((c) => (c.count as number) > 0)
+                  .map((cat: Record<string, unknown>) => (
                     <Badge
-                      key={cat.category}
+                      key={String(cat.category)}
                       variant="outline"
-                      className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 ${selectedCategory === cat.category ? "bg-gray-100" : ""}`}
-                      onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
+                      className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 ${selectedCategory === String(cat.category) ? "bg-gray-100" : ""}`}
+                      onClick={() => setSelectedCategory(selectedCategory === String(cat.category) ? null : String(cat.category))}
                     >
-                      {cat.icon} {cat.label} ({cat.count})
+                      {String(cat.icon)} {String(cat.label)} ({cat.count as number})
                     </Badge>
                   ))}
               </div>
@@ -169,29 +169,29 @@ export function CandidatoFilesTab({
 
               {/* Files from API */}
               {visibleFiles.map((file) => {
-                const colors = getCategoryColor(file.file_type)
+                const colors = getCategoryColor(String(file.file_type || ""))
                 return (
                   <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
                     <div className="p-3">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                          {getFileIcon(file.file_type, file.mime_type)}
+                          {getFileIcon(String(file.file_type || ""), file.mime_type as string | undefined)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h5 className="text-sm font-semibold text-lia-text-primary truncate">{file.file_name}</h5>
+                              <h5 className="text-sm font-semibold text-lia-text-primary truncate">{String(file.file_name || "")}</h5>
                               <div className="flex items-center gap-2 mt-1 flex-wrap">
                                 <span className="text-xs text-lia-text-secondary">
-                                  {formatFileSize(file.file_size)} • {file.file_name.split(".").pop()?.toUpperCase()}
+                                  {formatFileSize(Number(file.file_size) || 0)} • {String(file.file_name || "").split(".").pop()?.toUpperCase()}
                                 </span>
-                                <span className="text-xs text-lia-text-secondary">{formatRelativeTime(file.created_at)}</span>
+                                <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(file.created_at || ""))}</span>
                                 <Badge
                                   className="text-xs px-1.5 py-0 h-4"
                                   style={{ backgroundColor: colors.bg, color: colors.text }}
                                 >
                                   <Tag className="w-2.5 h-2.5 mr-0.5" />
-                                  {getCategoryLabel(file.file_type)}
+                                  {getCategoryLabel(String(file.file_type || ""))}
                                 </Badge>
                               </div>
                             </div>
@@ -200,7 +200,7 @@ export function CandidatoFilesTab({
                                 size="sm"
                                 variant="ghost"
                                 className="p-1.5 h-7 w-7"
-                                onClick={() => handleDownloadFile(file.file_url, file.file_name)}
+                                onClick={() => handleDownloadFile(String(file.file_url || ""), String(file.file_name || ""))}
                                 title="Baixar arquivo"
                               >
                                 <Download className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export function CandidatoFilesTab({
                                 size="sm"
                                 variant="ghost"
                                 className="p-1.5 h-7 w-7 text-status-error hover:text-status-error hover:bg-status-error/10"
-                                onClick={() => handleDeleteFile(file.id)}
+                                onClick={() => handleDeleteFile(String(file.id || ""))}
                                 title="Excluir arquivo"
                               >
                                 <X className="w-3.5 h-3.5" />

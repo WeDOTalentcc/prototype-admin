@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { FileText, Database, Users } from "lucide-react"
@@ -114,9 +116,9 @@ export function useChatMessages({
           timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           type: "text",
           actions: [
-            { label: "Analisar CV", icon: FileText, variant: "default" },
-            { label: "Extrair dados", icon: Database, variant: "outline" },
-            { label: "Comparar perfis", icon: Users, variant: "outline" },
+            { label: "Analisar CV", icon: FileText as unknown as React.ReactNode, variant: "default" },
+            { label: "Extrair dados", icon: Database as unknown as React.ReactNode, variant: "outline" },
+            { label: "Comparar perfis", icon: Users as unknown as React.ReactNode, variant: "outline" },
           ],
         }
         setMessages(prev => [...prev, liaResponse])
