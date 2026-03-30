@@ -38,10 +38,14 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
   const fetchAudits = useCallback(async (params?: BiasAuditListParams) => {
     if (!clientId) return
     try {
-      await biasAuditService.getAudits(clientId, params)
+      const result = await biasAuditService.getAudits(clientId, params)
+      await mutate(
+        (prev) => prev ? { ...prev, audits: result.audits, total: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const fetchAudit = useCallback(async (auditId: string): Promise<BiasAuditReport | null> => {
     if (!clientId) return null
