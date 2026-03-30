@@ -590,7 +590,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião
@@ -673,7 +673,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião
@@ -762,7 +762,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                   <Button
                                     size="sm"
                                     onClick={() => handleOpenMeeting(interview)}
-                                    className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md"
+                                    className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md"
                                   >
                                     <ExternalLink className="w-3 h-3" />
                                     Abrir Reunião
@@ -856,7 +856,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião

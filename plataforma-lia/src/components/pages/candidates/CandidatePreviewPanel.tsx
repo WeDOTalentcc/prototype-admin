@@ -126,7 +126,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className={`${textStyles.label} dark:text-lia-text-primary mb-1`}>Frontend</h5>
                     <div className="flex flex-wrap gap-1">
                       {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0">
+                        <Badge key={skill} className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -136,7 +136,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-status-success/15 text-status-success border-0">
+                        <Badge key={skill} className="text-xs bg-status-success/15 text-status-success border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -146,7 +146,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Soft Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
+                        <Badge key={skill} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
                           {skill}
                         </Badge>
                       ))}

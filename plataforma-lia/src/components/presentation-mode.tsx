@@ -53,7 +53,7 @@ const mockData = {
 
 // Componente de KPI memoizado
 const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors motion-reduce:transition-none">
+  <Card key={kpi.label} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors motion-reduce:transition-none">
     <CardContent className="p-8 text-center">
       <div className="text-5xl font-bold text-lia-text-primary mb-4">
         {kpi.value}
@@ -104,7 +104,7 @@ KPISlide.displayName = 'KPISlide'
 
 // Componente de departamento memoizado
 const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; efficiency: number; openPositions: number; avgDays: number }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border">
+  <Card key={dept.name} className="bg-white dark:bg-lia-bg-secondary border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
         <h3 className="text-3xl font-bold text-lia-text-primary mb-2">
@@ -181,7 +181,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
   }, [alert.type])
 
   return (
-    <Card key={index} className={`border ${getBgColor}`}>
+    <Card key={alert.message} className={`border ${getBgColor}`}>
       <CardContent className="p-6 flex items-center gap-4">
         {getIcon}
         <div className="text-xl font-medium text-lia-text-primary">

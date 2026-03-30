@@ -655,7 +655,7 @@ export function JobPreviewPanel({
                                   const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (entrevistasAgendadas / pipelineLia) * 100 : 0
                                   return (
-                                    <div className="bg-gray-900 dark:bg-gray-100 h-3 rounded-full flex items-center justify-end pr-1"
+                                    <div className="bg-gray-900 dark:bg-lia-btn-primary-bg h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white dark:text-lia-text-primary font-bold">{entrevistasAgendadas}</span>
                                     </div>
@@ -773,7 +773,7 @@ export function JobPreviewPanel({
                                 const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                                 const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
                                 const percent = agendadas > 0 ? ((agendadas - realizadas) / agendadas) * 100 : 0
-                                return <div className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full" style={{width: `${Math.max(0, percent)}%`}}></div>
+                                return <div className="bg-gray-900 dark:bg-lia-btn-primary-bg h-1.5 rounded-full" style={{width: `${Math.max(0, percent)}%`}}></div>
                               })()}
                             </div>
                             <p className="text-xs text-lia-text-primary mt-1">triagens pendentes</p>

@@ -141,7 +141,7 @@ export function CandidateSummaryCard({
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {data.skills.slice(0, compact ? 3 : 5).map((skill, index) => (
                   <Badge
-                    key={index}
+                    key={skill}
                     variant="secondary"
                     className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
                   >
@@ -163,7 +163,7 @@ export function CandidateSummaryCard({
               <div className="mt-3 space-y-1">
                 {data.highlights.slice(0, 2).map((highlight, index) => (
                   <div
-                    key={index}
+                    key={`highlight-${index}`}
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     <ThumbsUp className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
@@ -177,7 +177,7 @@ export function CandidateSummaryCard({
               <div className="mt-2 space-y-1">
                 {data.concerns.slice(0, 1).map((concern, index) => (
                   <div
-                    key={index}
+                    key={`concern-${index}`}
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />

@@ -109,7 +109,7 @@ function DemographicBar({ label, count, percentage }: DemographicDistribution) {
       <span className="text-xs text-lia-text-secondary">{label}</span>
       <div className="flex items-center gap-2">
         <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
-          <div className="h-full bg-gray-900 dark:bg-gray-50" style={{ width: `${percentage}%` }} />
+          <div className="h-full bg-gray-900 dark:bg-lia-btn-primary-bg" style={{ width: `${percentage}%` }} />
         </div>
         <span className="text-micro text-lia-text-secondary w-8 text-right">{count}</span>
       </div>
@@ -231,7 +231,7 @@ export function InsightsOverviewSection({
               {trendData.candidatesTrend.map((val, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
-                    className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-colors motion-reduce:transition-none"
+                    className="w-full bg-gray-900 dark:bg-lia-btn-primary-bg rounded-t transition-colors motion-reduce:transition-none"
                     style={{ height: `${(val / trendData.maxCandidates) * 100}%` }}
                   />
                   <span className="text-xs text-lia-text-tertiary mt-1">{trendData.weeks[i]}</span>
@@ -347,7 +347,7 @@ export function InsightsOverviewSection({
               </div>
               <div className="flex-1 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-[width] ${dim.score >= 80 ? "bg-gray-900 dark:bg-gray-50" : dim.score >= 60 ? "bg-status-warning" : "bg-status-error"}`}
+                  className={`h-full rounded-full transition-[width] ${dim.score >= 80 ? "bg-gray-900 dark:bg-lia-btn-primary-bg" : dim.score >= 60 ? "bg-status-warning" : "bg-status-error"}`}
                   style={{ width: `${dim.score}%` }}
                 />
               </div>

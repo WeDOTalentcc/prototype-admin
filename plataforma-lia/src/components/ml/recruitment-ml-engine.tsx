@@ -471,7 +471,7 @@ export function RecruitmentMLDashboard({
       {/* Predições */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {predictions.map((prediction, index) => (
-          <Card key={index} className="relative overflow-hidden">
+          <Card key={prediction.metric} className="relative overflow-hidden">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -536,7 +536,7 @@ export function RecruitmentMLDashboard({
             <div className="space-y-4">
               {insights.map((insight, index) => (
                 <div
-                  key={index}
+                  key={`insight-${index}`}
                   className={`p-4 rounded-md border-l-4 ${
  insight.impact === 'high' ? 'bg-status-error/10 border-status-error' :
                     insight.impact === 'medium' ? 'bg-status-warning/10 border-status-warning' :
@@ -611,7 +611,7 @@ export function RecruitmentMLDashboard({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {candidateScores.slice(0, 6).map((score, index) => (
-                <div key={index} className="p-4 border border-lia-border-subtle rounded-md">
+                <div key={score.name} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-lia-text-primary">{score.name}</h4>
                     <Badge className={`${

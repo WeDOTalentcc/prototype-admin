@@ -325,7 +325,7 @@ const EditCriteriaPopup: React.FC<{
                     size="sm"
                     onClick={handleSavePreset}
                     disabled={!presetName.trim()}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
                   >
                     Save
                   </Button>
@@ -344,7 +344,7 @@ const EditCriteriaPopup: React.FC<{
             </Button>
             <Button
               onClick={handleUpdate}
-              className="text-sm bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="text-sm bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
             >
               Update
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -696,7 +696,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                                 key={`dot-${idx}`}
                                 className={`w-2 h-2 rounded-full ${
                                   idx < reason.scores!.current
-                                    ? 'bg-gray-900 dark:bg-gray-50'
+                                    ? 'bg-gray-900 dark:bg-lia-btn-primary-bg'
                                     : 'bg-gray-200'
                                 }`}
                               />

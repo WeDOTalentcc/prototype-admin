@@ -207,7 +207,7 @@ export function ExecutiveDashboardPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                       {data.pendingActions.map((action, index) => (
                         <div
-                          key={index}
+                          key={`action-${index}`}
                           className={`p-3 rounded-md ${
                             action.priority === 'crítica'
                               ? 'bg-status-error/10 dark:bg-status-error/20'
@@ -323,7 +323,7 @@ export function ExecutiveDashboardPage() {
                         { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-wedo-orange", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },
                         { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-status-success", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
                       ].map((stage, index) => (
-                        <div key={index} className="flex items-center gap-3">
+                        <div key={stage.stage} className="flex items-center gap-3">
                           <div className="w-20 text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary text-right">{stage.stage}</div>
                           <div className="flex-1 relative h-7 bg-gray-100 dark:bg-lia-bg-elevated rounded-md overflow-hidden">
                             <div
@@ -357,7 +357,7 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {data.departmentMetrics.map((dept, index) => (
-                        <div key={index} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div key={dept.department} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
                           <div className="w-24 font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{dept.department}</div>
                           <div className="flex-1 grid grid-cols-4 gap-2 text-center text-xs">
                             <div>
@@ -606,7 +606,7 @@ export function ExecutiveDashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {data.riskFactors.map((risk, index) => (
                       <div
-                        key={index}
+                        key={risk.factor}
                         className={`p-4 rounded-md ${
                           risk.impact === 'High' ? 'bg-status-error/10 dark:bg-status-error/20' :
                           risk.impact === 'Medium' ? 'bg-status-warning/10 dark:bg-status-warning/20' :

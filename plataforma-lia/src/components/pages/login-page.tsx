@@ -248,7 +248,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={handleSSOLogin}
-                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                   >
                     <Building2 className="w-4 h-4" />
                     Entrar com SSO Corporativo
@@ -525,7 +525,7 @@ export function LoginPage() {
                 <Button
                   type="button"
                   onClick={handleSSOLogin}
-                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4" />
                   Entrar com SSO Corporativo

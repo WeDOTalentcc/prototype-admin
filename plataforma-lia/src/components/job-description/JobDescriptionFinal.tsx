@@ -147,7 +147,7 @@ export function JobDescriptionFinal({
             <h3 className="text-lg font-semibold mb-3">{SECTION_TITLES.what_you_will_do}</h3>
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
-                <li key={index} className="flex items-start gap-2">
+                <li key={`resp-${index}`} className="flex items-start gap-2">
                   <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
                   <span>{resp}</span>
                 </li>
@@ -190,7 +190,7 @@ export function JobDescriptionFinal({
               </h4>
               <ul className="space-y-1">
                 {data.nice_to_have.map((skill, index) => (
-                  <li key={index} className="flex items-center gap-2">
+                  <li key={skill} className="flex items-center gap-2">
                     <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
@@ -259,7 +259,7 @@ export function JobDescriptionFinal({
             <h3 className="text-lg font-semibold mb-3">{SECTION_TITLES.our_values}</h3>
             <ul className="space-y-1 text-sm">
               {data.company.values.map((value, index) => (
-                <li key={index}>
+                <li key={value.name}>
                   <strong>{value.name}:</strong> {value.description}
                 </li>
               ))}

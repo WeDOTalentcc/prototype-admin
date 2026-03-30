@@ -282,7 +282,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -350,7 +350,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -418,7 +418,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -486,7 +486,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                        className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -529,7 +529,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               <Button variant="outline" onClick={onClose}>
                 Fechar
               </Button>
-              <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white">
+              <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Novo Teste
               </Button>

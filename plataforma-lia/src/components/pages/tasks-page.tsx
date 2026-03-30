@@ -168,7 +168,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('all')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none ${
                             pendingTaskFilter === 'all'
-                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
+                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
@@ -178,7 +178,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('feedback')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'feedback'
-                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
+                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
@@ -189,7 +189,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('entrevista')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'entrevista'
-                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
+                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
@@ -200,7 +200,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('sourcing')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'sourcing'
-                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
+                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >

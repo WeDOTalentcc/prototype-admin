@@ -226,7 +226,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   <p className="text-micro text-lia-text-secondary mb-1">Distribuição de Perguntas</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-                      <div className="h-full bg-gray-900 dark:bg-gray-50" style={{width: '70%'}}></div>
+                      <div className="h-full bg-gray-900 dark:bg-lia-btn-primary-bg" style={{width: '70%'}}></div>
                     </div>
                     <span className="text-micro text-lia-text-primary">70% técnicas</span>
                   </div>
@@ -358,7 +358,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             </p>
             <Button
               size="sm"
-              className="h-7 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="h-7 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
               onClick={onClose}
             >
               Entendi

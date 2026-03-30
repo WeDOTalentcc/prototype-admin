@@ -228,7 +228,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              <div key={index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
+              <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
                   <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
                     {candidate.name?.charAt(0) || 'C'}
@@ -761,7 +761,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   <div className="space-y-1">
                     {commandHistory.map((command, index) => (
                       <button
-                        key={index}
+                        key={`hist-${index}`}
                         onClick={() => handleHistoryCommand(command)}
                         disabled={isProcessing}
                         className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none ${
@@ -952,7 +952,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {editArchetypeTags.map((tag, index) => (
                       <Badge 
-                        key={index} 
+                        key={`tag-${index}`} 
                         variant="secondary" 
                         className="text-xs bg-gray-100 text-lia-text-primary dark:text-lia-text-primary pr-1 flex items-center gap-1"
                       >

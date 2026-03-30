@@ -320,7 +320,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'email' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
@@ -336,7 +336,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'whatsapp' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
@@ -352,7 +352,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'both' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
+            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
         )}
       >
@@ -590,7 +590,7 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 1
-                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled'
+                  ? 'bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled'
                   : 'bg-gray-100 text-lia-text-secondary'
               )}
             >
@@ -602,7 +602,7 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 2
-                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled'
+                  ? 'bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled'
                   : 'bg-gray-100 text-lia-text-secondary'
               )}
             >
@@ -647,7 +647,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleNextStep}
               disabled={!hiredTemplateId || templatesLoading}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
             >
               Próximo
               <ArrowRight className="w-3.5 h-3.5" />
@@ -657,7 +657,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleConfirm}
               disabled={isSubmitting || (selectedCandidateIds.length > 0 && !othersTemplateId)}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
             >
               {isSubmitting ? (
                 <>

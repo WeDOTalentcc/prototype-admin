@@ -172,7 +172,7 @@ export function WSIScoreCard({
             {data.dimensions.slice(0, 4).map((dimension, index) => {
               const dimPercent = Math.round((dimension.score / dimension.max_score) * 100)
               return (
-                <div key={index} className="flex items-center gap-2">
+                <div key={dimension.name} className="flex items-center gap-2">
                   {getDimensionIcon(dimension.score / dimension.max_score)}
                   <span
                     className="text-sm flex-1 truncate text-lia-text-secondary"
@@ -206,7 +206,7 @@ export function WSIScoreCard({
             <div className="space-y-1">
               {data.strengths.slice(0, 2).map((strength, index) => (
                 <div
-                  key={index}
+                  key={`strength-${index}`}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   <Star className="h-3 w-3 mt-0.5 shrink-0 text-wedo-green" />
@@ -225,7 +225,7 @@ export function WSIScoreCard({
             <div className="space-y-1">
               {data.development_areas.slice(0, 2).map((area, index) => (
                 <div
-                  key={index}
+                  key={`area-${index}`}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />

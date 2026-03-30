@@ -88,7 +88,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
@@ -127,7 +127,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
@@ -166,7 +166,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 text-white"
+                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />

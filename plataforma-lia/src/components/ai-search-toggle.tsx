@@ -291,7 +291,7 @@ export function AISearchToggle({
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {suggestions.slice(0, 8).map((suggestion, index) => (
                 <button
-                  key={index}
+                  key={suggestion.title}
                   onClick={() => handleSubmit(suggestion.command)}
                   className="text-left p-3 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
                 >
@@ -318,7 +318,7 @@ export function AISearchToggle({
               <div className="flex gap-2 overflow-x-auto">
                 {recentCommands.map((command, index) => (
                   <button
-                    key={index}
+                    key={`cmd-${index}`}
                     onClick={() => handleSubmit(command)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-xs hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors motion-reduce:transition-none whitespace-nowrap"
                   >
@@ -412,7 +412,7 @@ export function AISearchToggle({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {suggestions.map((suggestion, index) => (
               <button
-                key={index}
+                key={suggestion.title}
                 onClick={() => handleSubmit(suggestion.command)}
                 className="text-left p-4 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
               >
@@ -442,7 +442,7 @@ export function AISearchToggle({
             <div className="flex flex-wrap gap-2">
               {recentCommands.map((command, index) => (
                 <button
-                  key={index}
+                  key={`cmd-${index}`}
                   onClick={() => handleSubmit(command)}
                   className="inline-flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-sm hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors motion-reduce:transition-none"
                 >

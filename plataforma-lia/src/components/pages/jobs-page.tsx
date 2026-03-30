@@ -492,14 +492,14 @@ export function JobsPage(props: JobsPageProps) {
               <Button
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-lia-text-disabled text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
                 title="Filtrar resultados da tabela"
               >
                 <Target className="w-3 h-3" />
                 Filtros
                 {getActiveJobFiltersCount() > 0 && (
-                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-disabled ml-1 text-xs font-bold">
+                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled ml-1 text-xs font-bold">
                     {getActiveJobFiltersCount()}
                   </Badge>
                 )}
@@ -508,7 +508,7 @@ export function JobsPage(props: JobsPageProps) {
               <Button
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-lia-text-disabled text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
                 onClick={handleToggleColumnConfig}
                 title="Configurar colunas da tabela"
               >
@@ -1399,7 +1399,7 @@ export function JobsPage(props: JobsPageProps) {
                     setReactivateScreeningJobs([])
                     setReactivateEndDate('')
                   }}
-                  className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+                  className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
                 >
                   Sim, reativar triagem
                 </Button>

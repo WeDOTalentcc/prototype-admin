@@ -282,7 +282,7 @@ export function WorkModelAnalyticsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {cargoWorkModels.slice(0, 8).map((cargo, index) => (
-                      <div key={index} className="space-y-2">
+                      <div key={cargo.cargo} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                             {cargo.cargo}
@@ -339,7 +339,7 @@ export function WorkModelAnalyticsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {seniorityData.map((level, index) => (
-                      <div key={index} className="space-y-2">
+                      <div key={level.nivel} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
@@ -407,7 +407,7 @@ export function WorkModelAnalyticsPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {regionalData.map((region, index) => (
-                    <div key={index} className="space-y-3">
+                    <div key={region.estado} className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">

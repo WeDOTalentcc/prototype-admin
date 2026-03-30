@@ -362,7 +362,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Habilidades Técnicas</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.skills.map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
+                        <Badge key={skill} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
                       ))}
@@ -373,7 +373,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Idiomas</label>
                     <div className="space-y-1">
                       {candidateData.languages.map((language: string, index: number) => (
-                        <div key={index} className="text-sm text-lia-text-primary">
+                        <div key={language} className="text-sm text-lia-text-primary">
                           {language}
                         </div>
                       ))}
@@ -384,7 +384,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs border-status-success/30 text-status-success">
+                        <Badge key={tag} variant="outline" className="text-xs border-status-success/30 text-status-success">
                           {tag}
                         </Badge>
                       ))}
@@ -403,7 +403,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 </CardHeader>
                 <CardContent>
                   {candidateData.education.map((edu: { degree?: string; institution?: string; year?: string; location?: string }, index: number) => (
-                    <div key={index} className="space-y-2">
+                    <div key={`edu-${index}`} className="space-y-2">
                       <div className="font-medium text-lia-text-primary">{edu.degree}</div>
                       <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                         {edu.institution} • {edu.year} • {edu.location}

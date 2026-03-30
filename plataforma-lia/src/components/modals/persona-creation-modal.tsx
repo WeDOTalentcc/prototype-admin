@@ -210,7 +210,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {personaData.requiredSkills.map((skill, index) => (
-                      <Badge key={index} className="bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-secondary flex items-center gap-1">
+                      <Badge key={`req-${index}`} className="bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-secondary flex items-center gap-1">
                         {skill}
                         <button
                           onClick={() => handleSkillRemove('required', index)}
@@ -242,7 +242,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {personaData.preferredSkills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="flex items-center gap-1">
+                      <Badge key={`pref-${index}`} variant="outline" className="flex items-center gap-1">
                         {skill}
                         <button
                           onClick={() => handleSkillRemove('preferred', index)}
@@ -363,7 +363,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Skills Obrigatórias:</p>
                         <div className="flex flex-wrap gap-1">
                           {personaData.requiredSkills.map((skill, index) => (
-                            <Badge key={index} className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary">
+                            <Badge key={`req-preview-${index}`} className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary">
                               {skill}
                             </Badge>
                           ))}

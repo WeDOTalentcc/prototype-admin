@@ -116,7 +116,7 @@ export function ProgressTrackerCard({
             >
               {data.stages.map((stage, index) => (
                 <div
-                  key={index}
+                  key={stage.name}
                   className={`${stage.color} relative`}
                   style={{width: `${(stage.count / data.total_candidates) * 100}%`,
                     minWidth: stage.count > 0 ? "16px" : "0"}}
@@ -126,7 +126,7 @@ export function ProgressTrackerCard({
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               {data.stages.map((stage, index) => (
-                <div key={index} className="flex items-center gap-1.5 text-xs">
+                <div key={stage.name} className="flex items-center gap-1.5 text-xs">
                   <div className={`h-2 w-2 rounded-full ${stage.color}`} />
                   <span className="text-lia-text-secondary">{stage.name}</span>
                   <span className="font-medium text-lia-text-primary">
@@ -169,7 +169,7 @@ export function ProgressTrackerCard({
           <div className="mt-4 space-y-1">
             {data.alerts.slice(0, 2).map((alert, index) => (
               <div
-                key={index}
+                key={`alert-${index}`}
                 className="flex items-start gap-2 text-xs px-2 py-1.5 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
               >
                 <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />

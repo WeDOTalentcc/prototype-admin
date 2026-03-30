@@ -293,7 +293,7 @@ export function LIASearchSidebar({
                   <div className="space-y-3">
                     {/* Mensagem do usuário */}
                     <div className="flex justify-end">
-                      <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white">
+                      <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-lia-btn-primary-bg text-white">
                         <p className="text-xs">{searchResults.query}</p>
                       </div>
                     </div>
@@ -437,7 +437,7 @@ export function LIASearchSidebar({
                     {/* Mensagem do usuário (query atual) */}
                     {searchResults.query && (
                       <div className="flex justify-end">
-                        <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white">
+                        <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-lia-btn-primary-bg text-white">
                           <p className="text-xs">{searchResults.query}</p>
                         </div>
                       </div>
@@ -456,7 +456,7 @@ export function LIASearchSidebar({
                               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
                                 <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-pulse motion-reduce:animate-none" />
                               </div>
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-gray-50 rounded-full animate-ping motion-reduce:animate-none" />
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-ping motion-reduce:animate-none" />
                             </div>
                             <div>
                               <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
@@ -479,7 +479,7 @@ export function LIASearchSidebar({
                               <span>Interpretando critérios</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
-                              <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
+                              <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-lia-btn-primary-bg flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
                                 <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                               </div>
                               <span aria-live="polite" aria-atomic="true">Buscando na base de candidatos</span>
@@ -494,9 +494,9 @@ export function LIASearchSidebar({
                         {/* Typing indicator */}
                         <div className="flex items-center gap-1.5 px-3 py-2">
                           <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
                           </div>
                         </div>
                       </div>

@@ -701,7 +701,7 @@ export function NewCandidateUnifiedModal({
             CV
           </div>
           {activeTab === 'cv' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-gray-100" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
           )}
         </button>
         <button
@@ -718,7 +718,7 @@ export function NewCandidateUnifiedModal({
             LinkedIn
           </div>
           {activeTab === 'linkedin' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-gray-100" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
           )}
         </button>
         <button
@@ -735,7 +735,7 @@ export function NewCandidateUnifiedModal({
             Manual
           </div>
           {activeTab === 'manual' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-gray-100" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
           )}
         </button>
       </div>

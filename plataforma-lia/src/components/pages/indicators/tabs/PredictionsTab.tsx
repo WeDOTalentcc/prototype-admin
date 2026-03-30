@@ -105,7 +105,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 { area: "Design", current: 12, predicted: 16, confidence: 89 },
                 { area: "Operações", current: 15, predicted: 18, confidence: 85 },
               ].map((item, index) => (
-                <div key={index} className="space-y-2">
+                <div key={item.area} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {item.area}
@@ -157,7 +157,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                 { skill: "UX Research", growth: "+43%", urgency: "baixa" },
               ].map((item, index) => (
                 <div
-                  key={index}
+                  key={item.skill}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
                 >
                   <div>
@@ -224,7 +224,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               },
             ].map((alert, index) => (
               <div
-                key={index}
+                key={`alert-${index}`}
                 className={`p-4 rounded-md border-l-4 ${
                   alert.type === "urgente"
                     ? "bg-status-error/10 border-l-red-500"

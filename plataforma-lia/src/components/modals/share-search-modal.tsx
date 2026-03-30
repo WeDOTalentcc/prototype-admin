@@ -494,7 +494,7 @@ export function ShareSearchModal({
                           className={cn(
                             "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-colors whitespace-nowrap",
                             selectedTemplateId === tpl.id
-                              ? "border-gray-900 dark:border-lia-border-subtle bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled"
+                              ? "border-gray-900 dark:border-lia-border-subtle bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled"
                               : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 text-lia-text-secondary dark:text-lia-text-secondary"
                           )}
                         >
@@ -678,7 +678,7 @@ export function ShareSearchModal({
                     </div>
 
                     <div className="flex justify-center pt-1">
-                      <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-lia-text-disabled rounded-md px-6 py-2 text-xs font-medium flex items-center gap-2">
+                      <div className="bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled rounded-md px-6 py-2 text-xs font-medium flex items-center gap-2">
                         <ExternalLink className="w-3.5 h-3.5" />
                         Acessar Candidatos
                       </div>
@@ -778,7 +778,7 @@ export function ShareSearchModal({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !canSubmit}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
             >
               {isSubmitting ? (
                 <>
