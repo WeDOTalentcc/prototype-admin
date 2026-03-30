@@ -71,7 +71,7 @@ export function useLiaSuggestions(companyId: string = "default", limit: number =
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<Record<string, unknown> | null>(null)
 
-  const fetchSuggestions = useCallback(async () => {
+  const fetchSuggestions = useCallback(async (signal?: AbortSignal) => {
     setLoading(true)
     setError(null)
     
@@ -81,7 +81,7 @@ export function useLiaSuggestions(companyId: string = "default", limit: number =
         limit: limit.toString(),
       })
       
-      const response = await fetch(`/api/backend-proxy/lia/suggestions?${params.toString()}`)
+      const response = await fetch(`/api/backend-proxy/lia/suggestions?${params.toString()}`, { signal })
       
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions")
@@ -91,6 +91,7 @@ export function useLiaSuggestions(companyId: string = "default", limit: number =
       setSuggestions(data.suggestions)
       setContext(data.context || null)
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       setError(err instanceof Error ? err.message : "Unknown error")
       setSuggestions([])
     } finally {
@@ -99,7 +100,9 @@ export function useLiaSuggestions(companyId: string = "default", limit: number =
   }, [companyId, limit])
 
   useEffect(() => {
-    fetchSuggestions()
+    const controller = new AbortController()
+    fetchSuggestions(controller.signal)
+    return () => controller.abort()
   }, [fetchSuggestions])
 
   return {
