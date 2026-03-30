@@ -15,7 +15,7 @@ const nextConfig = {
     '*.replit.dev',
     '*.repl.co'
   ],
-  reactStrictMode: false,
+  reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true  // Sprint 8: pre-existing lint errors - to be fixed in Sprint 9
   },
@@ -23,7 +23,7 @@ const nextConfig = {
     ignoreBuildErrors: true  // Sprint 8: pre-existing TS errors - to be fixed in Sprint 9
   },
   images: {
-    unoptimized: true,
+    unoptimized: false,
     domains: [
       "source.unsplash.com",
       "images.unsplash.com",
@@ -56,15 +56,58 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Assets estáticos do Next.js — cache longo (1 ano), imutáveis (hash no nome)
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Fontes e imagens públicas — cache moderado
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      {
+        // Rotas de API — sem cache (dados dinâmicos)
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache',
+          },
+        ],
+      },
+      {
+        // Páginas HTML — revalidar, mas usar cache se possível
         source: '/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
           },
         ],
       },
-    ];
+    ]
   },
   async rewrites() {
     return [
