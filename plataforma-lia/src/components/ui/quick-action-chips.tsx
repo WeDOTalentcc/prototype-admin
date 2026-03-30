@@ -32,7 +32,7 @@ export const QuickActionChips = React.memo(function QuickActionChips({ actions, 
   }
 
   return (
-    <div className={}>
+    <div className={`flex flex-wrap gap-2 ${className}`}>
       {actions.map((action) => {
         const Icon = action.icon
         return (
@@ -41,7 +41,7 @@ export const QuickActionChips = React.memo(function QuickActionChips({ actions, 
             variant="outline"
             size="sm"
             onClick={action.onClick}
-            className={}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-colors motion-reduce:transition-none duration-200 border-lia-border-default ${getVariantStyles(action.variant)}`}
           >
             <Icon className="w-3.5 h-3.5" />
             <span>{action.label}</span>

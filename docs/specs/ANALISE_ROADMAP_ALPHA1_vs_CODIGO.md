@@ -230,6 +230,14 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | E7 Triagem | ● | — | ● | ● | ● |
 | E8 Gate 2 | ● | ● | ● | — | ● |
 
+**Comunicação por etapa (somente etapas com canais ativos):**
+
+| Etapa | Email | WhatsApp | Chat Web | Teams | VoIP |
+|-------|:-----:|:--------:|:--------:|:-----:|:----:|
+| E6 Contato + Follow-up | ● | ● | — | ○ | — |
+| E7 Triagem WSI | ◐ | ● | ⚠ | — | ◐ |
+| E9 Agendar + Feedback | ● | ● | — | ◐ | — |
+
 > **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
 ---
